@@ -170,5 +170,35 @@ class SubclassTest(unittest.TestCase):
         self.assertEqual(hash(y), 11)       # MyInt.__hash__
         self.assertEqual(y * 5, 0)          # AnotherInt.__mul__
 
+    def test_multiple_inheritance(self):
+        class Ancestor:
+            def __hash__(self):
+                return 15
+            def __str__(self):
+                return "Ancestor"
+            def test(self):
+                return "Hello world"
+
+        class Foo(Ancestor, int): pass
+        class Bar(Ancestor, MyInt): pass
+        class Baz(MyInt, Ancestor): pass
+
+        x = Foo(5)
+        y = Bar(5)
+        z = Baz(5)
+
+        self.assertEqual(str(x), "Ancestor")        # Ancestor.__str__
+        self.assertEqual(hash(x), 15)               # Ancestor.__hash__
+        self.assertEqual(x.test(), "Hello world")   # Ancestor.test
+
+        self.assertEqual(str(y), "Ancestor")        # Ancestor.__str__
+        self.assertEqual(hash(y), 15)               # Ancestor.__str__
+        self.assertEqual(y.test(), "Hello world")   # Ancestor.test
+
+        self.assertEqual(str(z), "5")               # int.__str__
+        self.assertEqual(hash(z), 11)               # MyInt.__hash__
+        self.assertEqual(z.test(), "Hello world")   # Ancestor.test
+
+
 if __name__ == "__main__":
     unittest.main()

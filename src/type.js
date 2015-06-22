@@ -159,13 +159,21 @@ Sk.builtin.type = function (name, bases, dict) {
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
         }
 
-        var parent, it;
+        var parent, it, firstAncestor;
         // Set up inheritance from any builtins
         for (it = bases.tp$iter(), parent = it.tp$iternext(); parent !== undefined; parent = it.tp$iternext()) {
+            if (firstAncestor === undefined) {
+                firstAncestor = parent;
+            }
             if (parent.prototype instanceof Sk.builtin.object || parent === Sk.builtin.object) {
                 inheritsFromBuiltin = true;
-                Sk.abstr.setUpInheritance(_name, klass, parent);
             }
+        }
+
+        // Javascript does not support multiple inheritance, so only the first
+        // base (if any) will directly inherit in Javascript
+        if (firstAncestor !== undefined) {
+            Sk.abstr.setUpInheritance(_name, klass, firstAncestor);
         }
 
         if (!inheritsFromBuiltin) {
