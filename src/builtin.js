@@ -723,9 +723,7 @@ Sk.builtin.hash = function hash (value) {
         throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
     }
 
-    if ((value instanceof Object) && (value.__hash__ !== undefined)) {
-        return Sk.misceval.callsim(value.__hash__, value);
-    } else if ((value instanceof Object) && (value.tp$hash !== undefined)) {
+    if ((value instanceof Object) && (value.tp$hash !== undefined)) {
         if (value.$savedHash_) {
             return value.$savedHash_;
         }
