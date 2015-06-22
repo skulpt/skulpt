@@ -114,10 +114,14 @@ Sk.builtin.type = function (name, bases, dict) {
             self["$d"] = new Sk.builtin.dict([]);
 
             if (klass.prototype.tp$base !== undefined) {
-                // Call super constructor if subclass of a builtin with undefined __init__
-                args_copy = args.slice();
-                args_copy.unshift(klass, this);
-                Sk.abstr.superConstructor.apply(undefined, args_copy);
+                if (klass.prototype.tp$base.sk$klass) {
+                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend);
+                } else {
+                    // Call super constructor if subclass of a builtin
+                    args_copy = args.slice();
+                    args_copy.unshift(klass, this);
+                    Sk.abstr.superConstructor.apply(undefined, args_copy);
+                }
             }
 
             init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
@@ -204,11 +208,11 @@ Sk.builtin.type = function (name, bases, dict) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
 
-            if ((this.tp$base !== undefined) &&
-                (this.tp$base !== Sk.builtin.object) &&
-                (this.tp$base.prototype["$r"] !== undefined)) {
+            if ((klass.prototype.tp$base !== undefined) &&
+                (klass.prototype.tp$base !== Sk.builtin.object) &&
+                (klass.prototype.tp$base.prototype["$r"] !== undefined)) {
                 // If subclass of a builtin which is not object, use that class' repr
-                return this.tp$base.prototype["$r"].call(this);
+                return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
                 // Else, use default repr for a user-defined class instance
                 mod = dict.mp$subscript(module_lk); // lookup __module__
@@ -224,11 +228,11 @@ Sk.builtin.type = function (name, bases, dict) {
             if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype.__str__) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
             }
-            if ((this.tp$base !== undefined) &&
-                (this.tp$base !== Sk.builtin.object) &&
-                (this.tp$base.prototype.tp$str !== undefined)) {
+            if ((klass.prototype.tp$base !== undefined) &&
+                (klass.prototype.tp$base !== Sk.builtin.object) &&
+                (klass.prototype.tp$base.prototype.tp$str !== undefined)) {
                 // If subclass of a builtin which is not object, use that class' repr
-                return this.tp$base.prototype.tp$str.call(this);
+                return klass.prototype.tp$base.prototype.tp$str.call(this);
             }
             return this["$r"]();
         };

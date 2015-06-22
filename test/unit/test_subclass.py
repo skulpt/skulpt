@@ -47,6 +47,10 @@ class MyDict(dict):
     def __setitem__(self, key, value):
         return None
 
+class AnotherInt(MyInt):
+    def __mul__(self, other):
+        return 0
+
 class SubclassTest(unittest.TestCase):
 
     def test_builtin_functions(self):
@@ -154,6 +158,17 @@ class SubclassTest(unittest.TestCase):
 
         d[1] = "should not change"
         self.assertEqual(d, base_dict)                      # MyDict.__setitem__
+
+    def test_subclass_of_subclass(self):
+
+        x = MyInt(5)
+        self.assertEqual(x * 5, 25)
+
+        y = AnotherInt(5)
+        self.assertEqual(y, 5)              # int.__eq__
+        self.assertEqual(y + 2, 3)          # MyInt.__add__
+        self.assertEqual(hash(y), 11)       # MyInt.__hash__
+        self.assertEqual(y * 5, 0)          # AnotherInt.__mul__
 
 if __name__ == "__main__":
     unittest.main()
