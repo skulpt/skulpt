@@ -151,35 +151,54 @@ Sk.builtin.type = function (name, bases, dict) {
 
         var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
 
-        var inheritsFromBuiltin = false;
+        var inheritsFromObject = false, inheritsBuiltin = false;
 
         if (bases.v.length === 0 && Sk.python3) {
             // new style class, inherits from object by default
-            inheritsFromBuiltin = true;
+            inheritsFromObject = true;
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
         }
 
-        var parent, it, firstAncestor;
+        var parent, it, firstAncestor, builtin_bases = [];
         // Set up inheritance from any builtins
         for (it = bases.tp$iter(), parent = it.tp$iternext(); parent !== undefined; parent = it.tp$iternext()) {
             if (firstAncestor === undefined) {
                 firstAncestor = parent;
             }
             if (parent.prototype instanceof Sk.builtin.object || parent === Sk.builtin.object) {
-                inheritsFromBuiltin = true;
+
+                while (parent.sk$klass && parent.prototype.tp$base) {
+                    parent = parent.prototype.tp$base;
+                }
+
+                if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0) {
+                    builtin_bases.push(parent);
+                }
+
+                // This class inherits from Sk.builtin.object at some level
+                inheritsFromObject = true;
             }
+        }
+
+        if (builtin_bases.length > 1) {
+            throw new Sk.builtin.TypeError("Multiple inheritance with more than one builtin type is unsupported");
         }
 
         // Javascript does not support multiple inheritance, so only the first
         // base (if any) will directly inherit in Javascript
         if (firstAncestor !== undefined) {
-            Sk.abstr.setUpInheritance(_name, klass, firstAncestor);
+            goog.inherits(klass, firstAncestor);
+
+            if (firstAncestor.prototype instanceof Sk.builtin.object || firstAncestor === Sk.builtin.object) {
+                klass.prototype.tp$base = firstAncestor;
+            }
         }
 
-        if (!inheritsFromBuiltin) {
+        klass.prototype.tp$name = _name;
+        klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
+
+        if (!inheritsFromObject) {
             // old style class, does not inherit from object
-            klass.prototype.tp$name = _name;
-            klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
             klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
             klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         }

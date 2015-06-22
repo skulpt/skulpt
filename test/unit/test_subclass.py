@@ -199,6 +199,27 @@ class SubclassTest(unittest.TestCase):
         self.assertEqual(hash(z), 11)               # MyInt.__hash__
         self.assertEqual(z.test(), "Hello world")   # Ancestor.test
 
+    def test_bad_multiple_inheritance(self):
+
+        # Note: "with self.assertRaises" syntax is not supported by Skulpt
+        # at this time so must pass a function to "self.assertRaises"
+
+        def two_builtins():
+            class BadClass(int, float): pass
+
+        def builtin_and_subclass():
+            class BadClass(int, MyFloat): pass
+
+        def two_subclasses():
+            class BadClass(MyList, AnotherInt): pass
+
+        self.assertRaises(TypeError, two_builtins)
+        self.assertRaises(TypeError, builtin_and_subclass)
+        self.assertRaises(TypeError, two_subclasses)
+
+        class SameBuiltin(MyInt, int): pass
+        self.assertEqual(SameBuiltin(5), 5)
+
 
 if __name__ == "__main__":
     unittest.main()
