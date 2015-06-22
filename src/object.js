@@ -383,7 +383,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * Array of all the Python functions which are methods of this class.
  * @type {Array}
  */
-Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__",
+Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
 "__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
 
 /**

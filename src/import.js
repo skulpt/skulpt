@@ -210,8 +210,8 @@ Sk.doOneTimeInitialization = function () {
     // Sk.builtin.func, as that class was undefined when these functions were declared
     proto = Sk.builtin.object.prototype;
 
-    for (i = 0; i < proto.pythonFunctions.length; i++) {
-        name = proto.pythonFunctions[i];
+    for (i = 0; i < Sk.builtin.object.pythonFunctions.length; i++) {
+        name = Sk.builtin.object.pythonFunctions[i];
 
         if (proto[name] instanceof Sk.builtin.func) {
             // If functions have already been initialized, do not wrap again.

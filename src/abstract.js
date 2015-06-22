@@ -931,15 +931,8 @@ Sk.abstr.lookupSpecial = function(op, str) {
 };
 goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
-Sk.abstr.registerPythonFunctions = function (thisClass, funcNames) {
-    for (var i = 0; i < funcNames.length; i++) {
-        thisClass.prototype.pythonFunctions.push(funcNames[i]);
-    }
-};
-
 Sk.abstr.markUnhashable = function (thisClass) {
     var proto = thisClass.prototype;
-    proto.pythonFunctions.splice(proto.pythonFunctions.indexOf("__hash__"), 1);
     proto.__hash__ = Sk.builtin.none.none$;
     proto.tp$hash = Sk.builtin.none.none$;
 };
@@ -949,7 +942,6 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
-    child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
 };
 
 Sk.abstr.setUpObject = function (self) {

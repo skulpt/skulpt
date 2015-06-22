@@ -428,12 +428,6 @@ Sk.builtin.numtype.prototype["__coerce__"] = new Sk.builtin.func(function (self,
 
 });
 
-Sk.abstr.registerPythonFunctions(Sk.builtin.numtype,
-    ["__abs__", "__neg__", "__pos__", "__int__", "__long__", "__float__",
-     "__add__", "__radd__", "__sub__", "__rsub__", "__mul__", "__rmul__",
-     "__div__", "__rdiv__", "__floordiv__", "__rfloordiv__",
-     "__mod__", "__rmod__", "__divmod__", "__rdivmod__", "__coerce__"]);
-
 /**
  * Add a Python object to this instance and return the result (i.e. this + other).
  *
