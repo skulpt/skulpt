@@ -54,7 +54,7 @@ Sk.dunderToSkulpt = {
  *
  * @param {*} name name or object to get type of, if only one arg
  *
- * @param {Array.<Object>=} bases
+ * @param {Sk.builtin.tuple=} bases
  *
  * @param {Object=} dict
  *
@@ -231,7 +231,7 @@ Sk.builtin.type = function (name, bases, dict) {
             var cname;
             var mod;
             var reprf = this.tp$getattr("__repr__");
-            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype.__repr__) {
+            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
 
@@ -252,7 +252,7 @@ Sk.builtin.type = function (name, bases, dict) {
         };
         klass.prototype.tp$str = function () {
             var strf = this.tp$getattr("__str__");
-            if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype.__str__) {
+            if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype["__str__"]) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
             }
             if ((klass.prototype.tp$base !== undefined) &&

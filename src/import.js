@@ -186,7 +186,7 @@ Sk.doOneTimeInitialization = function () {
 
     var setUpClass = function (child) {
         var parent = child.tp$base;
-        var bases;
+        var bases = [];
         var base;
 
         for (base = parent; base !== undefined; base = base.tp$base) {
