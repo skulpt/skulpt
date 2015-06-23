@@ -680,6 +680,12 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         return Sk.builtin.bool.false$;
     }
 
+    // Check for Javascript inheritance
+    if (obj instanceof type) {
+        return Sk.builtin.bool.true$;
+    }
+
+
     issubclass = function (klass, base) {
         var i;
         var bases;
