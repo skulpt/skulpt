@@ -1,4 +1,4 @@
-# Python test set -- built-in functions
+__author__ = 'mchat'
 
 import unittest
 
