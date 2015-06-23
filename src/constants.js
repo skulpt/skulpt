@@ -19,3 +19,5 @@ Sk.abstr.setUpObject(Sk.builtin.bool.true$);
 Sk.abstr.setUpObject(Sk.builtin.bool.false$);
 
 Sk.builtin.int_.$defaults = [ new Sk.builtin.int_(10) ];
+Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
+

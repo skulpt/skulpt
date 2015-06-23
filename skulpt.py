@@ -98,7 +98,6 @@ Files = [
         'src/structseq.js',
         'src/generator.js',
         'src/file.js',
-        'src/constants.js',
         'src/ffi.js',
         'src/enumerate.js',
         'src/tokenize.js',
@@ -112,6 +111,7 @@ Files = [
         'src/timsort.js',
         'src/sorted.js',
         'src/builtindict.js',
+        'src/constants.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
