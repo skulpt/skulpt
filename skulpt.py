@@ -225,6 +225,57 @@ def test(debug_mode=False):
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
 
+def time_suite(iter=1):
+    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+
+    f = open("support/tmp/run.js", "w")
+
+    # Prepare named tests
+    buildNamedTestsFile()
+
+    # Prepare unit tests
+    testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+
+    f.write("var input;\n")
+
+    for fn in testFiles:
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        p3on = 'false'
+        f.write("""
+input = read('%s');
+print('%s');
+Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.importMain("%s", false);
+        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+    f.close()
+
+    times = []
+
+    # Run profile
+    for i in range(iter):
+        print "Iteration %d of %d..." % (i + 1, iter)
+        startTime = time.time()
+        p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
+                  ' '.join(getFileList(FILE_TYPE_TEST)),
+                  ' '.join(TestFiles)),
+                  shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+
+        if p.returncode != 0:
+            failTot += 1
+            print "{} exited with error code {}".format(fn,p.returncode)
+
+        endTime = time.time()
+        times.append(endTime - startTime)
+
+    avg = sum(times) / len(times)
+
+    print "Average time over %s iterations: %s seconds" % (iter, avg)
+
 def profile(fn="", process=True, output=""):
     """
     Runs v8 profiler, which outputs tick information to v8.log Use
@@ -1030,6 +1081,7 @@ Commands:
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
+    time [iter]      Average runtime of the test suite over [iter] iterations.
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1186,6 +1238,11 @@ def main():
 
         profile(fn=fn, output=out)
 
+    elif cmd == "time":
+        if len(sys.argv) < 3:
+            time_suite()
+        else:
+            time_suite(iter=int(sys.argv[2]))
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)
