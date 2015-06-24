@@ -220,7 +220,12 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret,
         swapped_method,
         method,
+        swapped_shortcut,
+        shortcut,
+        v_has_shortcut,
+        w_has_shortcut,
         op2method,
+        op2shortcut,
         vcmp,
         wcmp,
         w_seq_type,
@@ -364,6 +369,33 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         return !Sk.misceval.isTrue(Sk.abstr.sequenceContains(w, v));
     }
 
+    // Call Javascript shortcut method if exists for either object
+
+    op2shortcut = {
+        "Eq"   : "ob$eq",
+        "NotEq": "ob$ne",
+        "Gt"   : "ob$gt",
+        "GtE"  : "ob$ge",
+        "Lt"   : "ob$lt",
+        "LtE"  : "ob$le"
+    };
+
+    shortcut = op2shortcut[op];
+    v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
+    if (v_has_shortcut) {
+        if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
+    }
+
+    swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
+    w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
+    if (w_has_shortcut) {
+
+        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
+    }
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
@@ -392,7 +424,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     };
 
     method = Sk.abstr.lookupSpecial(v, op2method[op]);
-    if (method) {
+    if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsim(method, v, w);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
@@ -400,7 +432,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
-    if (swapped_method) {
+    if (swapped_method && !w_has_shortcut) {
         ret = Sk.misceval.callsim(swapped_method, w, v);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
