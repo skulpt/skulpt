@@ -482,17 +482,22 @@ def dist(options):
         print "Couldn't copy for gzip test."
         sys.exit(1)
 
-    has_gzip = os.access("gzip", os.X_OK)
+    path_list = os.environ.get('PATH','').split(':')
+    has_gzip = False
+    for p in path_list:
+        has_gzip = os.access(os.path.join(p,"gzip"), os.X_OK)
+        if has_gzip:
+            break
 
     if has_gzip:
         ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
         if ret != 0:
             print "Couldn't gzip to get final size."
             has_gzip = False
+            os.unlink("{0}/tmp.js".format(DIST_DIR))
 
         size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
         os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
-        os.unlink("{0}/tmp.js".format(DIST_DIR))
     else:
         os.unlink("{0}/tmp.js".format(DIST_DIR))
         print "No gzip executable, can't get final size"
