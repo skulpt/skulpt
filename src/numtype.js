@@ -18,7 +18,7 @@ Sk.builtin.numtype = function () {
 Sk.abstr.setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
 
 /**
- * Python wrapper of \_\_abs\_\_ method.
+ * Python wrapper of `__abs__` method.
  *
  * @name  __abs__
  * @instance
@@ -36,7 +36,7 @@ Sk.builtin.numtype.prototype["__abs__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_neg\_\_ method.
+ * Python wrapper of `__neg__` method.
  *
  * @name  __neg__
  * @instance
@@ -54,7 +54,7 @@ Sk.builtin.numtype.prototype["__neg__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_pos\_\_ method.
+ * Python wrapper of `__pos__` method.
  *
  * @name  __pos__
  * @instance
@@ -72,7 +72,7 @@ Sk.builtin.numtype.prototype["__pos__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_int\_\_ method.
+ * Python wrapper of `__int__` method.
  *
  * @name  __int__
  * @instance
@@ -90,7 +90,7 @@ Sk.builtin.numtype.prototype["__int__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_long\_\_ method.
+ * Python wrapper of `__long__` method.
  *
  * @name  __long__
  * @instance
@@ -108,7 +108,7 @@ Sk.builtin.numtype.prototype["__long__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_float\_\_ method.
+ * Python wrapper of `__float__` method.
  *
  * @name  __float__
  * @instance
@@ -126,7 +126,7 @@ Sk.builtin.numtype.prototype["__float__"] = new Sk.builtin.func(function (self) 
 });
 
 /**
- * Python wrapper of \_\_add\_\_ method.
+ * Python wrapper of `__add__` method.
  *
  * @name  __add__
  * @instance
@@ -144,7 +144,7 @@ Sk.builtin.numtype.prototype["__add__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_radd\_\_ method.
+ * Python wrapper of `__radd__` method.
  *
  * @name  __radd__
  * @instance
@@ -162,7 +162,7 @@ Sk.builtin.numtype.prototype["__radd__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_sub\_\_ method.
+ * Python wrapper of `__sub__` method.
  *
  * @name  __sub__
  * @instance
@@ -180,7 +180,7 @@ Sk.builtin.numtype.prototype["__sub__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_rsub\_\_ method.
+ * Python wrapper of `__rsub__` method.
  *
  * @name  __rsub__
  * @instance
@@ -198,7 +198,7 @@ Sk.builtin.numtype.prototype["__rsub__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_mul\_\_ method.
+ * Python wrapper of `__mul__` method.
  *
  * @name  __mul__
  * @instance
@@ -216,7 +216,7 @@ Sk.builtin.numtype.prototype["__mul__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_rmul\_\_ method.
+ * Python wrapper of `__rmul__` method.
  *
  * @name  __rmul__
  * @instance
@@ -234,7 +234,7 @@ Sk.builtin.numtype.prototype["__rmul__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_div\_\_ method.
+ * Python wrapper of `__div__` method.
  *
  * @name  __div__
  * @instance
@@ -252,7 +252,7 @@ Sk.builtin.numtype.prototype["__div__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_rdiv\_\_ method.
+ * Python wrapper of `__rdiv__` method.
  *
  * @name  __rdiv__
  * @instance
@@ -270,7 +270,7 @@ Sk.builtin.numtype.prototype["__rdiv__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_floordiv\_\_ method.
+ * Python wrapper of `__floordiv__` method.
  *
  * @name  __floordiv__
  * @instance
@@ -288,7 +288,7 @@ Sk.builtin.numtype.prototype["__floordiv__"] = new Sk.builtin.func(function (sel
 });
 
 /**
- * Python wrapper of \_\_rfloordiv\_\_ method.
+ * Python wrapper of `__rfloordiv__` method.
  *
  * @name  __rfloordiv__
  * @instance
@@ -306,7 +306,7 @@ Sk.builtin.numtype.prototype["__rfloordiv__"] = new Sk.builtin.func(function (se
 });
 
 /**
- * Python wrapper of \_\_mod\_\_ method.
+ * Python wrapper of `__mod__` method.
  *
  * @name  __mod__
  * @instance
@@ -324,7 +324,7 @@ Sk.builtin.numtype.prototype["__mod__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_rmod\_\_ method.
+ * Python wrapper of `__rmod__` method.
  *
  * @name  __rmod__
  * @instance
@@ -342,7 +342,7 @@ Sk.builtin.numtype.prototype["__rmod__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_divmod\_\_ method.
+ * Python wrapper of `__divmod__` method.
  *
  * @name  __divmod__
  * @instance
@@ -360,7 +360,7 @@ Sk.builtin.numtype.prototype["__divmod__"] = new Sk.builtin.func(function (self,
 });
 
 /**
- * Python wrapper of \_\_rdivmod\_\_ method.
+ * Python wrapper of `__rdivmod__` method.
  *
  * @name  __rdivmod__
  * @instance
@@ -378,7 +378,7 @@ Sk.builtin.numtype.prototype["__rdivmod__"] = new Sk.builtin.func(function (self
 });
 
 /**
- * Python wrapper of \_\_pow\_\_ method.
+ * Python wrapper of `__pow__` method.
  *
  * @name  __pow__
  * @instance
@@ -396,7 +396,7 @@ Sk.builtin.numtype.prototype["__pow__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_rpow\_\_ method.
+ * Python wrapper of `__rpow__` method.
  *
  * @name  __rpow__
  * @instance
@@ -414,7 +414,7 @@ Sk.builtin.numtype.prototype["__rpow__"] = new Sk.builtin.func(function (self, o
 });
 
 /**
- * Python wrapper of \_\_coerce\_\_ method.
+ * Python wrapper of `__coerce__` method.
  *
  * @name  __coerce__
  * @instance

@@ -18,7 +18,7 @@ Sk.builtin.seqtype = function () {
 Sk.abstr.setUpInheritance("SequenceType", Sk.builtin.seqtype, Sk.builtin.object);
 
 /**
- * Python wrapper of \_\_len\_\_ method.
+ * Python wrapper of `__len__` method.
  *
  * @name  __len__
  * @instance
@@ -33,7 +33,7 @@ Sk.builtin.seqtype.prototype["__len__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_iter\_\_ method.
+ * Python wrapper of `__iter__` method.
  *
  * @name  __iter__
  * @instance
@@ -48,7 +48,7 @@ Sk.builtin.seqtype.prototype["__iter__"] = new Sk.builtin.func(function (self) {
 });
 
 /**
- * Python wrapper of \_\_contains\_\_ method.
+ * Python wrapper of `__contains__` method.
  *
  * @name  __contains__
  * @instance
@@ -67,7 +67,7 @@ Sk.builtin.seqtype.prototype["__contains__"] = new Sk.builtin.func(function (sel
 });
 
 /**
- * Python wrapper of \_\_getitem\_\_ method.
+ * Python wrapper of `__getitem__` method.
  *
  * @name  __getitem__
  * @instance
@@ -82,7 +82,7 @@ Sk.builtin.seqtype.prototype["__getitem__"] = new Sk.builtin.func(function (self
 });
 
 /**
- * Python wrapper of \_\_add\_\_ method.
+ * Python wrapper of `__add__` method.
  *
  * @name  __add__
  * @instance
@@ -97,7 +97,7 @@ Sk.builtin.seqtype.prototype["__add__"] = new Sk.builtin.func(function (self, ot
 });
 
 /**
- * Python wrapper of \_\_mul\_\_ method.
+ * Python wrapper of `__mul__` method.
  *
  * @name  __mul__
  * @instance
@@ -116,7 +116,7 @@ Sk.builtin.seqtype.prototype["__mul__"] = new Sk.builtin.func(function (self, n)
 });
 
 /**
- * Python wrapper of \_\_rmul\_\_ method.
+ * Python wrapper of `__rmul__` method.
  *
  * @name  __rmul__
  * @instance

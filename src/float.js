@@ -727,7 +727,7 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
 /**
  * Round this instance to a given number of digits, or zero if omitted.
  *
- * Implements \_\_round\_\_ dunder method.
+ * Implements `__round__` dunder method.
  *
  * Javascript function, returns Python object.
  *

@@ -147,7 +147,7 @@ Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", 
 /** Default implementations of dunder methods found in all Python objects */
 
 /**
- * Python wrapper for \_\_repr\_\_ method.
+ * Python wrapper for `__repr__` method.
  * @name  __repr__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -159,7 +159,7 @@ Sk.builtin.object.prototype["__repr__"] = function (self) {
 };
 
 /**
- * Python wrapper for \_\_str\_\_ method.
+ * Python wrapper for `__str__` method.
  * @name  __str__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -171,7 +171,7 @@ Sk.builtin.object.prototype["__str__"] = function (self) {
 };
 
 /**
- * Python wrapper for \_\_hash\_\_ method.
+ * Python wrapper for `__hash__` method.
  * @name  __hash__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -183,7 +183,7 @@ Sk.builtin.object.prototype["__hash__"] = function (self) {
 };
 
 /**
- * Python wrapper for \_\_eq\_\_ method.
+ * Python wrapper for `__eq__` method.
  * @name  __eq__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -195,7 +195,7 @@ Sk.builtin.object.prototype["__eq__"] = function (self, other) {
 };
 
 /**
- * Python wrapper for \_\_ne\_\_ method.
+ * Python wrapper for `__ne__` method.
  * @name  __ne__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -207,7 +207,7 @@ Sk.builtin.object.prototype["__ne__"] = function (self, other) {
 };
 
 /**
- * Python wrapper for \_\_lt\_\_ method.
+ * Python wrapper for `__lt__` method.
  * @name  __lt__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -219,7 +219,7 @@ Sk.builtin.object.prototype["__lt__"] = function (self, other) {
 };
 
 /**
- * Python wrapper for \_\_le\_\_ method.
+ * Python wrapper for `__le__` method.
  * @name  __le__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -231,7 +231,7 @@ Sk.builtin.object.prototype["__le__"] = function (self, other) {
 };
 
 /**
- * Python wrapper for \_\_gt\_\_ method.
+ * Python wrapper for `__gt__` method.
  * @name  __gt__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -243,7 +243,7 @@ Sk.builtin.object.prototype["__gt__"] = function (self, other) {
 };
 
 /**
- * Python wrapper for \_\_ge\_\_ method.
+ * Python wrapper for `__ge__` method.
  * @name  __ge__
  * @memberOf Sk.builtin.object.prototype
  * @instance
@@ -289,7 +289,7 @@ Sk.builtin.object.prototype.tp$hash = function () {
 /**
  * Perform equality check between this instance and a Python object (i.e. this == other).
  *
- * Implements \_\_eq\_\_ dunder method.
+ * Implements `__eq__` dunder method.
  *
  * Javascript function, returns Python object.
  *
@@ -307,7 +307,7 @@ Sk.builtin.object.prototype.ob$eq = function (other) {
 /**
  * Perform non-equality check between this instance and a Python object (i.e. this != other).
  *
- * Implements \_\_ne\_\_ dunder method.
+ * Implements `__ne__` dunder method.
  *
  * Javascript function, returns Python object.
  *
@@ -325,7 +325,7 @@ Sk.builtin.object.prototype.ob$ne = function (other) {
 /**
  * Determine if this instance is less than a Python object (i.e. this < other).
  *
- * Implements \_\_lt\_\_ dunder method.
+ * Implements `__lt__` dunder method.
  *
  * Javascript function, returns Python object.
  *
@@ -339,7 +339,7 @@ Sk.builtin.object.prototype.ob$lt = function (other) {
 /**
  * Determine if this instance is less than or equal to a Python object (i.e. this <= other).
  *
- * Implements \_\_le\_\_ dunder method.
+ * Implements `__le__` dunder method.
  *
  * Javascript function, returns Python object.
  *
@@ -353,7 +353,7 @@ Sk.builtin.object.prototype.ob$le = function (other) {
 /**
  * Determine if this instance is greater than a Python object (i.e. this > other).
  *
- * Implements \_\_gt\_\_ dunder method.
+ * Implements `__gt__` dunder method.
  *
  * Javascript function, returns Python object.
  *
@@ -367,7 +367,7 @@ Sk.builtin.object.prototype.ob$gt = function (other) {
 /**
  * Determine if this instance is greater than or equal to a Python object (i.e. this >= other).
  *
- * Implements \_\_ge\_\_ dunder method.
+ * Implements `__ge__` dunder method.
  *
  * Javascript function, returns Python object.
  *

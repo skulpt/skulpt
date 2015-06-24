@@ -15,8 +15,8 @@
  * type int, all integers are created with this method, it is also used
  * for the builtin int()
  *
- * Takes also implemented \_\_int\_\_ and \_\_trunc\_\_ methods for x into account
- * and tries to use \_\_index\_\_ and/or \_\_int\_\_ if base is not a number
+ * Takes also implemented `__int__` and `__trunc__` methods for x into account
+ * and tries to use `__index__` and/or `__int__` if base is not a number
  *
  * @extends {Sk.builtin.numtype}
  * 
@@ -146,7 +146,7 @@ Sk.builtin.int_.prototype.nb$lng = function () {
 };
 
 /**
- * Python wrapper of \_\_trunc\_\_ dunder method.
+ * Python wrapper of `__trunc__` dunder method.
  *
  * @instance
  */
@@ -155,7 +155,7 @@ Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function(self) {
 });
 
 /**
- * Python wrapper of \_\_index\_\_ dunder method.
+ * Python wrapper of `__index__` dunder method.
  *
  * @instance
  */
@@ -164,7 +164,7 @@ Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function(self) {
 });
 
 /**
- * Python wrapper of \_\_complex\_\_ dunder method.
+ * Python wrapper of `__complex__` dunder method.
  *
  * @instance
  */
@@ -910,7 +910,7 @@ Sk.builtin.int_.prototype.ob$ge = function (other) {
 /**
  * Round this instance to a given number of digits, or zero if omitted.
  *
- * Implements \_\_round\_\_ dunder method.
+ * Implements `__round__` dunder method.
  *
  * Javascript function, returns Python object.
  *
