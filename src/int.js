@@ -130,8 +130,7 @@ Sk.builtin.int_ = function (x, base) {
 
 Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
-Sk.builtin.int_.co_varnames = [ "base" ];
-Sk.builtin.int_.co_numargs = 2;
+/* NOTE: See constants used for kwargs in constants.js */
 
 Sk.builtin.int_.prototype.nb$int_ = function () {
     return this;

@@ -52,5 +52,5 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     return list;
 };
-Sk.builtin.sorted.co_varnames = ["cmp", "key", "reverse"];
-Sk.builtin.sorted.co_numargs = 4;
+
+/* NOTE: See constants used for kwargs in constants.js */
