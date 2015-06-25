@@ -680,6 +680,12 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         return Sk.builtin.bool.false$;
     }
 
+    // Check for Javascript inheritance
+    if (obj instanceof type) {
+        return Sk.builtin.bool.true$;
+    }
+
+
     issubclass = function (klass, base) {
         var i;
         var bases;
@@ -700,7 +706,6 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
 
     return issubclass(obj.ob$type, type);
 };
-Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash (value) {
     var junk;
     Sk.builtin.pyCheckArgs("hash", arguments, 1, 1);
@@ -974,7 +979,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
          item !== undefined;
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
-            result = Sk.builtin.bool(item);
+            result = new Sk.builtin.bool( item);
         } else {
             result = Sk.misceval.callsim(fun, item);
         }

@@ -9,6 +9,7 @@ Sk.builtin.set = function (S) {
         return new Sk.builtin.set(S);
     }
 
+
     if (typeof(S) === "undefined") {
         S = [];
     }
@@ -27,18 +28,20 @@ Sk.builtin.set = function (S) {
     this["v"] = this.v;
     return this;
 };
-
-Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("set", Sk.builtin.set);
+Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
+Sk.abstr.markUnhashable(Sk.builtin.set);
 
 Sk.builtin.set.prototype.set_iter_ = function () {
-    return this["v"].tp$iter();
+    var iter = this["v"].tp$iter();
+    iter.tp$name = "set_iterator";
+
+    return iter;
 };
 
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
 };
 
-Sk.builtin.set.prototype.tp$name = "set";
 Sk.builtin.set.prototype["$r"] = function () {
     var it, i;
     var ret = [];
@@ -51,82 +54,104 @@ Sk.builtin.set.prototype["$r"] = function () {
         return new Sk.builtin.str("set([" + ret.join(", ") + "])");
     }
 };
-Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-// todo; you can't hash a set() -- what should this be?
-Sk.builtin.set.prototype.tp$hash = Sk.builtin.none.none$;
 
-Sk.builtin.set.prototype.tp$richcompare = function (w, op) {
-    // todo; NotImplemented if either isn't a set
+Sk.builtin.set.prototype.ob$eq = function (other) {
 
-    var isSuper;
-    var isSub;
-    var wl;
-    var vl;
-    if (this === w && Sk.misceval.opAllowsEquality(op)) {
-        return true;
+    if (this === other) {
+        return Sk.builtin.bool.true$;
     }
 
-    // w not a set
-    if (!w.__class__ || w.__class__ != Sk.builtin.set) {
-        // shortcuts for eq/not
-        if (op === "Eq") {
-            return false;
-        }
-        if (op === "NotEq") {
-            return true;
-        }
-
-        // todo; other types should have an arbitrary order
-        return false;
+    if (!(other instanceof Sk.builtin.set)) {
+        return Sk.builtin.bool.false$;
     }
 
-    vl = this.sq$length();
-    wl = w.sq$length();
-
-    // easy short-cut
-    if (wl !== vl) {
-        if (op === "Eq") {
-            return false;
-        }
-        if (op === "NotEq") {
-            return true;
-        }
+    if (this.sq$length() !== other.sq$length()) {
+        return Sk.builtin.bool.false$;
     }
 
-    // used quite a lot in comparisons.
-    isSub = false;
-    isSuper = false;
+    return this["issubset"].func_code(this, other);
+};
 
-    // gather common info
-    switch (op) {
-        case "Lt":
-        case "LtE":
-        case "Eq":
-        case "NotEq":
-            isSub = Sk.builtin.set.prototype["issubset"].func_code(this, w).v;
-            break;
-        case "Gt":
-        case "GtE":
-            isSuper = Sk.builtin.set.prototype["issuperset"].func_code(this, w).v;
-            break;
-        default:
-            goog.asserts.fail();
+Sk.builtin.set.prototype.ob$ne = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
     }
 
-    switch (op) {
-        case "Lt":
-            return vl < wl && isSub;
-        case "LtE":
-        case "Eq":  // we already know that the lengths are equal
-            return isSub;
-        case "NotEq":
-            return !isSub;
-        case "Gt":
-            return vl > wl && isSuper;
-        case "GtE":
-            return isSuper;
+    if (!(other instanceof Sk.builtin.set)) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (this.sq$length() !== other.sq$length()) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (this["issubset"].func_code(this, other).v) {
+        return Sk.builtin.bool.false$;
+    } else {
+        return Sk.builtin.bool.true$;
     }
 };
+
+Sk.builtin.set.prototype.ob$lt = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
+    }
+
+    if (this.sq$length() >= other.sq$length()) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issubset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$le = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (this.sq$length() > other.sq$length()) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issubset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$gt = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
+    }
+
+    if (this.sq$length() <= other.sq$length()) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issuperset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$ge = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (this.sq$length() < other.sq$length()) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issuperset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function(self) {
+
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+
+    return self.tp$iter();
+
+});
 
 Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
 Sk.builtin.set.prototype.sq$length = function () {

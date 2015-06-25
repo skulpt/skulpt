@@ -15,6 +15,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
         return new Sk.builtin.slice(start, stop, step);
     }
 
+
     if (stop === undefined && step === undefined) {
         stop = start;
         start = Sk.builtin.none.none$;
@@ -38,8 +39,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
     return this;
 };
 
-Sk.builtin.slice.prototype.tp$name = "slice";
-Sk.builtin.slice.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("slice", Sk.builtin.slice);
+Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
 
 Sk.builtin.slice.prototype["$r"] = function () {
     var a = Sk.builtin.repr(this.start).v;
@@ -47,8 +47,6 @@ Sk.builtin.slice.prototype["$r"] = function () {
     var c = Sk.builtin.repr(this.step).v;
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
-
-Sk.builtin.slice.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
     // w not a slice

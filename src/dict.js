@@ -10,6 +10,7 @@ Sk.builtin.dict = function dict (L) {
         return new Sk.builtin.dict(L);
     }
 
+
     if (L === undefined) {
         L = [];
     }
@@ -51,7 +52,8 @@ Sk.builtin.dict = function dict (L) {
     return this;
 };
 
-Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("dict", Sk.builtin.dict);
+Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
+Sk.abstr.markUnhashable(Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
 
@@ -210,7 +212,8 @@ Sk.builtin.dict.prototype.tp$iter = function () {
             }
             return ret.$keys[ret.$index++];
             // return ret.$obj[ret.$keys[ret.$index++]].lhs;
-        }
+        },
+        tp$name    : "dict_keyiterator"
     };
     return ret;
 };
@@ -247,63 +250,6 @@ Sk.builtin.dict.prototype["$r"] = function () {
 
 Sk.builtin.dict.prototype.mp$length = function () {
     return this.size;
-};
-
-Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.dict.prototype.tp$hash = Sk.builtin.none.none$;
-
-Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
-    // if the comparison allows for equality then short-circuit it here
-    var otherv;
-    var v;
-    var iter, k;
-    var otherl;
-    var thisl;
-    if (this === other && Sk.misceval.opAllowsEquality(op)) {
-        return true;
-    }
-
-    // Only support Eq and NotEq comparisons
-    switch (op) {
-        case "Lt":
-            return undefined;
-        case "LtE":
-            return undefined;
-        case "Eq":
-            break;
-        case "NotEq":
-            break;
-        case "Gt":
-            return undefined;
-        case "GtE":
-            return undefined;
-        default:
-            goog.asserts.fail();
-    }
-
-    if (!(other instanceof Sk.builtin.dict)) {
-        return op !== "Eq";
-    }
-
-    thisl = this.size;
-    otherl = other.size;
-
-    if (thisl !== otherl) {
-        return op !== "Eq";
-    }
-
-    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
-        v = this.mp$subscript(k);
-        otherv = other.mp$subscript(k);
-
-        if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
-            return op !== "Eq";
-        }
-    }
-
-    return op === "Eq";
 };
 
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
@@ -348,7 +294,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
 
 Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
     Sk.builtin.pyCheckArgs("has_key()", arguments, 1, 1, false, true);
-    return Sk.builtin.bool(self.sq$contains(k));
+    return new Sk.builtin.bool( self.sq$contains(k));
 });
 
 Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
@@ -510,7 +456,8 @@ Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, ite
 });
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, op);
+    // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
+    return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
 Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
@@ -555,29 +502,49 @@ Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
 });
 
 /* python3 recommends implementing simple ops */
-Sk.builtin.dict.prototype.__eq__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Eq");
-});
+Sk.builtin.dict.prototype.ob$eq = function (other) {
 
-Sk.builtin.dict.prototype.__ne__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    var iter, k, v, otherv;
 
-Sk.builtin.dict.prototype.__gt__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
 
-Sk.builtin.dict.prototype.__ge__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    if (!(other instanceof Sk.builtin.dict)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
 
-Sk.builtin.dict.prototype.__le__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "GtE");
-});
+    if (this.size !== other.size) {
+        return Sk.builtin.bool.false$;
+    }
 
-Sk.builtin.dict.prototype.__lt__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Lt");
-});
+    for (iter = this.tp$iter(), k = iter.tp$iternext();
+         k !== undefined;
+         k = iter.tp$iternext()) {
+        v = this.mp$subscript(k);
+        otherv = other.mp$subscript(k);
+
+        if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+
+    return Sk.builtin.bool.true$;
+};
+
+Sk.builtin.dict.prototype.ob$ne = function (other) {
+
+    var isEqual = this.ob$eq(other);
+
+    if (isEqual instanceof Sk.builtin.NotImplemented) {
+        return isEqual;
+    } else if (isEqual.v) {
+        return Sk.builtin.bool.false$;
+    } else {
+        return Sk.builtin.bool.true$;
+    }
+
+};
 
 Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
@@ -614,7 +581,5 @@ Sk.builtin.dict.prototype["viewkeys"] = new Sk.builtin.func(function (self) {
 Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
 });
-
-Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
