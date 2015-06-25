@@ -225,38 +225,108 @@ def test(debug_mode=False):
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
 
-def time_suite(iter=1):
+def parse_time_args(argv):
+    usageString = """
+
+{program} time [filename.py] [iter=1]
+    Computes the average runtime of a Python file (or test suite, if none specified)
+    over iter number of trials.
+    """.format(program=argv[0])
+
+    fn = ""
+    iter = 0
+
+    if len(sys.argv) > 4:
+        print usageString
+        sys.exit(2)
+
+    for arg in argv[2:]:
+        if arg.isdigit():
+            if iter:
+                print usageString
+                sys.exit(2)
+            else:
+                iter = int(arg)
+                if iter <= 0:
+                    print "Number of trials must be 1 or greater."
+                    sys.exit(2)
+        elif ".py" in arg:
+            if fn:
+                print usageString
+                sys.exit(2)
+            else:
+                fn = arg
+        else:
+            print usageString
+            sys.exit(2)
+
+    iter = iter if iter else 1
+    time_suite(iter=iter, fn=fn)
+
+def time_suite(iter=1, fn=""):
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
     f = open("support/tmp/run.js", "w")
 
-    # Prepare named tests
-    buildNamedTestsFile()
+    # Profile single file
+    if fn:
+        if not os.path.exists(fn):
+            print "%s doesn't exist" % fn
+            raise SystemExit()
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
 
-    # Prepare unit tests
-    testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-
-    f.write("var input;\n")
-
-    for fn in testFiles:
         modname = os.path.splitext(os.path.basename(fn))[0]
-        p3on = 'false'
         f.write("""
-input = read('%s');
-print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", false);
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+    var input = read('%s');
+    print("-----");
+    print(input);
+    print("-----");
+    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
+    Sk.misceval.asyncToPromise(function() {
+        return Sk.importMain("%s", true, true);
+    }).then(function () {
+        print("-----");
+    }, function(e) {
+        print("UNCAUGHT EXCEPTION: " + e);
+        print(e.stack);
+    });
+        """ % (fn, os.path.split(fn)[0], modname))
+
+    # Profile test suite
+    else:
+        # Prepare named tests
+        buildNamedTestsFile()
+
+        # Prepare unit tests
+        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
+        f.write("var input;\n")
+
+        for fn in testFiles:
+            modname = os.path.splitext(os.path.basename(fn))[0]
+            p3on = 'false'
+            f.write("""
+    input = read('%s');
+    print('%s');
+    Sk.configure({syspath:["%s"], read:read, python3:%s});
+    Sk.importMain("%s", false);
+            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+        fn = "test suite"
 
     f.close()
+
+    print "Timing %s...\n" % fn
 
     times = []
 
     # Run profile
     for i in range(iter):
-        print "Iteration %d of %d..." % (i + 1, iter)
+        if iter > 1:
+            print "Iteration %d of %d..." % (i + 1, iter)
         startTime = time.time()
         p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
                   ' '.join(getFileList(FILE_TYPE_TEST)),
@@ -274,7 +344,42 @@ Sk.importMain("%s", false);
 
     avg = sum(times) / len(times)
 
-    print "Average time over %s iterations: %s seconds" % (iter, avg)
+    if iter > 1:
+        print "\nAverage time over %s iterations: %s seconds" % (iter, avg)
+    else:
+        print "%s seconds" % avg
+
+def parse_profile_args(argv):
+    usageString = """
+
+{program} profile [filename.py] [output]
+    Runs profile on Python file (or test suite, if none specified)
+    and outputs processed results to output file (or stdout if none specified)
+    """.format(program=argv[0])
+
+    fn = ""
+    out = ""
+    numArgs = len(sys.argv)
+
+    if len(sys.argv) > 4:
+        print usageString
+        sys.exit(2)
+
+    for arg in argv[2:]:
+        if ".py" in arg:
+            if fn:
+                print usageString
+                sys.exit(2)
+            else:
+                fn = arg
+        else:
+            if out:
+                print usageString
+                sys.exit(2)
+            else:
+                out = arg
+
+    profile(fn=fn, output=out)
 
 def profile(fn="", process=True, output=""):
     """
@@ -1210,39 +1315,9 @@ def main():
     elif cmd == "repl":
         repl()
     elif cmd == "profile":
-        """
-    ./skulpt profile
-        Runs profile on test suite and outputs processed results to stdout
-
-    ./skulpt profile [output]
-        Runs profile on test suite and outputs processed results to output (should be clear text file)
-
-    ./skulpt profile [filename].py
-        Runs profile on Python file and outputs processed results to stdout
-
-    ./skulpt profile [filename].py output
-        Runs profile on Python file and outputs processed results to output (should be clear text file)
-        """
-
-        fn = ""
-        out = ""
-
-        if len(sys.argv) == 3:
-            if ".py" in sys.argv[2]:
-                fn = sys.argv[2]
-            else:
-                out = sys.argv[2]
-        elif len(sys.argv) == 4:
-            fn = sys.argv[2]
-            out = sys.argv[3]
-
-        profile(fn=fn, output=out)
-
+        parse_profile_args(sys.argv)
     elif cmd == "time":
-        if len(sys.argv) < 3:
-            time_suite()
-        else:
-            time_suite(iter=int(sys.argv[2]))
+        parse_time_args(sys.argv)
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)
