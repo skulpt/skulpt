@@ -178,10 +178,10 @@ elif sys.platform == "darwin":
 elif sys.platform == "linux2":
     if is64bit():
         os.environ["D8_PATH"] = "support/d8/x64"
-        jsengine = "support/d8/linux/d8 --debugger --harmony_promises"
+        jsengine = "support/d8/x64/d8 --debugger --harmony_promises"
     else:
         os.environ["D8_PATH"] = "support/d8/x32"
-        jsengine = "support/d8/windows/d8 --debugger --harmony_promises"
+        jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
