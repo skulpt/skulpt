@@ -336,8 +336,7 @@ def time_suite(iter=1, fn=""):
         outs, errs = p.communicate()
 
         if p.returncode != 0:
-            failTot += 1
-            print "{} exited with error code {}".format(fn,p.returncode)
+            print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
 
         endTime = time.time()
         times.append(endTime - startTime)
@@ -453,8 +452,7 @@ def profile(fn="", process=True, output=""):
     outs, errs = p.communicate()
 
     if p.returncode != 0:
-        failTot += 1
-        print "{} exited with error code {}".format(fn,p.returncode)
+        print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
 
     endTime = time.time()
 
