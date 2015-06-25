@@ -266,15 +266,17 @@ def parse_time_args(argv):
 def time_suite(iter=1, fn=""):
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
+
+    additional_files = ""
 
     # Profile single file
     if fn:
         if not os.path.exists(fn):
             print "%s doesn't exist" % fn
             raise SystemExit()
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
 
         modname = os.path.splitext(os.path.basename(fn))[0]
         f.write("""
@@ -316,6 +318,7 @@ def time_suite(iter=1, fn=""):
             """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
 
         fn = "test suite"
+        additional_files = ' '.join(TestFiles)
 
     f.close()
 
@@ -330,7 +333,7 @@ def time_suite(iter=1, fn=""):
         startTime = time.time()
         p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
                   ' '.join(getFileList(FILE_TYPE_TEST)),
-                  ' '.join(TestFiles)),
+                  additional_files),
                   shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
@@ -388,15 +391,17 @@ def profile(fn="", process=True, output=""):
     """
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
+
+    additional_files = ""
 
     # Profile single file
     if fn:
         if not os.path.exists(fn):
             print "%s doesn't exist" % fn
             raise SystemExit()
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
 
         modname = os.path.splitext(os.path.basename(fn))[0]
         f.write("""
@@ -438,6 +443,7 @@ def profile(fn="", process=True, output=""):
             """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
 
             fn = "test suite"
+            additional_files = ' '.join(TestFiles)
 
     f.close()
 
@@ -446,7 +452,7 @@ def profile(fn="", process=True, output=""):
     startTime = time.time()
     p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
               ' '.join(getFileList(FILE_TYPE_TEST)),
-              ' '.join(TestFiles)),
+              additional_files),
               shell=True, stdout=PIPE, stderr=PIPE)
 
     outs, errs = p.communicate()
