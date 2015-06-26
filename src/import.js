@@ -175,6 +175,15 @@ Sk.importSearchPathForName = function (name, ext, failok, canSuspend) {
     })();
 };
 
+/**
+ * Complete any initialization of Python classes which relies on internal
+ * dependencies.
+ *
+ * This includes making Python classes subclassable and ensuring that the
+ * {@link Sk.builtin.object} magic methods are wrapped inside Python functions.
+ *
+ * @return {undefined}
+ */
 Sk.doOneTimeInitialization = function () {
     var proto, name, i, x, func;
     var builtins = [];
@@ -184,6 +193,8 @@ Sk.doOneTimeInitialization = function () {
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
 
+    // Register a Python class with an internal dictionary, which allows it to
+    // be subclassed
     var setUpClass = function (child) {
         var parent = child.tp$base;
         var bases = [];
