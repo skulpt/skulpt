@@ -220,6 +220,40 @@ class SubclassTest(unittest.TestCase):
         class SameBuiltin(MyInt, int): pass
         self.assertEqual(SameBuiltin(5), 5)
 
+    def test_exceptions(self):
+
+        class TestFailed(Exception):
+            """Test failed."""
+
+        def raiseTestFailed():
+            raise TestFailed()
+
+        self.assertRaises(TestFailed, raiseTestFailed)
+
+        try:
+            raise TestFailed("test")
+        except TestFailed as e:
+            self.assertIn("TestFailed: test", str(e))
+
+        class MyTypeError(TypeError): pass
+
+        def raiseMyTypeError():
+            raise MyTypeError()
+
+        self.assertRaises(MyTypeError, raiseMyTypeError)
+        self.assertRaises(TypeError, raiseMyTypeError)
+        self.assertRaises(Exception, raiseMyTypeError)
+
+        class MyStandardError(StandardError):
+            def __str__(self):
+                return "My Standard Error"
+
+        try:
+            raise MyStandardError("test")
+        except MyStandardError as e:
+            self.assertEqual("My Standard Error", str(e))
+
+
 
 if __name__ == "__main__":
     unittest.main()
