@@ -51,6 +51,25 @@ class AnotherInt(MyInt):
     def __mul__(self, other):
         return 0
 
+foo_radd = "Foo __radd__"
+bar_add = "Bar __add__"
+baz_radd = "Baz __radd__"
+baz_add = "Baz __add__"
+
+class Foo(int):
+    def __radd__(self, other):
+        return foo_radd
+
+class Bar(int):
+    def __add__(self, other):
+        return bar_add
+
+class Baz(Bar):
+    def __add__(self, other):
+        return baz_add
+    def __radd__(self, other):
+        return baz_radd
+
 class SubclassTest(unittest.TestCase):
 
     def test_builtin_functions(self):
@@ -158,6 +177,30 @@ class SubclassTest(unittest.TestCase):
 
         d[1] = "should not change"
         self.assertEqual(d, base_dict)                      # MyDict.__setitem__
+
+    def test_override_ancestor_operations(self):
+
+        foo = Foo(5)
+        bar = Bar(5)
+        baz = Baz(5)
+
+        self.assertEqual(foo + 2, 7)            # int.__add__
+        self.assertEqual(2 + foo, foo_radd)     # Foo.__radd__
+
+        self.assertEqual(bar + 2, bar_add)      # Bar.__add__
+        self.assertEqual(2 + bar, 7)            # int.__radd__ (from Bar)
+
+        self.assertEqual(foo + bar, 10)         # int.__add__ (from Foo)
+        self.assertEqual(bar + foo, bar_add)    # Bar.__add__
+
+        self.assertEqual(baz + 2, baz_add)      # Baz.__add__
+        self.assertEqual(2 + baz, baz_radd)     # Baz.__radd__
+
+        self.assertEqual(foo + baz, 10)         # int.__add__ (from Foo)
+        self.assertEqual(baz + foo, baz_add)    # Baz.__add__
+
+        self.assertEqual(bar + baz, baz_radd)   # Baz.__radd__
+        self.assertEqual(baz + bar, baz_add)    # Baz.add
 
     def test_subclass_of_subclass(self):
 
