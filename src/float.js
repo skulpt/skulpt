@@ -228,6 +228,11 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
 };
 
 /** @override */
+Sk.builtin.float_.prototype.nb$reflected_add = function (other) {
+    return Sk.builtin.float_.prototype.nb$add.call(this, other);
+};
+
+/** @override */
 Sk.builtin.float_.prototype.nb$subtract = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v - other.v);
@@ -239,6 +244,12 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
 };
 
 /** @override */
+Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
+    var negative_this = this.nb$negative();
+    return Sk.builtin.float_.prototype.nb$add.call(negative_this, other);
+};
+
+/** @override */
 Sk.builtin.float_.prototype.nb$multiply = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v * other.v);
@@ -247,6 +258,11 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+/** @override */
+Sk.builtin.float_.prototype.nb$reflected_multiply = function (other) {
+    return Sk.builtin.float_.prototype.nb$multiply.call(this, other);
 };
 
 /** @override */
@@ -584,7 +600,11 @@ Sk.builtin.float_.prototype.nb$inplace_floor_divide = Sk.builtin.float_.prototyp
 /** @override */
 Sk.builtin.float_.prototype.nb$inplace_power = Sk.builtin.float_.prototype.nb$power;
 
-/** @override */
+/**
+ * @override
+ *
+ * @return {Sk.builtin.float_} A copy of this instance with the value negated.
+ */
 Sk.builtin.float_.prototype.nb$negative = function () {
     return new Sk.builtin.float_(-this.v);
 };

@@ -443,7 +443,7 @@ Sk.builtin.numtype.prototype.nb$add = function (other) {
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_add = function (other) {
-    return this.nb$add(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_add = function (other) {
@@ -465,8 +465,7 @@ Sk.builtin.numtype.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_subtract = function (other) {
-    var negative_this = this.nb$negative();
-    return negative_this.nb$add(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_subtract = function (other) {
@@ -489,7 +488,7 @@ Sk.builtin.numtype.prototype.nb$multiply = function (other) {
 
 
 Sk.builtin.numtype.prototype.nb$reflected_multiply = function (other) {
-    return this.nb$multiply(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_multiply = function (other) {
@@ -507,11 +506,11 @@ Sk.builtin.numtype.prototype.nb$inplace_multiply = function (other) {
  * @return {(Sk.builtin.numtype|Sk.builtin.NotImplemented)} The result of the division
  */
 Sk.builtin.numtype.prototype.nb$divide = function (other) {
-    return this.nb$floor_divide(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_divide = function (other) {
-    return this.nb$reflected_floor_divide(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_divide = function (other) {
