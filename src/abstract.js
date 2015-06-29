@@ -158,7 +158,37 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
 Sk.abstr.binary_op_ = function (v, w, opname) {
     var wop;
     var ret;
-    var vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
+    var vop;
+
+    // All Python inheritance is now enforced with Javascript inheritance
+    // (see Sk.abstr.setUpInheritance). This checks if w's type is a strict
+    // subclass of v's type
+    var w_is_subclass = w.constructor.prototype instanceof v.constructor;
+
+    // From the Python 2.7 docs:
+    //
+    // "If the right operand’s type is a subclass of the left operand’s type and
+    // that subclass provides the reflected method for the operation, this
+    // method will be called before the left operand’s non-reflected method.
+    // This behavior allows subclasses to override their ancestors’ operations."
+    //
+    // -- https://docs.python.org/2/reference/datamodel.html#index-92
+
+    if (w_is_subclass) {
+        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+        if (wop !== undefined) {
+            if (wop.call) {
+                ret = wop.call(w, v);
+            } else {
+                ret = Sk.misceval.callsim(wop, w, v);
+            }
+            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                return ret;
+            }
+        }
+    }
+
+    vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
         if (vop.call) {
             ret = vop.call(v, w);
@@ -169,15 +199,18 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             return ret;
         }
     }
-    wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
-    if (wop !== undefined) {
-        if (wop.call) {
-            ret = wop.call(w, v);
-        } else {
-            ret = Sk.misceval.callsim(wop, w, v);
-        }
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return ret;
+    // Don't retry RHS if failed above
+    if (!w_is_subclass) {
+        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+        if (wop !== undefined) {
+            if (wop.call) {
+                ret = wop.call(w, v);
+            } else {
+                ret = Sk.misceval.callsim(wop, w, v);
+            }
+            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                return ret;
+            }
         }
     }
     Sk.abstr.binop_type_error(v, w, opname);
