@@ -229,6 +229,8 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$reflected_add = function (other) {
+    // Should not automatically call this.nb$add, as nb$add may have
+    // been overridden by a subclass
     return Sk.builtin.float_.prototype.nb$add.call(this, other);
 };
 
@@ -245,6 +247,8 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
+    // Should not automatically call this.nb$add, as nb$add may have
+    // been overridden by a subclass
     var negative_this = this.nb$negative();
     return Sk.builtin.float_.prototype.nb$add.call(negative_this, other);
 };
@@ -262,6 +266,8 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$reflected_multiply = function (other) {
+    // Should not automatically call this.nb$multiply, as nb$multiply may have
+    // been overridden by a subclass
     return Sk.builtin.float_.prototype.nb$multiply.call(this, other);
 };
 
