@@ -54,10 +54,10 @@ Sk.builtin.asnum$ = function (a) {
     if (a === null) {
         return a;
     }
-    if (a.constructor === Sk.builtin.none) {
+    if (a instanceof Sk.builtin.none) {
         return null;
     }
-    if (a.constructor === Sk.builtin.bool) {
+    if (a instanceof Sk.builtin.bool) {
         if (a.v) {
             return 1;
         }
@@ -69,13 +69,13 @@ Sk.builtin.asnum$ = function (a) {
     if (typeof a === "string") {
         return a;
     }
-    if (a.constructor === Sk.builtin.int_) {
+    if (a instanceof Sk.builtin.int_) {
         return a.v;
     }
-    if (a.constructor === Sk.builtin.float_) {
+    if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
-    if (a.constructor === Sk.builtin.lng) {
+    if (a instanceof Sk.builtin.lng) {
         if (a.cantBeInt()) {
             return a.str$(10, true);
         }
@@ -530,7 +530,10 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
-        var internal = ["__bases__", "__mro__", "__class__", "__name__"];
+        var internal = [
+            "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
+            "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
+            "pythonFunctions", "HashNotImplemented", "constructor"];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -726,8 +729,6 @@ Sk.builtin.hash = function hash (value) {
         }
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
-    } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
-        return Sk.misceval.callsim(value.__hash__, value);
     } else if (value instanceof Sk.builtin.bool) {
         if (value.v) {
             return new Sk.builtin.int_(1);

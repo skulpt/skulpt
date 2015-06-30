@@ -17,6 +17,8 @@ Sk.builtin.numtype = function () {
 
 Sk.abstr.setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
 
+Sk.builtin.numtype.sk$abstract = true;
+
 /**
  * Python wrapper of `__abs__` method.
  *
@@ -426,12 +428,6 @@ Sk.builtin.numtype.prototype["__coerce__"] = new Sk.builtin.func(function (self,
 
 });
 
-Sk.abstr.registerPythonFunctions(Sk.builtin.numtype,
-    ["__abs__", "__neg__", "__pos__", "__int__", "__long__", "__float__",
-     "__add__", "__radd__", "__sub__", "__rsub__", "__mul__", "__rmul__",
-     "__div__", "__rdiv__", "__floordiv__", "__rfloordiv__",
-     "__mod__", "__rmod__", "__divmod__", "__rdivmod__", "__coerce__"]);
-
 /**
  * Add a Python object to this instance and return the result (i.e. this + other).
  *
@@ -447,7 +443,7 @@ Sk.builtin.numtype.prototype.nb$add = function (other) {
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_add = function (other) {
-    return this.nb$add(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_add = function (other) {
@@ -469,8 +465,7 @@ Sk.builtin.numtype.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_subtract = function (other) {
-    var negative_this = this.nb$negative();
-    return negative_this.nb$add(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_subtract = function (other) {
@@ -493,7 +488,7 @@ Sk.builtin.numtype.prototype.nb$multiply = function (other) {
 
 
 Sk.builtin.numtype.prototype.nb$reflected_multiply = function (other) {
-    return this.nb$multiply(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_multiply = function (other) {
@@ -511,11 +506,11 @@ Sk.builtin.numtype.prototype.nb$inplace_multiply = function (other) {
  * @return {(Sk.builtin.numtype|Sk.builtin.NotImplemented)} The result of the division
  */
 Sk.builtin.numtype.prototype.nb$divide = function (other) {
-    return this.nb$floor_divide(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$reflected_divide = function (other) {
-    return this.nb$reflected_floor_divide(other);
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.numtype.prototype.nb$inplace_divide = function (other) {

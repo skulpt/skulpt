@@ -85,31 +85,31 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
 
     switch (name) {
     case "Add":
-        return obj.nb$add ? obj.nb$add : obj["__radd__"];
+        return obj.nb$reflected_add ? obj.nb$reflected_add : obj["__radd__"];
     case "Sub":
-        return obj.nb$subtract ? obj.nb$subtract : obj["__rsub__"];
+        return obj.nb$reflected_subtract ? obj.nb$reflected_subtract : obj["__rsub__"];
     case "Mult":
-        return obj.nb$multiply ? obj.nb$multiply : obj["__rmul__"];
+        return obj.nb$reflected_multiply ? obj.nb$reflected_multiply : obj["__rmul__"];
     case "Div":
-        return obj.nb$divide ? obj.nb$divide : obj["__rdiv__"];
+        return obj.nb$reflected_divide ? obj.nb$reflected_divide : obj["__rdiv__"];
     case "FloorDiv":
-        return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__rfloordiv__"];
+        return obj.nb$reflected_floor_divide ? obj.nb$reflected_floor_divide : obj["__rfloordiv__"];
     case "Mod":
-        return obj.nb$remainder ? obj.nb$remainder : obj["__rmod__"];
+        return obj.nb$reflected_remainder ? obj.nb$reflected_remainder : obj["__rmod__"];
     case "DivMod":
-        return obj.nb$divmod ? obj.nb$divmod : obj["__rdivmod__"];
+        return obj.nb$reflected_divmod ? obj.nb$reflected_divmod : obj["__rdivmod__"];
     case "Pow":
-        return obj.nb$power ? obj.nb$power : obj["__rpow__"];
+        return obj.nb$reflected_power ? obj.nb$reflected_power : obj["__rpow__"];
     case "LShift":
-        return obj.nb$lshift ? obj.nb$lshift : obj["__rlshift__"];
+        return obj.nb$reflected_lshift ? obj.nb$reflected_lshift : obj["__rlshift__"];
     case "RShift":
-        return obj.nb$rshift ? obj.nb$rshift : obj["__rrshift__"];
+        return obj.nb$reflected_rshift ? obj.nb$reflected_rshift : obj["__rrshift__"];
     case "BitAnd":
-        return obj.nb$and ? obj.nb$and : obj["__rand__"];
+        return obj.nb$reflected_and ? obj.nb$reflected_and : obj["__rand__"];
     case "BitXor":
-        return obj.nb$xor ? obj.nb$xor : obj["__rxor__"];
+        return obj.nb$reflected_xor ? obj.nb$reflected_xor : obj["__rxor__"];
     case "BitOr":
-        return obj.nb$or ? obj.nb$or : obj["__ror__"];
+        return obj.nb$reflected_or ? obj.nb$reflected_or : obj["__ror__"];
     }
 };
 
@@ -158,7 +158,37 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
 Sk.abstr.binary_op_ = function (v, w, opname) {
     var wop;
     var ret;
-    var vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
+    var vop;
+
+    // All Python inheritance is now enforced with Javascript inheritance
+    // (see Sk.abstr.setUpInheritance). This checks if w's type is a strict
+    // subclass of v's type
+    var w_is_subclass = w.constructor.prototype instanceof v.constructor;
+
+    // From the Python 2.7 docs:
+    //
+    // "If the right operand’s type is a subclass of the left operand’s type and
+    // that subclass provides the reflected method for the operation, this
+    // method will be called before the left operand’s non-reflected method.
+    // This behavior allows subclasses to override their ancestors’ operations."
+    //
+    // -- https://docs.python.org/2/reference/datamodel.html#index-92
+
+    if (w_is_subclass) {
+        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+        if (wop !== undefined) {
+            if (wop.call) {
+                ret = wop.call(w, v);
+            } else {
+                ret = Sk.misceval.callsim(wop, w, v);
+            }
+            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                return ret;
+            }
+        }
+    }
+
+    vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
         if (vop.call) {
             ret = vop.call(v, w);
@@ -169,15 +199,18 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             return ret;
         }
     }
-    wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
-    if (wop !== undefined) {
-        if (wop.call) {
-            ret = wop.call(w, v);
-        } else {
-            ret = Sk.misceval.callsim(wop, w, v);
-        }
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return ret;
+    // Don't retry RHS if failed above
+    if (!w_is_subclass) {
+        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+        if (wop !== undefined) {
+            if (wop.call) {
+                ret = wop.call(w, v);
+            } else {
+                ret = Sk.misceval.callsim(wop, w, v);
+            }
+            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                return ret;
+            }
         }
     }
     Sk.abstr.binop_type_error(v, w, opname);
@@ -738,12 +771,12 @@ goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
     if (o !== null) {
-        if (o.mp$subscript) {
+        if (o.tp$getitem) {
+            return o.tp$getitem(key, canSuspend);
+        } else if (o.mp$subscript) {
             return o.mp$subscript(key, canSuspend);
         } else if (Sk.misceval.isIndex(key) && o.sq$item) {
             return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
-        } else if (o.tp$getitem) {
-            return o.tp$getitem(key, canSuspend);
         }
     }
 
@@ -755,12 +788,12 @@ goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
     if (o !== null) {
-        if (o.mp$ass_subscript) {
+        if (o.tp$setitem) {
+            return o.tp$setitem(key, v, canSuspend);
+        } else if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v, canSuspend);
         } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
             return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
-        } else if (o.tp$setitem) {
-            return o.tp$setitem(key, v, canSuspend);
         }
     }
 
@@ -931,37 +964,58 @@ Sk.abstr.lookupSpecial = function(op, str) {
 };
 goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
-Sk.abstr.registerPythonFunctions = function (thisClass, funcNames) {
-    for (var i = 0; i < funcNames.length; i++) {
-        thisClass.prototype.pythonFunctions.push(funcNames[i]);
-    }
-};
-
+/**
+ * Mark a class as unhashable and prevent its `__hash__` function from being called.
+ * @param  {function(...[?])} thisClass The class to mark as unhashable.
+ * @return {undefined}
+ */
 Sk.abstr.markUnhashable = function (thisClass) {
     var proto = thisClass.prototype;
-    proto.pythonFunctions.splice(proto.pythonFunctions.indexOf("__hash__"), 1);
     proto.__hash__ = Sk.builtin.none.none$;
     proto.tp$hash = Sk.builtin.none.none$;
 };
 
+/**
+ * Set up inheritance between two Python classes. This allows only for single
+ * inheritance -- multiple inheritance is not supported by Javascript.
+ *
+ * Javascript's inheritance is prototypal. This means that properties must
+ * be defined on the superclass' prototype in order for subclasses to inherit
+ * them.
+ *
+ * ```
+ * Sk.superclass.myProperty                 # will NOT be inherited
+ * Sk.superclass.prototype.myProperty       # will be inherited
+ * ```
+ *
+ * In order for a class to be subclassable, it must (directly or indirectly)
+ * inherit from Sk.builtin.object so that it will be properly initialized in
+ * {@link Sk.doOneTimeInitialization} (in src/import.js). Further, all Python
+ * builtins should inherit from Sk.builtin.object.
+ *
+ * @param {string} childName The Python name of the child (subclass).
+ * @param {function(...[?])} child     The subclass.
+ * @param {function(...[?])} parent    The superclass.
+ * @return {undefined}
+ */
 Sk.abstr.setUpInheritance = function (childName, child, parent) {
     goog.inherits(child, parent);
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
-    child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
 };
 
-Sk.abstr.setUpObject = function (self) {
-    // Python builtin instances do not maintain an internal Python dictionary
-    // (this causes problems when calling the super constructor on a dict
-    // instance). Instead, they maintain a Javascript object.
-    self["$d"] = {
-        "Sk.builtin.object": true   // Indicates this is a builtin object
-    };
-};
-
-Sk.abstr.superConstructor = function (thisClass, self) {
+/**
+ * Call the super constructor of the provided class, with the object `self` as
+ * the `this` value of that constructor. Any arguments passed to this function
+ * after `self` will be passed as-is to the constructor.
+ *
+ * @param  {function(...[?])} thisClass The subclass.
+ * @param  {Object} self      The instance of the subclas.
+ * @param  {...?} args Arguments to pass to the constructor.
+ * @return {undefined}
+ */
+Sk.abstr.superConstructor = function (thisClass, self, args) {
     var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
     thisClass.prototype.tp$base.apply(self, argumentsForConstructor);
 };

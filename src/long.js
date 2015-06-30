@@ -155,6 +155,13 @@ Sk.builtin.lng.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
+Sk.builtin.lng.prototype.nb$reflected_add = function (other) {
+    // Should not automatically call this.nb$add, as nb$add may have
+    // been overridden by a subclass
+    return Sk.builtin.lng.prototype.nb$add.call(this, other);
+};
+
 Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
 
 Sk.builtin.lng.prototype.nb$subtract = function (other) {
@@ -181,6 +188,14 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
+Sk.builtin.lng.prototype.nb$reflected_subtract = function (other) {
+    // Should not automatically call this.nb$add, as nb$add may have
+    // been overridden by a subclass
+    var negative_this = this.nb$negative();
+    return Sk.builtin.lng.prototype.nb$add.call(negative_this, other);
+};
+
 Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
@@ -204,6 +219,13 @@ Sk.builtin.lng.prototype.nb$multiply = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+/** @override */
+Sk.builtin.lng.prototype.nb$reflected_multiply = function (other) {
+    // Should not automatically call this.nb$multiply, as nb$multiply may have
+    // been overridden by a subclass
+    return Sk.builtin.lng.prototype.nb$multiply.call(this, other);
 };
 
 Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
@@ -622,6 +644,11 @@ Sk.builtin.lng.prototype.nb$reflected_xor = Sk.builtin.lng.prototype.nb$xor;
 
 Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
 
+/**
+ * @override
+ *
+ * @return {Sk.builtin.lng} A copy of this instance with the value negated.
+ */
 Sk.builtin.lng.prototype.nb$negative = function () {
     return new Sk.builtin.lng(this.biginteger.negate());
 };
