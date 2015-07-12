@@ -73,7 +73,7 @@ To give you some idea of what is going on behind the scenes with skulpt lets loo
 
 So, 50 lines of Javascript for hello world eh?  That sounds kind of crazy, but you have to recognize that the environment with global variables, local variables, error handling, etc all has to happen even for the simplest program to run.  The parts of the program above that really print "hello world" are lines 26-29.  If you have a look at them you will see that we have to construct a string object from the string literal and then pass that off to some print function.
 
-In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skuplt runtime.  It is usually the case that to extend Skupt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment. 
+In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skulpt runtime.  It is usually the case that to extend Skulpt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment. 
 
 An important thing to keep in mind as you are trying to understand Skulpt is that it is heavily influenced by the implementation of CPython.  So although Python and Javascript are both object oriented languages many parts of the skulpt implementation are quite procedural.  For example using functions that take an object as their first parameter may seem strange as we should have just created a method on that object.  But in order to follow the CPython implementation this decision was made early on.
 
@@ -457,7 +457,7 @@ and goes through the evaluation of the if condition. The second block is
 the if true block of the if. The third block is the else block of the if
 statement, and the final block is the rest of the program after the
 if/else is all done. You can verify this for yourself by putting this
-program into a file `simple.py` and runing `./skulpt.py run simple.py`
+program into a file `simple.py` and running `./skulpt.py run simple.py`
 If you examine the output you will see that the `$blk` variable is
 manipulated to control which `case` is executed the next time through
 the while loop. Very clever! If Javascript had `goto statements` this
