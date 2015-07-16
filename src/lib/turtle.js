@@ -1072,6 +1072,70 @@ function generateTurtleModule(_target) {
         };
         proto.$getscreen.isSk = true;
 
+        proto.$clone = function() {
+            console.log(this.skInstance);
+            var turtleMod = Sk.misceval.loadname('turtle',Sk.globals);
+            console.log(turtleMod);
+            var turtleKlass = Sk.abstr.gattr(turtleMod,'Turtle', true);
+            console.log(turtleKlass);
+            var newTurtleInstance = Sk.misceval.callsimOrSuspend(turtleKlass);
+            console.log(newTurtleInstance);
+
+            newTurtleInstance._x = this._x;
+            newTurtleInstance._y = this._y;
+            newTurtleInstance._angle = this._angle;
+            newTurtleInstance._radians = this._radians;
+            newTurtleInstance._shape = this._shape;
+            newTurtleInstance._color = this._color;
+            newTurtleInstance._fill = this._fill;
+            newTurtleInstance._filling = this._filling;
+            newTurtleInstance._size = this._size;
+            newTurtleInstance._computed_speed = this._computed_speed;
+            newTurtleInstance._down = this._down;
+            newTurtleInstance._shown = this._shown;
+
+            newTurtleInstance._clonedFrom = this;
+
+            return newTurtleInstance;
+
+        };
+        proto.$clone.returnType = function(value) {
+            console.log('return type value');
+            console.log(value);
+            console.log('return type this');
+            console.log(this);
+
+            value._x = value._clonedFrom._x;
+            value._y = value._clonedFrom._y;
+            value._angle = value._clonedFrom._angle;
+            value._radians = value._clonedFrom._radians;
+            value._shape = value._clonedFrom._shape;
+            value._color = value._clonedFrom._color;
+            value._fill = value._clonedFrom._fill;
+            value._filling = value._clonedFrom._filling;
+            value._size = value._clonedFrom._size;
+            value._computed_speed = value._clonedFrom._computed_speed;
+            value._down = value._clonedFrom._down;
+            value._shown = value._clonedFrom._shown;
+
+            //value.addUpdate(undefined, false, {
+            //    _x : value._clonedFrom._x,
+            //    _y : value._clonedFrom._y,
+            //    _angle : value._clonedFrom._angle,
+            //    _radians : value._clonedFrom._radians,
+            //    _shape : value._clonedFrom._shape,
+            //    _color : value._clonedFrom._color,
+            //    _fill : value._clonedFrom._fill,
+            //    _filling : value._clonedFrom._filling,
+            //    _size : value._clonedFrom._size,
+            //    _computed_speed : value._clonedFrom._computed_speed,
+            //    _down : value._clonedFrom._down,
+            //    _shown : value._clonedFrom._shown
+            //});
+
+            return value
+        };
+
         proto.$getturtle = proto.$getpen = function() {
             return this.skInstance;
         };
