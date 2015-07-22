@@ -1074,12 +1074,7 @@ function generateTurtleModule(_target) {
 
         proto.$clone = function() {
 
-            // I'm loading the module from the global scope.
-            // This means if turtle was imported within a function
-            // then this line will think it's undefined
-            var turtleMod = Sk.misceval.loadname('turtle',Sk.globals);
-            var turtleKlass = Sk.abstr.gattr(turtleMod,'Turtle', true);
-            var newTurtleInstance = Sk.misceval.callsimOrSuspend(turtleKlass);
+            var newTurtleInstance = Sk.misceval.callsimOrSuspend(_module.Turtle);
 
             newTurtleInstance.instance._x = this._x;
             newTurtleInstance.instance._y = this._y;
