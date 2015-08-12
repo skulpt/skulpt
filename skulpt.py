@@ -956,7 +956,7 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def docbi(options,dest="doc/dstatic"):
+def docbi(options,dest="doc/static"):
     builtinfn = "{0}/{1}".format(dest,OUTFILE_LIB)
     with open(builtinfn, "w") as f:
         f.write(getBuiltinsAsJson(options))
