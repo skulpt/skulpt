@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: function.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: function.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace Sk.builtin
+ */
+
+
+/**
+ * Check arguments to Python functions to ensure the correct number of
+ * arguments are passed.
+ *
+ * @param {string} name the name of the function
+ * @param {Object} args the args passed to the function
+ * @param {number} minargs the minimum number of allowable arguments
+ * @param {number=} maxargs optional maximum number of allowable
+ * arguments (default: Infinity)
+ * @param {boolean=} kwargs optional true if kwargs, false otherwise
+ * (default: false)
+ * @param {boolean=} free optional true if free vars, false otherwise
+ * (default: false)
+ */
+Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
+    var nargs = args.length;
+    var msg = "";
+
+    if (maxargs === undefined) {
+        maxargs = Infinity;
+    }
+    if (kwargs) {
+        nargs -= 1;
+    }
+    if (free) {
+        nargs -= 1;
+    }
+    if ((nargs &lt; minargs) || (nargs > maxargs)) {
+        if (minargs === maxargs) {
+            msg = name + "() takes exactly " + minargs + " arguments";
+        } else if (nargs &lt; minargs) {
+            msg = name + "() takes at least " + minargs + " arguments";
+        } else {
+            msg = name + "() takes at most " + maxargs + " arguments";
+        }
+        msg += " (" + nargs + " given)";
+        throw new Sk.builtin.TypeError(msg);
+    }
+};
+goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
+
+/**
+ * Check type of argument to Python functions.
+ *
+ * @param {string} name the name of the argument
+ * @param {string} exptype string of the expected type name
+ * @param {boolean} check truthy if type check passes, falsy otherwise
+ */
+Sk.builtin.pyCheckType = function (name, exptype, check) {
+    if (!check) {
+        throw new Sk.builtin.TypeError(name + " must be a " + exptype);
+    }
+};
+goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
+
+Sk.builtin.checkSequence = function (arg) {
+    return (arg !== null &amp;&amp; arg.mp$subscript !== undefined);
+};
+goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
+
+/**
+ * Use this to test whether or not a Python object is iterable.  You should **not** rely
+ * on the presence of tp$iter on the object as a good test, as it could be a user defined
+ * class with `__iter__` defined or ``__getitem__``  This tests for all of those cases
+ *
+ * @param arg {Object}   A Python object
+ * @returns {boolean} true if the object is iterable
+ */
+Sk.builtin.checkIterable = function (arg) {
+    var ret = false;
+    if (arg !== null ) {
+        try {
+            ret = Sk.abstr.iter(arg);
+            if (ret) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                return false;
+            } else {
+                throw e;
+            }
+        }
+    }
+    return ret;
+};
+goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
+
+Sk.builtin.checkCallable = function (arg) {
+    if (typeof arg === "function") {
+        return (!(arg instanceof Sk.builtin.none) &amp;&amp; (arg.ob$type !== undefined));
+    } else {
+        return ((arg.tp$call !== undefined) || (arg.__call__ !== undefined));
+    }
+};
+
+Sk.builtin.checkNumber = function (arg) {
+    return (arg !== null &amp;&amp; (typeof arg === "number" ||
+        arg instanceof Sk.builtin.int_ ||
+        arg instanceof Sk.builtin.float_ ||
+        arg instanceof Sk.builtin.lng));
+};
+goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
+
+/**
+ * Checks for complex type, delegates to internal method
+ * Most skulpt users would search here!
+ */
+Sk.builtin.checkComplex = function (arg) {
+    return Sk.builtin.complex._complex_check(arg);
+};
+goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
+
+Sk.builtin.checkInt = function (arg) {
+    return (arg !== null) &amp;&amp; ((typeof arg === "number" &amp;&amp; arg === (arg | 0)) ||
+        arg instanceof Sk.builtin.int_ ||
+        arg instanceof Sk.builtin.lng);
+};
+goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
+
+Sk.builtin.checkFloat = function (arg) {
+    return (arg !== null) &amp;&amp; (arg instanceof Sk.builtin.float_);
+};
+goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
+
+Sk.builtin.checkString = function (arg) {
+    return (arg !== null &amp;&amp; arg.__class__ == Sk.builtin.str);
+};
+goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
+
+Sk.builtin.checkClass = function (arg) {
+    return (arg !== null &amp;&amp; arg.sk$type);
+};
+goog.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
+
+Sk.builtin.checkBool = function (arg) {
+    return (arg instanceof Sk.builtin.bool);
+};
+goog.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
+
+Sk.builtin.checkNone = function (arg) {
+    return (arg instanceof Sk.builtin.none);
+};
+goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
+
+Sk.builtin.checkFunction = function (arg) {
+    return (arg !== null &amp;&amp; arg.tp$call !== undefined);
+};
+goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
+
+/**
+ * @constructor
+ * Sk.builtin.func
+ *
+ * @description
+ * This function converts a Javascript function into a Python object that is callable.  Or just
+ * think of it as a Python function rather than a Javascript function now.  This is an important
+ * distinction in skulpt because once you have Python function you cannot just call it.
+ * You must now use Sk.misceval.callsim to call the Python function.
+ *
+ * @param {Function} code the javascript implementation of this function
+ * @param {Object=} globals the globals where this function was defined.
+ * Can be undefined (which will be stored as null) for builtins. (is
+ * that ok?)
+ * @param {Object=} closure dict of free variables
+ * @param {Object=} closure2 another dict of free variables that will be
+ * merged into 'closure'. there's 2 to simplify generated code (one is $free,
+ * the other is $cell)
+ *
+ * closure is the cell variables from the parent scope that we need to close
+ * over. closure2 is the free variables in the parent scope that we also might
+ * need to access.
+ *
+ * NOTE: co_varnames and co_name are defined by compiled code only, so we have
+ * to access them via dict-style lookup for closure.
+ *
+ */
+Sk.builtin.func = function (code, globals, closure, closure2) {
+    var k;
+    this.func_code = code;
+    this.func_globals = globals || null;
+    if (closure2 !== undefined) {
+        // todo; confirm that modification here can't cause problems
+        for (k in closure2) {
+            closure[k] = closure2[k];
+        }
+    }
+    this.func_closure = closure;
+    return this;
+};
+goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
+
+
+Sk.builtin.func.prototype.tp$name = "function";
+Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
+    goog.asserts.assert(obj !== undefined &amp;&amp; objtype !== undefined);
+    if (obj == null) {
+        return this;
+    }
+    return new Sk.builtin.method(this, obj);
+};
+Sk.builtin.func.prototype.tp$call = function (args, kw) {
+    var j;
+    var i;
+    var numvarnames;
+    var varnames;
+    var kwlen;
+    var kwargsarr;
+    var expectskw;
+    var name;
+
+    // note: functions expect 'this' to be globals to avoid having to
+    // slice/unshift onto the main args
+    if (this.func_closure) {
+        // todo; OK to modify?
+        args.push(this.func_closure);
+    }
+
+    expectskw = this.func_code["co_kwargs"];
+    kwargsarr = [];
+
+    if (this.func_code["no_kw"] &amp;&amp; kw) {
+        name = (this.func_code &amp;&amp; this.func_code["co_name"] &amp;&amp; this.func_code["co_name"].v) || "&lt;native JS>";
+        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
+    }
+
+    if (kw) {
+        // bind the kw args
+        kwlen = kw.length;
+        varnames = this.func_code["co_varnames"];
+        numvarnames = varnames &amp;&amp; varnames.length;
+        for (i = 0; i &lt; kwlen; i += 2) {
+            // todo; make this a dict mapping name to offset
+            for (j = 0; j &lt; numvarnames; ++j) {
+                if (kw[i] === varnames[j]) {
+                    break;
+                }
+            }
+            if (varnames &amp;&amp; j !== numvarnames) {
+                args[j] = kw[i + 1];
+            } else if (expectskw) {
+                // build kwargs dict
+                kwargsarr.push(new Sk.builtin.str(kw[i]));
+                kwargsarr.push(kw[i + 1]);
+            } else {
+                name = (this.func_code &amp;&amp; this.func_code["co_name"] &amp;&amp; this.func_code["co_name"].v) || "&lt;native JS>";
+                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+            }
+        }
+    }
+    if (expectskw) {
+        args.unshift(kwargsarr);
+    }
+
+    //print(JSON.stringify(args, null, 2));
+
+    return this.func_code.apply(this.func_globals, args);
+};
+
+Sk.builtin.func.prototype.tp$getattr = function (key) {
+    return this[key];
+};
+Sk.builtin.func.prototype.tp$setattr = function (key, value) {
+    this[key] = value;
+};
+
+//todo; investigate why the other doesn't work
+//Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
+Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj("function", new Sk.builtin.func(null, null));
+
+Sk.builtin.func.prototype["$r"] = function () {
+    var name = (this.func_code &amp;&amp; this.func_code["co_name"] &amp;&amp; this.func_code["co_name"].v) || "&lt;native JS>";
+    return new Sk.builtin.str("&lt;function " + name + ">");
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu Aug 13 2015 08:14:27 GMT-0500 (CDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
