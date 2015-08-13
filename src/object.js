@@ -35,18 +35,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
-    //print("getattr", tp.tp$name, name);
-
     dict = this["$d"] || this.constructor["$d"];
-    descr = Sk.builtin.type.typeLookup(tp, name);
-
-    // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
-        // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
-    }
 
     // todo; assert? force?
     if (dict) {
@@ -65,6 +54,16 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
         if (res !== undefined) {
             return res;
         }
+    }
+
+    descr = Sk.builtin.type.typeLookup(tp, name);
+
+    // otherwise, look in the type for a descr
+    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
+        f = descr.ob$type.tp$descr_get;
+        // todo;
+        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+        //return f.call(descr, this, this.ob$type);
     }
 
     if (f) {

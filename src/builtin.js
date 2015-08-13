@@ -718,30 +718,23 @@ Sk.builtin.hash = function hash (value) {
         return 0;
     }};
 
-    if ((value instanceof Object) && Sk.builtin.checkNone(value.tp$hash)) {
-        // python sets the hash function to None , so we have to catch this case here
-        throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
-    }
-
-    if ((value instanceof Object) && (value.tp$hash !== undefined)) {
-        if (value.$savedHash_) {
+    if (value instanceof Object) {
+        if (Sk.builtin.checkNone(value.tp$hash)) {
+            // python sets the hash function to None , so we have to catch this case here
+            throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+        } else if (value.tp$hash !== undefined) {
+            if (value.$savedHash_) {
+                return value.$savedHash_;
+            }
+            value.$savedHash_ = value.tp$hash();
             return value.$savedHash_;
+        } else {
+            if (value.__id === undefined) {
+                Sk.builtin.hashCount += 1;
+                value.__id = Sk.builtin.hashCount;
+            }
+            return new Sk.builtin.int_(value.__id);
         }
-        value.$savedHash_ = value.tp$hash();
-        return value.$savedHash_;
-    } else if (value instanceof Sk.builtin.bool) {
-        if (value.v) {
-            return new Sk.builtin.int_(1);
-        }
-        return new Sk.builtin.int_(0);
-    } else if (value instanceof Sk.builtin.none) {
-        return new Sk.builtin.int_(0);
-    } else if (value instanceof Object) {
-        if (value.__id === undefined) {
-            Sk.builtin.hashCount += 1;
-            value.__id = Sk.builtin.hashCount;
-        }
-        return new Sk.builtin.int_(value.__id);
     } else if (typeof value === "number" || value === null ||
         value === true || value === false) {
         throw new Sk.builtin.TypeError("unsupported Javascript type");
