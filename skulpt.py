@@ -166,8 +166,12 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    os.environ["D8_PATH"] = ".\\support\\d8\\x32"
-    jsengine = ".\\support\\d8\\x32\\d8.exe --debugger --harmony"
+    winbase = ".\\support\\d8\\x32"
+    if not os.path.exists(winbase):
+        winbase = ".\\support\\d8"
+    os.environ["D8_PATH"] = winbase
+    jsengine = winbase + "\\d8.exe --debugger --harmony"
+
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
