@@ -1770,7 +1770,11 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this.setBlock(start);
 
     // load targets
-    nexti = this._gr("next", "Sk.abstr.iternext(", iter, ")");
+    out ("$ret = Sk.abstr.iternext(", iter,(this.u.canSuspend?", true":", false"),");");
+
+    this._checkSuspension(elt);
+
+    nexti = this._gr("next", "$ret");
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     target = this.vexpr(ge.target, nexti);
 
