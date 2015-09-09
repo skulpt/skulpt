@@ -20,6 +20,7 @@ import re
 import pprint
 import json
 import shutil
+import time
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -45,6 +46,7 @@ def bowerProperty(name):
 # Symbolic constants for the project structure.
 DIST_DIR        = 'dist'
 TEST_DIR        = 'test'
+RUN_DIR         = 'support/tmp'
 
 # Symbolic constants for the naming of distribution files.
 STANDARD_NAMING = True
@@ -68,25 +70,27 @@ Files = [
         ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'src/env.js',
         'src/type.js',
+        'src/abstract.js',
         'src/object.js',
         'src/function.js',
         'src/builtin.js',
         'src/errors.js',
-        'src/bool.js',
         'src/native.js',
         'src/method.js',
         'src/misceval.js',
-        'src/abstract.js',
+        'src/seqtype.js',
         'src/list.js',
         'src/str.js',
         'src/formatting.js',
         'src/tuple.js',
         'src/dict.js',
+        'src/numtype.js',
         'src/biginteger.js',
+        'src/int.js',
+        'src/bool.js',
+        'src/float.js',
         'src/number.js',
         'src/long.js',
-        'src/int.js',
-        'src/float.js',
         'src/complex.js',
         'src/slice.js',
         'src/set.js',
@@ -108,6 +112,7 @@ Files = [
         'src/timsort.js',
         'src/sorted.js',
         'src/builtindict.js',
+        'src/constants.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
@@ -161,28 +166,38 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony"
+    winbase = ".\\support\\d8\\x32"
+    if not os.path.exists(winbase):
+        winbase = ".\\support\\d8"
+    os.environ["D8_PATH"] = winbase
+    jsengine = winbase + "\\d8.exe --debugger --harmony"
+
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --debugger"
+    os.environ["D8_PATH"] = "./support/d8/mac"
+    jsengine = "./support/d8/mac/d8 --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
     if is64bit():
-        jsengine = "support/d8/d8x64 --debugger --harmony_promises"
+        os.environ["D8_PATH"] = "support/d8/x64"
+        jsengine = "support/d8/x64/d8 --debugger --harmony_promises"
     else:
-        jsengine = "support/d8/d8 --debugger --harmony_promises"
+        os.environ["D8_PATH"] = "support/d8/x32"
+        jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    jsengine = "support/d8/d8 --debugger --harmony_promises"
+    os.environ["D8_PATH"] = "support/d8/x32"
+    jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    jsengine = "support/d8/d8x64 --harmony_promises"
+    os.environ["D8_PATH"] = "support/d8/x64"
+    jsengine = "support/d8/x64/d8 --harmony_promises"
     nul = "/dev/null"
 
 #jsengine = "rhino"
@@ -213,6 +228,267 @@ def test(debug_mode=False):
         print "Now running new unit tests"
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
+
+def parse_time_args(argv):
+    usageString = """
+
+{program} time [filename.py] [iter=1]
+    Computes the average runtime of a Python file (or test suite, if none specified)
+    over iter number of trials.
+    """.format(program=argv[0])
+
+    fn = ""
+    iter = 0
+
+    if len(sys.argv) > 4:
+        print usageString
+        sys.exit(2)
+
+    for arg in argv[2:]:
+        if arg.isdigit():
+            if iter:
+                print usageString
+                sys.exit(2)
+            else:
+                iter = int(arg)
+                if iter <= 0:
+                    print "Number of trials must be 1 or greater."
+                    sys.exit(2)
+        elif ".py" in arg:
+            if fn:
+                print usageString
+                sys.exit(2)
+            else:
+                fn = arg
+        else:
+            print usageString
+            sys.exit(2)
+
+    iter = iter if iter else 1
+    time_suite(iter=iter, fn=fn)
+
+def time_suite(iter=1, fn=""):
+    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    f = open("support/tmp/run.js", "w")
+
+    additional_files = ""
+
+    # Profile single file
+    if fn:
+        if not os.path.exists(fn):
+            print "%s doesn't exist" % fn
+            raise SystemExit()
+
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        f.write("""
+    var input = read('%s');
+    print("-----");
+    print(input);
+    print("-----");
+    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
+    Sk.misceval.asyncToPromise(function() {
+        return Sk.importMain("%s", true, true);
+    }).then(function () {
+        print("-----");
+    }, function(e) {
+        print("UNCAUGHT EXCEPTION: " + e);
+        print(e.stack);
+    });
+        """ % (fn, os.path.split(fn)[0], modname))
+
+    # Profile test suite
+    else:
+        # Prepare named tests
+        buildNamedTestsFile()
+
+        # Prepare unit tests
+        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
+        f.write("var input;\n")
+
+        for fn in testFiles:
+            modname = os.path.splitext(os.path.basename(fn))[0]
+            p3on = 'false'
+            f.write("""
+    input = read('%s');
+    print('%s');
+    Sk.configure({syspath:["%s"], read:read, python3:%s});
+    Sk.importMain("%s", false);
+            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+        fn = "test suite"
+        additional_files = ' '.join(TestFiles)
+
+    f.close()
+
+    print "Timing %s...\n" % fn
+
+    times = []
+
+    # Run profile
+    for i in range(iter):
+        if iter > 1:
+            print "Iteration %d of %d..." % (i + 1, iter)
+        startTime = time.time()
+        p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
+                  ' '.join(getFileList(FILE_TYPE_TEST)),
+                  additional_files),
+                  shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+
+        if p.returncode != 0:
+            print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
+
+        endTime = time.time()
+        times.append(endTime - startTime)
+
+    avg = sum(times) / len(times)
+
+    if iter > 1:
+        print "\nAverage time over %s iterations: %s seconds" % (iter, avg)
+    else:
+        print "%s seconds" % avg
+
+def parse_profile_args(argv):
+    usageString = """
+
+{program} profile [filename.py] [output]
+    Runs profile on Python file (or test suite, if none specified)
+    and outputs processed results to output file (or stdout if none specified)
+    """.format(program=argv[0])
+
+    fn = ""
+    out = ""
+    numArgs = len(sys.argv)
+
+    if len(sys.argv) > 4:
+        print usageString
+        sys.exit(2)
+
+    for arg in argv[2:]:
+        if ".py" in arg:
+            if fn:
+                print usageString
+                sys.exit(2)
+            else:
+                fn = arg
+        else:
+            if out:
+                print usageString
+                sys.exit(2)
+            else:
+                out = arg
+
+    profile(fn=fn, output=out)
+
+def profile(fn="", process=True, output=""):
+    """
+    Runs v8 profiler, which outputs tick information to v8.log Use
+    https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
+    to analyze log.
+    """
+    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    f = open("support/tmp/run.js", "w")
+
+    additional_files = ""
+
+    # Profile single file
+    if fn:
+        if not os.path.exists(fn):
+            print "%s doesn't exist" % fn
+            raise SystemExit()
+
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        f.write("""
+    var input = read('%s');
+    print("-----");
+    print(input);
+    print("-----");
+    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
+    Sk.misceval.asyncToPromise(function() {
+        return Sk.importMain("%s", true, true);
+    }).then(function () {
+        print("-----");
+    }, function(e) {
+        print("UNCAUGHT EXCEPTION: " + e);
+        print(e.stack);
+    });
+        """ % (fn, os.path.split(fn)[0], modname))
+
+    # Profile test suite
+    else:
+        # Prepare named tests
+        buildNamedTestsFile()
+
+        # Prepare unit tests
+        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
+        f.write("var input;\n")
+
+        for fn in testFiles:
+            modname = os.path.splitext(os.path.basename(fn))[0]
+            p3on = 'false'
+            f.write("""
+    input = read('%s');
+    print('%s');
+    Sk.configure({syspath:["%s"], read:read, python3:%s});
+    Sk.importMain("%s", false);
+            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+            fn = "test suite"
+            additional_files = ' '.join(TestFiles)
+
+    f.close()
+
+    # Run profile
+    print("Running profile on %s..." % fn)
+    startTime = time.time()
+    p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
+              ' '.join(getFileList(FILE_TYPE_TEST)),
+              additional_files),
+              shell=True, stdout=PIPE, stderr=PIPE)
+
+    outs, errs = p.communicate()
+
+    if p.returncode != 0:
+        print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
+
+    endTime = time.time()
+
+    if errs:
+        print errs
+
+    print "\n\nRunning time: ", (endTime - startTime), " seconds\n\n"
+
+    # Process and display results
+    if process:
+        if output:
+            out_msg = " and saving in %s" % output
+            output = " > " + output
+        else:
+            out_msg = ""
+
+        print "Processing profile using d8 processor%s..." % out_msg
+        if sys.platform == "win32":
+            os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
+        elif sys.platform == "darwin":
+            os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
+        elif sys.platform == "linux2":
+            os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
+        else:
+            print """d8 processor is unsupported on this platform.
+    Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
 
 def debugbrowser():
     tmpl = """
@@ -426,23 +702,7 @@ def dist(options):
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
     if options.uncompressed:
-        if options.verbose:
-            print ". Writing combined version..."
-        combined = ''
-        linemap = open(os.path.join(DIST_DIR, OUTFILE_MAP), "w")
-        curline = 1
-        for file in getFileList(FILE_TYPE_DIST):
-            curfiledata = open(file).read()
-            combined += curfiledata
-            print >>linemap, "%d:%s" % (curline, file)
-            curline += len(curfiledata.split("\n")) - 1
-        linemap.close()
-        uncompfn = os.path.join(DIST_DIR, OUTFILE_REG)
-        open(uncompfn, "w").write(combined)
-        # Prevent accidental editing of the uncompressed distribution file.
-        if sys.platform != "win32":
-            os.chmod(os.path.join(DIST_DIR, OUTFILE_REG), 0o444)
-
+        make_skulpt_js(options,DIST_DIR)
 
     # Make the compressed distribution.
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
@@ -452,10 +712,10 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    # ret = test()
-    # if ret != 0:
-    #     print "Tests failed on uncompressed version."
-    #     sys.exit(1);
+    ret = test()
+    if ret != 0:
+        print "Tests failed on uncompressed version."
+        sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])
@@ -489,23 +749,30 @@ def dist(options):
         print "Tests failed on compressed unit tests"
         sys.exit(1)
 
+    doc()
+
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
     except:
         print "Couldn't copy for gzip test."
         sys.exit(1)
 
-    has_gzip = os.access("gzip", os.X_OK)
+    path_list = os.environ.get('PATH','').split(':')
+    has_gzip = False
+    for p in path_list:
+        has_gzip = os.access(os.path.join(p,"gzip"), os.X_OK)
+        if has_gzip:
+            break
 
     if has_gzip:
         ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
         if ret != 0:
             print "Couldn't gzip to get final size."
             has_gzip = False
+            os.unlink("{0}/tmp.js".format(DIST_DIR))
 
         size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
         os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
-        os.unlink("{0}/tmp.js".format(DIST_DIR))
     else:
         os.unlink("{0}/tmp.js".format(DIST_DIR))
         print "No gzip executable, can't get final size"
@@ -530,6 +797,54 @@ def dist(options):
         print ". Wrote {0}.".format(compfn)
         if has_gzip:
             print ". gzip of compressed: %d bytes" % size
+
+
+def make_skulpt_js(options,dest):
+    if options.verbose:
+        print ". Writing combined version..."
+    combined = ''
+    linemap = open(os.path.join(dest, OUTFILE_MAP), "w")
+    curline = 1
+    for file in getFileList(FILE_TYPE_DIST):
+        curfiledata = open(file).read()
+        combined += curfiledata
+        print >> linemap, "%d:%s" % (curline, file)
+        curline += len(curfiledata.split("\n")) - 1
+    linemap.close()
+    uncompfn = os.path.join(dest, OUTFILE_REG)
+    open(uncompfn, "w").write(combined)
+    # Prevent accidental editing of the uncompressed distribution file.
+    if sys.platform != "win32":
+        os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
+
+def run_in_browser(fn, options):
+    shutil.rmtree(RUN_DIR, ignore_errors=True)
+    if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
+    docbi(options,RUN_DIR)
+    scripts = []
+    for f in getFileList(FILE_TYPE_TEST):
+        scripts.append('<script type="text/javascript" src="%s"></script>' %
+                os.path.join('../..', f))
+    scripts = "\n".join(scripts)
+
+    with open (fn,'r') as runfile:
+        prog = runfile.read()
+
+    with open('support/run_template.html') as tpfile:
+        page = tpfile.read()
+        page = page % dict(code=prog,scripts=scripts)
+
+    with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
+        htmlfile.write(page)
+
+    if sys.platform == "darwin":
+        os.system("open {0}/run.html".format(RUN_DIR))
+    elif sys.platform == "linux2":
+        os.system("xdg-open {0}/run.html".format(RUN_DIR))
+    elif sys.platform == "win32":
+        os.system("start {0}/run.html".format(RUN_DIR))
+    else:
+        print("open or refresh {0}/run.html in your browser to test/debug".format(RUN_DIR))
 
 def regenparser():
     """regenerate the parser/ast source code"""
@@ -572,6 +887,11 @@ def regenruntests(togen="{0}/run/*.py".format(TEST_DIR)):
         if crlfprog:
             os.system("python %s %s.real" % (crlfprog, f))
 
+def doc():
+    print "Building Documentation in docs/ProgMan"
+    ret = os.system("jsdoc -c jsdoc.json HACKING.md")
+    if ret != 0:
+        print "Build of docs failed.  Is jsdoc installed?"
 
 
 def symtabdump(fn):
@@ -640,8 +960,8 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def docbi(options):
-    builtinfn = "doc/static/{0}".format(OUTFILE_LIB)
+def docbi(options,dest="doc/static"):
+    builtinfn = "{0}/{1}".format(dest,OUTFILE_LIB)
     with open(builtinfn, "w") as f:
         f.write(getBuiltinsAsJson(options))
         if options.verbose:
@@ -869,9 +1189,12 @@ def usageString(program):
 Commands:
 
     run              Run a Python file using Skulpt
+    brun             Run a Python file using Skulpt but in your browser
     test             Run all test cases
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
+    profile [fn] [out] Profile Skulpt using d8 and show processed results
+    time [iter]      Average runtime of the test suite over [iter] iterations.
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -908,7 +1231,7 @@ def main():
     parser.add_option("-v", "--verbose",
         action="store_true",
         dest="verbose",
-        default=True,
+        default=False,
         help="Make output more verbose [default]")
     (options, args) = parser.parse_args()
 
@@ -945,6 +1268,8 @@ def main():
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == "brun":
+        run_in_browser(sys.argv[2],options)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":
@@ -967,6 +1292,8 @@ def main():
         doctest()
     elif cmd == "docbi":
         docbi(options)
+    elif cmd == "doc":
+        doc()
     elif cmd == "nrt":
         print "Warning: nrt is deprectated."
         print "It is preferred that you enhance one of the unit tests in test/unit"
@@ -995,6 +1322,10 @@ def main():
         shell(sys.argv[2]);
     elif cmd == "repl":
         repl()
+    elif cmd == "profile":
+        parse_profile_args(sys.argv)
+    elif cmd == "time":
+        parse_time_args(sys.argv)
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)

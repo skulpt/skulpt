@@ -1,0 +1,19 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+    "source": {
+       "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js", "src/import.js",
+       "src/int.js", "src/float.js", "src/bool.js", "src/constants.js", "src/object.js", "src/seqtype.js", "src/numtype.js"]
+    },
+    "plugins": ["plugins/markdown"],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
+    },
+    "opts": {
+    "encoding": "utf8",               // same as -e utf8
+    "destination": "./doc/ProgMan"          // same as -d ./out/
+    }
+}

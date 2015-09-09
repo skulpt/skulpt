@@ -4,8 +4,7 @@ Sk.builtin.make_structseq = function (module, name, fields) {
     var nm = module + "." + name;
     var flds = fields;
 
-    var cons = function structseq_constructor(args)
-    {
+    var cons = function structseq_constructor(args) {
         Sk.builtin.pyCheckArgs(nm, arguments, 1, 1);
         var o;
         if (!(this instanceof Sk.builtin.structseq_types[nm])) {
@@ -16,11 +15,9 @@ Sk.builtin.make_structseq = function (module, name, fields) {
         var it, i;
         if (Object.prototype.toString.apply(args) === "[object Array]") {
             this.v = args;
-        }
-        else {
+        } else {
             this.v = [];
-            if (args.tp$iter)
-            {
+            if (args.tp$iter) {
                 var cnt = 0;
                 for (it = args.tp$iter(), i = it.tp$iternext(); i !== undefined && cnt < flds.length; i = it.tp$iternext()) {
                     this.v.push(i);
@@ -36,11 +33,11 @@ Sk.builtin.make_structseq = function (module, name, fields) {
             }  else {
                 throw new Sk.builtin.TypeError("constructor requires a sequence");
             } 
-        }       
+        }
 
         Sk.builtin.tuple.apply(this, arguments);
 
-        this.__class__ = Sk.builtin.structseq_types[nm];        
+        this.__class__ = Sk.builtin.structseq_types[nm];
     };
     cons["co_kwargs"] = true;
     Sk.builtin.structseq_types[nm] = cons;
@@ -62,8 +59,7 @@ Sk.builtin.make_structseq = function (module, name, fields) {
             return this.v[i];
         };
     }
-    for(var i=0; i<flds.length; i++)
-    {
+    for(var i=0; i<flds.length; i++) {
         cons.prototype[flds[i]] = makeGetter;
     }
 
@@ -86,11 +82,10 @@ Sk.builtin.make_structseq = function (module, name, fields) {
     };
     cons.prototype.tp$setattr = function (name, value) {
         var i = flds.indexOf(name);
-        if (i >= 0)
-        {
+        if (i >= 0) {
             this.v[i] = value;
         }
-    };    
+    };
 
     return cons;
 };

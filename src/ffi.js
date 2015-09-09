@@ -1,3 +1,8 @@
+/**
+ * @namespace Sk.ffi
+ *
+ */
+
 Sk.ffi = Sk.ffi || {};
 
 /**
@@ -17,22 +22,18 @@ Sk.ffi.remapToPy = function (obj) {
             arr.push(Sk.ffi.remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
-    }
-    else if (typeof obj === "object") {
+    } else if (typeof obj === "object") {
         kvs = [];
         for (k in obj) {
             kvs.push(Sk.ffi.remapToPy(k));
             kvs.push(Sk.ffi.remapToPy(obj[k]));
         }
         return new Sk.builtin.dict(kvs);
-    }
-    else if (typeof obj === "string") {
+    } else if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
-    }
-    else if (typeof obj === "number") {
-        return new Sk.builtin.nmber(obj, undefined);
-    }
-    else if (typeof obj === "boolean") {
+    } else if (typeof obj === "number") {
+        return Sk.builtin.assk$(obj);
+    } else if (typeof obj === "boolean") {
         return obj;
     }
     goog.asserts.fail("unhandled remap type " + typeof(obj));
@@ -40,7 +41,12 @@ Sk.ffi.remapToPy = function (obj) {
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 
 /**
- * maps from Python dict/list/str to Javascript Object/Array/string.
+ * Maps from Python dict/list/str/number to Javascript Object/Array/string/number.
+ *
+ * If obj is a
+ *
+ * @param obj {Object}  Any Python object (except a function)
+ *
  */
 Sk.ffi.remapToJs = function (obj) {
     var i;
@@ -62,24 +68,21 @@ Sk.ffi.remapToJs = function (obj) {
             ret[kAsJs] = Sk.ffi.remapToJs(v);
         }
         return ret;
-    }
-    else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
+    } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
         ret = [];
         for (i = 0; i < obj.v.length; ++i) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
-    }
-    else if (obj instanceof Sk.builtin.nmber) {
+    } else if (obj instanceof Sk.builtin.int_) {
         return Sk.builtin.asnum$(obj);
-    }
-    else if (obj instanceof Sk.builtin.lng) {
+    } else if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
-    }
-    else if (typeof obj === "number" || typeof obj === "boolean") {
+    } else if (obj instanceof Sk.builtin.lng) {
+        return Sk.builtin.asnum$(obj);
+    } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
-    }
-    else {
+    } else {
         return obj.v;
     }
 };
@@ -107,7 +110,10 @@ goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
  * number|string, etc.
  */
 Sk.ffi.basicwrap = function (obj) {
-    if (obj instanceof Sk.builtin.nmber) {
+    if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
     }
     if (obj instanceof Sk.builtin.lng) {

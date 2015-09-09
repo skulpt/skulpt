@@ -10,6 +10,7 @@ Sk.builtin.dict = function dict (L) {
         return new Sk.builtin.dict(L);
     }
 
+
     if (L === undefined) {
         L = [];
     }
@@ -23,7 +24,7 @@ Sk.builtin.dict = function dict (L) {
         }
     } else if (L instanceof Sk.builtin.dict) {
         // Handle calls of type "dict(mapping)" from Python code
-        for (it = L.tp$iter(), k = it.tp$iternext();
+        for (it = Sk.abstr.iter(L), k = it.tp$iternext();
              k !== undefined;
              k = it.tp$iternext()) {
             v = L.mp$subscript(k);
@@ -33,9 +34,9 @@ Sk.builtin.dict = function dict (L) {
             }
             this.mp$ass_subscript(k, v);
         }
-    } else if (L.tp$iter) {
+    } else if (Sk.builtin.checkIterable(L)) {
         // Handle calls of type "dict(iterable)" from Python code
-        for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (i.mp$subscript) {
                 this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
             } else {
@@ -51,7 +52,8 @@ Sk.builtin.dict = function dict (L) {
     return this;
 };
 
-Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("dict", Sk.builtin.dict);
+Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
+Sk.abstr.markUnhashable(Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
 
@@ -103,7 +105,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     return undefined;
 };
 
@@ -115,8 +117,7 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
     if (res !== undefined) {
         // Found in dictionary
         return res;
-    }
-    else {
+    } else {
         // Not found in dictionary
         s = new Sk.builtin.str(key);
         throw new Sk.builtin.KeyError(s.v);
@@ -172,7 +173,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     s = new Sk.builtin.str(key);
     throw new Sk.builtin.KeyError(s.v);
 };
@@ -186,8 +187,8 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     for (k in this) {
         if (this.hasOwnProperty(k)) {
             bucket = this[k];
-            if (bucket && bucket.$hash !== undefined) // skip internal stuff. todo; merge pyobj and this
-            {
+            if (bucket && bucket.$hash !== undefined) {
+                // skip internal stuff. todo; merge pyobj and this
                 for (i = 0; i < bucket.items.length; i++) {
                     allkeys.push(bucket.items[i].lhs);
                 }
@@ -211,22 +212,17 @@ Sk.builtin.dict.prototype.tp$iter = function () {
             }
             return ret.$keys[ret.$index++];
             // return ret.$obj[ret.$keys[ret.$index++]].lhs;
-        }
+        },
+        tp$name    : "dict_keyiterator"
     };
     return ret;
 };
-
-Sk.builtin.dict.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
-
-    return self.tp$iter();
-});
 
 Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
     var ret = [];
-    for (iter = this.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
@@ -248,63 +244,6 @@ Sk.builtin.dict.prototype["$r"] = function () {
 
 Sk.builtin.dict.prototype.mp$length = function () {
     return this.size;
-};
-
-Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.dict.prototype.tp$hash = Sk.builtin.none.none$;
-
-Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
-    // if the comparison allows for equality then short-circuit it here
-    var otherv;
-    var v;
-    var iter, k;
-    var otherl;
-    var thisl;
-    if (this === other && Sk.misceval.opAllowsEquality(op)) {
-        return true;
-    }
-
-    // Only support Eq and NotEq comparisons
-    switch (op) {
-        case "Lt":
-            return undefined;
-        case "LtE":
-            return undefined;
-        case "Eq":
-            break;
-        case "NotEq":
-            break;
-        case "Gt":
-            return undefined;
-        case "GtE":
-            return undefined;
-        default:
-            goog.asserts.fail();
-    }
-
-    if (!(other instanceof Sk.builtin.dict)) {
-        return op !== "Eq";
-    }
-
-    thisl = this.size;
-    otherl = other.size;
-
-    if (thisl !== otherl) {
-        return op !== "Eq";
-    }
-
-    for (iter = this.tp$iter(), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
-        v = this.mp$subscript(k);
-        otherv = other.mp$subscript(k);
-
-        if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
-            return op !== "Eq";
-        }
-    }
-
-    return op === "Eq";
 };
 
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
@@ -338,7 +277,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     if (d !== undefined) {
         return d;
     }
@@ -349,7 +288,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
 
 Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
     Sk.builtin.pyCheckArgs("has_key()", arguments, 1, 1, false, true);
-    return Sk.builtin.bool(self.sq$contains(k));
+    return new Sk.builtin.bool( self.sq$contains(k));
 });
 
 Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
@@ -358,7 +297,7 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -376,7 +315,7 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         ret.push(k);
@@ -390,7 +329,7 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -407,7 +346,7 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     var k;
     var iter;
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         self.mp$del_subscript(k);
@@ -446,7 +385,7 @@ Sk.builtin.dict.prototype.dict_merge = function(b) {
     } else {
         // generic slower way
         var keys = Sk.misceval.callsim(b["keys"], b);
-        for (iter = keys.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+        for (iter = Sk.abstr.iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
             v = b.tp$getitem(k); // get value
             if (v === undefined) {
                 throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
@@ -470,7 +409,7 @@ var update_f = function (kwargs, self, other) {
         var iter;
         var k, v;
         var seq_i = 0; // index of current sequence item
-        for (iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
+        for (iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
             // check if value is iter
             if (!Sk.builtin.checkIterable(k)) {
                 throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
@@ -479,7 +418,7 @@ var update_f = function (kwargs, self, other) {
             // cpython impl. would transform iterable into sequence
             // we just call iternext twice if k has length of 2
             if(k.sq$length() === 2) {
-                var k_iter = k.tp$iter();
+                var k_iter = Sk.abstr.iter(k);
                 var k_key = k_iter.tp$iternext();
                 var k_value = k_iter.tp$iternext();
                 self.mp$ass_subscript(k_key, k_value);
@@ -511,7 +450,8 @@ Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, ite
 });
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, op);
+    // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
+    return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
 Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
@@ -547,7 +487,7 @@ Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
 
-    return self.tp$iter();
+    return Sk.builtin.dict.prototype.tp$iter.call(self);
 });
 
 Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
@@ -556,29 +496,49 @@ Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
 });
 
 /* python3 recommends implementing simple ops */
-Sk.builtin.dict.prototype.__eq__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Eq");
-});
+Sk.builtin.dict.prototype.ob$eq = function (other) {
 
-Sk.builtin.dict.prototype.__ne__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    var iter, k, v, otherv;
 
-Sk.builtin.dict.prototype.__gt__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
 
-Sk.builtin.dict.prototype.__ge__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
-});
+    if (!(other instanceof Sk.builtin.dict)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
 
-Sk.builtin.dict.prototype.__le__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "GtE");
-});
+    if (this.size !== other.size) {
+        return Sk.builtin.bool.false$;
+    }
 
-Sk.builtin.dict.prototype.__lt__ = new Sk.builtin.func(function (self, other) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Lt");
-});
+    for (iter = this.tp$iter(), k = iter.tp$iternext();
+         k !== undefined;
+         k = iter.tp$iternext()) {
+        v = this.mp$subscript(k);
+        otherv = other.mp$subscript(k);
+
+        if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+
+    return Sk.builtin.bool.true$;
+};
+
+Sk.builtin.dict.prototype.ob$ne = function (other) {
+
+    var isEqual = this.ob$eq(other);
+
+    if (isEqual instanceof Sk.builtin.NotImplemented) {
+        return isEqual;
+    } else if (isEqual.v) {
+        return Sk.builtin.bool.false$;
+    } else {
+        return Sk.builtin.bool.true$;
+    }
+
+};
 
 Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
@@ -615,7 +575,5 @@ Sk.builtin.dict.prototype["viewkeys"] = new Sk.builtin.func(function (self) {
 Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
 });
-
-Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);

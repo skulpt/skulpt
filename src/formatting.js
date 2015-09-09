@@ -9,11 +9,11 @@ var format = function (kwa) {
     var arg_dict = {};
 
     Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
-    
-    
+
+
     args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
     kwargs = new Sk.builtins["dict"](kwa);
-    
+
     if (arguments[1] === undefined) {
         return args.v;
     }
@@ -42,19 +42,18 @@ var format = function (kwa) {
     // hand off format spec
     // return resulting spec to function
 
-    
+
     if(kwargs.size !== 0){
-        
+
         var kwItems = Sk.misceval.callsim(Sk.builtin.dict.prototype["items"], kwargs);
-        
+
         for (var n in kwItems.v){
-            
+
             arg_dict[kwItems.v[n].v[0].v] = kwItems.v[n].v[1].v;
         }
     }
     for(var i in args.v){
-        if(i !== "0")
-        {
+        if(i !== "0") {
             arg_dict[i-1] = args.v[i].v;
         }
     }
@@ -86,18 +85,16 @@ var format = function (kwa) {
         } else if(attribute_name !== undefined && attribute_name !== ""){
             value = arg_dict[arg_name][attribute_name].v;
             index++;
-        }
-        else if(arg_name !== undefined && arg_name !== ""){
+        } else if(arg_name !== undefined && arg_name !== ""){
             value = arg_dict[arg_name];
             index++;
-        }
-
-        else if(field_name === undefined || field_name === ""){
+        } else if(field_name === undefined || field_name === ""){
             return_str = arg_dict[index];
             index++;
             value = return_str;
-        }
-        else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
+        } else if(field_name instanceof Sk.builtin.int_ ||
+                  field_name instanceof Sk.builtin.float_ ||
+                  field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
             return_str = arg_dict[field_name];
             index++;
             value = return_str;
@@ -120,11 +117,9 @@ var format = function (kwa) {
             if(sign !== undefined && sign !== ""){
                 if ("-".indexOf(sign) !== -1) {
                     leftAdjust = true;
-                }
-                else if ("+".indexOf(sign) !== -1) {
+                } else if ("+".indexOf(sign) !== -1) {
                     precedeWithSign = true;
-                }
-                else if (" ".indexOf(sign) !== -1) {
+                } else if (" ".indexOf(sign) !== -1) {
                     blankBeforePositive = true;
                 }
             }
@@ -149,13 +144,11 @@ var format = function (kwa) {
             var s;
             if(conversion === undefined || conversion === ""){
                 return value;
-            }
-            else if( conversion == "r"){
+            } else if( conversion == "r"){
                 s = new Sk.builtin.str(value);
                 r = Sk.builtin.repr(s);
                 return r.v;
-            }
-            else if(conversion == "s"){
+            } else if(conversion == "s"){
                 r = new Sk.builtin.str(value);
                 return r.v;
             }
@@ -177,18 +170,15 @@ var format = function (kwa) {
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = "0" + r;
                     }
-                }
-                else if (leftAdjust) {
+                } else if (leftAdjust) {
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = r + fill_char;
                     }
-                }
-                else if(">".indexOf(fill_align) !== -1){
+                } else if(">".indexOf(fill_align) !== -1){
                     for (j = totLen; j < fieldWidth; ++j) {
                         prefix = fill_char + prefix;
                     }
-                }
-                else if("^".indexOf(fill_align) !== -1){
+                } else if("^".indexOf(fill_align) !== -1){
                     for (j = totLen; j < fieldWidth; ++j) {
                         if(j % 2 === 0){
                             prefix = fill_char + prefix;
@@ -196,13 +186,11 @@ var format = function (kwa) {
                             r = r + fill_char;
                         }
                     }
-                }
-                else if("=".indexOf(fill_align) !== -1){
+                } else if("=".indexOf(fill_align) !== -1){
                     for (j = totLen; j < fieldWidth; ++j) {
                         r =  fill_char + r;
                     }
-                }
-                else{
+                } else{
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = r + fill_char;
                     }
@@ -230,30 +218,26 @@ var format = function (kwa) {
                     neg = true;
                 }
                 r = n.toString(base);
-            }
-
-            else if (precision) {
+            } else if (precision) {
                 if (n < 0) {
                     n = -n;
                     neg = true;
                 }
                 n = Number(n.toString(base));
                 r = n.toFixed(precision);
-            }
-
-            else if (n instanceof Sk.builtin.nmber) {
+            } else if (n instanceof Sk.builtin.float_) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
                     r = r.substr(0, r.length - 2);
                 }
                 neg = n.nb$isnegative();
-            }
-
-            else if (n instanceof Sk.builtin.lng) {
+            } else if (n instanceof Sk.builtin.int_) {
+                r = n.str$(base, false);
+                neg = n.nb$isnegative();
+            } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
                 neg = n.nb$isnegative();    //  neg = n.size$ < 0;  RNL long.js change
-            }
-            else{
+            } else{
                 r = n;
             }
 
@@ -262,22 +246,18 @@ var format = function (kwa) {
 
             if (neg) {
                 prefix = "-";
-            }
-            else if (precedeWithSign) {
+            } else if (precedeWithSign) {
                 prefix = "+" ;
-            }
-            else if (blankBeforePositive) {
+            } else if (blankBeforePositive) {
                 prefix = " " ;
             }
 
             if (alternateForm) {
                 if (base === 16) {
                     prefix += "0x";
-                }
-                else if (base === 8 && !precZeroPadded && r !== "0") {
+                } else if (base === 8 && !precZeroPadded && r !== "0") {
                     prefix += "0o";
-                }
-                else if (base === 2 && !precZeroPadded && r !== "0"){
+                } else if (base === 2 && !precZeroPadded && r !== "0"){
                     prefix += "0b";
                 }
             }
@@ -324,8 +304,7 @@ var format = function (kwa) {
             if (precision === undefined || precision === "") {
                 if (conversionType === "e" || conversionType === "E" || conversionType === "%") {
                     precision = parseInt(6, 10);
-                }
-                else if (conversionType === "f" || conversionType === "F") {
+                } else if (conversionType === "f" || conversionType === "F") {
                     precision = parseInt(6, 10);
                 }
             }
@@ -337,17 +316,15 @@ var format = function (kwa) {
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return handleWidth("", String.fromCharCode(value));
-            }
-            else if (value instanceof Sk.builtin.nmber) {
+            } else if (value instanceof Sk.builtin.int_) {
                 return handleWidth("", String.fromCharCode(value.v));
-            }
-            else if (value instanceof Sk.builtin.lng) {
+            } else if (value instanceof Sk.builtin.float_) {
+                return handleWidth("", String.fromCharCode(value.v));
+            } else if (value instanceof Sk.builtin.lng) {
                 return handleWidth("", String.fromCharCode(value.str$(10, false)[0]));
-            }
-            else if (value.constructor === Sk.builtin.str) {
+            } else if (value.constructor === Sk.builtin.str) {
                 return handleWidth("", value.v.substr(0, 1));
-            }
-            else {
+            } else {
                 throw new Sk.builtin.TypeError("an integer is required");
             }
         } else if (percent) {

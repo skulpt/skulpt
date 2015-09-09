@@ -49,10 +49,12 @@ Sk.builtins = {
     "NameError"          : Sk.builtin.NameError,
     "IOError"            : Sk.builtin.IOError,
     "NotImplementedError": Sk.builtin.NotImplementedError,
+    "StandardError"      : Sk.builtin.StandardError,
     "SystemExit"         : Sk.builtin.SystemExit,
     "OverflowError"      : Sk.builtin.OverflowError,
     "OperationError"     : Sk.builtin.OperationError,
     "NegativePowerError" : Sk.builtin.NegativePowerError,
+    "RuntimeError"       : Sk.builtin.RuntimeError,
 
     "dict"      : Sk.builtin.dict,
     "file"      : Sk.builtin.file,

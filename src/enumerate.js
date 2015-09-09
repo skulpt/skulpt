@@ -10,6 +10,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         return new Sk.builtin.enumerate(iterable, start);
     }
 
+
     Sk.builtin.pyCheckArgs("enumerate", arguments, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
@@ -20,8 +21,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         } else {
             start = Sk.misceval.asIndex(start);
         }
-    }
-    else {
+    } else {
         start = 0;
     }
 
@@ -38,7 +38,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         if (next === undefined) {
             return undefined;
         }
-        idx = Sk.builtin.assk$(this.$index++, Sk.builtin.nmber.int$);
+        idx = new Sk.builtin.int_(this.$index++);
         return new Sk.builtin.tuple([idx, next]);
     };
 
@@ -47,10 +47,7 @@ Sk.builtin.enumerate = function (iterable, start) {
     return this;
 };
 
-Sk.builtin.enumerate.prototype.tp$name = "enumerate";
-Sk.builtin.enumerate.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("enumerate", Sk.builtin.enumerate);
-
-Sk.builtin.enumerate.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
 
 Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     return self.tp$iter();
@@ -59,3 +56,7 @@ Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self)
 Sk.builtin.enumerate.prototype["next"] = new Sk.builtin.func(function (self) {
     return self.tp$iternext();
 });
+
+Sk.builtin.enumerate.prototype["$r"] = function () {
+    return new Sk.builtin.str("<enumerate object>");
+};

@@ -121,7 +121,7 @@ class DictTest(unittest.TestCase):
                         self.i = 1
                     def __iter__(self):
                         return self
-                    def __next__(self):
+                    def next(self):
                         if self.i:
                             self.i = 0
                             return 'a'
@@ -129,7 +129,7 @@ class DictTest(unittest.TestCase):
                 return BogonIter()
             def __getitem__(self, key):
                 return key
-        #self.assertRaises(Exception, d.update, FailingUserDict())
+        self.assertRaises(Exception, d.update, FailingUserDict())
 
         class FailingUserDict:
             def keys(self):
@@ -138,7 +138,7 @@ class DictTest(unittest.TestCase):
                         self.i = ord('a')
                     def __iter__(self):
                         return self
-                    def __next__(self):
+                    def next(self):
                         if self.i <= ord('z'):
                             rtn = chr(self.i)
                             self.i += 1
@@ -152,7 +152,7 @@ class DictTest(unittest.TestCase):
         class badseq(object):
             def __iter__(self):
                 return self
-            def __next__(self):
+            def next(self):
                 raise Exception()
 
         self.assertRaises(Exception, {}.update, badseq())

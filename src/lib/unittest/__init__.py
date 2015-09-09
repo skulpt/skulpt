@@ -5,7 +5,6 @@ the unittest module from cpython.
 
 '''
 
-
 class TestCase:
     def __init__(self):
         self.numPassed = 0
@@ -36,7 +35,7 @@ class TestCase:
 
         for func in self.tlist:
             if self.verbose:
-                print 'Running %s' % self.cleanName(func)
+                print('Running %s' % self.cleanName(func))
             try:
                 self.setup()
                 self.assertPassed = 0
@@ -47,11 +46,11 @@ class TestCase:
                     self.numPassed += 1
                 else:
                     self.numFailed += 1
-                    print 'Tests failed in %s ' % self.cleanName(func)
+                    print('Tests failed in %s ' % self.cleanName(func))
             except Exception as e:
                 self.assertFailed += 1
                 self.numFailed += 1
-                print 'Test threw exception in %s (%s)' % (self.cleanName(func), e)
+                print('Test threw exception in %s (%s)' % (self.cleanName(func), e))
         self.showSummary()
 
     def assertEqual(self, actual, expected, feedback=""):
@@ -132,7 +131,7 @@ class TestCase:
             self.assertPassed += 1
         else:
             msg = 'Fail: expected %s got %s ' % (str(actual),str(expected)) + feedback
-            print msg
+            print(msg)
             self.assertFailed += 1
 
     def assertRaises(self, exception, callable=None, *args, **kwds):
@@ -161,13 +160,13 @@ class TestCase:
             msg = 'Fail'
         else:
             msg = 'Fail: ' + msg
-        print msg
+        print(msg)
         self.assertFailed += 1
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print "Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
-                                               self.numPassed, self.numFailed)
+        print("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+                                               self.numPassed, self.numFailed))
 
 
 

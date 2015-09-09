@@ -15,6 +15,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
         return new Sk.builtin.slice(start, stop, step);
     }
 
+
     if (stop === undefined && step === undefined) {
         stop = start;
         start = Sk.builtin.none.none$;
@@ -38,8 +39,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
     return this;
 };
 
-Sk.builtin.slice.prototype.tp$name = "slice";
-Sk.builtin.slice.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("slice", Sk.builtin.slice);
+Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
 
 Sk.builtin.slice.prototype["$r"] = function () {
     var a = Sk.builtin.repr(this.start).v;
@@ -47,8 +47,6 @@ Sk.builtin.slice.prototype["$r"] = function () {
     var c = Sk.builtin.repr(this.step).v;
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
-
-Sk.builtin.slice.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
     // w not a slice
@@ -124,8 +122,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
         if (stop < 0) {
             stop = length + stop;
         }
-    }
-    else {
+    } else {
         if (start === null) {
             start = length - 1;
         }
@@ -154,9 +151,9 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     length = Sk.builtin.asnum$(length);
     var sss = self.slice_indices_(length);
 
-    return new Sk.builtin.tuple([Sk.builtin.assk$(sss[0], Sk.builtin.nmber.int$), 
-                                 Sk.builtin.assk$(sss[1], Sk.builtin.nmber.int$), 
-                                 Sk.builtin.assk$(sss[2], Sk.builtin.nmber.int$)]);
+    return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), 
+                                 new Sk.builtin.int_(sss[1]), 
+                                 new Sk.builtin.int_(sss[2])]);
 });
 
 Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
@@ -169,8 +166,7 @@ Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
                 return;
             }
         }	//	wrt or wrtv? RNL
-    }
-    else {
+    } else {
         for (i = sss[0]; i > sss[1]; i += sss[2]) {
             if (f(i, wrtv) === false) {
                 return;

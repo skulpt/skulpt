@@ -17,6 +17,12 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
     if (!code) {
         return;
     } // ctor hack
+
+    if (!(this instanceof Sk.builtin.generator)) {
+        return new Sk.builtin.generator(code, globals, args, closure, closure2);
+    }
+
+
     this.func_code = code;
     this.func_globals = globals || null;
     this["gi$running"] = false;
@@ -43,7 +49,8 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
 };
 goog.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
-Sk.builtin.generator.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.abstr.setUpInheritance("generator", Sk.builtin.generator, Sk.builtin.object);
+
 
 Sk.builtin.generator.prototype.tp$iter = function () {
     return this;
@@ -81,8 +88,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
             // returns a pair: resume target and yielded value
             self["gi$resumeat"] = ret[0];
             ret = ret[1];
-        }
-        else {
+        } else {
             // todo; StopIteration
             return undefined;
         }
@@ -94,8 +100,6 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
 Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
     return self.tp$iternext(true);
 });
-
-Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("generator", Sk.builtin.generator);
 
 Sk.builtin.generator.prototype["$r"] = function () {
     return new Sk.builtin.str("<generator object " + this.func_code["co_name"].v + ">");
@@ -124,4 +128,3 @@ Sk.builtin.makeGenerator = function (next, data) {
     return gen;
 };
 goog.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
-

@@ -9,7 +9,7 @@ var $builtinmodule = function (name) {
             return new mod.defaultdict(default_, args);
         }
 
-        Sk.builtin.dict.call(this, args);
+        Sk.abstr.superConstructor(mod.defaultdict, this, args);
 
         if (default_ === undefined) {
             this.default_factory = Sk.builtin.none.none$;
@@ -31,11 +31,7 @@ var $builtinmodule = function (name) {
         return this;
     };
 
-    mod.defaultdict.prototype = Object.create(Sk.builtin.dict.prototype);
-
-    mod.defaultdict.prototype.tp$name = 'defaultdict';
-
-    mod.defaultdict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('defaultdict', mod.defaultdict);
+    Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
 
     mod.defaultdict.prototype['$r'] = function () {
         var def_str = Sk.misceval.objectRepr(this.default_factory).v;
@@ -76,16 +72,18 @@ var $builtinmodule = function (name) {
             return new mod.Counter(iter_or_map);
         }
 
+
         if (iter_or_map instanceof Sk.builtin.dict || iter_or_map === undefined) {
-            Sk.builtin.dict.call(this, iter_or_map);
+            Sk.abstr.superConstructor(mod.Counter, this, iter_or_map);
+
         }
         else {
             if (!(Sk.builtin.checkIterable(iter_or_map))) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter_or_map) + "' object is not iterable");
             }
 
-            Sk.builtin.dict.call(this);
-            var one = Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            Sk.abstr.superConstructor(mod.Counter, this);
+            var one = new Sk.builtin.int_(1);
 
             for (var iter = iter_or_map.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
@@ -99,11 +97,7 @@ var $builtinmodule = function (name) {
         return this;
     };
 
-    mod.Counter.prototype = Object.create(Sk.builtin.dict.prototype);
-
-    mod.Counter.prototype.tp$name = 'Counter';
-
-    mod.Counter.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('Counter', mod.Counter);
+    Sk.abstr.setUpInheritance("Counter", mod.Counter, Sk.builtin.dict);
 
     mod.Counter.prototype['$r'] = function () {
         var dict_str = this.size > 0 ? Sk.builtin.dict.prototype['$r'].call(this).v : '';
@@ -115,7 +109,7 @@ var $builtinmodule = function (name) {
             return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
         }
         catch (e) {
-            return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(0);
         }
     };
 
@@ -159,7 +153,7 @@ var $builtinmodule = function (name) {
         }
         else {
             if (!Sk.builtin.checkInt(n)) {
-                if (n.skType === Sk.builtin.nmber.float$) {
+                if (n instanceof Sk.builtin.float_) {
                     throw new Sk.builtin.TypeError("integer argument expected, got float");
                 }
                 else {
@@ -214,7 +208,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
             }
 
-            var one = new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            var one = new Sk.builtin.int_(1);
             for (var iter = other.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
                  k = iter.tp$iternext()) {
@@ -240,7 +234,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
             }
 
-            var one = new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            var one = new Sk.builtin.int_(1);
             for (var iter = other.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
                  k = iter.tp$iternext()) {
@@ -261,16 +255,12 @@ var $builtinmodule = function (name) {
 
         this.orderedkeys = [];
 
-        Sk.builtin.dict.call(this, items);
+        Sk.abstr.superConstructor(mod.OrderedDict, this, items);
 
         return this;
     }
 
-    mod.OrderedDict.prototype = Object.create(Sk.builtin.dict.prototype);
-
-    mod.OrderedDict.prototype.tp$name = 'OrderedDict'
-
-    mod.OrderedDict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('OrderedDict', mod.OrderedDict);
+    Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
 
     mod.OrderedDict.prototype['$r'] = function()
     {
@@ -318,6 +308,12 @@ var $builtinmodule = function (name) {
         return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
     }
 
+    mod.OrderedDict.prototype.__iter__ = new Sk.builtin.func(function (self) {
+        Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+
+        return mod.OrderedDict.prototype.tp$iter.call(self);
+    });
+
     mod.OrderedDict.prototype.tp$iter = function()
     {
         var ret;
@@ -340,47 +336,23 @@ var $builtinmodule = function (name) {
         return ret;
     }
 
-    mod.OrderedDict.prototype.tp$richcompare = function (other, op) 
-    {
-        var v, otherv;
-        var k, otherk;
-        var iter, otheriter;
-        var l, otherl;
+    mod.OrderedDict.prototype.ob$eq = function (other) {
+        var l;
+        var otherl;
+        var iter;
+        var k;
+        var v;
 
-        if (!(other instanceof mod.OrderedDict)) 
+        if (!(other instanceof mod.OrderedDict))
         {
-            return Sk.builtin.dict.prototype.tp$richcompare.call(this, other, op);
+            return Sk.builtin.dict.prototype.ob$eq.call(this, other);
         }
 
-        // Both are OrderedDicts
-        if (this === other && Sk.misceval.opAllowsEquality(op)) 
-        {
-            return true;
-        }
-
-        // Only support Eq and NotEq comparisons
-        switch (op) {
-            case "Lt":
-                return undefined;
-            case "LtE":
-                return undefined;
-            case "Eq":
-                break;
-            case "NotEq":
-                break;
-            case "Gt":
-                return undefined;
-            case "GtE":
-                return undefined;
-            default:
-                goog.asserts.fail();
-        }
-
-        l = this.size;
-        otherl = other.size;
+        l = this.mp$length();
+        otherl = other.mp$length();
 
         if (l !== otherl) {
-            return op !== "Eq";
+            return Sk.builtin.bool.false$;
         }
 
         for (iter = this.tp$iter(), otheriter = other.tp$iter(),
@@ -388,20 +360,59 @@ var $builtinmodule = function (name) {
              k !== undefined;
              k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) 
         {
-            if (!Sk.misceval.richCompareBool(k, otherk, "Eq"))
+            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq")))
             {
-                return op !== "Eq";
+                return Sk.builtin.bool.false$;
             }
             v = this.mp$subscript(k);
             otherv = other.mp$subscript(otherk);
-            
-            if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
-                return op !== "Eq";
+
+            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
+                return Sk.builtin.bool.false$;
             }
         }
 
-        return op === "Eq";        
-    }
+        return Sk.builtin.bool.true$;
+    };
+
+    mod.OrderedDict.prototype.ob$ne = function (other) {
+        var l;
+        var otherl;
+        var iter;
+        var k;
+        var v;
+
+        if (!(other instanceof mod.OrderedDict))
+        {
+            return Sk.builtin.dict.prototype.ob$ne.call(this, other);
+        }
+
+        l = this.size;
+        otherl = other.size;
+
+        if (l !== otherl) {
+            return Sk.builtin.bool.true$;
+        }
+
+        for (iter = this.tp$iter(), otheriter = other.tp$iter(),
+             k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
+             k !== undefined;
+             k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) 
+        {
+            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq")))
+            {
+                return Sk.builtin.bool.true$;
+            }
+            v = this.mp$subscript(k);
+            otherv = other.mp$subscript(otherk);
+
+            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
+                return Sk.builtin.bool.true$;
+            }
+        }
+
+        return Sk.builtin.bool.false$;
+    };
 
     mod.OrderedDict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         var s;
