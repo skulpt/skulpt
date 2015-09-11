@@ -1769,6 +1769,8 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this._jump(start);
     this.setBlock(start);
 
+    this.annotateSource(elt);
+
     // load targets
     out ("$ret = Sk.abstr.iternext(", iter,(this.u.canSuspend?", true":", false"),");");
 
@@ -1780,6 +1782,8 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
 
     n = ge.ifs.length;
     for (i = 0; i < n; ++i) {
+        this.annotateSource(ge.ifs[i]);
+
         ifres = this.vexpr(ge.ifs[i]);
         this._jumpfalse(ifres, start);
     }
@@ -1789,6 +1793,8 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     }
 
     if (genIndex >= generators.length) {
+        this.annotateSource(elt);
+
         velt = this.vexpr(elt);
         out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
         this.setBlock(skip);
