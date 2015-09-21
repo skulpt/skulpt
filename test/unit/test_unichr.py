@@ -24,5 +24,21 @@ class TestUnichr(unittest.TestCase):
     def testFour(self):
         self.assertEqual(unichr(0x1d11e), u'𝄞')
 
+    def testFive(self):
+        ex = 0
+        try:
+            s1 = unichr(-1)     # should throw ValueError
+        except ValueError:
+            ex = 1
+        self.assertEqual(1, ex)
+
+    def testSix(self):
+        ex = 0
+        try:
+            s1 = unichr(1<<22)   # should throw ValueError
+        except ValueError:
+            ex = 1
+        self.assertEqual(1, ex)
+
 if __name__ == '__main__':
     unittest.main()

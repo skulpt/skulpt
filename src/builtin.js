@@ -474,10 +474,15 @@ Sk.builtin.unichr = function unichr (x) {
     }
     x = Sk.builtin.asnum$(x);
 
-    // Don't do any special range checking here;
-    // let fromCodePoint() throw a range error if it needs to.
-
-    return new Sk.builtin.str(String.fromCodePoint(x));
+    try {
+        return new Sk.builtin.str(String.fromCodePoint(x));
+    }
+    catch (err) {
+        if (err instanceof RangeError) {
+          throw new Sk.builtin.ValueError(err.message);
+        }
+        throw err;
+    }
 };
 
 Sk.builtin.int2str_ = function helper_ (x, radix, prefix) {
