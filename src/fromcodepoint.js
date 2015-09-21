@@ -3,10 +3,11 @@ if (!String.fromCodePoint) {
     (function() {
         var defineProperty = (function() {
             // IE 8 only supports `Object.defineProperty` on DOM elements
+            var result;
             try {
                 var object = {};
                 var $defineProperty = Object.defineProperty;
-                var result = $defineProperty(object, "foo", object) && $defineProperty;
+                result = $defineProperty(object, "foo", object) && $defineProperty;
             } catch(error) {}
             return result;
         }());
