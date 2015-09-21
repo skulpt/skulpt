@@ -6,7 +6,7 @@ if (!String.fromCodePoint) {
             try {
                 var object = {};
                 var $defineProperty = Object.defineProperty;
-                var result = $defineProperty(object, object, object) && $defineProperty;
+                var result = $defineProperty(object, 'foo', object) && $defineProperty;
             } catch(error) {}
             return result;
         }());
