@@ -6,7 +6,7 @@ if (!String.fromCodePoint) {
             try {
                 var object = {};
                 var $defineProperty = Object.defineProperty;
-                var result = $defineProperty(object, 'foo', object) && $defineProperty;
+                var result = $defineProperty(object, "foo", object) && $defineProperty;
             } catch(error) {}
             return result;
         }());
@@ -20,9 +20,9 @@ if (!String.fromCodePoint) {
             var index = -1;
             var length = arguments.length;
             if (!length) {
-                return '';
+                return "";
             }
-            var result = '';
+            var result = "";
             while (++index < length) {
                 var codePoint = Number(arguments[index]);
                 if (
@@ -31,7 +31,7 @@ if (!String.fromCodePoint) {
                     codePoint > 0x10FFFF || // not a valid Unicode code point
                     floor(codePoint) != codePoint // not an integer
                 ) {
-                    throw RangeError('Invalid code point: ' + codePoint);
+                    throw RangeError("Invalid code point: " + codePoint);
                 }
                 if (codePoint <= 0xFFFF) { // BMP code point
                     codeUnits.push(codePoint);
@@ -50,10 +50,10 @@ if (!String.fromCodePoint) {
             return result;
         };
         if (defineProperty) {
-            defineProperty(String, 'fromCodePoint', {
-                'value': fromCodePoint,
-                'configurable': true,
-                'writable': true
+            defineProperty(String, "fromCodePoint", {
+                "value": fromCodePoint,
+                "configurable": true,
+                "writable": true
             });
         } else {
             String.fromCodePoint = fromCodePoint;
