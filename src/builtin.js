@@ -479,7 +479,7 @@ Sk.builtin.unichr = function unichr (x) {
     }
     catch (err) {
         if (err instanceof RangeError) {
-          throw new Sk.builtin.ValueError(err.message);
+            throw new Sk.builtin.ValueError(err.message);
         }
         throw err;
     }
