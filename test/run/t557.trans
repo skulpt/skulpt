@@ -1,0 +1,11 @@
+Module(body=[ClassDef(name='C',
+                      bases=[],
+                      body=[Raise(type=Call(func=Name(id='Exception',
+                                                      ctx=Load()),
+                                            args=[Str(s='Oops')],
+                                            keywords=[],
+                                            starargs=None,
+                                            kwargs=None),
+                                  inst=None,
+                                  tback=None)],
+                      decorator_list=[])])
