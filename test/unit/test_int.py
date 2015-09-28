@@ -393,6 +393,12 @@ class IntTestCases(unittest.TestCase):
       self.assertRaises(ValueError, check, '123\ud800', None)
       self.assertRaises(ValueError, check, '123\ud800', 10)
 
+    def test_conjugate(self):
+        self.assertEqual(int(3).conjugate(), 3)
+        self.assertEqual(int(-3).conjugate(), -3)
+        self.assertEqual(bool(True).conjugate(), 1)
+        self.assertEqual(bool(False).conjugate(), 0)
+
 class IntTest(unittest.TestCase):
     def test_int_inherited(self):
         class c:
