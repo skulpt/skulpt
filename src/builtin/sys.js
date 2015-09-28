@@ -62,6 +62,7 @@ var $builtinmodule = function (name) {
 
     sys.debug = new Sk.builtin.func(function () {
         debugger;
+        return Sk.builtin.none.none$;
     });
 
     return sys;
