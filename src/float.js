@@ -783,6 +783,10 @@ Sk.builtin.float_.prototype.__round__ = function (self, ndigits) {
     return new Sk.builtin.float_(result);
 };
 
+Sk.builtin.float_.prototype.conjugate = function () {
+    return new Sk.builtin.float_(this.v);
+};
+
 /** @override */
 Sk.builtin.float_.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));

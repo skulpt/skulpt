@@ -970,6 +970,10 @@ Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
     return new Sk.builtin.int_(result);
 };
 
+Sk.builtin.int_.prototype.conjugate = function () {
+    return new Sk.builtin.int_(this.v);
+};
+
 /** @override */
 Sk.builtin.int_.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));
