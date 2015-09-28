@@ -131,9 +131,9 @@ Sk.builtin.lng.prototype.clone = function () {
     return new Sk.builtin.lng(this);
 };
 
-Sk.builtin.lng.prototype.conjugate = function () {
-    return this.clone();
-};
+Sk.builtin.lng.prototype.conjugate = new Sk.builtin.func(function (self) {
+    return self.clone();
+});
 
 Sk.builtin.lng.prototype.nb$add = function (other) {
     var thisAsFloat;
