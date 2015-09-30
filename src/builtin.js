@@ -467,6 +467,24 @@ Sk.builtin.chr = function chr (x) {
     return new Sk.builtin.str(String.fromCharCode(x));
 };
 
+Sk.builtin.unichr = function unichr (x) {
+    Sk.builtin.pyCheckArgs("chr", arguments, 1, 1);
+    if (!Sk.builtin.checkInt(x)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+    x = Sk.builtin.asnum$(x);
+
+    try {
+        return new Sk.builtin.str(String.fromCodePoint(x));
+    }
+    catch (err) {
+        if (err instanceof RangeError) {
+            throw new Sk.builtin.ValueError(err.message);
+        }
+        throw err;
+    }
+};
+
 Sk.builtin.int2str_ = function helper_ (x, radix, prefix) {
     var suffix;
     var str = "";
@@ -1194,9 +1212,6 @@ Sk.builtin.reload = function reload () {
 };
 Sk.builtin.reversed = function reversed () {
     throw new Sk.builtin.NotImplementedError("reversed is not yet implemented");
-};
-Sk.builtin.unichr = function unichr () {
-    throw new Sk.builtin.NotImplementedError("unichr is not yet implemented");
 };
 Sk.builtin.vars = function vars () {
     throw new Sk.builtin.NotImplementedError("vars is not yet implemented");
