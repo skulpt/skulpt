@@ -1420,6 +1420,7 @@ function generateTurtleModule(_target) {
                         // trigger the intial keydown handler
                         self._keyListeners[key]();
                         self._createKeyRepeater(key, code);
+                        e.preventDefault();
                         break;
                     }
                 }
@@ -1436,6 +1437,7 @@ function generateTurtleModule(_target) {
             this._keyUpListener = function(e) {
                 var interval = self._keyLogger[e.charCode || e.keyCode];
                 if (interval !== undefined) {
+                    e.preventDefault();
                     window.clearInterval(interval);
                     window.clearTimeout(interval);
                     delete(self._keyLogger[e.charCode || e.keyCode]);
@@ -2217,9 +2219,24 @@ function generateTurtleModule(_target) {
         TURTLE_COUNT         = 0;
     }
 
+    function stopTurtle() {
+        cancelAnimationFrame();
+
+        if (_mouseHandler) {
+            _mouseHandler.reset();
+        }
+
+        _durationSinceRedraw = 0;
+        _screenInstance      = undefined;
+        _anonymousTurtle     = undefined;
+        _mouseHandler        = undefined;
+        TURTLE_COUNT         = 0;
+    }
+
     return {
         skModule : _module,
         reset    : resetTurtle,
+        stop     : stopTurtle,
         focus    : focusTurtle,
         Turtle   : Turtle,
         Screen   : Screen
@@ -2239,6 +2256,7 @@ else {
 
 Sk.TurtleGraphics.module = currentTarget.turtleInstance.skModule;
 Sk.TurtleGraphics.reset  = currentTarget.turtleInstance.reset;
+Sk.TurtleGraphics.stop   = currentTarget.turtleInstance.stop;
 Sk.TurtleGraphics.focus  = currentTarget.turtleInstance.focus;
 Sk.TurtleGraphics.raw = {
     Turtle : currentTarget.turtleInstance.Turtle,
