@@ -356,21 +356,14 @@ Sk.builtin.int_.prototype.nb$reflected_floor_divide = function (other) {
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
     var thisAsLong, thisAsFloat;
     var tmp;
+    var divResult;
 
     if (other instanceof Sk.builtin.int_) {
-
         //  Javacript logic on negatives doesn't work for Python... do this instead
-        tmp = this.v % other.v;
-
-        if (this.v < 0) {
-            if (other.v > 0 && tmp < 0) {
-                tmp = tmp + other.v;
-            }
-        } else {
-            if (other.v < 0 && tmp !== 0) {
-                tmp = tmp + other.v;
-            }
-        }
+        divResult = Sk.abstr.numberBinOp(this, other, "FloorDiv");
+        tmp = Sk.abstr.numberBinOp(divResult, other, "Mult");
+        tmp = Sk.abstr.numberBinOp(this, tmp, "Sub");
+        tmp = tmp.v;
 
         if (other.v < 0 && tmp === 0) {
             tmp = -0.0; // otherwise the sign gets lost by javascript modulo
