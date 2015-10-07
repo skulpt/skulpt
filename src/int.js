@@ -304,12 +304,27 @@ Sk.builtin.int_.prototype.nb$reflected_multiply = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.nb$divide = function (other) {
-    var thisAsFloat;
+    var thisAsLong, thisAsFloat;
     if (Sk.python3) {
         thisAsFloat = new Sk.builtin.float_(this.v);
         return thisAsFloat.nb$divide(other);
     }
-    return this.nb$floor_divide(other);
+
+    if (other instanceof Sk.builtin.int_) {
+        return this.nb$floor_divide(other);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$divide(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$divide(other);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 /** @override */
