@@ -301,7 +301,7 @@ Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
 
     //    Standard, long result mode
     if (other instanceof Sk.builtin.lng) {
-        return other.nb$floor_divide(this);
+        return other.nb$divide(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
