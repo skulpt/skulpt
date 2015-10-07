@@ -332,12 +332,12 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
 
     if (other instanceof Sk.builtin.lng) {
         thisAsLong = new Sk.builtin.lng(this.v);
-        return thisAsLong.nb$divide(other);
+        return thisAsLong.nb$floor_divide(other);
     }
 
     if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.float_(this.v);
-        return thisAsFloat.nb$divide(other);
+        return thisAsFloat.nb$floor_divide(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
