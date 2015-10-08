@@ -414,7 +414,7 @@ class IntTestCases(unittest.TestCase):
         self.assertEqual(mod(-5, 6), 1)
         self.assertEqual(mod(-5, -2), -1)
 
-    def test_int_binops(self):
+    def test_division(self):
         self.assertEqual(3/2, 1)
         self.assertEqual(3//2, 1)
         self.assertEqual(3/2.0, 1.5)
