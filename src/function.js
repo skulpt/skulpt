@@ -101,6 +101,16 @@ Sk.builtin.checkCallable = function (arg) {
     }
 };
 
+Sk.builtin.isNegativeZero = function (arg) {
+    var val = Sk.builtin.asnum$(arg);
+    if (1 / val === Number.NEGATIVE_INFINITY) {
+        return true;
+    }
+
+    return false;
+};
+goog.exportSymbol("Sk.builtin.isNegativeZero", Sk.builtin.isNegativeZero);
+
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number" ||
         arg instanceof Sk.builtin.int_ ||
