@@ -537,6 +537,21 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         }
         if (!fromlist || fromlist.length === 0) {
             return ret;
+        } else {
+            // push all names from the fromlist into our globals obj
+            var i;
+            for (i = 0; i < fromlist.length; i++) {
+                var fromName = fromlist[i];
+                var dottedName = name.split(".");
+                dottedName = dottedName[dottedName.length-1];
+                if (fromName != "*" && ret.$d[dottedName] != null) {
+                    var pyObj = ret.tp$getattr(fromName); // must be a javascript string
+                    if (pyObj === undefined || pyObj === null) {
+                        throw new Sk.builtin.ImportError("cannot import name '" + fromName + "'");
+                    }
+                    Sk.globals[pyObj] = pyObj;
+                }
+            }
         }
         // if there's a fromlist we want to return the actual module, not the
         // toplevel namespace
