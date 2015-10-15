@@ -537,7 +537,28 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         }
         if (!fromlist || fromlist.length === 0) {
             return ret;
+        } else {
+            // try to load the module from the file system if it is not present on the module itself
+            var i;
+            var fromNameRet; // module returned
+            var fromName; // name of current module for fromlist
+            var fromImportName; // dotted name
+            var dottedName = name.split("."); // get last module in dotted path
+            dottedName = dottedName[dottedName.length-1];
+            for (i = 0; i < fromlist.length; i++) {
+                fromName = fromlist[i];
+                if (fromName != "*" && ret.$d[fromName] == null && (ret.$d[dottedName] != null || ret.$d.__name__.v == dottedName)) {
+                    // add the module name to our requiredImport list
+                    fromImportName = "" + name + "." + fromName;
+                    fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true);
+                    ret["$d"][fromName] = fromNameRet;
+                }
+            }
         }
+
+        // check if modules in name list are in the module
+
+
         // if there's a fromlist we want to return the actual module, not the
         // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
@@ -549,6 +570,18 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
 Sk.importStar = function (module, loc, global) {
     // from the global scope, globals and locals can be the same.  So the loop below
     // could accidentally overwrite __name__, erasing __main__.
+    var i;
+    var nn = global["__name__"];
+    var props = Object["getOwnPropertyNames"](module["$d"]);
+    for (i in props) {
+        loc[props[i]] = module["$d"][props[i]];
+    }
+    if (global["__name__"] !== nn) {
+        global["__name__"] = nn;
+    }
+};
+
+Sk.importFromList = function(module, loc, global) {
     var i;
     var nn = global["__name__"];
     var props = Object["getOwnPropertyNames"](module["$d"]);
