@@ -414,6 +414,16 @@ class IntTestCases(unittest.TestCase):
         self.assertEqual(mod(-5, 6), 1)
         self.assertEqual(mod(-5, -2), -1)
 
+    def test_division(self):
+        self.assertEqual(3/2, 1)
+        self.assertEqual(3//2, 1)
+        self.assertEqual(3/2.0, 1.5)
+        self.assertEqual(3//2.0, 1.0)
+        self.assertEqual(-3/2, -2)
+        self.assertEqual(-3//2, -2)
+        self.assertEqual(-3/2.0, -1.5)
+        self.assertEqual(-3//2.0, -2.0)
+
 class IntTest(unittest.TestCase):
     def test_int_inherited(self):
         class c:
