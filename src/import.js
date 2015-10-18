@@ -364,6 +364,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
         external = Sk.loadExternalLibrary(name);
         if (external) {
             co = external;
+            filename = Sk.externalLibraries[name].path; // get path from config
+            // ToDo: check if this is a dotted name or import from ...
         } else {
             // Try loading as a builtin (i.e. already in JS) module, then try .py files
             codeAndPath = Sk.importSearchPathForName(name, ".js", true, canSuspend);
@@ -376,6 +378,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                     isPy = true;
                     return compileReadCode(Sk.importSearchPathForName(name, ".py", false, canSuspend));
                 } else {
+                    filename = codeAndPath.filename;
                     return isPy ? Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend)
                         : { funcname: "$builtinmodule", code: codeAndPath.code };
                 }
@@ -391,6 +394,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
 
         module.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
+
+        if (filename == null) {
+            filename = co.filename;
+        }
+
         if (Sk.dateSet == null || !Sk.dateSet) {
             finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
             Sk.dateSet = true;
@@ -443,6 +451,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             if (!modlocs["__name__"]) {
                 modlocs["__name__"] = new Sk.builtin.str(modname);
             }
+
+            modlocs["__path__"] = new Sk.builtin.str(filename);
 
             module["$d"] = modlocs;
             
