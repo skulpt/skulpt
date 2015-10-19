@@ -364,7 +364,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
         external = Sk.loadExternalLibrary(name);
         if (external) {
             co = external;
-            filename = Sk.externalLibraries[name].path; // get path from config
+            if (Sk.externalLibraries) {
+                filename = Sk.externalLibraries[name].path; // get path from config
+            } else {
+                filename = 'unknown';
+            }
             // ToDo: check if this is a dotted name or import from ...
         } else {
             // Try loading as a builtin (i.e. already in JS) module, then try .py files
@@ -566,9 +570,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
             }
         }
 
-        // check if modules in name list are in the module
-
-
         // if there's a fromlist we want to return the actual module, not the
         // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
@@ -580,18 +581,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
 Sk.importStar = function (module, loc, global) {
     // from the global scope, globals and locals can be the same.  So the loop below
     // could accidentally overwrite __name__, erasing __main__.
-    var i;
-    var nn = global["__name__"];
-    var props = Object["getOwnPropertyNames"](module["$d"]);
-    for (i in props) {
-        loc[props[i]] = module["$d"][props[i]];
-    }
-    if (global["__name__"] !== nn) {
-        global["__name__"] = nn;
-    }
-};
-
-Sk.importFromList = function(module, loc, global) {
     var i;
     var nn = global["__name__"];
     var props = Object["getOwnPropertyNames"](module["$d"]);
