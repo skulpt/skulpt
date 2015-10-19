@@ -367,7 +367,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             if (Sk.externalLibraries) {
                 filename = Sk.externalLibraries[name].path; // get path from config
             } else {
-                filename = 'unknown';
+                filename = "unknown";
             }
             // ToDo: check if this is a dotted name or import from ...
         } else {
