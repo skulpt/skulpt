@@ -440,7 +440,7 @@ Sk.builtin.abs = function abs (x) {
 
     // call custom __abs__ methods
     if (x.tp$getattr) {
-        var f = x.tp$getattr('__abs__');
+        var f = x.tp$getattr("__abs__");
         return Sk.misceval.callsim(f);
     }
 
