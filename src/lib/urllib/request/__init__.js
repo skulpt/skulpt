@@ -107,8 +107,16 @@ var $builtinmodule = function (name) {
      */
     request.urlopen = new Sk.builtin.func(function (url, data, timeout) {
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", url.v, false);
-        xmlhttp.send(null);
+
+        if (!data) {
+          xmlhttp.open("GET", url.v, false);
+          xmlhttp.send(null);
+        } else {
+          xmlhttp.open("POST", url.v, false);
+          xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+          xmlhttp.setRequestHeader("Content-length", data.v.length);
+          xmlhttp.send(data.v);
+        }
 
         return Sk.misceval.callsim(request.Response, xmlhttp)
     });
