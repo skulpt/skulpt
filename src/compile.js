@@ -335,8 +335,9 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var items;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
+        items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
-            this.vexpr(e.elts[i], "Sk.abstr.objectGetItem(" + data + "," + i + ")");
+            this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
     else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
@@ -527,8 +528,8 @@ Compiler.prototype.cslice = function (s) {
     var high;
     var low;
     goog.asserts.assert(s instanceof Slice);
-    low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.nmber(0)"; // todo;ideally, these numbers would be constants
-    high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.nmber(2147483647)";
+    low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(0)"; // todo;ideally, these numbers would be constants
+    high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(2147483647)";
     step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
     return this._gr("slice", "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
@@ -678,10 +679,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             if (typeof e.n === "number") {
                 return e.n;
             }
-            else if (e.n instanceof Sk.builtin.nmber) {
+            else if (e.n instanceof Sk.builtin.int_) {
+                return "new Sk.builtin.int_(" + e.n.v + ")";
+            } else if (e.n instanceof Sk.builtin.float_) {
                 // Preserve sign of zero for floats
-                nStr = e.n.skType === Sk.builtin.nmber.float$ && e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
-                return "new Sk.builtin.nmber(" + nStr + ",'" + e.n.skType + "')";
+                nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
+                return "new Sk.builtin.float_(" + nStr + ")";
             }
             else if (e.n instanceof Sk.builtin.lng) {
                 // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
@@ -1766,13 +1769,21 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this._jump(start);
     this.setBlock(start);
 
+    this.annotateSource(elt);
+
     // load targets
-    nexti = this._gr("next", "Sk.abstr.iternext(", iter, ")");
+    out ("$ret = Sk.abstr.iternext(", iter,(this.u.canSuspend?", true":", false"),");");
+
+    this._checkSuspension(elt);
+
+    nexti = this._gr("next", "$ret");
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     target = this.vexpr(ge.target, nexti);
 
     n = ge.ifs.length;
     for (i = 0; i < n; ++i) {
+        this.annotateSource(ge.ifs[i]);
+
         ifres = this.vexpr(ge.ifs[i]);
         this._jumpfalse(ifres, start);
     }
@@ -1782,6 +1793,8 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     }
 
     if (genIndex >= generators.length) {
+        this.annotateSource(elt);
+
         velt = this.vexpr(elt);
         out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
         this.setBlock(skip);
@@ -1831,7 +1844,7 @@ Compiler.prototype.cclass = function (s) {
     entryBlock = this.newBlock("class entry");
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "return(function $" + s.name.v + "$_closure(){";
+    this.u.switchCode += "(function $" + s.name.v + "$_closure(){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;"
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
@@ -1839,15 +1852,17 @@ Compiler.prototype.cclass = function (s) {
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
         this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = Date.now()}";
     }
-    this.u.switchCode += "while(true){";
+
+    this.u.switchCode += "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "}break;}}).apply(null,$rest);});";
+    this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}"
+    this.u.suffixCode += "}).apply(null,$rest);});";
 
     this.u.private_ = s.name;
 
     this.cbody(s.body);
-    out("break;");
+    out("return;");
 
     // build class
 
@@ -2232,7 +2247,7 @@ Compiler.prototype.cmod = function (mod) {
 
     var entryBlock = this.newBlock("module entry");
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $gbl = {}, $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname,$ret=undefined,currLineNo=undefined,currColNo=undefined;";
+    this.u.varDeclsCode = "var $gbl = {}, $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;var $ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }

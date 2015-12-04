@@ -28,14 +28,14 @@ class TestCaseGui(TestCase):
 				self.setup()
 				func()
 				self.tearDown()
-			except:
-				self.appendResult('Error')
+			except Exception as e:
+				self.appendResult('Error', None, None, e)
 				self.numFailed += 1
 		self.showSummary()
 
 	def appendResult(self,res,actual,expected,feedback):
 		if res == 'Error':
-			msg = 'Error'
+			msg = 'Error: %s' % feedback
 		elif res:
 			msg = 'Pass'
 			self.numPassed += 1

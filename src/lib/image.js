@@ -229,12 +229,12 @@ $builtinmodule = function (name) {
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getHeight", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.image.height, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(self.image.height);
         });
 
         $loc.getWidth = new Sk.builtin.func(function (self, titlestring) {
             Sk.builtin.pyCheckArgs("getWidth", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.image.width, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(self.image.width);
         });
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
@@ -312,27 +312,27 @@ $builtinmodule = function (name) {
 
         $loc.getRed = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getRed", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.red);
+            return Sk.builtin.assk$(self.red);
         });
 
         $loc.getGreen = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getGreen", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.green);
+            return Sk.builtin.assk$(self.green);
         });
 
         $loc.getBlue = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getBlue", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.blue);
+            return Sk.builtin.assk$(self.blue);
         });
 
         $loc.getX = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getX", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.x);
+            return Sk.builtin.assk$(self.x);
         });
 
         $loc.getY = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getY", arguments, 1, 1);
-            return new Sk.builtin.nmber(self.y);
+            return Sk.builtin.assk$(self.y);
         });
 
         $loc.setRed = new Sk.builtin.func(function (self, r) {

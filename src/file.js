@@ -7,6 +7,12 @@
 Sk.builtin.file = function (name, mode, buffering) {
     var i;
     var elem;
+
+    if (!(this instanceof Sk.builtin.file)) {
+        return new Sk.builtin.file(name, mode, buffering);
+    }
+
+
     this.mode = mode;
     this.name = name;
     this.closed = false;
@@ -14,15 +20,14 @@ Sk.builtin.file = function (name, mode, buffering) {
         elem = document.getElementById(name.v);
         if (elem == null) {
             if (mode.v == "w" || mode.v == "a") {
-              this.data$ = "";
+                this.data$ = "";
             } else {
-              throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
             }
         } else {
             if (elem.nodeName.toLowerCase() == "textarea") {
                 this.data$ = elem.value;
-            }
-            else {
+            } else {
                 this.data$ = elem.textContent;
             }
         }
@@ -46,9 +51,7 @@ Sk.builtin.file = function (name, mode, buffering) {
     return this;
 };
 
-Sk.builtin.file.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("file", Sk.builtin.file);
-
-Sk.builtin.file.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.abstr.setUpInheritance("file", Sk.builtin.file, Sk.builtin.object);
 
 Sk.builtin.file.prototype["$r"] = function () {
     return new Sk.builtin.str("<" +

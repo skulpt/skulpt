@@ -111,8 +111,8 @@ Parser.prototype.addtoken = function (type, value, context) {
                 /* jshint ignore:start */
                 while (states[state].length === 1
                     && states[state][0][0] === 0
-                    && states[state][0][1] === state) // states[state] == [(0, state)])
-                {
+                    && states[state][0][1] === state) {
+                    // states[state] == [(0, state)])
                     this.pop();
                     //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
                     if (this.stack.length === 0) {
@@ -130,8 +130,7 @@ Parser.prototype.addtoken = function (type, value, context) {
                 // done with this token
                 //print("DONE, return false");
                 return false;
-            }
-            else if (t >= 256) {
+            } else if (t >= 256) {
                 itsdfa = this.grammar.dfas[t];
                 itsfirst = itsdfa[1];
                 if (itsfirst.hasOwnProperty(ilabel)) {
@@ -150,8 +149,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             if (this.stack.length === 0) {
                 throw new Sk.builtin.ParseError("too much input", this.filename);
             }
-        }
-        else {
+        } else {
             // no transition
             errline = context[0][0];
             throw new Sk.builtin.ParseError("bad input", this.filename, errline, context);
@@ -248,8 +246,7 @@ Parser.prototype.pop = function () {
             //print("B", bc++);
             node = this.stack[this.stack.length - 1].node;
             node.children.push(newnode);
-        }
-        else {
+        } else {
             //print("C");
             this.rootnode = newnode;
             this.rootnode.used_names = this.used_names;
@@ -281,8 +278,7 @@ function makeParser (filename, style) {
     // for closure's benefit
     if (style === "file_input") {
         p.setup(Sk.ParseTables.sym.file_input);
-    }
-    else {
+    } else {
         goog.asserts.fail("todo;");
     }
     lineno = 1;
@@ -364,14 +360,12 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
     indent = indent || "";
     ret = "";
     ret += indent;
-    if (n.type >= 256) // non-term
-    {
+    if (n.type >= 256) { // non-term
         ret += Sk.ParseTables.number2symbol[n.type] + "\n";
         for (i = 0; i < n.children.length; ++i) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
-    }
-    else {
+    } else {
         ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
     }
     return ret;

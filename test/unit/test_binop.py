@@ -352,7 +352,11 @@ class RatTestCase(unittest.TestCase):
         self.assertEqual(divmod(10, 4), (2, 2))     
         self.assertEqual(divmod(5, 2.5), (2.0, 0.0))
         self.assertEqual(divmod(10, 4.5), (2.0, 1.0))        
-        self.assertEqual(divmod(10, 5.5), (1.0, 4.5))                
+        self.assertEqual(divmod(10, 5.5), (1.0, 4.5))
+        self.assertEqual(divmod(10L, 4L), (2L, 2L))
+        self.assertEqual(divmod(5L, 2.5), (2.0, 0.0))
+        self.assertEqual(divmod(10L, 4.5), (2.0, 1.0))
+        self.assertEqual(divmod(10L, 5.5), (1.0, 4.5))
 
     # XXX Ran out of steam; TO DO: mod, future division
 

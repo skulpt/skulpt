@@ -9,6 +9,7 @@ Sk.builtin.set = function (S) {
         return new Sk.builtin.set(S);
     }
 
+
     if (typeof(S) === "undefined") {
         S = [];
     }
@@ -18,7 +19,7 @@ Sk.builtin.set = function (S) {
     // python sorts sets on init, but not thereafter.
     // Skulpt seems to init a new set each time you add/remove something
     //Sk.builtin.list.prototype['sort'].func_code(S);
-    for (it = S_list.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         Sk.builtin.set.prototype["add"].func_code(this, i);
     }
 
@@ -27,22 +28,24 @@ Sk.builtin.set = function (S) {
     this["v"] = this.v;
     return this;
 };
-
-Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("set", Sk.builtin.set);
+Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
+Sk.abstr.markUnhashable(Sk.builtin.set);
 
 Sk.builtin.set.prototype.set_iter_ = function () {
-    return this["v"].tp$iter();
+    var iter = this["v"].tp$iter();
+    iter.tp$name = "set_iterator";
+
+    return iter;
 };
 
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
 };
 
-Sk.builtin.set.prototype.tp$name = "set";
 Sk.builtin.set.prototype["$r"] = function () {
     var it, i;
     var ret = [];
-    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
     if(Sk.python3) {
@@ -51,82 +54,110 @@ Sk.builtin.set.prototype["$r"] = function () {
         return new Sk.builtin.str("set([" + ret.join(", ") + "])");
     }
 };
-Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-// todo; you can't hash a set() -- what should this be?
-Sk.builtin.set.prototype.tp$hash = Sk.builtin.none.none$;
 
-Sk.builtin.set.prototype.tp$richcompare = function (w, op) {
-    // todo; NotImplemented if either isn't a set
+Sk.builtin.set.prototype.ob$eq = function (other) {
 
-    var isSuper;
-    var isSub;
-    var wl;
-    var vl;
-    if (this === w && Sk.misceval.opAllowsEquality(op)) {
-        return true;
+    if (this === other) {
+        return Sk.builtin.bool.true$;
     }
 
-    // w not a set
-    if (!w.__class__ || w.__class__ != Sk.builtin.set) {
-        // shortcuts for eq/not
-        if (op === "Eq") {
-            return false;
-        }
-        if (op === "NotEq") {
-            return true;
-        }
-
-        // todo; other types should have an arbitrary order
-        return false;
+    if (!(other instanceof Sk.builtin.set)) {
+        return Sk.builtin.bool.false$;
     }
 
-    vl = this.sq$length();
-    wl = w.sq$length();
-
-    // easy short-cut
-    if (wl !== vl) {
-        if (op === "Eq") {
-            return false;
-        }
-        if (op === "NotEq") {
-            return true;
-        }
+    if (Sk.builtin.set.prototype.sq$length.call(this) !==
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.false$;
     }
 
-    // used quite a lot in comparisons.
-    isSub = false;
-    isSuper = false;
+    return this["issubset"].func_code(this, other);
+};
 
-    // gather common info
-    switch (op) {
-        case "Lt":
-        case "LtE":
-        case "Eq":
-        case "NotEq":
-            isSub = Sk.builtin.set.prototype["issubset"].func_code(this, w).v;
-            break;
-        case "Gt":
-        case "GtE":
-            isSuper = Sk.builtin.set.prototype["issuperset"].func_code(this, w).v;
-            break;
-        default:
-            goog.asserts.fail();
+Sk.builtin.set.prototype.ob$ne = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
     }
 
-    switch (op) {
-        case "Lt":
-            return vl < wl && isSub;
-        case "LtE":
-        case "Eq":  // we already know that the lengths are equal
-            return isSub;
-        case "NotEq":
-            return !isSub;
-        case "Gt":
-            return vl > wl && isSuper;
-        case "GtE":
-            return isSuper;
+    if (!(other instanceof Sk.builtin.set)) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (Sk.builtin.set.prototype.sq$length.call(this) !==
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (this["issubset"].func_code(this, other).v) {
+        return Sk.builtin.bool.false$;
+    } else {
+        return Sk.builtin.bool.true$;
     }
 };
+
+Sk.builtin.set.prototype.ob$lt = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
+    }
+
+    if (Sk.builtin.set.prototype.sq$length.call(this) >=
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issubset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$le = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (Sk.builtin.set.prototype.sq$length.call(this) >
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issubset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$gt = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.false$;
+    }
+
+    if (Sk.builtin.set.prototype.sq$length.call(this) <=
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issuperset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype.ob$ge = function (other) {
+
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (Sk.builtin.set.prototype.sq$length.call(this) <
+        Sk.builtin.set.prototype.sq$length.call(other)) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return this["issuperset"].func_code(this, other);
+};
+
+Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function(self) {
+
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+
+    return Sk.builtin.set.prototype.tp$iter.call(self);
+
+});
 
 Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
 Sk.builtin.set.prototype.sq$length = function () {
@@ -141,7 +172,7 @@ Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, oth
     // requires all items in self to not be in other
     var isIn;
     var it, item;
-    for (it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         isIn = Sk.abstr.sequenceContains(other, item);
         if (isIn) {
             return Sk.builtin.bool.false$;
@@ -159,7 +190,7 @@ Sk.builtin.set.prototype["issubset"] = new Sk.builtin.func(function (self, other
         // every item in this set can't be in other if it's shorter!
         return Sk.builtin.bool.false$;
     }
-    for (it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         isIn = Sk.abstr.sequenceContains(other, item);
         if (!isIn) {
             return Sk.builtin.bool.false$;
@@ -202,7 +233,7 @@ Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, oth
 Sk.builtin.set.prototype["symmetric_difference"] = new Sk.builtin.func(function (self, other) {
     var it, item;
     var S = Sk.builtin.set.prototype["union"].func_code(self, other);
-    for (it = S.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {
             Sk.builtin.set.prototype["discard"].func_code(S, item);
         }
@@ -216,7 +247,7 @@ Sk.builtin.set.prototype["copy"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) {
     var it, item;
-    for (it = other.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(other), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         Sk.builtin.set.prototype["add"].func_code(self, item);
     }
     return Sk.builtin.none.none$;
@@ -225,7 +256,7 @@ Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) 
 Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (self, other) {
     var i;
     var it, item;
-    for (it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (!Sk.abstr.sequenceContains(arguments[i], item)) {
                 Sk.builtin.set.prototype["discard"].func_code(self, item);
@@ -239,7 +270,7 @@ Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (
 Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (self, other) {
     var i;
     var it, item;
-    for (it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (Sk.abstr.sequenceContains(arguments[i], item)) {
                 Sk.builtin.set.prototype["discard"].func_code(self, item);
@@ -275,7 +306,7 @@ Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
         throw new Sk.builtin.KeyError("pop from an empty set");
     }
 
-    it = self.tp$iter();
+    it = Sk.abstr.iter(self);
     item = it.tp$iternext();
     Sk.builtin.set.prototype["discard"].func_code(self, item);
     return item;

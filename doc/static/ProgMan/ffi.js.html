@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: ffi.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: ffi.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace Sk.ffi
+ *
+ */
+
+Sk.ffi = Sk.ffi || {};
+
+/**
+ * maps from Javascript Object/Array/string to Python dict/list/str.
+ *
+ * only works on basic objects that are being used as storage, doesn't handle
+ * functions, etc.
+ */
+Sk.ffi.remapToPy = function (obj) {
+    var k;
+    var kvs;
+    var i;
+    var arr;
+    if (Object.prototype.toString.call(obj) === "[object Array]") {
+        arr = [];
+        for (i = 0; i &lt; obj.length; ++i) {
+            arr.push(Sk.ffi.remapToPy(obj[i]));
+        }
+        return new Sk.builtin.list(arr);
+    } else if (typeof obj === "object") {
+        kvs = [];
+        for (k in obj) {
+            kvs.push(Sk.ffi.remapToPy(k));
+            kvs.push(Sk.ffi.remapToPy(obj[k]));
+        }
+        return new Sk.builtin.dict(kvs);
+    } else if (typeof obj === "string") {
+        return new Sk.builtin.str(obj);
+    } else if (typeof obj === "number") {
+        return Sk.builtin.assk$(obj);
+    } else if (typeof obj === "boolean") {
+        return obj;
+    }
+    goog.asserts.fail("unhandled remap type " + typeof(obj));
+};
+goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
+
+/**
+ * Maps from Python dict/list/str/number to Javascript Object/Array/string/number.
+ *
+ * If obj is a
+ *
+ * @param obj {Object}  Any Python object (except a function)
+ *
+ */
+Sk.ffi.remapToJs = function (obj) {
+    var i;
+    var kAsJs;
+    var v;
+    var iter, k;
+    var ret;
+    if (obj instanceof Sk.builtin.dict) {
+        ret = {};
+        for (iter = obj.tp$iter(), k = iter.tp$iternext();
+             k !== undefined;
+             k = iter.tp$iternext()) {
+            v = obj.mp$subscript(k);
+            if (v === undefined) {
+                v = null;
+            }
+            kAsJs = Sk.ffi.remapToJs(k);
+            // todo; assert that this is a reasonble lhs?
+            ret[kAsJs] = Sk.ffi.remapToJs(v);
+        }
+        return ret;
+    } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
+        ret = [];
+        for (i = 0; i &lt; obj.v.length; ++i) {
+            ret.push(Sk.ffi.remapToJs(obj.v[i]));
+        }
+        return ret;
+    } else if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    } else if (obj instanceof Sk.builtin.float_) {
+        return Sk.builtin.asnum$(obj);
+    } else if (obj instanceof Sk.builtin.lng) {
+        return Sk.builtin.asnum$(obj);
+    } else if (typeof obj === "number" || typeof obj === "boolean") {
+        return obj;
+    } else {
+        return obj.v;
+    }
+};
+goog.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
+
+Sk.ffi.callback = function (fn) {
+    if (fn === undefined) {
+        return fn;
+    }
+    return function () {
+        return Sk.misceval.apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
+    };
+};
+goog.exportSymbol("Sk.ffi.callback", Sk.ffi.callback);
+
+Sk.ffi.stdwrap = function (type, towrap) {
+    var inst = new type();
+    inst["v"] = towrap;
+    return inst;
+};
+goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
+
+/**
+ * for when the return type might be one of a variety of basic types.
+ * number|string, etc.
+ */
+Sk.ffi.basicwrap = function (obj) {
+    if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (obj instanceof Sk.builtin.float_) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (obj instanceof Sk.builtin.lng) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (typeof obj === "number" || typeof obj === "boolean") {
+        return obj;
+    }
+    if (typeof obj === "string") {
+        return new Sk.builtin.str(obj);
+    }
+    goog.asserts.fail("unexpected type for basicwrap");
+};
+goog.exportSymbol("Sk.ffi.basicwrap", Sk.ffi.basicwrap);
+
+Sk.ffi.unwrapo = function (obj) {
+    if (obj === undefined) {
+        return undefined;
+    }
+    return obj["v"];
+};
+goog.exportSymbol("Sk.ffi.unwrapo", Sk.ffi.unwrapo);
+
+Sk.ffi.unwrapn = function (obj) {
+    if (obj === null) {
+        return null;
+    }
+    return obj["v"];
+};
+goog.exportSymbol("Sk.ffi.unwrapn", Sk.ffi.unwrapn);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu Aug 13 2015 08:14:27 GMT-0500 (CDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

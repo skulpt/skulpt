@@ -1,3 +1,7 @@
+/**
+ * @namespace Sk.misceval
+ *
+ */
 Sk.misceval = {};
 
 /*
@@ -11,6 +15,8 @@ Sk.misceval = {};
 */
 
 /**
+ *
+ * Hi kids lets make a suspension...
  * @constructor
  * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
  * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
@@ -32,6 +38,9 @@ Sk.misceval.Suspension = function Suspension(resume, child, data) {
 goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
 /**
+ *
+ * Well this seems pretty obvious by the name what it should do..
+ *
  * @param{Sk.misceval.Suspension} susp
  * @param{string=} message
  */
@@ -46,11 +55,16 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
 };
 goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
+/**
+ * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
+ * @param o
+ * @returns {boolean}
+ */
 Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__")) {
+    if (Sk.abstr.lookupSpecial(o, "__index__")) {
         return true;
     }
     return false;
@@ -75,7 +89,7 @@ Sk.misceval.asIndex = function (o) {
     if (typeof o === "number") {
         return o;
     }
-    if (o.constructor === Sk.builtin.nmber) {
+    if (o.constructor === Sk.builtin.int_) {
         return o.v;
     }
     if (o.constructor === Sk.builtin.lng) {
@@ -84,11 +98,11 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    idxfn = Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__");
+    idxfn = Sk.abstr.lookupSpecial(o, "__index__");
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + 
+            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
                                            Sk.abstr.typeName(ret) + ")");
         }
         return Sk.builtin.asnum$(ret);
@@ -129,17 +143,14 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
         ihigh = Sk.misceval.asIndex(w) || 1e100;
         if (x === null) {
             Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
-        }
-        else {
+        } else {
             Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
         }
-    }
-    else {
+    } else {
         slice = new Sk.builtin.slice(v, w);
         if (x === null) {
             return Sk.abstr.objectDelItem(u, slice);
-        }
-        else {
+        } else {
             return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
         }
     }
@@ -162,8 +173,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     if (arg instanceof Sk.builtin.set) {
         // this is a Sk.builtin.set
         arg = arg.tp$iter().$obj;
-    }
-    else if (arg instanceof Sk.builtin.dict) {
+    } else if (arg instanceof Sk.builtin.dict) {
         // this is a Sk.builtin.list
         arg = Sk.builtin.dict.prototype["keys"].func_code(arg);
     }
@@ -171,11 +181,10 @@ Sk.misceval.arrayFromArguments = function (args) {
     // shouldn't else if here as the above may output lists to arg.
     if (arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple) {
         return arg.v;
-    }
-    else if (arg.tp$iter !== undefined) {
+    } else if (Sk.builtin.checkIterable(arg)) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
-        for (it = arg.tp$iter(), i = it.tp$iternext();
+        for (it = Sk.abstr.iter(arg), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
             res.push(i);
         }
@@ -211,8 +220,14 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret,
         swapped_method,
         method,
+        swapped_shortcut,
+        shortcut,
+        v_has_shortcut,
+        w_has_shortcut,
         op2method,
-        res,
+        op2shortcut,
+        vcmp,
+        wcmp,
         w_seq_type,
         w_num_type,
         v_seq_type,
@@ -324,10 +339,11 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     // handle identity and membership comparisons
     if (op === "Is") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) === 0) && (v.skType === w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+            return v.numberCompare(w) === 0;
+        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+            return v.numberCompare(w) === 0;
+        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) === 0;
         }
 
@@ -335,10 +351,11 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+            return v.numberCompare(w) !== 0;
+        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+            return v.numberCompare(w) !== 0;
+        }else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -346,23 +363,50 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     if (op === "In") {
-        return Sk.abstr.sequenceContains(w, v);
+        return Sk.misceval.isTrue(Sk.abstr.sequenceContains(w, v));
     }
     if (op === "NotIn") {
-        return !Sk.abstr.sequenceContains(w, v);
+        return !Sk.misceval.isTrue(Sk.abstr.sequenceContains(w, v));
     }
 
+    // Call Javascript shortcut method if exists for either object
 
-    // use comparison methods if they are given for either object
-    if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    op2shortcut = {
+        "Eq"   : "ob$eq",
+        "NotEq": "ob$ne",
+        "Gt"   : "ob$gt",
+        "GtE"  : "ob$ge",
+        "Lt"   : "ob$lt",
+        "LtE"  : "ob$le"
+    };
+
+    shortcut = op2shortcut[op];
+    v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
+    if (v_has_shortcut) {
+        if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
+    w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
+    if (w_has_shortcut) {
+
+        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
+    }
+
+    // use comparison methods if they are given for either object
+    if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
+    }
+
+    if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
@@ -379,66 +423,78 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         "LtE"  : "__le__"
     };
 
-    method = op2method[op];
-    swapped_method = op2method[Sk.misceval.swappedOp_[op]];
-
-    if (v[method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
-        }
-    }
-    else if (w[swapped_method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    method = Sk.abstr.lookupSpecial(v, op2method[op]);
+    if (method && !v_has_shortcut) {
+        ret = Sk.misceval.callsim(method, v, w);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (v["__cmp__"]) {
-        ret = Sk.misceval.callsim(v["__cmp__"], v, w);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        }
-        else if (op === "NotEq") {
-            return ret !== 0;
-        }
-        else if (op === "Lt") {
-            return ret < 0;
-        }
-        else if (op === "Gt") {
-            return ret > 0;
-        }
-        else if (op === "LtE") {
-            return ret <= 0;
-        }
-        else if (op === "GtE") {
-            return ret >= 0;
+    swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    if (swapped_method && !w_has_shortcut) {
+        ret = Sk.misceval.callsim(swapped_method, w, v);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (w["__cmp__"]) {
+    vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
+    if (vcmp) {
+        try {
+            ret = Sk.misceval.callsim(vcmp, v, w);
+            if (Sk.builtin.checkNumber(ret)) {
+                ret = Sk.builtin.asnum$(ret);
+                if (op === "Eq") {
+                    return ret === 0;
+                } else if (op === "NotEq") {
+                    return ret !== 0;
+                } else if (op === "Lt") {
+                    return ret < 0;
+                } else if (op === "Gt") {
+                    return ret > 0;
+                } else if (op === "LtE") {
+                    return ret <= 0;
+                } else if (op === "GtE") {
+                    return ret >= 0;
+                }
+            }
+
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                throw new Sk.builtin.TypeError("comparison did not return an int");
+            }
+        } catch (e) {
+            throw new Sk.builtin.TypeError("comparison did not return an int");
+        }
+    }
+
+    wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
+    if (wcmp) {
         // note, flipped on return value and call
-        ret = Sk.misceval.callsim(w["__cmp__"], w, v);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        }
-        else if (op === "NotEq") {
-            return ret !== 0;
-        }
-        else if (op === "Lt") {
-            return ret > 0;
-        }
-        else if (op === "Gt") {
-            return ret < 0;
-        }
-        else if (op === "LtE") {
-            return ret >= 0;
-        }
-        else if (op === "GtE") {
-            return ret <= 0;
+        try {
+            ret = Sk.misceval.callsim(wcmp, w, v);
+            if (Sk.builtin.checkNumber(ret)) {
+                ret = Sk.builtin.asnum$(ret);
+                if (op === "Eq") {
+                    return ret === 0;
+                } else if (op === "NotEq") {
+                    return ret !== 0;
+                } else if (op === "Lt") {
+                    return ret > 0;
+                } else if (op === "Gt") {
+                    return ret < 0;
+                } else if (op === "LtE") {
+                    return ret >= 0;
+                } else if (op === "GtE") {
+                    return ret <= 0;
+                }
+            }
+
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                throw new Sk.builtin.TypeError("comparison did not return an int");
+            }
+        } catch (e) {
+            throw new Sk.builtin.TypeError("comparison did not return an int");
         }
     }
 
@@ -494,35 +550,30 @@ Sk.misceval.objectRepr = function (v) {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if ((v === null) || (v instanceof Sk.builtin.none)) {
         return new Sk.builtin.str("None");
-    } // todo; these should be consts
-    else if (v === true) {
+    } else if (v === true) {
+        // todo; these should be consts
         return new Sk.builtin.str("True");
-    }
-    else if (v === false) {
+    } else if (v === false) {
         return new Sk.builtin.str("False");
-    }
-    else if (typeof v === "number") {
+    } else if (typeof v === "number") {
         return new Sk.builtin.str("" + v);
-    }
-    else if (!v["$r"]) {
+    } else if (!v["$r"]) {
         if (v.tp$name) {
             return new Sk.builtin.str("<" + v.tp$name + " object>");
         } else {
             return new Sk.builtin.str("<unknown>");
         }
-    }
-    else if (v.constructor === Sk.builtin.nmber) {
+    } else if (v.constructor === Sk.builtin.float_) {
         if (v.v === Infinity) {
             return new Sk.builtin.str("inf");
-        }
-        else if (v.v === -Infinity) {
+        } else if (v.v === -Infinity) {
             return new Sk.builtin.str("-inf");
-        }
-        else {
+        } else {
             return v["$r"]();
         }
-    }
-    else {
+    } else if (v.constructor === Sk.builtin.int_) {
+        return v["$r"]();
+    } else {
         return v["$r"]();
     }
 };
@@ -567,14 +618,11 @@ Sk.misceval.isTrue = function (x) {
     if (x instanceof Sk.builtin.lng) {
         return x.nb$nonzero();
     }
-    if (x.constructor === Sk.builtin.nmber) {
+    if (x.constructor === Sk.builtin.int_) {
         return x.v !== 0;
     }
-    if (x.mp$length) {
-        return x.mp$length() !== 0;
-    }
-    if (x.sq$length) {
-        return x.sq$length() !== 0;
+    if (x.constructor === Sk.builtin.float_) {
+        return x.v !== 0;
     }
     if (x["__nonzero__"]) {
         ret = Sk.misceval.callsim(x["__nonzero__"], x);
@@ -590,13 +638,19 @@ Sk.misceval.isTrue = function (x) {
         }
         return Sk.builtin.asnum$(ret) !== 0;
     }
+    if (x.mp$length) {
+        return Sk.builtin.asnum$(x.mp$length()) !== 0;
+    }
+    if (x.sq$length) {
+        return Sk.builtin.asnum$(x.sq$length()) !== 0;
+    }
     return true;
 };
 goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
-Sk.misceval.print_ = function (x)   // this was function print(x)   not sure why...
-{
+Sk.misceval.print_ = function (x) {
+    // this was function print(x)   not sure why...
     var isspace;
     var s;
     if (Sk.misceval.softspace_) {
@@ -712,7 +766,6 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  *
  * TODO I think all the above is out of date.
  */
-
 Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
@@ -957,8 +1010,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    }
-    else if (typeof func === "function") {
+    } else if (typeof func === "function") {
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
@@ -1014,8 +1066,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         }
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
-    }
-    else {
+    } else {
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {

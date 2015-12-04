@@ -1,4 +1,9 @@
 /**
+ * @namespace Sk.builtin
+ */
+
+
+/**
  * Check arguments to Python functions to ensure the correct number of
  * arguments are passed.
  *
@@ -46,7 +51,6 @@ goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
  * @param {string} exptype string of the expected type name
  * @param {boolean} check truthy if type check passes, falsy otherwise
  */
-
 Sk.builtin.pyCheckType = function (name, exptype, check) {
     if (!check) {
         throw new Sk.builtin.TypeError(name + " must be a " + exptype);
@@ -59,27 +63,49 @@ Sk.builtin.checkSequence = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
+/**
+ * Use this to test whether or not a Python object is iterable.  You should **not** rely
+ * on the presence of tp$iter on the object as a good test, as it could be a user defined
+ * class with `__iter__` defined or ``__getitem__``  This tests for all of those cases
+ *
+ * @param arg {Object}   A Python object
+ * @returns {boolean} true if the object is iterable
+ */
 Sk.builtin.checkIterable = function (arg) {
-    return (arg !== null && arg.tp$iter !== undefined);
+    var ret = false;
+    if (arg !== null ) {
+        try {
+            ret = Sk.abstr.iter(arg);
+            if (ret) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                return false;
+            } else {
+                throw e;
+            }
+        }
+    }
+    return ret;
 };
 goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (arg) {
-    if (typeof arg === "function")
-    {
+    if (typeof arg === "function") {
         return (!(arg instanceof Sk.builtin.none) && (arg.ob$type !== undefined));
-    }
-    else
-    {
+    } else {
         return ((arg.tp$call !== undefined) || (arg.__call__ !== undefined));
     }
 };
 
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number" ||
-        arg instanceof Sk.builtin.nmber ||
-        arg instanceof Sk.builtin.lng ||
-        arg instanceof Sk.builtin.bool));
+        arg instanceof Sk.builtin.int_ ||
+        arg instanceof Sk.builtin.float_ ||
+        arg instanceof Sk.builtin.lng));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -94,16 +120,13 @@ goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.int$) ||
-        arg instanceof Sk.builtin.lng ||
-        arg instanceof Sk.builtin.bool);
+        arg instanceof Sk.builtin.int_ ||
+        arg instanceof Sk.builtin.lng);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg !== null) && (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.float$);
+    return (arg !== null) && (arg instanceof Sk.builtin.float_);
 };
 goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
@@ -134,6 +157,13 @@ goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 /**
  * @constructor
+ * Sk.builtin.func
+ *
+ * @description
+ * This function converts a Javascript function into a Python object that is callable.  Or just
+ * think of it as a Python function rather than a Javascript function now.  This is an important
+ * distinction in skulpt because once you have Python function you cannot just call it.
+ * You must now use Sk.misceval.callsim to call the Python function.
  *
  * @param {Function} code the javascript implementation of this function
  * @param {Object=} globals the globals where this function was defined.
@@ -215,13 +245,11 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
             }
             if (varnames && j !== numvarnames) {
                 args[j] = kw[i + 1];
-            }
-            else if (expectskw) {
+            } else if (expectskw) {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
-            }
-            else {
+            } else {
                 name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
                 throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }

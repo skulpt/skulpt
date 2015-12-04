@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: func</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: func</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="Sk.html">Sk</a><a href="Sk.builtin.html">.builtin</a>.</span>
+        
+        func
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="func"><span class="type-signature"></span>new func<span class="signature">(code, globals<span class="signature-attributes">opt</span>, closure<span class="signature-attributes">opt</span>, closure2<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>This function converts a Javascript function into a Python object that is callable.  Or just
+think of it as a Python function rather than a Javascript function now.  This is an important
+distinction in skulpt because once you have Python function you cannot just call it.
+You must now use Sk.misceval.callsim to call the Python function.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>code</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>the javascript implementation of this function</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>globals</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>the globals where this function was defined.
+Can be undefined (which will be stored as null) for builtins. (is
+that ok?)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>closure</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>dict of free variables</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>closure2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>another dict of free variables that will be
+merged into 'closure'. there's 2 to simplify generated code (one is $free,
+the other is $cell)</p>
+<p>closure is the cell variables from the parent scope that we need to close
+over. closure2 is the free variables in the parent scope that we also might
+need to access.</p>
+<p>NOTE: co_varnames and co_name are defined by compiled code only, so we have
+to access them via dict-style lookup for closure.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="function.js.html">function.js</a>, <a href="function.js.html#line158">line 158</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Thu Aug 13 2015 08:14:27 GMT-0500 (CDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

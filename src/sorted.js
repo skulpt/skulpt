@@ -7,10 +7,9 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
     if (key !== undefined && !(key instanceof Sk.builtin.none)) {
         if (cmp instanceof Sk.builtin.none || cmp === undefined) {
             compare_func = function (a, b) {
-                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.int_(-1) : new Sk.builtin.int_(0);
             };
-        }
-        else {
+        } else {
             compare_func = function (a, b) {
                 return Sk.misceval.callsim(cmp, a[0], b[0]);
             };
@@ -23,8 +22,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             next = iter.tp$iternext();
         }
         list = new Sk.builtin.list(arr);
-    }
-    else {
+    } else {
         if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
             compare_func = cmp;
         }
@@ -33,8 +31,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     if (compare_func !== undefined) {
         list.list_sort_(list, compare_func);
-    }
-    else {
+    } else {
         list.list_sort_(list);
     }
 
@@ -55,6 +52,5 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     return list;
 };
-Sk.builtin.sorted.co_varnames = ["cmp", "key", "reverse"];
-Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
-Sk.builtin.sorted.co_numargs = 4;
+
+/* NOTE: See constants used for kwargs in constants.js */

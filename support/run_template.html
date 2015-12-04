@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    %(scripts)s
+    <script src="skulpt-stdlib.js" type="text/javascript"></script>
+
+</head>
+<body>
+<h1>In Browser Testing Page</h1>
+<p>Open the Javascript Console and click the run button.</p>
+<p>Remember that you can add a debugger statement to your Python below or in the Skulpt Javascript.</p>
+
+<script type="text/javascript">
+function outf(text) {
+   var mypre = document.getElementById(Sk.pre);
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+function showjs(text) {
+   var mypre = document.getElementById("runbrowser_jsout");
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+
+function builtinRead(x)
+{
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+function runit(myDiv) {
+   var prog = document.getElementById(myDiv+"_code").value;
+   var mypre = document.getElementById(myDiv+"_pre");
+   mypre.innerHTML = '';
+   Sk.canvas = myDiv+"_canvas";
+    var can = document.getElementById(Sk.canvas);
+    can.style.display = 'block';
+    if (can) {
+        can.width = can.width;
+        if (Sk.tg) {
+            Sk.tg.canvasInit = false;
+            Sk.tg.turtleList = [];
+        }
+    }
+
+   Sk.pre = myDiv+"_pre";
+   Sk.configure({output:outf,
+  	        read: builtinRead,
+            debugout: showjs,
+              });
+       var myPromise = Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody("<stdin>",true,prog,true);
+       });
+       myPromise.then(function(mod) {}, function(err) {
+           console.log(err.toString());
+            });
+}
+</script>
+<h3>Test Code</h3>
+<div id="runbrowser">
+<form>
+<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="15">
+%(code)s
+</textarea>
+<button onclick="runit('runbrowser')" type="button">Run</button>
+</form>
+
+<h3>Canvas</h3>
+<div id="runbrowser_canvas" height="500" width="800"
+	style="border-style: solid; display: none"></div>
+
+<h3>Output</h3>
+<pre id="runbrowser_pre" style="background-color: #dddddd"></pre>
+
+<h3>Compiled To Javascript</h3>
+<pre id="runbrowser_jsout"></pre>
+
+</div>
+</body>
+</html>

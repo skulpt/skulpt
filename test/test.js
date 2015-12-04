@@ -450,7 +450,13 @@ function testsMain()
     if (!Sk.inBrowser) {
         promise.then(function(x) {
             print("Quitting");
-            quit(tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
+
+            var exitCode = tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail;
+            if (exitCode > 0) {
+                quit(exitCode);
+            }
+
+            // Do not quit if success; may prevent other scripts from running after this one
         });
     }
 }
