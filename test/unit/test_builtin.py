@@ -235,6 +235,19 @@ class BuiltinTest(unittest.TestCase):
             raise RuntimeError
         self.assertRaises(RuntimeError, map, badfunc, range(5))
 
+    def test_abs(self):
+        class TestAbs:
+
+            def __init__(self):
+                self.foo = -3
+
+            def __abs__(self):
+                return -self.foo
+
+        bar = TestAbs()
+        self.assertEqual(abs(bar), 3)
+        self.assertEqual(abs(-3), 3)
+
     def test_reduce(self):
         add = lambda x, y: x+y
         self.assertEqual(reduce(add, ['a', 'b', 'c'], ''), 'abc')

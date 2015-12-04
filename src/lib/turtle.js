@@ -1097,6 +1097,42 @@ function generateTurtleModule(_target) {
         };
         proto.$getscreen.isSk = true;
 
+        proto.$clone = function() {
+
+            var newTurtleInstance = Sk.misceval.callsimOrSuspend(_module.Turtle);
+
+            // All the properties that are in getState()
+            newTurtleInstance.instance._x = this._x;
+            newTurtleInstance.instance._y = this._y;
+            newTurtleInstance.instance._angle = this._angle;
+            newTurtleInstance.instance._radians = this._radians;
+            newTurtleInstance.instance._shape = this._shape;
+            newTurtleInstance.instance._color = this._color;
+            newTurtleInstance.instance._fill = this._fill;
+            newTurtleInstance.instance._filling = this._filling;
+            newTurtleInstance.instance._size = this._size;
+            newTurtleInstance.instance._computed_speed = this._computed_speed;
+            newTurtleInstance.instance._down = this._down;
+            newTurtleInstance.instance._shown = this._shown;
+
+            // Other properties to copy
+            newTurtleInstance.instance._isRadians = this._isRadians;
+            newTurtleInstance.instance._fullCircle = this._fullCircle;
+            newTurtleInstance.instance._bufferSize = this._bufferSize;
+            console.log(this._undoBuffer);
+            newTurtleInstance.instance._undoBuffer = this._undoBuffer;
+            console.log(newTurtleInstance.instance._undoBuffer);
+
+
+            newTurtleInstance._clonedFrom = this;
+
+            return newTurtleInstance;
+        };
+        proto.$clone.returnType = function(value) {
+            // When I return the instance here, I'm not sure if it ends up with the right "Turtle" python type.
+            return value
+        };
+
         proto.$getturtle = proto.$getpen = function() {
             return this.skInstance;
         };
@@ -1427,6 +1463,7 @@ function generateTurtleModule(_target) {
                         // trigger the intial keydown handler
                         self._keyListeners[key]();
                         self._createKeyRepeater(key, code);
+                        e.preventDefault();
                         break;
                     }
                 }
@@ -1443,6 +1480,7 @@ function generateTurtleModule(_target) {
             this._keyUpListener = function(e) {
                 var interval = self._keyLogger[e.charCode || e.keyCode];
                 if (interval !== undefined) {
+                    e.preventDefault();
                     window.clearInterval(interval);
                     window.clearTimeout(interval);
                     delete(self._keyLogger[e.charCode || e.keyCode]);
@@ -2236,9 +2274,24 @@ function generateTurtleModule(_target) {
         TURTLE_COUNT         = 0;
     }
 
+    function stopTurtle() {
+        cancelAnimationFrame();
+
+        if (_mouseHandler) {
+            _mouseHandler.reset();
+        }
+
+        _durationSinceRedraw = 0;
+        _screenInstance      = undefined;
+        _anonymousTurtle     = undefined;
+        _mouseHandler        = undefined;
+        TURTLE_COUNT         = 0;
+    }
+
     return {
         skModule : _module,
         reset    : resetTurtle,
+        stop     : stopTurtle,
         focus    : focusTurtle,
         Turtle   : Turtle,
         Screen   : Screen
@@ -2258,6 +2311,7 @@ else {
 
 Sk.TurtleGraphics.module = currentTarget.turtleInstance.skModule;
 Sk.TurtleGraphics.reset  = currentTarget.turtleInstance.reset;
+Sk.TurtleGraphics.stop   = currentTarget.turtleInstance.stop;
 Sk.TurtleGraphics.focus  = currentTarget.turtleInstance.focus;
 Sk.TurtleGraphics.raw = {
     Turtle : currentTarget.turtleInstance.Turtle,

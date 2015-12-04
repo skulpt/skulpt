@@ -187,7 +187,7 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     for (k in this) {
         if (this.hasOwnProperty(k)) {
             bucket = this[k];
-            if (bucket && bucket.$hash !== undefined) {
+            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
                 // skip internal stuff. todo; merge pyobj and this
                 for (i = 0; i < bucket.items.length; i++) {
                     allkeys.push(bucket.items[i].lhs);
