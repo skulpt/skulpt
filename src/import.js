@@ -364,6 +364,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
         external = Sk.loadExternalLibrary(name);
         if (external) {
             co = external;
+            if (Sk.externalLibraries) {
+                filename = Sk.externalLibraries[name].path; // get path from config
+            } else {
+                filename = "unknown";
+            }
+            // ToDo: check if this is a dotted name or import from ...
         } else {
             // Try loading as a builtin (i.e. already in JS) module, then try .py files
             codeAndPath = Sk.importSearchPathForName(name, ".js", true, canSuspend);
@@ -376,6 +382,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                     isPy = true;
                     return compileReadCode(Sk.importSearchPathForName(name, ".py", false, canSuspend));
                 } else {
+                    filename = codeAndPath.filename;
                     return isPy ? Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend)
                         : { funcname: "$builtinmodule", code: codeAndPath.code };
                 }
@@ -391,6 +398,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
 
         module.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
+
+        if (filename == null) {
+            filename = co.filename;
+        }
+
         if (Sk.dateSet == null || !Sk.dateSet) {
             finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
             Sk.dateSet = true;
@@ -443,6 +455,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             if (!modlocs["__name__"]) {
                 modlocs["__name__"] = new Sk.builtin.str(modname);
             }
+
+            modlocs["__path__"] = new Sk.builtin.str(filename);
 
             module["$d"] = modlocs;
             
@@ -537,7 +551,25 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         }
         if (!fromlist || fromlist.length === 0) {
             return ret;
+        } else {
+            // try to load the module from the file system if it is not present on the module itself
+            var i;
+            var fromNameRet; // module returned
+            var fromName; // name of current module for fromlist
+            var fromImportName; // dotted name
+            var dottedName = name.split("."); // get last module in dotted path
+            dottedName = dottedName[dottedName.length-1];
+            for (i = 0; i < fromlist.length; i++) {
+                fromName = fromlist[i];
+                if (fromName != "*" && ret.$d[fromName] == null && (ret.$d[dottedName] != null || ret.$d.__name__.v == dottedName)) {
+                    // add the module name to our requiredImport list
+                    fromImportName = "" + name + "." + fromName;
+                    fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true);
+                    ret["$d"][fromName] = fromNameRet;
+                }
+            }
         }
+
         // if there's a fromlist we want to return the actual module, not the
         // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
