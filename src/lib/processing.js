@@ -25,6 +25,7 @@ var $builtinmodule = function (name) {
     var mod = {};
     var imList = [];
     var looping = true;
+    var instance = null;
 
     // We need this to store a reference to the actual processing object which is not created
     // until the run function is called.  Even then the processing object is passed by the
@@ -1548,6 +1549,11 @@ var $builtinmodule = function (name) {
         window.Processing.logger = { log : function(message) {
             Sk.misceval.print_(message);
         }};
+        // if a Processing instance already exists it's likely still running, stop it by exiting
+        instance = window.Processing.getInstanceById(Sk.canvas);
+        if (instance) {
+            instance.exit();
+        }
         mod.p = new window.Processing(canvas, sketchProc);
 
 
