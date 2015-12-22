@@ -80,13 +80,19 @@ $builtinmodule = function (name) {
             // if imageId is the name of an image file prepend http://host/app/book/_static/
             // if image proxy server is configured construct url for proxy
             // return the final URL
+
+            var proxy = typeof(Sk.imageProxy) === "function"
+                        ? Sk.imageProxy : function (str) {
+                            return Sk.imageProxy + "/" + str;
+                        };
+
             var url;
             var ret;
             ret = Sk.ffi.remapToJs(imageId);
             url = document.createElement("a");
             url.href = ret;
             if (window.location.host !== url.host) {
-                ret = Sk.imageProxy + "/" + ret;
+                ret = proxy(ret);
             }
             return ret;
         };
