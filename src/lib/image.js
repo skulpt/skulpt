@@ -83,17 +83,18 @@ $builtinmodule = function (name) {
 
             var proxy = typeof(Sk.imageProxy) === "function"
                         ? Sk.imageProxy : function (str) {
-                            return Sk.imageProxy + "/" + str;
+                            url = document.createElement("a");
+                            url.href = ret;
+                            if (window.location.host !== url.host) {
+                              return Sk.imageProxy + "/" + str;
+                            } 
+                            return str;
                         };
 
             var url;
             var ret;
             ret = Sk.ffi.remapToJs(imageId);
-            url = document.createElement("a");
-            url.href = ret;
-            if (window.location.host !== url.host) {
-                ret = proxy(ret);
-            }
+            ret = proxy(ret);
             return ret;
         };
 
@@ -378,7 +379,7 @@ $builtinmodule = function (name) {
         });
 
         $loc.__str__ = new Sk.builtin.func(function (self) {
-            return "[" + self.red + "," + self.green + "," + self.blue + "]";
+            return Sk.ffi.remapToPy("[" + self.red + "," + self.green + "," + self.blue + "]");
         });
 
         //getColorTuple
