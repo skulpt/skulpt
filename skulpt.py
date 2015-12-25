@@ -203,7 +203,7 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test(debug_mode=False):
+def test(debug_mode=False,options=None):
     """runs the unit tests."""
     if debug_mode:
         debugon = "--debug-mode"
@@ -713,7 +713,7 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    ret = test()
+    ret = test(options=options)
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
@@ -745,7 +745,7 @@ def dist(options):
     if ret != 0:
         print "Tests failed on compressed version."
         sys.exit(1)
-    ret = rununits(opt=True)
+    ret = rununits(opt=True,options=options)
     if ret != 0:
         print "Tests failed on compressed unit tests"
         sys.exit(1)
@@ -1018,7 +1018,7 @@ def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
+def rununits(opt=False, p3=False,options=None):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1066,7 +1066,7 @@ Sk.importMain("%s", false);
     print "Summary"
     print "Passed: %5d Failed %5d" % (passTot, failTot)
 
-    if failTot != 0:
+    if failTot != 0 and (not options or not options.ignoreunits):
         return -1
     else:
         return 0
@@ -1234,6 +1234,7 @@ def main():
         dest="verbose",
         default=False,
         help="Make output more verbose [default]")
+    parser.add_option("-i", "--ignoreunits", action="store_true", dest="ignoreunits", default=False)
     (options, args) = parser.parse_args()
 
     # This is rather aggressive. Do we really want it?
@@ -1249,7 +1250,7 @@ def main():
         cmd = sys.argv[1]
 
     if cmd == "test":
-        test()
+        test(options=options)
     elif cmd == "testdebug":
         test(True)
     elif cmd == "dist":
@@ -1272,7 +1273,7 @@ def main():
     elif cmd == "brun":
         run_in_browser(sys.argv[2],options)
     elif cmd == 'rununits':
-        rununits()
+        rununits(options=options)
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "run3":
