@@ -670,9 +670,7 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
     if (mode === undefined) {
         mode = new Sk.builtin.str("r");
     }
-    if (mode.v !== "r" && mode.v !== "rb") {
-        throw "todo; haven't implemented non-read opens";
-    }
+
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
@@ -802,33 +800,10 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 };
 
 Sk.builtin.raw_input = function (prompt) {
-    var x, resolution, susp;
-
-    prompt = prompt ? prompt.v : "";
-    x = Sk.inputfun(prompt);
-
-    if (x instanceof Promise) {
-        susp = new Sk.misceval.Suspension();
-
-        susp.resume = function() {
-            return new Sk.builtin.str(resolution);
-        };
-
-        susp.data = {
-            type: "Sk.promise",
-            promise: x.then(function(value) {
-                resolution = value;
-                return value;
-            }, function(err) {
-                resolution = "";
-                return err;
-            })
-        };
-
-        return susp;
-    } else {
-        return new Sk.builtin.str(x);
-    }
+    var sys = Sk.importModule("sys");
+    Sk.misceval.apply(sys.$d.stdout.write, undefined, undefined, undefined, [sys.$d.stdout, prompt]);
+    //Sk.misceval(sys.$d.stdout.write, prompt);
+    return Sk.misceval.apply(sys.$d.stdin.readline, undefined, undefined, undefined, [sys.$d.stdin]);
 };
 
 Sk.builtin.input = Sk.builtin.raw_input;
