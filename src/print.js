@@ -73,7 +73,7 @@ var print_f = function function_print(kwa) {
         Sk.misceval.callsim(kw_list.file.write, kw_list.file, new Sk.builtin.str(s)); // callsim to write function
     } else {
         var sys = Sk.importModule("sys");
-        Sk.misceval.apply(sys.$d.stdout.write, undefined, undefined, undefined, [sys.$d.stdout, new Sk.builtin.str(s)]);
+        Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
     }
 
     // ToDo:

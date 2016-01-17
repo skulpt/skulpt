@@ -28,10 +28,6 @@ Notes:
   bytes that occupy space in the buffer.
 - There's a simple test set (see end of this file).
 """
-try:
-    from errno import EINVAL
-except ImportError:
-    EINVAL = 22
 
 __all__ = ["StringIO"]
 
@@ -53,7 +49,7 @@ class StringIO:
     """
     def __init__(self, buf = ''):
         # Force self.buf to be a string or unicode
-        if not isinstance(buf, basestring):
+        if not isinstance(buf, str):
             buf = str(buf)
         self.buf = buf
         self.len = len(buf)
@@ -200,7 +196,7 @@ class StringIO:
         if size is None:
             size = self.pos
         elif size < 0:
-            raise IOError(EINVAL, "Negative size not allowed")
+            raise IOError(22, "Negative size not allowed")
         elif size < self.pos:
             self.pos = size
         self.buf = self.getvalue()[:size]
@@ -214,7 +210,7 @@ class StringIO:
         _complain_ifclosed(self.closed)
         if not s: return
         # Force s to be a string or unicode
-        if not isinstance(s, basestring):
+        if not isinstance(s, str):
             s = str(s)
         spos = self.pos
         slen = self.len

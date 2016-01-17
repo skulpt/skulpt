@@ -1,1 +1,1 @@
-#dud
+import StringIO

@@ -17,15 +17,15 @@ Sk.builtin.file = function (name, mode, buffering) {
     this.closed = false;
 
     if (this.name === "/dev/stdout") {
-        this.data$ == Sk.builtin.none.$none;
-        this.fileno = 1
+        this.data$ = Sk.builtin.none.none$;
+        this.fileno = 1;
     } else if (this.name === "/dev/stdin") {
-        this.fileno = 0
+        this.fileno = 0;
     } else if (this.name === "/dev/stderr") {
-        this.fileno = 2
+        this.fileno = 2;
     } else {
         if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
-            this.fileno = 10
+            this.fileno = 10;
             elem = document.getElementById(name.v);
             if (elem == null) {
                 throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
@@ -162,8 +162,8 @@ Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size
 });
 
 Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, sizehint) {
-    if (fileno === 0) {
-        return Sk.builtin.NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
+    if (self.fileno === 0) {
+        return new Sk.builtin.NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
     }
 
     var i;
