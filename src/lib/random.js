@@ -414,6 +414,15 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.exp(normalSample(mu, sigma)));
     });
 
+    mod.expovariate = new Sk.builtin.func(function (lambd) {
+        Sk.builtin.pyCheckArgs("expovariate", arguments, 1, 1);
+
+        lambd = Sk.builtin.asnum$(lambd);
+
+        var rnd = myGenerator.genrand_res53();
+        return new Sk.builtin.float_(-Math.log(rnd)/lambd);
+    });
+
     mod.choice = new Sk.builtin.func(function (seq) {
         Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
         Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
