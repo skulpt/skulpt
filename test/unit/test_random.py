@@ -16,8 +16,8 @@ class Test_Distributions(unittest.TestCase):
         N = 5000
         x = [i/float(N) for i in xrange(1,N)]
         for variate, args, mu, sigmasqrd in [
-                (random.uniform, (1.0,10.0), (10.0+1.0)/2, (10.0-1.0)**2/12) #,
-#                 (g.triangular, (0.0, 1.0, 1.0/3.0), 4.0/9.0, 7.0/9.0/18.0),
+                (random.uniform, (1.0,10.0), (10.0+1.0)/2, (10.0-1.0)**2/12),
+                (random.triangular, (0.0, 1.0, 1.0/3.0), 4.0/9.0, 7.0/9.0/18.0) #,
 #                 (g.expovariate, (1.5,), 1/1.5, 1/1.5**2),
 #                 (g.paretovariate, (5.0,), 5.0/(5.0-1),
 #                                   5.0/((5.0-1)**2*(5.0-2))),
