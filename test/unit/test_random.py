@@ -21,6 +21,7 @@ class Test_Distributions(unittest.TestCase):
                 (random.gauss, (-5.0,2.0), -5.0, 2.0**2),
                 (random.normalvariate, (2.0,0.8), 2.0, 0.8**2),
                 (random.lognormvariate, (-1.0,0.5), exp(-1.0 + 0.5**2)/2.0, (exp(0.5**2) - 1) * exp(-2.0 + 0.5**2)),
+                (random.expovariate, (0.4,), 1.0/0.4, 1.0/0.4**2),
                 (random.triangular, (0.0, 1.0, 1.0/3.0), 4.0/9.0, 7.0/9.0/18.0) #,
 #                 (g.expovariate, (1.5,), 1/1.5, 1/1.5**2),
 #                 (g.paretovariate, (5.0,), 5.0/(5.0-1),
