@@ -370,13 +370,8 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(sample);
     });
 
-    mod.gauss = new Sk.builtin.func(function (mu, sigma) {
-        Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
-
+    var normalSample = function(mu, sigma) {
         var r1, r2, u, v, s;
-
-        mu = Sk.builtin.asnum$(mu);
-        sigma = Sk.builtin.asnum$(sigma);
 
         // Box-Muller transform
         // (https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform)
@@ -396,10 +391,28 @@ var $builtinmodule = function (name) {
             nextNormalSample = u * Math.sin(v);
         }
 
-        return new Sk.builtin.float_(mu + sigma*s);
+        return mu + sigma*s;
+    };
+    
+    mod.gauss = new Sk.builtin.func(function (mu, sigma) {
+        Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
+
+        mu = Sk.builtin.asnum$(mu);
+        sigma = Sk.builtin.asnum$(sigma);
+
+        return new Sk.builtin.float_(normalSample(mu, sigma));
     });
 
     mod.normalvariate = mod.gauss;
+
+    mod.lognormvariate = new Sk.builtin.func(function (mu, sigma) {
+        Sk.builtin.pyCheckArgs("lognormvariate", arguments, 2, 2);
+
+        mu = Sk.builtin.asnum$(mu);
+        sigma = Sk.builtin.asnum$(sigma);
+
+        return new Sk.builtin.float_(Math.exp(normalSample(mu, sigma)));
+    });
 
     mod.choice = new Sk.builtin.func(function (seq) {
         Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
