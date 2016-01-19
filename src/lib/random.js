@@ -224,6 +224,7 @@ var $builtinmodule = function (name) {
     var mod = {};
 
     var myGenerator = new MersenneTwister();
+    var nextNormalSample = undefined;
 
     mod.seed = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
@@ -368,6 +369,37 @@ var $builtinmodule = function (name) {
 
         return new Sk.builtin.float_(sample);
     });
+
+    mod.gauss = new Sk.builtin.func(function (mu, sigma) {
+        Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
+
+        var r1, r2, u, v, s;
+
+        mu = Sk.builtin.asnum$(mu);
+        sigma = Sk.builtin.asnum$(sigma);
+
+        // Box-Muller transform
+        // (https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform)
+        // generates two independent samples from a Gaussian
+        // distribution. Return one of them and store the another one
+        // and return it next time.
+
+        if (nextNormalSample !== undefined) {
+            s = nextNormalSample;
+            nextNormalSample = undefined;
+        } else {
+            r1 = myGenerator.genrand_res53();
+            r2 = myGenerator.genrand_res53();
+            u = Math.sqrt(-2*Math.log(r1));
+            v = 2*Math.PI*r2;
+            s = u * Math.cos(v);
+            nextNormalSample = u * Math.sin(v);
+        }
+
+        return new Sk.builtin.float_(mu + sigma*s);
+    });
+
+    mod.normalvariate = mod.gauss;
 
     mod.choice = new Sk.builtin.func(function (seq) {
         Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
