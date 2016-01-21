@@ -65,8 +65,6 @@ class IterInheritsTestCase(unittest.TestCase):
 
     def test_explicit_not_reversed(self):
         a = list(range(20))
-        # r = sorted(a,reverse=False)
-        # self.assertEqual(list(r), list(a)))
         r = sorted(a,reverse=False)
         self.assertEqual(r, a)
 
