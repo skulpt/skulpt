@@ -343,6 +343,8 @@ var $builtinmodule = function (name) {
 
     mod.triangular = new Sk.builtin.func(function (low, high, mode) {
         Sk.builtin.pyCheckArgs("triangular", arguments, 2, 3);
+        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
+        Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
 
         var rnd, sample, swap;
 
@@ -353,9 +355,10 @@ var $builtinmodule = function (name) {
             low = high;
             high = swap;
         }
-        if (mode === undefined) {
+        if ((mode === undefined) || (mode instanceof Sk.builtin.none)) {
             mode = (high - low)/2.0;
         } else {
+            Sk.builtin.pyCheckType("mode", "number", Sk.builtin.checkNumber(mode));
             mode = Sk.builtin.asnum$(mode);
         }
 
@@ -396,6 +399,8 @@ var $builtinmodule = function (name) {
     
     mod.gauss = new Sk.builtin.func(function (mu, sigma) {
         Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
+        Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
+        Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
         mu = Sk.builtin.asnum$(mu);
         sigma = Sk.builtin.asnum$(sigma);
@@ -403,10 +408,15 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(normalSample(mu, sigma));
     });
 
+    // CPython uses a different (slower but thread-safe) algorithm for
+    // normalvariate. We use the same algorithm for normalvariate and
+    // gauss.
     mod.normalvariate = mod.gauss;
 
     mod.lognormvariate = new Sk.builtin.func(function (mu, sigma) {
         Sk.builtin.pyCheckArgs("lognormvariate", arguments, 2, 2);
+        Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
+        Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
         mu = Sk.builtin.asnum$(mu);
         sigma = Sk.builtin.asnum$(sigma);
@@ -416,6 +426,7 @@ var $builtinmodule = function (name) {
 
     mod.expovariate = new Sk.builtin.func(function (lambd) {
         Sk.builtin.pyCheckArgs("expovariate", arguments, 1, 1);
+        Sk.builtin.pyCheckType("lambd", "number", Sk.builtin.checkNumber(lambd));
 
         lambd = Sk.builtin.asnum$(lambd);
 
