@@ -1,6 +1,6 @@
 import random 
 import unittest
-from math import exp
+from math import exp, sqrt
 
 class Test_Distributions(unittest.TestCase):
     def test_seeding(self):
@@ -44,6 +44,67 @@ class Test_Distributions(unittest.TestCase):
             # Reduced precision from two to zero decimal places
             self.assertAlmostEqual(s1/N, mu, 0)
             self.assertAlmostEqual(s2/(N-1), sigmasqrd, 0)
-        
+
+    def test_sample_frequency(self):
+        N = 1000
+        population = [-2, -1, 0, 1, 2]
+        hist = {}
+        for i in xrange(N):
+            sampled = random.sample(population, 2)
+            key = ','.join(str(x) for x in sampled)
+            hist[key] = hist.get(key, 0) + 1
+
+        # There are m * (m-1) ways to pick an ordered pair. The
+        # observed number of occurrences of a pair follows a
+        # Binomial(N, 1/(m*(m-1))) distribution.
+        m = len(population)
+        p = 1.0 / (m*(m-1))
+        mean = N*p
+        stddev = sqrt(N*p*(1-p))
+        low = mean - 4*stddev
+        high = mean + 4*stddev
+
+        for a in population:
+            for b in population:
+                if a != b:
+                    key = '%s,%s' % (a, b)
+                    observed = hist.get(key, 0)
+                    self.assertLess(low, observed, 'Sample %s' % key)
+                    self.assertGreater(high, observed, 'Sample %s' % key)
+
+    def test_sample_tuple(self):
+        population = (1, 2, 3, 4)
+        sampled = random.sample(population, 3)
+        self.assertEqual(len(sampled), 3)
+        for x in sampled:
+            self.assertIn(x, population)
+
+    def test_sample_set(self):
+        population = set(range(20))
+        sampled = random.sample(population, 10)
+        self.assertEqual(len(sampled), 10)
+        for x in sampled:
+            self.assertIn(x, population)
+
+    def test_sample_dict(self):
+        population = {"one": 1, "two": 2, "three": 3}
+        sampled = random.sample(population, 2)
+        self.assertEqual(len(sampled), 2)
+        for x in sampled:
+            self.assertIn(x, population.keys())
+
+    def test_sample_empty(self):
+        sampled = random.sample([], 0)
+        self.assertEqual(sampled, [])
+
+    def test_sample_all(self):
+        population = "ABCDEF"
+        sampled = random.sample(population, len(population))
+        self.assertEqual(set(sampled), set(population))
+
+    def test_sample_one_too_many(self):
+        self.assertRaises(ValueError, random.sample, range(4), 5)
+
+
 if __name__ == '__main__':
     unittest.main() 

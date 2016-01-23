@@ -471,5 +471,55 @@ var $builtinmodule = function (name) {
         return Sk.builtin.none.none$;
     });
 
+    mod.sample = new Sk.builtin.func(function (population, k) {
+        var i, j, iter, elem, reservoir;
+
+        Sk.builtin.pyCheckArgs("sample", arguments, 2, 2);
+        Sk.builtin.pyCheckType("population", "iterable", Sk.builtin.checkIterable(population));
+        Sk.builtin.pyCheckType("k", "integer", Sk.builtin.checkInt(k));
+        k = Sk.builtin.asnum$(k);
+        
+        // "Algorithm R" in
+        // https://en.wikipedia.org/wiki/Reservoir_sampling
+        //
+        // This algorithm guarantees that each element has
+        // equal probability of being included in the
+        // resulting list. See the Wikipedia page for a proof.
+        //
+        // This requires no extra space but the runtime is
+        // proportional to len(population). CPython implements a fast
+        // path for the case when k is much smaller than
+        // len(population). A similar optimization could be
+        // implemented here.
+        reservoir = [];
+        iter = Sk.abstr.iter(population);
+        for (i = 0, elem = iter.tp$iternext();
+             elem !== undefined;
+             i++, elem = iter.tp$iternext()) {
+            j = Math.floor(myGenerator.genrand_res53() * (i + 1));
+            if (i < k) {
+                // Fill the reservoir
+                if (j < i) {
+                    // Shuffle the existing elements to ensure that
+                    // subslices are valid random samples
+                    reservoir[i] = reservoir[j];
+                }
+                reservoir[j] = elem;
+            } else {
+                // Replace elements with a probability that decreases
+                // the further we get
+                if (j < k) {
+                    reservoir[j] = elem;
+                }
+            }
+        }
+        
+        if (i < k) {
+            throw new Sk.builtin.ValueError("sample larger than population");
+        }
+
+        return Sk.builtin.list(reservoir);
+    });
+
     return mod;
 }
