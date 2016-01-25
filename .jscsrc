@@ -11,7 +11,6 @@
         "try",
         "catch"
     ],
-    "requireSemicolons": true,
     "disallowNewlineBeforeBlockStatements": true,
     "disallowKeywordsOnNewLine": [
         "else"
