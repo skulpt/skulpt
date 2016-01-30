@@ -213,7 +213,7 @@ Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
             if (self.fileno === 1) {
                 Sk.output(Sk.ffi.remapToJs(str));
             } else {
-              Sk.filewrite(self, str);
+                Sk.filewrite(self, str);
             }
         } else {
             if (self.fileno === 1) {
