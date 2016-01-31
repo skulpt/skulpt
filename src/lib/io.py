@@ -1,1 +1,1 @@
-raise NotImplementedError("io is not yet implemented in Skulpt")
+raise NotImplementedError("uu is not yet implemented in Skulpt")

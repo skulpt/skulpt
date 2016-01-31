@@ -660,7 +660,8 @@ Sk.misceval.print_ = function (x) {
         Sk.misceval.softspace_ = false;
     }
     s = new Sk.builtin.str(x);
-    Sk.output(s.v);
+    var sys = Sk.importModule("sys");
+    Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
     isspace = function (c) {
         return c === "\n" || c === "\t" || c === "\r";
     };

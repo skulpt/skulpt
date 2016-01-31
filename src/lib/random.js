@@ -224,6 +224,7 @@ var $builtinmodule = function (name) {
     var mod = {};
 
     var myGenerator = new MersenneTwister();
+    var nextNormalSample = undefined;
 
     mod.seed = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
@@ -338,6 +339,99 @@ var $builtinmodule = function (name) {
         var rnd = myGenerator.genrand_res53();
         c = a + rnd * (b - a)
         return new Sk.builtin.float_(c);
+    });
+
+    mod.triangular = new Sk.builtin.func(function (low, high, mode) {
+        Sk.builtin.pyCheckArgs("triangular", arguments, 2, 3);
+        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
+        Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+
+        var rnd, sample, swap;
+
+        low = Sk.builtin.asnum$(low);
+        high = Sk.builtin.asnum$(high);
+        if (low > high) {
+            swap = low;
+            low = high;
+            high = swap;
+        }
+        if ((mode === undefined) || (mode instanceof Sk.builtin.none)) {
+            mode = (high - low)/2.0;
+        } else {
+            Sk.builtin.pyCheckType("mode", "number", Sk.builtin.checkNumber(mode));
+            mode = Sk.builtin.asnum$(mode);
+        }
+
+        // https://en.wikipedia.org/wiki/Triangular_distribution
+        rnd = myGenerator.genrand_res53();
+        if (rnd < (mode - low)/(high - low)) {
+            sample = low + Math.sqrt(rnd * (high - low) * (mode - low));
+        } else {
+            sample = high - Math.sqrt((1 - rnd) * (high - low) * (high - mode));
+        }
+
+        return new Sk.builtin.float_(sample);
+    });
+
+    var normalSample = function(mu, sigma) {
+        var r1, r2, u, v, s;
+
+        // Box-Muller transform
+        // (https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform)
+        // generates two independent samples from a Gaussian
+        // distribution. Return one of them and store the another one
+        // and return it next time.
+
+        if (nextNormalSample !== undefined) {
+            s = nextNormalSample;
+            nextNormalSample = undefined;
+        } else {
+            r1 = myGenerator.genrand_res53();
+            r2 = myGenerator.genrand_res53();
+            u = Math.sqrt(-2*Math.log(r1));
+            v = 2*Math.PI*r2;
+            s = u * Math.cos(v);
+            nextNormalSample = u * Math.sin(v);
+        }
+
+        return mu + sigma*s;
+    };
+    
+    mod.gauss = new Sk.builtin.func(function (mu, sigma) {
+        Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
+        Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
+        Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
+
+        mu = Sk.builtin.asnum$(mu);
+        sigma = Sk.builtin.asnum$(sigma);
+
+        return new Sk.builtin.float_(normalSample(mu, sigma));
+    });
+
+    // CPython uses a different (slower but thread-safe) algorithm for
+    // normalvariate. We use the same algorithm for normalvariate and
+    // gauss.
+    mod.normalvariate = mod.gauss;
+
+    mod.lognormvariate = new Sk.builtin.func(function (mu, sigma) {
+        Sk.builtin.pyCheckArgs("lognormvariate", arguments, 2, 2);
+        Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
+        Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
+
+        mu = Sk.builtin.asnum$(mu);
+        sigma = Sk.builtin.asnum$(sigma);
+
+        return new Sk.builtin.float_(Math.exp(normalSample(mu, sigma)));
+    });
+
+    mod.expovariate = new Sk.builtin.func(function (lambd) {
+        Sk.builtin.pyCheckArgs("expovariate", arguments, 1, 1);
+        Sk.builtin.pyCheckType("lambd", "number", Sk.builtin.checkNumber(lambd));
+
+        lambd = Sk.builtin.asnum$(lambd);
+
+        var rnd = myGenerator.genrand_res53();
+        return new Sk.builtin.float_(-Math.log(rnd)/lambd);
     });
 
     mod.choice = new Sk.builtin.func(function (seq) {

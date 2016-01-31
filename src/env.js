@@ -60,7 +60,7 @@ Sk.configure = function (options) {
 
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
-
+    
     Sk.retainGlobals = options["retainglobals"] || false;
     goog.asserts.assert(typeof Sk.retainGlobals === "boolean");
 

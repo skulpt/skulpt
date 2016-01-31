@@ -61,9 +61,14 @@ var $builtinmodule = function (name) {
     });
 
     sys.debug = new Sk.builtin.func(function () {
-        debugger;
         return Sk.builtin.none.none$;
     });
+
+    sys.__stdout__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdout"), new Sk.builtin.str("w"));
+    sys.__stdin__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdin"), new Sk.builtin.str("r"));
+
+    sys.stdout = sys.__stdout__;
+    sys.stdin = sys.__stdin__;
 
     return sys;
 };
