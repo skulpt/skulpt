@@ -57,7 +57,7 @@ Sk.builtin.file = function (name, mode, buffering) {
 
     this.__class__ = Sk.builtin.file;
 
-    if (Sk.fileopen) {
+    if (Sk.fileopen && this.fileno >= 10) {
         Sk.fileopen(this);
     }
 
@@ -204,7 +204,7 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
     var mode = Sk.ffi.remapToJs(self.mode);
-    if (self.mode.v === "w" || self.mode.v === "wb" || self.mode.v === "a" || self.mode.v === "ab") {
+    if (mode === "w" || mode === "wb" || mode === "a" || mode === "ab") {
         if (Sk.filewrite) {
             if (self.closed) {
                 throw new Sk.builtin.ValueError("I/O operation on closed file");
