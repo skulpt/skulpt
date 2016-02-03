@@ -807,8 +807,8 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 
 Sk.builtin.raw_input = function (prompt) {
     var sys = Sk.importModule("sys");
-    Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], prompt]);
-    return Sk.misceval.apply(sys["$d"]["stdin"]["readline"], undefined, undefined, undefined, [sys["$d"]["stdin"]]);
+    Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], prompt);
+    return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
 };
 
 Sk.builtin.input = Sk.builtin.raw_input;

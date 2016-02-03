@@ -35,7 +35,9 @@ function runit(myDiv) {
    var mypre = document.getElementById(myDiv+"_pre");
 
    Sk.inputfun = function() {
-       return window.prompt();
+       return new Promise(function (resolve) {
+           resolve(window.prompt());
+       });
    };
    //Sk.outputfun = alert;
 
