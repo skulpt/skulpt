@@ -806,33 +806,9 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 };
 
 Sk.builtin.raw_input = function (prompt) {
-    var x, resolution, susp;
-
-    prompt = prompt ? prompt.v : "";
-    x = Sk.inputfun(prompt);
-
-    if (x instanceof Promise) {
-        susp = new Sk.misceval.Suspension();
-
-        susp.resume = function() {
-            return new Sk.builtin.str(resolution);
-        };
-
-        susp.data = {
-            type: "Sk.promise",
-            promise: x.then(function(value) {
-                resolution = value;
-                return value;
-            }, function(err) {
-                resolution = "";
-                return err;
-            })
-        };
-
-        return susp;
-    } else {
-        return new Sk.builtin.str(x);
-    }
+    var sys = Sk.importModule("sys");
+    Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], prompt);
+    return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
 };
 
 Sk.builtin.input = Sk.builtin.raw_input;
