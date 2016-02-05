@@ -2247,10 +2247,15 @@ Compiler.prototype.cmod = function (mod) {
 
     var entryBlock = this.newBlock("module entry");
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $gbl = {}, $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;var $ret=undefined,currLineNo=undefined,currColNo=undefined;";
+    this.u.varDeclsCode =
+        "var $gbl = {}, $blk=" + entryBlock +
+        ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
+        "');var $ret=undefined,currLineNo=undefined,currColNo=undefined;";
+
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
+
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
         this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = Date.now()}";
     }

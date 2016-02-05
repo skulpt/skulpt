@@ -33,6 +33,12 @@ function builtinRead(x)
 function runit(myDiv) {
    var prog = document.getElementById(myDiv+"_code").value;
    var mypre = document.getElementById(myDiv+"_pre");
+
+   Sk.inputfun = function() {
+       return new Promise(function (resolve) { resolve(window.prompt()); });
+   };
+   //Sk.outputfun = alert;
+
    mypre.innerHTML = '';
    Sk.canvas = myDiv+"_canvas";
     var can = document.getElementById(Sk.canvas);
