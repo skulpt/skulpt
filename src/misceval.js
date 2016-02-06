@@ -998,6 +998,29 @@ Sk.misceval.chain = function (initialValue, chainedFns) {
 };
 goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
+
+/**
+ * Catch any exceptions thrown by a function, or by resuming any suspension it
+ * returns.
+ */
+Sk.misceval.tryCatch = function (tryFn, catchFn) {
+    var r;
+
+    try {
+        r = tryFn();
+    } catch(e) {
+        return catchFn(e);
+    }
+
+    if (r instanceof Sk.misceval.Suspension) {
+        var susp = new Sk.misceval.Suspension(undefined, r);
+        susp.resume = function() { return Sk.misceval.tryCatch(r.resume, catchFn); };
+        return susp;
+    } else {
+        return r;
+    }
+};
+
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
