@@ -998,6 +998,37 @@ Sk.misceval.chain = function (initialValue, chainedFns) {
 };
 goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
+
+/**
+ * Catch any exceptions thrown by a function, or by resuming any suspension it
+ * returns.
+ *
+ *     var result = Sk.misceval.tryCatch(asyncFunc, function(err) {
+ *       console.log(err);
+ *     });
+ *
+ * Because exceptions are returned asynchronously aswell you can't catch them
+ * with a try/catch. That's what this function is for.
+ */
+Sk.misceval.tryCatch = function (tryFn, catchFn) {
+    var r;
+
+    try {
+        r = tryFn();
+    } catch(e) {
+        return catchFn(e);
+    }
+
+    if (r instanceof Sk.misceval.Suspension) {
+        var susp = new Sk.misceval.Suspension(undefined, r);
+        susp.resume = function() { return Sk.misceval.tryCatch(r.resume, catchFn); };
+        return susp;
+    } else {
+        return r;
+    }
+};
+goog.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
+
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
