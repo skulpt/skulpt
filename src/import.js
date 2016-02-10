@@ -564,7 +564,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         } else {
             // if it's on the module self return the module
             var mod = Sk.sysmodules.mp$subscript(name);
-            if (mod && mod.d$ && mod.d$[fromlist[0]]) {
+            if (mod && mod.$d && mod.$d[fromlist[0]]) {
                 return mod;
             }
             // try to load the module from the file system if it is not present on the module itself
