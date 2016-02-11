@@ -101,13 +101,13 @@ Sk.builtin.type = function (name, bases, dict) {
         /**
         * @constructor
         */
-        klass = function (kwdict, varargseq, kws, args, canSuspend) {
+        klass = function (kwdict, varargseq, kws, args, canSuspend, skipInit) {
             var init;
             var self = this;
             var s;
             var args_copy;
             if (!(this instanceof klass)) {
-                return new klass(kwdict, varargseq, kws, args, canSuspend);
+                return new klass(kwdict, varargseq, kws, args, canSuspend, skipInit);
             }
 
             args = args || [];
@@ -115,7 +115,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
             if (klass.prototype.tp$base !== undefined) {
                 if (klass.prototype.tp$base.sk$klass) {
-                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend);
+                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend, true);
                 } else {
                     // Call super constructor if subclass of a builtin
                     args_copy = args.slice();
@@ -125,7 +125,7 @@ Sk.builtin.type = function (name, bases, dict) {
             }
 
             init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
-            if (init !== undefined) {
+            if (init !== undefined && !skipInit) {
                 // return should be None or throw a TypeError otherwise
                 args.unshift(self);
                 s = Sk.misceval.applyOrSuspend(init, kwdict, varargseq, kws, args);
