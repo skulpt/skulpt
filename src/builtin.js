@@ -1163,6 +1163,11 @@ Sk.builtin.reversed = function reversed (seq) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
         }
 
+        /**
+         * Builds an iterator that outputs the items form last to first.
+         *
+         * @constructor
+         */
         var reverseIter = function (obj) {
             this.idx = obj.sq$length() - 1;
             this.myobj = obj;
