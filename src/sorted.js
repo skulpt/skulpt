@@ -8,10 +8,12 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     if (reverse === undefined) {
         rev = false;
-    } else if (reverse === Sk.builtin.none.none$) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    } else {
+    } else if (reverse instanceof Sk.builtin.float_) {
+        throw new Sk.builtin.TypeError("an integer is required, got float");
+    } else if (reverse instanceof Sk.builtin.int_ || reverse.prototype instanceof Sk.builtin.int_) {
         rev = Sk.misceval.isTrue(reverse);
+    } else {
+        throw new Sk.builtin.TypeError("an integer is required");
     }
 
     if (key !== undefined && !(key instanceof Sk.builtin.none)) {
