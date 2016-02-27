@@ -47,17 +47,28 @@ to debug line by line a program they have written would have some real
 benefit.
 
 
-### Practical Matters
+### Building Skulpt
+
+Building Skulpt is straightforward:
+
+1. Clone the repository from GitHub, ideally using your own fork if you're planning on making any contributions
+2. Install node.js
+3. Install the jscs, jshint and jsdoc node modules using `npm install jscs jshint jsdoc`
+4. Navigate to the repository and run `./m dist`
+5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist`folder
+
+
+### Contributing
 
 There is plenty of work still to do in making improvements to Skulpt.  If you would like to contribute
 
 1. Create a Github account if you don't already have one
 2. Create a Fork of the Skulpt repository -- This will make a clone of the repository in your account.  **DO NOT** clone this one.  Once you've made the fork you will clone the forked version in your account to your local machine for development.
-3. Install node.js first, then install jshint and jscs using npm.
 3. Read the HACKING.rst file to get the "lay of the land".  If you plan to work on creating  a module then you may also find this [blog post] (http://reputablejournal.com/posts/2011/03/adding-a-module-to-skulpt.html) helpful.
 3. Check the issues list for something to do.
-4. Fix or add your own features.  Commit and push to your forked version of the repository.  When everything is tested and ready to be incorporated into the master version...
-5. Make a Pull Request to get your feature(s) added to the main repository.
+4. Follow the instructions above to get skulpt building
+5. Fix or add your own features.  Commit and push to your forked version of the repository.  When everything is tested and ready to be incorporated into the master version...
+6. Make a Pull Request to get your feature(s) added to the main repository.
 
 
 ## Community
