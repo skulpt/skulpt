@@ -1152,6 +1152,54 @@ Sk.builtin.format = function format (value, format_spec) {
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
+Sk.builtin.reversed = function reversed (seq) {
+    Sk.builtin.pyCheckArgs("reversed", arguments, 1, 1);
+
+    var special = Sk.abstr.lookupSpecial(seq, "__reversed__");
+    if (special != null) {
+        return Sk.misceval.callsim(special, seq);
+    } else {
+        if (!Sk.builtin.checkSequence(seq)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
+        }
+
+        /**
+         * Builds an iterator that outputs the items form last to first.
+         *
+         * @constructor
+         */
+        var reverseIter = function (obj) {
+            this.idx = obj.sq$length() - 1;
+            this.myobj = obj;
+            this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+            this.tp$iter = function() {
+                return this;
+            },
+            this.tp$iternext = function () {
+                var ret;
+
+                if (this.idx < 0) {
+                    return undefined;
+                }
+
+                try {
+                    ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+                } catch (e) {
+                    if (e instanceof Sk.builtin.IndexError) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                }
+                this.idx--;
+                return ret;
+            };
+        };
+
+        return new reverseIter(seq);
+    }
+};
+
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
 };
@@ -1190,9 +1238,6 @@ Sk.builtin.property = function property () {
 };
 Sk.builtin.reload = function reload () {
     throw new Sk.builtin.NotImplementedError("reload is not yet implemented");
-};
-Sk.builtin.reversed = function reversed () {
-    throw new Sk.builtin.NotImplementedError("reversed is not yet implemented");
 };
 Sk.builtin.vars = function vars () {
     throw new Sk.builtin.NotImplementedError("vars is not yet implemented");
