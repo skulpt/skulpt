@@ -1,4 +1,24 @@
 {
+  "name": "skulpt",
+  "version": "1.0.0",
+  "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
+  "keywords": ["skulpt"],
+  "scripts": {
+    "lint": "jshint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skulpt/skulpt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skulpt/skulpt/issues"
+  },
+  "homepage": "http://www.skulpt.org/",
+  "author": {
+    "name": "Brad Miller"
+  },
+  "license": "MIT",
+  "private": true,
   "dependencies": {
     "jshint": "~2.5.2",
     "jscs": "~1.12",
