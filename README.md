@@ -53,8 +53,8 @@ Building Skulpt is straightforward:
 
 1. Clone the repository from GitHub, ideally using your own fork if you're planning on making any contributions
 2. Install node.js
-3. Install the jscs, jshint and jsdoc node modules using `npm install jscs jshint jsdoc`
-4. Navigate to the repository and run `./m dist`
+3. Install the jscs, jshint and jsdoc node modules using `npm install -g jscs jshint jsdoc` (you may need to use `sudo` to run this command)
+4. Navigate to the repository and run `./skulpt.py dist`
 5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist`folder
 
 
