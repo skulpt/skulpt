@@ -471,17 +471,22 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
     return i;
 };
 
-Sk.abstr.sequenceContains = function (seq, ob) {
-    var it, i;
+/**
+ * @param {*} seq
+ * @param {*} ob
+ * @param {boolean=} canSuspend
+ */
+Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     var seqtypename;
     var special;
+    var r;
 
     if (seq.sq$contains) {
         return seq.sq$contains(ob);
     }
 
-    /** 
-     *  Look for special method and call it, we have to distinguish between built-ins and 
+    /**
+     *  Look for special method and call it, we have to distinguish between built-ins and
      *  python objects
      */
     special = Sk.abstr.lookupSpecial(seq, "__contains__");
@@ -495,12 +500,15 @@ Sk.abstr.sequenceContains = function (seq, ob) {
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    r = Sk.misceval.iterFor(Sk.abstr.iter(seq), function(i) {
         if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
-            return true;
+            return new Sk.misceval.Break(true);
+        } else {
+            return false;
         }
-    }
-    return false;
+    }, false);
+
+    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
@@ -653,7 +661,7 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
     }
 
     for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
-         (i !== undefined) && (res.length < n); 
+         (i !== undefined) && (res.length < n);
          i = it.tp$iternext()) {
         res.push(i);
     }
@@ -898,7 +906,7 @@ Sk.abstr.iter = function(obj) {
 
     /**
      * Builds an iterator around classes that have a __getitem__ method.
-     * 
+     *
      * @constructor
      */
     var seqIter = function (obj) {
