@@ -481,7 +481,7 @@ Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
 
 Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr) {
     Sk.builtin.pyCheckArgs("__getattr__", arguments, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.tp$getattr.call(self, attr);
+    return Sk.builtin.dict.prototype.tp$getattr.call(self, Sk.ffi.remapToJs(attr));
 });
 
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {

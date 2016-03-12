@@ -193,5 +193,12 @@ class DictTest(unittest.TestCase):
         self.assertRaises(TypeError, d.get)
         self.assertRaises(TypeError, d.get, None, None, None)
 
+    def test_attrib(self):
+        d = {}
+        def do_set():
+            d.x = 42
+        self.assertRaises(AttributeError, do_set)
+        self.assertRaises(AttributeError, lambda: d.x)
+
 if __name__ == '__main__':
     unittest.main()
