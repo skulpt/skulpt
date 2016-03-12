@@ -981,7 +981,13 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
-    var fs = arguments, i = 1;
+    var fs = new Array(arguments.length), i = 1;
+
+    for (i = 1; i < arguments.length; i++) {
+        fs[i] = arguments[i];
+    }
+
+    i = 1;
 
     return (function nextStep(r) {
         while (i < fs.length) {
