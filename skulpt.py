@@ -1036,7 +1036,9 @@ def rununits(opt=False, p3=False):
 var input = read('%s');
 print('%s');
 Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", false);
+Sk.misceval.asyncToPromise(function() {
+    Sk.importMain("%s", false, true);
+}).then(quit, function(e) { throw e; });
         """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
         f.close()
         if opt:
