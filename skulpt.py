@@ -1192,6 +1192,7 @@ Commands:
     run              Run a Python file using Skulpt
     brun             Run a Python file using Skulpt but in your browser
     test             Run all test cases
+    rununits         Run only the new-style unit tests
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
