@@ -18,6 +18,25 @@ class TestGenericStringIO(unittest.TestCase):
     def setup(self):
         self._fp = StringIO.StringIO(self._lines)
 
+    def test_input(self):
+        #with prompt
+        teststdout = StringIO.StringIO();
+        sys.stdin = StringIO.StringIO("test input")
+        sys.stdout = teststdout
+        res = raw_input("test prompt")
+        sys.stdout = sys.__stdout__
+        self.assertEqual(res, "test input")
+        self.assertEqual(teststdout.getvalue(), "test prompt")
+
+        #without prompt
+        sys.stdin = StringIO.StringIO("test input")
+        teststdout = StringIO.StringIO();
+        sys.stdout = teststdout
+        res = raw_input()
+        sys.stdout = sys.__stdout__
+        sys.stdin = sys.__stdin__
+        self.assertEqual(res, "test input")
+
     def test_reads(self):
         eq = self.assertEqual
         self.assertRaises(TypeError, self._fp.seek)
