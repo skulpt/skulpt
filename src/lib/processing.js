@@ -1871,7 +1871,7 @@ var $builtinmodule = function (name) {
 
 	$loc.normalize = new Sk.builtin.func(function (self) {
 	    // normalize()	Normalizes the vector
-	    self.v.normalize(vec.v);
+	    self.v.normalize();
 	});
 
 	$loc.limit = new Sk.builtin.func(function (self, value) {
