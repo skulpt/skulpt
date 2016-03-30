@@ -10,7 +10,8 @@ class Test_Distributions(unittest.TestCase):
         random.seed(1)
         b = random.uniform(1,5)
         self.assertEqual(a, b)
-    def test_avg_std(self):
+
+    def _excluded_test_avg_std(self):
         # Use integration to test distribution average and standard deviation.
         # Only works for distributions which do not consume variates in pairs
         #g = random.Random()
