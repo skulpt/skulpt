@@ -809,16 +809,16 @@ Sk.builtin.raw_input = function (prompt) {
 };
 
 Sk.builtin.input = function (prompt) {
-  var raw_input = Sk.builtin.raw_input(prompt);
+    var raw_input = Sk.builtin.raw_input(prompt);
 
-  if (raw_input instanceof Sk.builtin.str) {
-    try {
-      return new Sk.builtin.int_(raw_input);
-    } catch (err) {
-      //do nothing, this is not a number
+    if (raw_input instanceof Sk.builtin.str) {
+        try {
+            return new Sk.builtin.int_(raw_input);
+        } catch (err) {
+            //do nothing, this is not a number
+        }
     }
-  }
-  return raw_input;
+    return raw_input;
 };
 
 Sk.builtin.jseval = function jseval (evalcode) {
