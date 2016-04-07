@@ -758,6 +758,7 @@ def dist(options):
 
     try:
         shutil.copy("debugger/debugger.js", DIST_DIR)
+        shutil.copy("debugger/debugger_cm.js", DIST_DIR)
     except Exception as e:
         print "Couldn't copy debugger to output file: %s" % e.message
         sys.exit(1)

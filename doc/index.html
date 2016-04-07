@@ -11,11 +11,12 @@
     <script src="static/codemirrorepl.js" type="text/javascript"></script>
     <script src="static/repl.js" type="text/javascript"></script>
     <script src="static/python.js" type="text/javascript"></script>
-    <script src="static/env/editor.js" type="text/javascript"></script>
     <script type="text/javascript" src="../../support/jsbeautify/beautify.js"></script>
-    <script src="../../debugger.js" type="text/javascript"></script>
     <script src="../../dist/skulpt.js" type="text/javascript"></script>
-    <script src="../../dist/skulpt-stdlib.js" type="text/javascript"></script>
+    <script src="../../dist/debugger.js" type="text/javascript"></script>
+    <script src="static/skulpt-stdlib.js" type="text/javascript"></script>
+    <script src="static/env/editor.js" type="text/javascript"></script>
+    <script src="../../dist/debugger_cm.js" type="text/javascript"></script>
 </head>
 <body>
 
@@ -85,6 +86,7 @@ for c in ['red', 'green', 'yellow', 'blue']:
     t.forward(75)
     t.left(90)
     </textarea>
+    <textarea id="debugger_cm", cols="85" rows="1"></textarea>
     <button id="skulpt_run">Run</button>
     <button id="skulpt_debug">Debug</button>
     <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>

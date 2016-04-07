@@ -59,9 +59,12 @@ $(document).ready(function () {
             
             (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
             try {
+                var sk_debugger = new Sk.Debugger();
+                var susp_handlers = {};
+                susp_handlers["*"] = sk_debugger.suspension_handler;
                 Sk.misceval.asyncToPromise(function() {
                     return Sk.importMainWithBody("<stdin>",true,editor.getValue(),true);
-                });
+                }, susp_handlers);
             } catch(e) {
                 outf(e.toString() + "\n")
             }
@@ -83,6 +86,9 @@ $(document).ready(function () {
         extraKeys: keymap,
         parserConfig: {'pythonVersion': 2, 'strictErrors': true}
     });
+    
+    window.code_editor = editor;
+    window.code_editor = editor;
 
     $("#skulpt_run").click(function (e) { keymap["Ctrl-Enter"](editor)} );
     $("#skulpt-debug").click(function (e) { keymap["Alt-Enter"](editor)} );

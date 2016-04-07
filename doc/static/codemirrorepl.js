@@ -38,7 +38,7 @@ function CodeMirrorREPL(textareaId, options) {
     };
 
     var mirror  = CodeMirror.fromTextArea(textarea, options);
-
+    
     var history = [];
     var buffer = [];
     var repl = this;
@@ -51,6 +51,7 @@ function CodeMirrorREPL(textareaId, options) {
     repl.print = print;
     repl.setMode = setMode;
     repl.setTheme = setTheme;
+    repl.setHeight = setHeight;
     mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
 
     function undo() {}
@@ -212,6 +213,10 @@ function CodeMirrorREPL(textareaId, options) {
 
     function setTheme(theme) {
         mirror.setOption("theme", theme);
+    }
+    
+    function setHeight(height) {
+      mirror.setSize("100%", height);
     }
 }
 
