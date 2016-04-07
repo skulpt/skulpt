@@ -713,7 +713,7 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    # ret = test()
+    ret = test()
     ret = 0
     if ret != 0:
         print "Tests failed on uncompressed version."
@@ -737,6 +737,9 @@ def dist(options):
     if ret != 0:
         print "closure-compiler failed."
         sys.exit(1)
+        
+    # Copy the debugger file to the output dir
+    
 
     # Run tests on compressed.
     if options.verbose:
@@ -754,9 +757,9 @@ def dist(options):
     doc()
 
     try:
-        shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
-    except:
-        print "Couldn't copy for gzip test."
+        shutil.copy("debugger/debugger.js", DIST_DIR)
+    except Exception as e:
+        print "Couldn't copy debugger to output file: %s" % e.message
         sys.exit(1)
 
     path_list = os.environ.get('PATH','').split(':')
