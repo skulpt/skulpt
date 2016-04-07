@@ -4,6 +4,11 @@ $(document).ready(function () {
         output.text(output.text() + text);
     };
     
+    var jsoutput = $("#codeoutput");
+    var jsoutf = function (text) {
+        jsoutput.text(text);
+    }
+    
     var keymap = {
         "Ctrl-Enter" : function (editor) {
             Sk.configure({output: outf, read: builtinRead});
@@ -35,6 +40,31 @@ $(document).ready(function () {
             } catch(e) {
                 outf(e.toString() + "\n")
             }
+        },
+        "Alt-Enter": function (editor) {
+            Sk.configure({
+                output: outf,
+                debugout: jsoutf,
+                read: builtinRead,
+                yieldLimit: null,
+                execLimit: null,
+                debugging: true,
+            });
+            Sk.canvas = "mycanvas";
+            if (editor.getValue().indexOf('turtle') > -1 ) {
+                $('#mycanvas').show()
+            }
+            Sk.pre = "edoutput";
+            Sk.pre = "codeoutput";
+            
+            (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+            try {
+                Sk.misceval.asyncToPromise(function() {
+                    return Sk.importMainWithBody("<stdin>",true,editor.getValue(),true);
+                });
+            } catch(e) {
+                outf(e.toString() + "\n")
+            }
         }
     }
 
@@ -55,6 +85,7 @@ $(document).ready(function () {
     });
 
     $("#skulpt_run").click(function (e) { keymap["Ctrl-Enter"](editor)} );
+    $("#skulpt-debug").click(function (e) { keymap["Alt-Enter"](editor)} );
 
     $("#toggledocs").click(function (e) {
         $("#quickdocs").toggle();
