@@ -4,10 +4,12 @@
 
 var Sk = Sk || {}; //jshint ignore:line
 
-Sk.Debugger = function() {
+Sk.Debugger = function(output_callback) {
     this.breakpoints = [];
     this.suspensions = [];
     this.eval_callback = null;
+    this.suspension = null;
+    this.output_callback = output_callback;
 }
 
 Sk.Debugger.prototype.add_breakpoint = function(breakpoint) {
@@ -26,7 +28,24 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
     });
 }
 
-Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers) {
+Sk.Debugger.prototype.resume = function() {
+    if (this.suspension == null) {
+        this.output_callback.print("No running program");
+    } else {
+        var promise = this.suspension_handler(this.suspension);
+        promise.then(this.success, this.reject);
+    }
+}
+
+Sk.Debugger.prototype.success = function() {
+    this.output_callback.print("Success running suspension");
+}
+
+Sk.Debugger.prototype.reject = function() {
+    this.output_callback.print("Error running suspension");
+}
+
+Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers, debugger_obj) {
     return new Promise(function(resolve, reject) {
         try {
             var r = suspendablefn();
@@ -34,7 +53,9 @@ Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers) {
             (function handleResponse (r) {
                 try {
                     while (r instanceof Sk.misceval.Suspension) {
-
+                        debugger_obj.suspension = r;
+                        return;
+                        
                         var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
 
                         if (handler) {

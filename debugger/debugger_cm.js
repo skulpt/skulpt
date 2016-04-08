@@ -16,7 +16,7 @@ $(function () {
         re_emptyline = new RegExp("^\\s*$");
         
     // Debugger
-    repl.sk_debugger = new Sk.Debugger(),
+    repl.sk_debugger = new Sk.Debugger(repl),
         
     // code editor
     repl.sk_code_editor = window.code_editor;
@@ -65,7 +65,7 @@ $(function () {
             susp_handlers["*"] = repl.sk_debugger.suspension_handler.bind(this);
             repl.sk_debugger.asyncToPromise(function() {
                 return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
-            }, susp_handlers);
+            }, susp_handlers, this.sk_debugger);
             // repl.sk_debugger.eval_callback = repl.debug_callback;
             // repl.sk_debugger.execute(function() {
             //     return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
@@ -76,7 +76,7 @@ $(function () {
     }
     
     repl.continue = function() {
-        this.suspension.resume();
+        this.sk_debugger.resume.call(this.sk_debugger);
     }
     
     repl.set_breakpoint = function(bp) {
