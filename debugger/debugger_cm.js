@@ -45,7 +45,7 @@ $(function () {
     
     repl.run_code = function(code) {
         Sk.configure({
-            output: window.outf,
+            output: window.jsoutf,
             debugout: window.jsoutf,
             read: window.builtinRead,
             yieldLimit: null,
