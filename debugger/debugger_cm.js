@@ -3,6 +3,7 @@ $(function () {
             mode: "python",
             theme: "solarized light",
         }),
+
         compilableLines = [],
 
         // Run code regex
@@ -13,7 +14,6 @@ $(function () {
         
         //test for empty line.
         re_emptyline = new RegExp("^\\s*$");
-        
         
     // Debugger
     repl.sk_debugger = new Sk.Debugger(),

@@ -89,10 +89,11 @@ for c in ['red', 'green', 'yellow', 'blue']:
     <textarea id="debugger_cm", cols="85" rows="1"></textarea>
     <button id="skulpt_run">Run</button>
     <button id="skulpt_debug">Debug</button>
-    <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
+    <button id="skulpt_js_output" onclick="var cm = $('.CodeMirror')[2].CodeMirror;$(cm.getWrapperElement()).toggle()">Hide/Unhide JS</button>
+    <textarea id="codeoutput"></textarea>
 
+    <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
     <pre id="edoutput"></pre>
-    <pre id="codeoutput"></pre>
 
     <div id="mycanvas" height="400" width="400"
             style="border-style: solid;"></div>

@@ -15,11 +15,13 @@ Sk.Debugger.prototype.add_breakpoint = function(breakpoint) {
 }
 
 Sk.Debugger.prototype.suspension_handler = function(susp) {
+    console.log("Created the promise");
     return new Promise(function(resolve, reject) {
         try {
-             resolve(susp.resume());
+            console.log("I am executing resolve in Promise");
+            resolve(susp.resume());
         } catch(e) {
-             reject(e);
+            reject(e);
         }
     });
 }
@@ -31,28 +33,6 @@ Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers) {
 
             (function handleResponse (r) {
                 try {
-                    // jsh*nt insists these be defined outside the loop
-                    var resume = function() {
-                        handleResponse(r.resume());
-                    };
-                    var resumeWithData = function resolved(x) {
-                        try {
-                            r.data["result"] = x;
-                            resume();
-                        } catch(e) {
-                            reject(e);
-                        }
-                    };
-                    var resumeWithError = function rejected(e) {
-                        try {
-                            r.data["error"] = e;
-                            resume();
-                        } catch(ex) {
-                            reject(ex);
-                        }
-                    };
-
-
                     while (r instanceof Sk.misceval.Suspension) {
 
                         var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
