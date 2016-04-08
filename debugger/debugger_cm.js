@@ -19,10 +19,23 @@ $(function () {
         re_emptyline = new RegExp("^\\s*$"),
         
         // test for view locals
-        re_viewlocals = new RegExp("view locals"),
+        re_viewlocals = /view local(s*)( *)(\w*)/,
         
         // test for view globals
-        re_viewglobals = new RegExp("view globals");
+        re_viewglobals = /view global(s*)( *)(\w*)/,
+        
+        // test for help
+        re_help = new RegExp("help"),
+        
+        // cmd list
+        cmd_list = {
+            "help": "Display the list of commands available in the debugger",
+            "run": "Run / Restart the current program in the editor",
+            "next": "Step Over to the next instruction",
+            "cont": "Continue execution till next breakpoint is hit or application terminates",
+            "view locals": "View all the locals at the current execution point",
+            "view globals": "View all the globals at the current execution point",
+        };
         
     // Debugger
     repl.sk_debugger = new Sk.Debugger(repl),
@@ -104,27 +117,49 @@ $(function () {
         repl.suspension = suspension;
     }
     
-    repl.view_locals = function() {
+    repl.view_locals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
         if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
             suspension = suspension.child;
             
         var locals = suspension.$loc;
         
-        for (var local in locals) {
-            repl.print(local + ": " + locals[local].v);
+        if (variable == "") {
+            for (var local in locals) {
+                repl.print(local + ": " + locals[local].v);
+            }
+        } else {
+            if (hasOwnProperty(locals, variable)) {
+                repl.print(variable + ": " + locals[variable].v);
+            } else {
+                repl.print("No such local variable: " + variable);
+            }
         }
     }
     
-    repl.view_globals = function() {
+    repl.view_globals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
         if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
             suspension = suspension.child;
             
         var globals = suspension.$gbl;
         
-        for (var global in globals) {
-            repl.print(global + ": " + globals[global].v);
+        if (variable == "") {
+            for (var global in globals) {
+                repl.print(global + ": " + globals[global].v);
+            }
+        } else {
+            if (hasOwnProperty(globals, variable)) {
+                repl.print(variable + ": " + globals[variable].v);
+            } else {
+                repl.print("No such local variable: " + variable);
+            }
+        }
+    }
+    
+    repl.display_help = function() {
+        for (var cmd in cmd_list) {
+            repl.print(cmd + ": " + cmd_list[cmd]);
         }
     }
     
@@ -161,9 +196,23 @@ $(function () {
             } else if (re_nextstep.test(lines[0])) {
                 this.continue();
             } else if (re_viewlocals.test(lines[0])) {
-                this.view_locals();
+                // get the matches for this.
+                var matches = re_viewlocals.exec(lines[0]);
+                var variable = null;
+                if (matches.length == 4) {
+                    variable = matches[3];
+                }
+                this.view_locals(variable);
             } else if (re_viewglobals.test(lines[0])) {
-                this.view_globals();
+                // get the matches for this.
+                var matches = re_viewglobals.exec(lines[0]);
+                var variable = null;
+                if (matches.length == 4) {
+                    variable = matches[3];
+                }
+                this.view_globals(variable);
+            } else if (re_help.test(lines[0])) {
+                this.display_help();
             }
             
         } catch (err) {
@@ -181,4 +230,12 @@ $(function () {
             });
         }
     };
+    
+        
+    (function() {
+        repl.print("          Skulpt Debugger");
+        repl.print("-----------------------------------");
+        repl.print("type 'help' for looking at commands");
+        repl.print("-----------------------------------");
+    })();
 });
