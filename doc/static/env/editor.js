@@ -75,6 +75,7 @@ $(document).ready(function () {
         autofocus: true,
         theme: "solarized dark",
         //path: "static/env/codemirror/js/",
+        styleActiveLine: true,
         lineNumbers: true,
         textWrapping: false,
         indentUnit: 4,

@@ -4,12 +4,37 @@
 
 var Sk = Sk || {}; //jshint ignore:line
 
+function hasOwnProperty(obj, prop) {
+    var proto = obj.__proto__ || obj.constructor.prototype;
+    return (prop in obj) &&
+        (!(prop in proto) || proto[prop] !== obj[prop]);
+}
+
+
 Sk.Debugger = function(output_callback) {
     this.breakpoints = [];
     this.suspensions = [];
     this.eval_callback = null;
     this.suspension = null;
     this.output_callback = output_callback;
+}
+
+Sk.Debugger.prototype.print_suspension_info = function(suspension) {
+    if (!hasOwnProperty(suspension, filename) && suspension.child instanceof Sk.misceval.Suspension)
+        suspension = suspension.child;
+
+    var filename = suspension.filename;
+    var lineno = suspension.lineno;
+    var colno = suspension.colno;
+    this.output_callback.print("Broken at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
+    this.output_callback.print("----------------------------------------------------------------------------------\n");
+    this.output_callback.print(" --> " + this.output_callback.sk_code_editor.getLine(lineno - 1) + "\n");
+    this.output_callback.print("----------------------------------------------------------------------------------\n");
+}
+
+Sk.Debugger.prototype.set_suspension = function(suspension) {
+    this.print_suspension_info(suspension);
+    this.suspension = suspension;
 }
 
 Sk.Debugger.prototype.add_breakpoint = function(breakpoint) {
@@ -39,12 +64,10 @@ Sk.Debugger.prototype.resume = function() {
 
 Sk.Debugger.prototype.success = function(r) {
     if (r instanceof Sk.misceval.Suspension) {
-        this.suspension = r;
+        this.set_suspension(r);
     } else {
         this.suspension = null;
     }
-
-    this.output_callback.print("Success running suspension");
 }
 
 Sk.Debugger.prototype.reject = function() {
@@ -59,7 +82,7 @@ Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers, deb
             (function handleResponse (r) {
                 try {
                     while (r instanceof Sk.misceval.Suspension) {
-                        debugger_obj.suspension = r;
+                        debugger_obj.set_suspension(r);
                         return;
                         
                         var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);

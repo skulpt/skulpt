@@ -20,7 +20,7 @@ $(function () {
         
     // code editor
     repl.sk_code_editor = window.code_editor;
-        
+    
     repl.isBalanced = function (code) {
         var lines = code.split('\n'),
             depth = 0,
