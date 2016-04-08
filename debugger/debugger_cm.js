@@ -7,16 +7,16 @@ $(function () {
         compilableLines = [],
 
         // Run code regex
-        re_run = new RegExp("run"),
+        re_run = /run/,
         
         // Continue Execution
-        re_continue = new RegExp("cont"),
+        re_continue = /cont/,
         
         // Next Step
-        re_nextstep = new RegExp("next"),
+        re_nextstep = /next/,
         
         //test for empty line.
-        re_emptyline = new RegExp("^\\s*$"),
+        re_emptyline = /^\\s*$/,
         
         // test for view locals
         re_viewlocals = /view local(s*)( *)(\w*)/,
@@ -25,7 +25,7 @@ $(function () {
         re_viewglobals = /view global(s*)( *)(\w*)/,
         
         // test for help
-        re_help = new RegExp("help"),
+        re_help = /help/,
         
         // cmd list
         cmd_list = {
