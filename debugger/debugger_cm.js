@@ -12,8 +12,17 @@ $(function () {
         // Continue Execution
         re_continue = new RegExp("cont"),
         
+        // Next Step
+        re_nextstep = new RegExp("next"),
+        
         //test for empty line.
-        re_emptyline = new RegExp("^\\s*$");
+        re_emptyline = new RegExp("^\\s*$"),
+        
+        // test for view locals
+        re_viewlocals = new RegExp("view locals"),
+        
+        // test for view globals
+        re_viewglobals = new RegExp("view globals");
         
     // Debugger
     repl.sk_debugger = new Sk.Debugger(repl),
@@ -95,6 +104,30 @@ $(function () {
         repl.suspension = suspension;
     }
     
+    repl.view_locals = function() {
+        var suspension = repl.sk_debugger.get_active_suspension();
+        if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
+            suspension = suspension.child;
+            
+        var locals = suspension.$loc;
+        
+        for (var local in locals) {
+            repl.print(local + ": " + locals[local].v);
+        }
+    }
+    
+    repl.view_globals = function() {
+        var suspension = repl.sk_debugger.get_active_suspension();
+        if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
+            suspension = suspension.child;
+            
+        var globals = suspension.$gbl;
+        
+        for (var global in globals) {
+            repl.print(global + ": " + globals[global].v);
+        }
+    }
+    
     //Loop
     repl.eval = function (code) {
         Sk.configure({
@@ -125,7 +158,14 @@ $(function () {
                 this.run_code();
             } else if (re_continue.test(lines[0])) {
                 this.continue();
+            } else if (re_nextstep.test(lines[0])) {
+                this.continue();
+            } else if (re_viewlocals.test(lines[0])) {
+                this.view_locals();
+            } else if (re_viewglobals.test(lines[0])) {
+                this.view_globals();
             }
+            
         } catch (err) {
             repl.print(err);
 

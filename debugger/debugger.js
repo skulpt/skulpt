@@ -19,6 +19,10 @@ Sk.Debugger = function(output_callback) {
     this.output_callback = output_callback;
 }
 
+Sk.Debugger.prototype.get_active_suspension = function() {
+    return this.suspension;
+}
+
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {
     if (!hasOwnProperty(suspension, filename) && suspension.child instanceof Sk.misceval.Suspension)
         suspension = suspension.child;
