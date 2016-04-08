@@ -10,9 +10,8 @@ function hasOwnProperty(obj, prop) {
         (!(prop in proto) || proto[prop] !== obj[prop]);
 }
 
-
 Sk.Debugger = function(output_callback) {
-    this.breakpoints = [];
+    this.dbg_breakpoints = {};
     this.suspensions = [];
     this.eval_callback = null;
     this.suspension = null;
@@ -21,6 +20,19 @@ Sk.Debugger = function(output_callback) {
 
 Sk.Debugger.prototype.get_active_suspension = function() {
     return this.suspension;
+}
+
+Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno) {
+    var key = filename + "-" + lineno + "-" + colno;
+    return key;
+}
+
+Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        return true;
+    }
+    return false;
 }
 
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {
@@ -41,8 +53,9 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     this.suspension = suspension;
 }
 
-Sk.Debugger.prototype.add_breakpoint = function(breakpoint) {
-    this.breakpoints.concat(breakpoint);
+Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    this.breakpoints[key] = true;
 }
 
 Sk.Debugger.prototype.suspension_handler = function(susp) {
