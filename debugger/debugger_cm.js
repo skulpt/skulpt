@@ -13,6 +13,12 @@ $(function () {
         
         //test for empty line.
         re_emptyline = new RegExp("^\\s*$");
+        
+    // Debugger
+    repl.sk_debugger = new Sk.Debugger(),
+        
+    // code editor
+    repl.sk_code_editor = window.code_editor;
 
     repl.isBalanced = function (code) {
         var lines = code.split('\n'),
@@ -37,7 +43,31 @@ $(function () {
     repl.setHeight(28 * 10);
     
     repl.run_code = function(code) {
-        console.log("Run Code");
+        Sk.configure({
+            output: window.outf,
+            debugout: window.jsoutf,
+            read: window.builtinRead,
+            yieldLimit: null,
+            execLimit: null,
+            debugging: true,
+        });
+        Sk.canvas = "mycanvas";
+        if (repl.sk_code_editor.getValue().indexOf('turtle') > -1 ) {
+            $('#mycanvas').show()
+        }
+        Sk.pre = "edoutput";
+        Sk.pre = "codeoutput";
+        
+        (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+        try {
+            var susp_handlers = {};
+            susp_handlers["*"] = repl.sk_debugger.suspension_handler;
+            Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
+            }, susp_handlers);
+        } catch(e) {
+            outf(e.toString() + "\n")
+        }
     }
     
     repl.continue = function() {
@@ -56,9 +86,6 @@ $(function () {
         console.log("Clear Breakpoint " + bp);
     }
     
-    repl.debugger = new Sk.Debugger();
-    repl.code_editor = window.code_editor;
-
     //Loop
     repl.eval = function (code) {
         Sk.configure({

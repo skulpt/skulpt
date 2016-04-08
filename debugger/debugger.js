@@ -27,7 +27,7 @@ Sk.Debugger.prototype.wait_for_cmd = function() {
 Sk.Debugger.prototype.suspension_handler = function(susp) {
     return new Promise(function(resolve, reject) {
         try {
-               resolve(susp.resume());
+             resolve(susp.resume());
         } catch(e) {
              reject(e);
         }

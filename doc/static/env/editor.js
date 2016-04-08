@@ -88,7 +88,9 @@ $(document).ready(function () {
     });
     
     window.code_editor = editor;
-    window.code_editor = editor;
+    window.jsoutf = jsoutf;
+    window.outf = outf;
+    window.builtinRead = builtinRead;
 
     $("#skulpt_run").click(function (e) { keymap["Ctrl-Enter"](editor)} );
     $("#skulpt-debug").click(function (e) { keymap["Alt-Enter"](editor)} );
