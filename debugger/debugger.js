@@ -33,7 +33,7 @@ Sk.Debugger.prototype.resume = function() {
         this.output_callback.print("No running program");
     } else {
         var promise = this.suspension_handler(this.suspension);
-        promise.then(this.success.bind(this), this.reject);
+        promise.then(this.success.bind(this), this.reject.bind(this));
     }
 }
 
