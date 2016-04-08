@@ -33,11 +33,17 @@ Sk.Debugger.prototype.resume = function() {
         this.output_callback.print("No running program");
     } else {
         var promise = this.suspension_handler(this.suspension);
-        promise.then(this.success, this.reject);
+        promise.then(this.success.bind(this), this.reject);
     }
 }
 
-Sk.Debugger.prototype.success = function() {
+Sk.Debugger.prototype.success = function(r) {
+    if (r instanceof Sk.misceval.Suspension) {
+        this.suspension = r;
+    } else {
+        this.suspension = null;
+    }
+
     this.output_callback.print("Success running suspension");
 }
 
