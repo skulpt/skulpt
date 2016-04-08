@@ -14,6 +14,13 @@ $(function () {
         //test for empty line.
         re_emptyline = new RegExp("^\\s*$");
         
+        
+    // Debugger
+    repl.sk_debugger = new Sk.Debugger(),
+        
+    // code editor
+    repl.sk_code_editor = window.code_editor;
+        
     repl.isBalanced = function (code) {
         var lines = code.split('\n'),
             depth = 0,
@@ -55,17 +62,21 @@ $(function () {
         (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
         try {
             var susp_handlers = {};
-            susp_handlers["*"] = repl.sk_debugger.suspension_handler;
-            Sk.misceval.asyncToPromise(function() {
+            susp_handlers["*"] = repl.sk_debugger.suspension_handler.bind(this);
+            repl.sk_debugger.asyncToPromise(function() {
                 return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
             }, susp_handlers);
+            // repl.sk_debugger.eval_callback = repl.debug_callback;
+            // repl.sk_debugger.execute(function() {
+            //     return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
+            //     }, susp_handlers);
         } catch(e) {
             outf(e.toString() + "\n")
         }
     }
     
     repl.continue = function() {
-        console.log("End code");
+        this.suspension.resume();
     }
     
     repl.set_breakpoint = function(bp) {
@@ -78,6 +89,10 @@ $(function () {
     
     repl.clear_breakpoint = function(bp) {
         console.log("Clear Breakpoint " + bp);
+    }
+    
+    repl.debug_callback = function(suspension) {
+        repl.suspension = suspension;
     }
     
     //Loop
@@ -108,6 +123,8 @@ $(function () {
             }
             else if (re_run.test(lines[0])) {
                 this.run_code();
+            } else if (re_continue.test(lines[0])) {
+                this.continue();
             }
         } catch (err) {
             repl.print(err);
@@ -124,10 +141,4 @@ $(function () {
             });
         }
     };
-    
-    // Debugger
-    repl.sk_debugger = new Sk.Debugger(repl.eval),
-        
-    // code editor
-    repl.sk_code_editor = window.code_editor;
 });
