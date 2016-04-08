@@ -5,7 +5,7 @@ $(document).ready(function () {
     };
     
     var jsoutf = function (text) {
-        js_output.print(text);
+        window.js_output.setValue(text);
     }
     
     var keymap = {
@@ -54,7 +54,6 @@ $(document).ready(function () {
                 $('#mycanvas').show()
             }
             Sk.pre = "edoutput";
-            Sk.pre = "codeoutput";
             
             (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
             try {
