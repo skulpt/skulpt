@@ -4,27 +4,19 @@
 
 var Sk = Sk || {}; //jshint ignore:line
 
-Sk.Debugger = function() {
+Sk.Debugger = function(execution_callback) {
     this.breakpoints = [];
-    this.cmds = {
-        "run": this.run(),
-        "cont": this.continue(),
-        "blah": this.nop(),
-        "blahblah": this.nop(),
-    }
-    
-    this.cmdlist = ["run", "cont", "blah", "blahblah"];
+    this.callback = execution_callback;
 }
 
 Sk.Debugger.prototype.add_breakpoint = function(breakpoint) {
     this.breakpoints.concat(breakpoint);
 }
 
-Sk.Debugger.prototype.wait_for_cmd = function() {
-    
-}
-
 Sk.Debugger.prototype.suspension_handler = function(susp) {
+    // Call the callback for the debugger so that we can inspect
+    this.callback();
+    
     return new Promise(function(resolve, reject) {
         try {
              resolve(susp.resume());

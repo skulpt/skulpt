@@ -14,12 +14,6 @@ $(function () {
         //test for empty line.
         re_emptyline = new RegExp("^\\s*$");
         
-    // Debugger
-    repl.sk_debugger = new Sk.Debugger(),
-        
-    // code editor
-    repl.sk_code_editor = window.code_editor;
-
     repl.isBalanced = function (code) {
         var lines = code.split('\n'),
             depth = 0,
@@ -130,4 +124,10 @@ $(function () {
             });
         }
     };
+    
+    // Debugger
+    repl.sk_debugger = new Sk.Debugger(repl.eval),
+        
+    // code editor
+    repl.sk_code_editor = window.code_editor;
 });
