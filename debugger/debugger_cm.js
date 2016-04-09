@@ -93,6 +93,10 @@ $(function () {
     
     repl.setHeight(28 * 10);
     
+    repl.get_source_line = function(lineno) {
+        return repl.sk_code_editor.getLine(lineno);
+    }
+    
     repl.run_code = function(code) {
         Sk.configure({
             output: window.jsoutf,

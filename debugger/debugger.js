@@ -27,6 +27,20 @@ Sk.Debugger = function(filename, output_callback) {
     this.filename = filename;
 }
 
+Sk.Debugger.prototype.print = function(txt) {
+    if (this.output_callback != null) {
+        this.output_callback.print(txt);
+    }
+}
+
+Sk.Debugger.prototype.get_source_line = function(lineno) {
+    if (this.output_callback != null) {
+        return this.output_callback.get_source_line(lineno);
+    }
+    
+    return "";
+}
+
 Sk.Debugger.prototype.enable_step_mode = function() {
     this.step_mode = true;
 }
@@ -88,10 +102,10 @@ Sk.Debugger.prototype.print_suspension_info = function(suspension) {
     var filename = suspension.filename;
     var lineno = suspension.lineno;
     var colno = suspension.colno;
-    this.output_callback.print("Hit Breakpoint at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
-    this.output_callback.print("----------------------------------------------------------------------------------\n");
-    this.output_callback.print(" ==> " + this.output_callback.sk_code_editor.getLine(lineno - 1) + "\n");
-    this.output_callback.print("----------------------------------------------------------------------------------\n");
+    this.print("Hit Breakpoint at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
+    this.print("----------------------------------------------------------------------------------\n");
+    this.print(" ==> " + this.get_source_line(lineno - 1) + "\n");
+    this.print("----------------------------------------------------------------------------------\n");
 }
 
 Sk.Debugger.prototype.set_suspension = function(suspension) {
@@ -137,7 +151,7 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
 
 Sk.Debugger.prototype.resume = function() {
     if (this.suspension == null) {
-        this.output_callback.print("No running program");
+        this.print("No running program");
     } else {
         var promise = this.suspension_handler(this.suspension);
         promise.then(this.success.bind(this), this.error.bind(this));
@@ -160,24 +174,24 @@ Sk.Debugger.prototype.success = function(r) {
             this.suspension = parent_suspension;
         } else {
             this.suspension = null;
-            this.output_callback.print("Program execution complete");
+            this.print("Program execution complete");
         }
     }
 }
 
 Sk.Debugger.prototype.error = function(e) {
-    this.output_callback.print("Traceback (most recent call last):");
+    this.print("Traceback (most recent call last):");
     for (var idx = 0; idx < e.traceback.length; ++idx) {
-        this.output_callback.print("  File \"" + e.traceback[idx].filename + "\", line " + e.traceback[idx].lineno + ", in <module>");
-        var code = this.output_callback.sk_code_editor.getLine(e.traceback[idx].lineno - 1);
+        this.print("  File \"" + e.traceback[idx].filename + "\", line " + e.traceback[idx].lineno + ", in <module>");
+        var code = this.get_source_line(e.traceback[idx].lineno - 1);
         code = code.trim();
         code = "    " + code;
-        this.output_callback.print(code);
+        this.print(code);
     }
     
     var err_ty = e.constructor.tp$name;
     for (var idx = 0; idx < e.args.v.length; ++idx) {
-        this.output_callback.print(err_ty + ": " + e.args.v[idx].v);
+        this.print(err_ty + ": " + e.args.v[idx].v);
     }
 }
 
