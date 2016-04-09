@@ -36,6 +36,9 @@ $(function () {
         // test for clear breakpoints
         re_clear_bp = /clear bp (\d+)/,
         
+        // test for current execution line
+        re_exec_line = /view exec_line/,
+        
         // editor filename
         editor_filename = "<stdin>",
         
@@ -148,6 +151,36 @@ $(function () {
         repl.suspension = suspension;
     }
     
+    repl.view_execution_line = function() {
+        var suspension = this.sk_debugger.get_active_suspension();
+        if (suspension != null) {
+            if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
+                suspension = suspension.child;
+                
+            var filename = suspension.filename;
+            var lineno = suspension.lineno;
+            var colno = suspension.colno;
+            repl.print("Broken at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
+            repl.print("----------------------------------------------------------------------------------\n");
+
+            var minLineNo = Math.max(0, lineno - 3);
+            var maxLineNo = Math.min(lineno + 3, repl.sk_code_editor.lineCount());
+            
+            for (var i = minLineNo; i <= maxLineNo; ++i) {
+                var prefix = "     ";
+                if (i == lineno) {
+                    prefix = "---> "
+                }
+                
+                repl.print(prefix + repl.sk_code_editor.getLine(i - 1));
+            }
+            
+            repl.print("----------------------------------------------------------------------------------\n");
+        } else {
+            repl.print("Program is currently not executing");
+        }
+    }
+    
     repl.view_locals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
         if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
@@ -252,6 +285,8 @@ $(function () {
                 var matches = re_clear_bp.exec(lines[0]);
                 var lineno = matches[1];
                 this.clear_breakpoint(lineno);
+            } else if (re_exec_line.test(lines[0])) {
+                this.view_execution_line();
             } else if (re_help.test(lines[0])) {
                 this.display_help();
             }
