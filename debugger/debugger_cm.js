@@ -118,11 +118,13 @@ $(function () {
     }
     
     repl.continue = function() {
+        this.sk_debugger.disable_step_mode();
         this.sk_debugger.resume.call(this.sk_debugger);
     }
     
     repl.step = function() {
         this.sk_debugger.enable_step_mode();
+        this.sk_debugger.resume.call(this.sk_debugger);
     }
     
     repl.set_breakpoint = function(bp) {

@@ -30,6 +30,10 @@ Sk.Debugger.prototype.enable_step_mode = function() {
     this.step_mode = true;
 }
 
+Sk.Debugger.prototype.disable_step_mode = function() {
+    this.step_mode = false;
+}
+
 Sk.Debugger.prototype.get_suspension_stack = function() {
     return this.suspension_stack;
 }
@@ -44,6 +48,12 @@ Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno
 }
 
 Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
+    // If Step mode is enabled then ignore breakpoints since we will just break
+    // at every line.
+    if (this.step_mode == true) {
+        return true;
+    }
+    
     var key = this.generate_breakpoint_key(filename, lineno, colno);
     if (hasOwnProperty(this.dbg_breakpoints, key)) {
         return true;
@@ -82,20 +92,23 @@ Sk.Debugger.prototype.print_suspension_info = function(suspension) {
 Sk.Debugger.prototype.set_suspension = function(suspension) {
     if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
         suspension = suspension.child;
-    
-    // Clear the current stack
-    this.suspension_stack = [];
+        
+    var original_suspension = suspension;
     
     // Unroll the stack to get each suspension.
     var parent = null;
+    var nested = 0;
     while (suspension instanceof Sk.misceval.Suspension) {
-        this.suspension_stack.push(suspension);
         parent = suspension;
         suspension = suspension.child;
+        nested += 1;
     }
 
     suspension = parent;
-
+    if (nested >= 2) {
+        this.suspension_stack.push(original_suspension);
+    }
+    
     this.print_suspension_info(suspension);
     this.suspension = suspension;
 }
@@ -116,13 +129,11 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
 }
 
 Sk.Debugger.prototype.resume = function() {
-    this.step_mode = false;
-    
     if (this.suspension == null) {
         this.output_callback.print("No running program");
     } else {
         var promise = this.suspension_handler(this.suspension);
-        promise.then(this.success.bind(this), this.reject.bind(this));
+        promise.then(this.success.bind(this), this.error.bind(this));
     }
 }
 
@@ -130,7 +141,16 @@ Sk.Debugger.prototype.success = function(r) {
     if (r instanceof Sk.misceval.Suspension) {
         this.set_suspension(r);
     } else {
-        this.suspension = null;
+        if (this.suspension_stack.length > 0) {
+            // Current suspension should be the last one on the list
+            var parent_suspension = this.suspension_stack.pop();
+            this.print_suspension_info(parent_suspension);
+            // Do not use set_suspension since it will recurse to the child again
+            parent_suspension.child = null; // Remove the child so we don't recurse again.
+            this.suspension = parent_suspension;
+        } else {
+            this.suspension = null;
+        }
     }
 }
 
