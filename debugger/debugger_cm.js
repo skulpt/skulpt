@@ -9,11 +9,11 @@ $(function () {
         // Run code regex
         re_run = /run/,
         
-        // Continue Execution
-        re_continue = /cont/,
-        
         // Next Step
         re_nextstep = /next/,
+        
+        // Step instruction
+        re_step = /step/,
         
         //test for empty line.
         re_emptyline = /^\\s*$/,
@@ -119,6 +119,10 @@ $(function () {
     
     repl.continue = function() {
         this.sk_debugger.resume.call(this.sk_debugger);
+    }
+    
+    repl.step = function() {
+        this.sk_debugger.enable_step_mode();
     }
     
     repl.set_breakpoint = function(bp) {
@@ -266,8 +270,6 @@ $(function () {
             }
             else if (re_run.test(lines[0])) {
                 this.run_code();
-            } else if (re_continue.test(lines[0])) {
-                this.continue();
             } else if (re_nextstep.test(lines[0])) {
                 this.continue();
             } else if (re_viewlocals.test(lines[0])) {
@@ -302,6 +304,8 @@ $(function () {
                 this.display_help();
             } else if (re_where.test(lines[0])) {
                 this.where();
+            } else if (re_step.test(lines[0])) {
+                this.step();
             }
             
         } catch (err) {

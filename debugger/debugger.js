@@ -22,7 +22,12 @@ Sk.Debugger = function(filename, output_callback) {
     this.eval_callback = null;
     this.suspension = null;
     this.output_callback = output_callback;
+    this.step_mode = false;
     this.filename = filename;
+}
+
+Sk.Debugger.prototype.enable_step_mode = function() {
+    this.step_mode = true;
 }
 
 Sk.Debugger.prototype.get_suspension_stack = function() {
@@ -111,6 +116,8 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
 }
 
 Sk.Debugger.prototype.resume = function() {
+    this.step_mode = false;
+    
     if (this.suspension == null) {
         this.output_callback.print("No running program");
     } else {
