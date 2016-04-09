@@ -48,6 +48,7 @@ $(function () {
         // cmd list
         cmd_list = {
             "help": "Display the list of commands available in the debugger",
+            "where": "Print the stack trace",
             "run": "Run / Restart the current program in the editor",
             "next": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
@@ -230,6 +231,8 @@ $(function () {
     
     repl.where = function() {
         var suspension_stack = repl.sk_debugger.get_suspension_stack();
+        var active_suspension = repl.sk_debugger.get_active_suspension();
+        suspension_stack.push(active_suspension);
         var len = suspension_stack.length;
         for (var i = len - 1; i >= 0; --i) {
             var susp = suspension_stack[i];
