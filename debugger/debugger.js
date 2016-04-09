@@ -76,7 +76,7 @@ Sk.Debugger.prototype.clear_breakpoint = function(filename, lineno, colno) {
         delete this.dbg_breakpoints[key];
         return null;
     } else {
-        return "Invalid breakpoint specified";
+        return "Invalid breakpoint specified: " + filename + " line: " + lineno;
     }
 }
 

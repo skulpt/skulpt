@@ -40,7 +40,7 @@ $(function () {
         re_view_bp = /\bview bp\b/,
         
         // test for clear breakpoints
-        re_clear_bp = /\bclear bp\b (\d+)/,
+        re_clear_bp = /\bclear\b( \d+)+/,
         
         // test for current execution line
         re_list = /\blist\b/,
@@ -306,9 +306,10 @@ $(function () {
             } else if (re_view_bp.test(lines[0])) {
                 this.view_breakpoints();
             } else if (re_clear_bp.test(lines[0])) {
-                var matches = re_clear_bp.exec(lines[0]);
-                var lineno = matches[1];
-                this.clear_breakpoint(lineno);
+                var matches = lines[0].split(" ");
+                
+                for (var i = 1; i < matches.length; ++i)
+                    this.clear_breakpoint(matches[i]);
             } else if (re_list.test(lines[0])) {
                 this.list();
             } else if (re_help.test(lines[0])) {
