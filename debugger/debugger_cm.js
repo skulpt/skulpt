@@ -41,7 +41,13 @@ $(function () {
         
         // test for clear breakpoints
         re_clear_bp = /\bclear\b( \d+)+/,
+
+        // test for disable breakpoints
+        re_disable_bp = /\bdisable\b( \d+)+/,
         
+        // test for enable breakpoints
+        re_enable_bp = /\benable\b( \d+)+/,
+
         // test for current execution line
         re_list = /\blist\b/,
         
@@ -143,13 +149,18 @@ $(function () {
     }
     
     repl.view_breakpoints = function() {
-        repl.print("Filename\t\tLineNo\t\tColNo\t\tCode");
-        repl.print("--------\t\t------\t\t-----\t\t----");
+        repl.print("Filename\t\tLineNo\t\tColNo\t\tEnabled\t\tCode");
+        repl.print("--------\t\t------\t\t-----\t\t-------\t\t----");
         
         var bps = this.sk_debugger.get_breakpoints_list();
         for (var bp in bps) {
             var bp_obj = bps[bp];
-            var bp_str = ("     " + bp_obj.filename).slice(-10) + "\t\t" + ("     " + bp_obj.lineno).slice(-5) + "\t\t" + ("     " + bp_obj.colno).slice(-5) + "\t\t" + repl.sk_code_editor.getLine(bp_obj.lineno - 1);
+            var bp_str = 
+            ("     " + bp_obj.filename).slice(-10) + "\t\t" +
+            ("     " + bp_obj.lineno).slice(-5) + "\t\t" +
+            ("     " + bp_obj.colno).slice(-5) + "\t\t" +
+            ("     " + bp_obj.enabled).slice(-5) + "\t\t" +
+            repl.sk_code_editor.getLine(bp_obj.lineno - 1).trim();
             repl.print(bp_str);
         }
     }
@@ -164,6 +175,28 @@ $(function () {
             }
         }
     }
+    
+    repl.disable_breakpoint = function(bp) {
+        if (bp == "") {
+            repl.print("No breakpoints specified to be disabled");
+        } else {
+            var result = this.sk_debugger.disable_breakpoint(editor_filename + ".py", bp, "0");
+            if (result != null) {
+                repl.print(result);
+            }
+        }
+    }
+    
+    repl.enable_breakpoint = function(bp) {
+        if (bp == "") {
+            repl.print("No breakpoints specified to be disabled");
+        } else {
+            var result = this.sk_debugger.enable_breakpoint(editor_filename + ".py", bp, "0");
+            if (result != null) {
+                repl.print(result);
+            }
+        }
+    }    
     
     repl.debug_callback = function(suspension) {
         repl.suspension = suspension;
@@ -311,7 +344,6 @@ $(function () {
                 this.view_breakpoints();
             } else if (re_clear_bp.test(lines[0])) {
                 var matches = lines[0].split(" ");
-                
                 for (var i = 1; i < matches.length; ++i)
                     this.clear_breakpoint(matches[i]);
             } else if (re_list.test(lines[0])) {
@@ -326,6 +358,14 @@ $(function () {
                 var matches = re_tbreak.exec(lines[0]);
                 var lineno = matches[1];
                 this.set_breakpoint(lineno, true);
+            } else if (re_disable_bp.test(lines[0])) {
+                var matches = lines[0].split(" ");
+                for (var i = 1; i < matches.length; ++i)
+                    this.disable_breakpoint(matches[i]);
+            } else if (re_enable_bp.test(lines[0])) {
+                var matches = lines[0].split(" ");
+                for (var i = 1; i < matches.length; ++i)
+                    this.enable_breakpoint(matches[i]);
             }
             
         } catch (err) {

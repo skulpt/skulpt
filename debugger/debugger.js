@@ -14,6 +14,7 @@ Sk.Breakpoint = function(filename, lineno, colno) {
     this.filename = filename;
     this.lineno = lineno;
     this.colno = colno;
+    this.enabled = true;
 }
 
 Sk.Debugger = function(filename, output_callback) {
@@ -70,7 +71,7 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     }
     
     var key = this.generate_breakpoint_key(filename, lineno, colno);
-    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+    if (hasOwnProperty(this.dbg_breakpoints, key) && this.dbg_breakpoints[key].enabled == true) {
         if (hasOwnProperty(this.tmp_breakpoints, key)) {
             delete this.dbg_breakpoints[key];
             delete this.tmp_breakpoints[key];
@@ -82,6 +83,22 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
 
 Sk.Debugger.prototype.get_breakpoints_list = function() {
     return this.dbg_breakpoints;
+}
+
+Sk.Debugger.prototype.disable_breakpoint = function(filename, lineno, colno) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        this.dbg_breakpoints[key].enabled = false;
+    }
+}
+
+Sk.Debugger.prototype.enable_breakpoint = function(filename, lineno, colno) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        this.dbg_breakpoints[key].enabled = true;
+    }
 }
 
 Sk.Debugger.prototype.clear_breakpoint = function(filename, lineno, colno) {
