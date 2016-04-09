@@ -127,6 +127,10 @@ Sk.Debugger.prototype.error = function(e) {
     this.output_callback.print("Traceback (most recent call last):");
     for (var idx = 0; idx < e.traceback.length; ++idx) {
         this.output_callback.print("  File \"" + e.traceback[idx].filename + "\", line " + e.traceback[idx].lineno + ", in <module>");
+        var code = this.output_callback.sk_code_editor.getLine(e.traceback[idx].lineno - 1);
+        code = code.trim();
+        code = "    " + code;
+        this.output_callback.print(code);
     }
     
     var err_ty = e.constructor.tp$name;
