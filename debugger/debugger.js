@@ -16,12 +16,13 @@ Sk.Breakpoint = function(filename, lineno, colno) {
     this.colno = colno;
 }
 
-Sk.Debugger = function(output_callback) {
+Sk.Debugger = function(filename, output_callback) {
     this.dbg_breakpoints = {};
-    this.suspensions = [];
+    this.suspension_stack = [];
     this.eval_callback = null;
     this.suspension = null;
     this.output_callback = output_callback;
+    this.filename = filename;
 }
 
 Sk.Debugger.prototype.get_active_suspension = function() {
@@ -60,19 +61,32 @@ Sk.Debugger.prototype.clear_all_breakpoints = function() {
 }
 
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {
-    if (!hasOwnProperty(suspension, filename) && suspension.child instanceof Sk.misceval.Suspension)
-        suspension = suspension.child;
-
     var filename = suspension.filename;
     var lineno = suspension.lineno;
     var colno = suspension.colno;
-    this.output_callback.print("Broken at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
+    this.output_callback.print("Hit Breakpoint at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
     this.output_callback.print("----------------------------------------------------------------------------------\n");
     this.output_callback.print(" --> " + this.output_callback.sk_code_editor.getLine(lineno - 1) + "\n");
     this.output_callback.print("----------------------------------------------------------------------------------\n");
 }
 
 Sk.Debugger.prototype.set_suspension = function(suspension) {
+    if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
+        suspension = suspension.child;
+    
+    // Clear the current stack
+    this.suspension_stack = [];
+    
+    // Unroll the stack to get each suspension.
+    var parent = null;
+    while (suspension instanceof Sk.misceval.Suspension) {
+        this.suspension_stack.concat(suspension);
+        parent = suspension;
+        suspension = suspension.child;
+    }
+
+    suspension = parent;
+
     this.print_suspension_info(suspension);
     this.suspension = suspension;
 }
@@ -83,10 +97,8 @@ Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno) {
 }
 
 Sk.Debugger.prototype.suspension_handler = function(susp) {
-    console.log("Created the promise");
     return new Promise(function(resolve, reject) {
         try {
-            console.log("I am executing resolve in Promise");
             resolve(susp.resume());
         } catch(e) {
             reject(e);
@@ -111,8 +123,16 @@ Sk.Debugger.prototype.success = function(r) {
     }
 }
 
-Sk.Debugger.prototype.reject = function() {
-    this.output_callback.print("Error running suspension");
+Sk.Debugger.prototype.error = function(e) {
+    this.output_callback.print("Traceback (most recent call last):");
+    for (var idx = 0; idx < e.traceback.length; ++idx) {
+        this.output_callback.print("  File \"" + e.traceback[idx].filename + "\", line " + e.traceback[idx].lineno + ", in <module>");
+    }
+    
+    var err_ty = e.constructor.tp$name;
+    for (var idx = 0; idx < e.args.v.length; ++idx) {
+        this.output_callback.print(err_ty + ": " + e.args.v[idx].v);
+    }
 }
 
 Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers, debugger_obj) {

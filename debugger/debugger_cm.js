@@ -55,7 +55,7 @@ $(function () {
         };
         
     // Debugger
-    repl.sk_debugger = new Sk.Debugger(repl),
+    repl.sk_debugger = new Sk.Debugger(editor_filename, repl),
         
     // code editor
     repl.sk_code_editor = window.code_editor;
@@ -104,13 +104,10 @@ $(function () {
             susp_handlers["*"] = repl.sk_debugger.suspension_handler.bind(this);
             Sk.breakpoints = repl.sk_debugger.check_breakpoints.bind(repl.sk_debugger);
             
-            repl.sk_debugger.asyncToPromise(function() {
+            var promise = repl.sk_debugger.asyncToPromise(function() {
                 return Sk.importMainWithBody(editor_filename, true, repl.sk_code_editor.getValue(),true);
             }, susp_handlers, this.sk_debugger);
-            // repl.sk_debugger.eval_callback = repl.debug_callback;
-            // repl.sk_debugger.execute(function() {
-            //     return Sk.importMainWithBody("<stdin>",true, repl.sk_code_editor.getValue(),true);
-            //     }, susp_handlers);
+            promise.then(this.sk_debugger.success.bind(this.sk_debugger), this.sk_debugger.error.bind(this.sk_debugger));
         } catch(e) {
             outf(e.toString() + "\n")
         }
@@ -183,9 +180,6 @@ $(function () {
     
     repl.view_locals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
-        if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
-            suspension = suspension.child;
-            
         var locals = suspension.$loc;
         
         if (variable == "") {
@@ -203,9 +197,6 @@ $(function () {
     
     repl.view_globals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
-        if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
-            suspension = suspension.child;
-            
         var globals = suspension.$gbl;
         
         if (variable == "") {
