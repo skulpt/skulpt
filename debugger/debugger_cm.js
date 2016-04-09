@@ -7,40 +7,43 @@ $(function () {
         compilableLines = [],
 
         // Run code regex
-        re_run = /run/,
+        re_run = /\brun\b/,
         
         // Next Step
-        re_nextstep = /next/,
+        re_nextstep = /\bnext\b/,
         
         // Step instruction
-        re_step = /step/,
+        re_step = /\bstep\b/,
         
         //test for empty line.
         re_emptyline = /^\\s*$/,
         
         // test for view locals
-        re_viewlocals = /view local(s*)( *)(\w*)/,
+        re_viewlocals = /\bview local\b(s*)( *)(\w*)/,
         
         // test for view globals
-        re_viewglobals = /view global(s*)( *)(\w*)/,
+        re_viewglobals = /\bview global\b(s*)( *)(\w*)/,
         
         // test for help
-        re_help = /help/,
+        re_help = /\bhelp\b/,
         
         // test for set breakpoints
-        re_break = /break (\d+)/,
+        re_break = /\bbreak\b (\d+)/,
+        
+        // test for temporary breakpoints
+        re_tbreak = /\btbreak\b (\d+)/,
         
         // test for where command
-        re_where = /where/,
+        re_where = /\bwhere\b/,
         
         // test for view breakpoints
-        re_view_bp = /view bp/,
+        re_view_bp = /\bview bp\b/,
         
         // test for clear breakpoints
-        re_clear_bp = /clear bp (\d+)/,
+        re_clear_bp = /\bclear bp\b (\d+)/,
         
         // test for current execution line
-        re_list = /list/,
+        re_list = /\blist\b/,
         
         // editor filename
         editor_filename = "<stdin>",
@@ -49,12 +52,15 @@ $(function () {
         cmd_list = {
             "help": "Display the list of commands available in the debugger",
             "where": "Print the stack trace",
+            "down": "Move the current frame one level down in the stack trace (to a newer frame)",
+            "up": "Move the current frame one level up in the stack trace (to an older frame)",
+            "break <lineno>": "Set the breakpoint at specified line number",
+            "tbreak <lineno>": "Temporary breakpoint, which is removed automatically when it is first hit. The arguments are the same as break.",
             "run": "Run / Restart the current program in the editor",
             "next": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
             "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
             "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
-            "break <lineno>": "Set the breakpoint at specified line number",
             "clear bp <lineno>": "If lineno is specifed then that breakpoint is cleared otherwise all breakpoints are cleared",
             "list": "List source code for the current file. Without arguments, list 11 lines around the current line or continue the previous listing."
         };
@@ -128,8 +134,8 @@ $(function () {
         this.sk_debugger.resume.call(this.sk_debugger);
     }
     
-    repl.set_breakpoint = function(bp) {
-        this.sk_debugger.add_breakpoint(editor_filename + ".py", bp, "0");
+    repl.set_breakpoint = function(bp, temporary) {
+        this.sk_debugger.add_breakpoint(editor_filename + ".py", bp, "0", temporary);
     }
     
     repl.view_breakpoints = function() {
@@ -296,7 +302,7 @@ $(function () {
             } else if (re_break.test(lines[0])) {
                 var matches = re_break.exec(lines[0]);
                 var lineno = matches[1];
-                this.set_breakpoint(lineno);
+                this.set_breakpoint(lineno, false);
             } else if (re_view_bp.test(lines[0])) {
                 this.view_breakpoints();
             } else if (re_clear_bp.test(lines[0])) {
@@ -311,6 +317,10 @@ $(function () {
                 this.where();
             } else if (re_step.test(lines[0])) {
                 this.step();
+            } else if (re_tbreak.test(lines[0])) {
+                var matches = re_tbreak.exec(lines[0]);
+                var lineno = matches[1];
+                this.set_breakpoint(lineno, true);
             }
             
         } catch (err) {

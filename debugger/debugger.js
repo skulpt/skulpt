@@ -18,6 +18,7 @@ Sk.Breakpoint = function(filename, lineno, colno) {
 
 Sk.Debugger = function(filename, output_callback) {
     this.dbg_breakpoints = {};
+    this.tmp_breakpoints = {};
     this.suspension_stack = [];
     this.eval_callback = null;
     this.suspension = null;
@@ -56,6 +57,10 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     
     var key = this.generate_breakpoint_key(filename, lineno, colno);
     if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        if (hasOwnProperty(this.tmp_breakpoints, key)) {
+            delete this.dbg_breakpoints[key];
+            delete this.tmp_breakpoints[key];
+        }
         return true;
     }
     return false;
@@ -113,9 +118,11 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     this.suspension = suspension;
 }
 
-Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno) {
+Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno, temporary) {
     var key = this.generate_breakpoint_key(filename, lineno, colno);
     this.dbg_breakpoints[key] = new Sk.Breakpoint(filename, lineno, colno);
+    if (temporary)
+        this.tmp_breakpoints[key] = true;
 }
 
 Sk.Debugger.prototype.suspension_handler = function(susp) {
