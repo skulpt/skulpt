@@ -153,34 +153,6 @@ Sk.Debugger.prototype.asyncToPromise = function(suspendablefn, suspHandlers, deb
                     while (r instanceof Sk.misceval.Suspension) {
                         debugger_obj.set_suspension(r);
                         return;
-                        
-                        var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
-
-                        if (handler) {
-                            var handlerPromise = handler(r);
-                            if (handlerPromise) {
-                                handlerPromise.then(handleResponse, reject);
-                                return;
-                            }
-                        }
-
-                        if (r.data["type"] == "Sk.promise") {
-                            r.data["promise"].then(resumeWithData, resumeWithError);
-                            return;
-
-                        } else if (r.data["type"] == "Sk.yield" && typeof setTimeout === "function") {
-                            setTimeout(resume, 0);
-                            return;
-
-                        } else if (r.optional) {
-                            // Unhandled optional suspensions just get
-                            // resumed immediately, and we go around the loop again.
-                            r = r.resume();
-
-                        } else {
-                            // Unhandled, non-optional suspension.
-                            throw new Sk.builtin.SuspensionError("Unhandled non-optional suspension of type '"+r.data["type"]+"'");
-                        }
                     }
 
                     resolve(r);
