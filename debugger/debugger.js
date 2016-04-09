@@ -29,7 +29,7 @@ Sk.Debugger.prototype.get_active_suspension = function() {
 }
 
 Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno) {
-    var key = filename + "-" + lineno + "-" + colno;
+    var key = filename + "-" + lineno;
     return key;
 }
 
