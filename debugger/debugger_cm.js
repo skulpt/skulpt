@@ -30,6 +30,12 @@ $(function () {
         // test for set breakpoints
         re_set_bp = /set bp (\d+)/,
         
+        // test for view breakpoints
+        re_view_bp = /view bp/,
+        
+        // test for clear breakpoints
+        re_clear_bp = /clear bp (\d+)/,
+        
         // editor filename
         editor_filename = "<stdin>",
         
@@ -39,8 +45,10 @@ $(function () {
             "run": "Run / Restart the current program in the editor",
             "next": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
-            "view locals": "View all the locals at the current execution point",
-            "view globals": "View all the globals at the current execution point",
+            "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
+            "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
+            "set bp <lineno>": "Set the breakpoint at specified line number",
+            "clear bp <lineno>": "If lineno is specifed then that breakpoint is cleared otherwise all breakpoints are cleared"
         };
         
     // Debugger
@@ -113,12 +121,27 @@ $(function () {
         this.sk_debugger.add_breakpoint(editor_filename + ".py", bp, "0");
     }
     
-    repl.clear_all_breakpoints = function() {
-        console.log("Clear all breakpoints");
+    repl.view_breakpoints = function() {
+        repl.print("Filename\t\tLineNo\t\tColNo\t\tCode");
+        repl.print("--------\t\t------\t\t-----\t\t----");
+        
+        var bps = this.sk_debugger.get_breakpoints_list();
+        for (var bp in bps) {
+            var bp_obj = bps[bp];
+            var bp_str = ("     " + bp_obj.filename).slice(-10) + "\t\t" + ("     " + bp_obj.lineno).slice(-5) + "\t\t" + ("     " + bp_obj.colno).slice(-5) + "\t\t" + repl.sk_code_editor.getLine(bp_obj.lineno - 1);
+            repl.print(bp_str);
+        }
     }
     
     repl.clear_breakpoint = function(bp) {
-        console.log("Clear Breakpoint " + bp);
+        if (bp == "") {
+            this.sk_debugger.clear_all_breakpoints();
+        } else {
+            var result = this.sk_debugger.clear_breakpoint(editor_filename + ".py", bp, "0");
+            if (result != null) {
+                repl.print(result);
+            }
+        }
     }
     
     repl.debug_callback = function(suspension) {
@@ -222,7 +245,13 @@ $(function () {
             } else if (re_set_bp.test(lines[0])) {
                 var matches = re_set_bp.exec(lines[0]);
                 var lineno = matches[1];
-                
+                this.set_breakpoint(lineno);
+            } else if (re_view_bp.test(lines[0])) {
+                this.view_breakpoints();
+            } else if (re_clear_bp.test(lines[0])) {
+                var matches = re_clear_bp.exec(lines[0]);
+                var lineno = matches[1];
+                this.clear_breakpoint(lineno);
             } else if (re_help.test(lines[0])) {
                 this.display_help();
             }

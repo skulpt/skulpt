@@ -10,6 +10,12 @@ function hasOwnProperty(obj, prop) {
         (!(prop in proto) || proto[prop] !== obj[prop]);
 }
 
+Sk.Breakpoint = function(filename, lineno, colno) {
+    this.filename = filename;
+    this.lineno = lineno;
+    this.colno = colno;
+}
+
 Sk.Debugger = function(output_callback) {
     this.dbg_breakpoints = {};
     this.suspensions = [];
@@ -35,6 +41,24 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     return false;
 }
 
+Sk.Debugger.prototype.get_breakpoints_list = function() {
+    return this.dbg_breakpoints;
+}
+
+Sk.Debugger.prototype.clear_breakpoint = function(filename, lineno, colno) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        delete this.dbg_breakpoints[key];
+        return null;
+    } else {
+        return "Invalid breakpoint specified";
+    }
+}
+
+Sk.Debugger.prototype.clear_all_breakpoints = function() {
+    this.dbg_breakpoints = {}
+}
+
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {
     if (!hasOwnProperty(suspension, filename) && suspension.child instanceof Sk.misceval.Suspension)
         suspension = suspension.child;
@@ -55,7 +79,7 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
 
 Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno) {
     var key = this.generate_breakpoint_key(filename, lineno, colno);
-    this.breakpoints[key] = true;
+    this.dbg_breakpoints[key] = new Sk.Breakpoint(filename, lineno, colno);
 }
 
 Sk.Debugger.prototype.suspension_handler = function(susp) {
