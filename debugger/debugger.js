@@ -25,6 +25,10 @@ Sk.Debugger = function(filename, output_callback) {
     this.filename = filename;
 }
 
+Sk.Debugger.prototype.get_suspension_stack = function() {
+    return this.suspension_stack;
+}
+
 Sk.Debugger.prototype.get_active_suspension = function() {
     return this.suspension;
 }
@@ -66,7 +70,7 @@ Sk.Debugger.prototype.print_suspension_info = function(suspension) {
     var colno = suspension.colno;
     this.output_callback.print("Hit Breakpoint at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
     this.output_callback.print("----------------------------------------------------------------------------------\n");
-    this.output_callback.print(" --> " + this.output_callback.sk_code_editor.getLine(lineno - 1) + "\n");
+    this.output_callback.print(" ==> " + this.output_callback.sk_code_editor.getLine(lineno - 1) + "\n");
     this.output_callback.print("----------------------------------------------------------------------------------\n");
 }
 
@@ -80,7 +84,7 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     // Unroll the stack to get each suspension.
     var parent = null;
     while (suspension instanceof Sk.misceval.Suspension) {
-        this.suspension_stack.concat(suspension);
+        this.suspension_stack.push(suspension);
         parent = suspension;
         suspension = suspension.child;
     }

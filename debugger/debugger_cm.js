@@ -28,7 +28,10 @@ $(function () {
         re_help = /help/,
         
         // test for set breakpoints
-        re_set_bp = /set bp (\d+)/,
+        re_break = /break (\d+)/,
+        
+        // test for where command
+        re_where = /where/,
         
         // test for view breakpoints
         re_view_bp = /view bp/,
@@ -37,7 +40,7 @@ $(function () {
         re_clear_bp = /clear bp (\d+)/,
         
         // test for current execution line
-        re_exec_line = /view exec_line/,
+        re_list = /list/,
         
         // editor filename
         editor_filename = "<stdin>",
@@ -50,8 +53,9 @@ $(function () {
             "cont": "Continue execution till next breakpoint is hit or application terminates",
             "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
             "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
-            "set bp <lineno>": "Set the breakpoint at specified line number",
-            "clear bp <lineno>": "If lineno is specifed then that breakpoint is cleared otherwise all breakpoints are cleared"
+            "break <lineno>": "Set the breakpoint at specified line number",
+            "clear bp <lineno>": "If lineno is specifed then that breakpoint is cleared otherwise all breakpoints are cleared",
+            "list": "List source code for the current file. Without arguments, list 11 lines around the current line or continue the previous listing."
         };
         
     // Debugger
@@ -148,7 +152,7 @@ $(function () {
         repl.suspension = suspension;
     }
     
-    repl.view_execution_line = function() {
+    repl.list = function() {
         var suspension = this.sk_debugger.get_active_suspension();
         if (suspension != null) {
             if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
@@ -160,13 +164,13 @@ $(function () {
             repl.print("Broken at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
             repl.print("----------------------------------------------------------------------------------\n");
 
-            var minLineNo = Math.max(0, lineno - 3);
-            var maxLineNo = Math.min(lineno + 3, repl.sk_code_editor.lineCount());
+            var minLineNo = Math.max(0, lineno - 5);
+            var maxLineNo = Math.min(lineno + 5, repl.sk_code_editor.lineCount());
             
             for (var i = minLineNo; i <= maxLineNo; ++i) {
-                var prefix = "     ";
+                var prefix = i + "     ";
                 if (i == lineno) {
-                    prefix = "---> "
+                    prefix = i + " =>  "
                 }
                 
                 repl.print(prefix + repl.sk_code_editor.getLine(i - 1));
@@ -218,6 +222,22 @@ $(function () {
         }
     }
     
+    repl.where = function() {
+        var suspension_stack = repl.sk_debugger.get_suspension_stack();
+        var len = suspension_stack.length;
+        for (var i = len - 1; i >= 0; --i) {
+            var susp = suspension_stack[i];
+            repl.print("  File \"" + susp.filename + "\", line " + susp.lineno + ", in <module>");
+            var code = repl.sk_code_editor.getLine(susp.lineno - 1);
+            code = code.trim();
+            if (i == len - 1)
+                code = "=>  " + code;
+            else
+                code = "    " + code;
+            repl.print(code);
+        }
+    }
+    
     //Loop
     repl.eval = function (code) {
         Sk.configure({
@@ -266,8 +286,8 @@ $(function () {
                     variable = matches[3];
                 }
                 this.view_globals(variable);
-            } else if (re_set_bp.test(lines[0])) {
-                var matches = re_set_bp.exec(lines[0]);
+            } else if (re_break.test(lines[0])) {
+                var matches = re_break.exec(lines[0]);
                 var lineno = matches[1];
                 this.set_breakpoint(lineno);
             } else if (re_view_bp.test(lines[0])) {
@@ -276,10 +296,12 @@ $(function () {
                 var matches = re_clear_bp.exec(lines[0]);
                 var lineno = matches[1];
                 this.clear_breakpoint(lineno);
-            } else if (re_exec_line.test(lines[0])) {
-                this.view_execution_line();
+            } else if (re_list.test(lines[0])) {
+                this.list();
             } else if (re_help.test(lines[0])) {
                 this.display_help();
+            } else if (re_where.test(lines[0])) {
+                this.where();
             }
             
         } catch (err) {
