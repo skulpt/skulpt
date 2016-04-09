@@ -144,12 +144,16 @@ Sk.Debugger.prototype.success = function(r) {
         if (this.suspension_stack.length > 0) {
             // Current suspension should be the last one on the list
             var parent_suspension = this.suspension_stack.pop();
+            // The child has completed the execution. So override the child's resume
+            // so we can continue the execution.
+            parent_suspension.child.resume = function() {};
+
             this.print_suspension_info(parent_suspension);
             // Do not use set_suspension since it will recurse to the child again
-            parent_suspension.child = null; // Remove the child so we don't recurse again.
             this.suspension = parent_suspension;
         } else {
             this.suspension = null;
+            this.output_callback.print("Program execution complete");
         }
     }
 }
