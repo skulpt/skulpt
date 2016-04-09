@@ -15,6 +15,7 @@ Sk.Breakpoint = function(filename, lineno, colno) {
     this.lineno = lineno;
     this.colno = colno;
     this.enabled = true;
+    this.ignore_count = 0;
 }
 
 Sk.Debugger = function(filename, output_callback) {
@@ -71,12 +72,20 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     }
     
     var key = this.generate_breakpoint_key(filename, lineno, colno);
-    if (hasOwnProperty(this.dbg_breakpoints, key) && this.dbg_breakpoints[key].enabled == true) {
+    if (hasOwnProperty(this.dbg_breakpoints, key) &&
+        this.dbg_breakpoints[key].enabled == true) {
         if (hasOwnProperty(this.tmp_breakpoints, key)) {
             delete this.dbg_breakpoints[key];
             delete this.tmp_breakpoints[key];
         }
-        return true;
+        
+        this.dbg_breakpoints[key].ignore_count -= 1;
+        this.dbg_breakpoints[key].ignore_count = Math.max(0, this.dbg_breakpoints[key].ignore_count);
+        
+        if (this.dbg_breakpoints[key].ignore_count == 0)
+            return true;
+        else
+            return false;
     }
     return false;
 }
@@ -113,6 +122,14 @@ Sk.Debugger.prototype.clear_breakpoint = function(filename, lineno, colno) {
 
 Sk.Debugger.prototype.clear_all_breakpoints = function() {
     this.dbg_breakpoints = {}
+}
+
+Sk.Debugger.prototype.set_ignore_count = function(filename, lineno, colno, count) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        var bp = this.dbg_breakpoints[key];
+        bp.ignore_count = count;
+    }
 }
 
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {

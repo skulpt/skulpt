@@ -47,6 +47,9 @@ $(function () {
         
         // test for enable breakpoints
         re_enable_bp = /\benable\b( \d+)+/,
+        
+        // test for ignore count breakpoint
+        re_ignore_count = /\bignore count\b (\d+) (\d+)/,
 
         // test for current execution line
         re_list = /\blist\b/,
@@ -62,12 +65,15 @@ $(function () {
             "up": "Move the current frame one level up in the stack trace (to an older frame)",
             "break <lineno>": "Set the breakpoint at specified line number",
             "tbreak <lineno>": "Temporary breakpoint, which is removed automatically when it is first hit. The arguments are the same as break.",
+            "clear bpnumber [bpnumber ...]]": "If space separated breakpoints are specifed then that breakpoint is cleared otherwise all breakpoints are cleared",
+            "disable [bpnumber [bpnumber ...]]": "Disables the breakpoints given as a space separated list of breakpoint numbers. Disabling a breakpoint means it cannot cause the program to stop execution",
+            "enable [bpnumber [bpnumber ...]]": "Enables the breakpoints specified.",
+            "ignore bpnumber [count]": "Sets the ignore count for the given breakpoint number. If count is omitted, the ignore count is set to 0",
             "run": "Run / Restart the current program in the editor",
             "next": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
             "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
             "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
-            "clear bp <lineno>": "If lineno is specifed then that breakpoint is cleared otherwise all breakpoints are cleared",
             "list": "List source code for the current file. Without arguments, list 11 lines around the current line or continue the previous listing."
         };
         
@@ -198,6 +204,10 @@ $(function () {
         }
     }    
     
+    repl.set_ignore_count = function(bp, count) {
+        this.sk_debugger.set_ignore_count(bp, count);
+    }
+    
     repl.debug_callback = function(suspension) {
         repl.suspension = suspension;
     }
@@ -267,6 +277,7 @@ $(function () {
     }
     
     repl.display_help = function() {
+        repl.print("Help: refer to https://docs.python.org/2/library/pdb.html")
         for (var cmd in cmd_list) {
             repl.print(cmd + ": " + cmd_list[cmd]);
         }
@@ -366,6 +377,10 @@ $(function () {
                 var matches = lines[0].split(" ");
                 for (var i = 1; i < matches.length; ++i)
                     this.enable_breakpoint(matches[i]);
+            } else if (re_ignore_count.test(lines[0])) {
+                var matches = re_ignore_count.exec(lines[0])
+                var bp = matches[1];
+                var count = matches[2];
             }
             
         } catch (err) {
