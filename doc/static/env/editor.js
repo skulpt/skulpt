@@ -80,7 +80,6 @@ $(document).ready(function () {
     window.builtinRead = builtinRead;
 
     $("#skulpt_run").click(function (e) { keymap["Ctrl-Enter"](editor)} );
-    $("#skulpt-debug").click(function (e) { keymap["Alt-Enter"](editor)} );
 
     $("#toggledocs").click(function (e) {
         $("#quickdocs").toggle();
