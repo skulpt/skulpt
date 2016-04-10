@@ -16,7 +16,6 @@ Sk.Breakpoint = function(filename, lineno, colno) {
     this.colno = colno;
     this.enabled = true;
     this.ignore_count = 0;
-    this.condition = null;
 }
 
 Sk.Debugger = function(filename, output_callback) {
@@ -57,7 +56,9 @@ Sk.Debugger.prototype.get_suspension_stack = function() {
 }
 
 Sk.Debugger.prototype.get_active_suspension = function() {
-    return this.suspension;
+    if (this.suspension_stack.length == 0)
+        return null;
+    return this.suspension_stack[this.suspension_stack.length - 1];
 }
 
 Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno) {
@@ -163,24 +164,23 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
         suspension = suspension.child;
         
-    var original_suspension = suspension;
+    // Pop the last suspension of the stack if there is more than 0
+    if (this.suspension_stack.length > 0) {
+        this.suspension_stack.pop();
+    }
     
     // Unroll the stack to get each suspension.
     var parent = null;
     var nested = 0;
     while (suspension instanceof Sk.misceval.Suspension) {
         parent = suspension;
+        this.suspension_stack.push(parent);
         suspension = suspension.child;
-        nested += 1;
     }
 
     suspension = parent;
-    if (nested >= 2) {
-        this.suspension_stack.push(original_suspension);
-    }
     
     this.print_suspension_info(suspension);
-    this.suspension = suspension;
 }
 
 Sk.Debugger.prototype.add_breakpoint = function(filename, lineno, colno, temporary) {
@@ -201,10 +201,10 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
 }
 
 Sk.Debugger.prototype.resume = function() {
-    if (this.suspension == null) {
+    if (this.suspension_stack.length == 0) {
         this.print("No running program");
     } else {
-        var promise = this.suspension_handler(this.suspension);
+        var promise = this.suspension_handler(this.get_active_suspension());
         promise.then(this.success.bind(this), this.error.bind(this));
     }
 }
@@ -214,17 +214,21 @@ Sk.Debugger.prototype.success = function(r) {
         this.set_suspension(r);
     } else {
         if (this.suspension_stack.length > 0) {
-            // Current suspension should be the last one on the list
-            var parent_suspension = this.suspension_stack.pop();
+            // Current suspension needs to be popped of the stack
+            this.suspension_stack.pop();
+            
+            if (this.suspension_stack.length == 0) {
+                this.print("Program execution complete");
+                return;
+            }
+            
+            var parent_suspension = this.get_active_suspension();
             // The child has completed the execution. So override the child's resume
             // so we can continue the execution.
             parent_suspension.child.resume = function() {};
 
             this.print_suspension_info(parent_suspension);
-            // Do not use set_suspension since it will recurse to the child again
-            this.suspension = parent_suspension;
         } else {
-            this.suspension = null;
             this.print("Program execution complete");
         }
     }
