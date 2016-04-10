@@ -39,33 +39,6 @@ $(document).ready(function () {
             } catch(e) {
                 outf(e.toString() + "\n")
             }
-        },
-        "Alt-Enter": function (editor) {
-            Sk.configure({
-                output: outf,
-                debugout: jsoutf,
-                read: builtinRead,
-                yieldLimit: null,
-                execLimit: null,
-                debugging: true,
-            });
-            Sk.canvas = "mycanvas";
-            if (editor.getValue().indexOf('turtle') > -1 ) {
-                $('#mycanvas').show()
-            }
-            Sk.pre = "edoutput";
-            
-            (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
-            try {
-                var sk_debugger = new Sk.Debugger();
-                var susp_handlers = {};
-                susp_handlers["*"] = sk_debugger.suspension_handler;
-                Sk.misceval.asyncToPromise(function() {
-                    return Sk.importMainWithBody("<stdin>",true,editor.getValue(),true);
-                }, susp_handlers);
-            } catch(e) {
-                outf(e.toString() + "\n")
-            }
         }
     }
 
