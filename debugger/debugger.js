@@ -87,16 +87,17 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno, glob
     var key = this.generate_breakpoint_key(filename, lineno, colno);
     if (hasOwnProperty(this.dbg_breakpoints, key) &&
         this.dbg_breakpoints[key].enabled == true) {
-        
+        var bp = null;
         if (hasOwnProperty(this.tmp_breakpoints, key)) {
             delete this.dbg_breakpoints[key];
             delete this.tmp_breakpoints[key];
+            return;
         }
         
         this.dbg_breakpoints[key].ignore_count -= 1;
         this.dbg_breakpoints[key].ignore_count = Math.max(0, this.dbg_breakpoints[key].ignore_count);
         
-        var bp = this.dbg_breakpoints[key];
+        bp = this.dbg_breakpoints[key];
         if (bp.ignore_count == 0) {
             return true;
         } else {
@@ -138,6 +139,7 @@ Sk.Debugger.prototype.clear_breakpoint = function(filename, lineno, colno) {
 
 Sk.Debugger.prototype.clear_all_breakpoints = function() {
     this.dbg_breakpoints = {};
+    this.tmp_breakpoints = {};
 };
 
 Sk.Debugger.prototype.set_ignore_count = function(filename, lineno, colno, count) {
@@ -173,6 +175,7 @@ Sk.Debugger.prototype.print_suspension_info = function(suspension) {
 };
 
 Sk.Debugger.prototype.set_suspension = function(suspension) {
+    var parent = null;
     if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
         suspension = suspension.child;
         
@@ -183,7 +186,6 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     }
     
     // Unroll the stack to get each suspension.
-    var parent = null;
     while (suspension instanceof Sk.misceval.Suspension) {
         parent = suspension;
         this.suspension_stack.push(parent);

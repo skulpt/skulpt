@@ -161,10 +161,10 @@ $(function () {
     };
     
     repl.view_breakpoints = function() {
+        var bps = this.sk_debugger.get_breakpoints_list();
         repl.print("Filename\t\tLineNo\t\tColNo\t\tEnabled\t\tCode");
         repl.print("--------\t\t------\t\t-----\t\t-------\t\t----");
         
-        var bps = this.sk_debugger.get_breakpoints_list();
         for (var bp in bps) {
             var bp_obj = bps[bp];
             var bp_str = 
@@ -221,18 +221,15 @@ $(function () {
     repl.list = function() {
         var suspension = this.sk_debugger.get_active_suspension();
         if (suspension != null) {
-            if (!hasOwnProperty(suspension, "filename") && suspension.child instanceof Sk.misceval.Suspension)
-                suspension = suspension.child;
-                
             var filename = suspension.filename;
             var lineno = suspension.lineno;
             var colno = suspension.colno;
+            var minLineNo = Math.max(0, lineno - 5);
+            var maxLineNo = Math.min(lineno + 5, repl.sk_code_editor.lineCount());
+
             repl.print("Broken at <" + filename + "> at line: " + lineno + " column: " + colno + "\n");
             repl.print("----------------------------------------------------------------------------------\n");
 
-            var minLineNo = Math.max(0, lineno - 5);
-            var maxLineNo = Math.min(lineno + 5, repl.sk_code_editor.lineCount());
-            
             for (var i = minLineNo; i <= maxLineNo; ++i) {
                 var prefix = i + "     ";
                 if (i == lineno) {
@@ -292,12 +289,13 @@ $(function () {
     repl.where = function() {
         var suspension_stack = repl.sk_debugger.get_suspension_stack();
         var active_suspension = repl.sk_debugger.get_active_suspension();
-
         var len = suspension_stack.length;
+        
         for (var i = len - 1; i >= 0; --i) {
             var susp = suspension_stack[i];
-            repl.print("  File \"" + susp.filename + "\", line " + susp.lineno + ", in <module>");
             var code = repl.sk_code_editor.getLine(susp.lineno - 1);
+
+            repl.print("  File \"" + susp.filename + "\", line " + susp.lineno + ", in <module>");
             code = code.trim();
             if (susp === active_suspension) {
                 code = "=>  " + code;
