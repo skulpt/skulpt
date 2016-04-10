@@ -10,12 +10,6 @@ function hasOwnProperty(obj, prop) {
         (!(prop in proto) || proto[prop] !== obj[prop]);
 }
 
-Sk.Condition = function(lhs, cond, rhs) {
-    this.lhs = lhs;
-    this.cond = cond;
-    this.rhs = rhs;
-}
-
 Sk.Breakpoint = function(filename, lineno, colno) {
     this.filename = filename;
     this.lineno = lineno;
@@ -71,17 +65,6 @@ Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno
     return key;
 }
 
-Sk.Debugger.prototype.check_breakpoint_condition = function(bp) {
-    var conditional = bp.condition;
-    
-    if (conditional != null) {
-        var lhs = conditional.lhs;
-        var cond = conditional.cond;
-        var rhs = conditional.rhs;
-    }
-    return true;
-}
-
 Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno, globals, locals) {
     // If Step mode is enabled then ignore breakpoints since we will just break
     // at every line.
@@ -102,7 +85,7 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno, glob
         this.dbg_breakpoints[key].ignore_count = Math.max(0, this.dbg_breakpoints[key].ignore_count);
         
         var bp = this.dbg_breakpoints[key];
-        if (bp.ignore_count == 0 && this.check_breakpoint_condition(bp))
+        if (bp.ignore_count == 0)
             return true;
         else
             return false;
