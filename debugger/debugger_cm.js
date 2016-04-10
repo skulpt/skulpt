@@ -54,6 +54,8 @@ $(function () {
         // test for current execution line
         re_list = /\blist\b/,
         
+        re_condition = /condition (\d+), (\w+) (>|>=|<|<=|==) (\w+|\d+)/,
+        
         // editor filename
         editor_filename = "<stdin>",
         
@@ -205,7 +207,7 @@ $(function () {
     }    
     
     repl.set_ignore_count = function(bp, count) {
-        this.sk_debugger.set_ignore_count(bp, count);
+        this.sk_debugger.set_ignore_count(editor_filename + ".py", bp, "0", count);
     }
     
     repl.debug_callback = function(suspension) {
@@ -300,6 +302,10 @@ $(function () {
             repl.print(code);
         }
     }
+
+    repl.condition = function(lineno, lhs, cond, rhs) {
+        this.sk_debugger.set_condition(editor_filename + ".py", lineno, "0", lhs, cond, rhs);
+    }
     
     //Loop
     repl.eval = function (code) {
@@ -381,6 +387,13 @@ $(function () {
                 var matches = re_ignore_count.exec(lines[0])
                 var bp = matches[1];
                 var count = matches[2];
+            } else if (re_condition.test(lines[0])) {
+                var matches = re_condition.exec(lines[0]);
+                var lineno = matches[1];
+                var lhs = matches[2];
+                var cond = matches[3];
+                var rhs = matches[4];
+                this.condition(lineno, lhs, cond, rhs);
             }
             
         } catch (err) {

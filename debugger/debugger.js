@@ -10,12 +10,19 @@ function hasOwnProperty(obj, prop) {
         (!(prop in proto) || proto[prop] !== obj[prop]);
 }
 
+Sk.Condition = function(lhs, cond, rhs) {
+    this.lhs = lhs;
+    this.cond = cond;
+    this.rhs = rhs;
+}
+
 Sk.Breakpoint = function(filename, lineno, colno) {
     this.filename = filename;
     this.lineno = lineno;
     this.colno = colno;
     this.enabled = true;
     this.ignore_count = 0;
+    this.condition = null;
 }
 
 Sk.Debugger = function(filename, output_callback) {
@@ -64,6 +71,14 @@ Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno
     return key;
 }
 
+Sk.Debugger.prototype.check_breakpoint_condition = function(bp) {
+    var conditional = bp.condition;
+    var lhs = conditional.lhs;
+    var cond = conditional.cond;
+    var rhs = conditional.rhs;
+    return true;
+}
+
 Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     // If Step mode is enabled then ignore breakpoints since we will just break
     // at every line.
@@ -74,6 +89,7 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
     var key = this.generate_breakpoint_key(filename, lineno, colno);
     if (hasOwnProperty(this.dbg_breakpoints, key) &&
         this.dbg_breakpoints[key].enabled == true) {
+        
         if (hasOwnProperty(this.tmp_breakpoints, key)) {
             delete this.dbg_breakpoints[key];
             delete this.tmp_breakpoints[key];
@@ -82,7 +98,8 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
         this.dbg_breakpoints[key].ignore_count -= 1;
         this.dbg_breakpoints[key].ignore_count = Math.max(0, this.dbg_breakpoints[key].ignore_count);
         
-        if (this.dbg_breakpoints[key].ignore_count == 0)
+        var bp = this.dbg_breakpoints[key];
+        if (bp.ignore_count == 0 && this.check_breakpoint_condition(bp))
             return true;
         else
             return false;
@@ -130,6 +147,20 @@ Sk.Debugger.prototype.set_ignore_count = function(filename, lineno, colno, count
         var bp = this.dbg_breakpoints[key];
         bp.ignore_count = count;
     }
+}
+
+Sk.Debugger.prototype.set_condition = function(filename, lineno, colno, lhs, cond, rhs) {
+    var key = this.generate_breakpoint_key(filename, lineno, colno);
+    var bp;
+    if (hasOwnProperty(this.dbg_breakpoints, key)) {
+        // Set a new condition
+        bp = this.dbg_breakpoints[key];
+    } else {
+        bp = new Sk.Breakpoint(filename, lineno, colno);
+    }
+    
+    bp.condition = new Sk.Condition(lhs, cond, rhs);
+    this.dbg_breakpoints[key] = bp;
 }
 
 Sk.Debugger.prototype.print_suspension_info = function(suspension) {
