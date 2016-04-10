@@ -73,13 +73,16 @@ Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno
 
 Sk.Debugger.prototype.check_breakpoint_condition = function(bp) {
     var conditional = bp.condition;
-    var lhs = conditional.lhs;
-    var cond = conditional.cond;
-    var rhs = conditional.rhs;
+    
+    if (conditional != null) {
+        var lhs = conditional.lhs;
+        var cond = conditional.cond;
+        var rhs = conditional.rhs;
+    }
     return true;
 }
 
-Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno) {
+Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno, globals, locals) {
     // If Step mode is enabled then ignore breakpoints since we will just break
     // at every line.
     if (this.step_mode == true) {

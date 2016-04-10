@@ -113,7 +113,7 @@ $(function () {
     
     repl.run_code = function(code) {
         Sk.configure({
-            output: window.jsoutf,
+            output: repl.print,
             debugout: window.jsoutf,
             read: window.builtinRead,
             yieldLimit: null,
