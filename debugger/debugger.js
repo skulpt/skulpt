@@ -22,6 +22,7 @@ Sk.Debugger = function(filename, output_callback) {
     this.dbg_breakpoints = {};
     this.tmp_breakpoints = {};
     this.suspension_stack = [];
+    this.current_suspension = 0;
     this.eval_callback = null;
     this.suspension = null;
     this.output_callback = output_callback;
@@ -43,6 +44,14 @@ Sk.Debugger.prototype.get_source_line = function(lineno) {
     return "";
 }
 
+Sk.Debugger.prototype.move_up_the_stack = function() {
+    this.current_suspension = Math.min(this.current_suspension + 1, this.suspension_stack.length - 1);
+}
+
+Sk.Debugger.prototype.move_down_the_stack = function() {
+    this.current_suspension = Math.max(this.current_suspension - 1, 0);
+}
+
 Sk.Debugger.prototype.enable_step_mode = function() {
     this.step_mode = true;
 }
@@ -58,7 +67,8 @@ Sk.Debugger.prototype.get_suspension_stack = function() {
 Sk.Debugger.prototype.get_active_suspension = function() {
     if (this.suspension_stack.length == 0)
         return null;
-    return this.suspension_stack[this.suspension_stack.length - 1];
+
+    return this.suspension_stack[this.current_suspension];
 }
 
 Sk.Debugger.prototype.generate_breakpoint_key = function(filename, lineno, colno) {
@@ -167,6 +177,7 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     // Pop the last suspension of the stack if there is more than 0
     if (this.suspension_stack.length > 0) {
         this.suspension_stack.pop();
+        this.current_suspension -= 1;
     }
     
     // Unroll the stack to get each suspension.
@@ -175,6 +186,7 @@ Sk.Debugger.prototype.set_suspension = function(suspension) {
     while (suspension instanceof Sk.misceval.Suspension) {
         parent = suspension;
         this.suspension_stack.push(parent);
+        this.current_suspension += 1;
         suspension = suspension.child;
     }
 
@@ -201,6 +213,9 @@ Sk.Debugger.prototype.suspension_handler = function(susp) {
 }
 
 Sk.Debugger.prototype.resume = function() {
+    // Reset the suspension stack to the topmost
+    this.current_suspension = this.suspension_stack.length - 1;
+    
     if (this.suspension_stack.length == 0) {
         this.print("No running program");
     } else {

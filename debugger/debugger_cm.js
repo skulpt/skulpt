@@ -54,6 +54,12 @@ $(function () {
         // test for current execution line
         re_list = /\blist\b/,
         
+        // test for going up the stack
+        re_up = /up/,
+        
+        // test for going down the stack
+        re_down = /down/,
+        
         // editor filename
         editor_filename = "<stdin>",
         
@@ -285,6 +291,7 @@ $(function () {
     
     repl.where = function() {
         var suspension_stack = repl.sk_debugger.get_suspension_stack();
+        var active_suspension = repl.sk_debugger.get_active_suspension();
 
         var len = suspension_stack.length;
         for (var i = len - 1; i >= 0; --i) {
@@ -292,12 +299,22 @@ $(function () {
             repl.print("  File \"" + susp.filename + "\", line " + susp.lineno + ", in <module>");
             var code = repl.sk_code_editor.getLine(susp.lineno - 1);
             code = code.trim();
-            if (i == len - 1)
+            if (susp == active_suspension)
                 code = "=>  " + code;
             else
                 code = "    " + code;
             repl.print(code);
         }
+    }
+    
+    repl.down = function() {
+        repl.sk_debugger.move_down_the_stack();
+        repl.sk_debugger.print_suspension_info(repl.sk_debugger.get_active_suspension());
+    }
+    
+    repl.up = function() {
+        repl.sk_debugger.move_up_the_stack();
+        repl.sk_debugger.print_suspension_info(repl.sk_debugger.get_active_suspension());
     }
 
     //Loop
@@ -380,6 +397,11 @@ $(function () {
                 var matches = re_ignore_count.exec(lines[0])
                 var bp = matches[1];
                 var count = matches[2];
+                this.set_ignore_count(bp, count);
+            } else if (re_down.test(lines[0])) {
+                this.down();
+            } else if (re_up.test(lines[0])) {
+                this.up();
             }
             
         } catch (err) {
