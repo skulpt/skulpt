@@ -113,7 +113,7 @@ $(function () {
     
     repl.get_source_line = function(lineno) {
         return repl.sk_code_editor.getLine(lineno);
-    }
+    };
     
     repl.run_code = function(code) {
         Sk.configure({
@@ -144,21 +144,21 @@ $(function () {
         } catch(e) {
             outf(e.toString() + "\n")
         }
-    }
+    };
     
     repl.continue = function() {
         this.sk_debugger.disable_step_mode();
         this.sk_debugger.resume.call(this.sk_debugger);
-    }
+    };
     
     repl.step = function() {
         this.sk_debugger.enable_step_mode();
         this.sk_debugger.resume.call(this.sk_debugger);
-    }
+    };
     
     repl.set_breakpoint = function(bp, temporary) {
         this.sk_debugger.add_breakpoint(editor_filename + ".py", bp, "0", temporary);
-    }
+    };
     
     repl.view_breakpoints = function() {
         repl.print("Filename\t\tLineNo\t\tColNo\t\tEnabled\t\tCode");
@@ -175,7 +175,7 @@ $(function () {
             repl.sk_code_editor.getLine(bp_obj.lineno - 1).trim();
             repl.print(bp_str);
         }
-    }
+    };
     
     repl.clear_breakpoint = function(bp) {
         if (bp == "") {
@@ -186,7 +186,7 @@ $(function () {
                 repl.print(result);
             }
         }
-    }
+    };
     
     repl.disable_breakpoint = function(bp) {
         if (bp == "") {
@@ -197,7 +197,7 @@ $(function () {
                 repl.print(result);
             }
         }
-    }
+    };
     
     repl.enable_breakpoint = function(bp) {
         if (bp == "") {
@@ -208,15 +208,15 @@ $(function () {
                 repl.print(result);
             }
         }
-    }    
+    };
     
     repl.set_ignore_count = function(bp, count) {
         this.sk_debugger.set_ignore_count(editor_filename + ".py", bp, "0", count);
-    }
+    };
     
     repl.debug_callback = function(suspension) {
         repl.suspension = suspension;
-    }
+    };
     
     repl.list = function() {
         var suspension = this.sk_debugger.get_active_suspension();
@@ -246,7 +246,7 @@ $(function () {
         } else {
             repl.print("Program is currently not executing");
         }
-    }
+    };
     
     repl.view_locals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
@@ -263,7 +263,7 @@ $(function () {
                 repl.print("No such local variable: " + variable);
             }
         }
-    }
+    };
     
     repl.view_globals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
@@ -280,14 +280,14 @@ $(function () {
                 repl.print("No such local variable: " + variable);
             }
         }
-    }
+    };
     
     repl.display_help = function() {
         repl.print("Help: refer to https://docs.python.org/2/library/pdb.html")
         for (var cmd in cmd_list) {
             repl.print(cmd + ": " + cmd_list[cmd]);
         }
-    }
+    };
     
     repl.where = function() {
         var suspension_stack = repl.sk_debugger.get_suspension_stack();
@@ -299,23 +299,24 @@ $(function () {
             repl.print("  File \"" + susp.filename + "\", line " + susp.lineno + ", in <module>");
             var code = repl.sk_code_editor.getLine(susp.lineno - 1);
             code = code.trim();
-            if (susp == active_suspension)
+            if (susp === active_suspension) {
                 code = "=>  " + code;
-            else
+            } else {
                 code = "    " + code;
+            }
             repl.print(code);
         }
-    }
+    };
     
     repl.down = function() {
         repl.sk_debugger.move_down_the_stack();
-        repl.sk_debugger.print_suspension_info(repl.sk_debugger.get_active_suspension());
-    }
+        repl.where();
+    };
     
     repl.up = function() {
         repl.sk_debugger.move_up_the_stack();
-        repl.sk_debugger.print_suspension_info(repl.sk_debugger.get_active_suspension());
-    }
+        repl.where();
+    };
 
     //Loop
     repl.eval = function (code) {
@@ -337,7 +338,10 @@ $(function () {
             
         //split lines on linefeed
         var lines = code.split('\n'), index = -1, line = 0;
-
+        var matches = null;
+        var variable = null;
+        var lineno = 0;
+        
         try {
             //Evaluate
             if (!lines || /^\s*$/.test(lines)) {
@@ -349,28 +353,28 @@ $(function () {
                 this.continue();
             } else if (re_viewlocals.test(lines[0])) {
                 // get the matches for this.
-                var matches = re_viewlocals.exec(lines[0]);
-                var variable = null;
+                matches = re_viewlocals.exec(lines[0]);
+                variable = null;
                 if (matches.length == 4) {
                     variable = matches[3];
                 }
                 this.view_locals(variable);
             } else if (re_viewglobals.test(lines[0])) {
                 // get the matches for this.
-                var matches = re_viewglobals.exec(lines[0]);
-                var variable = null;
+                matches = re_viewglobals.exec(lines[0]);
+                variable = null;
                 if (matches.length == 4) {
                     variable = matches[3];
                 }
                 this.view_globals(variable);
             } else if (re_break.test(lines[0])) {
-                var matches = re_break.exec(lines[0]);
+                matches = re_break.exec(lines[0]);
                 var lineno = matches[1];
                 this.set_breakpoint(lineno, false);
             } else if (re_view_bp.test(lines[0])) {
                 this.view_breakpoints();
             } else if (re_clear_bp.test(lines[0])) {
-                var matches = lines[0].split(" ");
+                matches = lines[0].split(" ");
                 for (var i = 1; i < matches.length; ++i)
                     this.clear_breakpoint(matches[i]);
             } else if (re_list.test(lines[0])) {
@@ -382,19 +386,19 @@ $(function () {
             } else if (re_step.test(lines[0])) {
                 this.step();
             } else if (re_tbreak.test(lines[0])) {
-                var matches = re_tbreak.exec(lines[0]);
-                var lineno = matches[1];
+                matches = re_tbreak.exec(lines[0]);
+                lineno = matches[1];
                 this.set_breakpoint(lineno, true);
             } else if (re_disable_bp.test(lines[0])) {
-                var matches = lines[0].split(" ");
+                matches = lines[0].split(" ");
                 for (var i = 1; i < matches.length; ++i)
                     this.disable_breakpoint(matches[i]);
             } else if (re_enable_bp.test(lines[0])) {
-                var matches = lines[0].split(" ");
+                matches = lines[0].split(" ");
                 for (var i = 1; i < matches.length; ++i)
                     this.enable_breakpoint(matches[i]);
             } else if (re_ignore_count.test(lines[0])) {
-                var matches = re_ignore_count.exec(lines[0])
+                matches = re_ignore_count.exec(lines[0]);
                 var bp = matches[1];
                 var count = matches[2];
                 this.set_ignore_count(bp, count);
