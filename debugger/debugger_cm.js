@@ -9,8 +9,8 @@ $(function () {
         // Run code regex
         re_run = /\brun\b/,
         
-        // Next Step
-        re_nextstep = /\bnext\b/,
+        // Continue
+        re_cont = /\bcont\b/,
         
         // Step instruction
         re_step = /\bstep\b/,
@@ -19,10 +19,10 @@ $(function () {
         re_emptyline = /^\\s*$/,
         
         // test for view locals
-        re_viewlocals = /\bview local\b(s*)( *)(\w*)/,
+        re_viewlocals = /view local(s*)( *)(\w*)/,
         
         // test for view globals
-        re_viewglobals = /\bview global\b(s*)( *)(\w*)/,
+        re_viewglobals = /view global(s*)( *)(\w*)/,
         
         // test for help
         re_help = /\bhelp\b/,
@@ -76,7 +76,7 @@ $(function () {
             "enable [bpnumber [bpnumber ...]]": "Enables the breakpoints specified.",
             "ignore bpnumber [count]": "Sets the ignore count for the given breakpoint number. If count is omitted, the ignore count is set to 0",
             "run": "Run / Restart the current program in the editor",
-            "next": "Step Over to the next instruction",
+            "step": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
             "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
             "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
@@ -247,15 +247,19 @@ $(function () {
     
     repl.view_locals = function(variable) {
         var suspension = repl.sk_debugger.get_active_suspension();
-        var locals = suspension.$loc;
-        
+
         if (variable == "") {
-            for (var local in locals) {
-                repl.print(local + ": " + locals[local].v);
+            for (var local in suspension.$tmps) {
+                repl.print(local + ": " + suspension.$tmps[local].v);
+            }
+            for (var local in suspension.$loc) {
+                repl.print(local + ": " + suspension.$loc[local].v);
             }
         } else {
-            if (hasOwnProperty(locals, variable)) {
-                repl.print(variable + ": " + locals[variable].v);
+            if (hasOwnProperty(suspension.$loc, variable)) {
+                repl.print(variable + ": " + suspension.$loc[variable].v);
+            } else if (hasOwnProperty(suspension.$tmps, variable)) {
+                repl.print(variable + ": " + suspension.$tmps[variable].v);
             } else {
                 repl.print("No such local variable: " + variable);
             }
@@ -347,7 +351,7 @@ $(function () {
             }
             else if (re_run.test(lines[0])) {
                 this.run_code();
-            } else if (re_nextstep.test(lines[0])) {
+            } else if (re_cont.test(lines[0])) {
                 this.continue();
             } else if (re_viewlocals.test(lines[0])) {
                 // get the matches for this.

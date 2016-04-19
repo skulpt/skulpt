@@ -228,13 +228,18 @@ Sk.Debugger.prototype.resume = function() {
     }
 };
 
+Sk.Debugger.prototype.pop_suspension_stack = function() {
+    this.suspension_stack.pop();
+    this.current_suspension -= 1;
+}
+
 Sk.Debugger.prototype.success = function(r) {
     if (r instanceof Sk.misceval.Suspension) {
         this.set_suspension(r);
     } else {
         if (this.suspension_stack.length > 0) {
             // Current suspension needs to be popped of the stack
-            this.suspension_stack.pop();
+            this.pop_suspension_stack();
             
             if (this.suspension_stack.length == 0) {
                 this.print("Program execution complete");
