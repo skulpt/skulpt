@@ -475,9 +475,10 @@ Compiler.prototype.ccompare = function (e) {
 
     for (i = 0; i < n; ++i) {
         rhs = this.vexpr(e.comparators[i]);
-        res = this._gr("compare", "Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "'))");
-        out(fres, "=", res, ";");
-        this._jumpfalse(res, done);
+        out("$ret = Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true));");
+        this._checkSuspension(e);
+        out(fres, "=$ret;");
+        this._jumpfalse("$ret", done);
         cur = rhs;
     }
     this._jump(done);
