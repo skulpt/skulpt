@@ -981,6 +981,8 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
+    // as per the discussion here: https://github.com/skulpt/skulpt/pull/552
+    // this is here for performance reasons. array.slice doesn't get optimized
     var fs = new Array(arguments.length), i = 1;
 
     for (i = 1; i < arguments.length; i++) {
