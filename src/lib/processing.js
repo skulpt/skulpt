@@ -121,13 +121,6 @@ var $builtinmodule = function (name) {
     mod.MODEL = new Sk.builtin.int_( 4);
     mod.SHAPE = new Sk.builtin.int_( 5);
     
-    // Stroke modes
-    mod.SQUARE = Sk.builtin.assk$(  'butt', Sk.builtin.nmber.str);
-    mod.ROUND = Sk.builtin.assk$(   'round', Sk.builtin.nmber.str);
-    mod.PROJECT = Sk.builtin.assk$( 'square', Sk.builtin.nmber.str);
-    mod.MITER = Sk.builtin.assk$(   'miter', Sk.builtin.nmber.str);
-    mod.BEVEL = Sk.builtin.assk$(   'bevel', Sk.builtin.nmber.str);
-    
     // Lighting modes
     mod.AMBIENT = new Sk.builtin.int_(     0);
     mod.DIRECTIONAL = new Sk.builtin.int_( 1);
@@ -250,12 +243,12 @@ var $builtinmodule = function (name) {
     mod.PERSPECTIVE = new Sk.builtin.int_(  3);
     
     // Cursors
-    mod.ARROW = Sk.builtin.assk$('default', Sk.builtin.str);
-    mod.CROSS = Sk.builtin.assk$('crosshair', Sk.builtin.str);
-    mod.HAND = Sk.builtin.assk$('pointer', Sk.builtin.str);
-    mod.MOVE = Sk.builtin.assk$('move', Sk.builtin.str);
-    mod.TEXT = Sk.builtin.assk$('text', Sk.builtin.str);
-    mod.WAIT = Sk.builtin.assk$('wait', Sk.builtin.str);
+    mod.ARROW = new Sk.builtin.str("default");
+    mod.CROSS = new Sk.builtin.str("crosshair");
+    mod.HAND = new Sk.builtin.str("pointer");
+    mod.MOVE = new Sk.builtin.str("move");
+    mod.TEXT = new Sk.builtin.str("text");
+    mod.WAIT = new Sk.builtin.str("wait");
     mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto", Sk.builtin.nmber.str);
 
     // Hints
