@@ -932,7 +932,10 @@ Sk.abstr.iter = function(obj) {
     if (obj.tp$getattr) {
         iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
         if (iter) {
-            return Sk.misceval.callsim(iter,obj);
+            ret = Sk.misceval.callsim(iter, obj);
+            if (ret.tp$iternext) {
+                return ret;
+            }
         }
     }
     if (obj.tp$iter) {
