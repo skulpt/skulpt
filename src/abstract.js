@@ -918,7 +918,7 @@ Sk.abstr.iter = function(obj) {
             try {
                 ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
             } catch (e) {
-                if (e instanceof Sk.builtin.IndexError) {
+                if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
                 } else {
                     throw e;
