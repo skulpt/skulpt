@@ -74,6 +74,8 @@ Sk.ffi.remapToJs = function (obj) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
+    } else if (obj instanceof Sk.builtin.bool) {
+        return obj.v ? true : false;
     } else if (obj instanceof Sk.builtin.int_) {
         return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.float_) {
