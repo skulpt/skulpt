@@ -34,15 +34,15 @@ var $builtinmodule = function (name) {
     mod.struct_time = struct_time_f;
 
     function check_struct_time(t) {
-        if (!(t instanceof struct_time)) {
+        if (!(t instanceof struct_time_f)) {
             throw new Sk.builtin.TypeError("Required argument 'struct_time' must be of type: 'struct_time'");
         }
         var i;
-        var len = self.v.length;
-        var obj = self.v;
+        var len = t.v.length;
+        var obj = t.v;
         for (i = 0; i < len; ++i) {
             if (!Sk.builtin.checkInt(obj[i])) {
-                throw new Sk.builtin.TypeError("an integer is required");
+                throw new Sk.builtin.TypeError("struct_time may only contain integers");
             }
         }
         return true;
@@ -201,7 +201,7 @@ var $builtinmodule = function (name) {
         return asctime_f(localtime_f(secs));
     });
 
-    mod.mktime = new Sk.builtin.func(function(time) {
+    function mktime_f(time) {
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
             var d = new Date();
@@ -212,8 +212,12 @@ var $builtinmodule = function (name) {
             d.setMinutes(Sk.builtin.asnum$(time.v[4]));
             d.setSeconds(Sk.builtin.asnum$(time.v[5]));
             return Sk.builtin.assk$(d.getTime() / 1000, undefined);
+        } else {
+            throw new Sk.builtin.TypeError("mktime() requires a struct_time or 9-tuple");
         }
-    });
+    }
+
+    mod.mktime = new Sk.builtin.func(mktime_f);
 
     /*
     The offset of the local (non-DST) timezone, in seconds west of UTC (negative in most of Western Europe, 
@@ -251,33 +255,9 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(res);
     });
 
-    /*
-    %a  Locale’s abbreviated weekday name.   
-    %A  Locale’s full weekday name.  
-    %b  Locale’s abbreviated month name.     
-    %B  Locale’s full month name.    
-    %c  Locale’s appropriate date and time representation.   
-    %d  Day of the month as a decimal number [01,31].    
-    %H  Hour (24-hour clock) as a decimal number [00,23].    
-    %I  Hour (12-hour clock) as a decimal number [01,12].    
-    %j  Day of the year as a decimal number [001,366].   
-    %m  Month as a decimal number [01,12].   
-    %M  Minute as a decimal number [00,59].  
-    %p  Locale’s equivalent of either AM or PM. (1)
-    %S  Second as a decimal number [00,61]. (2)
-    %U  Week number of the year (Sunday as the first day of the week) as a decimal number [00,53]. All days in a new year preceding the first Sunday are considered to be in week 0.    (3)
-    %w  Weekday as a decimal number [0(Sunday),6].   
-    %W  Week number of the year (Monday as the first day of the week) as a decimal number [00,53]. All days in a new year preceding the first Monday are considered to be in week 0.    (3)
-    %x  Locale’s appropriate date representation.    
-    %X  Locale’s appropriate time representation.    
-    %y  Year without century as a decimal number [00,99].    
-    %Y  Year with century as a decimal number.   
-    %Z  Time zone name (no characters if no time zone exists).   
-    %%  A literal '%' character.         
-    */
-
     function strftime_f(format, t) {
-        throw new NotImplementedError("time.strftime() is not yet implemented");
+        var jsFormat;
+
         Sk.builtin.pyCheckArgs("strftime", arguments, 1, 2);
         if (!Sk.builtin.checkString(format)) {
             throw new Sk.builtin.TypeError("format must be a string");
@@ -287,11 +267,13 @@ var $builtinmodule = function (name) {
             t = localtime_f();
         } else if (!(t instanceof struct_time_f)) {
             t = new struct_time_f(t);
-        } else {
-            // check bounds on given struct_time
         }
 
-        // todo rest of implementation
+        check_struct_time(t);
+        
+        jsFormat = Sk.ffi.remapToJs(format);
+
+        return Sk.ffi.remapToPy(strftime(jsFormat, new Date(mktime_f(t).v*1000)));
     }
 
     mod.strftime = new Sk.builtin.func(strftime_f);
