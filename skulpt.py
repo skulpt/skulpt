@@ -117,6 +117,11 @@ Files = [
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
+ExtLibs = [
+        'support/time-helpers/strftime-min.js',
+        'support/time-helpers/strptime.min.js'
+]
+
 TestFiles = [
         'support/closure-library/closure/goog/base.js',
         'support/closure-library/closure/goog/deps.js',
@@ -149,8 +154,8 @@ def getTip():
     return repo.head.commit.hexsha
 
 
-def getFileList(type):
-    ret = []
+def getFileList(type, include_ext_libs=True):
+    ret = list(ExtLibs) if include_ext_libs else []
     for f in Files:
         if isinstance(f, tuple):
             if f[1] == type:
@@ -719,12 +724,12 @@ def dist(options):
         sys.exit(1);
 
     # compress
-    uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])
+    uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST, include_ext_libs=False)])
 
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file %s" % (uncompfiles, compfn))
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file tmp.js" % (uncompfiles))
     # to disable asserts
     # --define goog.DEBUG=false
     #
@@ -736,6 +741,20 @@ def dist(options):
     if ret != 0:
         print "closure-compiler failed."
         sys.exit(1)
+
+    if options.verbose:
+        print ". Bundling external libraries..."
+
+    bundle = ""
+    for fn in ExtLibs + ["tmp.js"]:
+        with open(fn, "r") as f:
+            bundle += f.read()
+
+    with open(compfn, "w") as f:
+        f.write(bundle)
+
+    print ". Wrote bundled file"
+
 
     # Run tests on compressed.
     if options.verbose:
