@@ -5,19 +5,52 @@
  window.performance.now()
 
  notes:
- - struct_time is a named tuple that has extra methods: 'n_fields', 'n_sequence_fields', 'n_unnamed_fields',
+ - struct_time is a structseq but structseq does not implement methods: 'n_fields', 'n_sequence_fields', 'n_unnamed_fields' yet
+
+ ['__doc__', '__file__', '__name__', '__package__', 'accept2dyear', 'altzone', 'asctime', 'clock', 'ctime', 'daylight', 'gmtime', 'localtime', 'mktime', 'sleep', 'strftime', 'strptime', 'struct_time', 'time', 'timezone', 'tzname', 'tzset']
  */
 
 var $builtinmodule = function (name) {
     var mod = {};
 
-    var struct_time_fields = ['tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min', 'tm_sec', 'tm_wday', 'tm_yday', 'tm_isdst'];
+    mod.__file__ = "/src/lib/time/__init__.js";
+
+    mod.__package__ = Sk.builtin.none.none$;
+
+    var struct_time_fields = {
+        "tm_year": "year, for example, 1993", 
+        "tm_mon": "month of year, range [1, 12]", 
+        "tm_mday": "day of month, range [1, 31]", 
+        "tm_hour": "hours, range [0, 23]", 
+        "tm_min": "minutes, range [0, 59]", 
+        "tm_sec": "seconds, range [0, 61]", 
+        "tm_wday": "day of week, range [0, 6], Monday is 0", 
+        "tm_yday": "day of year, range [1, 366]", 
+        "tm_isdst": "1 if summer time is in effect, 0 if not, and -1 if unknown"
+    };
 
     var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields);
+
     mod.struct_time = struct_time_f;
 
+    function check_struct_time(t) {
+        if (!(t instanceof struct_time)) {
+            throw new Sk.builtin.TypeError("Required argument 'struct_time' must be of type: 'struct_time'");
+        }
+        var i;
+        var len = self.v.length;
+        var obj = self.v;
+        for (i = 0; i < len; ++i) {
+            if (!Sk.builtin.checkInt(obj[i])) {
+                throw new Sk.builtin.TypeError("an integer is required");
+            }
+        }
+        return true;
+    }
+
     mod.time = new Sk.builtin.func(function () {
-        var res = new Date().getTime();
+        Sk.builtin.pyCheckArgs("time", arguments, 0, 0);
+        var res = Date.now();
         if (performance && performance.now)
         {
             res = res + performance.now() % 1;
@@ -27,6 +60,8 @@ var $builtinmodule = function (name) {
 
     // This is an experimental implementation of time.sleep(), using suspensions
     mod.sleep = new Sk.builtin.func(function(delay) {
+        Sk.builtin.pyCheckArgs("sleep", arguments, 1, 1);
+        Sk.builtin.pyCheckType("delay", "float", Sk.builtin.checkNumber(delay));
         var susp = new Sk.misceval.Suspension();
         susp.resume = function() { return Sk.builtin.none.none$; }
         susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
@@ -40,10 +75,15 @@ var $builtinmodule = function (name) {
         return susp;
     });
 
+    function padLeft(str, l, c) {
+        var _str = str.toString();
+        return Array(l - _str.length + 1).join(c || " ") + _str;
+    }
+
     function isLeapYear(year) {
         if((year & 3) != 0) return false;
         return ((year % 100) != 0 || (year % 400) == 0);
-    };
+    }
 
     function getDayOfYear(date,utc) {
         utc = utc || false;
@@ -113,6 +153,7 @@ var $builtinmodule = function (name) {
         }
         return date_to_struct_time(d);
     }
+
     mod.localtime = new Sk.builtin.func(localtime_f);
 
     mod.gmtime = new Sk.builtin.func(function(secs) {
@@ -129,30 +170,7 @@ var $builtinmodule = function (name) {
     var monthnames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var daynames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    function pad2(str)
-    {
-        if (str.length < 2)
-        {
-            return "0" + str;
-        }
-        return str;
-    }
-
-    function pad4(str)
-    {
-        while (str.length < 4)
-        {
-            str = "0" + str;
-        }
-        return str;
-    }
-
-    /*
-    Convert a tuple or struct_time representing a time as returned by gmtime() or localtime() to a 24-character 
-    string of the following form: 'Sun Jun 20 23:21:05 1993'. If t is not provided, the current time as returned 
-    by localtime() is used. Locale information is not used by asctime().    
-    */
-    function asctime(time) {
+    function asctime_f(time) {
         if (!time || Sk.builtin.checkNone(time))
         {
             time = localtime_f();
@@ -165,39 +183,24 @@ var $builtinmodule = function (name) {
             var parts = [];
             parts.push(daynames[Sk.builtin.asnum$(time.v[6])]);
             parts.push(monthnames[Sk.builtin.asnum$(time.v[1])]);  
-            parts.push(pad2(Sk.builtin.asnum$(time.v[2]).toString()));
+            parts.push(padLeft(Sk.builtin.asnum$(time.v[2]).toString(), 2, '0'));
             parts.push(
-                pad2(Sk.builtin.asnum$(time.v[3]).toString()) + ":" +
-                pad2(Sk.builtin.asnum$(time.v[4]).toString()) + ":" +
-                pad2(Sk.builtin.asnum$(time.v[5]).toString())
+                padLeft(Sk.builtin.asnum$(time.v[3]).toString(), 2, '0') + ":" +
+                padLeft(Sk.builtin.asnum$(time.v[4]).toString(), 2, '0') + ":" +
+                padLeft(Sk.builtin.asnum$(time.v[5]).toString(), 2, '0')
             );
-            parts.push(pad4(Sk.builtin.asnum$(time.v[0]).toString()));
+            parts.push(padLeft(Sk.builtin.asnum$(time.v[0]).toString(), 4, '0'));
 
             return Sk.builtin.str(parts.join(" "));
         }
     }
 
-    mod.asctime = new Sk.builtin.func(function(secs) {
-        return asctime(secs);
-    });
+    mod.asctime = new Sk.builtin.func(asctime_f);
 
-    /*
-    Convert a time expressed in seconds since the epoch to a string representing local time. If secs is not
-    provided or None, the current time as returned by time() is used. ctime(secs) is equivalent to 
-    asctime(localtime(secs)). Locale information is not used by ctime().
-    */
     mod.ctime = new Sk.builtin.func(function(secs) {
-        return asctime(localtime_f(secs));
+        return asctime_f(localtime_f(secs));
     });
 
-    /*
-    This is the inverse function of localtime(). Its argument is the struct_time or full 9-tuple (since the 
-    dst flag is needed; use -1 as the dst flag if it is unknown) which expresses the time in local time, not UTC.
-    It returns a floating point number, for compatibility with time(). If the input value cannot be represented as
-    a valid time, either OverflowError or ValueError will be raised (which depends on whether the invalid value is 
-    caught by Python or the underlying C libraries). The earliest date for which it can generate a time is 
-    platform-dependent.    
-    */
     mod.mktime = new Sk.builtin.func(function(time) {
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
@@ -235,6 +238,8 @@ var $builtinmodule = function (name) {
     */
     mod.tzname = Sk.builtin.tuple(timeZoneNames());
 
+    mod.accept2dyear = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+
     mod.clock = new Sk.builtin.func(function() {
         var res = 0.0;
         if (performance && performance.now)
@@ -270,25 +275,42 @@ var $builtinmodule = function (name) {
     %Z  Time zone name (no characters if no time zone exists).   
     %%  A literal '%' character.         
     */
-    // accept2dyear
-    mod.accept2year = function accept2year() {
-        throw new Sk.builtin.NotImplementedError("accept2year is not implemented")
-    };
 
-    // strftime()
-    mod.strftime = function strftime() {
-        throw new Sk.builtin.NotImplementedError("strftime is not implemented")
-    };
+    function strftime_f(format, t) {
+        throw new NotImplementedError("time.strftime() is not yet implemented");
+        Sk.builtin.pyCheckArgs("strftime", arguments, 1, 2);
+        if (!Sk.builtin.checkString(format)) {
+            throw new Sk.builtin.TypeError("format must be a string");
+        }
+        if (!t)
+        {
+            t = localtime_f();
+        } else if (!(t instanceof struct_time_f)) {
+            t = new struct_time_f(t);
+        } else {
+            // check bounds on given struct_time
+        }
 
-    // strptime()
-    mod.strptime = function strptime() {
-        throw new Sk.builtin.NotImplementedError("strptime is not implemented")
-    };
+        // todo rest of implementation
+    }
 
-    // tzset()
-    mod.tzset = function tzset() {
-        throw new Sk.builtin.NotImplementedError("tzset is not implemented")
-    };
+    mod.strftime = new Sk.builtin.func(strftime_f);
+
+    function tzset_f()
+    {
+        throw new NotImplementedError("time.tzset() is not yet implemented");
+        Sk.builtin.pyCheckArgs("tzset", arguments, 0, 0);
+    }
+
+    mod.tzset = new Sk.builtin.func(tzset_f);
+
+    function strptime_f()
+    {
+        throw new NotImplementedError("time.strptime() is not yet implemented");
+        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);   
+    }
+
+    mod.strptime = new Sk.builtin.func(strptime_f);
 
     return mod;
 };
