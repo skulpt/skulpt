@@ -73,6 +73,11 @@ class StructSeqTest(unittest.TestCase):
         self.assertEqual(len(t), t.n_fields)
         self.assertEqual(t.n_fields, t.n_sequence_fields+t.n_unnamed_fields)
 
+    def test_getattr(self):
+        t = time.gmtime(0)
+        self.assertEqual(t.tm_year, 1970)
+        self.assertRaises(AttributeError, lambda : t.tm_nonexistent_attr)
+
     def test_constructor(self):
         t = time.struct_time
 
