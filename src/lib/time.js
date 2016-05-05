@@ -182,7 +182,7 @@ var $builtinmodule = function (name) {
             // todo: test validity??
             var parts = [];
             parts.push(daynames[Sk.builtin.asnum$(time.v[6])]);
-            parts.push(monthnames[Sk.builtin.asnum$(time.v[1])]);  
+            parts.push(monthnames[Sk.builtin.asnum$(time.v[1])-1]);  
             parts.push(padLeft(Sk.builtin.asnum$(time.v[2]).toString(), 2, '0'));
             parts.push(
                 padLeft(Sk.builtin.asnum$(time.v[3]).toString(), 2, '0') + ":" +
@@ -280,16 +280,23 @@ var $builtinmodule = function (name) {
 
     function tzset_f()
     {
-        throw new NotImplementedError("time.tzset() is not yet implemented");
+        throw new Sk.builtin.NotImplementedError("time.tzset() is not yet implemented");
         Sk.builtin.pyCheckArgs("tzset", arguments, 0, 0);
     }
 
     mod.tzset = new Sk.builtin.func(tzset_f);
 
-    function strptime_f()
+    function strptime_f(s, format)
     {
-        throw new NotImplementedError("time.strptime() is not yet implemented");
-        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);   
+        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);
+        Sk.builtin.pyCheckType("string", "string", Sk.builtin.checkString(s));
+        if (format !== undefined) {
+            Sk.builtin.pyCheckType("format", "string", Sk.builtin.checkString(format));
+        } else {
+            format = new Sk.builtin.str("%a %b %d %H:%M:%S %Y");
+        }
+
+        return date_to_struct_time(strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
     }
 
     mod.strptime = new Sk.builtin.func(strptime_f);
