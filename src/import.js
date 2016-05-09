@@ -235,6 +235,12 @@ Sk.doOneTimeInitialization = function () {
 
         proto[name] = new Sk.builtin.func(proto[name]);
     }
+
+    // compile internal python files and add them to the __builtin__ module
+    for (var file in Sk.internalPy.files) {
+        var mod = Sk.importBuiltinWithBody(file.split(".")[0], false, Sk.internalPy.files[file], false);
+        Sk.importStar(mod, Sk.globals, Sk.globals);
+    }
 };
 
 /**
@@ -539,6 +545,21 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body, canSuspend);
 };
 
+/**
+ * **Run Python Code in Skulpt**
+ *
+ * When you want to hand Skulpt a string corresponding to a Python program this is the function.
+ *
+ * @param name {string}  File name to use for messages related to this run
+ * @param dumpJS {boolean} print out the compiled javascript
+ * @param body {string} Python Code
+ * @param canSuspend {boolean}  Use Suspensions for async execution
+ *
+ */
+Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
+    return Sk.importModuleInternal_(name, dumpJS, "__builtin__", body, canSuspend);
+};
+
 Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.  for some reason, __name__ gets overwritten.
@@ -617,5 +638,6 @@ Sk.importStar = function (module, loc, global) {
 
 goog.exportSymbol("Sk.importMain", Sk.importMain);
 goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
+goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
 goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
 goog.exportSymbol("Sk.importStar", Sk.importStar);

@@ -116,6 +116,7 @@ Files = [
         'src/sorted.js',
         'src/builtindict.js',
         'src/constants.js',
+        'src/internalpython.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
@@ -672,6 +673,15 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
+def getInternalCodeAsJson():
+    ret = {}
+    ret['files'] = {}
+    for f in ["src/" + x for x in os.listdir("src") if os.path.splitext(x)[1] == ".py" if os.path.isfile("src/" + x)]:
+        ext = os.path.splitext(f)[1]
+        if ext == ".py":
+            f = f.replace("\\", "/")
+            ret['files'][f] = open(f).read()
+    return "Sk.internalPy=" + json.dumps(ret)
 
 def getBuiltinsAsJson(options):
     ret = {}
@@ -1291,6 +1301,9 @@ def main():
         cmd = "help"
     else:
         cmd = sys.argv[1]
+
+    with open("src/internalpython.js", "w") as f:
+        f.write(getInternalCodeAsJson() + ";")
 
     if cmd == "test":
         test()
