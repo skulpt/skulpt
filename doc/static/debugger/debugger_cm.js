@@ -123,6 +123,7 @@ $(function () {
             yieldLimit: null,
             execLimit: null,
             debugging: true,
+            breakpoints: repl.sk_debugger.check_breakpoints.bind(repl.sk_debugger),
         });
         Sk.canvas = "mycanvas";
         if (repl.sk_code_editor.getValue().indexOf('turtle') > -1 ) {
@@ -135,8 +136,7 @@ $(function () {
         try {
             var susp_handlers = {};
             susp_handlers["*"] = repl.sk_debugger.suspension_handler.bind(this);
-            Sk.breakpoints = repl.sk_debugger.check_breakpoints.bind(repl.sk_debugger);
-            
+
             var promise = repl.sk_debugger.asyncToPromise(function() {
                 return Sk.importMainWithBody(editor_filename, true, repl.sk_code_editor.getValue(),true);
             }, susp_handlers, this.sk_debugger);
