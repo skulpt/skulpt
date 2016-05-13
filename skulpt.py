@@ -761,9 +761,8 @@ def dist(options):
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
         shutil.copy("debugger/debugger.js", DIST_DIR)
-        shutil.copy("debugger/debugger_cm.js", DIST_DIR)
     except Exception as e:
-        print "Couldn't copy debugger to output file: %s" % e.message
+        print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
 
     path_list = os.environ.get('PATH','').split(':')
