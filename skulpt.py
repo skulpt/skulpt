@@ -216,12 +216,14 @@ def test(debug_mode=False):
     ret4 = 0
     if ret1 == 0:
         print "Running jshint"
-        if sys.platform == "win32":
-            jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
-            jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
-        else:
-            jshintcmd = "jshint src/*.js"
-            jscscmd = "jscs src/*.js --reporter=inline"
+        base_dirs = ["src", "debugger"]
+        for base_dir in base_dirs:
+            if sys.platform == "win32":
+                jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+                jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+            else:
+                jshintcmd = "jshint " + base_dir + "/*.js"
+                jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
@@ -714,7 +716,7 @@ def dist(options):
         print ". Running tests on uncompressed..."
 
     ret = test()
-    ret = 0
+
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
@@ -757,6 +759,7 @@ def dist(options):
     doc()
 
     try:
+        shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
         shutil.copy("debugger/debugger.js", DIST_DIR)
         shutil.copy("debugger/debugger_cm.js", DIST_DIR)
     except Exception as e:
