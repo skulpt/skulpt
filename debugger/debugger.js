@@ -251,8 +251,7 @@ Sk.Debugger.prototype.success = function(r) {
             // The child has completed the execution. So override the child's resume
             // so we can continue the execution.
             parent_suspension.child.resume = function() {};
-
-            this.print_suspension_info(parent_suspension);
+            this.resume();
         } else {
             this.print("Program execution complete");
         }

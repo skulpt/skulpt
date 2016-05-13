@@ -147,6 +147,15 @@ $(function () {
     };
     
     repl.continue = function() {
+        Sk.configure({
+            output: repl.print,
+            debugout: window.jsoutf,
+            read: window.builtinRead,
+            yieldLimit: null,
+            execLimit: null,
+            debugging: true,
+            breakpoints: repl.sk_debugger.check_breakpoints.bind(repl.sk_debugger),
+        });
         this.sk_debugger.disable_step_mode();
         this.sk_debugger.resume.call(this.sk_debugger);
     };
@@ -322,22 +331,6 @@ $(function () {
 
     //Loop
     repl.eval = function (code) {
-        Sk.configure({
-            output: function(str) {
-                //strip out line-feeds
-                if (str.replace(/\n/g, "") !== "") {
-                    repl.print(str);
-                }
-            },
-            read: function (x) {
-                if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-                    throw "File not found: '" + x + "'";
-                }
-                return Sk.builtinFiles["files"][x];
-            },
-            retainglobals: true
-        });
-            
         //split lines on linefeed
         var lines = code.split('\n'), index = -1, line = 0;
         var matches = null;
