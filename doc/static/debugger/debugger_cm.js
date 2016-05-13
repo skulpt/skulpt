@@ -401,6 +401,8 @@ $(function () {
                 this.down();
             } else if (re_up.test(lines[0])) {
                 this.up();
+            } else {
+                repl.print("Invalid Command: " + lines[0]);
             }
             
         } catch (err) {
