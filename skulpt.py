@@ -55,6 +55,7 @@ OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-
 OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
 OUTFILE_LIB     = "{0}-stdlib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
 OUTFILE_MAP     = "{0}-linemap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
+OUTFILE_DEBUGGER = "debugger.js"
 
 # Symbolic constants for file types.
 FILE_TYPE_DIST = 'dist'
@@ -710,6 +711,7 @@ def dist(options):
     # Make the compressed distribution.
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
+    debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
 
     # Run tests on uncompressed.
     if options.verbose:
@@ -794,6 +796,7 @@ def dist(options):
     try:
         shutil.copy(compfn,    os.path.join("doc", "static", OUTFILE_MIN))
         shutil.copy(builtinfn, os.path.join("doc", "static", OUTFILE_LIB))
+        shutil.copy(debuggerfn, os.path.join("doc", "static", "debugger", OUTFILE_DEBUGGER))
     except:
         print "Couldn't copy to docs dir."
         sys.exit(1)
