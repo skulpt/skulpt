@@ -1,4 +1,5 @@
 import unittest
+from time import sleep
 # from test.test_support import run_unittest, TESTFN, unlink, have_unicode, \
 #                               check_py3k_warnings, cpython_only
 
@@ -33,6 +34,19 @@ class IteratingSequenceClass:
         self.n = n
     def __iter__(self):
         return BasicIterClass(self.n)
+
+class SleepingIterClass(BasicIterClass):
+    def __init__(self, n):
+        BasicIterClass.__init__(self, n)
+    def next(self):
+        sleep(0.01)
+        return BasicIterClass.next(self)
+
+class SleepingSequenceClass:
+    def __init__(self, n):
+        self.n = n
+    def __iter__(self):
+        return SleepingIterClass(self.n)
 
 class SequenceClass:
     def __init__(self, n):
@@ -106,6 +120,10 @@ class TestCase(unittest.TestCase):
     # Test a class with __iter__ in a for loop
     def test_iter_class_for(self):
         self.check_for_loop(IteratingSequenceClass(10), range(10))
+
+    # Test a class with a suspending iterator in a for loop
+    def test_iter_sleeping_class_for(self):
+        self.check_for_loop(SleepingSequenceClass(10), range(10))
 
     # Test a class with __iter__ with explicit iter()
     # def test_iter_class_iter(self):
@@ -189,6 +207,32 @@ class TestCase(unittest.TestCase):
             self.assertEqual(res, range(10))
         else:
             self.fail("should have raised RuntimeError")
+
+    # Test exception propagation through explicit iterator
+    #def test_exception_iter(self):
+    #    class MyIterClass(object):
+    #        def __init__(self):
+    #            self.i = -1
+    #            SequenceClass.__init__(self)
+
+    #        def next(self):
+    #            self.i += 1
+    #            if self.i == 10:
+    #                raise RuntimeError
+    #            return self.i
+
+    #    class MySequenceClass(SequenceClass):
+    #        def __iter__(self):
+    #            return MyIterClass()
+
+    #    res = []
+    #    try:
+    #        for x in MySequenceClass(20):
+    #            res.append(x)
+    #    except RuntimeError:
+    #        self.assertEqual(res, range(10))
+    #    else:
+    #        self.fail("should have raised RuntimeError")
 
     # Test for StopIteration from __getitem__
     def test_stop_sequence(self):

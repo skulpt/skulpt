@@ -918,7 +918,7 @@ Sk.abstr.iter = function(obj) {
             try {
                 ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
             } catch (e) {
-                if (e instanceof Sk.builtin.IndexError) {
+                if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
                 } else {
                     throw e;
@@ -932,7 +932,10 @@ Sk.abstr.iter = function(obj) {
     if (obj.tp$getattr) {
         iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
         if (iter) {
-            return Sk.misceval.callsim(iter,obj);
+            ret = Sk.misceval.callsim(iter, obj);
+            if (ret.tp$iternext) {
+                return ret;
+            }
         }
     }
     if (obj.tp$iter) {

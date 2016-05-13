@@ -54,6 +54,7 @@ Sk.builtins = {
     "OverflowError"      : Sk.builtin.OverflowError,
     "OperationError"     : Sk.builtin.OperationError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
+    "StopIteration"      : Sk.builtin.StopIteration,
 
     "dict"      : Sk.builtin.dict,
     "file"      : Sk.builtin.file,
