@@ -91,7 +91,7 @@ Sk.Debugger.prototype.check_breakpoints = function(filename, lineno, colno, glob
         if (hasOwnProperty(this.tmp_breakpoints, key)) {
             delete this.dbg_breakpoints[key];
             delete this.tmp_breakpoints[key];
-            return;
+            return true;
         }
         
         this.dbg_breakpoints[key].ignore_count -= 1;
