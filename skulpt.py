@@ -55,6 +55,7 @@ OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-
 OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
 OUTFILE_LIB     = "{0}-stdlib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
 OUTFILE_MAP     = "{0}-linemap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
+OUTFILE_DEBUGGER = "debugger.js"
 
 # Symbolic constants for file types.
 FILE_TYPE_DIST = 'dist'
@@ -216,12 +217,14 @@ def test(debug_mode=False):
     ret4 = 0
     if ret1 == 0:
         print "Running jshint"
-        if sys.platform == "win32":
-            jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
-            jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
-        else:
-            jshintcmd = "jshint src/*.js"
-            jscscmd = "jscs src/*.js --reporter=inline"
+        base_dirs = ["src", "debugger"]
+        for base_dir in base_dirs:
+            if sys.platform == "win32":
+                jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+                jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+            else:
+                jshintcmd = "jshint " + base_dir + "/*.js"
+                jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
@@ -708,12 +711,14 @@ def dist(options):
     # Make the compressed distribution.
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
+    debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
 
     # Run tests on uncompressed.
     if options.verbose:
         print ". Running tests on uncompressed..."
 
     ret = test()
+
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
@@ -736,6 +741,9 @@ def dist(options):
     if ret != 0:
         print "closure-compiler failed."
         sys.exit(1)
+        
+    # Copy the debugger file to the output dir
+    
 
     # Run tests on compressed.
     if options.verbose:
@@ -754,8 +762,9 @@ def dist(options):
 
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
-    except:
-        print "Couldn't copy for gzip test."
+        shutil.copy("debugger/debugger.js", DIST_DIR)
+    except Exception as e:
+        print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
 
     path_list = os.environ.get('PATH','').split(':')
@@ -787,6 +796,7 @@ def dist(options):
     try:
         shutil.copy(compfn,    os.path.join("doc", "static", OUTFILE_MIN))
         shutil.copy(builtinfn, os.path.join("doc", "static", OUTFILE_LIB))
+        shutil.copy(debuggerfn, os.path.join("doc", "static", "debugger", OUTFILE_DEBUGGER))
     except:
         print "Couldn't copy to docs dir."
         sys.exit(1)

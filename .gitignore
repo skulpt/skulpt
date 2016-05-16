@@ -1,6 +1,7 @@
 support/tmp/
 doc/static/skulpt-stdlib.js
 doc/static/skulpt.min.js
+doc/static/debugger/debugger.js
 doc/static/dist/*
 doc/ProgMan/
 vendor/
