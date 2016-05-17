@@ -52,6 +52,10 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
                 }
             }
             if (varnames && j !== numvarnames) {
+                if (j in args) {
+                    name = (this.im_func.func_code && this.im_func.func_code["co_name"] && this.im_func.func_code["co_name"].v) || "<native JS>";
+                    throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
+                }
                 args[j] = kw[i + 1];
             } else if (expectskw) {
                 // build kwargs dict
