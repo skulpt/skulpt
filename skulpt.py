@@ -746,9 +746,9 @@ def dist(options):
     if ret != 0:
         print "closure-compiler failed."
         sys.exit(1)
-        
+
     # Copy the debugger file to the output dir
-    
+
 
     if options.verbose:
         print ". Bundling external libraries..."
@@ -1066,8 +1066,12 @@ var input = read('%s');
 print('%s');
 Sk.configure({syspath:["%s"], read:read, python3:%s});
 Sk.misceval.asyncToPromise(function() {
-    Sk.importMain("%s", false, true);
-}).then(quit, function(e) { throw e; });
+    return Sk.importMain("%s", false, true);
+}).then(function () {}, function(e) {
+    print("UNCAUGHT EXCEPTION: " + e);
+    print(e.stack);
+    quit(1);
+});
         """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
         f.close()
         if opt:
