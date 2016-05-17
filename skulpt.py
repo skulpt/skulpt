@@ -1055,7 +1055,13 @@ def rununits(opt=False, p3=False):
 var input = read('%s');
 print('%s');
 Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", false);
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", false, true);
+}).then(function () {}, function(e) {
+    print("UNCAUGHT EXCEPTION: " + e);
+    print(e.stack);
+    quit(1);
+});
         """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
         f.close()
         if opt:
