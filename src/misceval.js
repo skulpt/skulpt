@@ -1147,8 +1147,15 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         }
 
         if (kwdict) {
-            goog.asserts.fail("kwdict not implemented;");
+            for (it = Sk.abstr.iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
+                if (!Sk.builtin.checkString(i)) {
+                    throw new Sk.builtin.TypeError("Function keywords must be strings");
+                }
+                kws.push(i.v);
+                kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
+            }
         }
+
         //goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
         //print('kw args location: '+ kws + ' args ' + args.length)
         if (kws !== undefined && kws.length > 0) {
@@ -1187,8 +1194,15 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                     args.push(i);
                 }
             }
+
             if (kwdict) {
-                goog.asserts.fail("kwdict not implemented;");
+                for (it = Sk.abstr.iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
+                    if (!Sk.builtin.checkString(i)) {
+                        throw new Sk.builtin.TypeError("Function keywords must be strings");
+                    }
+                    kws.push(i.v);
+                    kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
+                }
             }
             return fcall.call(func, args, kws, kwdict);
         }
@@ -1200,7 +1214,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
             // func is actually the object here because we got __call__
             // from it. todo; should probably use descr_get here
             args.unshift(func);
-            return Sk.misceval.apply(fcall, kws, args, kwdict, varargseq);
+            return Sk.misceval.apply(fcall, kwdict, varargseq, kws, args);
         }
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
