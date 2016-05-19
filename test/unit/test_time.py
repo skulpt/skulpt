@@ -4,7 +4,7 @@ import unittest
 import time
 
 class TimeTestCase(unittest.TestCase):
-    def setup(self):
+    def setUp(self):
         self.t = time.time()
         
     def test_data_attributes(self):

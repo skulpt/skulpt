@@ -15,7 +15,7 @@ class TestGenericStringIO(unittest.TestCase):
     _line = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!'
     _lines = str((_line + '\n') * 5)
 
-    def setup(self):
+    def setUp(self):
         self._fp = StringIO.StringIO(self._lines)
 
     def test_input(self):

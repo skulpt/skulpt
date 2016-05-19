@@ -19,7 +19,7 @@ class TestCase:
                 self.tlist.append(getattr(self,name))
                 testNames[name]=True
 
-    def setup(self):
+    def setUp(self):
         pass
 
     def tearDown(self):
@@ -37,7 +37,7 @@ class TestCase:
             if self.verbose:
                 print('Running %s' % self.cleanName(func))
             try:
-                self.setup()
+                self.setUp()
                 self.assertPassed = 0
                 self.assertFailed = 0
                 func()
