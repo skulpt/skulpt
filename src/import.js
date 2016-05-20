@@ -575,7 +575,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                     // add the module name to our requiredImport list
                     fromImportName = "" + name + "." + fromName;
                     fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true, currentDir);
-                    ret["$d"][fromName] = fromNameRet;
+                    ret["$d"][fromName] = Sk.abstr.gattr(fromNameRet, fromName, true);
                 }
             }
         }
