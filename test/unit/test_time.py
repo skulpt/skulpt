@@ -26,7 +26,7 @@ class TimeTestCase(unittest.TestCase):
         time.sleep(0.01)
 
     def test_strftime(self):
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661)), "Jan 01 1970 01:01:01");
+        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
 
     def _test_dir(self):
         # this test fails because the compare 
