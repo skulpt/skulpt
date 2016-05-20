@@ -273,4 +273,4 @@ class IterInheritsTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main(verbose=True)
+    unittest.main(verbosity=2)
