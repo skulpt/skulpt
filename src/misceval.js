@@ -1191,8 +1191,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         if (fcall !== undefined) {
             fcall = Sk.misceval.callsim(func.__get__, func, func);
             //args.unshift(func);
-            if (fcall.tp$call)
-            {
+            if (fcall.tp$call) {
                 return fcall.tp$call.call(fcall, args);                
             }
         }
