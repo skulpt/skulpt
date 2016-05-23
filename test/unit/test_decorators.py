@@ -78,6 +78,56 @@ class testclass:
     def val(self):
         log2.append("testclass.val - deleter")
 
+
+
+class Property(object):
+    "Emulate PyProperty_Type() in Objects/descrobject.c"
+
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+        self.__doc__ = doc
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        if self.fget is None:
+            raise AttributeError("unreadable attribute")
+        return self.fget(obj)
+
+    def __set__(self, obj, value):
+        if self.fset is None:
+            raise AttributeError("can't set attribute")
+        self.fset(obj, value)
+
+    def __delete__(self, obj):
+        if self.fdel is None:
+            raise AttributeError("can't delete attribute")
+        self.fdel(obj)
+
+    def getter(self, fget):
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+    def setter(self, fset):
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+    def deleter(self, fdel):
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+
+class test():
+    def __init__(self):
+        self._foo = 4
+    def h(self):
+        return self._foo
+    def hset(self,newval):
+        self._foo = newval * 10
+
+    h = Property(h, hset, doc='''returns 4''')
+
+
 class TestDescriptorGetSetOnMethod(unittest.TestCase):
     def setup(self):
         log2 = []
@@ -111,6 +161,16 @@ class TestDescriptorGetSetOnMethod(unittest.TestCase):
             'testclass.val - getter', 
             456])
         #del y.val del is not yet implemented
+
+
+    def test_property(self):
+        t1 = test()
+        self.assertEqual(t1.h, 4)
+        t1.h = 9
+        self.assertEqual(t1.h, 90)
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
