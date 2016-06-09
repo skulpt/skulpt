@@ -7,13 +7,16 @@
     <link rel="stylesheet" type="text/css" media="all" href="static/codemirror.css">
     <link rel="stylesheet" type="text/css" media="all" href="static/solarized.css">
     <link rel="stylesheet" type="text/css" media="all" href="static/main.css">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="static/codemirrorepl.js" type="text/javascript"></script>
     <script src="static/repl.js" type="text/javascript"></script>
     <script src="static/python.js" type="text/javascript"></script>
-    <script src="static/env/editor.js" type="text/javascript"></script>
+    <script src="../../support/jsbeautify/beautify.js" type="text/javascript" ></script>
     <script src="static/skulpt.min.js" type="text/javascript"></script>
+    <script src="static/debugger/debugger.js" type="text/javascript"></script>
     <script src="static/skulpt-stdlib.js" type="text/javascript"></script>
+    <script src="static/env/editor.js" type="text/javascript"></script>
+    <script src="static/debugger/debugger_cm.js" type="text/javascript"></script>
 </head>
 <body>
 
@@ -83,11 +86,13 @@ for c in ['red', 'green', 'yellow', 'blue']:
     t.forward(75)
     t.left(90)
     </textarea>
+    <textarea id="debugger_cm", cols="85" rows="1"></textarea>
     <button id="skulpt_run">Run</button>
-    <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
+    <button id="skulpt_js_output" onclick="var cm = $('.CodeMirror')[2].CodeMirror;$(cm.getWrapperElement()).toggle()">Hide/Unhide JS</button>
+    <textarea id="codeoutput"></textarea>
 
-    <pre id="edoutput">
-    </pre>
+    <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
+    <pre id="edoutput"></pre>
 
     <div id="mycanvas" height="400" width="400"
             style="border-style: solid;"></div>

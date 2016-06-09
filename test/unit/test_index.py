@@ -22,7 +22,7 @@ class oldstyle:
 #         return self
 
 class BaseTestCase(unittest.TestCase):
-    def setup(self):
+    def setUp(self):
         self.o = oldstyle()
         #self.n = newstyle()
 
@@ -71,7 +71,7 @@ class BaseTestCase(unittest.TestCase):
 class SeqTestCase(unittest.TestCase):
     # This test case isn't run directly. It just defines common tests
     # to the different sequence types below
-    def setup(self):
+    def setUp(self):
         self.o = oldstyle()
         #self.n = newstyle()
         self.o2 = oldstyle()
@@ -249,7 +249,7 @@ class StringTestCase(SeqTestCase):
 
 # class OverflowTestCase(unittest.TestCase):
 
-#     def setup(self):
+#     def setUp(self):
 #         self.pos = 2**100
 #         self.neg = -self.pos
 

@@ -11,7 +11,7 @@ class TestCase:
         self.numFailed = 0
         self.assertPassed = 0
         self.assertFailed = 0
-        self.verbose = True
+        self.verbosity = 1
         self.tlist = []
         testNames = {}
         for name in dir(self):
@@ -19,7 +19,7 @@ class TestCase:
                 self.tlist.append(getattr(self,name))
                 testNames[name]=True
 
-    def setup(self):
+    def setUp(self):
         pass
 
     def tearDown(self):
@@ -34,10 +34,10 @@ class TestCase:
     def main(self):
 
         for func in self.tlist:
-            if self.verbose:
+            if self.verbosity > 1:
                 print('Running %s' % self.cleanName(func))
             try:
-                self.setup()
+                self.setUp()
                 self.assertPassed = 0
                 self.assertFailed = 0
                 func()
@@ -170,7 +170,7 @@ class TestCase:
 
 
 
-def main(verbose=False, names=None):
+def main(verbosity=1, names=None):
     glob = globals() # globals() still needs work
     if names == None:
         names = glob
@@ -178,7 +178,7 @@ def main(verbose=False, names=None):
         if issubclass(glob[name],TestCase):
             try:
                 tc = glob[name]()
-                tc.verbose = verbose
+                tc.verbosity = verbosity
                 tc.main()
             except:
                 print("Uncaught Error in: ", name)

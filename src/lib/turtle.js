@@ -610,7 +610,9 @@ function generateTurtleModule(_target) {
                 {angle:this._angle, radians: this._radians}
             );
         };
-        proto.$degrees.returnType = Types.FLOAT;
+        proto.$degrees.minArgs     = 0;
+        proto.$degrees.keywordArgs = ["fullcircle"];
+        proto.$degrees.returnType  = Types.FLOAT;
 
         proto.$radians = function() {
             if (!this._isRadians) {
@@ -844,6 +846,7 @@ function generateTurtleModule(_target) {
             return this._speed;
         };
         proto.$speed.minArgs = 0;
+        proto.$speed.keywordArgs = ["speed"];
 
         proto.$pencolor = function(r,g,b,a) {
             var color;
@@ -1011,6 +1014,7 @@ function generateTurtleModule(_target) {
             return this._size;
         };
         proto.$pensize.minArgs = proto.$width.minArgs = 0;
+        proto.$pensize.keywordArgs = proto.$width.keywordArgs = ["width"];
 
         proto.$showturtle = proto.$st = function() {
             this._shown = true;
@@ -1034,7 +1038,8 @@ function generateTurtleModule(_target) {
 
             return this._shape;
         };
-        proto.$shape.minArgs = 0;
+        proto.$shape.minArgs     = 0;
+        proto.$shape.keywordArgs = ["name"];
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1047,7 +1052,8 @@ function generateTurtleModule(_target) {
         proto.$tracer = function(n, delay) {
             return this._screen.$tracer(n, delay);
         };
-        proto.$tracer.minArgs = 0;
+        proto.$tracer.minArgs     = 0;
+        proto.$tracer.keywordArgs = ["n", "delay"];
         
         proto.$update = function() {
             return this._screen.$update();
@@ -1056,7 +1062,8 @@ function generateTurtleModule(_target) {
         proto.$delay = function(delay) {
             return this._screen.$delay(delay);
         };
-        proto.$delay.minArgs = 0;
+        proto.$delay.minArgs     = 0;
+        proto.$delay.keywordArgs = ["delay"];
 
         proto.$reset = function() {
             this.reset();
@@ -1255,8 +1262,8 @@ function generateTurtleModule(_target) {
 
             return this._setworldcoordinates(-width/2, -height/2, width/2, height/2);
         };
-        proto.$setup.minArgs = 2;
-
+        proto.$setup.minArgs     = 0;
+        proto.$setup.keywordArgs = ["width", "height", "startx", "starty"];
 
         proto.$register_shape = proto.$addshape = function(name, points) {
             if (!points) {

@@ -55,6 +55,7 @@ Sk.builtins = {
     "OperationError"     : Sk.builtin.OperationError,
     "NegativePowerError" : Sk.builtin.NegativePowerError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
+    "StopIteration"      : Sk.builtin.StopIteration,
 
     "dict"      : Sk.builtin.dict,
     "file"      : Sk.builtin.file,

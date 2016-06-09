@@ -63,6 +63,11 @@ class IterInheritsTestCase(unittest.TestCase):
         r = sorted(a,reverse=True)
         self.assertEqual(list(r), list(range(19, -1, -1)))
 
+    def test_explicit_not_reversed(self):
+        a = list(range(20))
+        r = sorted(a,reverse=False)
+        self.assertEqual(r, a)
+
     def test_delitem(self):
         self.type2test = list
         a = self.type2test([0, 1])
@@ -268,4 +273,4 @@ class IterInheritsTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main(verbose=True)
+    unittest.main(verbosity=2)

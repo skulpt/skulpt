@@ -290,20 +290,20 @@ Sk.builtin.type = function (name, bases, dict) {
             }
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
-        klass.prototype.tp$iternext = function () {
+        klass.prototype.tp$iternext = function (canSuspend) {
+            var r;
             var iternextf = this.tp$getattr("next");
-            var ret;
             if (iternextf) {
-                try {
-                    ret = Sk.misceval.callsim(iternextf);
-                } catch (e) {
+                r = Sk.misceval.tryCatch(function() {
+                    return Sk.misceval.callsimOrSuspend(iternextf);
+                }, function(e) {
                     if (e instanceof Sk.builtin.StopIteration) {
-                        ret = undefined;
+                        return undefined;
                     } else {
                         throw e;
                     }
-                }
-                return ret;
+                });
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
         };
 
