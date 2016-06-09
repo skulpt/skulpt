@@ -5,7 +5,7 @@ import time
 
 class StructSeqTest(unittest.TestCase):
 
-    def test_tuple(self):
+    def _test_tuple(self):
         t = time.gmtime()
         self.assertIsInstance(t, tuple)
         astuple = tuple(t)
@@ -73,6 +73,11 @@ class StructSeqTest(unittest.TestCase):
         self.assertEqual(len(t), t.n_fields)
         self.assertEqual(t.n_fields, t.n_sequence_fields+t.n_unnamed_fields)
 
+    def test_getattr(self):
+        t = time.gmtime(0)
+        self.assertEqual(t.tm_year, 1970)
+        self.assertRaises(AttributeError, lambda : t.tm_nonexistent_attr)
+
     def test_constructor(self):
         t = time.struct_time
 
@@ -111,6 +116,13 @@ class StructSeqTest(unittest.TestCase):
                 for step in indices[1:]:
                     self.assertEqual(list(t[start:stop:step]),
                                      L[start:stop:step])
+
+    def _test_writability(self):
+        def change(s):
+            s.tm_mon = 30
+
+        x = time.struct_time((1,2,3,4,5,6,7,8,9))
+        self.assertRaises(AttributeError, lambda: change(x))
 
 if __name__ == '__main__':
     unittest.main()

@@ -181,4 +181,4 @@ class TestNamedTuple(unittest.TestCase):
         # self.assertEqual(t.__getnewargs__(), values)
 
 if __name__ == "__main__":
-    unittest.main(verbose=True)
+    unittest.main(verbosity=2)

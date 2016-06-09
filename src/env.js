@@ -70,6 +70,16 @@ Sk.configure = function (options) {
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 
+    Sk.setTimeout = options["setTimeout"];
+    if (Sk.setTimeout === undefined) {
+        if (typeof setTimeout === "function") {
+            Sk.setTimeout = setTimeout;
+        } else {
+            Sk.setTimeout = function(func, delay) { func(); };
+        }
+    }
+    goog.asserts.assert(typeof Sk.setTimeout === "function");
+
     if ("execLimit" in options) {
         Sk.execLimit = options["execLimit"];
     }

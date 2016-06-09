@@ -541,5 +541,22 @@ Sk.builtin.SystemError = function (args) {
 Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.StopIteration = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.StopIteration)) {
+        o = Object.create(Sk.builtin.StopIteration.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+};
+Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
+goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
+
 
 goog.exportSymbol("Sk", Sk);

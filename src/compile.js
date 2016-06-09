@@ -475,9 +475,10 @@ Compiler.prototype.ccompare = function (e) {
 
     for (i = 0; i < n; ++i) {
         rhs = this.vexpr(e.comparators[i]);
-        res = this._gr("compare", "Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "'))");
-        out(fres, "=", res, ";");
-        this._jumpfalse(res, done);
+        out("$ret = Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true));");
+        this._checkSuspension(e);
+        out(fres, "=$ret;");
+        this._jumpfalse("$ret", done);
         cur = rhs;
     }
     this._jump(done);
@@ -1161,42 +1162,32 @@ Compiler.prototype.cfor = function (s) {
 };
 
 Compiler.prototype.craise = function (s) {
-    var inst, exc;
-    if (s && s.type && s.type.id && (s.type.id.v === "StopIteration")) {
-        // currently, we only handle StopIteration, and all it does it return
-        // undefined which is what our iterator protocol requires.
-        //
-        // totally hacky, but good enough for now.
-        out("return undefined;");
+    var inst = "", exc;
+    if (s.inst) {
+        // handles: raise Error, arguments
+        inst = this.vexpr(s.inst);
+        out("throw ", this.vexpr(s.type), "(", inst, ");");
     }
-    else {
-        inst = "";
-        if (s.inst) {
-            // handles: raise Error, arguments
-            inst = this.vexpr(s.inst);
-            out("throw ", this.vexpr(s.type), "(", inst, ");");
-        }
-        else if (s.type) {
-            if (s.type.func) {
-                // handles: raise Error(arguments)
-                out("throw ", this.vexpr(s.type), ";");
-            }
-            else {
-                // handles: raise Error OR raise someinstance
-                exc = this._gr("err", this.vexpr(s.type));
-                out("if(",exc," instanceof Sk.builtin.type) {",
-                    "throw Sk.misceval.callsim(", exc, ");",
-                    "} else if(typeof(",exc,") === 'function') {",
-                    "throw ",exc,"();",
-                    "} else {",
-                    "throw ", exc, ";",
-                    "}");
-            }
+    else if (s.type) {
+        if (s.type.func) {
+            // handles: raise Error(arguments)
+            out("throw ", this.vexpr(s.type), ";");
         }
         else {
-            // re-raise
-            out("throw $err;");
+            // handles: raise Error OR raise someinstance
+            exc = this._gr("err", this.vexpr(s.type));
+            out("if(",exc," instanceof Sk.builtin.type) {",
+                "throw Sk.misceval.callsim(", exc, ");",
+                "} else if(typeof(",exc,") === 'function') {",
+                "throw ",exc,"();",
+                "} else {",
+                "throw ", exc, ";",
+                "}");
         }
+    }
+    else {
+        // re-raise
+        out("throw $err;");
     }
 };
 

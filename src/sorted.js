@@ -4,6 +4,18 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
     var iter;
     var compare_func;
     var list;
+    var rev;
+
+    if (reverse === undefined) {
+        rev = false;
+    } else if (reverse instanceof Sk.builtin.float_) {
+        throw new Sk.builtin.TypeError("an integer is required, got float");
+    } else if (reverse instanceof Sk.builtin.int_ || reverse.prototype instanceof Sk.builtin.int_) {
+        rev = Sk.misceval.isTrue(reverse);
+    } else {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+
     if (key !== undefined && !(key instanceof Sk.builtin.none)) {
         if (cmp instanceof Sk.builtin.none || cmp === undefined) {
             compare_func = function (a, b) {
@@ -35,7 +47,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         list.list_sort_(list);
     }
 
-    if (reverse) {
+    if (rev) {
         list.list_reverse_(list);
     }
 
