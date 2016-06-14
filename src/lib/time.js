@@ -65,7 +65,7 @@ var $builtinmodule = function (name) {
         var susp = new Sk.misceval.Suspension();
         susp.resume = function() { return Sk.builtin.none.none$; }
         susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
-            Sk.setTimeout(resolve, Sk.ffi.remapToJs(delay)*1000);
+            Sk.setTimeout.call(window, resolve, Sk.ffi.remapToJs(delay)*1000);
         })};
         return susp;
     });
