@@ -564,7 +564,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         } else {
             // try to load the module from the file system if it is not present on the module itself
             var i;
-            var fromNameRet; // module returned
             var fromName; // name of current module for fromlist
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
