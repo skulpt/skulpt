@@ -61,7 +61,7 @@ Sk.configure = function (options) {
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
         if (typeof setTimeout === "function") {
-            Sk.setTimeout = setTimeout;
+            Sk.setTimeout = function(func, delay) { setTimeout(func, delay); };
         } else {
             Sk.setTimeout = function(func, delay) { func(); };
         }
