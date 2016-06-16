@@ -101,13 +101,13 @@ Sk.builtin.type = function (name, bases, dict) {
         /**
         * @constructor
         */
-        klass = function (kwdict, varargseq, kws, args, canSuspend) {
+        klass = function (kwdict, varargseq, kws, args, canSuspend, skipInit) {
             var init;
             var self = this;
             var s;
             var args_copy;
             if (!(this instanceof klass)) {
-                return new klass(kwdict, varargseq, kws, args, canSuspend);
+                return new klass(kwdict, varargseq, kws, args, canSuspend, skipInit);
             }
 
             args = args || [];
@@ -115,7 +115,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
             if (klass.prototype.tp$base !== undefined) {
                 if (klass.prototype.tp$base.sk$klass) {
-                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend);
+                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend, true);
                 } else {
                     // Call super constructor if subclass of a builtin
                     args_copy = args.slice();
@@ -125,7 +125,7 @@ Sk.builtin.type = function (name, bases, dict) {
             }
 
             init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
-            if (init !== undefined) {
+            if (init !== undefined && !skipInit) {
                 // return should be None or throw a TypeError otherwise
                 args.unshift(self);
                 s = Sk.misceval.applyOrSuspend(init, kwdict, varargseq, kws, args);
@@ -153,7 +153,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
         var inheritsFromObject = false, inheritsBuiltin = false;
 
-        if (bases.v.length === 0 && Sk.python3) {
+        if (bases.v.length === 0 && Sk.__future__.inherit_from_object) {
             // new style class, inherits from object by default
             inheritsFromObject = true;
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
@@ -384,7 +384,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
             cname = mod.v + ".";
         }
         ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.python3) {
+        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
             ctype = "type";
         }
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
@@ -401,7 +401,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
 Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
 Sk.builtin.type["$r"] = function () {
-    if(Sk.python3) {
+    if(Sk.__future__.class_repr) {
         return new Sk.builtin.str("<class 'type'>");
     } else {
         return new Sk.builtin.str("<type 'type'>");

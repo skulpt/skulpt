@@ -23,12 +23,24 @@ function generateTurtleModule(_target) {
         SHAPES               = {},
         TURTLE_COUNT         = 0,
         Types                = {},
+        _defaultSetup        = {
+            target     : "turtle", // DOM element or id of parent container
+            width      : 400, // if set to 0 it will use the target width
+            height     : 400, // if set to 0 it will use the target height
+            worldWidth : 0, // if set to 0 it will use config.width
+            worldHeight: 0, // if set to 0 it will use config.height
+            animate    : true, // enabled/disable all animated rendering
+            bufferSize : 0, // default turtle buffer size
+            allowUndo  : true, // enable ability to use the undo buffer
+            assets     : {}
+        },
         _frameRequest,
         _frameRequestTimeout,
         _screenInstance,
         _config,
         _anonymousTurtle,
-        _mouseHandler;
+        _mouseHandler,
+        _assets;
 
     // Ensure that the turtle DOM target has a tabindex
     // so that it can accept keyboard focus and events
@@ -79,28 +91,41 @@ function generateTurtleModule(_target) {
     ];
 
     _config = (function() {
-        var defaultSetup = {
-                target     : "turtle", // DOM element or id of parent container
-                width      : 400, // if set to 0 it will use the target width
-                height     : 400, // if set to 0 it will use the target height
-                animate    : true, // enabled/disable all animated rendering
-                bufferSize : 0, // default turtle buffer size
-                allowUndo  : true, // enable ability to use the undo buffer
-            },
-            key;
+        var key;
 
         if (!Sk.TurtleGraphics) {
             Sk.TurtleGraphics = {};
         }
 
-        for(key in defaultSetup) {
+        for(key in _defaultSetup) {
             if (!Sk.TurtleGraphics.hasOwnProperty(key)) {
-                Sk.TurtleGraphics[key] = defaultSetup[key];
+                Sk.TurtleGraphics[key] = _defaultSetup[key];
             }
         }
 
         return Sk.TurtleGraphics;
     })();
+
+    function getAsset(name) {
+        var assets = _config.assets,
+            asset  = (typeof assets === "function") ? assets(name) : assets[name];
+
+        if (typeof asset === "string") {
+            return new Promise(function(resolve, reject) {
+                var img = new Image();
+                img.onload = function() {
+                    _config.assets[name] = this;
+                    resolve(img);
+                };
+                img.onerror = function() {
+                    reject(new Error("Missing asset: " + asset));
+                }
+                img.src = asset;
+            });
+        }
+
+        return new InstantPromise(undefined, asset);
+    }
 
     // InstantPromise is a workaround to allow usage of the clean promise-style
     // then/catch syntax but to instantly call resolve the then/catch chain so we
@@ -109,12 +134,12 @@ function generateTurtleModule(_target) {
     // performance.  These 'instant promises' come into play when a tracer()
     // call is made with a value other than 1.  When tracer is 0 or greater than 1
     // , we can bypass the creation of a Suspension and proceed to the next line of
-    // code immediately if the current line is not going to incur involve a screen
+    // code immediately if the current line is not going to involve a screen
     // update. We determine if a real promise or InstantPromise is necessary by
     // checking FrameManager.willRenderNext()
-    function InstantPromise() {
-        this.lastResult = undefined;
-        this.lastError  = undefined;
+    function InstantPromise(err, result) {
+        this.lastResult = result;
+        this.lastError  = err;
     }
 
     InstantPromise.prototype.then = function(cb) {
@@ -1129,13 +1154,10 @@ function generateTurtleModule(_target) {
         this._mode      = "standard";
         this._managers  = {};
         this._keyLogger = {};
-        if (_config.height && _config.width) {
-            w = _config.width/2;
-            h = _config.height/2;
-        } else {
-            w = _config.defaultSetup.width/2;
-            h = _config.defaultSetup.height/2;
-        }
+
+        w = (_config.worldWidth || _config.width || getWidth()) / 2;
+        h = (_config.worldHeight || _config.height || getHeight()) / 2;
+
         this.setUpWorld(-w,-h,w,h);
     }
 
@@ -1244,8 +1266,16 @@ function generateTurtleModule(_target) {
         proto.$setup.keywordArgs = ["width", "height", "startx", "starty"];
 
         proto.$register_shape = proto.$addshape = function(name, points) {
-            SHAPES[name] = points;
+            if (!points) {
+                return getAsset(name).then(function(asset) {
+                    SHAPES[name] = asset;
+                });
+            }
+            else {
+                SHAPES[name] = points;
+            }
         };
+        proto.$setup.minArgs = 1;
 
         proto.$getshapes = function() {
             return Object.keys(SHAPES);
@@ -1335,6 +1365,19 @@ function generateTurtleModule(_target) {
             return getFrameManager().turtles();
         };
         proto.$turtles.returnType = Types.TURTLE_LIST;
+
+        proto.$bgpic = function(name) {
+            var self;
+            if (name) {
+                self = this;
+                return getAsset(name).then(function(asset) {
+                    clearLayer(self.bgLayer(), undefined, asset);
+                });
+            }
+
+            return this._bgpic;
+        };
+        proto.$bgpic.minArgs = 0;
 
         proto.$bgcolor = function(color, g, b, a) {
             if (arguments.length) {
@@ -1502,7 +1545,7 @@ function generateTurtleModule(_target) {
             _anonymousTurtle = _module.Turtle();
         }
 
-        return _anonymousTurtle;
+        return _anonymousTurtle.instance;
     }
 
     function getTarget() {
@@ -1527,7 +1570,8 @@ function generateTurtleModule(_target) {
         return (
             (_screenInstance && _screenInstance._width) ||
             _config.width ||
-            getTarget().clientWidth
+            getTarget().clientWidth ||
+            _defaultSetup.width
         ) | 0;
     }
 
@@ -1535,7 +1579,8 @@ function generateTurtleModule(_target) {
         return (
             (_screenInstance && _screenInstance._height) ||
             _config.height ||
-            getTarget().clientHeight
+            getTarget().clientHeight ||
+            _defaultSetup.height
         ) | 0;
     }
 
@@ -1708,18 +1753,28 @@ function generateTurtleModule(_target) {
         context.save();
         context.translate(state.x, state.y);
         context.scale(xScale,yScale);
-        context.rotate(bearing);
-        context.beginPath();
-        context.lineWidth   = 1;
-        context.strokeStyle = state.color;
-        context.fillStyle   = state.fill;
-        context.moveTo(shape[0][0], shape[0][1]);
-        for(var i = 1; i < shape.length; i++) {
-            context.lineTo(shape[i][0], shape[i][1]);
+
+        if (shape.nodeName) {
+            context.rotate(bearing + Math.PI);
+            var iw = shape.naturalWidth;
+            var ih = shape.naturalHeight;
+            context.drawImage(shape, 0, 0, iw, ih, -iw/2, -ih/2, iw, ih);
         }
-        context.closePath();
-        context.fill();
-        context.stroke();
+        else {
+            context.rotate(bearing);
+            context.beginPath();
+            context.lineWidth   = 1;
+            context.strokeStyle = state.color;
+            context.fillStyle   = state.fill;
+            context.moveTo(shape[0][0], shape[0][1]);
+            for(var i = 1; i < shape.length; i++) {
+                context.lineTo(shape[i][0], shape[i][1]);
+            }
+            context.closePath();
+            context.fill();
+            context.stroke();
+        }
+
         context.restore();
     }
 
@@ -1733,7 +1788,7 @@ function generateTurtleModule(_target) {
         context.beginPath();
         context.moveTo(this.x, this.y);
         size = size * Math.min(Math.abs(xScale),Math.abs(yScale));
-        context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
+        context.arc(this.x, this.y, size/2, 0, Turtle.RADIANS);
         context.closePath();
         context.fillStyle = color || this.color;
         context.fill();

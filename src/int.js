@@ -305,7 +305,7 @@ Sk.builtin.int_.prototype.nb$reflected_multiply = function (other) {
 /** @override */
 Sk.builtin.int_.prototype.nb$divide = function (other) {
     var thisAsLong, thisAsFloat;
-    if (Sk.python3) {
+    if (Sk.__future__.division) {
         thisAsFloat = new Sk.builtin.float_(this.v);
         return thisAsFloat.nb$divide(other);
     }

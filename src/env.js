@@ -16,6 +16,9 @@ var Sk = Sk || {}; //jshint ignore:line
  * strings.
  * syspath: Setable to emulate PYTHONPATH environment variable (for finding
  * modules). Should be an array of JS strings.
+ * nonreadopen: Boolean - set to true to allow non-read file operations
+ * fileopen: Optional function to call any time a file is opened
+ * filewrite: Optional function to call when writing to a file
  *
  * Any variables that aren't set will be left alone.
  */
@@ -33,6 +36,15 @@ Sk.configure = function (options) {
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
+    Sk.nonreadopen = options["nonreadopen"] || false;
+    goog.asserts.assert(typeof Sk.nonreadopen === "boolean");
+
+    Sk.fileopen = options["fileopen"] || undefined;
+    goog.asserts.assert(typeof Sk.fileopen === "function" || typeof Sk.fileopen === "undefined");
+
+    Sk.filewrite = options["filewrite"] || undefined;
+    goog.asserts.assert(typeof Sk.filewrite === "function" || typeof Sk.filewrite === "undefined");
+
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
     goog.asserts.assert(typeof Sk.timeoutMsg === "function");
     goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
@@ -40,8 +52,42 @@ Sk.configure = function (options) {
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
-    Sk.python3 = options["python3"] || Sk.python3;
-    goog.asserts.assert(typeof Sk.python3 === "boolean");
+    Sk.__future__ = options["__future__"] || {
+        print_function: false,
+        division: false,
+        absolute_import: null,
+        unicode_literals: false,
+        // skulpt specific
+        set_repr: false,
+        class_repr: false,
+        inherit_from_object: false
+    };
+
+    if (Sk.__future__.print_function === undefined || Sk.__future__.print_function === null || typeof Sk.__future__.print_function !== "boolean") {
+        throw new Error("must specify Sk.__future__.print_function and it must be a boolean");
+    }
+
+    if (Sk.__future__.division === undefined || Sk.__future__.division === null || typeof Sk.__future__.division !== "boolean") {
+        throw new Error("must specify Sk.__future__.division and it must be a boolean");
+    }
+
+    if (Sk.__future__.unicode_literals === undefined || Sk.__future__.unicode_literals === null || typeof Sk.__future__.unicode_literals !== "boolean") {
+        throw new Error("must specify Sk.__future__.unicode_literals and it must be a boolean");
+    }
+
+    if (Sk.__future__.set_repr === undefined || Sk.__future__.set_repr === null || typeof Sk.__future__.set_repr !== "boolean") {
+        throw new Error("must specify Sk.__future__.set_repr and it must be a boolean");
+    }
+
+    if (Sk.__future__.class_repr === undefined || Sk.__future__.class_repr === null || typeof Sk.__future__.class_repr !== "boolean") {
+        throw new Error("must specify Sk.__future__.class_repr and it must be a boolean");
+    }
+
+    if (Sk.__future__.inherit_from_object === undefined || Sk.__future__.inherit_from_object === null || typeof Sk.__future__.inherit_from_object !== "boolean") {
+        throw new Error("must specify Sk.__future__.inherit_from_object and it must be a boolean");
+    }
+
+    // in __future__ add checks for absolute_import
 
     Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
     goog.asserts.assert(typeof Sk.imageProxy === "string");
@@ -61,7 +107,7 @@ Sk.configure = function (options) {
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
         if (typeof setTimeout === "function") {
-            Sk.setTimeout = setTimeout;
+            Sk.setTimeout = function(func, delay) { setTimeout(func, delay); };
         } else {
             Sk.setTimeout = function(func, delay) { func(); };
         }
@@ -88,6 +134,13 @@ Sk.configure = function (options) {
     Sk.misceval.softspace_ = false;
 };
 goog.exportSymbol("Sk.configure", Sk.configure);
+
+/*
+* Replaceable handler for uncaught exceptions
+*/
+Sk.uncaughtException = function(err) {
+    throw err;
+};
 
 /*
  * Replaceable handler for uncaught exceptions
@@ -180,11 +233,10 @@ if (!Sk.inBrowser) {
     };
 }
 
-Sk.python3 = false;
 Sk.inputfun = function (args) {
     return window.prompt(args);
 };
 
-goog.exportSymbol("Sk.python3", Sk.python3);
+goog.exportSymbol("Sk.__future__", Sk.__future__);
 goog.exportSymbol("Sk.inputfun", Sk.inputfun);
 goog.require("goog.asserts");

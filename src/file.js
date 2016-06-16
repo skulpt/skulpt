@@ -28,7 +28,11 @@ Sk.builtin.file = function (name, mode, buffering) {
             this.fileno = 10;
             elem = document.getElementById(name.v);
             if (elem == null) {
-                throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                if (mode.v == "w" || mode.v == "a") {
+                    this.data$ = "";
+                } else {
+                    throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                }
             } else {
                 if (elem.nodeName.toLowerCase() == "textarea") {
                     this.data$ = elem.value;
@@ -52,6 +56,10 @@ Sk.builtin.file = function (name, mode, buffering) {
     this.pos$ = 0;
 
     this.__class__ = Sk.builtin.file;
+
+    if (Sk.fileopen && this.fileno >= 10) {
+        Sk.fileopen(this);
+    }
 
     return this;
 };
@@ -195,10 +203,27 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size
 });
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
-    if (self.fileno === 1) {
-        Sk.output(Sk.ffi.remapToJs(str));
+    var mode = Sk.ffi.remapToJs(self.mode);
+    if (mode === "w" || mode === "wb" || mode === "a" || mode === "ab") {
+        if (Sk.filewrite) {
+            if (self.closed) {
+                throw new Sk.builtin.ValueError("I/O operation on closed file");
+            }
+
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                Sk.filewrite(self, str);
+            }
+        } else {
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                goog.asserts.fail();
+            }
+        }
     } else {
-        goog.asserts.fail();
+        throw new Sk.builtin.IOError("File not open for writing");
     }
 });
 

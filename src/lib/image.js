@@ -80,14 +80,21 @@ $builtinmodule = function (name) {
             // if imageId is the name of an image file prepend http://host/app/book/_static/
             // if image proxy server is configured construct url for proxy
             // return the final URL
+
+            var proxy = typeof(Sk.imageProxy) === "function"
+                        ? Sk.imageProxy : function (str) {
+                            url = document.createElement("a");
+                            url.href = ret;
+                            if (window.location.host !== url.host) {
+                              return Sk.imageProxy + "/" + str;
+                            } 
+                            return str;
+                        };
+
             var url;
             var ret;
             ret = Sk.ffi.remapToJs(imageId);
-            url = document.createElement("a");
-            url.href = ret;
-            if (window.location.host !== url.host) {
-                ret = Sk.imageProxy + "/" + ret;
-            }
+            ret = proxy(ret);
             return ret;
         };
 
@@ -372,7 +379,7 @@ $builtinmodule = function (name) {
         });
 
         $loc.__str__ = new Sk.builtin.func(function (self) {
-            return "[" + self.red + "," + self.green + "," + self.blue + "]";
+            return Sk.ffi.remapToPy("[" + self.red + "," + self.green + "," + self.blue + "]");
         });
 
         //getColorTuple

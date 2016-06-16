@@ -562,6 +562,11 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         if (!fromlist || fromlist.length === 0) {
             return ret;
         } else {
+            // if it's on the module self return the module
+            var mod = Sk.sysmodules.mp$subscript(name);
+            if (mod && mod.$d && mod.$d[fromlist[0]]) {
+                return mod;
+            }
             // try to load the module from the file system if it is not present on the module itself
             var i;
             var fromNameRet; // module returned
@@ -579,9 +584,9 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 }
             }
         }
-
-        // if there's a fromlist we want to return the actual module, not the
-        // toplevel namespace
+        //
+        // // if there's a fromlist we want to return the actual module, not the
+        // // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
         goog.asserts.assert(ret);
         return ret;
