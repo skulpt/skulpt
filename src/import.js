@@ -578,8 +578,8 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];
 
-                var foundFromName = false;
-                var found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
+                foundFromName = false;
+                found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
                 if (found) {
                     // Check if the current fromName is already in the "name" module
                     foundFromName = Sk.sysmodules.mp$subscript(name)["$d"][fromName] != null;
