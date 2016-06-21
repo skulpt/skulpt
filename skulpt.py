@@ -865,7 +865,7 @@ def make_skulpt_js(options,dest):
     if sys.platform != "win32":
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
-def run_in_browser(fn, options):
+def run_in_browser(fn, options, debug_mode=False):
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -880,7 +880,7 @@ def run_in_browser(fn, options):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts)
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower())
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1082,7 +1082,7 @@ def rununits(opt=False, p3=False, debug_mode=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugger: %s});
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1327,7 +1327,9 @@ def main():
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
-        run_in_browser(sys.argv[2],options)
+        run_in_browser(sys.argv[2], options)
+    elif cmd == "brundebug":
+        run_in_browser(sys.argv[2], options, True)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":
