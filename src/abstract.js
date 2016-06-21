@@ -828,20 +828,24 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
         ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
     }
 
-    ret = Sk.misceval.chain(ret, function(ret) {
+    var eventualresult = Sk.misceval.chain(undefined, function () {
+        return obj;
+    }, function(obj1) {
         var f;
+        objname = Sk.abstr.typeName(obj1);
 
-        if (ret === undefined && obj.tp$getattr !== undefined) {
-            ret = obj.tp$getattr(nameJS);
+        if (ret === undefined && obj1.tp$getattr !== undefined) {
+            ret = obj1.tp$getattr(nameJS);
 
             if (ret === undefined) {
-                f = obj.tp$getattr("__getattr__");
+                f = obj1.tp$getattr("__getattr__");
 
                 if (f !== undefined) {
                     ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
                 }
             }
         }
+        
         return ret;
     }, function(r) {
         if (r === undefined) {
@@ -850,7 +854,7 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
         return r;
     });
 
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    return canSuspend ? eventualresult : Sk.misceval.retryOptionalSuspensionOrThrow(eventualresult);
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
