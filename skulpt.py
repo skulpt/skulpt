@@ -236,7 +236,7 @@ def test(debug_mode=False):
         ret3 = os.system(jscscmd)
         #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits()
+        ret4 = rununits(debug_mode=debug_mode)
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -725,6 +725,13 @@ def dist(options):
 
     ret = test()
 
+    # Run tests on uncompressed.
+    if options.verbose:
+        print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+
+
+    ret = test(debug_mode=True)
+
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
@@ -1039,16 +1046,16 @@ def runopt(fn):
     run(fn, "", True)
 
 def run3(fn):
-    run(fn,p3=True)
+    run(fn, p3=True)
 
 def rundebug(fn):
-    run(fn,debug_mode=True)
+    run(fn, debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
+def rununits(opt=False, p3=False, debug_mode=False):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1065,7 +1072,7 @@ def rununits(opt=False, p3=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugger: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1073,7 +1080,7 @@ Sk.misceval.asyncToPromise(function() {
     print(e.stack);
     quit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
         if opt:
             p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
