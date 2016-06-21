@@ -1632,9 +1632,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         out(scopename, ".$defaults=[", defaults.join(","), "];");
     }
 
-    if (decos.length > 0) {
-        out(scopename, ".$decorators=[", decos.join(","), "];");
-    }
 
     //
     // attach co_varnames (only the argument names) for keyword argument
@@ -1690,14 +1687,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
     }
     else {
-        var res;
-        if (decos.length > 0)
-        {
-            res = this._gr("funcobj", "Sk.misceval.callsimOrSuspend(", scopename, ".$decorators[0], new Sk.builtins['function'](", scopename, ",$gbl", frees, "))"); // scopename, ".$decorators[0](new Sk.builtins['function'](", scopename, ",$gbl", frees, "))";
-        } else {
-            res = this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
-        }
-        return res;
+        return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
     }
 };
 
