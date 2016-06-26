@@ -11,7 +11,6 @@ class property(object):
             else:
                 doc = None
         self.__doc__ = doc
-        print("__init__ Property")
 
     def __get__(self, obj, objtype=None):
         if obj is None:
