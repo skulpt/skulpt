@@ -930,10 +930,8 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                             r.data["promise"].then(resumeWithData, resumeWithError);
                             return;
 
-                        } else if (r.data["type"] == "Sk.yield") {
-                            // Assumes all yields are optional, as Sk.setTimeout might
-                            // not be able to yield.
-                            Sk.setTimeout(resume, 0);
+                        } else if (r.data["type"] == "Sk.yield" && typeof setTimeout === "function") {
+                            setTimeout(resume, 0);
                             return;
 
                         } else if (r.optional) {
@@ -1189,6 +1187,15 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
     } else {
+        fcall = func.__get__;
+        if (fcall !== undefined) {
+            fcall = Sk.misceval.callsim(func.__get__, func, func);
+            //args.unshift(func);
+            if (fcall.tp$call) {
+                return fcall.tp$call.call(fcall, args);
+            }
+        }
+
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {
