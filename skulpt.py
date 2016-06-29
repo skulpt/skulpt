@@ -102,6 +102,7 @@ Files = [
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
+        'src/iterator.js',
         'src/enumerate.js',
         'src/tokenize.js',
         'gen/parse_tables.js',

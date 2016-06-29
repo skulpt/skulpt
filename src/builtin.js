@@ -1230,9 +1230,25 @@ Sk.builtin.frozenset = function frozenset () {
 Sk.builtin.help = function help () {
     throw new Sk.builtin.NotImplementedError("help is not yet implemented");
 };
-Sk.builtin.iter = function iter () {
-    throw new Sk.builtin.NotImplementedError("iter is not yet implemented");
+
+Sk.builtin.iter = function iter (obj, sentinel) {
+    Sk.builtin.pyCheckArgs("iter", arguments, 1, 2);
+    if (arguments.length === 1) {
+        if (!Sk.builtin.checkIterable(obj)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + 
+                "' object is not iterable");
+        } else {
+            return new Sk.builtin.iterator(obj);
+        }
+    } else {
+        if (Sk.builtin.checkCallable(obj)) {
+            return new Sk.builtin.iterator(obj, sentinel);
+        } else {
+            throw new TypeError("iter(v, w): v must be callable");
+        }
+    }
 };
+
 Sk.builtin.locals = function locals () {
     throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
 };
