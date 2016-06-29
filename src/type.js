@@ -304,6 +304,8 @@ Sk.builtin.type = function (name, bases, dict) {
                     }
                 });
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            } else {
+                throw new Sk.builtin.TypeError("instance has no next() method");
             }
         };
 
