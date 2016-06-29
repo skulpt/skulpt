@@ -119,31 +119,14 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
 Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
 Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
-Sk.builtin.tuple.prototype.tp$iter = function () {
-    var ret =
-    {
-        tp$iter    : function () {
-            return ret;
-        },
-        $obj       : this,
-        $index     : 0,
-        tp$iternext: function () {
-            // todo; StopIteration
-            if (ret.$index >= ret.$obj.v.length) {
-                return undefined;
-            }
-            return ret.$obj.v[ret.$index++];
-        },
-        tp$name    : "tuple_iterator"
-    };
-    return ret;
-};
-
-Sk.builtin.tuple.prototype["__iter__"] = new Sk.builtin.func(function (self) {
+Sk.builtin.tuple.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
-
-    return self.tp$iter();
+    return new Sk.builtin.tuple_iter_(self);
 });
+
+Sk.builtin.tuple.prototype.tp$iter = function () {
+    return new Sk.builtin.tuple_iter_(this);
+};
 
 Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
@@ -272,3 +255,43 @@ Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) 
 });
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
+
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.tuple_iter_ = function (obj) {
+    if (!(this instanceof Sk.builtin.tuple_iter_)) {
+        return new Sk.builtin.tuple_iter_(obj);
+    }
+    this.$index = 0;
+    this.$obj = obj.v.slice();
+    this.sq$length = this.$obj.length;
+    this.tp$iter = this;
+    this.tp$iternext = function () {
+        if (this.$index >= this.sq$length) {
+            return undefined;
+        }
+        return this.$obj[this.$index++];
+    };
+    this.$r = function () {
+        return new Sk.builtin.str("tupleiterator");
+    };
+    return this;
+};
+
+Sk.abstr.setUpInheritance("tupleiterator", Sk.builtin.tuple_iter_, Sk.builtin.object);
+
+Sk.builtin.tuple_iter_.prototype.__class__ = Sk.builtin.tuple_iter_;
+
+Sk.builtin.tuple_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    return self;
+});
+
+Sk.builtin.tuple_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+});

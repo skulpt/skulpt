@@ -24,6 +24,8 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     return this.im_func.tp$call(args, kw);
 };
 
+Sk.builtin.method.prototype.tp$name = "instancemethod";
+
 Sk.builtin.method.prototype["$r"] = function () {
     var name = (this.im_func.func_code && this.im_func.func_code["co_name"] && this.im_func.func_code["co_name"].v) || "<native JS>";
     return new Sk.builtin.str("<bound method " + this.im_self.ob$type.tp$name + "." + name +

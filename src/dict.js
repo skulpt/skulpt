@@ -178,46 +178,6 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
     throw new Sk.builtin.KeyError(s.v);
 };
 
-Sk.builtin.dict.prototype.tp$iter = function () {
-    var ret;
-    var i;
-    var bucket;
-    var k;
-    var allkeys = [];
-    for (k in this) {
-        if (this.hasOwnProperty(k)) {
-            bucket = this[k];
-            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
-                // skip internal stuff. todo; merge pyobj and this
-                for (i = 0; i < bucket.items.length; i++) {
-                    allkeys.push(bucket.items[i].lhs);
-                }
-            }
-        }
-    }
-    //print(allkeys);
-
-    ret =
-    {
-        tp$iter    : function () {
-            return ret;
-        },
-        $obj       : this,
-        $index     : 0,
-        $keys      : allkeys,
-        tp$iternext: function () {
-            // todo; StopIteration
-            if (ret.$index >= ret.$keys.length) {
-                return undefined;
-            }
-            return ret.$keys[ret.$index++];
-            // return ret.$obj[ret.$keys[ret.$index++]].lhs;
-        },
-        tp$name    : "dict_keyiterator"
-    };
-    return ret;
-};
-
 Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
@@ -488,8 +448,12 @@ Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
 
-    return Sk.builtin.dict.prototype.tp$iter.call(self);
+    return new Sk.builtin.dict_iter_(self);
 });
+
+Sk.builtin.dict.prototype.tp$iter = function () {
+    return new Sk.builtin.dict_iter_(this);
+};
 
 Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, false, true);
@@ -578,3 +542,58 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
 });
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
+
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.dict_iter_ = function (obj) {
+    var k, i, bucket, allkeys;
+    if (!(this instanceof Sk.builtin.dict_iter_)) {
+        return new Sk.builtin.dict_iter_(obj);
+    }
+    this.$index = 0;
+    this.$obj = obj;
+    allkeys = [];
+    for (k in obj) {
+        if (obj.hasOwnProperty(k)) {
+            bucket = obj[k];
+            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
+                // skip internal stuff. todo; merge pyobj and this
+                for (i = 0; i < bucket.items.length; i++) {
+                    allkeys.push(bucket.items[i].lhs);
+                }
+            }
+        }
+    }
+    this.$keys = allkeys;
+    this.tp$iter = this;
+    this.tp$iternext = function () {
+        // todo; StopIteration
+        if (this.$index >= this.$keys.length) {
+            return undefined;
+        }
+        return this.$keys[this.$index++];
+        // return this.$obj[this.$keys[this.$index++]].lhs;
+    };
+    this.$r = function () {
+        return new Sk.builtin.str("dictionary-keyiterator");
+    };
+    return this;
+};
+
+Sk.abstr.setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
+
+Sk.builtin.dict_iter_.prototype.__class__ = Sk.builtin.dict_iter_;
+
+Sk.builtin.dict_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    return self;
+});
+
+Sk.builtin.dict_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+});

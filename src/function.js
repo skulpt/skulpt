@@ -227,11 +227,20 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var kwargsarr;
     var expectskw;
     var name;
+    var numargs;
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     if (this.func_closure) {
         // todo; OK to modify?
+        if (this.func_code["$defaults"] && this.func_code["co_varnames"]) {
+            // Make sure all default arguments are in args before adding closure
+            numargs = args.length;
+            numvarnames = this.func_code["co_varnames"].length;
+            for (i = numargs; i < numvarnames; i++) {
+                args.push(undefined);
+            }
+        }
         args.push(this.func_closure);
     }
 
