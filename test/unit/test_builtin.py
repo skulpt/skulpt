@@ -344,5 +344,65 @@ class BuiltinTest(unittest.TestCase):
         #         return chr(ord(str.__getitem__(self, index))+1)
         # self.assertEqual(filter(lambda x: x>="3", shiftstr("1234")), "345")
 
+    def test_callable(self):
+        self.assertTrue(callable(len))                            # builtin
+        self.assertFalse(callable("a"))
+        self.assertTrue(callable(callable))                       # builtin
+        self.assertTrue(callable(lambda x, y: x + y))             # python lambda
+        def f(): pass
+        self.assertTrue(callable(f))                              # python func
+        class C1(object):
+            def meth(self): pass
+        self.assertTrue(callable(C1))                               # class
+        c = C1()
+        self.assertTrue(callable(c.meth))                           # method (instance)
+        # __call__ is looked up on the class, not the instance
+        c.__call__ = None
+        self.assertFalse(callable(c))                               # class instance without __call__ in class
+        class C2(object):
+            def __call__(self): pass
+        c2 = C2()
+        self.assertTrue(callable(c2))                               # class instance with __call__ in class
+        self.assertFalse(callable(False))                                       # bool
+        self.assertFalse(callable(["this is a list"]))                          # list        
+        self.assertFalse(callable(["this is a list with a function", f]))       # list containing function
+        self.assertFalse(callable({}))                                          # dict
+        self.assertFalse(callable(None))                                        # nonetype
+        self.assertFalse(callable(1))                                           # number
+        self.assertTrue(callable(float))                                        # float builtin
+        self.assertFalse(callable(float()))                                     # function call
+        self.assertFalse(callable(float(1)))                                    # float type
+        self.assertFalse(callable("+"))                                         # string containing symbol
+        self.assertFalse(callable(4+7))                                         # expression
+        self.assertFalse(callable(enumerate(['a', 'b', 'c', 'd'])))             # list created by callable function
+        self.assertFalse(callable(()))                                          # tuple                                        
+        # generators are callable
+        def squares(n):
+            '''Yields the squares from 0 to n-1 squared.'''
+            for i in range(n):
+                yield i * i
+        self.assertTrue(callable(squares))                                      # generator
+        class SuperClass(object): #superclass
+            def getName(self):
+                raise NotImplementedError
+        class LittleClass(SuperClass): #subclass/ inherited from SuperClass
+                def __call__(self):
+                    return "LittleClass"
+        big = SuperClass()
+        big.__call__ = "call me super"
+        self.assertFalse(callable(big))                                             # checking callable by class (not instances)
+        class_inst = LittleClass()                                                  # class instances are not callable unless they have a .__call__ method
+        self.assertTrue(callable(class_inst)) 
+        #### nested classes
+        class Outer(object):
+            def __init__(self):
+                self.y = 0
+
+            class Inner(object):
+                def __init__(self):
+                    self.x = 1
+        self.assertTrue(callable(Outer.Inner))                                 # function object
+        self.assertTrue(callable(Outer.Inner.__init__))
+
 if __name__ == "__main__":
     unittest.main()

@@ -1205,8 +1205,15 @@ Sk.builtin.reversed = function reversed (seq) {
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
 };
-Sk.builtin.callable = function callable () {
-    throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
+
+Sk.builtin.callable = function callable (obj) {
+    // check num of args
+    Sk.builtin.pyCheckArgs("callable", arguments, 1, 1);
+
+    if (Sk.builtin.checkCallable(obj)) {
+        return Sk.builtin.bool.true$;
+    }
+    return Sk.builtin.bool.false$;
 };
 
 Sk.builtin.delattr = function delattr () {
