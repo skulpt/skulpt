@@ -559,6 +559,8 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         if (saveSk !== Sk.globals) {
             Sk.globals = saveSk;
         }
+
+        // There is no fromlist, so we have reached the end of the lookup, return
         if (!fromlist || fromlist.length === 0) {
             return ret;
         } else {
@@ -568,10 +570,23 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
             var fromName; // name of current module for fromlist
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
-            dottedName = dottedName[dottedName.length-1];
+            var lastDottedName = dottedName[dottedName.length-1];
+            
+            var found; // Contains sysmodules the "name"
+            var foundFromName; // Contains the sysmodules[name] the current item from the fromList
+
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];
-                if (fromName != "*" && ret.$d[fromName] == null && (ret.$d[dottedName] != null || ret.$d.__name__.v == dottedName)) {
+
+                foundFromName = false;
+                found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
+                if (found) {
+                    // Check if the current fromName is already in the "name" module
+                    foundFromName = Sk.sysmodules.mp$subscript(name)["$d"][fromName] != null;
+                }
+
+                // Only import from file system if we have not found the fromName in the current module
+                if (!foundFromName && fromName != "*" && ret.$d[fromName] == null && (ret.$d[lastDottedName] != null || ret.$d.__name__.v == lastDottedName)) {
                     // add the module name to our requiredImport list
                     fromImportName = "" + name + "." + fromName;
                     fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true, currentDir);
