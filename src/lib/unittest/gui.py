@@ -26,6 +26,7 @@ class TestCaseGui(TestCase):
          row = document.createElement('tr')
          for item in headers:
              head = document.createElement('th')
+             head.setAttribute('class','ac-feedback')
              head.innerHTML = item
              head.setCSS('text-align','center')
              row.appendChild(head)
@@ -56,20 +57,23 @@ class TestCaseGui(TestCase):
              err = True
              msg = 'Error: %s' % param
              errorData = document.createElement('td')
+             errorData.setAttribute('class','ac-feedback')
              errorData.innerHTML = 'ERROR'
              errorData.setCSS('background-color','#de8e96')
              errorData.setCSS('text-align','center')
              row.appendChild(errorData)
          elif res:
              passed = document.createElement('td')
-             passed.innerHTML = 'PASS'
+             passed.setAttribute('class','ac-feedback')
+             passed.innerHTML = 'Pass'
              passed.setCSS('background-color','#83d382')
              passed.setCSS('text-align','center')
              row.appendChild(passed)
              self.numPassed += 1
          else:
              fail = document.createElement('td')
-             fail.innerHTML = 'FAIL'
+             fail.setAttribute('class','ac-feedback')
+             fail.innerHTML = 'Fail'
              fail.setCSS('background-color','#de8e96')
              fail.setCSS('text-align','center')
              row.appendChild(fail)
@@ -77,6 +81,7 @@ class TestCaseGui(TestCase):
 
 
          act = document.createElement('td')
+         act.setAttribute('class','ac-feedback')
          if trimActual:
              actHTML = str(actual)[:5] + "..." + str(actual)[-5:]
              if actualType == str:
@@ -88,6 +93,8 @@ class TestCaseGui(TestCase):
          row.appendChild(act)
 
          expect = document.createElement('td')
+         expect.setAttribute('class','ac-feedback')
+
          if trimExpected:
              expectedHTML = str(expected)[:5] + "..." + str(expected)[-5:]
              if expectedType == str:
@@ -98,6 +105,8 @@ class TestCaseGui(TestCase):
          expect.setCSS('text-align','center')
          row.appendChild(expect)
          inp = document.createElement('td')
+         inp.setAttribute('class','ac-feedback')
+
          if err:
              inp.innerHTML = msg
          else:
