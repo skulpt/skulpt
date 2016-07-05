@@ -34,7 +34,7 @@ class TestCaseGui(TestCase):
 
          for func in self.tlist:
              try:
-                 self.setup()
+                 self.setUp()
                  func()
                  self.tearDown()
              except Exception as e:
