@@ -188,7 +188,7 @@ Sk.importSearchPathForName = function (name, ext, failok, canSuspend, currentDir
  *
  * @return {undefined}
  */
-Sk.doOneTimeInitialization = function () {
+Sk.doOneTimeInitialization = function (canSuspend) {
     var proto, name, i, x, func;
     var builtins = [];
 
@@ -235,13 +235,21 @@ Sk.doOneTimeInitialization = function () {
 
         proto[name] = new Sk.builtin.func(proto[name]);
     }
+
+    // compile internal python files and add them to the __builtin__ module
+    for (var file in Sk.internalPy.files) {
+        var fileWithoutExtension = file.split(".")[0].split("/")[1];
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], canSuspend);
+        goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+        Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+    }
 };
 
 /**
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
  */
-Sk.importSetUpPath = function () {
+Sk.importSetUpPath = function (canSuspend) {
     var i;
     var paths;
     if (!Sk.realsyspath) {
@@ -255,7 +263,7 @@ Sk.importSetUpPath = function () {
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
 
-        Sk.doOneTimeInitialization();
+        Sk.doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -289,7 +297,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     var parentModName;
     var modNameSplit;
     var toReturn;
-    Sk.importSetUpPath();
+    Sk.importSetUpPath(canSuspend);
 
     // if no module name override, supplied, use default name
     if (modname === undefined) {
@@ -539,6 +547,21 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body, canSuspend);
 };
 
+/**
+ * **Run Python Code in Skulpt**
+ *
+ * When you want to hand Skulpt a string corresponding to a Python program this is the function.
+ *
+ * @param name {string}  File name to use for messages related to this run
+ * @param dumpJS {boolean} print out the compiled javascript
+ * @param body {string} Python Code
+ * @param canSuspend {boolean}  Use Suspensions for async execution
+ *
+ */
+Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
+    return Sk.importModuleInternal_(name, dumpJS, "__builtin__", body, canSuspend);
+};
+
 Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.  for some reason, __name__ gets overwritten.
@@ -559,24 +582,34 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         if (saveSk !== Sk.globals) {
             Sk.globals = saveSk;
         }
+
+        // There is no fromlist, so we have reached the end of the lookup, return
         if (!fromlist || fromlist.length === 0) {
             return ret;
         } else {
-            // if it's on the module self return the module
-            var mod = Sk.sysmodules.mp$subscript(name);
-            if (mod && mod.$d && mod.$d[fromlist[0]]) {
-                return mod;
-            }
             // try to load the module from the file system if it is not present on the module itself
             var i;
             var fromNameRet; // module returned
             var fromName; // name of current module for fromlist
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
-            dottedName = dottedName[dottedName.length-1];
+            var lastDottedName = dottedName[dottedName.length-1];
+            
+            var found; // Contains sysmodules the "name"
+            var foundFromName; // Contains the sysmodules[name] the current item from the fromList
+
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];
-                if (fromName != "*" && ret.$d[fromName] == null && (ret.$d[dottedName] != null || ret.$d.__name__.v == dottedName)) {
+
+                foundFromName = false;
+                found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
+                if (found) {
+                    // Check if the current fromName is already in the "name" module
+                    foundFromName = Sk.sysmodules.mp$subscript(name)["$d"][fromName] != null;
+                }
+
+                // Only import from file system if we have not found the fromName in the current module
+                if (!foundFromName && fromName != "*" && ret.$d[fromName] == null && (ret.$d[lastDottedName] != null || ret.$d.__name__.v == lastDottedName)) {
                     // add the module name to our requiredImport list
                     fromImportName = "" + name + "." + fromName;
                     fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true, currentDir);
@@ -584,9 +617,9 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 }
             }
         }
-        //
-        // // if there's a fromlist we want to return the actual module, not the
-        // // toplevel namespace
+
+        // if there's a fromlist we want to return the actual module, not the
+        // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
         goog.asserts.assert(ret);
         return ret;
@@ -609,5 +642,6 @@ Sk.importStar = function (module, loc, global) {
 
 goog.exportSymbol("Sk.importMain", Sk.importMain);
 goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
+goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
 goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
 goog.exportSymbol("Sk.importStar", Sk.importStar);

@@ -115,6 +115,7 @@ Files = [
         'src/sorted.js',
         'src/builtindict.js',
         'src/constants.js',
+        'src/internalpython.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
@@ -671,6 +672,15 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
+def getInternalCodeAsJson():
+    ret = {}
+    ret['files'] = {}
+    for f in ["src/" + x for x in os.listdir("src") if os.path.splitext(x)[1] == ".py" if os.path.isfile("src/" + x)]:
+        ext = os.path.splitext(f)[1]
+        if ext == ".py":
+            f = f.replace("\\", "/")
+            ret['files'][f] = open(f).read()
+    return "Sk.internalPy=" + json.dumps(ret)
 
 def getBuiltinsAsJson(options):
     ret = {}
@@ -717,16 +727,16 @@ def dist(options):
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
     debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
+    
+    if options.disabletests == False:
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Running tests on uncompressed..."
 
-    # Run tests on uncompressed.
-    if options.verbose:
-        print ". Running tests on uncompressed..."
-
-    ret = test()
-
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        sys.exit(1);
+        ret = test()
+        if ret != 0:
+            print "Tests failed on uncompressed version."
+            sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST, include_ext_libs=False)])
@@ -749,7 +759,6 @@ def dist(options):
 
     # Copy the debugger file to the output dir
 
-
     if options.verbose:
         print ". Bundling external libraries..."
 
@@ -765,17 +774,19 @@ def dist(options):
 
 
     # Run tests on compressed.
-    if options.verbose:
-        print ". Running tests on compressed..."
-    buildNamedTestsFile()
-    ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on compressed version."
-        sys.exit(1)
-    ret = rununits(opt=True)
-    if ret != 0:
-        print "Tests failed on compressed unit tests"
-        sys.exit(1)
+    if options.disabletests == False:
+        if options.verbose:
+            print ". Running tests on compressed..."
+        buildNamedTestsFile()
+        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+        if ret != 0:
+            print "Tests failed on compressed version."
+            sys.exit(1)
+        ret = rununits(opt=True)
+        if ret != 0:
+            print "Tests failed on compressed unit tests"
+            sys.exit(1)
+
 
     doc()
 
@@ -1265,6 +1276,7 @@ def main():
     parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
     parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
     parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
+    parser.add_option("-d", "--disabletests", action="store_true", dest="disabletests", default=False)
     parser.add_option("-v", "--verbose",
         action="store_true",
         dest="verbose",
@@ -1283,6 +1295,9 @@ def main():
         cmd = "help"
     else:
         cmd = sys.argv[1]
+
+    with open("src/internalpython.js", "w") as f:
+        f.write(getInternalCodeAsJson() + ";")
 
     if cmd == "test":
         test()
