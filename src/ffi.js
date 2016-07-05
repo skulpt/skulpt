@@ -22,6 +22,8 @@ Sk.ffi.remapToPy = function (obj) {
             arr.push(Sk.ffi.remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
+    } else if (obj === null) {
+        return Sk.builtin.none.none$;
     } else if (typeof obj === "object") {
         kvs = [];
         for (k in obj) {
