@@ -188,7 +188,7 @@ Sk.importSearchPathForName = function (name, ext, failok, canSuspend, currentDir
  *
  * @return {undefined}
  */
-Sk.doOneTimeInitialization = function () {
+Sk.doOneTimeInitialization = function (canSuspend) {
     var proto, name, i, x, func;
     var builtins = [];
 
@@ -239,7 +239,7 @@ Sk.doOneTimeInitialization = function () {
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], false);
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], canSuspend);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
     }
@@ -249,7 +249,7 @@ Sk.doOneTimeInitialization = function () {
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
  */
-Sk.importSetUpPath = function () {
+Sk.importSetUpPath = function (canSuspend) {
     var i;
     var paths;
     if (!Sk.realsyspath) {
@@ -263,7 +263,7 @@ Sk.importSetUpPath = function () {
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
 
-        Sk.doOneTimeInitialization();
+        Sk.doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -297,7 +297,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     var parentModName;
     var modNameSplit;
     var toReturn;
-    Sk.importSetUpPath();
+    Sk.importSetUpPath(canSuspend);
 
     // if no module name override, supplied, use default name
     if (modname === undefined) {

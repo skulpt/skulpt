@@ -930,8 +930,10 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                             r.data["promise"].then(resumeWithData, resumeWithError);
                             return;
 
-                        } else if (r.data["type"] == "Sk.yield" && typeof setTimeout === "function") {
-                            setTimeout(resume, 0);
+                        } else if (r.data["type"] == "Sk.yield") {
+                            // Assumes all yields are optional, as Sk.setTimeout might
+                            // not be able to yield.
+                            Sk.setTimeout(resume, 0);
                             return;
 
                         } else if (r.optional) {
