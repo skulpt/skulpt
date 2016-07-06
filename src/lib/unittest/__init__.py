@@ -182,7 +182,7 @@ class TestCase:
             msg = 'Pass'
             self.assertPassed += 1
         else:
-            msg = 'Fail: expected %s got %s ' % (str(actual),str(expected)) + feedback
+            msg = 'Fail: ' +  feedback
             print(msg)
             self.assertFailed += 1
 
