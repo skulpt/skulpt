@@ -136,7 +136,7 @@ class TestCase:
             res = round(a-b, places) == 0
         
         if not res and feedback == "":
-            feedback = "Expected %s to equal %s" % (str(actual),str(expected))
+            feedback = "Expected %s to equal %s" % (str(a),str(b))
         self.appendResult(res, a, b, feedback)
 
     def assertNotAlmostEqual(self, a, b, places=7, feedback="", delta=None):
