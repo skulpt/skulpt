@@ -184,11 +184,9 @@ class TestCase:
 
 
 
-def main(verbosity=1, names=None):
+def main(verbosity=1):
     glob = globals() # globals() still needs work
-    if names == None:
-        names = glob
-    for name in names:
+    for name in glob:
         if issubclass(glob[name],TestCase):
             try:
                 tc = glob[name]()

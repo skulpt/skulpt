@@ -566,7 +566,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         } else {
             // try to load the module from the file system if it is not present on the module itself
             var i;
-            var fromNameRet; // module returned
             var fromName; // name of current module for fromlist
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
@@ -589,8 +588,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 if (!foundFromName && fromName != "*" && ret.$d[fromName] == null && (ret.$d[lastDottedName] != null || ret.$d.__name__.v == lastDottedName)) {
                     // add the module name to our requiredImport list
                     fromImportName = "" + name + "." + fromName;
-                    fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true, currentDir);
-                    ret["$d"][fromName] = fromNameRet;
+                    Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, false, currentDir);
                 }
             }
         }
