@@ -242,16 +242,18 @@ Sk.builtin.round = function round (number, ndigits) {
 Sk.builtin.len = function len (item) {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
+    var int_ = function(i) { return new Sk.builtin.int_(i); };
+
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(), Sk.builtin.int_);
+        return Sk.misceval.chain(item.sq$length(), int_);
     }
 
     if (item.mp$length) {
-        return Sk.misceval.chain(item.mp$length(), Sk.builtin.int_);
+        return Sk.misceval.chain(item.mp$length(), int_);
     }
 
     if (item.tp$length) {
-        return Sk.misceval.chain(item.tp$length(true), Sk.builtin.int_);
+        return Sk.misceval.chain(item.tp$length(true), int_);
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");

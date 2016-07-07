@@ -284,11 +284,11 @@ Sk.builtin.type = function (name, bases, dict) {
             });
         };
         klass.prototype.tp$iter = function () {
-            var iterf = Sk.abstr.gattr(this, "__iter__");
+            var iterf = Sk.abstr.gattr(this, "__iter__", false);
             return Sk.misceval.callsim(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
-            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "next"), function(iternextf) {
+            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "next", canSuspend), function(/** {Object} */ iternextf) {
                 return Sk.misceval.tryCatch(function() {
                     return Sk.misceval.callsimOrSuspend(iternextf);
                 }, function(e) {
@@ -304,7 +304,7 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$getitem = function (key, canSuspend) {
-            var getf = Sk.abstr.gattr(this, "__getitem__"), r;
+            var getf = Sk.abstr.gattr(this, "__getitem__", canSuspend), r;
             if (getf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
@@ -312,7 +312,7 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
         };
         klass.prototype.tp$setitem = function (key, value, canSuspend) {
-            var setf = Sk.abstr.gattr(this, "__setitem__"), r;
+            var setf = Sk.abstr.gattr(this, "__setitem__", canSuspend), r;
             if (setf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
