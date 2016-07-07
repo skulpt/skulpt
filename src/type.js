@@ -263,14 +263,11 @@ Sk.builtin.type = function (name, bases, dict) {
             }
             return this["$r"]();
         };
-        klass.prototype.tp$length = function () {
-            var tname;
-            var lenf = this.tp$getattr("__len__");
-            if (lenf !== undefined) {
-                return Sk.misceval.apply(lenf, undefined, undefined, undefined, []);
-            }
-            tname = Sk.abstr.typeName(this);
-            throw new Sk.builtin.AttributeError(tname + " instance has no attribute '__len__'");
+        klass.prototype.tp$length = function (canSuspend) {
+            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "__len__", canSuspend), function(lenf) {
+                return Sk.misceval.applyOrSuspend(lenf, undefined, undefined, undefined, []);
+            });
+            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
         klass.prototype.tp$call = function (args, kw) {
             var callf = this.tp$getattr("__call__");

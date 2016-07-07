@@ -243,15 +243,15 @@ Sk.builtin.len = function len (item) {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     if (item.sq$length) {
-        return new Sk.builtin.int_(item.sq$length());
+        return Sk.misceval.chain(item.sq$length(true), Sk.builtin.int_);
     }
 
     if (item.mp$length) {
-        return new Sk.builtin.int_(item.mp$length());
+        return Sk.misceval.chain(item.mp$length(true), Sk.builtin.int_);
     }
 
     if (item.tp$length) {
-        return new Sk.builtin.int_(item.tp$length());
+        return Sk.misceval.chain(item.tp$length(true), Sk.builtin.int_);
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
