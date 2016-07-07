@@ -230,6 +230,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype["$r"] = function () {
             var cname;
             var mod;
+            // TODO use Sk.abstr.gattr() here so __repr__ can be dynamically provided (eg by __getattr__())
             var reprf = this.tp$getattr("__repr__");
             if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
@@ -251,6 +252,7 @@ Sk.builtin.type = function (name, bases, dict) {
             }
         };
         klass.prototype.tp$str = function () {
+            // TODO use Sk.abstr.gattr() here so __str__ can be dynamically provided (eg by __getattr__())
             var strf = this.tp$getattr("__str__");
             if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype["__str__"]) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
@@ -270,28 +272,17 @@ Sk.builtin.type = function (name, bases, dict) {
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
         klass.prototype.tp$call = function (args, kw) {
-            var callf = this.tp$getattr("__call__");
-            /* todo; vararg kwdict */
-            if (callf) {
-                return Sk.misceval.apply(callf, undefined, undefined, kw, args);
-            }
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
+            return Sk.misceval.chain(Sk.abstr.gattr(this, "__call__", true), function(callf) {
+                return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
+            });
         };
         klass.prototype.tp$iter = function () {
-            var ret;
-            var iterf = this.tp$getattr("__iter__");
-            var tname = Sk.abstr.typeName(this);
-            if (iterf) {
-                ret = Sk.misceval.callsim(iterf);
-                return ret;
-            }
-            throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
+            var iterf = Sk.abstr.gattr(this, "__iter__");
+            return Sk.misceval.callsim(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
-            var r;
-            var iternextf = this.tp$getattr("next");
-            if (iternextf) {
-                r = Sk.misceval.tryCatch(function() {
+            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "next"), function(iternextf) {
+                return Sk.misceval.tryCatch(function() {
                     return Sk.misceval.callsimOrSuspend(iternextf);
                 }, function(e) {
                     if (e instanceof Sk.builtin.StopIteration) {
@@ -300,14 +291,13 @@ Sk.builtin.type = function (name, bases, dict) {
                         throw e;
                     }
                 });
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-            } else {
-                throw new Sk.builtin.TypeError("instance has no next() method");
-            }
+            });
+
+            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 
         klass.prototype.tp$getitem = function (key, canSuspend) {
-            var getf = this.tp$getattr("__getitem__"), r;
+            var getf = Sk.abstr.gattr(this, "__getitem__"), r;
             if (getf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
@@ -315,7 +305,7 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
         };
         klass.prototype.tp$setitem = function (key, value, canSuspend) {
-            var setf = this.tp$getattr("__setitem__"), r;
+            var setf = Sk.abstr.gattr(this, "__setitem__"), r;
             if (setf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
