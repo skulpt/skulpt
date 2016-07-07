@@ -341,7 +341,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 args.unshift(magic_func, this);
 
                 if (canSuspendIdx) {
-                    var canSuspend = args[canSuspendIdx+1];
+                    canSuspend = args[canSuspendIdx+1];
                     args.splice(canSuspendIdx+1, 1);
                     if (canSuspend) {
                         return Sk.misceval.callsimOrSuspend.apply(undefined, args);
