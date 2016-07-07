@@ -12,6 +12,13 @@ if(Sk.builtin === undefined) {
  * checks for the numeric shortcuts and not the sequence shortcuts when computing
  * a binary operation.
  *
+ * Because many of these functions are used in contexts in which Skulpt does not
+ * [yet] handle suspensions, the assumption is that they must not suspend. However,
+ * some of these built-in functions are acquiring 'canSuspend' arguments to signal
+ * where this is not the case. These need to be spliced out of the argument list before
+ * it is passed to python. Array values in this map contain [dunderName, argumentIdx],
+ * where argumentIdx specifies the index of the 'canSuspend' boolean argument.
+ *
  * @type {Object}
  */
 Sk.dunderToSkulpt = {
@@ -45,7 +52,7 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": "sq$length"
+    "__len__": ["sq$length", 0]
 };
 
 /**
@@ -328,22 +335,39 @@ Sk.builtin.type = function (name, bases, dict) {
         // fix for class attributes
         klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
 
-        var shortcutDunder = function (skulpt_name, magic_name, magic_func) {
+        var shortcutDunder = function (skulpt_name, magic_name, magic_func, canSuspendIdx) {
             klass.prototype[skulpt_name] = function () {
-                var args = Array.prototype.slice.call(arguments);
+                var args = Array.prototype.slice.call(arguments), canSuspend;
                 args.unshift(magic_func, this);
+
+                if (canSuspendIdx) {
+                    var canSuspend = args[canSuspendIdx+1];
+                    args.splice(canSuspendIdx+1, 1);
+                    if (canSuspend) {
+                        return Sk.misceval.callsimOrSuspend.apply(undefined, args);
+                    }
+                }
                 return Sk.misceval.callsim.apply(undefined, args);
             };
         };
 
-        // Register skulpt shortcuts to magic methods defined by this class
-        var dunder, skulpt_name;
+        // Register skulpt shortcuts to magic methods defined by this class.
+        // TODO: This is somewhat problematic, as it means that dynamically defined
+        // methods (eg those returned by __getattr__()) cannot be used by these magic
+        // functions.
+        var dunder, skulpt_name, canSuspendIdx;
         for (dunder in Sk.dunderToSkulpt) {
             skulpt_name = Sk.dunderToSkulpt[dunder];
+            if (typeof(skulpt_name) === "string") {
+                canSuspendIdx = null;
+            } else {
+                canSuspendIdx = skulpt_name[1];
+                skulpt_name = skulpt_name[0];
+            }
 
             if (klass[dunder]) {
                 // scope workaround
-                shortcutDunder(skulpt_name, dunder, klass[dunder]);
+                shortcutDunder(skulpt_name, dunder, klass[dunder], canSuspendIdx);
             }
         }
 

@@ -243,11 +243,11 @@ Sk.builtin.len = function len (item) {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(true), Sk.builtin.int_);
+        return Sk.misceval.chain(item.sq$length(), Sk.builtin.int_);
     }
 
     if (item.mp$length) {
-        return Sk.misceval.chain(item.mp$length(true), Sk.builtin.int_);
+        return Sk.misceval.chain(item.mp$length(), Sk.builtin.int_);
     }
 
     if (item.tp$length) {
