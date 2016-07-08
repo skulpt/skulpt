@@ -321,13 +321,13 @@ Compiler.prototype._checkSuspension = function(e) {
 
         e = e || {lineno: "$currLineNo", col_offset: "$currColNo"};
 
-        out ("if ($ret && $ret.isSuspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
+        out ("if ($ret && $ret.$isSuspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
 
         this.u.doesSuspend = true;
         this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
 
     } else {
-        out ("if ($ret && $ret.isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
+        out ("if ($ret && $ret.$isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
     }
 };
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
@@ -933,7 +933,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var seenTemps = {};
     var hasCell = unit.ste.blockType === FunctionBlock && unit.ste.childHasFree;
     var output = "var $wakeFromSuspension = function() {" +
-                    "var susp = "+unit.scopename+".wakingSuspension; delete "+unit.scopename+".wakingSuspension;" +
+                    "var susp = "+unit.scopename+".$wakingSuspension; delete "+unit.scopename+".$wakingSuspension;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
@@ -951,7 +951,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
 
     output += "var $saveSuspension = function($child, $filename, $lineno, $colno) {" +
                 "var susp = new Sk.misceval.Suspension(); susp.child=$child;" +
-                "susp.resume=function(){"+unit.scopename+".wakingSuspension=susp; return "+unit.scopename+"("+(unit.ste.generator?"$gen":"")+"); };" +
+                "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+"("+(unit.ste.generator?"$gen":"")+"); };" +
                 "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;" +
                 "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;" +
                 "susp.optional=susp.child.optional;" +
@@ -1521,7 +1521,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // If there is a suspension, resume from it. Otherwise, initialise
     // parameters appropriately.
     //
-    this.u.varDeclsCode += "if ("+scopename+".wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
+    this.u.varDeclsCode += "if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
 
     //
     // initialize default arguments. we store the values of the defaults to
@@ -2251,7 +2251,7 @@ Compiler.prototype.cmod = function (mod) {
         this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = Date.now()}";
     }
 
-    this.u.varDeclsCode += "if ("+modf+".wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
+    this.u.varDeclsCode += "if ("+modf+".$wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
         "    else { Sk.globals = $gbl; }" +

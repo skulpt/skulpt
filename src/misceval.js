@@ -23,7 +23,7 @@ Sk.misceval = {};
  * @param{Object=} data Data attached to this suspension. Will be copied from child if not supplied.
  */
 Sk.misceval.Suspension = function Suspension(resume, child, data) {
-    this.isSuspension = true;
+    this.$isSuspension = true;
     if (resume !== undefined && child !== undefined) {
         this.resume = function() { return resume(child.resume()); };
     }
