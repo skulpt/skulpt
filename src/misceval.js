@@ -989,28 +989,43 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
-    // as per the discussion here: https://github.com/skulpt/skulpt/pull/552
-    // this is here for performance reasons. array.slice doesn't get optimized
-    var fs = new Array(arguments.length), i = 1;
+    // We try to minimse overhead when nothing suspends (the common case)
+    var i = 1, value = initialValue, j, fs;
 
-    for (i = 1; i < arguments.length; i++) {
-        fs[i] = arguments[i];
+    while (true) {
+        if (i == arguments.length) {
+            return value;
+        }
+        if (value && value.isSuspension) { break; } // oops, slow case
+        value = arguments[i](value);
+        i++;
     }
 
-    i = 1;
+    // Okay, we've suspended at least once, so we're taking the slow(er) path.
+
+    // Copy our remaining arguments into an array (inline, because passing
+    // "arguments" out of a function kills the V8 optimiser).
+    // (discussion: https://github.com/skulpt/skulpt/pull/552)
+    fs = new Array(arguments.length - i);
+
+    for (j = 0; j < arguments.length - i; j++) {
+        fs[j] = arguments[i+j];
+    }
+
+    j = 0;
 
     return (function nextStep(r) {
-        while (i < fs.length) {
+        while (j < fs.length) {
             if (r instanceof Sk.misceval.Suspension) {
                 return new Sk.misceval.Suspension(nextStep, r);
             }
 
-            r = fs[i](r);
-            i++;
+            r = fs[j](r);
+            j++;
         }
 
         return r;
-    })(initialValue);
+    })(value);
 };
 goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
