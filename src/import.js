@@ -238,7 +238,7 @@ Sk.doOneTimeInitialization = function () {
 
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
-        var fileWithoutExtension = file.split(".")[0].split('/')[1];
+        var fileWithoutExtension = file.split(".")[0].split("/")[1];
         var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], false);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];

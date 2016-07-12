@@ -828,7 +828,7 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
         ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
     }
 
-    var ret = Sk.misceval.chain(ret, function(ret) {
+    ret = Sk.misceval.chain(ret, function(ret) {
         var f;
 
         if (ret === undefined && obj.tp$getattr !== undefined) {
@@ -842,7 +842,6 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
                 }
             }
         }
-
         return ret;
     }, function(r) {
         if (r === undefined) {
