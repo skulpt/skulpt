@@ -31,13 +31,6 @@ Sk.builtin.set = function (S) {
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
-Sk.builtin.set.prototype.set_iter_ = function () {
-    var iter = this["v"].tp$iter();
-    iter.tp$name = "set_iterator";
-
-    return iter;
-};
-
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
 };
@@ -151,15 +144,15 @@ Sk.builtin.set.prototype.ob$ge = function (other) {
     return this["issuperset"].func_code(this, other);
 };
 
-Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function(self) {
-
+Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
-
-    return Sk.builtin.set.prototype.tp$iter.call(self);
-
+    return new Sk.builtin.set_iter_(self);
 });
 
-Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
+Sk.builtin.set.prototype.tp$iter = function () {
+    return new Sk.builtin.set_iter_(this);
+};
+
 Sk.builtin.set.prototype.sq$length = function () {
     return this["v"].mp$length();
 };
@@ -317,5 +310,58 @@ Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     return Sk.builtin.none.none$;
 });
 
-
 goog.exportSymbol("Sk.builtin.set", Sk.builtin.set);
+
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.set_iter_ = function (obj) {
+    var allkeys, k, i, bucket;
+    if (!(this instanceof Sk.builtin.set_iter_)) {
+        return new Sk.builtin.set_iter_(obj);
+    }
+    this.$obj = obj;
+    this.tp$iter = this;
+    allkeys = [];
+    for (k in obj.v) {
+        if (obj.v.hasOwnProperty(k)) {
+            bucket = obj.v[k];
+            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
+                // skip internal stuff. todo; merge pyobj and this
+                for (i = 0; i < bucket.items.length; i++) {
+                    allkeys.push(bucket.items[i].lhs);
+                }
+            }
+        }
+    }
+    this.$index = 0;
+    this.$keys = allkeys;
+    this.tp$iternext = function () {
+        if (this.$index >= this.$keys.length) {
+            return undefined;
+        }
+        return this.$keys[this.$index++];
+    };
+    this.$r = function () {
+        return new Sk.builtin.str("setiterator");
+    };
+    return this;
+};
+
+Sk.abstr.setUpInheritance("setiterator", Sk.builtin.set_iter_, Sk.builtin.object);
+
+Sk.builtin.set_iter_.prototype.__class__ = Sk.builtin.set_iter_;
+
+Sk.builtin.set_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    return self;
+});
+
+Sk.builtin.set_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+});

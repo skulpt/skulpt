@@ -80,36 +80,36 @@ class TestCase(unittest.TestCase):
         self.assertEqual(res, seq)
 
     # Test basic use of iter() function
-    # def test_iter_basic(self):
-    #     self.check_iterator(iter(range(10)), range(10))
+    def test_iter_basic(self):
+        self.check_iterator(iter(range(10)), range(10))
 
     # Test that iter(iter(x)) is the same as iter(x)
-    # def test_iter_idempotency(self):
-    #     seq = range(10)
-    #     it = iter(seq)
-    #     it2 = iter(it)
-    #     self.assertTrue(it is it2)
+    def test_iter_idempotency(self):
+        seq = range(10)
+        it = iter(seq)
+        it2 = iter(it)
+        self.assertTrue(it is it2)
 
     # Test that for loops over iterators work
-    # def test_iter_for_loop(self):
-    #     self.check_for_loop(iter(range(10)), range(10))
+    def test_iter_for_loop(self):
+        self.check_for_loop(iter(range(10)), range(10))
 
     # Test several independent iterators over the same list
-    # def test_iter_independence(self):
-    #     seq = range(3)
-    #     res = []
-    #     for i in iter(seq):
-    #         for j in iter(seq):
-    #             for k in iter(seq):
-    #                 res.append((i, j, k))
-    #     self.assertEqual(res, TRIPLETS)
+    def test_iter_independence(self):
+        seq = range(3)
+        res = []
+        for i in iter(seq):
+            for j in iter(seq):
+                for k in iter(seq):
+                    res.append((i, j, k))
+        self.assertEqual(res, TRIPLETS)
 
     # Test triple list comprehension using iterators
-    # def test_nested_comprehensions_iter(self):
-    #     seq = range(3)
-    #     res = [(i, j, k)
-    #            for i in iter(seq) for j in iter(seq) for k in iter(seq)]
-    #     self.assertEqual(res, TRIPLETS)
+    def test_nested_comprehensions_iter(self):
+        seq = range(3)
+        res = [(i, j, k)
+               for i in iter(seq) for j in iter(seq) for k in iter(seq)]
+        self.assertEqual(res, TRIPLETS)
 
     # Test triple list comprehension without iterators
     def test_nested_comprehensions_for(self):
@@ -126,16 +126,16 @@ class TestCase(unittest.TestCase):
         self.check_for_loop(SleepingSequenceClass(10), range(10))
 
     # Test a class with __iter__ with explicit iter()
-    # def test_iter_class_iter(self):
-    #     self.check_iterator(iter(IteratingSequenceClass(10)), range(10))
+    def test_iter_class_iter(self):
+        self.check_iterator(iter(IteratingSequenceClass(10)), range(10))
 
     # Test for loop on a sequence class without __iter__
     def test_seq_class_for(self):
         self.check_for_loop(SequenceClass(10), range(10))
 
     # Test iter() on a sequence class without __iter__
-    # def test_seq_class_iter(self):
-    #     self.check_iterator(iter(SequenceClass(10)), range(10))
+    def test_seq_class_iter(self):
+        self.check_iterator(iter(SequenceClass(10)), range(10))
 
     # Test a new_style class with __iter__ but no next() method
     # def test_new_style_iter_class(self):
@@ -145,52 +145,53 @@ class TestCase(unittest.TestCase):
     #     self.assertRaises(TypeError, iter, IterClass())
 
     # Test two-argument iter() with callable instance
-    # def test_iter_callable(self):
-    #     class C:
-    #         def __init__(self):
-    #             self.i = 0
-    #         def __call__(self):
-    #             i = self.i
-    #             self.i = i + 1
-    #             if i > 100:
-    #                 raise IndexError # Emergency stop
-    #             return i
-    #     self.check_iterator(iter(C(), 10), range(10))
+    def test_iter_callable(self):
+        class C:
+            def __init__(self):
+                self.i = 0
+            def __call__(self):
+                i = self.i
+                self.i = i + 1
+                if i > 100:
+                    raise IndexError # Emergency stop
+                return i
+        self.check_iterator(iter(C(), 10), range(10))
 
     # Test two-argument iter() with function
-    # def test_iter_function(self):
-    #     def spam(state=[0]):
-    #         i = state[0]
-    #         state[0] = i+1
-    #         return i
-    #     self.check_iterator(iter(spam, 10), range(10))
+    def test_iter_function(self):
+        def spam(state=[0]):
+            i = state[0]
+            state[0] = i+1
+            return i
+        self.check_iterator(iter(spam, 10), range(10))
 
     # Test two-argument iter() with function that raises StopIteration
-    # def test_iter_function_stop(self):
-    #     def spam(state=[0]):
-    #         i = state[0]
-    #         if i == 10:
-    #             raise StopIteration
-    #         state[0] = i+1
-    #         return i
-    #     self.check_iterator(iter(spam, 20), range(10))
+    def test_iter_function_stop(self):
+        def spam(state=[0]):
+            i = state[0]
+            if i == 10:
+                raise StopIteration
+            state[0] = i+1
+            return i
+        self.check_iterator(iter(spam, 20), range(10))
 
     # Test exception propagation through function iterator
-    # def test_exception_function(self):
-    #     def spam(state=[0]):
-    #         i = state[0]
-    #         state[0] = i+1
-    #         if i == 10:
-    #             raise RuntimeError
-    #         return i
-    #     res = []
-    #     try:
-    #         for x in iter(spam, 20):
-    #             res.append(x)
-    #     except RuntimeError:
-    #         self.assertEqual(res, range(10))
-    #     else:
-    #         self.fail("should have raised RuntimeError")
+    def test_exception_function(self):
+        def spam(state=[0]):
+            i = state[0]
+            state[0] = i+1
+            if i == 10:
+                raise RuntimeError
+            return i
+        res = []
+
+        try:
+            for x in iter(spam, 20):
+                res.append(x)
+        except RuntimeError:
+            self.assertEqual(res, range(10))
+        else:
+            self.fail("should have raised RuntimeError")
 
     # Test exception propagation through sequence iterator
     def test_exception_sequence(self):
@@ -244,24 +245,24 @@ class TestCase(unittest.TestCase):
         self.check_for_loop(MySequenceClass(20), range(10))
 
     # Test a big range
-    # def test_iter_big_range(self):
-    #     self.check_for_loop(iter(range(10000)), range(10000))
+    def test_iter_big_range(self):
+        self.check_for_loop(iter(range(10000)), range(10000))
 
     # Test an empty list
-    # def test_iter_empty(self):
-    #     self.check_for_loop(iter([]), [])
+    def test_iter_empty(self):
+        self.check_for_loop(iter([]), [])
 
     # Test a tuple
-    # def test_iter_tuple(self):
-    #     self.check_for_loop(iter((0,1,2,3,4,5,6,7,8,9)), range(10))
+    def test_iter_tuple(self):
+        self.check_for_loop(iter((0,1,2,3,4,5,6,7,8,9)), range(10))
 
     # Test an xrange
-    # def test_iter_xrange(self):
-    #     self.check_for_loop(iter(xrange(10)), range(10))
+    def test_iter_xrange(self):
+        self.check_for_loop(iter(xrange(10)), range(10))
 
     # Test a string
-    # def test_iter_string(self):
-    #     self.check_for_loop(iter("abcde"), ["a", "b", "c", "d", "e"])
+    def test_iter_string(self):
+        self.check_for_loop(iter("abcde"), ["a", "b", "c", "d", "e"])
 
     # Test a Unicode string
     # if have_unicode:
@@ -865,45 +866,48 @@ class TestCase(unittest.TestCase):
     # This tests various things that weren't sink states in Python 2.2.1,
     # plus various things that always were fine.
 
-    # def test_sinkstate_list(self):
-    #     # This used to fail
-    #     a = range(5)
-    #     b = iter(a)
-    #     self.assertEqual(list(b), range(5))
-    #     a.extend(range(5, 10))
-    #     self.assertEqual(list(b), [])
+    def test_sinkstate_list(self):
+        # This used to fail
+        a = range(5)
+        b = iter(a)
+        # print "list of b", list(b)
+        # print next(b)
+        self.assertEqual(list(b), range(5))
+        a.extend(range(5, 10))
+        self.assertEqual(list(b), [])
 
-    # def test_sinkstate_tuple(self):
-    #     a = (0, 1, 2, 3, 4)
-    #     b = iter(a)
-    #     self.assertEqual(list(b), range(5))
-    #     self.assertEqual(list(b), [])
+    def test_sinkstate_tuple(self):
+        a = (0, 1, 2, 3, 4)
+        b = iter(a)
+        self.assertEqual(list(b), range(5))
+        self.assertEqual(list(b), [])
+        
 
-    # def test_sinkstate_string(self):
-    #     a = "abcde"
-    #     b = iter(a)
-    #     self.assertEqual(list(b), ['a', 'b', 'c', 'd', 'e'])
-    #     self.assertEqual(list(b), [])
-
-    # def test_sinkstate_sequence(self):
-    #     # This used to fail
-    #     a = SequenceClass(5)
-    #     b = iter(a)
-    #     self.assertEqual(list(b), range(5))
-    #     a.n = 10
-    #     self.assertEqual(list(b), [])
+    def test_sinkstate_string(self):
+        a = "abcde"
+        b = iter(a)
+        self.assertEqual(list(b), ['a', 'b', 'c', 'd', 'e'])
+        self.assertEqual(list(b), [])
 
     # def test_sinkstate_callable(self):
     #     # This used to fail
-    #     def spam(state=[0]):
-    #         i = state[0]
-    #         state[0] = i+1
-    #         if i == 10:
-    #             raise AssertionError, "shouldn't have gotten this far"
-    #         return i
-    #     b = iter(spam, 5)
-    #     self.assertEqual(list(b), range(5))
-    #     self.assertEqual(list(b), [])
+        # a = SequenceClass(5)
+        # b = iter(a)
+        # self.assertEqual(list(b), range(5))
+        # a.n = 10
+        # self.assertEqual(list(b), [])
+
+    def test_sinkstate_callable(self):
+        # This used to fail
+        def spam(state=[0]):
+            i = state[0]
+            state[0] = i+1
+            if i == 10:
+                raise AssertionError, "shouldn't have gotten this far"
+            return i
+        b = iter(spam, 5)
+        self.assertEqual(list(b), range(5))
+        self.assertEqual(list(b), [])
 
     # def test_sinkstate_dict(self):
     #     # XXX For a more thorough test, see towards the end of:
@@ -922,18 +926,18 @@ class TestCase(unittest.TestCase):
         self.assertEqual(list(b), range(5))
         self.assertEqual(list(b), [])
 
-    # def test_sinkstate_range(self):
-    #     a = xrange(5)
-    #     b = iter(a)
-    #     self.assertEqual(list(b), range(5))
-    #     self.assertEqual(list(b), [])
+    def test_sinkstate_range(self):
+        a = xrange(5)
+        b = iter(a)
+        self.assertEqual(list(b), range(5))
+        self.assertEqual(list(b), [])
 
-    # def test_sinkstate_enumerate(self):
-    #     a = range(5)
-    #     e = enumerate(a)
-    #     b = iter(e)
-    #     self.assertEqual(list(b), zip(range(5), range(5)))
-    #     self.assertEqual(list(b), [])
+    def test_sinkstate_enumerate(self):
+        a = range(5)
+        e = enumerate(a)
+        b = iter(e)
+        self.assertEqual(list(b), zip(range(5), range(5)))
+        self.assertEqual(list(b), [])
 
     # def test_3720(self):
     #     # Avoid a crash, when an iterator deletes its next() method.

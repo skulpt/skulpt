@@ -139,24 +139,12 @@ Sk.builtin.str.prototype.sq$contains = function (ob) {
     return this.v.indexOf(ob.v) != -1;
 };
 
+Sk.builtin.str.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    return new Sk.builtin.str_iter_(self);
+});
+
 Sk.builtin.str.prototype.tp$iter = function () {
-    var ret =
-    {
-        tp$iter    : function () {
-            return ret;
-        },
-        $obj       : this,
-        $index     : 0,
-        tp$iternext: function () {
-            // todo; StopIteration
-            if (ret.$index >= ret.$obj.v.length) {
-                return undefined;
-            }
-            return new Sk.builtin.str(ret.$obj.v.substr(ret.$index++, 1));
-        },
-        tp$name    : "str_iterator"
-    };
-    return ret;
+    return new Sk.builtin.str_iter_(this);
 };
 
 Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
@@ -1137,3 +1125,44 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     ret = this.v.replace(regex, replFunc);
     return new Sk.builtin.str(ret);
 };
+
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.str_iter_ = function (obj) {
+    if (!(this instanceof Sk.builtin.str_iter_)) {
+        return new Sk.builtin.str_iter_(obj);
+    }
+    this.$index = 0;
+    this.$obj = obj.v.slice();
+    this.sq$length = this.$obj.length;
+    this.tp$iter = this;
+    this.tp$iternext = function () {
+        if (this.$index >= this.sq$length) {
+            return undefined;
+        }
+        return new Sk.builtin.str(this.$obj.substr(this.$index++, 1));
+    };
+    this.$r = function () {
+        return new Sk.builtin.str("iterator");
+    };
+    return this;
+};
+
+Sk.abstr.setUpInheritance("iterator", Sk.builtin.str_iter_, Sk.builtin.object);
+
+Sk.builtin.str_iter_.prototype.__class__ = Sk.builtin.str_iter_;
+
+Sk.builtin.str_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    return self;
+});
+
+Sk.builtin.str_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+});
