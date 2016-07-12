@@ -6,7 +6,7 @@ If you are reading this document, chances are you have used Skulpt in some form 
 What is Skulpt?
 ---------------
 
-Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But its not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work. 
+Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work. 
 
 To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
 
@@ -130,7 +130,7 @@ Types and Namespaces
 
 
 The `Sk` object contains all of the core Skulpt objects and
-functions. Its pretty easy to get from Sk.blah to its source.
+functions. It's pretty easy to get from Sk.blah to its source.
 Usually you will see something like `Sk.builtin.foo` which indicates
 that you will likely find a corresponding file for foo in the src directory.
 Similarly `Sk.misceval.callsim` tells you that you should look
@@ -433,7 +433,7 @@ On lines 52 and 53 we perform the addition using
 `Sk.abstr.numberBinOp($loadname1, $loadname2, 'Add');` Note the abstract
 (see abstract.js) nature of `numberBinOp` -- two parameters for the
 operands, and one parameter `'Add'` that indicates the operator. Finally
-the temporary result returned by numberBinOp is stored in $loc.z. Its
+the temporary result returned by numberBinOp is stored in $loc.z. It's
 important to note that $loc.z contains a Python number object. Down in
 the bowels of numberBinOp, the javascript numeric values for x and y are
 retrieved and result of adding two javascript numbers is converted to
@@ -690,7 +690,7 @@ directory you will need to have either \_\_init\_\_.py or
 need to be anything in the file as long as it exists. This is just like
 CPython by the way. Then to make a test module you can either make a
 test directory and put all your javascript code in \_\_init\_\_.js or
-you can simply create a test.js file in the bnm directory. Lets look at
+you can simply create a test.js file in the bnm directory. Let's look at
 the test module.
 
 
@@ -698,30 +698,28 @@ the test module.
     {
         var mod = {};
         var myfact = function(n) {
-     if(n < 1) {
-         return 1;
-     } else {
-         return n * myfact(n-1);
-     }
+            if(n < 1) {
+                return 1;
+            } else {
+                return n * myfact(n-1);
+            }
         }
         mod.fact = new Sk.builtin.func(function(a) {
-     return myfact(a);
+            return myfact(a);
         });
+
         mod.Stack = Sk.misceval.buildClass(mod, function($gbl, $loc) {
-     $loc.__init__ = new Sk.builtin.func(function(self) {
-         self.stack = [];
-     });
-    
-     $loc.push = new Sk.builtin.func(function(self,x) {
-         self.stack.push(x);
-     });
-     $loc.pop = new Sk.builtin.func(function(self) {
-         return self.stack.pop();
-     });
-        },
-        'Stack', []);
-    
-    
+            $loc.__init__ = new Sk.builtin.func(function(self) {
+                self.stack = [];
+            });
+            $loc.push = new Sk.builtin.func(function(self,x) {
+                self.stack.push(x);
+            });
+            $loc.pop = new Sk.builtin.func(function(self) {
+                return self.stack.pop();
+            });
+        }, 'Stack', []);
+
         return mod;
     }
 
@@ -744,7 +742,7 @@ simple Python program that exercises the module:
     print 'done'
 
 
-Its not obvious, but the buildClass method takes four parameters:
+It's not obvious, but the buildClass method takes four parameters:
 globals, func, name, bases It seems that you always pass the mod object
 itself as the globals parameter, the func parameter is a function that
 represents the class object, the Name is the external name of the class,
@@ -758,9 +756,9 @@ take a globals object and two closure objects. Look at the comments in
 function.js if you want more explanation of how the builtin.func method
 works.
 
-Well, I think this should be enough to get you going. Its worth
+Well, I think this should be enough to get you going. It's worth
 repeating, if you made it this far, don't forget to call `./skulpt.py docbi` or
-`./skulpt.py dist` after you make changes in your module, its easy to get into the
+`./skulpt.py dist` after you make changes in your module, it's easy to get into the
 mode of thinking that the new javascript is automatically loaded. But
 skulpt-stdlib.js is not automatically rebuilt!
 
