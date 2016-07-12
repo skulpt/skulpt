@@ -705,7 +705,7 @@ the test module.
             }
         }
         mod.fact = new Sk.builtin.func(function(a) {
-            return myfact(a);
+            return myfact(a.v);  // extract the underlying JS value with .v
         });
 
         mod.Stack = Sk.misceval.buildClass(mod, function($gbl, $loc) {
