@@ -104,18 +104,6 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
 
     dict = this["$d"] || this.constructor["$d"];
 
-    if (dict.mp$ass_subscript) {
-        pyname = new Sk.builtin.str(name);
-
-        if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
-            dict.mp$lookup(pyname) === undefined) {
-            // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
-        }
-        dict.mp$ass_subscript(new Sk.builtin.str(name), value);
-    } else if (typeof dict === "object") {
-        dict[name] = value;
-    }
 
     descr = Sk.builtin.type.typeLookup(tp, name);
 
@@ -130,6 +118,19 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
         // todo;
         //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
         //return f.call(descr, this, this.ob$type);
+    }
+
+    if (dict.mp$ass_subscript) {
+        pyname = new Sk.builtin.str(name);
+
+        if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
+            dict.mp$lookup(pyname) === undefined) {
+            // Cannot add new attributes to a builtin object
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
+        }
+        dict.mp$ass_subscript(new Sk.builtin.str(name), value);
+    } else if (typeof dict === "object") {
+        dict[name] = value;
     }
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
