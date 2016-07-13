@@ -288,7 +288,18 @@ Sk.builtin.type = function (name, bases, dict) {
             return Sk.misceval.callsim(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
-            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "next", canSuspend), function(/** {Object} */ iternextf) {
+            var self = this;
+            var r = Sk.misceval.chain(
+                Sk.misceval.tryCatch(function() {
+                    return Sk.abstr.gattr(self, "next", canSuspend);
+                }, function(e) {
+                    if (e instanceof Sk.builtin.AttributeError) {
+                        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
+                    } else {
+                        throw e;
+                    }
+                }),
+            function(/** {Object} */ iternextf) {
                 return Sk.misceval.tryCatch(function() {
                     return Sk.misceval.callsimOrSuspend(iternextf);
                 }, function(e) {
