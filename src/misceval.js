@@ -996,7 +996,7 @@ Sk.misceval.chain = function (initialValue, chainedFns) {
         if (i == arguments.length) {
             return value;
         }
-        if (value && value.isSuspension) { break; } // oops, slow case
+        if (value && value.$isSuspension) { break; } // oops, slow case
         value = arguments[i](value);
         i++;
     }
