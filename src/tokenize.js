@@ -291,7 +291,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
 
     if (this.contstr.length > 0) {
         if (!line) {
-            throw new Sk.builtin.TokenError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
+            throw new Sk.builtin.SyntaxError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
         }
         this.endprog.lastIndex = 0;
         endmatch = this.endprog.test(line);
@@ -394,7 +394,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
     else // continued statement
     {
         if (!line) {
-            throw new Sk.builtin.TokenError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
+            throw new Sk.builtin.SyntaxError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
         }
         this.continued = false;
     }
