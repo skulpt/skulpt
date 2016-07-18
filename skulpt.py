@@ -734,6 +734,19 @@ def dist(options):
             print ". Running tests on uncompressed..."
 
         ret = test()
+
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+
+        # turn the tests in debug mode off because they take too long
+        # # Run tests on uncompressed.
+        # if options.verbose:
+        #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+        #
+        #
+        # ret = test(debug_mode=True)
+
         if ret != 0:
             print "Tests failed on uncompressed version."
             sys.exit(1);
