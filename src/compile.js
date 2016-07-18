@@ -2294,6 +2294,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.varDeclsCode += "if ("+modf+".wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
+        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; $gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename + "');}" +
         "    else { Sk.globals = $gbl; }" +
         "} else { Sk.globals = $gbl; }";
 
