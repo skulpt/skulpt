@@ -184,7 +184,6 @@ class FBDevice:
         self.gamma = [0]*32
 
         _ish.init()
-        _ish.setpixels(self.data)
 
     def setpixel(self, index, value):
         _ish.setpixel(index, value)
