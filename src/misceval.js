@@ -936,6 +936,10 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                             Sk.setTimeout(resume, 0);
                             return;
 
+                        } else if (r.data["type"] == "Sk.delay") {
+                            Sk.setTimeout(resume, 1);
+                            return;
+
                         } else if (r.optional) {
                             // Unhandled optional suspensions just get
                             // resumed immediately, and we go around the loop again.

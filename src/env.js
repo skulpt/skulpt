@@ -101,6 +101,12 @@ Sk.configure = function (options) {
     Sk.debugging = options["debugging"] || false;
     goog.asserts.assert(typeof Sk.debugging === "boolean");
 
+    Sk.killableWhile = options["killableWhile"] || false;
+    goog.asserts.assert(typeof Sk.killableWhile === "boolean");
+
+    Sk.killableFor = options["killableFor"] || false;
+    goog.asserts.assert(typeof Sk.killableFor === "boolean");
+
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 
