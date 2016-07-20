@@ -1093,7 +1093,7 @@ Compiler.prototype.cwhile = function (s) {
         this.setBlock(body);
 
         if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
-            var suspType = 'Sk.delay';
+            var suspType = 'Sk.nextTick';
             var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
             out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
                 "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
@@ -1162,7 +1162,7 @@ Compiler.prototype.cfor = function (s) {
     target = this.vexpr(s.target, nexti);
 
     if ((Sk.debugging || Sk.killableFor) && this.u.canSuspend) {
-        var suspType = 'Sk.delay';
+        var suspType = 'Sk.nextTick';
         var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
         out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
             "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",

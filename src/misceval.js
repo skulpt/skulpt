@@ -853,6 +853,40 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
 goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
 
 /**
+ * This mimics node's proccess.nextTick() and bypasses the setTimeout contraint,
+ * that may cause a decrease in performance in loops.
+ * 
+ * @param {Function} fn a javascript function to call after next tick
+ */
+Sk.misceval.setZeroTimeout = function (fn) {
+    Sk.misceval.setZeroTimeout.timeouts.push(fn);
+    if (typeof window != 'undefined') {
+        window.postMessage(Sk.misceval.setZeroTimeout.messageName, "*");
+    } else {
+        fn();
+    }
+}
+goog.exportSymbol("Sk.misceval.setZeroTimeout", Sk.misceval.setZeroTimeout);
+
+Sk.misceval.setZeroTimeout.timeouts = [];
+Sk.misceval.setZeroTimeout.messageName = "zero-timeout-message";
+
+Sk.misceval.handleZeroTimeoutMessage = function(event) {
+    if (typeof window != 'undefined' && event.source == window && event.data == Sk.misceval.setZeroTimeout.messageName) {
+        event.stopPropagation();
+        if (Sk.misceval.setZeroTimeout.timeouts.length > 0) {
+            var fn = Sk.misceval.setZeroTimeout.timeouts.shift();
+            fn();
+        }
+    }
+}
+goog.exportSymbol("Sk.misceval.handleZeroTimeoutMessage", Sk.misceval.handleZeroTimeoutMessage);
+
+if (typeof window != 'undefined') {
+    window.addEventListener("message", Sk.misceval.handleZeroTimeoutMessage, true);
+}
+
+/**
  * Wraps anything that can return an Sk.misceval.Suspension, and returns a
  * JS Promise with the result. Also takes an object map of suspension handlers:
  * pass in {"suspType": function (susp) {} }, and your function will be called
@@ -936,8 +970,9 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                             Sk.setTimeout(resume, 0);
                             return;
 
-                        } else if (r.data["type"] == "Sk.delay") {
-                            Sk.setTimeout(resume, 1);
+                        } else if (r.data["type"] == "Sk.nextTick") {
+                            //Sk.setTimeout(resume, 0);
+                            Sk.misceval.setZeroTimeout(resume);
                             return;
 
                         } else if (r.optional) {
