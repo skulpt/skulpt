@@ -185,7 +185,7 @@ var $builtinmodule = function (name) {
         if (jsPressure.value < 260 || jsPressure.value > 1260) {
             return Sk.ffi.remapToPy([].concat([0, jsPressure.value], jsTemperature));
         }
-        
+
         return Sk.ffi.remapToPy([].concat([1, jsPressure.value], jsTemperature));
     });
     
@@ -243,7 +243,6 @@ var $builtinmodule = function (name) {
             return Sk.ffi.remapToPy([0, jsTemperature.value]); // invalid
         }
         
-        // return Python Array containing [isValid, temperature]
         return Sk.ffi.remapToPy([1, jsTemperature.value]);
     });
     
@@ -269,6 +268,122 @@ var $builtinmodule = function (name) {
         var gyro = Sk.ffi.remapToPy(Sk.sense_hat.rtimu.gyro);
         
         return gyro;
+    });
+
+    /**
+     * Named InputEvent tuple
+     */
+    var input_event_fields = {
+        "timestamp": "", 
+        "direction": "", 
+        "action": "", 
+    };
+    var input_event_f = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
+    mod.InputEvent = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
+
+    //var _stick_file = Sk.sense_hat.sensestick;
+    //_stick_file._eventQueue = [];
+
+    mod._wait = new Sk.builtin.func(function (timeout) {
+        var _timeout;
+        if (!timeout || timeout instanceof Sk.builtin.none) {
+            _timeout = null;
+        } else if (Sk.builtin.checkNumber(timeout)) {
+            _timeout = Sk.ffi.remapToJs(timeout);
+        }
+
+        var timeoutHandle;
+        var hasEvent = false;
+        var susp = new Sk.misceval.Suspension();
+        susp.resume = function () {
+            // Should the post image get stuff go here??
+            if (susp.data["error"]) {
+                if (susp.data.error === 'KeyboardInterrupt') {
+                    throw new Error('KeyboardInterrupt');
+                } else {
+                    throw new Sk.builtin.IOError('SenseStickDevice Error');
+                }
+            }
+            return Sk.builtin.bool(hasEvent);
+        };
+        susp.data = {
+            type: "Sk.promise",
+            promise: new Promise(function (resolve, reject) {
+                // Listen to new one, once
+                function handleKeyInput (event, inputData) {
+                    // Clear timeout
+                    if (timeoutHandle) {
+                        window.clearTimeout(timeoutHandle);
+                    }
+
+                    if (inputData.type === 'keyboardinterrupt') {
+                        reject('KeyboardInterrupt');
+                    }
+
+                    // Store event in the internal queue
+                    Sk.sense_hat.sensestick._eventQueue.push(inputData);
+
+                    hasEvent = true; // Set return value
+                    resolve();
+                }
+
+                Sk.sense_hat.sensestick.once('sensestick.input', handleKeyInput);
+
+                if (_timeout != null) {
+                    timeoutHandle = setTimeout(function() {
+                        Sk.sense_hat.sensestick.off('sensestick.input', handleKeyInput);
+                        hasEvent = false; // Timeout passed before callback occured
+                        resolve()
+                    }, _timeout * 1000);
+                }
+            })
+        };
+        return susp;
+    });
+
+    mod._read = new Sk.builtin.func(function () {
+        var inputEvent;
+        var susp = new Sk.misceval.Suspension();
+        susp.resume = function () {
+            // Should the post image get stuff go here??
+            if (susp.data["error"]) {
+                if (susp.data.error === 'KeyboardInterrupt') {
+                    throw new Error('KeyboardInterrupt');
+                } else {
+                    throw new Sk.builtin.IOError('SenseStickDevice Error');
+                }
+            }
+
+            var tup = new Sk.builtin.tuple([
+                Sk.builtin.int_(inputEvent.timestamp),
+                Sk.builtin.int_(inputEvent.key),
+                Sk.builtin.int_(inputEvent.state),
+                Sk.builtin.int_(inputEvent.type)
+            ]);
+            return tup;
+        };
+        susp.data = {
+            type: "Sk.promise",
+            promise: new Promise(function (resolve, reject) {
+                // Read from internal eventQueue
+                if (Sk.sense_hat.sensestick._eventQueue.length > 0) {
+                    inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
+                    resolve();
+                } else {
+                    // add eventlistener
+                    Sk.sense_hat.sensestick.once('sensestick.input', function (event, inputData) {
+                        // Interrupt handling, so that we do not need to wait until the users inputs something
+                        if (inputData.type === 'keyboardinterrupt') {
+                            reject('KeyboardInterrupt');
+                        }
+
+                        inputEvent = inputData;
+                        resolve();
+                    });
+                }
+            })
+        };
+        return susp;
     });
 
     return mod;

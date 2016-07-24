@@ -7,6 +7,7 @@ from image import Image
 # custom modules required for integrating our hooks
 from ._sense_hat_text_dict import TEXT_DICT
 import _internal_sense_hat as _ish
+from .stick import SenseStick
 
 class RTIMU:
   """
@@ -184,6 +185,7 @@ class FBDevice:
         self.gamma = [0]*32
 
         _ish.init()
+        _ish.setpixels(self.data)
 
     def setpixel(self, index, value):
         _ish.setpixel(index, value)
@@ -324,6 +326,7 @@ class SenseHat(object):
         self._compass_enabled = False
         self._gyro_enabled = False
         self._accel_enabled = False
+        self._stick = SenseStick()
 
     ####
     # Text assets
@@ -405,6 +408,13 @@ class SenseHat(object):
         device = FBDevice()
 
         return device
+
+     ####
+     # Joystick
+     ####
+    @property
+    def stick(self):
+        return self._stick   
 
     ####
     # LED Matrix
