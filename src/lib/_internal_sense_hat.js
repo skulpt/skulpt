@@ -270,6 +270,12 @@ var $builtinmodule = function (name) {
         return gyro;
     });
 
+    /********************************************************/
+    /* SenseStick specific functions.
+    /*
+    /*
+     **/
+
     /**
      * Named InputEvent tuple
      */
@@ -280,9 +286,6 @@ var $builtinmodule = function (name) {
     };
     var input_event_f = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
     mod.InputEvent = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
-
-    //var _stick_file = Sk.sense_hat.sensestick;
-    //_stick_file._eventQueue = [];
 
     mod._wait = new Sk.builtin.func(function (timeout) {
         var _timeout;
@@ -341,13 +344,56 @@ var $builtinmodule = function (name) {
         return susp;
     });
 
+    mod._inspectFunction = new Sk.builtin.func(function (func) {
+        //var kwargs = false;
+        var argsLength = 0;
+
+        if (func.im_self && func.im_func) {
+            //kwargs = func.im_func.func_code["co_kwargs"] != null;
+            argsLength = func.im_func.func_code.length - 1; // -1 for the self
+            //console.info('method', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
+        } else {
+            //kwargs = func.func_code["co_kwargs"] != null;
+            argsLength = func.func_code.length;
+            //console.info('function', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
+        }
+
+        return Sk.builtin.int_(argsLength);
+    });
+
+    /**
+     * Removes the event handler for simulating threading
+     */
+    mod._stop_stick_thread = new Sk.builtin.func(function() {
+        if (Sk.sense_hat.sensestick._threadHandler != null) {
+            Sk.sense_hat.sensestick.off('sensestick.input', _threadHandler);
+        }
+    });
+
+    /**
+     * Adds the event handler for simulating threading for the SenseStick callbacks
+     */
+    mod._start_stick_thread = new Sk.builtin.func(function(callback) {
+        function handleKeyInput (event, inputData) {
+            // Store event in the internal queue
+            Sk.sense_hat.sensestick._eventQueue.push(inputData);
+
+            // This may cause, that we are not able to call our interrupt suspension handler
+            Sk.misceval.callsimAsync(null, callback);
+        }
+
+        Sk.sense_hat.sensestick.on('sensestick.input', handleKeyInput);
+        Sk.sense_hat.sensestick._threadHandler = handleKeyInput; // Callback and save closure
+    });
+
     mod._read = new Sk.builtin.func(function () {
         var inputEvent;
         var susp = new Sk.misceval.Suspension();
         susp.resume = function () {
-            // Should the post image get stuff go here??
-            if (susp.data["error"]) {
-                if (susp.data.error === 'KeyboardInterrupt') {
+            // We need the 2nd check for the keyboardinterrupt when we push this from the 
+            // watching thread
+            if (susp.data["error"] || inputEvent.type === 'keyboardinterrupt') {
+                if (susp.data.error === 'KeyboardInterrupt' || inputEvent.type === 'keyboardinterrupt') {
                     throw new Error('KeyboardInterrupt');
                 } else {
                     throw new Sk.builtin.IOError('SenseStickDevice Error');

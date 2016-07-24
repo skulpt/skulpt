@@ -1,4 +1,4 @@
-from _internal_sense_hat import InputEvent, _wait, _read
+from _internal_sense_hat import InputEvent, _wait, _read, _start_stick_thread, _stop_stick_thread, _inspectFunction
 
 DIRECTION_UP     = 'up'
 DIRECTION_DOWN   = 'down'
@@ -33,7 +33,7 @@ class SenseStick(object):
     def __init__(self):
         self._callbacks = {}
         #self._stick_file = io.open(self._stick_device(), 'rb', buffering=0)
-        #self._callback_thread = None
+        self._callback_thread = False
         #self._callback_event = Event()
 
     def close(self):
@@ -97,6 +97,7 @@ class SenseStick(object):
         return _wait(timeout)
 
     def _wrap_callback(self, fn):
+        return fn
         """
         # Shamelessley nicked (with some variation) from GPIO Zero :)
         @wraps(fn)
@@ -135,30 +136,38 @@ class SenseStick(object):
         """
 
     def _start_stop_thread(self):
-        """
         if self._callbacks and not self._callback_thread:
-            self._callback_event.clear()
-            self._callback_thread = Thread(target=self._callback_run)
-            self._callback_thread.daemon = True
-            self._callback_thread.start()
+            #self._callback_event.clear()
+            #self._callback_thread = Thread(target=self._callback_run)
+            #self._callback_thread.daemon = True
+            #self._callback_thread.start()
+            _start_stick_thread(self._callback_run)
+            self._callback_thread = True
         elif not self._callbacks and self._callback_thread:
-            self._callback_event.set()
-            self._callback_thread.join()
-            self._callback_thread = None
-        """
+            #self._callback_event.set()
+            _stop_stick_thread()
+            self._callback_thread = False
 
     def _callback_run(self):
-        """
-        while not self._callback_event.wait(0):
-            event = self._read()
-            if event:
-                callback = self._callbacks.get(event.direction)
-                if callback:
+        # Use this as the internal callback function from our
+        # JavaScript event based callback system
+        event = self._read()
+        if event:
+            callback = self._callbacks.get(event.direction)
+            if callback:
+                argsLength = _inspectFunction(callback)
+                if argsLength == 1:
                     callback(event)
-                callback = self._callbacks.get('*')
-                if callback:
+                else:
+                    callback()
+
+            callback = self._callbacks.get('*')
+            if callback:
+                argsLength = _inspectFunction(callback)
+                if argsLength == 1:
                     callback(event)
-        """
+                else:
+                    callback()
 
     def wait_for_event(self, emptybuffer=False):
         """
@@ -203,11 +212,8 @@ class SenseStick(object):
 
     @direction_up.setter
     def direction_up(self, value):
-        """
         self._callbacks[DIRECTION_UP] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
 
     @property
     def direction_down(self):
@@ -222,11 +228,8 @@ class SenseStick(object):
 
     @direction_down.setter
     def direction_down(self, value):
-        """
         self._callbacks[DIRECTION_DOWN] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
 
     @property
     def direction_left(self):
@@ -241,11 +244,8 @@ class SenseStick(object):
 
     @direction_left.setter
     def direction_left(self, value):
-        """
         self._callbacks[DIRECTION_LEFT] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
 
     @property
     def direction_right(self):
@@ -260,11 +260,8 @@ class SenseStick(object):
 
     @direction_right.setter
     def direction_right(self, value):
-        """
         self._callbacks[DIRECTION_RIGHT] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
 
     @property
     def direction_middle(self):
@@ -279,11 +276,8 @@ class SenseStick(object):
 
     @direction_middle.setter
     def direction_middle(self, value):
-        """
         self._callbacks[DIRECTION_MIDDLE] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
 
     @property
     def direction_any(self):
@@ -299,8 +293,5 @@ class SenseStick(object):
 
     @direction_any.setter
     def direction_any(self, value):
-        """
         self._callbacks['*'] = self._wrap_callback(value)
         self._start_stop_thread()
-        """
-        raise RuntimeError('Not possible in skulpt')
