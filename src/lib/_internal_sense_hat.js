@@ -330,14 +330,19 @@ var $builtinmodule = function (name) {
                     resolve();
                 }
 
-                Sk.sense_hat.sensestick.once('sensestick.input', handleKeyInput);
+                if (Sk.sense_hat.sensestick._eventQueue.length > 0) {
+                    hasEvent = true;
+                    resolve();
+                } else {
+                    Sk.sense_hat.sensestick.once('sensestick.input', handleKeyInput);
 
-                if (_timeout != null) {
-                    timeoutHandle = setTimeout(function() {
-                        Sk.sense_hat.sensestick.off('sensestick.input', handleKeyInput);
-                        hasEvent = false; // Timeout passed before callback occured
-                        resolve()
-                    }, _timeout * 1000);
+                    if (_timeout != null) {
+                        timeoutHandle = setTimeout(function() {
+                            Sk.sense_hat.sensestick.off('sensestick.input', handleKeyInput);
+                            hasEvent = false; // Timeout passed before callback occured
+                            resolve()
+                        }, _timeout * 1000);
+                    }
                 }
             })
         };
@@ -423,7 +428,7 @@ var $builtinmodule = function (name) {
                             reject('KeyboardInterrupt');
                         }
 
-                        inputEvent = inputData;
+                        inputEvent = inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
                         resolve();
                     });
                 }

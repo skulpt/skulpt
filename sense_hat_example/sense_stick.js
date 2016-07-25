@@ -16,11 +16,38 @@ function onLoad(event) {
         sensestick: new SenseStickDevice()
     }; // create sense_hat value placeholder
     
-    function handleKeyInput(e) {
+    function handleKeyInput(e, state) {
         var key = e.target.getAttribute('data-key');
         state = SenseStickDevice.STATE_PRESS;
-
         window.sense_hat.sensestick.push(key, state);
+    }
+
+    function handleRealKeyInput(state, e) {
+        console.info(e.keyCode, state);
+        var stickKey;
+
+        switch(e.keyCode) {
+            case 37:
+                stickKey = SenseStickDevice.KEY_LEFT
+                break;
+            case 38:
+                stickKey = SenseStickDevice.KEY_UP;
+                break;
+            case 39:
+                stickKey = SenseStickDevice.KEY_RIGHT
+                break;
+            case 40:
+                stickKey = SenseStickDevice.KEY_DOWN;
+                break;
+            case 13:
+                stickKey = SenseStickDevice.KEY_ENTER;
+                break;
+            default:
+                console.warn('Invalid keyCode in SenseStick handler', e.keyCode);
+                return;
+        }
+
+        window.sense_hat.sensestick.push(stickKey, state);
     }
 
     // hook up sensestick buttons
@@ -29,6 +56,11 @@ function onLoad(event) {
     document.getElementById('stick-btn-left').addEventListener('click', handleKeyInput);
     document.getElementById('stick-btn-right').addEventListener('click', handleKeyInput);
     document.getElementById('stick-btn-enter').addEventListener('click', handleKeyInput);
+
+    // Create callback functions and bind the right STATE
+    var handleKeyDown = handleRealKeyInput.bind(this, SenseStickDevice.STATE_HOLD);
+    var handleKeyPress = handleRealKeyInput.bind(this, SenseStickDevice.STATE_PRESS);
+    var handleKeyUp = handleRealKeyInput.bind(this, SenseStickDevice.STATE_RELEASE);
 
     /****************************************************************
      * Here starts the skulpt specific stuff, e.g. run/stop btns input, output...
@@ -85,6 +117,14 @@ function onLoad(event) {
         }
     }
 
+    function cleanAfterRun() {
+        Sk.sense_hat.sensestick.destroy();
+
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keypress', handleKeyPress);
+        document.removeEventListener('keyup', handleKeyUp);
+    }
+
     stopbtn.addEventListener('click', function (e) {
         interrupt = true;
         window.sense_hat.sensestick.triggerKeyboardInterrupt(); // Otherwise we need to wait until the suspension resolves!
@@ -119,11 +159,16 @@ function onLoad(event) {
             return Sk.importMainWithBody("<stdin>", false, editor.getValue(), true);
         }, {'*': interruptHandler});
 
+        // Bind key events
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keypress', handleKeyPress);
+        document.addEventListener('keyup', handleKeyUp);
+
         pr.then(function () {
             output.value = output.value + "\nFinished";
 
             // Remove any listenerer to avoid weird side effects, !IMPORTANT!
-            Sk.sense_hat.sensestick.destroy();
+            cleanAfterRun();
         }, function (err) {
             if (err.nativeError && err.nativeError.message === 'KeyboardInterrupt') {
                 output.value = output.value + "\nStopped!";
@@ -133,7 +178,7 @@ function onLoad(event) {
             }
 
             // Remove any listenerer to avoid weird side effects, !IMPORTANT!
-            Sk.sense_hat.sensestick.destroy();
+            cleanAfterRun();
         });
     });
 }
@@ -190,6 +235,8 @@ SenseStickDevice.prototype.push = function (key, state, type) {
         state: parseInt(state),
         timestamp: Date.now()
     };
+
+    this._eventQueue.push(event);
 
     this.emit('sensestick.input', event);
 }

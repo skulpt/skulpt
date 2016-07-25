@@ -30,15 +30,16 @@
       <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <div class="m-t-1 m-b-1" id="editor">#!/usr/bin/python3
-import time
-from sense_hat import SenseHat, SenseStick
+                <div class="m-t-1 m-b-1" id="editor">import time
+from sense_hat import SenseHat
 import sys
 
 """
     A bug on a colored background, responding to keypresses.
+
     Modify the starting state in the `state` dict.
     The background changes colors based on the bug's xy coords.
+
     This version handles keypresses with a SenseStick object.
 """
 
@@ -46,9 +47,6 @@ state = { "bug_x" : 4,
           "bug_y" : 4,
           "bug_rgb" : (250,250,250) }
 
-print("Press Ctrl-C to quit")
-
-stick = SenseStick()
 sense = SenseHat()
 
 def setscreen():
@@ -65,32 +63,29 @@ def setscreen():
     b = int(((y * 32)/255) * brightness + zero)
     r = abs(g - b)
     sense.clear((r,g,b))
-    print(r,g,b)
-    
-def draw_bug(key):
+    #print(r,g,b)
+
+def draw_bug(event):
     global state
-    key_code = key[1]
-    print key
-    print stick.STATE_RELEASE
-    if key[2] == stick.STATE_RELEASE:
+    if event.action == 'released':
         # Ignore releases
         return
-    elif key_code == stick.KEY_UP:
+    elif event.direction == 'up':
         state["bug_x"] = state["bug_x"]
         state["bug_y"] = 7 if state["bug_y"] == 0 else state["bug_y"] - 1
         setscreen()
         sense.set_pixel(state["bug_x"], state["bug_y"], state["bug_rgb"])
-    elif key_code == stick.KEY_DOWN:
+    elif event.direction == 'down':
         state["bug_x"] = state["bug_x"]
         state["bug_y"] = 0 if state["bug_y"] == 7 else state["bug_y"] + 1
         setscreen()
         sense.set_pixel(state["bug_x"], state["bug_y"], state["bug_rgb"])
-    elif key_code == stick.KEY_RIGHT:
+    elif event.direction == 'right':
         state["bug_x"] = 0 if state["bug_x"] == 7 else state["bug_x"] + 1
         state["bug_y"] = state["bug_y"]
         setscreen()
         sense.set_pixel(state["bug_x"], state["bug_y"], state["bug_rgb"])
-    elif key_code == stick.KEY_LEFT:
+    elif event.direction == 'left':
         state["bug_x"] = 7 if state["bug_x"] == 0 else state["bug_x"] - 1
         state["bug_y"] = state["bug_y"] 
         setscreen()
@@ -100,12 +95,9 @@ def draw_bug(key):
 setscreen()
 sense.set_pixel(state["bug_x"], state["bug_y"], state["bug_rgb"])
 
-try:
-    while True:
-        if stick.wait(0):
-            draw_bug(stick.read()) # differs from the example in the repo to test wait!
-except KeyboardInterrupt:
-    sys.exit()</div>
+while True:
+    for event in sense.stick.get_events():
+        draw_bug(event)</div>
                 <button class="btn btn-success btn-sm m-r-1" id="runbtn">Run</button><button class="btn btn-danger btn-sm" id="stopbtn">Stop</button>
             </div>
             <div class="col-md-6">
