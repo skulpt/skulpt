@@ -106,8 +106,21 @@ var $builtinmodule = function (name) {
         return date.getTimezoneOffset() < stdTimezoneOffset();
     }
 
+    /**
+     * ToDo: This is broken since FireFox Version 47 on Windows 10,
+     *       FIXED it by checking the result of the exec
+     * 
+     * @param {any} date
+     * @returns
+     */
     function timeZoneName(date) {
-        return /\((.*)\)/.exec(date.toString())[1];
+        var result = /\((.*)\)/.exec(date.toString());
+
+        if (result && result.length > 1) {
+            return result[1];
+        } else {
+            return null;
+        }
     }
 
     function timeZoneNames() {
