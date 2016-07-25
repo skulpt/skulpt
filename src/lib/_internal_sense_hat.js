@@ -323,9 +323,6 @@ var $builtinmodule = function (name) {
                         reject('KeyboardInterrupt');
                     }
 
-                    // Store event in the internal queue
-                    Sk.sense_hat.sensestick._eventQueue.push(inputData);
-
                     hasEvent = true; // Set return value
                     resolve();
                 }

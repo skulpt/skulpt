@@ -23,27 +23,27 @@ function onLoad(event) {
     }
 
     function handleRealKeyInput(state, e) {
-        console.info(e.keyCode, state);
+        console.info(e.key, SenseStickDevice.stateToText(state));
         var stickKey;
 
-        switch(e.keyCode) {
-            case 37:
+        switch(e.key) {
+            case "ArrowLeft":
                 stickKey = SenseStickDevice.KEY_LEFT
                 break;
-            case 38:
+            case "ArrowUp":
                 stickKey = SenseStickDevice.KEY_UP;
                 break;
-            case 39:
+            case "ArrowRight":
                 stickKey = SenseStickDevice.KEY_RIGHT
                 break;
-            case 40:
+            case "ArrowDown":
                 stickKey = SenseStickDevice.KEY_DOWN;
                 break;
-            case 13:
+            case "Enter":
                 stickKey = SenseStickDevice.KEY_ENTER;
                 break;
             default:
-                console.warn('Invalid keyCode in SenseStick handler', e.keyCode);
+                console.warn('Invalid keyCode in SenseStick handler', e.key);
                 return;
         }
 
@@ -58,8 +58,8 @@ function onLoad(event) {
     document.getElementById('stick-btn-enter').addEventListener('click', handleKeyInput);
 
     // Create callback functions and bind the right STATE
-    var handleKeyDown = handleRealKeyInput.bind(this, SenseStickDevice.STATE_HOLD);
-    var handleKeyPress = handleRealKeyInput.bind(this, SenseStickDevice.STATE_PRESS);
+    var handleKeyDown = handleRealKeyInput.bind(this, SenseStickDevice.STATE_PRESS);
+    var handleKeyPress = handleRealKeyInput.bind(this, SenseStickDevice.STATE_HOLD);
     var handleKeyUp = handleRealKeyInput.bind(this, SenseStickDevice.STATE_RELEASE);
 
     /****************************************************************
@@ -120,9 +120,9 @@ function onLoad(event) {
     function cleanAfterRun() {
         Sk.sense_hat.sensestick.destroy();
 
-        document.removeEventListener('keydown', handleKeyDown);
-        document.removeEventListener('keypress', handleKeyPress);
-        document.removeEventListener('keyup', handleKeyUp);
+        document.body.removeEventListener('keydown', handleKeyDown);
+        document.body.removeEventListener('keypress', handleKeyPress);
+        document.body.removeEventListener('keyup', handleKeyUp);
     }
 
     stopbtn.addEventListener('click', function (e) {
@@ -160,9 +160,9 @@ function onLoad(event) {
         }, {'*': interruptHandler});
 
         // Bind key events
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keypress', handleKeyPress);
-        document.addEventListener('keyup', handleKeyUp);
+        document.body.addEventListener('keydown', handleKeyDown);
+        document.body.addEventListener('keypress', handleKeyPress);
+        document.body.addEventListener('keyup', handleKeyUp);
 
         pr.then(function () {
             output.value = output.value + "\nFinished";
@@ -236,9 +236,15 @@ SenseStickDevice.prototype.push = function (key, state, type) {
         timestamp: Date.now()
     };
 
-    this._eventQueue.push(event);
+    this._enqueue(event);
 
     this.emit('sensestick.input', event);
+}
+
+SenseStickDevice.prototype._enqueue = function (event) {
+    this._eventQueue.push(event);
+    // Not sure if we need to do this. 
+    //this._eventQueue.unshift(event);
 }
 
 /**
@@ -248,6 +254,19 @@ SenseStickDevice.prototype.push = function (key, state, type) {
 SenseStickDevice.prototype.destroy = function () {
     if (this._threadHandler) {
         this.off('sensestick.input', this._threadHandler);
+    }
+}
+
+SenseStickDevice.stateToText = function (state) {
+    switch(state) {
+        case SenseStickDevice.STATE_RELEASE:
+            return "release";
+        case SenseStickDevice.STATE_HOLD:
+            return "hold";
+        case SenseStickDevice.STATE_PRESS:
+            return "press"
+        default:
+            return undefined;
     }
 }
 
