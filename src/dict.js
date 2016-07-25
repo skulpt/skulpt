@@ -16,6 +16,7 @@ Sk.builtin.dict = function dict (L) {
     }
 
     this.size = 0;
+    this.buckets = {};
 
     if (Object.prototype.toString.apply(L) === "[object Array]") {
         // Handle dictionary literals
@@ -93,7 +94,7 @@ Sk.builtin.dict.prototype.key$pop = function (bucket, key) {
 // Perform dictionary lookup, either return value or undefined if key not in dictionary
 Sk.builtin.dict.prototype.mp$lookup = function (key) {
     var k = kf(key);
-    var bucket = this[k.v];
+    var bucket = this.buckets[k.v];
     var item;
 
     // todo; does this need to go through mp$ma_lookup
@@ -133,7 +134,7 @@ Sk.builtin.dict.prototype.sq$contains = function (ob) {
 
 Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     var k = kf(key);
-    var bucket = this[k.v];
+    var bucket = this.buckets[k.v];
     var item;
 
     if (bucket === undefined) {
@@ -141,7 +142,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         bucket = {$hash: k, items: [
             {lhs: key, rhs: w}
         ]};
-        this[k.v] = bucket;
+        this.buckets[k.v] = bucket;
         this.size += 1;
         return;
     }
@@ -160,7 +161,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
 Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
     Sk.builtin.pyCheckArgs("del", arguments, 1, 1, false, false);
     var k = kf(key);
-    var bucket = this[k.v];
+    var bucket = this.buckets[k.v];
     var item;
     var s;
 
@@ -225,7 +226,7 @@ Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
 Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
     Sk.builtin.pyCheckArgs("pop()", arguments, 1, 2, false, true);
     var k = kf(key);
-    var bucket = self[k.v];
+    var bucket = self.buckets[k.v];
     var item;
     var s;
 
@@ -548,16 +549,17 @@ goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
  * @param {Object} obj
  */
 Sk.builtin.dict_iter_ = function (obj) {
-    var k, i, bucket, allkeys;
+    var k, i, bucket, allkeys, buckets;
     if (!(this instanceof Sk.builtin.dict_iter_)) {
         return new Sk.builtin.dict_iter_(obj);
     }
     this.$index = 0;
     this.$obj = obj;
     allkeys = [];
-    for (k in obj) {
-        if (obj.hasOwnProperty(k)) {
-            bucket = obj[k];
+    buckets = obj.buckets;
+    for (k in buckets) {
+        if (buckets.hasOwnProperty(k)) {
+            bucket = buckets[k];
             if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
                 // skip internal stuff. todo; merge pyobj and this
                 for (i = 0; i < bucket.items.length; i++) {
