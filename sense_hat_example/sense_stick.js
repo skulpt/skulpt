@@ -22,8 +22,14 @@ function onLoad(event) {
         window.sense_hat.sensestick.push(key, state);
     }
 
+    /**
+     * IMPORTANT: This must be added to the trinket.io key handler
+     * 
+     * @param {any} state
+     * @param {any} e
+     * @returns
+     */
     function handleRealKeyInput(state, e) {
-        console.info(e.key, SenseStickDevice.stateToText(state));
         var stickKey;
 
         switch(e.key) {
@@ -45,6 +51,22 @@ function onLoad(event) {
             default:
                 console.warn('Invalid keyCode in SenseStick handler', e.key);
                 return;
+        }
+
+        switch(state) {
+            case SenseStickDevice.STATE_PRESS:
+                if (Sk.sense_hat.sensestick.isKeyDown(e.key)) {
+                    // Change the state to hold if the key is already down
+                    state = SenseStickDevice.STATE_HOLD;
+                } else {
+                    Sk.sense_hat.sensestick.addKeyDownEventToDict(e.key);
+                }
+                break;
+            case SenseStickDevice.STATE_RELEASE:
+                Sk.sense_hat.sensestick.removeKeyDownEventFromDict(e.key);
+                break;
+            default:
+                break;
         }
 
         window.sense_hat.sensestick.push(stickKey, state);
@@ -219,6 +241,7 @@ function SenseStickDevice() {
     this._eventListeners;
     this._eventQueue = [];
     this._threadHandler = null;
+    this._isDownDict = {};
 }
 
 // inheritance, or so :P
@@ -226,6 +249,18 @@ $.extend(SenseStickDevice.prototype, jQuery.eventEmitter);
 
 SenseStickDevice.prototype.triggerKeyboardInterrupt = function () {
     this.emit('sensestick.input', { type: 'keyboardinterrupt'});
+}
+
+SenseStickDevice.prototype.addKeyDownEventToDict = function (keyStr) {
+    this._isDownDict[keyStr] = true;
+}
+
+SenseStickDevice.prototype.removeKeyDownEventFromDict = function (keyStr) {
+    delete this._isDownDict[keyStr];
+}
+
+SenseStickDevice.prototype.isKeyDown = function (keyStr) {
+    return this._isDownDict[keyStr] === true;
 }
 
 SenseStickDevice.prototype.push = function (key, state, type) {
@@ -255,6 +290,12 @@ SenseStickDevice.prototype.destroy = function () {
     if (this._threadHandler) {
         this.off('sensestick.input', this._threadHandler);
     }
+
+    // Empty dict
+    this._isDownDict = {};
+
+    // Empty queue
+    this._eventQueue = [];
 }
 
 SenseStickDevice.stateToText = function (state) {
