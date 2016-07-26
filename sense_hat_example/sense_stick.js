@@ -31,8 +31,9 @@ function onLoad(event) {
      */
     function handleRealKeyInput(state, e) {
         var stickKey;
+        var key = SenseStickDevice.normalizeKeyEvent(e);
 
-        switch(e.key) {
+        switch(key) {
             case "ArrowLeft":
                 stickKey = SenseStickDevice.KEY_LEFT
                 break;
@@ -49,7 +50,7 @@ function onLoad(event) {
                 stickKey = SenseStickDevice.KEY_ENTER;
                 break;
             default:
-                console.warn('Invalid keyCode in SenseStick handler', e.key);
+                console.warn('Invalid keyCode in SenseStick handler', key);
                 return;
         }
 
@@ -308,6 +309,30 @@ SenseStickDevice.stateToText = function (state) {
             return "press"
         default:
             return undefined;
+    }
+}
+
+SenseStickDevice.normalizeKeyEvent = function (event) {
+    if (event.key != null) {
+        return event.key;
+    }
+
+    var keyCode = e.keyCode ? e.keyCode : e.which;
+
+    switch (keyCode) {
+        case 37:
+            return "ArrowLeft";
+        case  38:
+            return "ArrowUp";
+        case 39:
+            return "ArrowRight";
+        case 40:
+            return "ArrowDown";
+        case 13:
+            return "Enter";
+        default:
+            return "NoSenseStickKey";
+
     }
 }
 
