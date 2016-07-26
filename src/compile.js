@@ -2237,7 +2237,9 @@ Compiler.prototype.cmod = function (mod) {
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0, this.canSuspend);
 
     var entryBlock = this.newBlock("module entry");
-    this.u.prefixCode = "var " + modf + "=(function($modname){";
+    // we name the function to guarantee that internal references to modf reference this function
+    // even if the global var is redefined
+    this.u.prefixCode = "var " + modf + "=(function " + modf + "($modname){";
     this.u.varDeclsCode =
         "var $gbl = {}, $blk=" + entryBlock +
         ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
