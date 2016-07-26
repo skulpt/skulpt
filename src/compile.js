@@ -1630,6 +1630,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         out(scopename, ".$defaults=[", defaults.join(","), "];");
     }
 
+    if (decos.length > 0) {
+        out(scopename, ".$decorators=[", decos.join(","), "];");
+    }
 
     //
     // attach co_varnames (only the argument names) for keyword argument

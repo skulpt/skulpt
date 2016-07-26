@@ -13,7 +13,6 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-
     return this;
 };
 
@@ -103,7 +102,6 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
-
 
     descr = Sk.builtin.type.typeLookup(tp, name);
 
