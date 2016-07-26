@@ -115,11 +115,19 @@ var $builtinmodule = function (name) {
      */
     function timeZoneName(date) {
         var result = /\((.*)\)/.exec(date.toString());
+        var language = window.navigator.userLanguage || window.navigator.language;
 
         if (result && result.length > 1) {
             return result[1];
         } else {
-            return null;
+            // Try 2nd way, using the locale string, this does not work in Safari (26.07.2016)
+            try {
+                var localeString = date.toLocaleString(language, { timeZoneName: "short" });
+                result = localeString.split(" ");
+                return result[result.length - 1];
+            } catch (e) {
+                return null;
+            }
         }
     }
 
