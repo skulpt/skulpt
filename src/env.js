@@ -121,12 +121,22 @@ Sk.yieldLimit = Number.POSITIVE_INFINITY;
 Sk.output = function (x) {
 };
 
+
+/* By default, you can put any modules you like into this object. */
+Sk.builtinFiles = {};
+goog.exportSymbol("Sk.builtinFiles", Sk.builtinFiles);
+
+
 /*
- * Replacable function to load modules with (called via import, etc.)
- * todo; this should be an async api
+ * Replacable function to load modules with (called via import, etc.).
+ * May return a suspension.
  */
 Sk.read = function (x) {
-    throw "Sk.read has not been implemented";
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
+        throw "File not found: '" + x + "'";
+    }
+
+    return Sk.builtinFiles["files"][x];
 };
 
 /*
