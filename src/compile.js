@@ -1232,9 +1232,7 @@ Compiler.prototype.ctryexcept = function (s) {
             // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
             // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
 
-            // this check is not right, should use isinstance, but exception objects
-            // are not yet proper Python objects
-            check = this._gr("instance", "$err instanceof ", handlertype);
+            check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
             this._jumpfalse(check, next);
         }
 
