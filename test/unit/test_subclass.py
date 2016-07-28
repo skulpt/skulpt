@@ -275,8 +275,8 @@ class SubclassTest(unittest.TestCase):
 
         try:
             raise TestFailed("test")
+            self.fail("Should never get here")
         except TestFailed as e:
-            print e
             self.assertIn("TestFailed: test", str(e))
 
         class MyTypeError(TypeError): pass
@@ -294,8 +294,16 @@ class SubclassTest(unittest.TestCase):
 
         try:
             raise MyStandardError("test")
+            self.fail("Should never get here")
         except MyStandardError as e:
             self.assertEqual("My Standard Error", str(e))
+
+        # Test multiple-class catch
+        try:
+            raiseTestFailed()
+            self.fail("Shouldn't get here")
+        except (StandardError, TestFailed):
+            pass
 
 
 
