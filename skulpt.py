@@ -673,13 +673,20 @@ function quit(rc)
     print ". Built %s" % outfn
 
 
-def getBuiltinsAsJson(options=None, compile=False, dirs=["src/builtin", "src/lib"], additional=False):
+def getBuiltinsAsJson(options=None, compile=False, dirs=["src/builtin", "src/lib"], prefix=None, additional=False):
+    def replace_prefix(pfx, s):
+        if prefix is not None:
+            return prefix + (s[len(pfx):] if s.startswith(pfx) else s)
+        else:
+            return s
+
     if compile:
         files = []
         for root in dirs:
             for dirpath, dirnames, filenames in os.walk(root):
                 for filename in filenames:
-                    files.append (os.path.join(dirpath, filename))
+                    fn = os.path.join(dirpath, filename)
+                    files.append ([fn, replace_prefix(root, fn)])
 
         f = open("support/tmp/compile.js", "w")
         f.write("""
@@ -688,8 +695,8 @@ var files = %s;
 var code = {};
 
 for (var i in files) {
-    var fn = files[i];
-    var key = fn.replace(/\\\\/g, "/");
+    var fn = files[i][0];
+    var key = files[i][1].replace(/\\\\/g, "/");
     if (/\\.js$/.test(fn)) {
         code[key] = read(fn);
     } else if(/\\.py$/.test(fn)) {
@@ -705,7 +712,7 @@ for (var i in files) {
     }
 }
 if (%s) {
-    print('Sk.builtinFiles = Sk.builtinFiles || {};\\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\\n');
+    print("Sk.builtinFiles = Sk.builtinFiles || {};\\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\\n");
     for (var i in code) {
         print('Sk.builtinFiles.files[' + JSON.stringify(i) + '] = ' + JSON.stringify(code[i]) + ";\\n");
     }
@@ -740,12 +747,12 @@ if (%s) {
                     if ext == ".py" or ext == ".js":
                         if options is not None and options.verbose:
                             print "reading", f
-                        f = f.replace("\\", "/")
-                        ret['files'][f] = open(f).read()
+                        fkey = replace_prefix(root, f).replace("\\", "/")
+                        ret['files'][fkey] = open(f).read()
         if additional:
 
-            outs = 'Sk.builtinFiles = Sk.builtinFiles || {};\\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\\n'
-            outs += "\n".join(("Sk.builtinFiles.files[%s] = %s;" % (f, ret['files'][f]) for f in ret['files']))
+            outs = 'Sk.builtinFiles = Sk.builtinFiles || {};\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\n'
+            outs += "\n".join(("Sk.builtinFiles.files[%s] = %s;" % (json.dumps(f), json.dumps(ret['files'][f])) for f in ret['files']))
             return outs
         else:
             return "Sk.builtinFiles=" + json.dumps(ret)
@@ -1319,6 +1326,8 @@ Commands:
     rundebug         Run a Python file using Skulpt in debug mode
     compile          Compile a Python file to Javascript using Skulpt
     compileall [dirs..] Recursively compile directories of Python (and JS) files
+    combineall [dirs..] Recursively combine directories of Python (and JS) files
+                        into a JS file that provides them as built-in modules.
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1346,6 +1355,8 @@ Options:
     -v, --verbose      Make output more verbose [default]
     -c, --compile      Compile standard library files ahead-of-time to Javascript
                        (produces large output, not recommended)
+    -p, --prefix       When using 'compileall' or 'combineall', sets a prefix
+                       that will be used instead of the compiled path[s] in output.
     --version          Returns the version string in Bower configuration file.
 '''.format(program=program)
 
@@ -1360,6 +1371,7 @@ def main():
         default=False,
         help="Make output more verbose [default]")
     parser.add_option("-c", "--compile", action="store_true", dest="aot_compile", default=False)
+    parser.add_option("-p", "--prefix", dest="combine_prefix")
     (options, args) = parser.parse_args()
 
     # This is rather aggressive. Do we really want it?
@@ -1396,7 +1408,9 @@ def main():
     elif cmd == "compile":
         compile(sys.argv[2])
     elif cmd == "compileall":
-        print getBuiltinsAsJson(compile=True, dirs=sys.argv[2:], additional=True)
+        print getBuiltinsAsJson(compile=True, dirs=args[1:], prefix=options.combine_prefix, additional=True)
+    elif cmd == "combineall":
+        print getBuiltinsAsJson(compile=False, dirs=args[1:], prefix=options.combine_prefix, additional=True)
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
