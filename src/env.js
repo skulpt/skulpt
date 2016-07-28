@@ -107,6 +107,30 @@ Sk.configure = function (options) {
     Sk.killableFor = options["killableFor"] || false;
     goog.asserts.assert(typeof Sk.killableFor === "boolean");
 
+    Sk.signals = typeof options["signals"] !== undefined ? options["signals"] : null;
+    if (Sk.signals === true) {
+        Sk.signals = {
+            listeners: [],
+            addEventListener: function (handler) {
+                Sk.signals.listeners.push(handler);
+            },
+            removeEventListener: function (handler) {
+                var index = Sk.signals.listeners.indexOf(handler);
+                if (index >= 0) {
+                    Sk.signals.listeners.splice(index, 1); // Remove items
+                }
+            },
+            signal: function (signal, data) {
+                for (var i = 0; i < Sk.signals.listeners.length; i++) {
+                    Sk.signals.listeners[i].call(null, signal, data);
+                }
+            }
+        };
+    } else {
+        Sk.signals = null;
+    }
+    goog.asserts.assert(typeof Sk.signals === "object");
+
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 

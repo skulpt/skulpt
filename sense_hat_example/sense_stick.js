@@ -3,6 +3,22 @@
  */
 document.addEventListener("DOMContentLoaded", onLoad);
 function onLoad(event) {
+
+    /**
+     * Sends a signal to the Skulpt "Thread". If the thread,
+     * is paused using signal.pause(). The execution will be
+     * continued.
+     * 
+     * @param {any} signal
+     * @param {any} data
+     */
+    function sendSignalToSkulpt(signal, data) {
+        // Now trigger the signal, w00t
+        if (Sk.signals != null && Sk.signals.signal != null) {
+            Sk.signals.signal(signal, data);
+        }
+    }
+
     window.sense_hat = {
         rtimu: {
             pressure: [1, 1160], /* isValid, pressure*/
@@ -13,7 +29,7 @@ function onLoad(event) {
             compass: [0, 0, 0],
             fusionPose: [0, 0, 0] /* fusionpose, accelerometer */
         },
-        sensestick: new SenseStickDevice()
+        sensestick: new SenseStickDevice(sendSignalToSkulpt)
     }; // create sense_hat value placeholder
     
     function handleKeyInput(e, state) {
@@ -150,6 +166,10 @@ function onLoad(event) {
 
     stopbtn.addEventListener('click', function (e) {
         interrupt = true;
+
+        // first raise signal
+        sendSignalToSkulpt('SIGTERM', {});
+
         window.sense_hat.sensestick.triggerKeyboardInterrupt(); // Otherwise we need to wait until the suspension resolves!
     });
     
@@ -170,7 +190,8 @@ function onLoad(event) {
                 var newText = output.value + val;
                 output.value = newText;
             },
-            killableWhile: true 
+            killableWhile: true,
+            signals: true
         });
         
         Sk.imageProxy = '';
@@ -193,6 +214,7 @@ function onLoad(event) {
             // Remove any listenerer to avoid weird side effects, !IMPORTANT!
             cleanAfterRun();
         }, function (err) {
+            console.info('errorHandler', err);
             if (err.nativeError && err.nativeError.message === 'KeyboardInterrupt') {
                 output.value = output.value + "\nStopped!";
             } else {
@@ -238,11 +260,12 @@ function onLoad(event) {
 /**
  * Handles the sense stick events
  */
-function SenseStickDevice() {
+function SenseStickDevice(sendSignalToSkulpt) {
     this._eventListeners;
     this._eventQueue = [];
     this._threadHandler = null;
     this._isDownDict = {};
+    this.sendSignalToSkulpt = sendSignalToSkulpt;
 }
 
 // inheritance, or so :P
@@ -274,7 +297,21 @@ SenseStickDevice.prototype.push = function (key, state, type) {
 
     this._enqueue(event);
 
+    var shouldTriggerSignal = false;
+    if (Sk.sense_hat.sensestick._threadHandler != null) {
+        shouldTriggerSignal = true;
+    }
+
+    /*
+     * Emit event and let the handler call the callback function.
+     * Always call the callback before signaling, we cannot
+     */
     this.emit('sensestick.input', event);
+
+    // Now trigger the signal, w00t
+    if (shouldTriggerSignal) {
+        this.sendSignalToSkulpt('sensestick.input');
+    }
 }
 
 SenseStickDevice.prototype._enqueue = function (event) {

@@ -378,10 +378,10 @@ var $builtinmodule = function (name) {
     mod._start_stick_thread = new Sk.builtin.func(function(callback) {
         function handleKeyInput (event, inputData) {
             // Store event in the internal queue
-            Sk.sense_hat.sensestick._eventQueue.push(inputData);
-
+            //Sk.sense_hat.sensestick._eventQueue.push(inputData);
+            debugger;
             // This may cause, that we are not able to call our interrupt suspension handler
-            Sk.misceval.callsimAsync(null, callback);
+            var ret = Sk.misceval.callsimAsync(null, callback);
         }
 
         Sk.sense_hat.sensestick.on('sensestick.input', handleKeyInput);
@@ -396,6 +396,8 @@ var $builtinmodule = function (name) {
             // watching thread
             if (susp.data["error"] || inputEvent.type === 'keyboardinterrupt') {
                 if (susp.data.error === 'KeyboardInterrupt' || inputEvent.type === 'keyboardinterrupt') {
+                    // throwing now
+                    console.info("throwing now!");
                     throw new Error('KeyboardInterrupt');
                 } else {
                     throw new Sk.builtin.IOError('SenseStickDevice Error');

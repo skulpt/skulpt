@@ -1,5 +1,5 @@
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_RELEASED
-#from signal import pause
+from signal import pause
 
 x = 3
 y = 3
@@ -30,7 +30,7 @@ def pushed_right(event):
 
 def refresh():
     sense.clear()
-    sense.set_pixel(x, y, 255, 255, 255)
+    sense.set_pixel(x, y, 255, 0, 0)
 
 sense.stick.direction_up = pushed_up
 sense.stick.direction_down = pushed_down
@@ -39,8 +39,8 @@ sense.stick.direction_right = pushed_right
 sense.stick.direction_any = refresh
 refresh()
 
-while True:
-    pass
+#while True:
+#    pass
 
 # This seems not to be possible in skulpt: https://docs.python.org/2/library/signal.html#signal.pause
-#pause()
+pause()
