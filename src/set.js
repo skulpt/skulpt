@@ -317,16 +317,17 @@ goog.exportSymbol("Sk.builtin.set", Sk.builtin.set);
  * @param {Object} obj
  */
 Sk.builtin.set_iter_ = function (obj) {
-    var allkeys, k, i, bucket;
+    var allkeys, k, i, bucket, buckets;
     if (!(this instanceof Sk.builtin.set_iter_)) {
         return new Sk.builtin.set_iter_(obj);
     }
     this.$obj = obj;
     this.tp$iter = this;
     allkeys = [];
-    for (k in obj.v) {
-        if (obj.v.hasOwnProperty(k)) {
-            bucket = obj.v[k];
+    buckets = obj.v.buckets;
+    for (k in buckets) {
+        if (buckets.hasOwnProperty(k)) {
+            bucket = buckets[k];
             if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
                 // skip internal stuff. todo; merge pyobj and this
                 for (i = 0; i < bucket.items.length; i++) {

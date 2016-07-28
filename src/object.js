@@ -19,6 +19,13 @@ Sk.builtin.object = function () {
 
 
 
+var _tryGetSubscript = function(dict, pyName) {
+    try {
+        return dict.mp$subscript(pyName);
+    } catch (x) {
+        return undefined;
+    }
+};
 
 /**
  * @return {undefined}
@@ -42,11 +49,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            try {
-                res = dict.mp$subscript(pyName);
-            } catch (x) {
-                res = undefined;
-            }
+            res = _tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
