@@ -998,6 +998,27 @@ def docbi(options,dest="doc/static"):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
+def compile(fn, opt=False, p3=False, debug_mode=False):
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    f = open("support/tmp/run.js", "w")
+    f.write("""
+var fn = '%s';
+var input = read(fn);
+Sk.configure({python3: %s, debugging: %s});
+var co = Sk.compile(input, fn, 'exec', true);
+print(co.code + '\\nvar $builtinmodule = ' + co.funcname + ';');
+    """ % (fn, 'true' if p3 else 'false', 'true' if debug_mode else 'false'))
+    f.close()
+    if opt:
+        os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
+    else:
+        os.system("{0} {1} support/tmp/run.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
+
+
 def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
@@ -1233,6 +1254,8 @@ Commands:
     docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
     time [iter]      Average runtime of the test suite over [iter] iterations.
+    rundebug         Run a Python file using Skulpt in debug mode
+    compile          Compile a Python file to Javascript using Skulpt
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1304,6 +1327,8 @@ def main():
         regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
+    elif cmd == "compile":
+        compile(sys.argv[2])
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
