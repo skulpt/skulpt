@@ -267,16 +267,16 @@ Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.ParseError = function (args) {
+Sk.builtin.SyntaxError = function (args) {
     var o;
-    if (!(this instanceof Sk.builtin.ParseError)) {
-        o = Object.create(Sk.builtin.ParseError.prototype);
+    if (!(this instanceof Sk.builtin.SyntaxError)) {
+        o = Object.create(Sk.builtin.SyntaxError.prototype);
         o.constructor.apply(o, arguments);
         return o;
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ParseError", Sk.builtin.ParseError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -331,38 +331,6 @@ Sk.builtin.SystemExit = function (args) {
 Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
 goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.SyntaxError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SyntaxError)) {
-        o = Object.create(Sk.builtin.SyntaxError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.TokenError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TokenError)) {
-        o = Object.create(Sk.builtin.TokenError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("TokenError", Sk.builtin.TokenError, Sk.builtin.StandardError);
 
 /**
  * @constructor
