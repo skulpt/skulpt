@@ -894,7 +894,11 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                 try {
                     // jsh*nt insists these be defined outside the loop
                     var resume = function() {
-                        handleResponse(r.resume());
+                        try {
+                            handleResponse(r.resume());
+                        } catch (e) {
+                            reject(e);
+                        }
                     };
                     var resumeWithData = function resolved(x) {
                         try {
@@ -933,11 +937,13 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                         } else if (r.data["type"] == "Sk.yield") {
                             // Assumes all yields are optional, as Sk.setTimeout might
                             // not be able to yield.
-                            Sk.setTimeout(resume, 0);
+                            //Sk.setTimeout(resume, 0);
+                            setImmediate(resume);
                             return;
 
                         } else if (r.data["type"] == "Sk.delay") {
-                            Sk.setTimeout(resume, 1);
+                            //Sk.setTimeout(resume, 1);
+                            setImmediate(resume);
                             return;
 
                         } else if (r.optional) {

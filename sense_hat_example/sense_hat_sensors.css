@@ -1,0 +1,198 @@
+.orientation-stage {
+    perspective: 700px;
+    -webkit-perspective: 700px;
+    -webkit-perspective-origin: 50% 50%;
+    perspective-origin: 50% 50%;
+    width: 160px;
+    height: 160px;
+    background-image: -webkit-linear-gradient(#dedede 0%, #ffffff 64%, #ababab 64%, #f1f0f0 100%);
+    background-image: -o-linear-gradient(#dedede 0%, #ffffff 64%, #ababab 64%, #f1f0f0 100%);
+    background-image: linear-gradient(#dedede 0%, #ffffff 64%, #ababab 64%, #f1f0f0 100%);
+    transition: 0.2s ease opacity, 0.2s ease -webkit-filter;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.orientation-element,
+.orientation-element::before,
+.orientation-element::after
+{
+    position: absolute;
+    box-sizing: border-box;
+    transform-style: preserve-3d;
+    background: no-repeat;
+    background-size: cover;
+    backface-visibility: hidden;
+}
+
+.orientation-box {
+    width: 66px;
+    height: 122px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    /*transform: rotate3d(1, 0, 0, 90deg);*/
+    /*transform: rotate3d(1, 0, 0, 90deg) rotate3d(0, 1, 0, 45deg) rotate3d(0, 0, 1, -45deg);*/
+}
+
+.orientation-box.is-animating, .is-animating .orientation-layer {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.orientation-layer {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+}
+
+.orientation-front,
+.orientation-back
+{
+    width: 66px;
+    height: 122px;
+    border-radius: 8px;
+}
+
+
+.orientation-front {
+    background-image: url(Images/sense_hat-front.png);
+}
+
+.orientation-back {
+    transform: rotateY(180deg) translateZ(12px);
+    background-image: url(Images/accelerometer-back.png);
+}
+
+
+.orientation-left,
+.orientation-right {
+    width: 12px;
+    height: 106px;
+    top: 8px;
+    background-position: center center;
+}
+
+.orientation-left {
+    left: -12px;
+    transform-origin: right center;
+    transform: rotateY(-90deg);
+    background-image: url(Images/accelerometer-left.png);
+}
+
+
+.orientation-right {
+    right: -12px;
+    transform-origin: left center;
+    transform: rotateY(90deg);
+    background-image: url(Images/accelerometer-right.png);
+}
+
+.orientation-left::before,
+.orientation-left::after,
+.orientation-right::before,
+.orientation-right::after
+{
+    content: '';
+    width: 12px;
+    height: 6px;
+}
+
+.orientation-left::before,
+.orientation-left::after
+{
+    background-image: url(Images/accelerometer-left.png);
+}
+
+.orientation-right::before,
+.orientation-right::after
+{
+    background-image: url(Images/accelerometer-right.png);
+}
+
+.orientation-left::before,
+.orientation-right::before {
+    top: -6px;
+    transform-origin: center bottom;
+    transform: rotateX(26deg);
+    background-position: center top;
+}
+
+.orientation-left::after,
+.orientation-right::after {
+    bottom: -6px;
+    transform-origin: center top;
+    transform: rotateX(-25deg);
+    background-position: center bottom;
+}
+
+.orientation-top,
+.orientation-bottom {
+    width: 50px;
+    height: 12px;
+    left: 8px;
+    background-position: center center;
+}
+
+.orientation-top {
+    top: -12px;
+    transform-origin: center bottom;
+    transform: rotateX(90deg);
+    background-image: url(Images/accelerometer-top.png);
+}
+
+
+.orientation-bottom {
+    bottom: -12px;
+    transform-origin: center top;
+    transform: rotateX(-90deg);
+    background-image: url(Images/accelerometer-bottom.png);
+}
+
+
+.orientation-top::before,
+.orientation-top::after,
+.orientation-bottom::before,
+.orientation-bottom::after
+{
+    content: '';
+    width: 8px;
+    height: 12px;
+}
+
+.orientation-top::before,
+.orientation-top::after
+{
+    background-image: url(Images/accelerometer-top.png);
+}
+
+.orientation-bottom::before,
+.orientation-bottom::after
+{
+    background-image: url(Images/accelerometer-bottom.png);
+}
+
+.orientation-top::before,
+.orientation-bottom::before {
+    left: -6px;
+    transform-origin: right center;
+    transform: rotateY(-26deg);
+    background-position: left center;
+}
+
+.orientation-top::after,
+.orientation-bottom::after {
+    right: -6px;
+    transform-origin: left center;
+    transform: rotateY(26deg);
+    background-position: right center;
+}
+
+.accelerometer-axis-input-container {
+    margin-bottom: 10px;
+}
+
+.accelerometer-inputs-cell {
+    vertical-align: top;
+}
