@@ -353,11 +353,9 @@ var $builtinmodule = function (name) {
         if (func.im_self && func.im_func) {
             //kwargs = func.im_func.func_code["co_kwargs"] != null;
             argsLength = func.im_func.func_code.length - 1; // -1 for the self
-            //console.info('method', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
         } else {
             //kwargs = func.func_code["co_kwargs"] != null;
             argsLength = func.func_code.length;
-            //console.info('function', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
         }
 
         return Sk.builtin.int_(argsLength);
@@ -378,8 +376,6 @@ var $builtinmodule = function (name) {
     mod._start_stick_thread = new Sk.builtin.func(function(callback) {
         function handleKeyInput (event, inputData) {
             // Store event in the internal queue
-            //Sk.sense_hat.sensestick._eventQueue.push(inputData);
-            debugger;
             // This may cause, that we are not able to call our interrupt suspension handler
             var ret = Sk.misceval.callsimAsync(null, callback);
         }
@@ -397,7 +393,6 @@ var $builtinmodule = function (name) {
             if (susp.data["error"] || inputEvent.type === 'keyboardinterrupt') {
                 if (susp.data.error === 'KeyboardInterrupt' || inputEvent.type === 'keyboardinterrupt') {
                     // throwing now
-                    console.info("throwing now!");
                     throw new Error('KeyboardInterrupt');
                 } else {
                     throw new Sk.builtin.IOError('SenseStickDevice Error');
