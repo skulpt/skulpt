@@ -377,7 +377,7 @@ var $builtinmodule = function (name) {
         function handleKeyInput (event, inputData) {
             // Store event in the internal queue
             // This may cause, that we are not able to call our interrupt suspension handler
-            var ret = Sk.misceval.callsimAsync(null, callback);
+            Sk.misceval.callsimAsync(null, callback);
         }
 
         Sk.sense_hat.sensestick.on('sensestick.input', handleKeyInput);
