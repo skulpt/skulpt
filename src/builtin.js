@@ -559,7 +559,8 @@ Sk.builtin.dir = function dir (x) {
         var internal = [
             "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
-            "pythonFunctions", "HashNotImplemented", "constructor"];
+            "pythonFunctions", "HashNotImplemented", "constructor", "__dict__"
+        ];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -754,11 +755,11 @@ Sk.builtin.hash = function hash (value) {
             value.$savedHash_ = value.tp$hash();
             return value.$savedHash_;
         } else {
-            if (value.__id === undefined) {
+            if (value.__hash === undefined) {
                 Sk.builtin.hashCount += 1;
-                value.__id = Sk.builtin.hashCount;
+                value.__hash = Sk.builtin.hashCount;
             }
-            return new Sk.builtin.int_(value.__id);
+            return new Sk.builtin.int_(value.__hash);
         }
     } else if (typeof value === "number" || value === null ||
         value === true || value === false) {
@@ -1205,6 +1206,17 @@ Sk.builtin.reversed = function reversed (seq) {
 
         return new reverseIter(seq);
     }
+};
+
+Sk.builtin.id = function (obj) {
+    Sk.builtin.pyCheckArgs("id", arguments, 1, 1);
+
+    if (obj.__id === undefined) {
+        Sk.builtin.idCount += 1;
+        obj.__id = Sk.builtin.idCount;
+    }
+
+    return new Sk.builtin.int_(obj.__id);
 };
 
 Sk.builtin.bytearray = function bytearray () {
