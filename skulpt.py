@@ -116,6 +116,7 @@ Files = [
         'src/sorted.js',
         'src/builtindict.js',
         'src/constants.js',
+        'src/internalpython.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
@@ -236,7 +237,7 @@ def test(debug_mode=False):
         ret3 = os.system(jscscmd)
         #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits()
+        ret4 = rununits(debug_mode=debug_mode)
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -672,6 +673,15 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
+def getInternalCodeAsJson():
+    ret = {}
+    ret['files'] = {}
+    for f in ["src/" + x for x in os.listdir("src") if os.path.splitext(x)[1] == ".py" if os.path.isfile("src/" + x)]:
+        ext = os.path.splitext(f)[1]
+        if ext == ".py":
+            f = f.replace("\\", "/")
+            ret['files'][f] = open(f).read()
+    return "Sk.internalPy=" + json.dumps(ret)
 
 def getBuiltinsAsJson(options):
     ret = {}
@@ -724,6 +734,14 @@ def dist(options):
         print ". Running tests on uncompressed..."
 
     ret = test()
+
+    # turn the tests in debug mode off because they take too long
+    # # Run tests on uncompressed.
+    # if options.verbose:
+    #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+    #
+    #
+    # ret = test(debug_mode=True)
 
     if ret != 0:
         print "Tests failed on uncompressed version."
@@ -848,7 +866,7 @@ def make_skulpt_js(options,dest):
     if sys.platform != "win32":
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
-def run_in_browser(fn, options):
+def run_in_browser(fn, options, debug_mode=False):
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -863,7 +881,7 @@ def run_in_browser(fn, options):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts)
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower())
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1039,16 +1057,16 @@ def runopt(fn):
     run(fn, "", True)
 
 def run3(fn):
-    run(fn,p3=True)
+    run(fn, p3=True)
 
 def rundebug(fn):
-    run(fn,debug_mode=True)
+    run(fn, debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
+def rununits(opt=False, p3=False, debug_mode=False):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1065,7 +1083,7 @@ def rununits(opt=False, p3=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1073,7 +1091,7 @@ Sk.misceval.asyncToPromise(function() {
     print(e.stack);
     quit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
         if opt:
             p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
@@ -1285,6 +1303,9 @@ def main():
     else:
         cmd = sys.argv[1]
 
+    with open("src/internalpython.js", "w") as f:
+        f.write(getInternalCodeAsJson() + ";")
+
     if cmd == "test":
         test()
     elif cmd == "testdebug":
@@ -1307,7 +1328,9 @@ def main():
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
-        run_in_browser(sys.argv[2],options)
+        run_in_browser(sys.argv[2], options)
+    elif cmd == "brundebug":
+        run_in_browser(sys.argv[2], options, True)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":
