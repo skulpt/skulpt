@@ -1,5 +1,5 @@
 """
-This file was modified from cpython.
+This file was modified from CPython.
 Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014, 2015, 2016 Python Software Foundation; All Rights Reserved
 """
@@ -264,7 +264,6 @@ class TestCopy(unittest.TestCase):
     #   #       return self.foo == other.foo
     #   x = NewArgs(42)
     #   y = copy.copy(x)
-    #   print y.__dict__()
     #   self.assertIsInstance(y, NewArgs)
     #   self.assertEqual(y, x)
     #   self.assertIsNot(y, x)

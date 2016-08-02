@@ -1,5 +1,5 @@
 """
-This file was modified from cpython.
+This file was modified from CPython.
 Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014, 2015, 2016 Python Software Foundation; All Rights Reserved
 """
@@ -52,26 +52,26 @@ class reconstruct_state():
     def __reduce__(self):
         return (reconstruct_state, (), self.__dict__)
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__()
+        return self.__dict__ == other.__dict__
 
 class reconstruct_state_setstate(object):
     def __reduce__(self):
-        return (reconstruct_state_setstate, (), self.__dict__())
+        return (reconstruct_state_setstate, (), self.__dict__)
     def __setstate__(self, state):
-        self.__dict__().update(state)
+        self.__dict__.update(state)
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
 class reduce_4tuple(list):
     def __reduce__(self):
-        return (reduce_4tuple, (), self.__dict__(), iter(self))
+        return (reduce_4tuple, (), self.__dict__, iter(self))
     def __eq__(self, other):
         return (list(self) == list(other) and
                 self.__dict__ == other.__dict__)
 
 class reduce_5tuple(dict):
     def __reduce__(self):
-        return (reduce_5tuple, (), self.__dict__(), None, self.items())
+        return (reduce_5tuple, (), self.__dict__, None, self.items())
     def __eq__(self, other):
         return (dict(self) == dict(other) and
                 self.__dict__ == other.__dict__)
