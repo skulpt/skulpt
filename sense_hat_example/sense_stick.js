@@ -12,10 +12,10 @@ function onLoad(event) {
      * @param {any} signal
      * @param {any} data
      */
-    function sendSignalToSkulpt(signal, data) {
+    function sendSignalToSkulpt(signal) {
         // Now trigger the signal, w00t
         if (Sk.signals != null && Sk.signals.signal != null) {
-            Sk.signals.signal(signal, data);
+            Sk.signals.signal(signal);
         }
     }
 
@@ -168,7 +168,7 @@ function onLoad(event) {
         interrupt = true;
 
         // first raise signal
-        sendSignalToSkulpt('SIGTERM', {});
+        sendSignalToSkulpt(0);
 
         window.sense_hat.sensestick.triggerKeyboardInterrupt(); // Otherwise we need to wait until the suspension resolves!
     });
@@ -307,11 +307,6 @@ SenseStickDevice.prototype.push = function (key, state, type) {
      * Always call the callback before signaling, we cannot
      */
     this.emit('sensestick.input', event);
-
-    // Now trigger the signal, w00t
-    if (shouldTriggerSignal) {
-        this.sendSignalToSkulpt('sensestick.input');
-    }
 }
 
 SenseStickDevice.prototype._enqueue = function (event) {
