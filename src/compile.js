@@ -932,7 +932,8 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var localsToSave = unit.localnames.concat(unit.tempsToSave);
     var seenTemps = {};
     var hasCell = unit.ste.blockType === FunctionBlock && unit.ste.childHasFree;
-    var output = "var $wakeFromSuspension = function() {" +
+    var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
+                 "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; delete "+unit.scopename+".$wakingSuspension;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
