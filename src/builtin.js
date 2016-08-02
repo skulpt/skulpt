@@ -242,16 +242,18 @@ Sk.builtin.round = function round (number, ndigits) {
 Sk.builtin.len = function len (item) {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
+    var int_ = function(i) { return new Sk.builtin.int_(i); };
+
     if (item.sq$length) {
-        return new Sk.builtin.int_(item.sq$length());
+        return Sk.misceval.chain(item.sq$length(), int_);
     }
 
     if (item.mp$length) {
-        return new Sk.builtin.int_(item.mp$length());
+        return Sk.misceval.chain(item.mp$length(), int_);
     }
 
     if (item.tp$length) {
-        return new Sk.builtin.int_(item.tp$length());
+        return Sk.misceval.chain(item.tp$length(true), int_);
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
@@ -808,10 +810,13 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 
 Sk.builtin.raw_input = function (prompt) {
     var sys = Sk.importModule("sys");
-    if (prompt) {
-        Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(prompt));
-    }
-    return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
+    var lprompt = prompt ? prompt : "";
+
+    return Sk.misceval.chain(undefined, function () {
+        return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(prompt));
+    }, function () {
+        return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
+    });
 };
 
 Sk.builtin.input = Sk.builtin.raw_input;
@@ -1211,8 +1216,15 @@ Sk.builtin.reversed = function reversed (seq) {
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
 };
-Sk.builtin.callable = function callable () {
-    throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
+
+Sk.builtin.callable = function callable (obj) {
+    // check num of args
+    Sk.builtin.pyCheckArgs("callable", arguments, 1, 1);
+
+    if (Sk.builtin.checkCallable(obj)) {
+        return Sk.builtin.bool.true$;
+    }
+    return Sk.builtin.bool.false$;
 };
 
 Sk.builtin.delattr = function delattr () {
@@ -1229,18 +1241,49 @@ Sk.builtin.frozenset = function frozenset () {
 Sk.builtin.help = function help () {
     throw new Sk.builtin.NotImplementedError("help is not yet implemented");
 };
-Sk.builtin.iter = function iter () {
-    throw new Sk.builtin.NotImplementedError("iter is not yet implemented");
+
+Sk.builtin.iter = function iter (obj, sentinel) {
+    Sk.builtin.pyCheckArgs("iter", arguments, 1, 2);
+    if (arguments.length === 1) {
+        if (!Sk.builtin.checkIterable(obj)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + 
+                "' object is not iterable");
+        } else {
+            return new Sk.builtin.iterator(obj);
+        }
+    } else {
+        if (Sk.builtin.checkCallable(obj)) {
+            return new Sk.builtin.iterator(obj, sentinel);
+        } else {
+            throw new TypeError("iter(v, w): v must be callable");
+        }
+    }
 };
+
 Sk.builtin.locals = function locals () {
     throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
 };
 Sk.builtin.memoryview = function memoryview () {
     throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented");
 };
-Sk.builtin.next_ = function next_ () {
-    throw new Sk.builtin.NotImplementedError("next is not yet implemented");
+
+Sk.builtin.next_ = function next_ (iter, default_) {
+    var nxt;
+    Sk.builtin.pyCheckArgs("next", arguments, 1, 2);
+    if (!iter.tp$iternext) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
+            "' object is not an iterator");
+    }
+    nxt = iter.tp$iternext();
+    if (nxt === undefined) {
+        if (default_) {
+            return default_;
+        }
+        throw new Sk.builtin.StopIteration();
+    }
+    return nxt;
 };
+
 Sk.builtin.property = function property () {
     throw new Sk.builtin.NotImplementedError("property is not yet implemented");
 };

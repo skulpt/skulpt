@@ -13,12 +13,18 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-
     return this;
 };
 
 
 
+var _tryGetSubscript = function(dict, pyName) {
+    try {
+        return dict.mp$subscript(pyName);
+    } catch (x) {
+        return undefined;
+    }
+};
 
 /**
  * @return {undefined}
@@ -38,30 +44,12 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     dict = this["$d"] || this.constructor["$d"];
     //print("getattr", tp.tp$name, name);
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
-
-    // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
-        if (!(f) && descr["__get__"]) {
-            f = descr["__get__"];
-            return Sk.misceval.callsimOrSuspend(f, descr, this);
-        }
-        // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
-    }
-
     // todo; assert? force?
     if (dict) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            try {
-                res = dict.mp$subscript(pyName);
-            } catch (x) {
-                res = undefined;
-            }
+            res = _tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
@@ -76,14 +64,18 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
         f = descr.ob$type.tp$descr_get;
+        if (!(f) && descr["__get__"]) {
+            f = descr["__get__"];
+            return Sk.misceval.callsimOrSuspend(f, descr, this, Sk.builtin.none.none$);
+        }
         // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
-    }
+        // if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+        // return f.call(descr, this, this.ob$type);
 
-    if (f) {
-        // non-data descriptor
-        return f.call(descr, this, this.ob$type);
+        if (f) {
+            // non-data descriptor
+            return f.call(descr, this, this.ob$type);
+        }
     }
 
     if (descr !== undefined) {
@@ -103,33 +95,29 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     var objname = Sk.abstr.typeName(this);
     var pyname;
     var dict;
+    var tp = this.ob$type;
     var descr;
-    var tp;
     var f;
 
     goog.asserts.assert(typeof name === "string");
-
-    tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+
+    dict = this["$d"] || this.constructor["$d"];
 
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        // f = descr.ob$type.tp$descr_set;
-        if (!(f) && descr["__set__"]) {
+        //f = descr.ob$type.tp$descr_set;
+        if (descr["__set__"]) {
             f = descr["__set__"];
-            Sk.misceval.callsim(f, descr, this, value);
+            Sk.misceval.callsimOrSuspend(f, descr, this, value);
             return;
         }
         // todo;
         //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
         //return f.call(descr, this, this.ob$type);
     }
-
-    // todo; lots o' stuff
-
-    dict = this["$d"] || this.constructor["$d"];
 
     if (dict.mp$ass_subscript) {
         pyname = new Sk.builtin.str(name);

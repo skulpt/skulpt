@@ -51,23 +51,27 @@ function runit(myDiv) {
         }
     }
 
-   Sk.pre = myDiv+"_pre";
-   Sk.configure({output:outf,
-  	        read: builtinRead,
-            debugout: showjs,
-              });
-       var myPromise = Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody("<stdin>",true,prog,true);
-       });
-       myPromise.then(function(mod) {}, function(err) {
-           console.log(err.toString());
-            });
+    Sk.pre = myDiv+"_pre";
+    Sk.configure({
+        output:outf,
+        read: builtinRead,
+        debugout: showjs,
+        debugging: %(debug_mode)s
+    });
+
+    var myPromise = Sk.misceval.asyncToPromise(function() {
+            return Sk.importMainWithBody("<stdin>",true,prog,true);
+    });
+
+    myPromise.then(function(mod) {}, function(err) {
+        console.log(err.toString());
+    });
 }
 </script>
 <h3>Test Code</h3>
 <div id="runbrowser">
 <form>
-<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="15">
+<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="20" style="font-family: 'Lucida Console', Monaco, monospace;">
 %(code)s
 </textarea>
 <button onclick="runit('runbrowser')" type="button">Run</button>

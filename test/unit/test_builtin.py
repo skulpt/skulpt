@@ -344,5 +344,164 @@ class BuiltinTest(unittest.TestCase):
         #         return chr(ord(str.__getitem__(self, index))+1)
         # self.assertEqual(filter(lambda x: x>="3", shiftstr("1234")), "345")
 
+    def test_callable(self):
+        self.assertTrue(callable(len))                            # builtin
+        self.assertFalse(callable("a"))
+        self.assertTrue(callable(callable))                       # builtin
+        self.assertTrue(callable(lambda x, y: x + y))             # python lambda
+        def f(): pass
+        self.assertTrue(callable(f))                              # python func
+        class C1(object):
+            def meth(self): pass
+        self.assertTrue(callable(C1))                               # class
+        c = C1()
+        self.assertTrue(callable(c.meth))                           # method (instance)
+        # __call__ is looked up on the class, not the instance
+        c.__call__ = None
+        self.assertFalse(callable(c))                               # class instance without __call__ in class
+        class C2(object):
+            def __call__(self): pass
+        c2 = C2()
+        self.assertTrue(callable(c2))                               # class instance with __call__ in class
+        self.assertFalse(callable(False))                                       # bool
+        self.assertFalse(callable(["this is a list"]))                          # list        
+        self.assertFalse(callable(["this is a list with a function", f]))       # list containing function
+        self.assertFalse(callable({}))                                          # dict
+        self.assertFalse(callable(None))                                        # nonetype
+        self.assertFalse(callable(1))                                           # number
+        self.assertTrue(callable(float))                                        # float builtin
+        self.assertFalse(callable(float()))                                     # function call
+        self.assertFalse(callable(float(1)))                                    # float type
+        self.assertFalse(callable("+"))                                         # string containing symbol
+        self.assertFalse(callable(4+7))                                         # expression
+        self.assertFalse(callable(enumerate(['a', 'b', 'c', 'd'])))             # list created by callable function
+        self.assertFalse(callable(()))                                          # tuple                                        
+        # generators are callable
+        def squares(n):
+            '''Yields the squares from 0 to n-1 squared.'''
+            for i in range(n):
+                yield i * i
+        self.assertTrue(callable(squares))                                      # generator
+        class SuperClass(object): #superclass
+            def getName(self):
+                raise NotImplementedError
+        class LittleClass(SuperClass): #subclass/ inherited from SuperClass
+                def __call__(self):
+                    return "LittleClass"
+        big = SuperClass()
+        big.__call__ = "call me super"
+        self.assertFalse(callable(big))                                             # checking callable by class (not instances)
+        class_inst = LittleClass()                                                  # class instances are not callable unless they have a .__call__ method
+        self.assertTrue(callable(class_inst)) 
+        #### nested classes
+        class Outer(object):
+            def __init__(self):
+                self.y = 0
+
+            class Inner(object):
+                def __init__(self):
+                    self.x = 1
+        self.assertTrue(callable(Outer.Inner))                                 # function object
+        self.assertTrue(callable(Outer.Inner.__init__))
+    
+    def test_next(self):
+        itera = iter([1,2,3])                                 # iterator
+        self.assertEqual(next(itera), 1)
+        self.assertEqual(next(itera), 2)
+        self.assertEqual(next(itera), 3)
+        self.assertEqual(next(itera, "stop please"), "stop please") # test default
+        self.assertRaises(StopIteration, next, itera)               # causes StopIteration
+        self.assertRaises(TypeError, next, [1,2,3,4])               # type errors "not an iterator" : list
+        self.assertRaises(TypeError, next, (1,2,3,4))               # tuple
+        self.assertRaises(TypeError, next, "hello")                 # string
+        self.assertEqual(next(iter("hello")), "h")                  # iterator from a string
+        self.assertRaises(TypeError, next, False)                   # Type Error: bool object is not an iterator
+        self.assertRaises(TypeError, next, {1:2})                   # TypeError: dict object is not an iterator
+        self.assertRaises(TypeError, next, 1)                       # TypeError: int object is not an iterator
+        class Noniter:
+            def __init__(self, num):
+                self.mynum = num
+        noniterb = Noniter(1)                                           # "class instance without __iter__ method"   
+        self.assertRaises(TypeError, next, noniterb)                    # TypeError: instance has no next() method
+        self.assertRaises(TypeError, next, noniterb, "defaultreturn")   # class instance without __iter__ method, has default
+        iterc = Noniter(2)
+        iterc.__iter__ = iter([1,2,3])                                  # class instance with __iter__ method
+        self.assertRaises(TypeError, next, iterc)                       # TypeError: instance has no next() method                   # stop iteration
+        self.assertEqual(next(iterc.__iter__), 1)                 # iterator class without __iter__, instance with __iter__... should raise StopIteration error
+        self.assertEqual(next(iterc.__iter__), 2)
+        self.assertEqual(next(iterc.__iter__), 3)
+        self.assertRaises(StopIteration, next, iterc.__iter__)
+        class Iterb:
+            def __init__(self, lst):
+                self.lst = lst
+                self.iter = iter(self.lst)
+
+            def __iter__(self):
+                return self.iter
+        iterb = Iterb((1, 2))
+        self.assertRaises(TypeError, next, iterb)                  # TypeError: instance has no next() method
+        self.assertEqual(next(iterb.__iter__()), 1)                 # class with __iter__ method
+        self.assertEqual(next(iterb.__iter__()), 2)  
+        self.assertRaises(StopIteration, next, iterb.__iter__())
+        self.assertRaises(StopIteration, next, iterb.__iter__())
+        iterstr = Iterb("str")
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "s")      # iterator class with string and default
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "t")
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "r")
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "ing")    # class instance with __iter__ method, testing default
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "ing")
+        self.assertEqual(next(iterstr.__iter__(), "ing"), "ing")
+        self.assertRaises(StopIteration, next, iterb.__iter__())    # class instance with __iter__ method, testing stop/no default
+        spellcow = iter("cow")                                      # tuple iterator
+        self.assertEqual(next(spellcow, "moo"), "c")                # sring, with defaul
+        self.assertEqual(next(spellcow, "moo"), "o")
+        self.assertEqual(next(spellcow, "moo"), "w")
+        self.assertEqual(next(spellcow, "moo"), "moo")
+        iterd = iter([])                                            # empty iterator
+        self.assertRaises(StopIteration, next, iterd)
+
+        class HasNext:
+            def __init__(self, num):
+                self.mynum = num
+
+            def next(self):
+                return "this is the next value"
+        hasnext1 = HasNext(123)
+        self.assertEqual(next(hasnext1), "this is the next value")  # has a "next" method
+
+        class NoNext:
+            def __iter__(self):
+                return self
+        NoNextinst = NoNext()
+        self.assertRaises(TypeError, next, NoNextinst.__iter__)     # TypeError: instancemethod object is not an iterator
+        self.assertRaises(TypeError, next, NoNextinst.__iter__())
+
+        it = iter(range(2))                                         # cpython testing
+        self.assertEqual(next(it), 0)
+        self.assertEqual(next(it), 1)
+        self.assertRaises(StopIteration, next, it)
+        self.assertRaises(StopIteration, next, it)
+        self.assertEqual(next(it, 42), 42)
+
+        class Iter:
+            def __iter__(self):
+                return self
+
+            def next(self):
+                raise StopIteration
+
+        it = iter(Iter())
+        self.assertEqual(next(it, 42), 42)
+        self.assertRaises(StopIteration, next, it)
+
+        def gen():
+            yield 1
+            return
+
+        it = gen()
+        self.assertEqual(next(it), 1)
+        self.assertRaises(StopIteration, next, it)
+        self.assertEqual(next(it, 42), 42)
+
 if __name__ == "__main__":
     unittest.main()

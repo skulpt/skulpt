@@ -226,6 +226,19 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(ret);
     });
 
+    /* Return True if x is infinite, and False otherwise. */
+    mod.isinf = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("isinf", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        var _x = Sk.builtin.asnum$(x);
+        if(isFinite(_x) && !isNaN(_x)) {
+            return Sk.builtin.bool.false$;
+        } else {
+            return Sk.builtin.bool.true$
+        }
+    });
+
     /* Return True if x is a NaN (not a number), and False otherwise. */
     mod.isnan = new Sk.builtin.func(function(x) {
         Sk.builtin.pyCheckArgs("isnan", arguments, 1, 1);
