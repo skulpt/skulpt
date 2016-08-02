@@ -17,9 +17,11 @@ Sk.builtin.method = function (func, self, klass) {
     this.im_func = func;
     this.im_self = self;
     this.im_class = klass;
-    this["$d"] = new Sk.builtin.dict([new Sk.builtin.str("im_self"), self,
-        new Sk.builtin.str("im_class"), klass,
-        new Sk.builtin.str("im_func"), func]);
+    this["$d"] = {
+        im_func: func,
+        im_self: self,
+        im_class: klass
+    };
 };
 goog.exportSymbol("Sk.builtin.method", Sk.builtin.method);
 Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object);
