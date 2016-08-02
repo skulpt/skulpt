@@ -2327,9 +2327,9 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     var c = new Compiler(filename, st, flags.cf_flags, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
 
-    var ret = c.result.join("");
+    var ret = "$compiledmod = function() {" + c.result.join("") + "\nreturn " + funcname + ";}();";
     return {
-        funcname: funcname,
+        funcname: "$compiledmod",
         code    : ret
     };
 };
