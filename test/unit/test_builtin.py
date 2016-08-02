@@ -38,6 +38,39 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, hasattr, sys, 1)
         self.assertRaises(TypeError, hasattr)
 
+        class A:
+            def __init__(self):
+                self.undef_self = None
+
+            def undefxz(self):
+                return None
+
+            def __getattr__(self, name):
+                if name == 'undef':
+                    return None
+                if name == 'one':
+                    return 1
+                raise AttributeError
+
+        class NoGAtt:
+            def __init__(self):
+                self.undef_self = None
+
+            def undefxz(self):
+                return None
+        a = A()
+        b = NoGAtt()
+        self.assertTrue(hasattr(a, 'undefxz'))
+        self.assertTrue(hasattr(a, 'undef_self'))
+        self.assertTrue(hasattr(a, 'one'))
+        self.assertTrue(hasattr(a, 'undef'))
+        self.assertFalse(hasattr(a, "Robyn"))
+        self.assertTrue(hasattr(b, 'undefxz'))
+        self.assertTrue(hasattr(b, 'undef_self'))
+        self.assertFalse(hasattr(b, 'one'))
+        self.assertFalse(hasattr(b, 'undef'))
+        self.assertFalse(hasattr(a, "Robyn"))
+
     def test_setattr(self):
         setattr(sys, 'spam', 1)
         self.assertEqual(sys.spam, 1)
