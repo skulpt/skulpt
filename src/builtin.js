@@ -1278,9 +1278,6 @@ Sk.builtin.next_ = function next_ (iter, default_) {
     return nxt;
 };
 
-Sk.builtin.property = function property () {
-    throw new Sk.builtin.NotImplementedError("property is not yet implemented");
-};
 Sk.builtin.reload = function reload () {
     throw new Sk.builtin.NotImplementedError("reload is not yet implemented");
 };
