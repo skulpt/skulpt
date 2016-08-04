@@ -254,6 +254,31 @@ class PropertySubclassTests(unittest.TestCase):
     #             return 2
     #     self.assertEqual(Foo.spam.__doc__, "a new docstring")
 
+class TestDecorators(unittest.TestCase):
+
+    def test_single(self):
+        class C(object):
+            @staticmethod
+            def foo(): return 42
+        self.assertEqual(C.foo(), 42)
+        self.assertEqual(C().foo(), 42)
+
+    def test_staticmethods(self):
+        # Testing static methods...
+        class C(object):
+            def foo(*a): return a
+            goo = staticmethod(foo)
+        c = C()
+        self.assertEqual(C.goo(1), (1,))
+        self.assertEqual(c.goo(1), (1,))
+        self.assertEqual(c.foo(1), (c, 1,))
+        class D(C):
+            pass
+        d = D()
+        self.assertEqual(D.goo(1), (1,))
+        self.assertEqual(d.goo(1), (1,))
+        self.assertEqual(d.foo(1), (d, 1))
+        self.assertEqual(D.foo(d, 1), (d, 1))
 
 
 if __name__ == '__main__':
