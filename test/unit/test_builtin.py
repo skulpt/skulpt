@@ -78,6 +78,44 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, 1, 'spam', 9)
         self.assertRaises(TypeError, setattr)
 
+    def test_delattr(self):
+        class NoName:
+            def color(self):
+                return "green"
+        x = NoName()
+        y = NoName
+        setattr(NoName, "shape", "square")
+        self.assertEqual(getattr(NoName, "shape"), "square")
+        self.assertTrue(hasattr(NoName, "shape"))
+        self.assertEqual(getattr(NoName(), "shape"), "square")
+        self.assertTrue(hasattr(NoName(), "shape"))
+        self.assertRaises(AttributeError, delattr, NoName(), "shape")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertEqual(getattr(y, "shape"), "square")
+        setattr(y, "shape", "circle")
+        setattr(x, "shape", "square")
+        self.assertEqual(getattr(NoName, "shape"), "circle")
+        self.assertEqual(getattr(NoName(), "shape"), "circle")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertEqual(getattr(y, "shape"), "circle")
+        delattr(NoName, "shape")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertRaises(AttributeError, delattr, y, "shape")
+        self.assertRaises(AttributeError, delattr, NoName(), "shape")
+        self.assertRaises(AttributeError, delattr, NoName, "shape")
+        self.assertEqual(getattr(x, "color")(), "green")
+        self.assertEqual(getattr(NoName(), "color")(), "green")
+        self.assertEqual(getattr(x, "color")(), "green")
+        setattr(x, "color", "red")
+        self.assertEqual(x.color, "red")
+        delattr(NoName, "color")
+        self.assertEqual(x.color, "red")
+        self.assertRaises(AttributeError, delattr, NoName, "color")
+        self.assertEqual(x.color, "red")
+        self.assertRaises(AttributeError, delattr, NoName, "color")
+        self.assertRaises(TypeError, delattr, list, "append")
+        self.assertRaises(TypeError, setattr, dict, "k", "v")
+
     def test_dir_subclasses(self):
         class Base:
             def method1(self):
