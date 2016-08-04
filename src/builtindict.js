@@ -25,6 +25,7 @@ Sk.builtins = {
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
     "hasattr"   : Sk.builtin.hasattr,
+    "id"        : Sk.builtin.id,
 
     "map"   : Sk.builtin.map,
     "filter": Sk.builtin.filter,

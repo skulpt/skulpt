@@ -119,6 +119,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
             args = args || [];
             self["$d"] = new Sk.builtin.dict([]);
+            self["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), self["$d"]);
 
             if (klass.prototype.tp$base !== undefined) {
                 if (klass.prototype.tp$base.sk$klass) {
@@ -627,13 +628,14 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     if (other.ob$type != Sk.builtin.type) {
         return undefined;
     }
-
     if (!this["$r"] || !other["$r"]) {
         return undefined;
     }
-
-    r1 = this["$r"]();
-    r2 = other["$r"]();
-
+    r1 = new Sk.builtin.str(this["$r"]().v.slice(1,6));
+    r2 = new Sk.builtin.str(other["$r"]().v.slice(1,6));
+    if (this["$r"]().v.slice(1,6) !== "class") {
+        r1 = this["$r"]();
+        r2 = other["$r"]();
+    }
     return r1.tp$richcompare(r2, op);
 };
