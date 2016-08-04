@@ -280,27 +280,27 @@ class TestDecorators(unittest.TestCase):
         self.assertEqual(d.foo(1), (d, 1))
         self.assertEqual(D.foo(d, 1), (d, 1))
 
-    # def test_classmethods(self):
-    #     # Testing class methods...
-    #     class C(object):
-    #         def foo(*a): return a
-    #         goo = classmethod(foo)
-    #     c = C()
-    #     self.assertEqual(C.goo(1), (C, 1))
-    #     self.assertEqual(c.goo(1), (C, 1))
-    #     self.assertEqual(c.foo(1), (c, 1))
-    #     class D(C):
-    #         pass
-    #     d = D()
-    #     self.assertEqual(D.goo(1), (D, 1))
-    #     self.assertEqual(d.goo(1), (D, 1))
-    #     self.assertEqual(d.foo(1), (d, 1))
-    #     self.assertEqual(D.foo(d, 1), (d, 1))
-    #     # Test for a specific crash (SF bug 528132)
-    #     def f(cls, arg): return (cls, arg)
-    #     ff = classmethod(f)
-    #     self.assertEqual(ff.__get__(0, int)(42), (int, 42))
-    #     self.assertEqual(ff.__get__(0)(42), (int, 42))
+    def test_classmethods(self):
+        # Testing class methods...
+        class C(object):
+            def foo(*a): return a
+            goo = classmethod(foo)
+        c = C()
+        self.assertEqual(C.goo(1), (C, 1))
+        self.assertEqual(c.goo(1), (C, 1))
+        self.assertEqual(c.foo(1), (c, 1))
+        class D(C):
+            pass
+        d = D()
+        self.assertEqual(D.goo(1), (D, 1))
+        self.assertEqual(d.goo(1), (D, 1))
+        self.assertEqual(d.foo(1), (d, 1))
+        self.assertEqual(D.foo(d, 1), (d, 1))
+        # Test for a specific crash (SF bug 528132)
+        def f(cls, arg): return (cls, arg)
+        ff = classmethod(f)
+        self.assertEqual(ff.__get__(0, int)(42), (int, 42))
+        self.assertEqual(ff.__get__(0)(42), (int, 42))
 
 if __name__ == '__main__':
     unittest.main()
