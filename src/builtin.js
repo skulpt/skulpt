@@ -789,9 +789,9 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
 };
 
 Sk.builtin.setattr = function setattr (obj, name, value) {
+    Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
     // cannot set or del attr from builtin type
     if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
-        Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
         if (!Sk.builtin.checkString(name)) {
             throw new Sk.builtin.TypeError("attribute name must be string");
         }
@@ -1257,6 +1257,7 @@ Sk.builtin.callable = function callable (obj) {
 };
 
 Sk.builtin.delattr = function delattr (obj, attr) {
+    Sk.builtin.pyCheckArgs("delattr", arguments, 2, 2);
     if (obj["$d"][attr.v] !== undefined) {
         var ret = Sk.misceval.tryCatch(function() {
             var try1 = Sk.builtin.setattr(obj, attr, undefined);
