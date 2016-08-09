@@ -198,9 +198,7 @@ class SenseStick(object):
             event = self._read()
             if event:
                 result.append(event)
-        # Make sure returned events are sorted by timestamp
-        results = sorted(result, key=lambda x: x.timestamp)
-        return results
+        return result
 
     @property
     def direction_up(self):

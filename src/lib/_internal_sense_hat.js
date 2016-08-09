@@ -412,7 +412,7 @@ var $builtinmodule = function (name) {
             promise: new Promise(function (resolve, reject) {
                 // Read from internal eventQueue
                 if (Sk.sense_hat.sensestick._eventQueue.length > 0) {
-                    inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
+                    inputEvent = Sk.sense_hat.sensestick._eventQueue.shift();
                     resolve();
                 } else {
                     // add eventlistener
@@ -422,7 +422,7 @@ var $builtinmodule = function (name) {
                             reject('KeyboardInterrupt');
                         }
 
-                        inputEvent = inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
+                        inputEvent = inputEvent = Sk.sense_hat.sensestick._eventQueue.shift();
                         resolve();
                     });
                 }
