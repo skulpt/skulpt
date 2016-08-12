@@ -242,11 +242,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
             }
         }
 
-        if (this.func_code.toString().indexOf("($free)") != -1) { 
-            args.unshift(this.func_closure);
-        } else {
-            args.push(this.func_closure);
-        }
+        args.push(this.func_closure);
     }
 
     expectskw = this.func_code["co_kwargs"];
