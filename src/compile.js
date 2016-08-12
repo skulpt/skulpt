@@ -1568,10 +1568,15 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         
         if (hasFree) {
             start -= 1;
+            // because the argument is overridden with the first of the varargs get $free from the arguments array
         } 
 
         this.u.localnames.push(vararg.v);
         this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
+    
+        if (hasFree) {
+            this.u.varDeclsCode += "$free = arguments[arguments.length-1];"
+        }
     }
 
     //
