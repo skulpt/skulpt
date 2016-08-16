@@ -359,7 +359,7 @@ Sk.builtin.type = function (name, bases, dict) {
                         return Sk.misceval.callsimOrSuspend.apply(undefined, args);
                     }
                 }
-                return Sk.misceval.callsim.apply(undefined, args);
+                return Sk.misceval.callsimOrSuspend.apply(undefined, args);
             };
         };
 
