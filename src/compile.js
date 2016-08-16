@@ -1471,9 +1471,14 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
     }
     if (hasFree) {
-        funcArgs.push("$free");
-        this.u.tempsToSave.push("$free");
+        if (vararg) {
+            this.u.varDeclsCode += "$free = arguments[arguments.length-1];"
+        } else {
+            funcArgs.push("$free");
+            this.u.tempsToSave.push("$free");
+        }
     }
+
     this.u.prefixCode += funcArgs.join(",");
 
     this.u.prefixCode += "){";
@@ -1565,18 +1570,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     if (vararg) {
         start = funcArgs.length;
-        
-        if (hasFree) {
-            start -= 1;
-            // because the argument is overridden with the first of the varargs get $free from the arguments array
-        } 
 
         this.u.localnames.push(vararg.v);
         this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
-    
-        if (hasFree) {
-            this.u.varDeclsCode += "$free = arguments[arguments.length-1];"
-        }
     }
 
     //
