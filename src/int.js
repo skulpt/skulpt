@@ -637,7 +637,9 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
                 // Fail, recompute with longs
                 return new Sk.builtin.lng(this.v).nb$lshift(other);
             }
-        } else if (tmp !== undefined) {
+        }
+
+        if (tmp !== undefined) {
             tmp = /** @type {number} */ (tmp);
             return new Sk.builtin.int_(tmp);
         }
