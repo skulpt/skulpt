@@ -633,7 +633,7 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
                 throw new Sk.builtin.ValueError("negative shift count");
             }
             tmp = this.v << shift;
-            if (this.v !== 0 && shift != 0 && tmp <= this.v) {
+            if (this.v !== 0 && shift !== 0 && tmp <= this.v) {
                 // Fail, recompute with longs
                 return new Sk.builtin.lng(this.v).nb$lshift(other);
             }
