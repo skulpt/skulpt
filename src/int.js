@@ -643,9 +643,7 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
             tmp = /** @type {number} */ (tmp);
             return new Sk.builtin.int_(tmp);
         }
-    }
-
-    if (other instanceof Sk.builtin.lng) {
+    } else if (other instanceof Sk.builtin.lng) {
         thisAsLong = new Sk.builtin.lng(this.v);
         return thisAsLong.nb$lshift(other);
     }
