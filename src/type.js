@@ -52,7 +52,7 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": ["sq$length", 0]
+    "__len__": ["sq$length", -1]
 };
 
 /**
@@ -352,14 +352,20 @@ Sk.builtin.type = function (name, bases, dict) {
                 var args = Array.prototype.slice.call(arguments), canSuspend;
                 args.unshift(magic_func, this);
 
-                if (canSuspendIdx) {
-                    canSuspend = args[canSuspendIdx+1];
-                    args.splice(canSuspendIdx+1, 1);
+                if (canSuspendIdx !== null) {
+                    if (canSuspendIdx >= 0) {
+                        canSuspend = args[canSuspendIdx+1];
+                        args.splice(canSuspendIdx+1, 1);
+                    } else {
+                        //assume we can suspend
+                        canSuspend = true;
+                    }
+
                     if (canSuspend) {
                         return Sk.misceval.callsimOrSuspend.apply(undefined, args);
                     }
                 }
-                return Sk.misceval.callsimOrSuspend.apply(undefined, args);
+                return Sk.misceval.callsim.apply(undefined, args);
             };
         };
 
