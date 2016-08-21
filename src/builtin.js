@@ -789,18 +789,21 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
 };
 
 Sk.builtin.setattr = function setattr (obj, name, value) {
-
     Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
-    if (!Sk.builtin.checkString(name)) {
-        throw new Sk.builtin.TypeError("attribute name must be string");
-    }
-    if (obj.tp$setattr) {
-        obj.tp$setattr(Sk.ffi.remapToJs(name), value);
-    } else {
-        throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+    // cannot set or del attr from builtin type
+    if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
+        if (!Sk.builtin.checkString(name)) {
+            throw new Sk.builtin.TypeError("attribute name must be string");
+        }
+        if (obj.tp$setattr) {
+            obj.tp$setattr(Sk.ffi.remapToJs(name), value);
+        } else {
+            throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+        }
+        return Sk.builtin.none.none$;
     }
 
-    return Sk.builtin.none.none$;
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
 
 Sk.builtin.raw_input = function (prompt) {
@@ -995,6 +998,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
 Sk.builtin.hasattr = function hasattr (obj, attr) {
     Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
+    var special, ret;
     if (!Sk.builtin.checkString(attr)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
@@ -1003,7 +1007,26 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
         if (obj.tp$getattr(attr.v)) {
             return Sk.builtin.bool.true$;
         } else {
-            return Sk.builtin.bool.false$;
+            special = Sk.abstr.lookupSpecial(obj, "__getattr__");
+            if (special) {
+                ret = Sk.misceval.tryCatch(function () {
+                    var val = Sk.misceval.callsim(special, obj, attr);
+                    if (val) {
+                        return Sk.builtin.bool.true$;
+                    } else {
+                        return Sk.builtin.bool.false$;
+                    }
+                }, function(e) {
+                    if (e instanceof Sk.builtin.AttributeError) {
+                        return Sk.builtin.bool.false$;
+                    } else {
+                        throw e;
+                    }
+                });
+                return ret;
+            } else {
+                return Sk.builtin.bool.false$;
+            }
         }
     } else {
         throw new Sk.builtin.AttributeError("Object has no tp$getattr method");
@@ -1233,9 +1256,37 @@ Sk.builtin.callable = function callable (obj) {
     return Sk.builtin.bool.false$;
 };
 
-Sk.builtin.delattr = function delattr () {
-    throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
+Sk.builtin.delattr = function delattr (obj, attr) {
+    Sk.builtin.pyCheckArgs("delattr", arguments, 2, 2);
+    if (obj["$d"][attr.v] !== undefined) {
+        var ret = Sk.misceval.tryCatch(function() {
+            var try1 = Sk.builtin.setattr(obj, attr, undefined);
+            return try1;
+        }, function(e) {
+            Sk.misceval.tryCatch(function() {
+                var try2 = Sk.builtin.setattr(obj["$d"], attr, undefined);
+
+                return try2;
+            }, function(e) {
+                if (e instanceof Sk.builtin.AttributeError) {
+                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+                } else {
+                    throw e;
+                }
+            });
+        });
+        return ret;
+    } // cannot set or del attr from builtin type
+    if (obj["$r"]().v.slice(1,5) !== "type") {
+        if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
+            obj[attr.v] = undefined;
+            return Sk.builtin.none.none$;
+        }
+        throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+    }
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
+
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
