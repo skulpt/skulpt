@@ -49,6 +49,9 @@ Sk.configure = function (options) {
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
     
+    Sk.inputfunTakesPrompt = options["inputfunTakesPrompt"] || false;
+    goog.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
+
     Sk.retainGlobals = options["retainglobals"] || false;
     goog.asserts.assert(typeof Sk.retainGlobals === "boolean");
 

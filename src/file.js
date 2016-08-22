@@ -122,12 +122,15 @@ Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function (self, size) {
     return ret;
 });
 
-Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.$readline = function (self, size, prompt) {
     if (self.fileno === 0) {
         var x, resolution, susp;
 
-        var prompt = prompt ? prompt.v : "";
-        x = Sk.inputfun(prompt);
+        var lprompt = Sk.ffi.remapToJs(prompt);
+
+        lprompt = lprompt ? lprompt : "";
+
+        x = Sk.inputfun(lprompt);
 
         if (x instanceof Promise) {
             susp = new Sk.misceval.Suspension();
@@ -159,6 +162,10 @@ Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size
         }
         return new Sk.builtin.str(line);
     }
+};
+
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) { 
+    return Sk.builtin.file.$readline(self, size, undefined); 
 });
 
 Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, sizehint) {
