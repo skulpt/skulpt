@@ -84,6 +84,8 @@ Sk.ffi.remapToJs = function (obj) {
         return Sk.builtin.asnum$(obj);
     } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
+    } else if (obj === undefined) {
+        return undefined;
     } else {
         return obj.v;
     }
