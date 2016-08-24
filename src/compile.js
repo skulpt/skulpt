@@ -1391,7 +1391,7 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        aliasOut = fixReservedWords(alias.name.v);
+        aliasOut = "'" + fixReservedWords(alias.name.v) + "'";
         if (i === 0 && alias.name.v === "*") {
             goog.asserts.assert(n === 1);
             out("Sk.importStar(", mod, ",$loc, $gbl);");
