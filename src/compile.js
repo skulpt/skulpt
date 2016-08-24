@@ -3,84 +3,6 @@ var out;
 
 Sk.gensymcount = 0;
 
-var reservedWords_ = {
-    "abstract": true,
-    "as": true,
-    "boolean": true,
-    "break": true,
-    "byte": true,
-    "case": true,
-    "catch": true,
-    "char": true,
-    "class": true,
-    "continue": true,
-    "const": true,
-    "debugger": true,
-    "default": true,
-    "delete": true,
-    "do": true,
-    "double": true,
-    "else": true,
-    "enum": true,
-    "export": true,
-    "extends": true,
-    "false": true,
-    "final": true,
-    "finally": true,
-    "float": true,
-    "for": true,
-    "function": true,
-    "goto": true,
-    "if": true,
-    "implements": true,
-    "import": true,
-    "in": true,
-    "instanceof": true,
-    "int": true,
-    "interface": true,
-    "is": true,
-    "long": true,
-    "namespace": true,
-    "native": true,
-    "new": true,
-    "null": true,
-    "package": true,
-    "private": true,
-    "protected": true,
-    "public": true,
-    "return": true,
-    "short": true,
-    "static": true,
-    "super": false,
-    "switch": true,
-    "synchronized": true,
-    "this": true,
-    "throw": true,
-    "throws": true,
-    "transient": true,
-    "true": true,
-    "try": true,
-    "typeof": true,
-    "use": true,
-    "var": true,
-    "void": true,
-    "volatile": true,
-    "while": true,
-    "with": true
-};
-
-/**
- * Fix reserved words
- * 
- * @param {string} name
- */
-Sk.fixReservedWords = function fixReservedWords(name) {
-    if (reservedWords_[name] !== true) {
-        return name;
-    }
-    return name + "_$rw$";
-}
-
 /**
  * @constructor
  * @param {string} filename
@@ -199,6 +121,84 @@ Compiler.prototype.gensym = function (hint) {
 Compiler.prototype.niceName = function (roughName) {
     return this.gensym(roughName.replace("<", "").replace(">", "").replace(" ", "_"));
 };
+
+var reservedWords_ = {
+    "abstract": true,
+    "as": true,
+    "boolean": true,
+    "break": true,
+    "byte": true,
+    "case": true,
+    "catch": true,
+    "char": true,
+    "class": true,
+    "continue": true,
+    "const": true,
+    "debugger": true,
+    "default": true,
+    "delete": true,
+    "do": true,
+    "double": true,
+    "else": true,
+    "enum": true,
+    "export": true,
+    "extends": true,
+    "false": true,
+    "final": true,
+    "finally": true,
+    "float": true,
+    "for": true,
+    "function": true,
+    "goto": true,
+    "if": true,
+    "implements": true,
+    "import": true,
+    "in": true,
+    "instanceof": true,
+    "int": true,
+    "interface": true,
+    "is": true,
+    "long": true,
+    "namespace": true,
+    "native": true,
+    "new": true,
+    "null": true,
+    "package": true,
+    "private": true,
+    "protected": true,
+    "public": true,
+    "return": true,
+    "short": true,
+    "static": true,
+    "super": false,
+    "switch": true,
+    "synchronized": true,
+    "this": true,
+    "throw": true,
+    "throws": true,
+    "transient": true,
+    "true": true,
+    "try": true,
+    "typeof": true,
+    "use": true,
+    "var": true,
+    "void": true,
+    "volatile": true,
+    "while": true,
+    "with": true
+};
+
+/**
+ * Fix reserved words
+ * 
+ * @param {string} name
+ */
+function fixReservedWords(name) {
+    if (reservedWords_[name] !== true) {
+        return name;
+    }
+    return name + "_$rw$";
+}
 
 var reservedNames_ = {
     "__defineGetter__": true,
@@ -1379,6 +1379,7 @@ Compiler.prototype.cfromimport = function (s) {
     var n = s.names.length;
     var names = [];
     for (i = 0; i < n; ++i) {
+        s.names[i].name.v = fixReservedWords(s.names[i].name.v);
         names[i] = Sk.fixReservedWords(s.names[i].name["$r"]().v);
     }
     out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
@@ -1397,7 +1398,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", Sk.fixReservedWords(alias.name["$r"]().v), ")");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
@@ -2113,7 +2114,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     }
 
     // have to do this after looking it up in the scope
-    mangled = Sk.fixReservedWords(mangled);
+    mangled = fixReservedWords(mangled);
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here
@@ -2244,7 +2245,7 @@ Compiler.prototype.exitScope = function () {
     if (prev.name.v !== "<module>") {// todo; hacky
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
-        mangled = Sk.fixReservedWords(mangled);
+        mangled = fixReservedWords(mangled);
         mangled = fixReservedNames(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
@@ -2378,4 +2379,3 @@ Sk.resetCompiler = function () {
 };
 
 goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
-goog.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
