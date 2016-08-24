@@ -1379,7 +1379,7 @@ Compiler.prototype.cfromimport = function (s) {
     var n = s.names.length;
     var names = [];
     for (i = 0; i < n; ++i) {
-        names[i] = s.names[i].name["$r"]().v;
+        names[i] = Sk.fixReservedWords(s.names[i].name["$r"]().v);
     }
     out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
 
