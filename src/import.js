@@ -601,7 +601,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
             var foundFromName; // Contains the sysmodules[name] the current item from the fromList
 
             for (i = 0; i < fromlist.length; i++) {
-                fromName = fromlist[i];
+                fromName = Sk.fixReservedWords(fromlist[i]);
 
                 foundFromName = false;
                 found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
