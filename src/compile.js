@@ -712,7 +712,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            mangled = Sk.fixReservedWords(mangled);
+            mangled = fixReservedWords(mangled);
             mangled = fixReservedNames(mangled);
             switch (e.ctx) {
                 case AugLoad:
@@ -1380,7 +1380,7 @@ Compiler.prototype.cfromimport = function (s) {
     var names = [];
     for (i = 0; i < n; ++i) {
         s.names[i].name.v = fixReservedWords(s.names[i].name.v);
-        names[i] = Sk.fixReservedWords(s.names[i].name["$r"]().v);
+        names[i] = s.names[i].name["$r"]().v;
     }
     out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
 
