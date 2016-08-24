@@ -1374,6 +1374,7 @@ Compiler.prototype.cfromimport = function (s) {
     var storeName;
     var got;
     var alias;
+    var aliasOut;
     var mod;
     var i;
     var n = s.names.length;
