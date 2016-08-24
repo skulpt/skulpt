@@ -72,7 +72,7 @@ var reservedWords_ = {
 /**
  * Fix reserved words
  * 
- * @param {string}
+ * @param {string} name
  */
 Sk.fixReservedWords = function fixReservedWords(name) {
     if (reservedWords_[name] !== true) {
@@ -1397,7 +1397,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", Sk.fixReservedWords(alias.name["$r"]().v), ")");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
