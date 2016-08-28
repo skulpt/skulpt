@@ -129,7 +129,31 @@ Sk.output = function (x) {
  * todo; this should be an async api
  */
 Sk.read = function (x) {
-    throw "Sk.read has not been implemented";
+    var path;
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
+        if (XMLHttpRequest !== undefined) {
+            path = x.substring(0, 2) == "./" ? x.substring(2) : x;
+
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.onload = function onload() {
+                    if (xhr.status >= 400) {
+                        reject("File not found: '" + x + "'");
+                    } else {
+                        resolve(xhr.responseText);
+                    }
+                };
+
+                xhr.open("GET", path, true);
+                xhr.responseType = "text";
+                xhr.send(null);
+            });
+        }
+
+        throw "File not found: '" + x + "'";
+    }
+    
+    return Sk.builtinFiles["files"][x];
 };
 
 /*
