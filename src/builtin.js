@@ -245,7 +245,7 @@ Sk.builtin.len = function len (item) {
     var int_ = function(i) { return new Sk.builtin.int_(i); };
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(), int_);
+        return Sk.misceval.chain(item.sq$length(true), int_);
     }
 
     if (item.mp$length) {
