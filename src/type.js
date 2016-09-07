@@ -52,7 +52,7 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": ["sq$length", 0]
+    "__len__": ["sq$length", 1]
 };
 
 /**
@@ -119,6 +119,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
             args = args || [];
             self["$d"] = new Sk.builtin.dict([]);
+            self["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), self["$d"]);
 
             if (klass.prototype.tp$base !== undefined) {
                 if (klass.prototype.tp$base.sk$klass) {
@@ -351,9 +352,10 @@ Sk.builtin.type = function (name, bases, dict) {
                 var args = Array.prototype.slice.call(arguments), canSuspend;
                 args.unshift(magic_func, this);
 
-                if (canSuspendIdx) {
+                if (canSuspendIdx !== null) {
                     canSuspend = args[canSuspendIdx+1];
                     args.splice(canSuspendIdx+1, 1);
+
                     if (canSuspend) {
                         return Sk.misceval.callsimOrSuspend.apply(undefined, args);
                     }
@@ -627,13 +629,14 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     if (other.ob$type != Sk.builtin.type) {
         return undefined;
     }
-
     if (!this["$r"] || !other["$r"]) {
         return undefined;
     }
-
-    r1 = this["$r"]();
-    r2 = other["$r"]();
-
+    r1 = new Sk.builtin.str(this["$r"]().v.slice(1,6));
+    r2 = new Sk.builtin.str(other["$r"]().v.slice(1,6));
+    if (this["$r"]().v.slice(1,6) !== "class") {
+        r1 = this["$r"]();
+        r2 = other["$r"]();
+    }
     return r1.tp$richcompare(r2, op);
 };

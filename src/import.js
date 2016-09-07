@@ -548,10 +548,9 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 };
 
 /**
- * **Run Python Code in Skulpt**
- *
- * When you want to hand Skulpt a string corresponding to a Python program this is the function.
- *
+ * Imports internal python files into the `__builin__` module. Used during startup 
+ * to compile and import all *.py files from the src/ directory. 
+ * 
  * @param name {string}  File name to use for messages related to this run
  * @param dumpJS {boolean} print out the compiled javascript
  * @param body {string} Python Code

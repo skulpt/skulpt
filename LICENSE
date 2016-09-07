@@ -1,4 +1,4 @@
-Copyright (c) 2009-2010 Scott Graham
+Copyright (c) 2009-2016 Scott Graham and contributors to the Skulpt Project
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ Portions of the code were written with the benefit of viewing code that's in
 the official "CPython" and "pypy" distribution and/or translated from code that's in the
 official "CPython" and "pypy" distribution. As such, they are:
 
-    Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Python Software
+    Copyright (c) 2001 -- 2016 Python Software
     Foundation; All Rights Reserved"
 
 per:

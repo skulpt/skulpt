@@ -25,6 +25,7 @@ Sk.builtins = {
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
     "hasattr"   : Sk.builtin.hasattr,
+    "id"        : Sk.builtin.id,
 
     "map"   : Sk.builtin.map,
     "filter": Sk.builtin.filter,
@@ -98,7 +99,6 @@ Sk.builtins = {
     "memoryview": Sk.builtin.memoryview,
     "next"      : Sk.builtin.next_,
     "pow"       : Sk.builtin.pow,
-    "property"  : Sk.builtin.property,
     "reload"    : Sk.builtin.reload,
     "reversed"  : Sk.builtin.reversed,
     "super"     : Sk.builtin.superbi,

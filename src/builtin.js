@@ -245,7 +245,7 @@ Sk.builtin.len = function len (item) {
     var int_ = function(i) { return new Sk.builtin.int_(i); };
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(), int_);
+        return Sk.misceval.chain(item.sq$length(true), int_);
     }
 
     if (item.mp$length) {
@@ -559,7 +559,8 @@ Sk.builtin.dir = function dir (x) {
         var internal = [
             "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
-            "pythonFunctions", "HashNotImplemented", "constructor"];
+            "pythonFunctions", "HashNotImplemented", "constructor", "__dict__"
+        ];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -760,11 +761,11 @@ Sk.builtin.hash = function hash (value) {
             value.$savedHash_ = value.tp$hash();
             return value.$savedHash_;
         } else {
-            if (value.__id === undefined) {
+            if (value.__hash === undefined) {
                 Sk.builtin.hashCount += 1;
-                value.__id = Sk.builtin.hashCount;
+                value.__hash = Sk.builtin.hashCount;
             }
-            return new Sk.builtin.int_(value.__id);
+            return new Sk.builtin.int_(value.__hash);
         }
     } else if (typeof value === "number" || value === null ||
         value === true || value === false) {
@@ -794,23 +795,30 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
 };
 
 Sk.builtin.setattr = function setattr (obj, name, value) {
-
     Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
-    if (!Sk.builtin.checkString(name)) {
-        throw new Sk.builtin.TypeError("attribute name must be string");
-    }
-    if (obj.tp$setattr) {
-        obj.tp$setattr(Sk.ffi.remapToJs(name), value);
-    } else {
-        throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+    // cannot set or del attr from builtin type
+    if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
+        if (!Sk.builtin.checkString(name)) {
+            throw new Sk.builtin.TypeError("attribute name must be string");
+        }
+        if (obj.tp$setattr) {
+            obj.tp$setattr(Sk.ffi.remapToJs(name), value);
+        } else {
+            throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+        }
+        return Sk.builtin.none.none$;
     }
 
-    return Sk.builtin.none.none$;
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
 
 Sk.builtin.raw_input = function (prompt) {
     var sys = Sk.importModule("sys");
     var lprompt = prompt ? prompt : "";
+
+    if (Sk.inputfunTakesPrompt) {
+        return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
+    }
 
     return Sk.misceval.chain(undefined, function () {
         return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(prompt));
@@ -1000,6 +1008,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
 Sk.builtin.hasattr = function hasattr (obj, attr) {
     Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
+    var special, ret;
     if (!Sk.builtin.checkString(attr)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
@@ -1008,7 +1017,26 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
         if (obj.tp$getattr(attr.v)) {
             return Sk.builtin.bool.true$;
         } else {
-            return Sk.builtin.bool.false$;
+            special = Sk.abstr.lookupSpecial(obj, "__getattr__");
+            if (special) {
+                ret = Sk.misceval.tryCatch(function () {
+                    var val = Sk.misceval.callsim(special, obj, attr);
+                    if (val) {
+                        return Sk.builtin.bool.true$;
+                    } else {
+                        return Sk.builtin.bool.false$;
+                    }
+                }, function(e) {
+                    if (e instanceof Sk.builtin.AttributeError) {
+                        return Sk.builtin.bool.false$;
+                    } else {
+                        throw e;
+                    }
+                });
+                return ret;
+            } else {
+                return Sk.builtin.bool.false$;
+            }
         }
     } else {
         throw new Sk.builtin.AttributeError("Object has no tp$getattr method");
@@ -1213,6 +1241,17 @@ Sk.builtin.reversed = function reversed (seq) {
     }
 };
 
+Sk.builtin.id = function (obj) {
+    Sk.builtin.pyCheckArgs("id", arguments, 1, 1);
+
+    if (obj.__id === undefined) {
+        Sk.builtin.idCount += 1;
+        obj.__id = Sk.builtin.idCount;
+    }
+
+    return new Sk.builtin.int_(obj.__id);
+};
+
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
 };
@@ -1227,9 +1266,37 @@ Sk.builtin.callable = function callable (obj) {
     return Sk.builtin.bool.false$;
 };
 
-Sk.builtin.delattr = function delattr () {
-    throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
+Sk.builtin.delattr = function delattr (obj, attr) {
+    Sk.builtin.pyCheckArgs("delattr", arguments, 2, 2);
+    if (obj["$d"][attr.v] !== undefined) {
+        var ret = Sk.misceval.tryCatch(function() {
+            var try1 = Sk.builtin.setattr(obj, attr, undefined);
+            return try1;
+        }, function(e) {
+            Sk.misceval.tryCatch(function() {
+                var try2 = Sk.builtin.setattr(obj["$d"], attr, undefined);
+
+                return try2;
+            }, function(e) {
+                if (e instanceof Sk.builtin.AttributeError) {
+                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+                } else {
+                    throw e;
+                }
+            });
+        });
+        return ret;
+    } // cannot set or del attr from builtin type
+    if (obj["$r"]().v.slice(1,5) !== "type") {
+        if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
+            obj[attr.v] = undefined;
+            return Sk.builtin.none.none$;
+        }
+        throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+    }
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
+
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
@@ -1284,9 +1351,6 @@ Sk.builtin.next_ = function next_ (iter, default_) {
     return nxt;
 };
 
-Sk.builtin.property = function property () {
-    throw new Sk.builtin.NotImplementedError("property is not yet implemented");
-};
 Sk.builtin.reload = function reload () {
     throw new Sk.builtin.NotImplementedError("reload is not yet implemented");
 };

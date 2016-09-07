@@ -216,7 +216,7 @@ Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     if (obj == null) {
         return this;
     }
-    return new Sk.builtin.method(this, obj);
+    return new Sk.builtin.method(this, obj, objtype);
 };
 Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var j;
@@ -241,6 +241,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
                 args.push(undefined);
             }
         }
+
         args.push(this.func_closure);
     }
 

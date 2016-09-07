@@ -424,6 +424,42 @@ class IntTestCases(unittest.TestCase):
         self.assertEqual(-3/2.0, -1.5)
         self.assertEqual(-3//2.0, -2.0)
 
+    def test_lshift_type(self):
+        # Bug #620: lshift of 0 should not become long
+        # 0 << 0
+        x = 0 << 0
+        self.assertEqual(x, 0)
+        self.assertIsInstance(x, int)
+
+        x = 0L << 0
+        self.assertEqual(x, 0L)
+        self.assertIsInstance(x, long)
+
+        # 0 <<        
+        x = 0 << 1
+        self.assertEqual(x, 0)
+        self.assertIsInstance(x, int)
+        x = 0 << 1000
+        self.assertEqual(x, 0)
+        self.assertIsInstance(x, int)
+
+        x = 0L << 1
+        self.assertEqual(x, 0L)
+        self.assertIsInstance(x, long)
+        x = 0L << 1000
+        self.assertEqual(x, 0L)
+        self.assertIsInstance(x, long)
+
+        # << 0
+        x = 1 << 0
+        self.assertEqual(x, 1)
+        self.assertIsInstance(x, int)
+
+        x = 1L << 0
+        self.assertEqual(x, 1L)
+        self.assertIsInstance(x, long)
+        
+
 class IntTest(unittest.TestCase):
     def test_int_inherited(self):
         class c:
