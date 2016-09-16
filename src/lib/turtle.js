@@ -1502,7 +1502,7 @@ function generateTurtleModule(_target) {
             _anonymousTurtle = _module.Turtle();
         }
 
-        return _anonymousTurtle;
+        return _anonymousTurtle.instance;
     }
 
     function getTarget() {
