@@ -819,31 +819,11 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-
     if (obj.tp$getattr !== undefined) {
-        f = obj.tp$getattr("__getattribute__");
+        ret = obj.tp$getattr(nameJS, canSuspend);
     }
 
-    if (f !== undefined) {
-        ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
-    }
-
-    ret = Sk.misceval.chain(ret, function(ret) {
-        var f;
-
-        if (ret === undefined && obj.tp$getattr !== undefined) {
-            ret = obj.tp$getattr(nameJS);
-
-            if (ret === undefined) {
-                f = obj.tp$getattr("__getattr__");
-
-                if (f !== undefined) {
-                    ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
-                }
-            }
-        }
-        return ret;
-    }, function(r) {
+    ret = Sk.misceval.chain(ret, function(r) {
         if (r === undefined) {
             throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
         }
@@ -854,6 +834,7 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
+
 Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
 
@@ -861,16 +842,8 @@ Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-    if (obj.tp$getattr !== undefined) {
-        setf = obj.tp$getattr("__setattr__");
-        if (setf !== undefined) {
-            r = Sk.misceval.callsimOrSuspend(setf, new Sk.builtin.str(nameJS), data);
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-        }
-    }
-
     if (obj.tp$setattr !== undefined) {
-        obj.tp$setattr(nameJS, data);
+        return obj.tp$setattr(nameJS, data, canSuspend);
     } else {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
