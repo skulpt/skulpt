@@ -27,6 +27,9 @@ var _tryGetSubscript = function(dict, pyName) {
 };
 
 /**
+ * Get an attribute
+ * @param {string} name JS name of the attribute
+ * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
 Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
@@ -84,6 +87,12 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
+/**
+ * @param {string} name
+ * @param {undefined} value
+ * @param {boolean=} canSuspend
+ * @return {undefined}
+ */
 Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
     var pyname;
@@ -152,6 +161,7 @@ Sk.builtin.object.prototype.tp$name = "object";
  */
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
+Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 
 /** Default implementations of dunder methods found in all Python objects */
 /**

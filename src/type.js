@@ -164,7 +164,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 if (init !== undefined) {
                     args.unshift(self);
                     return Sk.misceval.applyOrSuspend(init, undefined, undefined, kws, args);
-                } else if (newf === undefined && (args.length != 0 || kws.length != 0) && !inheritsBuiltin) {
+                } else if (newf === undefined && (args.length !== 0 || kws.length !== 0) && !inheritsBuiltin) {
                     // We complain about spurious constructor arguments if neither __new__
                     // nor __init__ were overridden
                     throw new Sk.builtin.TypeError("__init__() got unexpected argument(s)");
