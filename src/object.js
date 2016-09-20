@@ -170,10 +170,10 @@ Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure 
  * @memberOf Sk.builtin.object.prototype
  * @instance
  */
-Sk.builtin.object.prototype["__new__"] = function (args) {
-    Sk.builtin.pyCheckArgs("__new__", args, 1, 1, false, false);
+Sk.builtin.object.prototype["__new__"] = function (cls) {
+    Sk.builtin.pyCheckArgs("__new__", arguments, 1, 1, false, false);
 
-    return new args[0]([], []);
+    return new cls([], []);
 };
 
 /**
