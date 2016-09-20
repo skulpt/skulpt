@@ -213,7 +213,7 @@ goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 Sk.builtin.func.prototype.tp$name = "function";
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    if (obj == null) {
+    if (obj === Sk.builtin.none.none$) {
         return this;
     }
     return new Sk.builtin.method(this, obj, objtype);

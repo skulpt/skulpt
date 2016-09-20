@@ -314,7 +314,7 @@ class IntTestCases(unittest.TestCase):
             def __int__(self):
                 return 42.0
 
-        my_int = MyInt(7)
+        my_int = MyInt() #MyInt(7)
         # not possible due to unsupported subclassing
         #self.assertEqual(my_int, 7)
         self.assertEqual(int(my_int), 42)

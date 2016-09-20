@@ -52,7 +52,9 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": ["sq$length", 1]
+    "__len__": ["sq$length", 1],
+    "__get__": ["tp$descr_get", 3],
+    "__set__": ["tp$descr_set", 3]
 };
 
 /**
@@ -105,27 +107,19 @@ Sk.builtin.type = function (name, bases, dict) {
         // dict is the result of running the classes code object
         // (basically the dict of functions). those become the prototype
         // object of the class).
+
         /**
+        * The constructor is a stub, that gets called from object.__new__
         * @constructor
         */
-        klass = function (kwdict, varargseq, kws, args, canSuspend) {
-            var init;
-            var self = this;
-            var s;
+        klass = function (args, kws) {
             var args_copy;
-            if (!(this instanceof klass)) {
-                return new klass(kwdict, varargseq, kws, args, canSuspend);
-            }
 
-            args = args || [];
-            self["$d"] = new Sk.builtin.dict([]);
-            self["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), self["$d"]);
-
-            // TODO deal with __new__ properly. (Also, does this handle multiple inheritance?)
-
+            // Call up through the chain in case there's a built-in object
+            // whose constructor we need to initialise
             if (klass.prototype.tp$base !== undefined) {
                 if (klass.prototype.tp$base.sk$klass) {
-                    klass.prototype.tp$base.call(this, kwdict, varargseq, kws, args.slice(), canSuspend);
+                    klass.prototype.tp$base.call(this, args, kws);
                 } else {
                     // Call super constructor if subclass of a builtin
                     args_copy = args.slice();
@@ -134,25 +128,55 @@ Sk.builtin.type = function (name, bases, dict) {
                 }
             }
 
-            init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
-            if (init !== undefined) {
-                // TODO? return should be None or throw a TypeError otherwise
-                args.unshift(self);
-                // Regardless, we make sure we unconditionally return self, whatever __init__() returns
-                s = Sk.misceval.chain(
-                    Sk.misceval.applyOrSuspend(init, kwdict, varargseq, kws, args),
-                    function() { return self; }
-                );
-
-                return canSuspend ? s : Sk.misceval.retryOptionalSuspensionOrThrow(s);
-            }
-
-            return self;
+            this["$d"] = new Sk.builtin.dict([]);
+            this["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), this["$d"]);
         };
+
 
         var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
 
         var inheritsBuiltin = false;
+
+        // Invoking the class object calls __new__() to generate a new instance,
+        // then __init__() to initialise it
+        klass.tp$call = function(args, kws) {
+            var newf = Sk.builtin.type.typeLookup(klass, "__new__"), newargs;
+            var self;
+
+            args = args || [];
+            kws = kws || [];
+
+            if (newf === undefined || newf === Sk.builtin.object.prototype["__new__"]) {
+                // No override -> just call the constructor
+                self = new klass(args, kws);
+                newf = undefined;
+            } else {
+                newargs = args.slice();
+                newargs.unshift(klass);
+                self = Sk.misceval.applyOrSuspend(newf, undefined, undefined, kws, newargs);
+            }
+
+            return Sk.misceval.chain(self, function(s) {
+                var init = Sk.builtin.type.typeLookup(s.ob$type, "__init__");
+
+                self = s; // in case __new__ suspended
+
+                if (init !== undefined) {
+                    args.unshift(self);
+                    return Sk.misceval.applyOrSuspend(init, undefined, undefined, kws, args);
+                } else if (newf === undefined && (args.length != 0 || kws.length != 0) && !inheritsBuiltin) {
+                    // We complain about spurious constructor arguments if neither __new__
+                    // nor __init__ were overridden
+                    throw new Sk.builtin.TypeError("__init__() got unexpected argument(s)");
+                }
+            }, function(r) {
+                if (r !== Sk.builtin.none.none$ && r !== undefined) {
+                    throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(r));
+                } else {
+                    return self;
+                }
+            });
+        };
 
         if (bases.v.length === 0 && Sk.python3) {
             // new style class, inherits from object by default
@@ -165,15 +189,14 @@ Sk.builtin.type = function (name, bases, dict) {
             if (firstAncestor === undefined) {
                 firstAncestor = parent;
             }
-            if (parent.prototype instanceof Sk.builtin.object || parent === Sk.builtin.object) {
 
-                while (parent.sk$klass && parent.prototype.tp$base) {
-                    parent = parent.prototype.tp$base;
-                }
+            while (parent.sk$klass && parent.prototype.tp$base) {
+                parent = parent.prototype.tp$base;
+            }
 
-                if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0) {
-                    builtin_bases.push(parent);
-                }
+            if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0) {
+                builtin_bases.push(parent);
+                inheritsBuiltin = true;
             }
         }
 
@@ -215,9 +238,6 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__class__"] = klass;
         klass["__name__"] = name;
         klass.sk$klass = true;
-        klass.prototype.tp$descr_get = function () {
-            goog.asserts.fail("in type tp$descr_get");
-        };
         klass.prototype["$r"] = function () {
             var cname;
             var mod;
@@ -465,7 +485,7 @@ Sk.builtin.type["$r"] = function () {
 //Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
-Sk.builtin.type.prototype.tp$getattr = function (name) {
+Sk.builtin.type.prototype.tp$getattr = function (name, canSuspend) {
     var res;
     var tp = this;
     var descr;
@@ -482,14 +502,14 @@ Sk.builtin.type.prototype.tp$getattr = function (name) {
 
     //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
     if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
+        f = descr.tp$descr_get;
         // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
         // return f.call(descr, this, this.ob$type);
     }
 
     if (f) {
         // non-data descriptor
-        return f.call(descr, null, tp);
+        return f.call(descr, Sk.builtin.none.none$, tp, canSuspend);
     }
 
     if (descr !== undefined) {

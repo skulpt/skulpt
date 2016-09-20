@@ -29,7 +29,7 @@ var _tryGetSubscript = function(dict, pyName) {
 /**
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericGetAttr = function (name) {
+Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     var res;
     var f;
     var descr;
@@ -61,19 +61,13 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
-        if (!(f) && descr["__get__"]) {
-            f = descr["__get__"];
-            return Sk.misceval.callsimOrSuspend(f, descr, this, Sk.builtin.none.none$);
-        }
-        // todo;
-        // if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        // return f.call(descr, this, this.ob$type);
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_get;
+        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
 
         if (f) {
             // non-data descriptor
-            return f.call(descr, this, this.ob$type);
+            return f.call(descr, this, this.ob$type, canSuspend);
         }
     }
 
@@ -90,7 +84,7 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
-Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
+Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
     var pyname;
     var dict;
@@ -106,16 +100,12 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        //f = descr.ob$type.tp$descr_set;
-        if (descr["__set__"]) {
-            f = descr["__set__"];
-            Sk.misceval.callsimOrSuspend(f, descr, this, value);
-            return;
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_set;
+        // todo; is this the right lookup priority for data descriptors?
+        if (f) {
+            return f.call(descr, this, value, canSuspend);
         }
-        // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
     }
 
     if (dict.mp$ass_subscript) {
@@ -164,6 +154,17 @@ Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", 
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
 
 /** Default implementations of dunder methods found in all Python objects */
+/**
+ * Default implementation of __new__ just calls the class constructor
+ * @name  __new__
+ * @memberOf Sk.builtin.object.prototype
+ * @instance
+ */
+Sk.builtin.object.prototype["__new__"] = function (args) {
+    Sk.builtin.pyCheckArgs("__new__", args, 1, 1, false, false);
+
+    return new args[0]([], []);
+};
 
 /**
  * Python wrapper for `__repr__` method.
