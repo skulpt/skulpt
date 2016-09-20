@@ -243,9 +243,9 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$setattr = function(name, data, canSuspend) {
-            var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
+            var r, /** @type {(Object|undefined)} */ setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
             if (setf !== undefined) {
-                r = Sk.misceval.callsimOrSuspend(setf, new Sk.builtin.str(name), data);
+                r = Sk.misceval.callsimOrSuspend(/** @type {Object} */ (setf), new Sk.builtin.str(name), data);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
@@ -253,31 +253,31 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$getattr = function(name, canSuspend) {
-            var r, getf;
+            var r, /** @type {(Object|undefined)} */ getf;
             // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
             // convention
             var callCatchUndefined = function() {
                 return Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspend(getf, new Sk.builtin.str(name));
+                    return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new Sk.builtin.str(name));
                 }, function (e) {
                     if (e instanceof Sk.builtin.AttributeError) {
                         return undefined;
                     } else {
                         throw e;
                     }
-                })
+                });
             };
 
             getf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__getattribute__");
 
             if (getf !== undefined) {
-                r = callCatchUndefined(getf);
+                r = callCatchUndefined();
             } else {
                 r = Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
                 if (r === undefined) {
                     getf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__getattr__");
                     if (getf !== undefined) {
-                        r = callCatchUndefined(getf);
+                        r = callCatchUndefined();
                     }
                 }
             }
