@@ -1005,7 +1005,7 @@ class tzinfo(object):
             raise ValueError("fromutc() requires a non-None dst() result")
         delta = dtoff - dtdst
         if delta:
-            dt += delta
+            dt = dt + delta
             dtdst = dt.dst()
             if dtdst is None:
                 raise ValueError("fromutc(): dt.dst gave inconsistent "
