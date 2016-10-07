@@ -106,19 +106,42 @@ var $builtinmodule = function (name) {
      * constructs a Response.
      */
     request.urlopen = new Sk.builtin.func(function (url, data, timeout) {
-        var xmlhttp = new XMLHttpRequest();
+        var prom = new Promise(function(resolve, reject) {
+            var xmlhttp = new XMLHttpRequest();
 
-        if (!data) {
-          xmlhttp.open("GET", url.v, false);
-          xmlhttp.send(null);
-        } else {
-          xmlhttp.open("POST", url.v, false);
-          xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-          xmlhttp.setRequestHeader("Content-length", data.v.length);
-          xmlhttp.send(data.v);
-        }
+            xmlhttp.addEventListener("loadend", function (e) {
+                resolve(Sk.misceval.callsim(request.Response, xmlhttp));
+            });
 
-        return Sk.misceval.callsim(request.Response, xmlhttp)
+            if (!data) {
+                xmlhttp.open("GET", url.v);
+                xmlhttp.send(null);
+            } else {
+                xmlhttp.open("POST", url.v);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp.setRequestHeader("Content-length", data.v.length);
+                xmlhttp.send(data.v);
+            }
+        });
+
+        var susp = new Sk.misceval.Suspension();
+
+        susp.resume = function() {
+            return resolution;
+        };
+
+        susp.data = {
+            type: "Sk.promise",
+            promise: prom.then(function(value) {
+                resolution = value;
+                return value;
+            }, function(err) {
+                resolution = "";
+                return err;
+            })
+        };
+
+        return susp;
     });
 
 
