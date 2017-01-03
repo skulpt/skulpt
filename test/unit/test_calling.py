@@ -56,5 +56,20 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: o.f1(*[1, 2, 3], **{'y', 4}))
 
 
+# Test the interaction of free variables with kwargs
+def make_adder():
+    c = 42
+    def f(x):
+        return x + c
+    return f
+
+class ClosureTestCase(unittest.TestCase):
+    def test_closure_with_kwargs(self):
+        adder = make_adder()
+
+        self.assertEqual(adder(x=42), 84)
+
+
+
 if __name__ == "__main__":
     unittest.main()
