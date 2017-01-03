@@ -361,5 +361,39 @@ class RatTestCase(unittest.TestCase):
     # XXX Ran out of steam; TO DO: mod, future division
 
 
+
+class IntContainerNoOps(object):
+    def __init__(self, v):
+        self.v = v
+
+class IntContainerOps(IntContainerNoOps):
+    def __add__(self, x):
+        return self.__class__(self.v + x.v)
+
+class IntContainerIOps(IntContainerOps):
+    def __iadd__(self, x):
+        self.v += x.v
+        return self
+
+
+class IOpsTestCase(unittest.TestCase):
+    def check_ops(self, Cls, is_same = False):
+        self.assertEqual((Cls(2) + Cls(3)).v, 5)
+        # TODO other ops
+
+        x = Cls(2)
+        y = x
+        y += Cls(3)
+        self.assertEqual(y.v, 5)
+        self.assertIs(y, x) if is_same else self.assertIsNot(y, x)
+
+    def test_ops(self):
+        self.assertRaises(TypeError, lambda: IntContainerNoOps(2) + IntContainerNoOps(3))
+
+        self.check_ops(IntContainerOps, False)
+
+        #self.check_ops(IntContainerIOps, True)
+
+
 if __name__ == "__main__":
     unittest.main()
