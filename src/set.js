@@ -212,40 +212,46 @@ Sk.builtin.set.prototype["issuperset"] = new Sk.builtin.func(function (self, oth
 });
 
 Sk.builtin.set.prototype["union"] = new Sk.builtin.func(function (self) {
-    var S, new_args;
+    var S, i, new_args;
 
     Sk.builtin.pyCheckArgs("union", arguments, 1);
 
-    S = Sk.builtin.set.prototype["copy"].func_code(self),
-      new_args = Array.prototype.slice.call(arguments); //copy array
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
+    for (i = 1; i < arguments.length; i++) {
+        new_args.push(arguments[i]);
+    }
 
-    new_args[0] = S;
     Sk.builtin.set.prototype["update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
-    var S, new_args;
+    var S, i, new_args;
     
     Sk.builtin.pyCheckArgs("intersection", arguments, 1);
 
-    S = Sk.builtin.set.prototype["copy"].func_code(self),
-      new_args = Array.prototype.slice.call(arguments); //copy array
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
+    for (i = 1; i < arguments.length; i++) {
+        new_args.push(arguments[i]);
+    }
 
-    new_args[0] = S;
     Sk.builtin.set.prototype["intersection_update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, other) {
-    var S, new_args;
+    var S, i, new_args;
     
     Sk.builtin.pyCheckArgs("difference", arguments, 2);
 
-    S = Sk.builtin.set.prototype["copy"].func_code(self),
-      new_args = Array.prototype.slice.call(arguments); //copy array
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
+    for (i = 1; i < arguments.length; i++) {
+        new_args.push(arguments[i]);
+    }
 
-    new_args[0] = S;
     Sk.builtin.set.prototype["difference_update"].func_code.apply(null, new_args);
     return S;
 });
