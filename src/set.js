@@ -165,6 +165,12 @@ Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, oth
     // requires all items in self to not be in other
     var isIn;
     var it, item;
+
+    Sk.builtin.pyCheckArgs("isdisjoint", arguments, 2, 2);
+    if (!Sk.builtin.checkIterable(other)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
+    }
+
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         isIn = Sk.abstr.sequenceContains(other, item);
         if (isIn) {
@@ -177,8 +183,16 @@ Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, oth
 Sk.builtin.set.prototype["issubset"] = new Sk.builtin.func(function (self, other) {
     var isIn;
     var it, item;
-    var selfLength = self.sq$length();
-    var otherLength = other.sq$length();
+    var selfLength, otherLength;
+
+    Sk.builtin.pyCheckArgs("issubset", arguments, 2, 2);
+    if (!Sk.builtin.checkIterable(other)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
+    }
+
+    selfLength = self.sq$length();
+    otherLength = other.sq$length();
+
     if (selfLength > otherLength) {
         // every item in this set can't be in other if it's shorter!
         return Sk.builtin.bool.false$;
@@ -193,39 +207,61 @@ Sk.builtin.set.prototype["issubset"] = new Sk.builtin.func(function (self, other
 });
 
 Sk.builtin.set.prototype["issuperset"] = new Sk.builtin.func(function (self, other) {
+    Sk.builtin.pyCheckArgs("issuperset", arguments, 2, 2);
     return Sk.builtin.set.prototype["issubset"].func_code(other, self);
 });
 
 Sk.builtin.set.prototype["union"] = new Sk.builtin.func(function (self) {
-    var i;
-    var S = new Sk.builtin.set(self);
+    var S, i, new_args;
+
+    Sk.builtin.pyCheckArgs("union", arguments, 1);
+
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
     for (i = 1; i < arguments.length; i++) {
-        Sk.builtin.set.prototype["update"].func_code(S, arguments[i]);
+        new_args.push(arguments[i]);
     }
+
+    Sk.builtin.set.prototype["update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
-    var S = Sk.builtin.set.prototype["copy"].func_code(self),
-        new_args = Array.prototype.slice.call(arguments); //copy array
+    var S, i, new_args;
     
-    new_args[0] = S;
+    Sk.builtin.pyCheckArgs("intersection", arguments, 1);
+
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
+    for (i = 1; i < arguments.length; i++) {
+        new_args.push(arguments[i]);
+    }
+
     Sk.builtin.set.prototype["intersection_update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, other) {
-    var S = Sk.builtin.set.prototype["copy"].func_code(self),
-        new_args = Array.prototype.slice.call(arguments); //copy array
+    var S, i, new_args;
     
-    new_args[0] = S;
+    Sk.builtin.pyCheckArgs("difference", arguments, 2);
+
+    S = Sk.builtin.set.prototype["copy"].func_code(self);
+    new_args = [S];
+    for (i = 1; i < arguments.length; i++) {
+        new_args.push(arguments[i]);
+    }
+
     Sk.builtin.set.prototype["difference_update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["symmetric_difference"] = new Sk.builtin.func(function (self, other) {
-    var it, item;
-    var S = Sk.builtin.set.prototype["union"].func_code(self, other);
+    var it, item, S;
+
+    Sk.builtin.pyCheckArgs("symmetric_difference", arguments, 2, 2);
+
+    S = Sk.builtin.set.prototype["union"].func_code(self, other);
     for (it = Sk.abstr.iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {
             Sk.builtin.set.prototype["discard"].func_code(S, item);
@@ -235,20 +271,41 @@ Sk.builtin.set.prototype["symmetric_difference"] = new Sk.builtin.func(function 
 });
 
 Sk.builtin.set.prototype["copy"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("copy", arguments, 1, 1);
     return new Sk.builtin.set(self);
 });
 
 Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) {
-    var it, item;
-    for (it = Sk.abstr.iter(other), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        Sk.builtin.set.prototype["add"].func_code(self, item);
+    var i, it, item, arg;
+
+    Sk.builtin.pyCheckArgs("update", arguments, 2);
+
+    for (i = 1; i < arguments.length; i++) {
+        arg = arguments[i];
+        if (!Sk.builtin.checkIterable(arg)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
+        }
+        for (it = Sk.abstr.iter(arg), item = it.tp$iternext();
+             item !== undefined;
+             item = it.tp$iternext()) {
+            Sk.builtin.set.prototype["add"].func_code(self, item);
+        }
     }
+
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (self, other) {
-    var i;
-    var it, item;
+    var i, it, item;
+
+    Sk.builtin.pyCheckArgs("intersection_update", arguments, 2);
+    for (i = 1; i < arguments.length; i++) {
+        if (!Sk.builtin.checkIterable(arguments[i])) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
+                                           "' object is not iterable");
+        }
+    }
+
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (!Sk.abstr.sequenceContains(arguments[i], item)) {
@@ -261,8 +318,16 @@ Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (
 });
 
 Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (self, other) {
-    var i;
-    var it, item;
+    var i, it, item;
+
+    Sk.builtin.pyCheckArgs("difference_update", arguments, 2);
+    for (i = 1; i < arguments.length; i++) {
+        if (!Sk.builtin.checkIterable(arguments[i])) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
+                                           "' object is not iterable");
+        }
+    }
+
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (Sk.abstr.sequenceContains(arguments[i], item)) {
@@ -275,6 +340,8 @@ Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (se
 });
 
 Sk.builtin.set.prototype["symmetric_difference_update"] = new Sk.builtin.func(function (self, other) {
+    Sk.builtin.pyCheckArgs("symmetric_difference_update", arguments, 2, 2);
+
     var sd = Sk.builtin.set.prototype["symmetric_difference"].func_code(self, other);
     self.set_reset_();
     Sk.builtin.set.prototype["update"].func_code(self, sd);
@@ -283,11 +350,15 @@ Sk.builtin.set.prototype["symmetric_difference_update"] = new Sk.builtin.func(fu
 
 
 Sk.builtin.set.prototype["add"] = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("add", arguments, 2, 2);
+
     self.v.mp$ass_subscript(item, true);
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.set.prototype["discard"] = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("discard", arguments, 2, 2);
+
     Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
         Sk.builtin.none.none$);
     return Sk.builtin.none.none$;
@@ -295,6 +366,9 @@ Sk.builtin.set.prototype["discard"] = new Sk.builtin.func(function (self, item) 
 
 Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
     var it, item;
+
+    Sk.builtin.pyCheckArgs("pop", arguments, 1, 1);
+
     if (self.sq$length() === 0) {
         throw new Sk.builtin.KeyError("pop from an empty set");
     }
@@ -306,6 +380,8 @@ Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
+
     self.v.mp$del_subscript(item);
     return Sk.builtin.none.none$;
 });
