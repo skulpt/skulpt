@@ -18,6 +18,25 @@ class RTIMU:
     self._compass_enabled = True
     self._gyro_enabled = False
     self._accel_enabled = True
+    self._imu_data = {
+      'accel':            (0.0, 0.0, 0.0),
+      'accelValid':       False,
+      'compass':          (0.0, 0.0, 0.0),
+      'compassValid':     False,
+      'fusionPose':       (0.0, 0.0, 0.0),
+      'fusionPoseValid':  False,
+      'fusionQPose':      (0.0, 0.0, 0.0, 0.0),
+      'fusionQPoseValid': False,
+      'gyro':             (0.0, 0.0, 0.0),
+      'gyroValid':        False,
+      'humidity':         float('nan'),
+      'humidityValid':    False,
+      'pressure':         float('nan'),
+      'pressureValid':    False,
+      'temperature':      float('nan'),
+      'temperatureValid': False,
+      'timestamp':        0,
+      }
   
   def IMUInit(self):
     """
@@ -26,50 +45,93 @@ class RTIMU:
     """
     return True
 
-  def IMUGyroBiasValid(self):
-      return True
-
-  def getCompassCalibrationValid(self):
-      return True
-
-  def getCompassCalibrationEllipsoidValid(self):
-      return True
-
-  def getAccelCalibrationValid(self):
-      return True
-
-  def IMUGyroBiasValid(self):
-      return True
-
-  def resetFusion(self):
-      """
-      Return true if valid bias
-      :return:
-      """
-      pass
-
-  def setSlerPower(self):
-      """
-      Enable or disable Gyro reading
-      :return:
-      """
-      pass
-
-  def setGyroEnable(selfs):
-      pass
-
-  def setAccelEnable(self):
-      pass
-
-  def setCompassEnable(self):
-      pass
-
   def IMUGetPollInterval(self):
     """
-      Get the recommended poll interval in mS
+      Get the recommended poll interval in ms
     """
-    return 1
+    return 3
+
+  def IMUGyroBiasValid(self):
+    raise NotImplementedError
+
+  def IMURead(self):
+    # ToDo: https://github.com/RPi-Distro/python-sense-emu/blob/master/sense_emu/RTIMU.py#L96
+    return 3 # long
+
+  def IMUName(self):
+    return "LSM9DS1"
     
+  def IMUType(self):
+    return 6 # 6 in real units
+
+  def getAccel(self):
+    return self._imu_data['accel']
+
+  def getAccelCalibrationValid(self):
+    raise NotImplementedError
+
+  def getAccelResiduals(self):
+    raise NotImplementedError
+
+  def getCompass(self):
+    return self._imu_data['compass']
+
+  def getCompassCalibrationValid(self):
+    raise NotImplementedError
+
+  def getCompassCalibrationEllipsoidValid(self):
+    raise NotImplementedError
+
+  def getFusionData(self):
+    return self._imu_data['fusionPose']
+
+  def getGyro(self):
+    return self._imu_data['gyro']
+
+  def resetFusion(self):
+    """
+    Return true if valid bias
+    :return:
+    """
+    pass
+
+  def setSlerPower(self):
+    """
+    Enable or disable Gyro reading
+    :return:
+    """
+    pass
+  
+  def getIMUData(self):
+    # ToDo: https://github.com/RPi-Distro/python-sense-emu/blob/master/sense_emu/RTIMU.py#L153
+    """
+      https://github.com/richards-tech/RTIMULib2/blob/master/Linux/python/PyRTIMU_RTIMU.cpp#L189
+    """
+    return {
+      "timestamp": time.time(),
+      "fusionPoseValid": True,
+      "fusionPose": self._getFusionPose(),
+      "fusionQPoseValid": True,
+      "gyroValid": False,
+      "gyro": _ish.gyroRead(),
+      "accelValid": True,
+      "accel": _ish.accelRead(),
+      "compassValid": False,
+      "compass": _ish.compassRead(),
+      "pressureValid": True,
+      "pressure": _ish.pressureRead(),
+      "temperatureValid": True,
+      "temperature": _ish.temperatureRead(),
+      "humidityValid": True,
+      "humidity": _ish.humidityRead()
+    }
+
+  def getMeasuredPose(self):
+    raise NotImplementedError
+
+  def getMeasuredQPose(self):
+    raise NotImplementedError
+
   def setCompassEnable(self, enabled):
     self._compass_enabled = enabled
   
@@ -77,46 +139,14 @@ class RTIMU:
     self._gyro_enabled = enabled
     
   def setAccelEnable(self, enabled):
-    self._accel_enabled = enabled
-    
-  def IMURead(self):
-    return 3 # long
-  
-  def IMUName(self):
-    return "DUNNO"
-    
-  def IMUType(self):
-    return 1234556 #long
-    
-  def getIMUData(self):
-    """
-      https://github.com/richards-tech/RTIMULib2/blob/master/Linux/python/PyRTIMU_RTIMU.cpp#L189
-    """
-    return {
-        "timestamp": time.time(),
-        "fusionPoseValid": True,
-        "fusionPose": self._getFusionPose(),
-        "fusionQPoseValid": True,
-        "gyroValid": False,
-        "gyro": _ish.gyroRead(),
-        "accelValid": True,
-        "accel": _ish.accelRead(),
-        "compassValid": False,
-        "compass": _ish.compassRead(),
-        "pressureValid": True,
-        "pressure": _ish.pressureRead(),
-        "temperatureValid": True,
-        "temperature": _ish.temperatureRead(),
-        "humidityValid": True,
-        "humidity": _ish.humidityRead()
-        }
-  
+    self._accel_enabled = enabled  
+
   def _getFusionPose(self):
-      if self._accel_enabled == False and self._gyro_enabled == False:
-          # ToDo: special compass only handling for yaw data
-          return _ish.fusionPoseRead()
-          
+    if self._accel_enabled == False and self._gyro_enabled == False:
+      # ToDo: special compass only handling for yaw data
       return _ish.fusionPoseRead()
+        
+    return _ish.fusionPoseRead()
 
 class RTPressure:
   def __init__(self, imu_settings):
@@ -130,10 +160,10 @@ class RTPressure:
     return _ish.pressureRead();
   
   def pressureName(self):
-    return "DUNNO"
+    return "LPS25H"
     
   def pressureType(self):
-    return 1234 # long
+    return 3 # long
     
 class RTHumidity:
   """
@@ -159,13 +189,13 @@ class RTHumidity:
     """
       Get the type code of the humidity sensor
     """
-    return 12345 # long
+    return 2 # long
 
   def humidityName(self):
     """
       Get the name of the humidity sensor
     """
-    return "DUNNO"
+    return "HTS221"
 
 class Settings:
   def __init__(self, settings_path):
@@ -923,7 +953,7 @@ class SenseHat(object):
         radians using the aircraft principal axes of pitch, roll and yaw
         """
         # orientaiton radians
-        # yaw: alpha, pitch: gamma, roll: beta
+        # yaw: alpha (z), pitch: gamma (y), roll: beta (x)
         raw = self._get_raw_data('fusionPoseValid', 'fusionPose')
 
         if raw is not None:
