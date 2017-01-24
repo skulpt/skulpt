@@ -38,6 +38,11 @@ function onLoad(event) {
     var Y = new Geometry.Vector(0, 1, 0);
     var Z = new Geometry.Vector(0, 0, 1);
 
+    var ACCEL_FACTOR = 4081.6327;
+    var GYRO_FACTOR = 57.142857;
+    var COMPASS_FACTOR = 7142.8571;
+    var ORIENT_FACTOR = 5214.1892;
+
      /**
      * Handle device orientation changes (actually we should compute the orientation from compass and accelerometer)
      */
@@ -60,8 +65,8 @@ function onLoad(event) {
 
         // calculate gyro, by reading the rate of change of the orientation
         var _gyro = Geometry.vectorSubstraction(new_orientation, old_orientation);
-        _gyro = _gyro.divide(time_delta);
-        console.log('new gyro data', _gyro);
+        _gyro = _gyro.divide(time_delta).asArray();
+        //console.log('new gyro data', _gyro);
 
         var _gravity = Z.asArray();
         var _north = X.multiply(0.33).asArray();
@@ -108,8 +113,41 @@ function onLoad(event) {
 
         var _accel = dot3x3and3x1(T, _gravity);
         var _compass = dot3x3and3x1(T, _north);
+        //console.info(vecToStr(_accel), vecToStr(_gyro), vecToStr(_compass));
+        function clamp(value, min_value, max_value) {
+            return Math.min(max_value, Math.max(min_value, value))
+        }
 
-        console.log('accel and compass', _accel, _compass);
+        function int(val) {
+            return val | 0;
+        }
+
+        function vecToStr(arr) {
+            return "(" + arr[0] + ", " + arr[1] + ", " + arr[2] + ")";
+        }
+
+        var accel=[
+            int(clamp(_accel[0], -8, 8) * ACCEL_FACTOR),
+            int(clamp(_accel[1], -8, 8) * ACCEL_FACTOR),
+            int(clamp(_accel[2], -8, 8) * ACCEL_FACTOR),
+        ];
+        var gyro=[
+            int(clamp(_gyro[0], -500, 500) * GYRO_FACTOR),
+            int(clamp(_gyro[1], -500, 500) * GYRO_FACTOR),
+            int(clamp(_gyro[2], -500, 500) * GYRO_FACTOR),
+        ];
+        var compass=[
+            int(clamp(_compass[0], -4, 4) * COMPASS_FACTOR),
+            int(clamp(_compass[1], -4, 4) * COMPASS_FACTOR),
+            int(clamp(_compass[2], -4, 4) * COMPASS_FACTOR),
+        ];
+        //var orient=[
+        //    int(clamp(orient[0], -180, 180) * ORIENT_FACTOR),
+        //    int(clamp(orient[1], -180, 180) * ORIENT_FACTOR),
+        //    int(clamp(orient[2], -180, 180) * ORIENT_FACTOR),
+        //];
+        
+        console.error(vecToStr(accel), vecToStr(gyro), vecToStr(compass));
 
         window.sense_hat.rtimu.timestamp = new_timestamp;
     }
