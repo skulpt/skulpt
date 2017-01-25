@@ -86,6 +86,13 @@ Geometry.Vector.prototype = {
     }
 }
 
+Geometry.Vector.fromArray = function (arr) {
+    if (arr == null || arr.length !== 3) {
+        throw new Error("Expected an array with 3 elements");
+    }
+    return new Geometry.Vector(arr[0], arr[1], arr[2]);
+}
+
 /**
  * Caclucate angle from 2 vectors
  */
@@ -109,7 +116,15 @@ Geometry.vectorSubstraction = function(u, v) {
 }
 
 Geometry.degToRad = function(deg) {
-    return deg * (Math.PI / 180); // we could use constants here
+    if (deg instanceof Geometry.Vector) {
+        return new Geometry.Vector(
+            Geometry.degToRad(deg.x),
+            Geometry.degToRad(deg.y),
+            Geometry.degToRad(deg.z)
+        );
+    } else {
+        return deg * (Math.PI / 180); // we could use constants here
+    }
 }
 
 Geometry.radToDeg = function(rad) {
@@ -127,74 +142,235 @@ Geometry.crossProduct = function(u, v) {
     return new Geometry.Vector(x, y, z);
 }
 
-Geometry.EulerAngles = function(alpha, beta, gamma) {
-    this.alpha = alpha;
-    this.beta = beta;
-    this.gamma = gamma;
+Geometry.EulerAngles = function(yaw, roll, pitch) {
+    this.yaw = yaw;
+    this.roll = roll;
+    this.pitch = pitch;
 }
 
 /**
  * Caclucate euler angles from a rotation matrix
  */
 Geometry.EulerAngles.fromRotationMatrix = function(rotationMatrix) {
-    var beta = Math.atan2(rotationMatrix.m23, rotationMatrix.m33);
-    var gamma = Math.atan2(-rotationMatrix.m13, Math.sqrt(rotationMatrix.m11 * rotationMatrix.m11 + rotationMatrix.m12 * rotationMatrix.m12));
-    var alpha = Math.atan2(rotationMatrix.m12, rotationMatrix.m11);
-    return new Geometry.EulerAngles(Geometry.radToDeg(alpha), Geometry.radToDeg(beta), Geometry.radToDeg(gamma));
+    var roll = Math.atan2(rotationMatrix.m23, rotationMatrix.m33);
+    var pitch = Math.atan2(-rotationMatrix.m13, Math.sqrt(rotationMatrix.m11 * rotationMatrix.m11 + rotationMatrix.m12 * rotationMatrix.m12));
+    var yaw = Math.atan2(rotationMatrix.m12, rotationMatrix.m11);
+    return new Geometry.EulerAngles(Geometry.radToDeg(yaw), Geometry.radToDeg(roll), Geometry.radToDeg(pitch));
 }
+
+        /**
+         * Transpose a 3 by 3 array matrix 
+         */
+Geometry.transpose3x3Array = function(a) {
+    return a[0].map(function(x,i) {
+        return a.map(function(y,k) {
+            return y[i];
+        })
+    });
+}
+
+Geometry.dot3x3and3x1 = function(a, b) {
+    var rs = [];
+
+    rs[0] = a[0][0]*b[0] + a[0][1] * b[1] + a[0][2] * b[2]; 
+    rs[1] = a[1][0]*b[0] + a[1][1] * b[1] + a[1][2] * b[2]; 
+    rs[2] = a[2][0]*b[0] + a[2][1] * b[1] + a[2][2] * b[2]; 
+    
+    return rs;
+}
+
+Geometry.clamp = function(value, min_value, max_value) {
+    return Math.min(max_value, Math.max(min_value, value))
+}
+
+Geometry.int = function(value) {
+    return value | 0;
+}
+
+// Default "vectors" that are used multiple times
+Geometry.Defaults = {};
+Geometry.Defaults.O = new Geometry.Vector(0, 0, 0);
+Geometry.Defaults.X = new Geometry.Vector(1, 0, 0);
+Geometry.Defaults.Y = new Geometry.Vector(0, 1, 0);
+Geometry.Defaults.Z = new Geometry.Vector(0, 0, 1);
+
+Geometry.Defaults.NORTH = Geometry.Defaults.X.multiply(0.33);
 
 /**
  * Stores the alpha, beta, gamma (yaw, pitch, roll) values
  * and creates a timestamp on object creation
  */
-function DeviceOrientation(alpha, beta, gamma) {
-    this.alpha = alpha;
-    this.beta = beta;
-    this.gamma = gamma;
-    this.timestamp = DeviceOrientation.getTimestamp(); // always create a timestamp
+window.IMUData = function() {
+    // Init with defaults
+    this._orientation = Geometry.Defaults.O;
+    this._compass = Geometry.Defaults.O;
+    this._gyro = Geometry.Defaults.O;
+    this._accel = Geometry.Defaults.O;
+    this._position = Geometry.Defaults.O;
+
+    this._gravity = Geometry.Defaults.Z;
+    this._north = Geometry.Defaults.NORTH;
+
+    this.timestamp = IMUData.getTimestamp(); // always create a timestamp
 }
 
+IMUData.ACCEL_FACTOR = 4081.6327;
+IMUData.GYRO_FACTOR = 57.142857;
+IMUData.COMPASS_FACTOR = 7142.8571;
+IMUData.ORIENT_FACTOR = 5214.1892;
+
 /**
- * Return the current orientation as x,y,z vector
+ * Updates the orientation and calculates the compass, gyro and accel
  * 
- * Using the following mapping: g:  yaw: alpha (z), pitch: gamma (y), roll: beta (x)
+ * @param {Object} orientation with alpha, beta, gamma keys
+ * @param {any} position
  */
-DeviceOrientation.prototype.asVector = function() {
-    return new Geometry.Vector(this.beta, this.gamma, this.alpha);
+IMUData.prototype.setOrientation = function(orientation, position) {
+    if (position == null) {
+        position = Geometry.Defaults.O;
+    }
+
+    if (!(orientation instanceof Geometry.Vector)) {
+        orientation = new Geometry.Vector(orientation.x, orientation.y, orientation.z);
+    }
+
+    var oldOrientation = this._orientation;
+    var oldPosition = this._position;
+    var oldTimestamp = this.timestamp;
+
+    this._orientation = orientation;
+    this._position = position;
+
+    var newTimestamp = IMUData.getTimestamp();
+
+    var timeDelta = (newTimestamp - oldTimestamp) / 1000000;
+
+    // calculate gyro, by reading the rate of change of the orientation
+    this._gyro = Geometry.vectorSubstraction(this._orientation, oldOrientation).divide(timeDelta);
+
+    var x = Geometry.degToRad(this._orientation.x);
+    var y = Geometry.degToRad(this._orientation.y);
+    var z = Geometry.degToRad(this._orientation.z);
+
+    var c1 = Math.cos(z);
+    var c2 = Math.cos(y);
+    var c3 = Math.cos(x);
+    var s1 = Math.sin(z);
+    var s2 = Math.sin(y);
+    var s3 = Math.sin(x);
+
+    var R = [
+        [c1 * c2, c1 * s2 * s3 - c3 * s1, s1 * s3 + c1 * c3 * s2],
+        [c2 * s1, c1 * c3 + s1 * s2 * s3, c3 * s1 * s2 - c1 * s3],
+        [-s2,     c2 * s3,                c2 * c3],
+    ]
+
+    var T = Geometry.transpose3x3Array(R);
+
+    this._accel = Geometry.dot3x3and3x1(T, this._gravity.asArray());
+    this._accel = new Geometry.Vector(this._accel[0], this._accel[1], this._accel[2]);
+    this._compass = Geometry.dot3x3and3x1(T, this._north.asArray());
+    this._compass = new Geometry.Vector(this._compass[0], this._compass[1], this._compass[2]);
 }
 
-window.DeviceOrientation = DeviceOrientation;
+/**
+ * Returns the current imudata in an object as array values and with a timestamp
+ * 
+ * @returns
+ */
+IMUData.prototype.read = function() {
+    var orient = Geometry.degToRad(this._orientation).asArray();
+    var accel = this._accel.asArray();
+    var gyro = this._gyro.asArray();
+    var compass = this._compass.asArray();
+
+    accel=[
+        Geometry.int(Geometry.clamp(this._accel[0], -8, 8) * IMUData.ACCEL_FACTOR),
+        Geometry.int(Geometry.clamp(this._accel[1], -8, 8) * IMUData.ACCEL_FACTOR),
+        Geometry.int(Geometry.clamp(this._accel[2], -8, 8) * IMUData.ACCEL_FACTOR),
+    ];
+    gyro=[
+        Geometry.int(Geometry.clamp(this._gyro[0], -500, 500) * IMUData.GYRO_FACTOR),
+        Geometry.int(Geometry.clamp(this._gyro[1], -500, 500) * IMUData.GYRO_FACTOR),
+        Geometry.int(Geometry.clamp(this._gyro[2], -500, 500) * IMUData.GYRO_FACTOR),
+    ];
+    compass=[
+        Geometry.int(Geometry.clamp(this._compass[0], -4, 4) * IMUData.COMPASS_FACTOR),
+        Geometry.int(Geometry.clamp(this._compass[1], -4, 4) * IMUData.COMPASS_FACTOR),
+        Geometry.int(Geometry.clamp(this._compass[2], -4, 4) * IMUData.COMPASS_FACTOR),
+    ];
+    orient=[
+        Geometry.int(Geometry.clamp(orient[0], -180, 180) * IMUData.ORIENT_FACTOR),
+        Geometry.int(Geometry.clamp(orient[1], -180, 180) * IMUData.ORIENT_FACTOR),
+        Geometry.int(Geometry.clamp(orient[2], -180, 180) * IMUData.ORIENT_FACTOR),
+    ];
+
+    return {
+        accel: accel,
+        gyro: gyro,
+        compass: compass,
+        orient: orient,
+        timestamp: this.timestamp
+    };
+}
 
 /**
- * Validate user input, returns DeviceOrientation or null
+ * Returns the current orientation in yaw, pitch, beta
+ * 
+ * @returns
  */
-DeviceOrientation.parseUserInput = function (alphaString, betaString, gammaString) {
+IMUData.prototype.getOrientation = function() {
+    // ToDo: yaw: alpha (z), pitch: gamma (y), roll: beta (x)
+    return {
+        yaw: this._orientation.z / Geometry.Defaults.ORIENT_FACTOR,
+        pitch: this._orientation.y / Geometry.Defaults.ORIENT_FACTOR,
+        roll: this._orientation.x / Geometry.Defaults.ORIENT_FACTOR
+    };
+}
+
+IMUData.YRP2ZXYObj = function (yrp) {
+    return {
+        x: yrp.roll,
+        y: yrp.pitch,
+        z: yrp.yaw
+    };
+}
+
+/**
+ * Validate user input, returns IMUData or null
+ */
+IMUData.parseUserInput = function (yawString, rollString, pitchString) {
     function isUserInputValid(value) {
         if (!value)
             return true;
         return /^[-]?[0-9]*[.]?[0-9]*$/.test(value);
     }
 
-    if (!alphaString && !betaString && !gammaString) {
+    if (!yawString && !rollString && !pitchString) {
         return null;
     }
 
-    var isAlphaValid = isUserInputValid(alphaString);
-    var isBetaValid = isUserInputValid(betaString);
-    var isGammaValid = isUserInputValid(gammaString);
+    var isYawValid = isUserInputValid(yawString);
+    var isRollValid = isUserInputValid(rollString);
+    var isPitchValid = isUserInputValid(pitchString);
 
-    if (!isAlphaValid && !isBetaValid && !isGammaValid) {
+    if (!isYawValid && !isRollValid && !isPitchValid) {
         return null;
     }
 
-    var alpha = isAlphaValid ? parseFloat(alphaString) : -1;
-    var beta = isBetaValid ? parseFloat(betaString) : -1;
-    var gamma = isGammaValid ? parseFloat(gammaString) : -1;
+    var yaw = isYawValid ? parseFloat(yawString) : -1;
+    var roll = isRollValid ? parseFloat(rollString) : -1;
+    var pitch = isPitchValid ? parseFloat(pitchString) : -1;
 
-    return new DeviceOrientation(alpha, beta, gamma);
+    // Return object with the values
+    return {
+        yaw: yaw, 
+        roll: roll, 
+        pitch: pitch
+    };
 }
 
-DeviceOrientation.getTimestamp = function () {
+IMUData.getTimestamp = function () {
     // Return a common timestamp in microseconds
     var time = Date.now(); // millis
     var timestamp = (time * 1000) | 0; // microseconds and forced int
@@ -202,14 +378,14 @@ DeviceOrientation.getTimestamp = function () {
 }
 
 /**
- * DeviceOrientationInput class
+ * IMUInput class
  */
-function DeviceOrientationInput(elements, options) {
+function IMUInput(elements, options) {
     this._stageElement = elements.stageElement;
     this._boxElement =  elements.boxElement;
-    this._alphaElement =  elements.alphaInput;
-    this._betaElement =  elements.betaInput;
-    this._gammaElement =  elements.gammaInput;
+    this._yawElement =  elements.yawInput;
+    this._rollElement =  elements.rollInput;
+    this._pitchElement =  elements.pitchInput;
     
     this._resetButton =  elements.resetButton;
     
@@ -217,19 +393,18 @@ function DeviceOrientationInput(elements, options) {
     this._currentMatrix;
     this._isDragging = false;
     
-    var deviceOrientation;
-    if (options && options.deviceOrientation && options.deviceOrientation instanceof DeviceOrientation) {
-        deviceOrientation = options.deviceOrientation;
+    if (options && options.imuData && options.imuData instanceof IMUData) {
+        this.imuData = options.imuData;
     } else {
-        deviceOrientation = new DeviceOrientation(0, 0, 0);
+        this.imuData = new IMUData();
     }
     
     this.options = options;
     
-    this._setDeviceOrientation(deviceOrientation, 'InitialInput');
+    this._setIMUValues(this.imuData, 'InitialInput');
 }
 
-DeviceOrientationInput.getEventX = function(event) {
+IMUInput.getEventX = function(event) {
     if (event.x) {
         return event.x;
     }
@@ -239,7 +414,7 @@ DeviceOrientationInput.getEventX = function(event) {
     }
 }
 
-DeviceOrientationInput.getEventY = function(event) {
+IMUInput.getEventY = function(event) {
     if (event.y) {
         return event.y;
     }
@@ -249,17 +424,17 @@ DeviceOrientationInput.getEventY = function(event) {
     }
 }
 
-DeviceOrientationInput.prototype.bindToEvents = function() {
+IMUInput.prototype.bindToEvents = function() {
     //Drag.installDragHandle(this._stageElement, this._onBoxDragStart.bind(this), this._onBoxDrag.bind(this), this._onBoxDragEnd.bind(this), "move");
     this._dragHandle();
-    this._resetButton.addEventListener('click', this._resetDeviceOrientation.bind(this));
+    this._resetButton.addEventListener('click', this._resetOrientation.bind(this));
     
-    this._alphaElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
-    this._betaElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
-    this._gammaElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
+    this._yawElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
+    this._rollElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
+    this._pitchElement.addEventListener('input', this._applyDeviceOrientationUserInput.bind(this));
 }
 
-DeviceOrientationInput.prototype._dragHandle = function() {
+IMUInput.prototype._dragHandle = function() {
     function isMac() {
         return navigator.platform === 'MacIntel' || navigator.platform === 'MacPPC' || navigator.platform === 'Mac68K';
     }
@@ -350,7 +525,7 @@ DeviceOrientationInput.prototype._dragHandle = function() {
 /**
  * Calculate radius vector after dragging
  */
-DeviceOrientationInput.prototype._calculateRadiusVector = function (x, y) {
+IMUInput.prototype._calculateRadiusVector = function (x, y) {
     var rect = this._stageElement.getBoundingClientRect();
     var radius = Math.max(rect.width, rect.height) / 2;
     var sphereX = (x - rect.left - rect.width / 2) / radius;
@@ -362,12 +537,12 @@ DeviceOrientationInput.prototype._calculateRadiusVector = function (x, y) {
     return new Geometry.Vector(sphereX, sphereY, Math.sqrt(1 - sqrSum));
 };
 
-DeviceOrientationInput.prototype._onBoxDragEnd = function() {
+IMUInput.prototype._onBoxDragEnd = function() {
     this._boxMatrix = this._currentMatrix;
 };
 
-DeviceOrientationInput.prototype._onBoxDragStart = function (event) {
-    this._mouseDownVector = this._calculateRadiusVector(DeviceOrientationInput.getEventX(event), DeviceOrientationInput.getEventY(event));
+IMUInput.prototype._onBoxDragStart = function (event) {
+    this._mouseDownVector = this._calculateRadiusVector(IMUInput.getEventX(event), IMUInput.getEventY(event));
 
     if (!this._mouseDownVector)
         return false;
@@ -376,7 +551,7 @@ DeviceOrientationInput.prototype._onBoxDragStart = function (event) {
     return true;
 };
 
-DeviceOrientationInput._matrixToCSSString = function (matrix) {
+IMUInput._matrixToCSSString = function (matrix) {
     function generateCSSString(matrix){
         var str = '';
         str += matrix.m11.toFixed(20) + ',';
@@ -411,8 +586,8 @@ DeviceOrientationInput._matrixToCSSString = function (matrix) {
     return matrix.toString();
 }
 
-DeviceOrientationInput.prototype._onBoxDrag = function(event) {
-    var mouseMoveVector = this._calculateRadiusVector(DeviceOrientationInput.getEventX(event), DeviceOrientationInput.getEventY(event));
+IMUInput.prototype._onBoxDrag = function(event) {
+    var mouseMoveVector = this._calculateRadiusVector(IMUInput.getEventX(event), IMUInput.getEventY(event));
     if (!mouseMoveVector)
         return true;
 
@@ -426,7 +601,7 @@ DeviceOrientationInput.prototype._onBoxDrag = function(event) {
     this._currentMatrix = rotationMatrix.multiply(this._boxMatrix);
     
     // Crossbrowser and cross locale way of outputing the string
-    var matrixString = DeviceOrientationInput._matrixToCSSString(this._currentMatrix);
+    var matrixString = IMUInput._matrixToCSSString(this._currentMatrix);
     
     this._boxElement.style.webkitTransform = matrixString;
     this._boxElement.style.mozTransform = matrixString;
@@ -434,21 +609,21 @@ DeviceOrientationInput.prototype._onBoxDrag = function(event) {
     
     var eulerAngles = Geometry.EulerAngles.fromRotationMatrix(this._currentMatrix);
     
-    var newOrientation = new DeviceOrientation(-eulerAngles.alpha, -eulerAngles.beta, eulerAngles.gamma);
-    
-    this._setDeviceOrientation(newOrientation, "UserDrag");
+    this.imuData.setOrientation(IMUData.YRP2XYZObj(-eulerAngles.yaw, -eulerAngles.roll, eulerAngles.pitch));
+
+    this._setIMUValues(this.imuData, "UserDrag");
     return false;
 };
 
 /**
  * Update the draggable box position after user input
  */
-DeviceOrientationInput.prototype._setBoxOrientation = function(deviceOrientation) {
+IMUInput.prototype._setBoxOrientation = function(orientation) {
     var matrix = Geometry.Matrix();
     
-    this._boxMatrix = matrix.rotate(-deviceOrientation.beta, deviceOrientation.gamma, -deviceOrientation.alpha);
+    this._boxMatrix = matrix.rotate(-orientation.roll, orientation.pitch, -orientation.alpha);
     
-     var matrixString = DeviceOrientationInput._matrixToCSSString(this._boxMatrix);
+     var matrixString = IMUInput._matrixToCSSString(this._boxMatrix);
     this._boxElement.style.webkitTransform = matrixString;
     this._boxElement.style.mozTransform = matrixString;
     this._boxElement.style.transform = matrixString;
@@ -457,36 +632,47 @@ DeviceOrientationInput.prototype._setBoxOrientation = function(deviceOrientation
 /**
  * Handle user input
  */
-DeviceOrientationInput.prototype._applyDeviceOrientationUserInput = function(event) {
+IMUInput.prototype._applyDeviceOrientationUserInput = function(event) {
     event.preventDefault();
-    this._setDeviceOrientation(DeviceOrientation.parseUserInput(this._alphaElement.value.trim(), this._betaElement.value.trim(), this._gammaElement.value.trim()), "UserInput");
+    var yrp = IMUData.parseUserInput(this._yawElement.value.trim(), this._rollElement.value.trim(), this._pitchElement.value.trim());
+    this.imuData.setOrientation(IMUData.YRP2ZXYObj(yrp));
+
+    this._setIMUValues(this.imuData, "UserInput");
 }
 
 /**
  * Resets the orientation to (0, 0, 0)
  */
-DeviceOrientationInput.prototype._resetDeviceOrientation = function(event) {
+IMUInput.prototype._resetOrientation = function(event) {
     event.preventDefault();
-    this._setDeviceOrientation(new DeviceOrientation(0, 0, 0), "ResetButton");
+    this.imuData.setOrientation({
+        x: 0,
+        y: 0,
+        z: 0
+    });
+    this._setIMUValues(this.imuData, "ResetButton");
 }
 
 /**
  * Sets the device orientation after a change
  */
-DeviceOrientationInput.prototype._setDeviceOrientation = function(deviceOrientation, modificationSource) {
-    if (!deviceOrientation)
+IMUInput.prototype._setIMUValues = function(imuData, modificationSource) {
+    if (imuData == null)
+        // This should never happen, basically
         return;
 
+    var orientation = imuData.getOrientation();
+
     if (modificationSource != "UserInput") {
-        this._alphaElement.value = deviceOrientation.alpha;
-        this._betaElement.value = deviceOrientation.beta;
-        this._gammaElement.value = deviceOrientation.gamma;
+        this._yawElement.value = orientation.yaw;
+        this._rollElement.value = orientation.roll;
+        this._pitchElement.value = orientation.pitch;
     }
 
     if (modificationSource != "UserDrag")
-        this._setBoxOrientation(deviceOrientation);
+        this._setBoxOrientation(orientation);
 
-    if (this.options && this.options.onDeviceOrientationChange) {
-        this.options.onDeviceOrientationChange.call(null, deviceOrientation);
+    if (this.options && this.options.onIMUDataChange) {
+        this.options.onIMUDataChange.call(null, imuData);
     }
 };

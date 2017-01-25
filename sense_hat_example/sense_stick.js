@@ -28,131 +28,22 @@ function onLoad(event) {
             accel: [0, 0, 0],
             compass: [0, 0, 0],
             fusionPose: [0, 0, 0] /* fusionpose, accelerometer */,
-            timestamp: DeviceOrientation.getTimestamp(),
+            timestamp: IMUData.getTimestamp(),
         },
         sensestick: new SenseStickDevice(sendSignalToSkulpt)
     }; // create sense_hat value placeholder
 
-    var O = new Geometry.Vector(0, 0, 0);
-    var X = new Geometry.Vector(1, 0, 0);
-    var Y = new Geometry.Vector(0, 1, 0);
-    var Z = new Geometry.Vector(0, 0, 1);
-
-    var ACCEL_FACTOR = 4081.6327;
-    var GYRO_FACTOR = 57.142857;
-    var COMPASS_FACTOR = 7142.8571;
-    var ORIENT_FACTOR = 5214.1892;
-
      /**
      * Handle device orientation changes (actually we should compute the orientation from compass and accelerometer)
      */
-    function deviceOrientationChange(deviceOrientation) {
+    function imuDataChange(imuData) {
         // remember the mapping:  yaw: alpha (z), pitch: gamma (y), roll: beta (x)
-        var old_orientation = window.sense_hat.rtimu.fusionPose.slice(0); // make shallow copy
-        var old_orientation = new Geometry.Vector(old_orientation[0], old_orientation[1], old_orientation[2]);
-        var old_timestamp = window.sense_hat.rtimu.timestamp;
-        var new_orientation = deviceOrientation.asVector();
-
-        window.sense_hat.rtimu.fusionPose = [
-            deviceOrientation.beta,
-            deviceOrientation.gamma,
-            deviceOrientation.alpha
-        ];
-
-        // ToDo: Add calculations to transform the beta, gamma, alpha into gyro and accel
-        var new_timestamp = deviceOrientation.timestamp;
-        var time_delta = (new_timestamp - old_timestamp) / 1000000;
-
-        // calculate gyro, by reading the rate of change of the orientation
-        var _gyro = Geometry.vectorSubstraction(new_orientation, old_orientation);
-        _gyro = _gyro.divide(time_delta).asArray();
-        //console.log('new gyro data', _gyro);
-
-        var _gravity = Z.asArray();
-        var _north = X.multiply(0.33).asArray();
-
-        var x = Geometry.degToRad(new_orientation.x);
-        var y = Geometry.degToRad(new_orientation.y);
-        var z = Geometry.degToRad(new_orientation.z);
-
-        var c1 = Math.cos(z);
-        var c2 = Math.cos(y);
-        var c3 = Math.cos(x);
-        var s1 = Math.sin(z);
-        var s2 = Math.sin(y);
-        var s3 = Math.sin(x);
-
-        var R = [
-            [c1 * c2, c1 * s2 * s3 - c3 * s1, s1 * s3 + c1 * c3 * s2],
-            [c2 * s1, c1 * c3 + s1 * s2 * s3, c3 * s1 * s2 - c1 * s3],
-            [-s2,     c2 * s3,                c2 * c3],
-        ];
-
-        /**
-         * Transpose a 3 by 3 array matrix 
-         */
-        function transpose3x3Array(a) {
-            return a[0].map(function(x,i) {
-                return a.map(function(y,k) {
-                    return y[i];
-                })
-            });
-        }
-
-        function dot3x3and3x1(a, b) {
-            var rs = [];
-
-            rs[0] = a[0][0]*b[0] + a[0][1] * b[1] + a[0][2] * b[2]; 
-            rs[1] = a[1][0]*b[0] + a[1][1] * b[1] + a[1][2] * b[2]; 
-            rs[2] = a[2][0]*b[0] + a[2][1] * b[1] + a[2][2] * b[2]; 
-            
-            return rs;
-        }
-
-        var T = transpose3x3Array(R);
-
-        var _accel = dot3x3and3x1(T, _gravity);
-        var _compass = dot3x3and3x1(T, _north);
-        //console.info(vecToStr(_accel), vecToStr(_gyro), vecToStr(_compass));
-        function clamp(value, min_value, max_value) {
-            return Math.min(max_value, Math.max(min_value, value))
-        }
-
-        function int(val) {
-            return val | 0;
-        }
-
-        function vecToStr(arr) {
-            return "(" + arr[0] + ", " + arr[1] + ", " + arr[2] + ")";
-        }
-
-        var accel=[
-            int(clamp(_accel[0], -8, 8) * ACCEL_FACTOR),
-            int(clamp(_accel[1], -8, 8) * ACCEL_FACTOR),
-            int(clamp(_accel[2], -8, 8) * ACCEL_FACTOR),
-        ];
-        var gyro=[
-            int(clamp(_gyro[0], -500, 500) * GYRO_FACTOR),
-            int(clamp(_gyro[1], -500, 500) * GYRO_FACTOR),
-            int(clamp(_gyro[2], -500, 500) * GYRO_FACTOR),
-        ];
-        var compass=[
-            int(clamp(_compass[0], -4, 4) * COMPASS_FACTOR),
-            int(clamp(_compass[1], -4, 4) * COMPASS_FACTOR),
-            int(clamp(_compass[2], -4, 4) * COMPASS_FACTOR),
-        ];
-        //var orient=[
-        //    int(clamp(orient[0], -180, 180) * ORIENT_FACTOR),
-        //    int(clamp(orient[1], -180, 180) * ORIENT_FACTOR),
-        //    int(clamp(orient[2], -180, 180) * ORIENT_FACTOR),
-        //];
-        
-        console.error(vecToStr(accel), vecToStr(gyro), vecToStr(compass));
-
-        window.sense_hat.rtimu.timestamp = new_timestamp;
+        var values = imuData.read();
+        console.info('New values', values);
+        window.sense_hat.rtimu.timestamp = values.timestamp;
     }
     
-    function initDeviceOrientationInput(cb) {
+    function initIMUInput(cb) {
         var stageElement = document.querySelector('.orientation-stage');
         var boxElement = document.querySelector('.orientation-box');
         var resetButton = document.getElementById('device-orientation-reset-button');
@@ -160,29 +51,29 @@ function onLoad(event) {
         var betaInput = document.getElementById('device-orientation-override-beta');
         var gammaInput = document.getElementById('device-orientation-override-gamma');
         
-        var di = new DeviceOrientation(0, 0, 0);
+        var di = new IMUData();
         
         var elements = {
             stageElement: stageElement,
             boxElement: boxElement,
-            alphaInput: alphaInput,
-            betaInput: betaInput,
-            gammaInput: gammaInput,
+            yawInput: alphaInput,
+            rollInput: betaInput,
+            pitchInput: gammaInput,
             resetButton: resetButton
         };
         
         var options = {
-            deviceOrientation: di,
-            onDeviceOrientationChange: cb
+            imuData: di,
+            onIMUDataChange: cb
         };
         
-        var dii = new DeviceOrientationInput(elements, options);
+        var dii = new IMUInput(elements, options);
         dii.bindToEvents();
     }
 
     // init the deviceOrientationInput, well try to
     try {
-        initDeviceOrientationInput(deviceOrientationChange);
+        initIMUInput(imuDataChange);
     } catch (e) {
         console.error(e);
     }
