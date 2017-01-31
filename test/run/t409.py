@@ -3,7 +3,10 @@ print float(), type(float(0))
 # integers
 print float(1), type(float(1))
 print float(3/2), type(float(3/2))
+
+# longs
 print float(123456789L)
+print float(99999999999999999999)
 
 # floating point
 print float(1.234)
