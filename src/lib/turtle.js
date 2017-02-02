@@ -1126,9 +1126,7 @@ function generateTurtleModule(_target) {
             newTurtleInstance.instance._isRadians = this._isRadians;
             newTurtleInstance.instance._fullCircle = this._fullCircle;
             newTurtleInstance.instance._bufferSize = this._bufferSize;
-            console.log(this._undoBuffer);
             newTurtleInstance.instance._undoBuffer = this._undoBuffer;
-            console.log(newTurtleInstance.instance._undoBuffer);
 
 
             newTurtleInstance._clonedFrom = this;

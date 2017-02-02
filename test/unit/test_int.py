@@ -302,24 +302,29 @@ class IntTestCases(unittest.TestCase):
     #def test_intconversion(self):
 
     def test_int_subclass_with_int(self):
-        # skulpt does not support subclassing builtin types
+        # skulpt special-cases int() when called on something
+        # that's already an int.
         #class MyInt(int):
         class MyInt():
             def __int__(self):
                 return 42
 
-        # skulpt does not support subclassing builtin types
         #class BadInt(int):
         class BadInt():
             def __int__(self):
                 return 42.0
 
-        my_int = MyInt(7)
-        # not possible due to unsupported subclassing
-        #self.assertEqual(my_int, 7)
+        my_int = MyInt()
         self.assertEqual(int(my_int), 42)
 
         self.assertRaises(TypeError, int, BadInt())
+
+
+        class IntSubclass(int):
+            pass
+
+        my_int_2 = IntSubclass(42)
+        self.assertEqual(my_int_2, 42)
 
     def test_int_returns_int_subclass(self):
         class TruncReturnsIntSubclass:

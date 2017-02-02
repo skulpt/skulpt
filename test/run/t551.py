@@ -32,6 +32,9 @@ print "a.x = " + str(a.x)
 
 a.x += 1
 
+# Should not touch __getattr__ or __setattr__ at all
+A.foo = "bar"
+
 
 class B(object):
   def __getattr__(self, attr):

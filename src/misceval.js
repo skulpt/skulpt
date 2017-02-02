@@ -1150,22 +1150,11 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    } else if (typeof func === "function") {
-        // todo; i believe the only time this happens is the wrapper
-        // function around generators (that creates the iterator).
-        // should just make that a real function object and get rid
-        // of this case.
-        // alternatively, put it to more use, and perhaps use
-        // descriptors to create builtin.func's in other places.
-
-        // This actually happens for all builtin functions (in
-        // builtin.js, for example) as they are javascript functions,
+    } else if (typeof func === "function" && func.tp$call === undefined) {
+        // This happens in the wrapper functions around generators
+        // (that creates the iterator), and all the builtin functions
+        // (in builtin.js, for example) as they are javascript functions,
         // not Sk.builtin.func objects.
-
-        if (func.sk$klass) {
-            // klass wrapper around __init__ requires special handling
-            return func.apply(null, [kwdict, varargseq, kws, args, true]);
-        }
 
         if (varargseq) {
             for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
@@ -1214,15 +1203,6 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
     } else {
-        fcall = func.__get__;
-        if (fcall !== undefined) {
-            fcall = Sk.misceval.callsimOrSuspend(func.__get__, func, func);
-            //args.unshift(func);
-            if (fcall.tp$call) {
-                return fcall.tp$call.call(fcall, args);
-            }
-        }
-
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {
