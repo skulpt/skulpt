@@ -2,7 +2,7 @@ __author__ = 'albertjan'
 
 # unit test files should be named test_<your name here>.py
 # this ensures they will automatically be included in the
-# ./skulpt.py test or ./skulpt.py dist testing procedures
+# npm test or npm run dist testing procedures
 #
 
 import unittest

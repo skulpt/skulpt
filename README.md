@@ -18,7 +18,7 @@ Welcome to the Skulpt developer community! Check out the ideas list below. And t
 
 ### Ideas List
 
-We are coordinating sprints on some of the ideas below, builtins, stdlib, third party modules, and core performance [here](https://github.com/skulpt/skulpt/issues/400).  We always welcome interested developers becoming Primarily Repsonsible Persons (PRP) for features they're working on. 
+We are coordinating sprints on some of the ideas below, builtins, stdlib, third party modules, and core performance [here](https://github.com/skulpt/skulpt/issues/400).  We always welcome interested developers becoming Primarily Repsonsible Persons (PRP) for features they're working on.
 
 6. Expand the skulpt standard library to include more modules from the CPython standard library.  So far we have math, random, turtle, time (partial) random (partial) urllib (partial) unittest, image, DOM (partial) and re (partial).  Any of the partial modules could be completed, or many other CPython modules could be added.  Potential new modules from the standard library include:  functools, itertools, collections, datetime, operator, and string.  Many of these would be relatively easy projects for a less exeperienced student to take on.
 
@@ -52,9 +52,9 @@ benefit.
 Building Skulpt is straightforward:
 
 1. Clone the repository from GitHub, ideally using your own fork if you're planning on making any contributions
-2. Install node.js
-3. Install the jscs, jshint and jsdoc node modules using `npm install -g jscs jshint jsdoc` (you may need to use `sudo` to run this command)
-4. Navigate to the repository and run `./skulpt.py dist`
+2. Install node.js and Python 2 (required to run the build scripts)
+3. Install the required dependencies using `npm install`
+4. Navigate to the repository and run `npm run build`
 5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist`folder
 
 
@@ -87,5 +87,3 @@ As time goes on its getting more dangerous to try to acknowledge everyone who ha
 * Ben Wheeler for the new and improved turtle module
 * Scott Rixner and students for many bug fixes and improvements
 * Of course, The complete list is here:  https://github.com/skulpt/skulpt/graphs/contributors
-
-
