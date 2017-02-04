@@ -68,7 +68,7 @@ with common types and even work well recursively converting containers.  ``Sk.ff
 **definitely preferred** over  ``foo.v``  
 * Use the ``pyCheckArgs`` function at the beginning of anything that will be exposed to a Python programmer.
 * Check the types of arguments when you know what they must be.
-* Explicitly return ``Sk.builtin.null.null$`` for functions and methds that should return ``None``
+* Explicitly return ``Sk.builtin.none.none$`` for functions and methds that should return ``None``
 * If you are adding a module or package to the library, respect the package/module conventions.
     * modules should be named ``foo.js`` or ``foo.py``
     * packages should be a directory with an ``__init__.js`` or ``__init__.py`` file, and possibly additional modules.
