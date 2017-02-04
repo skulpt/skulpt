@@ -10,7 +10,7 @@ install:
 - pip install "GitPython>=0.2.0-beta1" --use-mirrors
 - mkdir -p vendors
 script:
-- npm run build -- -u
+- npm run build-min
 - npm test
 after_script:
 - ./dist-update.sh

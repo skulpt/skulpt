@@ -22,6 +22,7 @@
     "repl": "./skulpt.py repl",
 
     "build": "./skulpt.py dist",
+    "build-min": "./skulpt.py dist -u",
     "test": "./skulpt.py test"
   },
   "repository": {
