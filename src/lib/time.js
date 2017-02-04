@@ -1,9 +1,6 @@
 /*
  implementation of the Python time package.
 
- For higher res time we could use following apart from new Date:
- window.performance.now()
-
  notes:
  - struct_time is a structseq but structseq does not implement methods: 'n_fields', 'n_sequence_fields', 'n_unnamed_fields' yet
 
@@ -18,14 +15,14 @@ var $builtinmodule = function (name) {
     mod.__package__ = Sk.builtin.none.none$;
 
     var struct_time_fields = {
-        "tm_year": "year, for example, 1993", 
-        "tm_mon": "month of year, range [1, 12]", 
-        "tm_mday": "day of month, range [1, 31]", 
-        "tm_hour": "hours, range [0, 23]", 
-        "tm_min": "minutes, range [0, 59]", 
-        "tm_sec": "seconds, range [0, 61]", 
-        "tm_wday": "day of week, range [0, 6], Monday is 0", 
-        "tm_yday": "day of year, range [1, 366]", 
+        "tm_year": "year, for example, 1993",
+        "tm_mon": "month of year, range [1, 12]",
+        "tm_mday": "day of month, range [1, 31]",
+        "tm_hour": "hours, range [0, 23]",
+        "tm_min": "minutes, range [0, 59]",
+        "tm_sec": "seconds, range [0, 61]",
+        "tm_wday": "day of week, range [0, 6], Monday is 0",
+        "tm_yday": "day of year, range [1, 366]",
         "tm_isdst": "1 if summer time is in effect, 0 if not, and -1 if unknown"
     };
 
@@ -51,7 +48,7 @@ var $builtinmodule = function (name) {
     mod.time = new Sk.builtin.func(function () {
         Sk.builtin.pyCheckArgs("time", arguments, 0, 0);
         var res = Date.now();
-        if (performance && performance.now)
+        if (this.performance && this.performance.now)
         {
             res = res + performance.now() % 1;
         }
@@ -100,7 +97,7 @@ var $builtinmodule = function (name) {
         var jan = new Date(2002, 0, 1);
         var jul = new Date(2002, 6, 1);
         return Math.min(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-    }    
+    }
 
     function dst(date) {
         return date.getTimezoneOffset() < stdTimezoneOffset();
@@ -112,7 +109,7 @@ var $builtinmodule = function (name) {
 
     function timeZoneNames() {
         var jan = new Date(2002, 0, 1);
-        var jul = new Date(2002, 6, 1);     
+        var jul = new Date(2002, 6, 1);
         if (dst(jan)) {
             return [Sk.builtin.str(timeZoneName(jul)), Sk.builtin.str(timeZoneName(jan))];
         } else {
@@ -125,12 +122,12 @@ var $builtinmodule = function (name) {
         // y, m, d, hh, mm, ss, weekday, jday, dst
         return new struct_time_f(
             [
-                Sk.builtin.assk$(utc ? date.getUTCFullYear() : date.getFullYear()), 
+                Sk.builtin.assk$(utc ? date.getUTCFullYear() : date.getFullYear()),
                 Sk.builtin.assk$((utc ? date.getUTCMonth() : date.getMonth()) + 1), // want January == 1
-                Sk.builtin.assk$(utc ? date.getUTCDate() : date.getDate()), 
-                Sk.builtin.assk$(utc ? date.getUTCHours() : date.getHours()), 
-                Sk.builtin.assk$(utc ? date.getUTCMinutes() : date.getMinutes()), 
-                Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()), 
+                Sk.builtin.assk$(utc ? date.getUTCDate() : date.getDate()),
+                Sk.builtin.assk$(utc ? date.getUTCHours() : date.getHours()),
+                Sk.builtin.assk$(utc ? date.getUTCMinutes() : date.getMinutes()),
+                Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()),
                 Sk.builtin.assk$(((utc ? date.getUTCDay() : date.getDay()) + 6) % 7), // Want Monday == 0
                 Sk.builtin.assk$(getDayOfYear(date, utc)), // Want January, 1 == 1
                 Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
@@ -177,7 +174,7 @@ var $builtinmodule = function (name) {
             // todo: test validity??
             var parts = [];
             parts.push(daynames[Sk.builtin.asnum$(time.v[6])]);
-            parts.push(monthnames[Sk.builtin.asnum$(time.v[1])-1]);  
+            parts.push(monthnames[Sk.builtin.asnum$(time.v[1])-1]);
             parts.push(padLeft(Sk.builtin.asnum$(time.v[2]).toString(), 2, '0'));
             parts.push(
                 padLeft(Sk.builtin.asnum$(time.v[3]).toString(), 2, '0') + ":" +
@@ -215,7 +212,7 @@ var $builtinmodule = function (name) {
     mod.mktime = new Sk.builtin.func(mktime_f);
 
     /*
-    The offset of the local (non-DST) timezone, in seconds west of UTC (negative in most of Western Europe, 
+    The offset of the local (non-DST) timezone, in seconds west of UTC (negative in most of Western Europe,
     positive in the US, zero in the UK).
     */
     mod.timezone = new Sk.builtin.int_(stdTimezoneOffset() * 60);
@@ -232,7 +229,7 @@ var $builtinmodule = function (name) {
     mod.daylight = new Sk.builtin.int_(dst(new Date()) ? 1 : 0);
 
     /*
-    A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local 
+    A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local
     DST timezone. If no DST timezone is defined, the second string should not be used.
     */
     mod.tzname = Sk.builtin.tuple(timeZoneNames());
@@ -241,7 +238,7 @@ var $builtinmodule = function (name) {
 
     mod.clock = new Sk.builtin.func(function() {
         var res = 0.0;
-        if (performance && performance.now)
+        if (this.performance && this.performance.now)
         {
             res = performance.now() / 1000;
         } else {
@@ -265,7 +262,7 @@ var $builtinmodule = function (name) {
         }
 
         check_struct_time(t);
-        
+
         jsFormat = Sk.ffi.remapToJs(format);
 
         return Sk.ffi.remapToPy(strftime(jsFormat, new Date(mktime_f(t).v*1000)));
