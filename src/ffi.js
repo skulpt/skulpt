@@ -18,7 +18,7 @@ Sk.ffi.remapToPy = function (obj) {
     var arr;
 
     if (obj === null || typeof obj === "undefined") {
-        return Sk.builtin.none.none$
+        return Sk.builtin.none.none$;
     }
 
     if (obj.ob$type) {
