@@ -16,28 +16,48 @@ Sk.ffi.remapToPy = function (obj) {
     var kvs;
     var i;
     var arr;
+
+    if (obj === null || typeof obj === "undefined") {
+        return Sk.builtin.none.none$
+    }
+
+    if (obj.ob$type) {
+        return obj;
+    }
+
     if (Object.prototype.toString.call(obj) === "[object Array]") {
         arr = [];
         for (i = 0; i < obj.length; ++i) {
             arr.push(Sk.ffi.remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
-    } else if (obj === null) {
-        return Sk.builtin.none.none$;
-    } else if (typeof obj === "object") {
+    }
+
+    if (typeof obj === "object" && !obj.ob$type) {
         kvs = [];
         for (k in obj) {
             kvs.push(Sk.ffi.remapToPy(k));
             kvs.push(Sk.ffi.remapToPy(obj[k]));
         }
         return new Sk.builtin.dict(kvs);
-    } else if (typeof obj === "string") {
+    }
+
+    if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
-    } else if (typeof obj === "number") {
+    }
+
+    if (typeof obj === "number") {
         return Sk.builtin.assk$(obj);
-    } else if (typeof obj === "boolean") {
+    }
+
+    if (typeof obj === "boolean") {
         return new Sk.builtin.bool(obj);
     }
+
+    if (typeof obj === "function") {
+        return new Sk.builtin.func(obj);
+    }
+
     goog.asserts.fail("unhandled remap type " + typeof(obj));
 };
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
@@ -86,6 +106,8 @@ Sk.ffi.remapToJs = function (obj) {
         return Sk.builtin.asnum$(obj);
     } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
+    } else if (obj === undefined) {
+        return undefined;
     } else {
         return obj.v;
     }

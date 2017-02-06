@@ -353,11 +353,9 @@ var $builtinmodule = function (name) {
         if (func.im_self && func.im_func) {
             //kwargs = func.im_func.func_code["co_kwargs"] != null;
             argsLength = func.im_func.func_code.length - 1; // -1 for the self
-            //console.info('method', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
         } else {
             //kwargs = func.func_code["co_kwargs"] != null;
             argsLength = func.func_code.length;
-            //console.info('function', func, 'arguments: ', argsLength, 'keywords: ', kwargs);
         }
 
         return Sk.builtin.int_(argsLength);
@@ -378,7 +376,6 @@ var $builtinmodule = function (name) {
     mod._start_stick_thread = new Sk.builtin.func(function(callback) {
         function handleKeyInput (event, inputData) {
             // Store event in the internal queue
-            //Sk.sense_hat.sensestick._eventQueue.push(inputData);
             // This may cause, that we are not able to call our interrupt suspension handler
             Sk.misceval.callsimAsync(null, callback);
         }
@@ -415,7 +412,7 @@ var $builtinmodule = function (name) {
             promise: new Promise(function (resolve, reject) {
                 // Read from internal eventQueue
                 if (Sk.sense_hat.sensestick._eventQueue.length > 0) {
-                    inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
+                    inputEvent = Sk.sense_hat.sensestick._eventQueue.shift();
                     resolve();
                 } else {
                     // add eventlistener
@@ -425,7 +422,7 @@ var $builtinmodule = function (name) {
                             reject('KeyboardInterrupt');
                         }
 
-                        inputEvent = inputEvent = Sk.sense_hat.sensestick._eventQueue.pop();
+                        inputEvent = inputEvent = Sk.sense_hat.sensestick._eventQueue.shift();
                         resolve();
                     });
                 }

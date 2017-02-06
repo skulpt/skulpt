@@ -566,10 +566,12 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // a Python language module.  for some reason, __name__ gets overwritten.
     var saveSk = Sk.globals;
 
+    var file = Sk.ffi.remapToJs(locals["__file__"]);
+
     var currentDir =
-        locals["__file__"] === undefined ?
+        file === undefined ?
             undefined :
-            locals["__file__"].v.substring(0, locals["__file__"].v.lastIndexOf("/"));
+            file.substring(0, file.lastIndexOf("/"));
 
     var ret = Sk.importModuleInternal_(name, undefined, undefined, undefined, true, currentDir);
 

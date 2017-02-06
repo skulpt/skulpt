@@ -1922,6 +1922,42 @@ while True:
             <button class="btn btn-secondary btn-sm" data-key="28" id="stick-btn-enter">Enter</button>
         </div>
         <div class="row">
+            <div class="col-md-4 accelerometer-inputs-cell">
+                <div>
+                    <fieldset class="form-group">
+                        <label for="device-orientation-override-alpha">	&alpha;</label>
+                        <!--<input type="text" class="form-control form-control-sm" id="device-orientation-override-alpha" placeholder="0"> -->
+                        <input type="range" class="form-control form-control-sm" id="device-orientation-override-alpha" min="-360" max="360" step="5">
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="device-orientation-override-beta">&beta;</label>
+                        <!--<input type="text" class="form-control form-control-sm" id="device-orientation-override-beta" placeholder="0">-->
+                        <input type="range" class="form-control form-control-sm" id="device-orientation-override-beta" min="-360" max="360" step="5">
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="device-orientation-override-gamma">&gamma;</label>
+                        <!--<input type="text" class="form-control form-control-sm" id="device-orientation-override-gamma" placeholder="0">-->
+                        <input type="range" class="form-control form-control-sm" id="device-orientation-override-gamma" min="-360" max="360" step="5">
+                    </fieldset>
+                    <button class="btn btn-secondary btn-sm" id="device-orientation-reset-button">Reset</button>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="orientation-stage">
+                    <div class="orientation-layer">
+                        <section class="orientation-box orientation-element">
+                            <section class="orientation-front orientation-element"></section>
+                            <section class="orientation-top orientation-element"></section>
+                            <section class="orientation-back orientation-element"></section>
+                            <section class="orientation-left orientation-element"></section>
+                            <section class="orientation-right orientation-element"></section>
+                            <section class="orientation-bottom orientation-element"></section>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div
+        <div class="row">
             <div id="mycanvas" height="500" width="800"	style="border-style: solid;"></div>
         </div>
       </div>
@@ -1930,6 +1966,7 @@ while True:
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./sense_device.js"></script>
     <script src="./sense_stick.js"></script>
   </body>
 </html>
