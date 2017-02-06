@@ -27,11 +27,57 @@ function onLoad(event) {
             gyro: [0, 0, 0],
             accel: [0, 0, 0],
             compass: [0, 0, 0],
-            fusionPose: [0, 0, 0] /* fusionpose, accelerometer */
+            fusionPose: [0, 0, 0] /* fusionpose, accelerometer */,
+            timestamp: IMUData.getTimestamp(),
         },
         sensestick: new SenseStickDevice(sendSignalToSkulpt)
     }; // create sense_hat value placeholder
+
+     /**
+     * Handle device orientation changes (actually we should compute the orientation from compass and accelerometer)
+     */
+    function imuDataChange(imuData) {
+        // remember the mapping:  yaw: alpha (z), pitch: gamma (y), roll: beta (x)
+        var values = imuData.read();
+        console.info('New values', values);
+        window.sense_hat.rtimu.timestamp = values.timestamp;
+    }
     
+    function initIMUInput(cb) {
+        var stageElement = document.querySelector('.orientation-stage');
+        var boxElement = document.querySelector('.orientation-box');
+        var resetButton = document.getElementById('device-orientation-reset-button');
+        var alphaInput = document.getElementById('device-orientation-override-alpha');
+        var betaInput = document.getElementById('device-orientation-override-beta');
+        var gammaInput = document.getElementById('device-orientation-override-gamma');
+        
+        var di = new IMUData();
+        
+        var elements = {
+            stageElement: stageElement,
+            boxElement: boxElement,
+            yawInput: alphaInput,
+            rollInput: betaInput,
+            pitchInput: gammaInput,
+            resetButton: resetButton
+        };
+        
+        var options = {
+            imuData: di,
+            onIMUDataChange: cb
+        };
+        
+        var dii = new IMUInput(elements, options);
+        dii.bindToEvents();
+    }
+
+    // init the deviceOrientationInput, well try to
+    try {
+        initIMUInput(imuDataChange);
+    } catch (e) {
+        console.error(e);
+    }
+
     function handleKeyInput(e, state) {
         var key = e.target.getAttribute('data-key');
         state = SenseStickDevice.STATE_PRESS;
