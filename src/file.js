@@ -150,8 +150,7 @@ Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size
                     resolution = value;
                     return value;
                 }, function(err) {
-                    resolution = "";
-                    return err;
+                    throw err;
                 })
             };
 
