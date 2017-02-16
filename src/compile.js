@@ -2347,3 +2347,9 @@ Sk.resetCompiler = function () {
 };
 
 goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
+
+Sk.fixReservedWords = fixReservedWords;
+goog.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
+
+Sk.fixReservedNames = fixReservedNames;
+goog.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
