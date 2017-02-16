@@ -132,7 +132,7 @@ Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function (self, size) {
 
 Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) {
     if (self.fileno === 0) {
-        var x, resolution, susp;
+        var x, susp;
 
         var prompt = prompt ? prompt.v : "";
         x = Sk.inputfun(prompt);
@@ -141,18 +141,16 @@ Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size
             susp = new Sk.misceval.Suspension();
 
             susp.resume = function() {
-                return new Sk.builtin.str(resolution);
+                if (susp.data.error) {
+                    throw susp.data.error;
+                }
+
+                return new Sk.builtin.str(susp.data.result);
             };
 
             susp.data = {
                 type: "Sk.promise",
-                promise: x.then(function(value) {
-                    resolution = value;
-                    return value;
-                }, function(err) {
-                    resolution = "";
-                    return err;
-                })
+                promise: x
             };
 
             return susp;
