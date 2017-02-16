@@ -1,6 +1,6 @@
 {
   "name": "skulpt",
-  "version": "0.11.1.8",
+  "version": "0.11.1.9",
   "main": [ "./skulpt.js", "./skulpt-stdlib.js" ],
   "description": "Skulpt is a Javascript implementation of the Python programming language",
   "repository": {
