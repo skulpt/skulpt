@@ -24,5 +24,12 @@ class Test_ReservedWords(unittest.TestCase):
         setattr(f, "this", True)
         self.assertTrue(f.this)
 
+    def test_error_message(self):
+        f = True
+        try:
+          setattr(f, "continue", True)
+        except AttributeError as e:
+          self.assertTrue("_$rw$" not in str(e))
+
 if __name__ == '__main__':
     unittest.main()
