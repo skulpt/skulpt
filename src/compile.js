@@ -223,6 +223,10 @@ function fixReservedNames (name) {
     return name;
 }
 
+function unfixReserved(name) {
+    return name.replace(/_\$r[wn]\$$/, "");
+}
+
 function mangleName (priv, ident) {
     var name = ident.v;
     var strpriv = null;
@@ -2353,3 +2357,6 @@ goog.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
 Sk.fixReservedNames = fixReservedNames;
 goog.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+
+Sk.unfixReserved = unfixReserved;
+goog.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
