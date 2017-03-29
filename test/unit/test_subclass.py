@@ -288,6 +288,13 @@ class SubclassTest(unittest.TestCase):
         self.assertRaises(TypeError, raiseMyTypeError)
         self.assertRaises(Exception, raiseMyTypeError)
 
+        try:
+            raise StandardError("test")
+            self.fail("Should never get here")
+        except StandardError as e:
+            self.assertIsInstance(e.args, tuple)
+            self.assertEqual("test", e.args[0])
+
         class MyStandardError(StandardError):
             def __str__(self):
                 return "My Standard Error"
@@ -297,6 +304,8 @@ class SubclassTest(unittest.TestCase):
             self.fail("Should never get here")
         except MyStandardError as e:
             self.assertEqual("My Standard Error", str(e))
+            self.assertIsInstance(e.args, tuple)
+            self.assertEqual("test", e.args[0])
 
         # Test multiple-class catch
         try:
