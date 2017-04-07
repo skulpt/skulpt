@@ -267,9 +267,10 @@ var $builtinmodule = function (name) {
     // Magnetometer tilt compensation
     // From here http://diydrones.com/forum/topics/magnetometer-tilt-compensation-tutorial-sensor-analysis?commentId=705844%3AComment%3A1657670
     mod.headingRead = new Sk.builtin.func(function () {
-        x = Sk.sense_hat.rtimu.fusionPose[0]
-        y = Sk.sense_hat.rtimu.fusionPose[1]
-        z = Sk.sense_hat.rtimu.fusionPose[2]
+        var x, y, z;
+        x = Sk.sense_hat.rtimu.fusionPose[0];
+        y = Sk.sense_hat.rtimu.fusionPose[1];
+        z = Sk.sense_hat.rtimu.fusionPose[2];
         jsheading = Math.atan2((z * Math.sin(y) - y * Math.cos(y)), x * Math.cos(x) + y * Math.sin(x) * Math.sin(y) + z * Math.sin(x) * Math.cos(y));
         var heading = Sk.ffi.remapToPy(jsheading);
 
