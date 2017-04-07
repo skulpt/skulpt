@@ -992,8 +992,14 @@ class SenseHat(object):
         """
         Gets the direction of North from the magnetometer in degrees
         """
+        # Real behavior would be to disable gyro and accel and then reading from fusionPose,
+        # but the emulator cannot do fusionPose as we derive everything from the orientation.
+        # Therefore, we a shortcut and read directly from our internal module that applies compass tilt compensation algorithm
+        # and returns the heading in radians.
+        
+        deg = math.degrees(_ish.headingRead())
 
-        return _ish.headingRead()
+        return deg + 360 if deg < 0 else deg
 
     @property
     def compass(self):
