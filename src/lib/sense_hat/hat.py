@@ -37,7 +37,7 @@ class RTIMU:
       'temperatureValid': False,
       'timestamp':        0,
       }
-  
+
   def IMUInit(self):
     """
     Set up the IMU
@@ -60,7 +60,7 @@ class RTIMU:
 
   def IMUName(self):
     return "LSM9DS1"
-    
+
   def IMUType(self):
     return 6 # 6 in real units
 
@@ -101,7 +101,7 @@ class RTIMU:
     :return:
     """
     pass
-  
+
   def getIMUData(self):
     # ToDo: https://github.com/RPi-Distro/python-sense-emu/blob/master/sense_emu/RTIMU.py#L153
     """
@@ -134,50 +134,50 @@ class RTIMU:
 
   def setCompassEnable(self, enabled):
     self._compass_enabled = enabled
-  
+
   def setGyroEnable(self, enabled):
     self._gyro_enabled = enabled
-    
+
   def setAccelEnable(self, enabled):
-    self._accel_enabled = enabled  
+    self._accel_enabled = enabled
 
   def _getFusionPose(self):
     if self._accel_enabled == False and self._gyro_enabled == False:
       # ToDo: special compass only handling for yaw data
       return _ish.fusionPoseRead()
-        
+
     return _ish.fusionPoseRead()
 
 class RTPressure:
   def __init__(self, imu_settings):
     self._imu_settings = imu_settings
-  
+
   def pressureInit(self):
     return True
-    
+
   def pressureRead(self):
     # return Py_BuildValue("idid", data.pressureValid, data.pressure, data.temperatureValid, data.temperature);
     return _ish.pressureRead();
-  
+
   def pressureName(self):
     return "LPS25H"
-    
+
   def pressureType(self):
     return 3 # long
-    
+
 class RTHumidity:
   """
     https://github.com/richards-tech/RTIMULib2/blob/master/Linux/python/PyRTIMU_RTHumidity.cpp
   """
   def __init__(self, imu_settings):
     self._imu_settings = imu_settings
-    
+
   def humidityInit(self):
     """
       Set up the humidity sensor
     """
     return True
-    
+
   def humidityRead(self):
     """
       Get current values
@@ -236,7 +236,7 @@ class FBDevice:
                 raise OSError('Getting gamma requires a buffer for 32 values')
 
             gamma = _ish.getGamma()
-            
+
             for i in range(0, len(arg)):
                 arg[i] = gamma[i]
         elif request == FBDevice.SENSE_HAT_FB_FBIOSET_GAMMA:
@@ -291,7 +291,7 @@ class SenseHat(object):
             [48, 49, 50, 51, 52, 53, 54, 55],
             [56, 57, 58, 59, 60, 61, 62, 63]
         ]
-        
+
         # Trinket: hardcoded the values, why should we recalculate them every time
         pix_map90 = [[ 7, 15, 23, 31, 39, 47, 55, 63],
                              [ 6, 14, 22, 30, 38, 46, 54, 62],
@@ -329,14 +329,14 @@ class SenseHat(object):
 
 
         # Trinket: we are using an internal dict for that
-        
+
         # Load text assets
         #dir_path = os.path.dirname(__file__)
         #self._load_text_assets(
         #    os.path.join(dir_path, '%s.png' % text_assets),
         #    os.path.join(dir_path, '%s.txt' % text_assets)
         #)
-        
+
         # Trinket: we do not need to pass any paths as we use hard coded values
         self._load_text_assets("", "")
 
@@ -373,7 +373,7 @@ class SenseHat(object):
         Internal. Builds a character indexed dictionary of pixels used by the
         show_message function below
         """
-        
+
         # Trinket: Replaced the loading of the image file with a internal dict.
         #          This is faster than loading and processing the image on every run.
         #          Keeping the code, so that we might refactor is later
@@ -388,7 +388,7 @@ class SenseHat(object):
         #    end = start + 40
         #    char = text_pixels[start:end]
         #    self._text_dict[s] = char
-        
+
         # we just load the hardcoded data
         self._text_dict = TEXT_DICT
 
@@ -433,7 +433,7 @@ class SenseHat(object):
         """
 
         device = None
-        
+
         # Trinket: replace device identification with internal JS bridge
         device = FBDevice()
 
@@ -444,7 +444,7 @@ class SenseHat(object):
      ####
     @property
     def stick(self):
-        return self._stick   
+        return self._stick
 
     ####
     # LED Matrix
@@ -525,7 +525,7 @@ class SenseHat(object):
             # Two bytes per pixel in fb memory, 16 bit RGB565
             # Trinket: replace file operations with internal JS bridge
             self._fb_device.setpixel(map[index // 8][index % 8], pix)
-        
+
 
     def get_pixels(self):
         """
@@ -542,7 +542,7 @@ class SenseHat(object):
                 # Trinket: replace file operations with internal JS bridge
                 pix = self._fb_device.getpixel(map[row][col])
                 pixel_list.append(pix)
-        
+
         return pixel_list
 
     def set_pixel(self, x, y, *args):
@@ -596,7 +596,7 @@ class SenseHat(object):
             raise ValueError('Y position must be between 0 and 7')
 
         pix = None
-        
+
         # Trinket: replace file operations with internal JS bridge
         map = self._pix_map[self._rotation]
         pix = self._fb_device.getpixel(map[y][x])
@@ -731,7 +731,7 @@ class SenseHat(object):
 
     @property
     def gamma(self):
-        #buffer = array.array('B', [0]*32) 
+        #buffer = array.array('B', [0]*32)
         # ToDo: Change this back to array.array
         buffer = [0]*32
         self._fb_device.ioctl(SenseHat.SENSE_HAT_FB_FBIOGET_GAMMA, buffer)
@@ -992,13 +992,14 @@ class SenseHat(object):
         """
         Gets the direction of North from the magnetometer in degrees
         """
+        # Real behavior would be to disable gyro and accel and then reading from fusionPose,
+        # but the emulator cannot do fusionPose as we derive everything from the orientation.
+        # Therefore, we a shortcut and read directly from our internal module that applies compass tilt compensation algorithm
+        # and returns the heading in radians.
+        
+        deg = math.degrees(_ish.headingRead())
 
-        self.set_imu_config(True, False, False)
-        orientation = self.get_orientation_degrees()
-        if type(orientation) is dict and 'yaw' in orientation.keys():
-            return orientation['yaw']
-        else:
-            return None
+        return deg + 360 if deg < 0 else deg
 
     @property
     def compass(self):
