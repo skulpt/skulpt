@@ -264,16 +264,34 @@ var $builtinmodule = function (name) {
         return compass;
     });
 
-    // Magnetometer tilt compensation
-    // From here http://diydrones.com/forum/topics/magnetometer-tilt-compensation-tutorial-sensor-analysis?commentId=705844%3AComment%3A1657670
     mod.headingRead = new Sk.builtin.func(function () {
-        var x, y, z;
-        x = Sk.sense_hat.rtimu.fusionPose[0];
-        y = Sk.sense_hat.rtimu.fusionPose[1];
-        z = Sk.sense_hat.rtimu.fusionPose[2];
-        jsheading = Math.atan2((z * Math.sin(y) - y * Math.cos(y)), x * Math.cos(x) + y * Math.sin(x) * Math.sin(y) + z * Math.sin(x) * Math.cos(y));
-        var heading = Sk.ffi.remapToPy(jsheading);
+        /* Returns tilt-compensated magnetometer heading in radians */
+        /* Note: RTIMULib calculates a moving average. This gives an instant reading */
 
+        // Accelerometer's roll and pitch, used for compensation
+        var x, y;
+        x = Sk.sense_hat.rtimu.fusionPose[0]; // roll
+        y = Sk.sense_hat.rtimu.fusionPose[1]; // pitch
+
+        // Compass raw values in microteslas
+        var mx, my, mz;
+        mx = Sk.sense_hat.rtimu.compass[0];
+        my = Sk.sense_hat.rtimu.compass[1];
+        mz = Sk.sense_hat.rtimu.compass[2];
+
+        // Tilt compensation for Tait-Bryan XYZ convention
+        // Formulas here: https://dev.widemeadows.de/2014/01/24/to-tilt-compensate-or-not-to-tilt-compensate/
+        var phi, theta, mag_y, mag_x, jsheading, heading;
+        phi = -x;  // negative to match convention's roll direction
+        theta = y;
+
+        // Remap magnetometer values to the horizontal plane and determine yaw (aka heading)
+        mag_x = mx * Math.cos(theta) + my * Math.sin(phi) * Math.sin(phi) + mz * Math.cos(phi) * Math.sin(theta);
+        mag_y = my * Math.cos(phi) - mz * Math.sin(phi);
+        jsheading = Math.atan2(-mag_y, mag_x);
+
+        // Remap radian value to Skulpt and return
+        heading = Sk.ffi.remapToPy(jsheading);
         return heading;
     });
 
@@ -446,3 +464,4 @@ var $builtinmodule = function (name) {
 
     return mod;
 };
+
