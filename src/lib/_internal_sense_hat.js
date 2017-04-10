@@ -282,7 +282,7 @@ var $builtinmodule = function (name) {
         // Tilt compensation for Tait-Bryan XYZ convention
         // Formulas here: https://dev.widemeadows.de/2014/01/24/to-tilt-compensate-or-not-to-tilt-compensate/
         var phi, theta, mag_y, mag_x, jsheading, heading;
-        phi = -x;  // negative to match convention's roll direction
+        phi = x;
         theta = y;
 
         // Remap magnetometer values to the horizontal plane and determine yaw (aka heading)
