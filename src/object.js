@@ -284,6 +284,18 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
     return self.ob$ge(other);
 };
 
+/**
+ * Python wrapper for `__iadd__` method.
+ * @name  __iadd__
+ * @memberOf Sk.builtin.object.prototype
+ * @instance
+ */Sk.builtin.object.prototype["__iadd__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__iadd__", arguments, 1, 2, false, true);
+
+    return self.nb$add(other);
+};
+
+
 /** Default implementations of Javascript functions used in dunder methods */
 
 /**
@@ -415,7 +427,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * @type {Array}
  */
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
+"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__","__iadd__"];
 
 /**
  * @constructor
