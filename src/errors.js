@@ -80,6 +80,15 @@ Sk.builtin.BaseException.prototype.toString = function () {
     return this.tp$str().v;
 };
 
+// Create a descriptor to return the 'args' of an exception.
+// This is a hack to get around a weird mismatch between builtin
+// objects and proper types
+Sk.builtin.BaseException.prototype.args = {
+    "tp$descr_get": function(self, clstype) {
+        return self.args;
+    }
+};
+
 goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
 /**
