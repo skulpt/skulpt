@@ -17,9 +17,9 @@ def get_c_type(name):
     This function special cases the default types provided by asdl:
     identifier, string, int, bool.
     """
-    # XXX ack!  need to figure out where Id is useful and where string
-    # if isinstance(name, asdl.Id):
-    #    name = name.value
+    # # XXX ack!  need to figure out where Id is useful and where string
+    # if isinstance(name, asdl.TokenId):
+    #     name = name.value
     if name in asdl.builtin_types:
         return name
     else:
