@@ -18,8 +18,8 @@ def get_c_type(name):
     identifier, string, int, bool.
     """
     # XXX ack!  need to figure out where Id is useful and where string
-    if isinstance(name, asdl.Id):
-        name = name.value
+    # if isinstance(name, asdl.Id):
+    #    name = name.value
     if name in asdl.builtin_types:
         return name
     else:
@@ -189,7 +189,7 @@ class PrototypeVisitor(EmitVisitor):
                 name = f.name
             # XXX should extend get_c_type() to handle this
             if f.seq:
-                if f.type.value in ('cmpop',):
+                if f.type in ('cmpop',):
                     ctype = "asdl_int_seq *"
                 else:
                     ctype = "asdl_seq *"
