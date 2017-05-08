@@ -165,7 +165,6 @@ opmap_raw = """
 = EQUAL
 . DOT
 % PERCENT
-` BACKQUOTE
 { LBRACE
 } RBRACE
 @ AT
@@ -193,6 +192,8 @@ opmap_raw = """
 // DOUBLESLASH
 //= DOUBLESLASHEQUAL
 -> RARROW
+... ELLIPSIS
+@= ATEQUAL
 """
 
 opmap = {}
