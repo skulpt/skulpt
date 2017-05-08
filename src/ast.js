@@ -24,7 +24,7 @@ function Compiling (encoding, filename, c_flags) {
  * @return {number}
  */
 function NCH (n) {
-    goog.asserts.assert(n !== undefined);
+    goog.asserts.assert(n !== undefined, "node must be defined");
     if (n.children === null) {
         return 0;
     }
@@ -32,8 +32,8 @@ function NCH (n) {
 }
 
 function CHILD (n, i) {
-    goog.asserts.assert(n !== undefined);
-    goog.asserts.assert(i !== undefined);
+    goog.asserts.assert(n !== undefined, "node must be defined");
+    goog.asserts.assert(i !== undefined, "index of child must be specified");
     return n.children[i];
 }
 
@@ -111,7 +111,7 @@ function setContext (c, e, ctx, n) {
     var i;
     var exprName;
     var s;
-    goog.asserts.assert(ctx !== AugStore && ctx !== AugLoad);
+    goog.asserts.assert(ctx !== AugStore && ctx !== AugLoad, "context not AugStore or AugLoad");
     s = null;
     exprName = null;
 
@@ -208,8 +208,12 @@ var operatorMap = {};
 }());
 
 function getOperator (n) {
-    goog.asserts.assert(operatorMap[n.type] !== undefined);
+    goog.asserts.assert(operatorMap[n.type] !== undefined, "Operator missing from operatorMap");
     return operatorMap[n.type];
+}
+
+function new_identifier(n, c) {
+
 }
 
 function astForCompOp (c, n) {
@@ -262,7 +266,7 @@ function seqForTestlist (c, n) {
         n.type === SYM.listmaker ||
         n.type === SYM.testlist_comp ||
         n.type === SYM.testlist_safe ||
-        n.type === SYM.testlist1);
+        n.type === SYM.testlist1, "node type must be listlike");
     for (i = 0; i < NCH(n); i += 2) {
         goog.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test);
         seq[i / 2] = astForExpr(c, CHILD(n, i));
@@ -1538,11 +1542,9 @@ function astForBinop (c, n) {
 
 
 function astForTestlist(c, n) {
-    /* this doesn't show up in Grammar.txt never did: testlist_gexp: test (',' test)* [','] */
-    /* testlist_comp: test (',' test)* [','] */
+
+    /* testlist_comp: test (',' comp_for | (',' test)* [',']) */
     /* testlist: test (',' test)* [','] */
-    /* testlist_safe: test (',' test)+ [','] */
-    /* testlist1: test (',' test)* */
     goog.asserts.assert(NCH(n) > 0);
     if (n.type === SYM.testlist_comp) {
         if (NCH(n) > 1) {
@@ -1550,14 +1552,14 @@ function astForTestlist(c, n) {
         }
     }
     else {
-        goog.asserts.assert(n.type === SYM.testlist || n.type === SYM.testlist_safe || n.type === SYM.testlist1);
+        goog.asserts.assert(n.type === SYM.testlist || n.type === SYM.testlist_star_expr);
     }
 
     if (NCH(n) === 1) {
         return astForExpr(c, CHILD(n, 0));
     }
     else {
-        return new Tuple(seqForTestlist(c, n), Load, n.lineno, n.col_offset);
+        return new Tuple(seqForTestlist(c, n), Load, n.lineno, n.col_offset/*, c.c_arena */);
     }
 
 }
@@ -1916,11 +1918,9 @@ function astForSlice (c, n) {
 }
 
 function astForAtom(c, n) {
-    /* atom: ('(' [yield_expr|testlist_comp] ')' |
-       '[' [listmaker] ']' |
-       '{' [dictorsetmaker] '}' |
-       '`' testlist1 '`' |
-       NAME | NUMBER | STRING+)
+    /* atom: ('(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']'
+       | '{' [dictmaker|testlist_comp] '}' | NAME | NUMBER | STRING+
+       | '...' | 'None' | 'True' | 'False'
     */
     var i;
     var values;
@@ -1930,8 +1930,26 @@ function astForAtom(c, n) {
     var elts;
     switch (ch.type) {
         case TOK.T_NAME:
+            var s = ch.value;
             // All names start in Load context, but may be changed later
-            return new Name(strobj(ch.value), Load, n.lineno, n.col_offset);
+            if (s.length >= 4 && s.length <= 5) {
+                if (s === "None") {
+                    return new NameConstant(Sk.builtin.none.none$, n.lineno, n.col_offset /* c.c_arena*/);
+                }
+
+                if (s === "True") {
+                    return new NameConstant(Sk.builtin.bool.true$, n.lineno, n.col_offset /* c.c_arena*/);
+                }
+
+                if (s === "False") {
+                    return new NameConstant(Sk.builtin.bool.false$, n.lineno, n.col_offset /* c.c_arena*/);
+                }
+
+            }
+            var name = new_identifier(s, c)
+
+            /* All names start in Load context, but may later be changed. */
+            return new Name(name, Load, n.lineno, n.col_offset);
         case TOK.T_STRING:
             return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
@@ -1956,11 +1974,11 @@ function astForAtom(c, n) {
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA) {
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
-            } 
+            }
             return astForListcomp(c, ch);
-            
+
         case TOK.T_LBRACE:
-            /* dictorsetmaker: 
+            /* dictorsetmaker:
              *     (test ':' test (comp_for : (',' test ':' test)* [','])) |
              *     (test (comp_for | (',' test)* [',']))
              */
@@ -1970,7 +1988,7 @@ function astForAtom(c, n) {
             if (n.type === TOK.T_RBRACE) {
                 //it's an empty dict
                 return new Dict([], null, n.lineno, n.col_offset);
-            } 
+            }
             else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
                 //it's a simple set
                 elts = [];
@@ -1980,15 +1998,15 @@ function astForAtom(c, n) {
                     elts[i / 2] = expression;
                 }
                 return new Set(elts, n.lineno, n.col_offset);
-            } 
+            }
             else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
                 //it's a set comprehension
                 return astForSetComp(c, ch);
-            } 
+            }
             else if (NCH(ch) > 3 && CHILD(ch, 3).type === SYM.comp_for) {
                 //it's a dict compr. I think.
                 return astForDictComp(c, ch);
-            } 
+            }
             else {
                 size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
                 for (i = 0; i < NCH(ch); i += 4) {
@@ -2036,9 +2054,18 @@ function astForPower (c, n) {
     return e;
 }
 
+function astForStarred(c, n) {
+    REQ(n, SYM.star_expr);
+
+    /* The Load context is changed later */
+    return Starred(astForExpr(c, CHILD(n ,1)), Load, n.lineno, n.col_offset /*, c.c_arena */)
+}
+
 function astForExpr (c, n) {
-    /* handle the full range of simple expressions
+    /*
+     handle the full range of simple expressions
      test: or_test ['if' or_test 'else' test] | lambdef
+     test_nocond: or_test | lambdef_nocond
      or_test: and_test ('or' and_test)*
      and_test: not_test ('and' not_test)*
      not_test: 'not' not_test | comparison
@@ -2050,17 +2077,10 @@ function astForExpr (c, n) {
      arith_expr: term (('+'|'-') term)*
      term: factor (('*'|'/'|'%'|'//') factor)*
      factor: ('+'|'-'|'~') factor | power
-     power: atom trailer* ('**' factor)*
-
-     As well as modified versions that exist for backward compatibility,
-     to explicitly allow:
-     [ x for x in lambda: 0, lambda: 1 ]
-     (which would be ambiguous without these extra rules)
-
-     old_test: or_test | old_lambdef
-     old_lambdef: 'lambda' [vararglist] ':' old_test
-
-     */
+     power: atom_expr ['**' factor]
+     atom_expr: [AWAIT] atom trailer*
+     yield_expr: 'yield' [yield_arg]
+    */
 
     var exp;
     var cmps;
@@ -2070,14 +2090,14 @@ function astForExpr (c, n) {
     LOOP: while (true) {
         switch (n.type) {
             case SYM.test:
-            case SYM.old_test:
-                if (CHILD(n, 0).type === SYM.lambdef || CHILD(n, 0).type === SYM.old_lambdef) {
+            case SYM.test_nocond:
+                if (CHILD(n, 0).type === SYM.lambdef || CHILD(n, 0).type === SYM.lambdef_nocond) {
                     return astForLambdef(c, CHILD(n, 0));
                 }
                 else if (NCH(n) > 1) {
                     return astForIfexpr(c, n);
                 }
-            // fallthrough
+                // fallthrough
             case SYM.or_test:
             case SYM.and_test:
                 if (NCH(n) === 1) {
@@ -2089,7 +2109,7 @@ function astForExpr (c, n) {
                     seq[i / 2] = astForExpr(c, CHILD(n, i));
                 }
                 if (CHILD(n, 1).value === "and") {
-                    return new BoolOp(And, seq, n.lineno, n.col_offset);
+                    return new BoolOp(And, seq, n.lineno, n.col_offset /*, c.c_arena*/);
                 }
                 goog.asserts.assert(CHILD(n, 1).value === "or");
                 return new BoolOp(Or, seq, n.lineno, n.col_offset);
@@ -2117,6 +2137,12 @@ function astForExpr (c, n) {
                     return new Compare(astForExpr(c, CHILD(n, 0)), ops, cmps, n.lineno, n.col_offset);
                 }
                 break;
+            case SYM.star_expr:
+                return astForStarred(c, n)
+            /* The next fize cases all handle BinOps  The main body of code
+               is the same in each case, but the switch turned inside out to
+               reuse the code for each type of operator
+             */
             case SYM.expr:
             case SYM.xor_expr:
             case SYM.and_expr:
@@ -2129,10 +2155,28 @@ function astForExpr (c, n) {
                 }
                 return astForBinop(c, n);
             case SYM.yield_expr:
+                var an;
+                var en
+                var is_from = false;
                 exp = null;
-                if (NCH(n) === 2) {
-                    exp = astForTestlist(c, CHILD(n, 1));
+                if (NCH(n) > 1) {
+                    an = CHILD(m, 1); /* yield_arg */
                 }
+
+                if (an) {
+                    en = CHILD(an, NCH(an) - 1);
+                    if (NCH(an) == 2) {
+                        is_from = true;
+                        exp = astForExpr(c, en);
+                    } else {
+                        exp = astForTestlist(c, en);
+                    }
+                }
+
+                if (is_from) {
+                    return new YieldFrom(exp, n.lineno, n.col_offset);
+                }
+
                 return new Yield(exp, n.lineno, n.col_offset);
             case SYM.factor:
                 if (NCH(n) === 1) {
