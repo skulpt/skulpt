@@ -2180,9 +2180,6 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case AugAssign:
             return this.caugassign(s);
-        case Print:
-            this.cprint(s);
-            break;
         case For_:
             return this.cfor(s);
         case While_:
@@ -2191,12 +2188,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.cif(s);
         case Raise:
             return this.craise(s);
-        case TryExcept:
-            return this.ctryexcept(s);
-        case TryFinally:
-            return this.ctryfinally(s);
-        case With_:
-            return this.cwith(s);
+        // TODO compile Try and With here
         case Assert:
             return this.cassert(s);
         case Import_:
@@ -2318,7 +2310,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here
-    goog.asserts.assert(scope || name.v.charAt(1) === "_");
+    //goog.asserts.assert(scope || name.v.charAt(1) === "_");
 
     // in generator or at module scope, we need to store to $loc, rather that
     // to actual JS stack variables.

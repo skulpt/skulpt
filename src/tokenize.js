@@ -37,81 +37,19 @@ Sk.Tokenizer = function (filename, interactive, callback) {
         var i;
         for (i = 1; i < this.indents.length; ++i) // pop remaining indent levels
         {
-            if (this.callback(Sk.Tokenizer.Tokens.T_DEDENT, "", [this.lnum, 0], [this.lnum, 0], "")) {
+            if (this.callback(this.tokens.T_DEDENT, "", [this.lnum, 0], [this.lnum, 0], "")) {
                 return "done";
             }
         }
-        if (this.callback(Sk.Tokenizer.Tokens.T_ENDMARKER, "", [this.lnum, 0], [this.lnum, 0], "")) {
+        if (this.callback(this.tokens.T_ENDMARKER, "", [this.lnum, 0], [this.lnum, 0], "")) {
             return "done";
         }
 
         return "failed";
     };
 
-};
-
-/**
- * @enum {number}
- */
-Sk.Tokenizer.Tokens = {
-    T_ENDMARKER       : 0,
-    T_NAME            : 1,
-    T_NUMBER          : 2,
-    T_STRING          : 3,
-    T_NEWLINE         : 4,
-    T_INDENT          : 5,
-    T_DEDENT          : 6,
-    T_LPAR            : 7,
-    T_RPAR            : 8,
-    T_LSQB            : 9,
-    T_RSQB            : 10,
-    T_COLON           : 11,
-    T_COMMA           : 12,
-    T_SEMI            : 13,
-    T_PLUS            : 14,
-    T_MINUS           : 15,
-    T_STAR            : 16,
-    T_SLASH           : 17,
-    T_VBAR            : 18,
-    T_AMPER           : 19,
-    T_LESS            : 20,
-    T_GREATER         : 21,
-    T_EQUAL           : 22,
-    T_DOT             : 23,
-    T_PERCENT         : 24,
-    T_BACKQUOTE       : 25,
-    T_LBRACE          : 26,
-    T_RBRACE          : 27,
-    T_EQEQUAL         : 28,
-    T_NOTEQUAL        : 29,
-    T_LESSEQUAL       : 30,
-    T_GREATEREQUAL    : 31,
-    T_TILDE           : 32,
-    T_CIRCUMFLEX      : 33,
-    T_LEFTSHIFT       : 34,
-    T_RIGHTSHIFT      : 35,
-    T_DOUBLESTAR      : 36,
-    T_PLUSEQUAL       : 37,
-    T_MINEQUAL        : 38,
-    T_STAREQUAL       : 39,
-    T_SLASHEQUAL      : 40,
-    T_PERCENTEQUAL    : 41,
-    T_AMPEREQUAL      : 42,
-    T_VBAREQUAL       : 43,
-    T_CIRCUMFLEXEQUAL : 44,
-    T_LEFTSHIFTEQUAL  : 45,
-    T_RIGHTSHIFTEQUAL : 46,
-    T_DOUBLESTAREQUAL : 47,
-    T_DOUBLESLASH     : 48,
-    T_DOUBLESLASHEQUAL: 49,
-    T_AT              : 50,
-    T_OP              : 51,
-    T_COMMENT         : 52,
-    T_NL              : 53,
-    T_RARROW          : 54,
-    T_ERRORTOKEN      : 55,
-    T_N_TOKENS        : 56,
-    T_NT_OFFSET       : 256
+    this.tokens = Sk.token.tokens;
+    this.tok_name = Sk.token.tok_name;
 };
 
 /** @param {...*} x */
@@ -136,11 +74,11 @@ var Whitespace = "[ \\f\\t]*";
 var Comment_ = "#[^\\r\\n]*";
 var Ident = "[a-zA-Z_]\\w*";
 
-var Binnumber = "0[bB][01]*";
-var Hexnumber = "0[xX][\\da-fA-F]*[lL]?";
-var Octnumber = "0[oO]?[0-7]*[lL]?";
-var Decnumber = "[1-9]\\d*[lL]?";
-var Intnumber = group(Binnumber, Hexnumber, Octnumber, Decnumber);
+var Hexnumber = '0[xX][\da-fA-F]*';
+var Binnumber = '0[bB][01]*';
+var Octnumber = '0[oO][0-7]*';
+var Decnumber = '(?:0+|[1-9]\d*)';
+var Intnumber = group(Hexnumber, Binnumber, Octnumber, Decnumber);
 
 var Exponent = "[eE][-+]?\\d+";
 var Pointfloat = group("\\d+\\.\\d*", "\\.\\d+") + maybe(Exponent);
@@ -157,14 +95,14 @@ var Double_ = '^[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
 var Single3 = "[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
 // tail end of """ string
 var Double3 = '[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
-var Triple = group("[ubUB]?[rR]?'''", '[ubUB]?[rR]?"""');
-var String_ = group("[uU]?[rR]?'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
+var Triple = group("[bB]?[rR]?'''", '[bB]?[rR]?"""');
+var String_ = group("[bB]?[rR]?'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
     '[uU]?[rR]?"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*"');
 
 // Because of leftmost-then-longest match semantics, be sure to put the
 // longest operators first (e.g., if = came before ==, == would get
 // recognized as two instances of =).
-var Operator = group("\\*\\*=?", ">>=?", "<<=?", "<>", "!=",
+var Operator = group("\\*\\*=?", ">>=?", "<<=?", "!=",
     "//=?", "->",
     "[+\\-*/%&|^=<>]=?",
     "~");
@@ -185,10 +123,7 @@ var PseudoToken = "^" + group(PseudoExtras, Number_, Funny, ContStr, Ident);
 var triple_quoted = {
     "'''"  : true, '"""': true,
     "r'''" : true, 'r"""': true, "R'''": true, 'R"""': true,
-    "u'''" : true, 'u"""': true, "U'''": true, 'U"""': true,
     "b'''" : true, 'b"""': true, "B'''": true, 'B"""': true,
-    "ur'''": true, 'ur"""': true, "Ur'''": true, 'Ur"""': true,
-    "uR'''": true, 'uR"""': true, "UR'''": true, 'UR"""': true,
     "br'''": true, 'br"""': true, "Br'''": true, 'Br"""': true,
     "bR'''": true, 'bR"""': true, "BR'''": true, 'BR"""': true
 };
@@ -196,23 +131,10 @@ var triple_quoted = {
 var single_quoted = {
     "'"  : true, '"': true,
     "r'" : true, 'r"': true, "R'": true, 'R"': true,
-    "u'" : true, 'u"': true, "U'": true, 'U"': true,
     "b'" : true, 'b"': true, "B'": true, 'B"': true,
-    "ur'": true, 'ur"': true, "Ur'": true, 'Ur"': true,
-    "uR'": true, 'uR"': true, "UR'": true, 'UR"': true,
     "br'": true, 'br"': true, "Br'": true, 'Br"': true,
     "bR'": true, 'bR"': true, "BR'": true, 'BR"': true
 };
-
-// hack to make closure keep those objects. not sure what a better way is.
-(function () {
-    var k;
-    for (k in triple_quoted) {
-    }
-    for (k in single_quoted) {
-    }
-}());
-
 
 var tabsize = 8;
 
@@ -297,7 +219,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
         endmatch = this.endprog.test(line);
         if (endmatch) {
             pos = end = this.endprog.lastIndex;
-            if (this.callback(Sk.Tokenizer.Tokens.T_STRING, this.contstr + line.substring(0, end),
+            if (this.callback(this.tokens.T_STRING, this.contstr + line.substring(0, end),
                 this.strstart, [this.lnum, end], this.contline + line)) {
                 return 'done';
             }
@@ -306,7 +228,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
             this.contline = undefined;
         }
         else if (this.needcont && line.substring(line.length - 2) !== "\\\n" && line.substring(line.length - 3) !== "\\\r\n") {
-            if (this.callback(Sk.Tokenizer.Tokens.T_ERRORTOKEN, this.contstr + line,
+            if (this.callback(this.tokens.T_ERRORTOKEN, this.contstr + line,
                 this.strstart, [this.lnum, line.length], this.contline)) {
                 return 'done';
             }
@@ -349,12 +271,12 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
             if (line.charAt(pos) === '#') {
                 comment_token = rstrip(line.substring(pos), '\r\n');
                 nl_pos = pos + comment_token.length;
-                if (this.callback(Sk.Tokenizer.Tokens.T_COMMENT, comment_token,
+                if (this.callback(this.tokens.T_COMMENT, comment_token,
                     [this.lnum, pos], [this.lnum, pos + comment_token.length], line)) {
                     return 'done';
                 }
                 //print("HERE:1");
-                if (this.callback(Sk.Tokenizer.Tokens.T_NL, line.substring(nl_pos),
+                if (this.callback(this.tokens.T_NL, line.substring(nl_pos),
                     [this.lnum, nl_pos], [this.lnum, line.length], line)) {
                     return 'done';
                 }
@@ -362,7 +284,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
             }
             else {
                 //print("HERE:2");
-                if (this.callback(Sk.Tokenizer.Tokens.T_NL, line.substring(pos),
+                if (this.callback(this.tokens.T_NL, line.substring(pos),
                     [this.lnum, pos], [this.lnum, line.length], line)) {
                     return 'done';
                 }
@@ -375,7 +297,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
         if (column > this.indents[this.indents.length - 1]) // count indents or dedents
         {
             this.indents.push(column);
-            if (this.callback(Sk.Tokenizer.Tokens.T_INDENT, line.substring(0, pos), [this.lnum, 0], [this.lnum, pos], line)) {
+            if (this.callback(this.tokens.T_INDENT, line.substring(0, pos), [this.lnum, 0], [this.lnum, pos], line)) {
                 return 'done';
             }
         }
@@ -386,7 +308,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
             }
             this.indents.splice(this.indents.length - 1, 1);
             //print("dedent here");
-            if (this.callback(Sk.Tokenizer.Tokens.T_DEDENT, '', [this.lnum, pos], [this.lnum, pos], line)) {
+            if (this.callback(this.tokens.T_DEDENT, '', [this.lnum, pos], [this.lnum, pos], line)) {
                 return 'done';
             }
         }
@@ -421,22 +343,22 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
             initial = line.charAt(start);
             //Sk.debugout("token:",token, "initial:",initial, start, end);
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.')) {
-                if (this.callback(Sk.Tokenizer.Tokens.T_NUMBER, token, spos, epos, line)) {
+                if (this.callback(this.tokens.T_NUMBER, token, spos, epos, line)) {
                     return 'done';
                 }
             }
             else if (initial === '\r' || initial === '\n') {
-                newl = Sk.Tokenizer.Tokens.T_NEWLINE;
+                newl = this.tokens.T_NEWLINE;
                 //print("HERE:3");
                 if (this.parenlev > 0) {
-                    newl = Sk.Tokenizer.Tokens.T_NL;
+                    newl = this.tokens.T_NL;
                 }
                 if (this.callback(newl, token, spos, epos, line)) {
                     return 'done';
                 }
             }
             else if (initial === '#') {
-                if (this.callback(Sk.Tokenizer.Tokens.T_COMMENT, token, spos, epos, line)) {
+                if (this.callback(this.tokens.T_COMMENT, token, spos, epos, line)) {
                     return 'done';
                 }
             }
@@ -447,7 +369,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
                 if (endmatch) {
                     pos = this.endprog.lastIndex + pos;
                     token = line.substring(start, pos);
-                    if (this.callback(Sk.Tokenizer.Tokens.T_STRING, token, spos, [this.lnum, pos], line)) {
+                    if (this.callback(this.tokens.T_STRING, token, spos, [this.lnum, pos], line)) {
                         return 'done';
                     }
                 }
@@ -472,19 +394,19 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
                     return false;
                 }
                 else {
-                    if (this.callback(Sk.Tokenizer.Tokens.T_STRING, token, spos, epos, line)) {
+                    if (this.callback(this.tokens.T_STRING, token, spos, epos, line)) {
                         return 'done';
                     }
                 }
             }
             else if (this.namechars.indexOf(initial) !== -1) {
-                if (this.callback(Sk.Tokenizer.Tokens.T_NAME, token, spos, epos, line)) {
+                if (this.callback(this.tokens.T_NAME, token, spos, epos, line)) {
                     return 'done';
                 }
             }
             else if (initial === '\\') {
                 //print("HERE:4");
-                if (this.callback(Sk.Tokenizer.Tokens.T_NL, token, spos, [this.lnum, pos], line)) {
+                if (this.callback(this.tokens.T_NL, token, spos, [this.lnum, pos], line)) {
                     return 'done';
                 }
                 this.continued = true;
@@ -496,13 +418,13 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
                 else if (')]}'.indexOf(initial) !== -1) {
                     this.parenlev -= 1;
                 }
-                if (this.callback(Sk.Tokenizer.Tokens.T_OP, token, spos, epos, line)) {
+                if (this.callback(this.tokens.T_OP, token, spos, epos, line)) {
                     return 'done';
                 }
             }
         }
         else {
-            if (this.callback(Sk.Tokenizer.Tokens.T_ERRORTOKEN, line.charAt(pos),
+            if (this.callback(this.tokens.T_ERRORTOKEN, line.charAt(pos),
                 [this.lnum, pos], [this.lnum, pos + 1], line)) {
                 return 'done';
             }
@@ -513,22 +435,5 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
     return false;
 };
 
-Sk.Tokenizer.tokenNames = {
-    0  : 'T_ENDMARKER', 1: 'T_NAME', 2: 'T_NUMBER', 3: 'T_STRING', 4: 'T_NEWLINE',
-    5  : 'T_INDENT', 6: 'T_DEDENT', 7: 'T_LPAR', 8: 'T_RPAR', 9: 'T_LSQB',
-    10 : 'T_RSQB', 11: 'T_COLON', 12: 'T_COMMA', 13: 'T_SEMI', 14: 'T_PLUS',
-    15 : 'T_MINUS', 16: 'T_STAR', 17: 'T_SLASH', 18: 'T_VBAR', 19: 'T_AMPER',
-    20 : 'T_LESS', 21: 'T_GREATER', 22: 'T_EQUAL', 23: 'T_DOT', 24: 'T_PERCENT',
-    25 : 'T_BACKQUOTE', 26: 'T_LBRACE', 27: 'T_RBRACE', 28: 'T_EQEQUAL', 29: 'T_NOTEQUAL',
-    30 : 'T_LESSEQUAL', 31: 'T_GREATEREQUAL', 32: 'T_TILDE', 33: 'T_CIRCUMFLEX', 34: 'T_LEFTSHIFT',
-    35 : 'T_RIGHTSHIFT', 36: 'T_DOUBLESTAR', 37: 'T_PLUSEQUAL', 38: 'T_MINEQUAL', 39: 'T_STAREQUAL',
-    40 : 'T_SLASHEQUAL', 41: 'T_PERCENTEQUAL', 42: 'T_AMPEREQUAL', 43: 'T_VBAREQUAL', 44: 'T_CIRCUMFLEXEQUAL',
-    45 : 'T_LEFTSHIFTEQUAL', 46: 'T_RIGHTSHIFTEQUAL', 47: 'T_DOUBLESTAREQUAL', 48: 'T_DOUBLESLASH', 49: 'T_DOUBLESLASHEQUAL',
-    50 : 'T_AT', 51: 'T_OP', 52: 'T_COMMENT', 53: 'T_NL', 54: 'T_RARROW',
-    55 : 'T_ERRORTOKEN', 56: 'T_N_TOKENS',
-    256: 'T_NT_OFFSET'
-};
-
 goog.exportSymbol("Sk.Tokenizer", Sk.Tokenizer);
 goog.exportSymbol("Sk.Tokenizer.prototype.generateTokens", Sk.Tokenizer.prototype.generateTokens);
-goog.exportSymbol("Sk.Tokenizer.tokenNames", Sk.Tokenizer.tokenNames);

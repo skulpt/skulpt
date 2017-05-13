@@ -9,7 +9,7 @@
 //
 
 var SYM = Sk.ParseTables.sym;
-var TOK = Sk.Tokenizer.Tokens;
+var TOK = Sk.token.tokens;
 var COMP_GENEXP = 0;
 var COMP_SETCOMP = 1;
 
@@ -213,11 +213,11 @@ function getOperator (n) {
 }
 
 function new_identifier(n, c) {
-
+    return n;
 }
 
 function astForCompOp (c, n) {
-    /* comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'
+    /* comp_op: '<'|'>'|'=='|'>='|'<='|'!='|'in'|'not' 'in'|'is'
      |'is' 'not'
      */
     REQ(n, SYM.comp_op);
@@ -398,7 +398,6 @@ function astForTryStmt (c, n) {
     goog.asserts.assert(finally_ !== null);
     return new TryFinally(body, finally_, n.lineno, n.col_offset);
 }
-
 
 function astForDottedName (c, n) {
     var i;
@@ -842,7 +841,7 @@ function astForListcomp (c, n) {
             n = CHILD(n, 0);
             REQ(n, SYM.list_if);
             nifs++;
-            if (NCH(n) == 2) {
+            if (NCH(n) === 2) {
                 return nifs;
             }
             n = CHILD(n, 2);
@@ -1392,7 +1391,7 @@ function astForComprehension(c, n) {
             n = CHILD(n, 0);
             REQ(n, SYM.comp_if);
             nifs++;
-            if (NCH(n) == 2) {
+            if (NCH(n) === 2) {
                 return nifs;
             }
             n = CHILD(n, 2);
@@ -1537,12 +1536,9 @@ function astForBinop (c, n) {
         result = new BinOp(result, newoperator, tmp, nextOper.lineno, nextOper.col_offset);
     }
     return result;
-
 }
 
-
 function astForTestlist(c, n) {
-
     /* testlist_comp: test (',' comp_for | (',' test)* [',']) */
     /* testlist: test (',' test)* [','] */
     goog.asserts.assert(NCH(n) > 0);
@@ -1561,7 +1557,6 @@ function astForTestlist(c, n) {
     else {
         return new Tuple(seqForTestlist(c, n), Load, n.lineno, n.col_offset/*, c.c_arena */);
     }
-
 }
 
 function astForExprStmt (c, n) {
@@ -1918,7 +1913,7 @@ function astForSlice (c, n) {
 }
 
 function astForAtom(c, n) {
-    /* atom: ('(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']'
+    /* atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']'
        | '{' [dictmaker|testlist_comp] '}' | NAME | NUMBER | STRING+
        | '...' | 'None' | 'True' | 'False'
     */
@@ -2024,6 +2019,55 @@ function astForAtom(c, n) {
     }
 }
 
+function astForAtomExpr(c, n) {
+    var i, nch, start = 0;
+    var e, tmp;
+
+    REQ(n, SYM.atom_expr);
+    nch = NCH(n);
+
+    if (CHILD(n, 0).type === TOK.T_AWAIT) {
+        start = 1;
+        goog.asserts.assert(nch > 1);
+    }
+
+    e = astForAtom(c, CHILD(n, start));
+    if (!e) {
+        return null;
+    }
+
+    if (nch === 1) {
+        return e;
+    }
+
+    if (start && nch === 2) {
+        return new Await(e, n.lineno, n.col_offset /*, c->c_arena*/);
+    }
+
+    for (i = start + 1; i < nch; i++) {
+        var ch = CHILD(n, i);
+        if (ch.type !== SYM.trailer) {
+            break;
+        }
+        tmp = astForTrailer(c, ch, e);
+        if (!tmp) {
+            return null;
+        }
+
+        tmp.lineno = e.lineno;
+        tmp.col_offset = e.col_offset;
+        e = tmp;
+    }
+
+    if (start) {
+        /* there was an AWAIT */
+        return new Await(e, n.line, n.col_offset /*, c->c_arena*/);
+    }
+    else {
+        return e;
+    }
+}
+
 function astForPower (c, n) {
     /* power: atom trailer* ('**' factor)*
      */
@@ -2033,19 +2077,9 @@ function astForPower (c, n) {
     var i;
     var e;
     REQ(n, SYM.power);
-    e = astForAtom(c, CHILD(n, 0));
+    e = astForAtomExpr(c, CHILD(n, 0));
     if (NCH(n) === 1) {
         return e;
-    }
-    for (i = 1; i < NCH(n); ++i) {
-        ch = CHILD(n, i);
-        if (ch.type !== SYM.trailer) {
-            break;
-        }
-        tmp = astForTrailer(c, ch, e);
-        tmp.lineno = e.lineno;
-        tmp.col_offset = e.col_offset;
-        e = tmp;
     }
     if (CHILD(n, NCH(n) - 1).type === SYM.factor) {
         f = astForExpr(c, CHILD(n, NCH(n) - 1));
@@ -2193,26 +2227,12 @@ function astForExpr (c, n) {
     }
 }
 
-function astForPrintStmt (c, n) {
-    /* print_stmt: 'print' ( [ test (',' test)* [','] ]
-     | '>>' test [ (',' test)+ [','] ] )
-     */
-    var nl;
-    var i, j;
-    var seq;
-    var start = 1;
-    var dest = null;
-    REQ(n, SYM.print_stmt);
-    if (NCH(n) >= 2 && CHILD(n, 1).type === TOK.T_RIGHTSHIFT) {
-        dest = astForExpr(c, CHILD(n, 2));
-        start = 4;
-    }
-    seq = [];
-    for (i = start, j = 0; i < NCH(n); i += 2, ++j) {
-        seq[j] = astForExpr(c, CHILD(n, i));
-    }
-    nl = (CHILD(n, NCH(n) - 1)).type === TOK.T_COMMA ? false : true;
-    return new Print(dest, seq, nl, n.lineno, n.col_offset);
+function astForNonLocalStmt(c, n) {
+    throw new Error("Not implemented");
+}
+
+function astForAsycnStmt(c, n) {
+    throw new Error("Not implemented");
 }
 
 function astForStmt (c, n) {
@@ -2226,17 +2246,14 @@ function astForStmt (c, n) {
         n = CHILD(n, 0);
     }
     if (n.type === SYM.small_stmt) {
-        REQ(n, SYM.small_stmt);
         n = CHILD(n, 0);
-        /* small_stmt: expr_stmt | print_stmt  | del_stmt | pass_stmt
-         | flow_stmt | import_stmt | global_stmt | exec_stmt
-         | assert_stmt
-         */
+        /* small_stmt: expr_stmt | del_stmt | pass_stmt | flow_stmt
+                   | import_stmt | global_stmt | nonlocal_stmt | assert_stmt
+                   | debugger_stmt (skulpt special)
+        */
         switch (n.type) {
             case SYM.expr_stmt:
                 return astForExprStmt(c, n);
-            case SYM.print_stmt:
-                return astForPrintStmt(c, n);
             case SYM.del_stmt:
                 return astForDelStmt(c, n);
             case SYM.pass_stmt:
@@ -2247,8 +2264,8 @@ function astForStmt (c, n) {
                 return astForImportStmt(c, n);
             case SYM.global_stmt:
                 return astForGlobalStmt(c, n);
-            case SYM.exec_stmt:
-                return astForExecStmt(c, n);
+            case SYM.nonlocal_stmt:
+                return astForNonLocalStmt(c, n);
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
             case SYM.debugger_stmt:
@@ -2259,7 +2276,7 @@ function astForStmt (c, n) {
     }
     else {
         /* compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt
-                        | funcdef | classdef | decorated
+                        | funcdef | classdef | decorated | async_stmt
         */
         ch = CHILD(n, 0);
         REQ(n, SYM.compound_stmt);
@@ -2280,11 +2297,13 @@ function astForStmt (c, n) {
                 return astForClassdef(c, ch, []);
             case SYM.decorated:
                 return astForDecorated(c, ch);
+            case SYM.async_stmt:
+                return astForAsycnStmt(c, ch);
             default:
                 goog.asserts.assert("unhandled compound_stmt");
         }
     }
-}
+};
 
 Sk.astFromParse = function (n, filename, c_flags) {
     var j;

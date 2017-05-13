@@ -160,7 +160,7 @@ Parser.prototype.addtoken = function (type, value, context) {
 // turn a token into a label
 Parser.prototype.classify = function (type, value, context) {
     var ilabel;
-    if (type === Sk.Tokenizer.Tokens.T_NAME) {
+    if (type === Sk.token.tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
@@ -284,9 +284,9 @@ function makeParser (filename, style) {
     lineno = 1;
     column = 0;
     prefix = "";
-    T_COMMENT = Sk.Tokenizer.Tokens.T_COMMENT;
-    T_NL = Sk.Tokenizer.Tokens.T_NL;
-    T_OP = Sk.Tokenizer.Tokens.T_OP;
+    T_COMMENT = Sk.token.tokens.T_COMMENT;
+    T_NL = Sk.token.tokens.T_NL;
+    T_OP = Sk.token.tokens.T_OP;
     tokenizer = new Sk.Tokenizer(filename, style === "single_input", function (type, value, start, end, line) {
         var s_lineno = start[0];
         var s_column = start[1];
@@ -366,7 +366,7 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
     } else {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
+        ret += Sk.token.tok_name[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
     }
     return ret;
 };

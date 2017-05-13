@@ -483,12 +483,6 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
-        case Print:
-            if (s.dest) {
-                this.visitExpr(s.dest);
-            }
-            this.SEQExpr(s.values);
-            break;
         case For_:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
@@ -522,15 +516,6 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case TryExcept:
-            this.SEQStmt(s.body);
-            this.SEQStmt(s.orelse);
-            this.visitExcepthandlers(s.handlers);
-            break;
-        case TryFinally:
-            this.SEQStmt(s.body);
-            this.SEQStmt(s.finalbody);
-            break;
         case Assert:
             this.visitExpr(s.test);
             if (s.msg) {
@@ -540,15 +525,6 @@ SymbolTable.prototype.visitStmt = function (s) {
         case Import_:
         case ImportFrom:
             this.visitAlias(s.names, s.lineno);
-            break;
-        case Exec:
-            this.visitExpr(s.body);
-            if (s.globals) {
-                this.visitExpr(s.globals);
-                if (s.locals) {
-                    this.visitExpr(s.locals);
-                }
-            }
             break;
         case Global:
             nameslen = s.names.length;

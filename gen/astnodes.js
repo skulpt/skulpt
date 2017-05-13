@@ -183,7 +183,7 @@ function ClassDef(/* {identifier} */ name, /* {asdl_seq *} */ bases, /*
 }
 
 /** @constructor */
-function Return(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
+function Return_(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
                      col_offset)
 {
     this.value = value;
@@ -193,7 +193,7 @@ function Return(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
-function Delete(/* {asdl_seq *} */ targets, /* {int} */ lineno, /* {int} */
+function Delete_(/* {asdl_seq *} */ targets, /* {int} */ lineno, /* {int} */
                      col_offset)
 {
     this.targets = targets;
@@ -246,7 +246,7 @@ function AnnAssign(/* {expr_ty} */ target, /* {expr_ty} */ annotation, /*
 }
 
 /** @constructor */
-function For(/* {expr_ty} */ target, /* {expr_ty} */ iter, /* {asdl_seq *} */
+function For_(/* {expr_ty} */ target, /* {expr_ty} */ iter, /* {asdl_seq *} */
                   body, /* {asdl_seq *} */ orelse, /* {int} */ lineno, /* {int}
                   */ col_offset)
 {
@@ -278,7 +278,7 @@ function AsyncFor(/* {expr_ty} */ target, /* {expr_ty} */ iter, /* {asdl_seq *}
 }
 
 /** @constructor */
-function While(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /* {asdl_seq *}
+function While_(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /* {asdl_seq *}
                     */ orelse, /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(test !== null && test !== undefined);
@@ -291,7 +291,7 @@ function While(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /* {asdl_seq *}
 }
 
 /** @constructor */
-function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /* {asdl_seq *} */
+function If_(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /* {asdl_seq *} */
                  orelse, /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(test !== null && test !== undefined);
@@ -337,7 +337,7 @@ function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause, /* {int} */ lineno,
 }
 
 /** @constructor */
-function Try(/* {asdl_seq *} */ body, /* {asdl_seq *} */ handlers, /* {asdl_seq
+function Try_(/* {asdl_seq *} */ body, /* {asdl_seq *} */ handlers, /* {asdl_seq
                   *} */ orelse, /* {asdl_seq *} */ finalbody, /* {int} */
                   lineno, /* {int} */ col_offset)
 {
@@ -363,7 +363,7 @@ function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg, /* {int} */ lineno,
 }
 
 /** @constructor */
-function Import(/* {asdl_seq *} */ names, /* {int} */ lineno, /* {int} */
+function Import_(/* {asdl_seq *} */ names, /* {int} */ lineno, /* {int} */
                      col_offset)
 {
     this.names = names;
@@ -950,12 +950,12 @@ ClassDef.prototype._fields = [
     "decorator_list", function(n) { return n.decorator_list; },
     "docstring", function(n) { return n.docstring; }
 ];
-Return.prototype._astname = "Return";
-Return.prototype._fields = [
+Return_.prototype._astname = "Return";
+Return_.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Delete.prototype._astname = "Delete";
-Delete.prototype._fields = [
+Delete_.prototype._astname = "Delete";
+Delete_.prototype._fields = [
     "targets", function(n) { return n.targets; }
 ];
 Assign.prototype._astname = "Assign";
@@ -976,8 +976,8 @@ AnnAssign.prototype._fields = [
     "value", function(n) { return n.value; },
     "simple", function(n) { return n.simple; }
 ];
-For.prototype._astname = "For";
-For.prototype._fields = [
+For_.prototype._astname = "For";
+For_.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "body", function(n) { return n.body; },
@@ -990,14 +990,14 @@ AsyncFor.prototype._fields = [
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-While.prototype._astname = "While";
-While.prototype._fields = [
+While_.prototype._astname = "While";
+While_.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-If.prototype._astname = "If";
-If.prototype._fields = [
+If_.prototype._astname = "If";
+If_.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
@@ -1017,8 +1017,8 @@ Raise.prototype._fields = [
     "exc", function(n) { return n.exc; },
     "cause", function(n) { return n.cause; }
 ];
-Try.prototype._astname = "Try";
-Try.prototype._fields = [
+Try_.prototype._astname = "Try";
+Try_.prototype._fields = [
     "body", function(n) { return n.body; },
     "handlers", function(n) { return n.handlers; },
     "orelse", function(n) { return n.orelse; },
@@ -1029,8 +1029,8 @@ Assert.prototype._fields = [
     "test", function(n) { return n.test; },
     "msg", function(n) { return n.msg; }
 ];
-Import.prototype._astname = "Import";
-Import.prototype._fields = [
+Import_.prototype._astname = "Import";
+Import_.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
 ImportFrom.prototype._astname = "ImportFrom";

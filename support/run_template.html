@@ -89,6 +89,7 @@ function runit(myDiv) {
             outf(err.nativeError.stack);
         } else {
             outf(err.toString());
+            outf(err.stack)
         }
     });
 }

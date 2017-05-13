@@ -105,6 +105,7 @@ Files = [
         'src/ffi.js',
         'src/iterator.js',
         'src/enumerate.js',
+        'src/token.js',
         'src/tokenize.js',
         'gen/parse_tables.js',
         'src/parser.js',
