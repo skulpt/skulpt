@@ -1245,7 +1245,6 @@ Compiler.prototype.ctryexcept = function (s) {
             this.vexpr(handler.name, "$err");
         }
 
-        // Need to execute finally before leaving body if an exception is raised
         this.vseqstmt(handler.body);
 
         // Should jump to finally, but finally is not implemented yet
@@ -1259,15 +1258,36 @@ Compiler.prototype.ctryexcept = function (s) {
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
-    // Should jump to finally, but finally is not implemented yet
     this._jump(end);
+
     this.setBlock(end);
 };
 
 Compiler.prototype.ctryfinally = function (s) {
-    out("/*todo; tryfinally*/");
-    // everything but the finally?
-    this.ctryexcept(s.body[0]);
+
+    var finalBody = this.newBlock("finalbody");
+    var exceptionHandler = this.newBlock("finalexh")
+    var exceptionToReRaise = this._gr("finally_reraise", "undefined");
+    this.u.tempsToSave.push(exceptionToReRaise);
+
+    this.setupExcept(exceptionHandler);
+    this.vseqstmt(s.body);
+    this.endExcept();
+    // Normal execution falls through to finally body
+    this._jump(finalBody);
+
+    this.setBlock(exceptionHandler);
+    // Exception handling also goes to the finally body,
+    // stashing the original exception to re-raise
+    out(exceptionToReRaise,"=$err;");
+    this._jump(finalBody);
+
+    this.setBlock(finalBody);
+    this.vseqstmt(s.finalbody);
+    // If finalbody executes normally, AND we have an exception
+    // to re-raise, we raise it.
+    out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+    // Else, we continue from here.
 };
 
 Compiler.prototype.cassert = function (s) {
