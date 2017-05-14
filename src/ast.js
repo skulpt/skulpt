@@ -213,7 +213,7 @@ function getOperator (n) {
 }
 
 function new_identifier(n, c) {
-    return n;
+    return Sk.builtin.str(n);
 }
 
 function astForCompOp (c, n) {
