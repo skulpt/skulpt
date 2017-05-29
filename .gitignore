@@ -18,3 +18,5 @@ test/namedtests.js
 Vagrantfile
 v8.log
 src/internalpython.js
+
+tmp.js

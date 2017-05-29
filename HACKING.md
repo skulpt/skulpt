@@ -8,7 +8,7 @@ What is Skulpt?
 
 Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work.
 
-To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
+To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
 
 **Python Version**
 
