@@ -15,6 +15,7 @@
 function outf(text) {
    var mypre = document.getElementById(Sk.pre);
    mypre.innerHTML = mypre.innerHTML + text;
+   console.log(text);
 }
 
 function showjs(text) {
@@ -51,17 +52,27 @@ function runit(myDiv) {
         }
     }
 
-   Sk.pre = myDiv+"_pre";
-   Sk.configure({output:outf,
-  	        read: builtinRead,
-            debugout: showjs,
-              });
-       var myPromise = Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody("<stdin>",true,prog,true);
-       });
-       myPromise.then(function(mod) {}, function(err) {
-           console.log(err.toString());
-            });
+    Sk.pre = myDiv+"_pre";
+    Sk.configure({
+        output:outf,
+        read: builtinRead,
+        inputfunTakesPrompt: true,
+        debugout: showjs,
+        debugging: %(debug_mode)s
+    });
+
+    var myPromise = Sk.misceval.asyncToPromise(function() {
+            return Sk.importMainWithBody("<stdin>",true,prog,true);
+    });
+
+    myPromise.then(function(mod) {}, function(err) {
+        if (err.message) {
+            outf(err.message + "\n");
+            outf(err.stack);  
+        } else {
+            outf(err.toString());
+        }   
+    });
 }
 </script>
 <h3>Test Code</h3>

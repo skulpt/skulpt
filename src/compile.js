@@ -2021,7 +2021,7 @@ Compiler.prototype.vstmt = function (s) {
             out("debugger;");
             break;
         default:
-            goog.asserts.fail("unhandled case in vstmt");
+            goog.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
     }
 };
 
