@@ -1274,7 +1274,7 @@ Compiler.prototype.ctryexcept = function (s) {
 
 Compiler.prototype.outputFinallyCascade = function (thisFinally) {
     var nextFinally;
-    
+
     // What do we do when we're done executing a 'finally' block?
     // Normally you just fall off the end. If we're 'return'ing,
     // 'continue'ing or 'break'ing, $postfinally tells us what to do.
@@ -1305,7 +1305,7 @@ Compiler.prototype.outputFinallyCascade = function (thisFinally) {
         // ('continue' is the same thing as 'break' for us)
 
         nextFinally = this.peekFinallyBlock();
-        
+
         out("if($postfinally!==undefined) {",
                 "if ($postfinally.returning",
                     (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
@@ -2162,7 +2162,7 @@ Compiler.prototype.vstmt = function (s) {
             out("debugger;");
             break;
         default:
-            goog.asserts.fail("unhandled case in vstmt: " + s.constructor.name);
+            goog.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
     }
 };
 
