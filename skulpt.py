@@ -240,6 +240,29 @@ def test(debug_mode=False):
         ret4 = rununits(debug_mode=debug_mode)
     return ret1 | ret2 | ret3 | ret4
 
+def test3(debug_mode=False):
+    """runs the unit tests in python 3."""
+    if debug_mode:
+        debugon = "--debug-mode"
+    else:
+        debugon = ""
+    print "Running jshint"
+    base_dirs = ["src", "debugger"]
+    for base_dir in base_dirs:
+        if sys.platform == "win32":
+            jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+            jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
+        else:
+            jshintcmd = "jshint " + base_dir + "/*.js"
+            jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
+    ret1 = os.system(jshintcmd)
+    print "Running JSCS"
+    ret2 = os.system(jscscmd)
+    print "Now running unit tests"
+    ret3 = rununits(p3=True, debug_mode=debug_mode)
+    return ret1 | ret2 | ret3
+
+
 def parse_time_args(argv):
     usageString = """
 
@@ -1067,7 +1090,13 @@ def shell(fn):
 
 
 def rununits(opt=False, p3=False, debug_mode=False):
-    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    if p3:
+        unit_dir = 'test/unit3'
+        p3on = 'true'
+    else:
+        unit_dir = 'test/unit'
+        p3on = 'false'
+    testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
@@ -1076,10 +1105,6 @@ def rununits(opt=False, p3=False, debug_mode=False):
             os.mkdir("support/tmp")
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
-        if p3:
-            p3on = 'true'
-        else:
-            p3on = 'false'
         f.write("""
 var input = read('%s');
 print('%s');
@@ -1308,6 +1333,8 @@ def main():
 
     if cmd == "test":
         test()
+    elif cmd == "test3":
+        test3()
     elif cmd == "testdebug":
         test(True)
     elif cmd == "dist":
