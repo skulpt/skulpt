@@ -271,6 +271,21 @@ class IterInheritsTestCase(unittest.TestCase):
         a = self.type2test(range(10))
         del a[9::1<<333]
 
+    def test_explicit_dunders(self):
+        l = [1]
+        list.__setitem__(l, 0, 42)
+        self.assertEqual(l[0], 42)
+        self.assertEqual(list.__getitem__(l, 0), 42)
+        self.assertEqual(list.__len__(l), 1)
+
+        l2 = [i for i in list.__iter__(l)]
+        self.assertEqual(l2, [42])
+
+        self.assertTrue(list.__contains__(l, 42))
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
