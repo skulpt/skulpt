@@ -294,9 +294,9 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
     return false;
 };
 
-Sk.builtin.list.prototype.__contains__ = function(self, item) {
+Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
     return Sk.builtin.list.prototype.sq$contains.call(self, item);
-};
+});
 
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
