@@ -301,28 +301,28 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.AttributeError(tname + " instance has no attribute '__len__'");
         };
         klass.prototype.tp$call = function (args, kw) {
-            var callf = this.tp$getattr("__call__");
-            /* todo; vararg kwdict */
-            if (callf) {
-                return Sk.misceval.apply(callf, undefined, undefined, kw, args);
-            }
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
+            return Sk.misceval.chain(this.tp$getattr("__call__", true), function(callf) {
+                if (callf === undefined) {
+                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
+                }
+                return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
+            });
         };
         klass.prototype.tp$iter = function () {
-            var ret;
             var iterf = this.tp$getattr("__iter__");
-            var tname = Sk.abstr.typeName(this);
-            if (iterf) {
-                ret = Sk.misceval.callsim(iterf);
-                return ret;
+            if (iterf === undefined) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
             }
-            throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
+            return Sk.misceval.callsim(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
-            var r;
-            var iternextf = this.tp$getattr("next");
-            if (iternextf) {
-                r = Sk.misceval.tryCatch(function() {
+            var self = this;
+            var r = Sk.misceval.chain(self.tp$getattr("next", canSuspend), function(/** {Object} */ iternextf) {
+                if (iternextf === undefined) {
+                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
+                }
+
+                return Sk.misceval.tryCatch(function() {
                     return Sk.misceval.callsimOrSuspend(iternextf);
                 }, function(e) {
                     if (e instanceof Sk.builtin.StopIteration) {
@@ -331,12 +331,13 @@ Sk.builtin.type = function (name, bases, dict) {
                         throw e;
                     }
                 });
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-            }
+            });
+
+            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 
         klass.prototype.tp$getitem = function (key, canSuspend) {
-            var getf = this.tp$getattr("__getitem__"), r;
+            var getf = this.tp$getattr("__getitem__", canSuspend), r;
             if (getf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
@@ -344,7 +345,7 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
         };
         klass.prototype.tp$setitem = function (key, value, canSuspend) {
-            var setf = this.tp$getattr("__setitem__"), r;
+            var setf = this.tp$getattr("__setitem__", canSuspend), r;
             if (setf !== undefined) {
                 r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
