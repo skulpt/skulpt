@@ -14,7 +14,7 @@
 <script type="text/javascript">
 function outf(text) {
    var mypre = document.getElementById(Sk.pre);
-   mypre.innerHTML = mypre.innerHTML + text;
+   mypre.appendChild(document.createTextNode(text));
    console.log(text);
 }
 
