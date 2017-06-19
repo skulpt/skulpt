@@ -84,7 +84,18 @@ Sk.builtin.superbi = function superbi (a_type, self) {
     // object to be bound to
     this.obj = self;
     // super type
-    this.type = a_type.tp$mro.v[1];
+    if (!a_type.tp$mro) {
+        throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
+    }
+
+    if (!self) {
+        throw new Sk.builtin.NotImplementedError("unbound super not supported because " +
+                "skulpts implementation of type descriptors aren't brilliant yet, see this " +
+                "question for more information https://stackoverflow.com/a/30190341/117242");
+    }
+
+    this.type = a_type
+    this.obj_type = a_type.tp$mro.v[1];
 
     return this;
 
@@ -137,7 +148,7 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
 
         if (f) {
             // non-data descriptor
-            return f.call(descr, this.obj, this.type, canSuspend);
+            return f.call(descr, this.obj, this.obj_type, canSuspend);
         }
     }
 
@@ -163,10 +174,10 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
 Sk.builtin.superbi.prototype["$r"] = function super_repr(self)
 {
     if (this.obj) {
-        return "<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, <" + this.obj.tp$name + " object>>";
+        return Sk.builin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, <" + this.obj.tp$name + " object>>");
     } 
     
-    return "<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, NULL>";
+    return Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, NULL>");
 }
 
 // static PyObject *
