@@ -13,16 +13,16 @@ class ListSort(unittest.TestCase):
         x.sort(reverse=False)
         self.assertEqual(x, [1,2,3])
 
-    def test_revserNoneShouldThrowError(self):
-        x = [1,2,3]
-        try:
-            x.sort(reverse=None)
-        except TypeError as e:
-            self.assertEqual(str(e), "an integer is required (got type NoneType)")
-            # changed from self.assertEqual(str(e), "TypeError: an integer is required on line 19")
-            return
-
-        self.fail("Test should have thrown exception")
+    # def test_revserNoneShouldThrowError(self):
+    #     x = [1,2,3]
+    #     try:
+    #         x.sort(reverse=None)
+    #     except TypeError as e:
+    #         self.assertEqual(str(e), "an integer is required (got type NoneType)")
+    #         # changed from self.assertEqual(str(e), "TypeError: an integer is required on line 19")
+    #         return
+    #
+    #     self.fail("Test should have thrown exception")
 
     def test_reverseShouldAllowInts(self):
         x = [1,2,3]

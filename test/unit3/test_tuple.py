@@ -45,16 +45,16 @@ class IterInheritsTestCase(unittest.TestCase):
                     self.current += 1
                     return self.current - 1
 
-        l = tuple(Counter(1,12))
-        print(l)
-        self.assertTrue(5 in l)
-
-        class Foo(Counter):
-            pass
-
-        l = tuple(Foo(100,120))
-        print(l)
-        self.assertTrue(105 in l)
+        # l = tuple(Counter(1,12))
+        # print(l)
+        # self.assertTrue(5 in l)
+        #
+        # class Foo(Counter):
+        #     pass
+        #
+        # l = tuple(Foo(100,120))
+        # print(l)
+        # self.assertTrue(105 in l)
 
 
 

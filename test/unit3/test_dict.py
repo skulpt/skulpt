@@ -17,7 +17,7 @@ class DictTest(unittest.TestCase):
 
     def test_keys(self):
         d = {}
-        self.assertListEqual(list(d.keys()), [])
+        self.assertEqual(list(d.keys()), [])
         # changed from self.assertEqual(d.keys(), [])
         d = {'a': 1, 'b': 2}
         k = d.keys()
@@ -31,20 +31,20 @@ class DictTest(unittest.TestCase):
 
     def test_values(self):
         d = {}
-        self.assertListEqual(list(d.values()), [])
+        self.assertEqual(list(d.values()), [])
         # changed from self.assertEqual(d.values(), [])
         d = {1:2}
-        self.assertListEqual(list(d.values()), [2])
+        self.assertEqual(list(d.values()), [2])
         # changed from self.assertEqual(d.values(), [2])
 
         self.assertRaises(TypeError, d.values, None)
 
     def test_items(self):
         d = {}
-        self.assertListEqual(list(d.items()), [])
+        self.assertEqual(list(d.items()), [])
         # changed from self.assertEqual(d.items(), [])
         d = {1:2}
-        self.assertListEqual(list(d.items()), [(1, 2)])
+        self.assertEqual(list(d.items()), [(1, 2)])
         # changed from self.assertEqual(d.items(), [(1, 2)])
 
         self.assertRaises(TypeError, d.items, None)
