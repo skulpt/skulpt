@@ -1240,15 +1240,16 @@ goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases) {
+Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     // todo; metaclass
     var klass;
     var meta = Sk.builtin.type;
 
+    var l_cell = cell === undefined ? {} : cell;
     var locals = {};
 
     // init the dict for the class
-    func(globals, locals, []);
+    func(globals, locals, l_cell);
     // ToDo: check if func contains the __meta__ attribute
     // or if the bases contain __meta__
     // new Syntax would be different

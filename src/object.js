@@ -16,8 +16,6 @@ Sk.builtin.object = function () {
     return this;
 };
 
-
-
 var _tryGetSubscript = function(dict, pyName) {
     try {
         return dict.mp$subscript(pyName);

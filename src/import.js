@@ -207,10 +207,14 @@ Sk.doOneTimeInitialization = function () {
         for (base = parent; base !== undefined; base = base.tp$base) {
             bases.push(base);
         }
-
+        
+        child.tp$mro = new Sk.builtin.tuple([child]);
+        if (!child.tp$base){ 
+            child.tp$base = bases[0];
+        }
         child["$d"] = new Sk.builtin.dict([]);
         child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child]));
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
     };
 
     for (x in Sk.builtin) {

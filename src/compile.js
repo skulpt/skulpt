@@ -1662,13 +1662,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         entryBlock = "$gen.gi$resumeat";
         locals = "$gen.gi$locals";
     }
-    cells = "";
+    cells = ",$cell={}";
     if (hasCell) {
         if (isGenerator) {
             cells = ",$cell=$gen.gi$cells";
-        }
-        else {
-            cells = ",$cell={}";
         }
     }
 
@@ -2026,7 +2023,7 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}"
-    this.u.suffixCode += "}).apply(null,$rest);});";
+    this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
 
@@ -2040,7 +2037,7 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "])");
+    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
@@ -2439,8 +2436,13 @@ Compiler.prototype.cmod = function (mod) {
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode =
         "var $gbl = {}, $blk=" + entryBlock +
+<<<<<<< HEAD
         ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
         "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+=======
+        ",$exc=[],$loc=$gbl,$cell={},$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
+        "');var $ret=undefined,$currLineNo=undefined,$currColNo=undefined;";
+>>>>>>> tie up some loose ends and make some people happy
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
