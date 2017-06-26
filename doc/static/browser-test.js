@@ -13846,11 +13846,13 @@ Sk.doOneTimeInitialization = function()
 {
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
+    var object_mro = new Sk.builtin.tuple([Sk.builtin.object]);
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
     Sk.builtin.object.inst$dict = new Sk.builtin.dict([]);
     Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
-    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, object_mro);
+    Sk.builtin.object.tp$mro = object_mro;
 };
 
 /**

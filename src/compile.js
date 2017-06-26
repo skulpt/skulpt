@@ -1543,13 +1543,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         entryBlock = "$gen.gi$resumeat";
         locals = "$gen.gi$locals";
     }
-    cells = "";
+    cells = ",$cell={}";
     if (hasCell) {
         if (isGenerator) {
             cells = ",$cell=$gen.gi$cells";
-        }
-        else {
-            cells = ",$cell={}";
         }
     }
 
@@ -1890,10 +1887,9 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
     
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "(function $" + s.name.v + "$_closure(){";
-    this.u.switchCode += "if (typeof $cell === undefined) { var $cell = {}; }";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$currLineNo=undefined,$currColNo=undefined;"
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;$free=$globals;";
+    this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;"
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -1905,7 +1901,7 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}"
-    this.u.suffixCode += "}).apply(null,$rest);});";
+    this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
 
@@ -1919,7 +1915,7 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "])");
+    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
@@ -2297,7 +2293,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode =
         "var $gbl = {}, $blk=" + entryBlock +
-        ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
+        ",$exc=[],$loc=$gbl,$cell={},$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
         "');var $ret=undefined,currLineNo=undefined,currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
