@@ -521,7 +521,7 @@ Compiler.prototype.ccall = function (e) {
     }
     else {
         out ("$ret;"); // This forces a failure if $ret isn't defined
-        if (Sk.python3 && e.func.id && e.func.id.v === "super") {
+        if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super") {
             // make sure there is a self variable
             // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
             // so we should probably add self to the mangling

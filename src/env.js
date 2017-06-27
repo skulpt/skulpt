@@ -60,7 +60,8 @@ Sk.configure = function (options) {
         // skulpt specific
         set_repr: false,
         class_repr: false,
-        inherit_from_object: false
+        inherit_from_object: false,
+        super_args: false
     };
 
     if (Sk.__future__.print_function === undefined || Sk.__future__.print_function === null || typeof Sk.__future__.print_function !== "boolean") {
@@ -84,6 +85,10 @@ Sk.configure = function (options) {
     }
 
     if (Sk.__future__.inherit_from_object === undefined || Sk.__future__.inherit_from_object === null || typeof Sk.__future__.inherit_from_object !== "boolean") {
+        throw new Error("must specify Sk.__future__.inherit_from_object and it must be a boolean");
+    }
+
+    if (Sk.__future__.super_args === undefined || Sk.__future__.super_args === null || typeof Sk.__future__.superargs !== "boolean") {
         throw new Error("must specify Sk.__future__.inherit_from_object and it must be a boolean");
     }
 
