@@ -93,7 +93,7 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-           try {
+            try {
                 res = dict.mp$subscript(pyName);
             } catch (e) {
             }
