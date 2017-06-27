@@ -68,14 +68,6 @@ Sk.builtin.superbi.__init__ = new Sk.builtin.func(function(self, a_type, other_s
 
 Sk.abstr.setUpInheritance("super", Sk.builtin.superbi, Sk.builtin.object);
 
-var _tryGetSubscript = function(dict, pyName) {
-    try {
-        return dict.mp$subscript(pyName);
-    } catch (x) {
-        return undefined;
-    }
-};
-
 /**
  * Get an attribute
  * @param {string} name JS name of the attribute
@@ -101,7 +93,10 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            res = _tryGetSubscript(dict, pyName);
+           try {
+                res = dict.mp$subscript(pyName);
+            } catch (e) {
+            }
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
