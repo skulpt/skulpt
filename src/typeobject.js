@@ -112,7 +112,7 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
 
         if (f) {
             // non-data descriptor
-            return f.call(descr, this.obj, this.obj_type, canSuspend);
+            return f.call(descr, this.obj, this.obj_type);
         }
     }
 

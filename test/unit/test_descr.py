@@ -236,11 +236,11 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         class Base(object):
             aProp = property(lambda self: "foo")
 
-        class Sub(Base):
-            @classmethod
-            def test(klass):
-                pass
-                #return super(Sub,klass).aProp
+        # class Sub(Base):
+        #     @classmethod
+        #     def test(klass):
+        #         pass
+        #         #return super(Sub,klass).aProp
 
         # because calling super with a class as a second variable doesn't work yet
         # self.assertEqual(Sub.test(), Base.aProp)

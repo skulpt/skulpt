@@ -45,7 +45,9 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": "sq$length"
+    "__len__": "sq$length",      
+    "__get__": "tp$descr_get",
+    "__set__": "tp$descr_set"
 };
 
 /**
@@ -208,9 +210,6 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__class__"] = klass;
         klass["__name__"] = name;
         klass.sk$klass = true;
-        klass.prototype.tp$descr_get = function () {
-            goog.asserts.fail("in type tp$descr_get");
-        };
         klass.prototype["$r"] = function () {
             var cname;
             var mod;
@@ -463,14 +462,14 @@ Sk.builtin.type.prototype.tp$getattr = function (name) {
 
     //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
     if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
+        f = descr.tp$descr_get;
         // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
         // return f.call(descr, this, this.ob$type);
     }
 
     if (f) {
         // non-data descriptor
-        return f.call(descr, null, tp);
+        return f.call(descr, Sk.builtin.none.none$, tp);
     }
 
     if (descr !== undefined) {
