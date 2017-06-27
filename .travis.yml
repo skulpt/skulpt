@@ -3,7 +3,6 @@ sudo: false
 python:
 - '2.7'
 install:
-- npm install npm@latest -g
 - npm install jscs -g
 - npm install jshint -g
 - npm install
