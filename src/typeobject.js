@@ -1,9 +1,10 @@
 Sk.builtin.type_is_subtype_base_chain = function type_is_subtype_base_chain(a, b) {
     do {
-        if (a == b)
+        if (a == b) {
             return true;
+        }
         a = a.tp$base;
-    } while (!a === undefined);
+    } while (a !== undefined);
 
     return (b == Sk.builtin.object);
 };
@@ -20,12 +21,11 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
             }
         }
         return false; 
-    }
-    else {
+    } else {
         /* a is not completely initilized yet; follow tp_base */
         return Sk.builtin.type_is_subtype_base_chain(a, b);
     }
-}
+};
 
 /**
  * @constructor
@@ -38,14 +38,14 @@ Sk.builtin.superbi = function superbi (a_type, self) {
         return new Sk.builtin.superbi(a_type, self);
     }
 
-    Sk.misceval.callsim(Sk.builtin.superbi.__init__, this, a_type, self)
+    Sk.misceval.callsim(Sk.builtin.superbi.__init__, this, a_type, self);
 
     return this;
 };
 
 Sk.builtin.superbi.__init__ = new Sk.builtin.func(function(self, a_type, other_self) {
     self.obj = other_self;
-    self.type = a_type
+    self.type = a_type;
     
     if (!a_type.tp$mro) {
         throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
@@ -60,13 +60,21 @@ Sk.builtin.superbi.__init__ = new Sk.builtin.func(function(self, a_type, other_s
     }
 
     if (!Sk.builtin.PyType_IsSubtype(self.obj.ob$type, self.type)) {
-        throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance of subtype of type")
+        throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance of subtype of type");
     }
     
     return Sk.builtin.none.none$;
 });
 
 Sk.abstr.setUpInheritance("super", Sk.builtin.superbi, Sk.builtin.object);
+
+var _tryGetSubscript = function(dict, pyName) {
+    try {
+        return dict.mp$subscript(pyName);
+    } catch (x) {
+        return undefined;
+    }
+};
 
 /**
  * Get an attribute
@@ -123,14 +131,13 @@ Sk.builtin.superbi.prototype.tp$getattr = function (name, canSuspend) {
     return undefined;
 };
 
-Sk.builtin.superbi.prototype["$r"] = function super_repr(self)
-{
+Sk.builtin.superbi.prototype["$r"] = function super_repr(self) {
     if (this.obj) {
         return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, <" + this.obj.tp$name + " object>>");
     } 
     
     return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, NULL>");
-}
+};
 
 Sk.builtin.superbi.__doc__ = new Sk.builtin.str(
     "super(type, obj) -> bound super object; requires isinstance(obj, type)\n" +
