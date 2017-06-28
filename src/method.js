@@ -3,7 +3,7 @@
  *
  * co_varnames and co_name come from generated code, must access as dict.
  */
-Sk.builtin.method = function (func, self) {
+Sk.builtin.method = function (func, self, klass) {
     this.im_func = func;
     this.im_self = self;
     //print("constructing method", this.im_func.tp$name, this.im_self.tp$name);

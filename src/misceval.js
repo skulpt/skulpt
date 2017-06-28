@@ -1199,15 +1199,6 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
     } else {
-        fcall = func.__get__;
-        if (fcall !== undefined) {
-            fcall = Sk.misceval.callsim(func.__get__, func, func);
-            //args.unshift(func);
-            if (fcall.tp$call) {
-                return fcall.tp$call.call(fcall, args);
-            }
-        }
-
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {
@@ -1257,15 +1248,16 @@ goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases) {
+Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     // todo; metaclass
     var klass;
     var meta = Sk.builtin.type;
 
+    var l_cell = cell === undefined ? {} : cell;
     var locals = {};
 
     // init the dict for the class
-    func(globals, locals, []);
+    func(globals, locals, l_cell);
     // ToDo: check if func contains the __meta__ attribute
     // or if the bases contain __meta__
     // new Syntax would be different

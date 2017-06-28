@@ -114,6 +114,7 @@ Files = [
         'src/import.js',
         'src/timsort.js',
         'src/sorted.js',
+        'src/typeobject.js',
         'src/builtindict.js',
         'src/constants.js',
         'src/internalpython.js',

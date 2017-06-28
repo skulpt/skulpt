@@ -32,7 +32,7 @@ class cdeco:
         self.fset = fset
         self.fdel = fdel
 
-    def __get__(self, obj):
+    def __get__(self, obj, loc):
         log2.append("cdeco.__get__" + str(self.id))
         return self.fget(obj)
 
