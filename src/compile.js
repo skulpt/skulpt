@@ -525,7 +525,7 @@ Compiler.prototype.ccall = function (e) {
     }
     else {
         out ("$ret;"); // This forces a failure if $ret isn't defined
-        if (Sk.python3 && e.func.id && e.func.id.v === "super") {
+        if (Sk.python3 && e.func.id && e.func.id.v === "super" && args.length == 0) {
             // make sure there is a self variable
             // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
             // so we should probably add self to the mangling
@@ -2436,13 +2436,8 @@ Compiler.prototype.cmod = function (mod) {
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode =
         "var $gbl = {}, $blk=" + entryBlock +
-<<<<<<< HEAD
-        ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
-        "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
-=======
         ",$exc=[],$loc=$gbl,$cell={},$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
-        "');var $ret=undefined,$currLineNo=undefined,$currColNo=undefined;";
->>>>>>> tie up some loose ends and make some people happy
+        "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
