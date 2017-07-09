@@ -300,7 +300,6 @@ Sk.builtin.type = function (name, bases, dict) {
                     }
                 }
             }
-
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 

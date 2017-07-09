@@ -7,7 +7,7 @@
  */
 var $builtinmodule = function (name) {
     var mod = {};
-    
+
     function checkNumberAndReturn(val) {
         var parsed = parseFloat(val);
         // only numbers/floats are okay
@@ -31,7 +31,7 @@ var $builtinmodule = function (name) {
         if(!Sk.sense_hat) {
             throw new Error('SenseHat Browser storage must be set: Sk.sense_hat must exist');
         }
-        
+
         // create 64 (8x8) empty array for the leds
         if (!Sk.sense_hat.pixels || Sk.sense_hat.pixels.length === 0) {
             Sk.sense_hat.pixels = []
@@ -39,17 +39,17 @@ var $builtinmodule = function (name) {
                 Sk.sense_hat.pixels.push([0, 0, 0]);
             }
         }
-        
+
 
         if (!Sk.sense_hat.low_light) {
             Sk.sense_hat.low_light = false;
         }
-        
+
         // gamma is stored as a 32 bit value (so should we store it as a number or array?)
         if (!Sk.sense_hat.gamma) {
             Sk.sense_hat.gamma = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // lookup table (@see https://pythonhosted.org/sense-hat/api/#gamma)
         }
-        
+
         // Sensor stuff, all reads should never fail
         if (!Sk.sense_hat.rtimu) {
             Sk.sense_hat.rtimu = {
@@ -62,20 +62,20 @@ var $builtinmodule = function (name) {
                 fusionPose: [0, 0, 0] /* fusionpose, accelerometer */
             }
         }
-        
+
         if (Sk.sense_hat_emit) {
             Sk.sense_hat_emit('init');
         }
     });
-    
+
     // _fb_device specific methods
     mod.setpixel = new Sk.builtin.func(function (index, value) {
         var _index;
         var _value;
-        
+
         _index = Sk.ffi.remapToJs(index);
         _value = Sk.ffi.remapToJs(value);
-        
+
         try {
             Sk.sense_hat.pixels[_index] = _value;
         } catch (e) {
@@ -91,9 +91,9 @@ var $builtinmodule = function (name) {
         var value;
         var _index;
         var _value;
-        
+
         _index = Sk.ffi.remapToJs(index);
-        
+
         try {
             _value = Sk.sense_hat.pixels[_index];
             value = Sk.ffi.remapToPy(_value); // should return a list
@@ -101,19 +101,19 @@ var $builtinmodule = function (name) {
         } catch (e) {
             throw new Sk.builtin.ValueError(e.message);
         }
-        
+
         return value;
     });
 
     mod.setpixels = new Sk.builtin.func(function (values) {
         _values = Sk.ffi.remapToJs(values);
-        
+
         try {
             Sk.sense_hat.pixels = _values;
         } catch (e) {
             throw new Sk.builtin.ValueError(e.message);
         }
-        
+
         if (Sk.sense_hat_emit) {
             Sk.sense_hat_emit('setpixels');
         }
@@ -121,14 +121,14 @@ var $builtinmodule = function (name) {
 
     mod.getpixels = new Sk.builtin.func(function () {
         var values;
-        
+
         try {
             values = Sk.ffi.remapToPy(Sk.sense_hat.pixels); // should return a list
             values = new Sk.builtin.list(values);
         } catch (e) {
             throw new Sk.builtin.ValueError(e.message);
         }
-        
+
         return values;
     });
 
@@ -141,7 +141,7 @@ var $builtinmodule = function (name) {
         // checks are made in fb_device.py
         var _gamma = Sk.ffi.remapToJs(gamma);
         Sk.sense_hat.gamma = _gamma;
-        
+
         if (Sk.sense_hat_emit) {
             Sk.sense_hat_emit('setGamma');
         }
@@ -149,9 +149,9 @@ var $builtinmodule = function (name) {
 
     mod.setLowlight = new Sk.builtin.func(function (value) {
         var _value = Sk.ffi.remapToJs(value);
-        
+
         Sk.sense_hat.low_light = _value;
-        
+
         if (Sk.sense_hat_emit) {
             Sk.sense_hat_emit('changeLowlight', _value);
         }
@@ -188,7 +188,7 @@ var $builtinmodule = function (name) {
 
         return Sk.ffi.remapToPy([].concat([1, jsPressure.value], jsTemperature));
     });
-    
+
     /**
      * >= 0%
      */
@@ -215,10 +215,10 @@ var $builtinmodule = function (name) {
         if (jsHumidity.value < 0) {
             return Sk.ffi.remapToPy([].concat([0, jsHumidity.value], jsTemperature));
         }
-        
+
         return Sk.ffi.remapToPy([].concat([1, jsHumidity.value], jsTemperature));
     });
-    
+
     /**
      * Temperature Range: -40 to +120 degrees celsius
      */
@@ -242,31 +242,62 @@ var $builtinmodule = function (name) {
         if (jsTemperature.value < -40 || jsTemperature.value > 120) {
             return Sk.ffi.remapToPy([0, jsTemperature.value]); // invalid
         }
-        
+
         return Sk.ffi.remapToPy([1, jsTemperature.value]);
     });
-    
+
     mod.fusionPoseRead = new Sk.builtin.func(function () {
         var fusionPose = Sk.ffi.remapToPy(Sk.sense_hat.rtimu.fusionPose);
-        
+
         return fusionPose;
     });
 
     mod.accelRead = new Sk.builtin.func(function () {
         var accel = Sk.ffi.remapToPy(Sk.sense_hat.rtimu.accel);
-        
+
         return accel;
     });
 
     mod.compassRead = new Sk.builtin.func(function () {
         var compass = Sk.ffi.remapToPy(Sk.sense_hat.rtimu.compass);
-        
+
         return compass;
+    });
+
+    mod.headingRead = new Sk.builtin.func(function () {
+        /* Returns tilt-compensated magnetometer heading in radians */
+        /* Note: RTIMULib calculates a moving average. This gives an instant reading */
+
+        // Accelerometer's roll and pitch, used for compensation
+        var x, y;
+        x = Sk.sense_hat.rtimu.fusionPose[0]; // roll
+        y = Sk.sense_hat.rtimu.fusionPose[1]; // pitch
+
+        // Compass raw values in microteslas
+        var mx, my, mz;
+        mx = Sk.sense_hat.rtimu.compass[0];
+        my = Sk.sense_hat.rtimu.compass[1];
+        mz = Sk.sense_hat.rtimu.compass[2];
+
+        // Tilt compensation for Tait-Bryan XYZ convention
+        // Formulas here: https://dev.widemeadows.de/2014/01/24/to-tilt-compensate-or-not-to-tilt-compensate/
+        var phi, theta, mag_y, mag_x, jsheading, heading;
+        phi = x;
+        theta = y;
+
+        // Remap magnetometer values to the horizontal plane and determine yaw (aka heading)
+        mag_x = mx * Math.cos(theta) + my * Math.sin(phi) * Math.sin(phi) + mz * Math.cos(phi) * Math.sin(theta);
+        mag_y = my * Math.cos(phi) - mz * Math.sin(phi);
+        jsheading = Math.atan2(-mag_y, mag_x);
+
+        // Remap radian value to Skulpt and return
+        heading = Sk.ffi.remapToPy(jsheading);
+        return heading;
     });
 
     mod.gyroRead = new Sk.builtin.func(function () {
         var gyro = Sk.ffi.remapToPy(Sk.sense_hat.rtimu.gyro);
-        
+
         return gyro;
     });
 
@@ -280,9 +311,9 @@ var $builtinmodule = function (name) {
      * Named InputEvent tuple
      */
     var input_event_fields = {
-        "timestamp": "", 
-        "direction": "", 
-        "action": "", 
+        "timestamp": "",
+        "direction": "",
+        "action": "",
     };
     var input_event_f = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
     mod.InputEvent = Sk.builtin.make_structseq('SenseStick', 'InputEvent', input_event_fields);
@@ -388,7 +419,7 @@ var $builtinmodule = function (name) {
         var inputEvent;
         var susp = new Sk.misceval.Suspension();
         susp.resume = function () {
-            // We need the 2nd check for the keyboardinterrupt when we push this from the 
+            // We need the 2nd check for the keyboardinterrupt when we push this from the
             // watching thread
             if (susp.data["error"] || inputEvent.type === 'keyboardinterrupt') {
                 if (susp.data.error === 'KeyboardInterrupt' || inputEvent.type === 'keyboardinterrupt') {
@@ -433,3 +464,4 @@ var $builtinmodule = function (name) {
 
     return mod;
 };
+
