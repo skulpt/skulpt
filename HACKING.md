@@ -6,7 +6,7 @@ If you are reading this document, chances are you have used Skulpt in some form 
 What is Skulpt?
 ---------------
 
-Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work. 
+Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work.
 
 To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
 
@@ -73,7 +73,7 @@ To give you some idea of what is going on behind the scenes with skulpt lets loo
 
 So, 50 lines of Javascript for hello world eh?  That sounds kind of crazy, but you have to recognize that the environment with global variables, local variables, error handling, etc all has to happen even for the simplest program to run.  The parts of the program above that really print "hello world" are lines 26-29.  If you have a look at them you will see that we have to construct a string object from the string literal and then pass that off to some print function.
 
-In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skulpt runtime.  It is usually the case that to extend Skulpt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment. 
+In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skulpt runtime.  It is usually the case that to extend Skulpt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment.
 
 An important thing to keep in mind as you are trying to understand Skulpt is that it is heavily influenced by the implementation of CPython.  So although Python and Javascript are both object oriented languages many parts of the skulpt implementation are quite procedural.  For example using functions that take an object as their first parameter may seem strange as we should have just created a method on that object.  But in order to follow the CPython implementation this decision was made early on.
 
@@ -140,15 +140,15 @@ Perhaps one of the most important concepts to learn when starting to program Sku
 are always moving back and forth between Python objects and Javascript objects.  Much of your job
 as a skulpt hacker is to either create Python objects as part of a builtin or module function,
 or interact with objects that have been created by the users "regular" Python code.  Knowing when
-you are working with what is critical.  For example a Javascript string is not the same thing as a 
+you are working with what is critical.  For example a Javascript string is not the same thing as a
 python string.  A Python string is really an instance of ``Sk.builtin.str`` and a Javscript string is
-an instance of ``string``.  You can't compare the two directly, and you definitely cannot use them 
+an instance of ``string``.  You can't compare the two directly, and you definitely cannot use them
 interchangeably.
 
 Python  |  Skulpt              | Javascript
 --------|----------------------|-----------
 int     | Sk.builtin.int       | number
-float   | Sk.builtin.float     | number 
+float   | Sk.builtin.float     | number
 long    | Sk.builtin.lng       | NA
 complex | Sk.builtin.complex   | NA
 list    | Sk.builtin.list      | Array
@@ -168,7 +168,7 @@ When would you want to convert from Javascript to Python?  Very often, in your i
 
 
 In many places in the current codebase you will see the use of `somePythonObject.v`  Where `v` is the actual
-javascript value hidden away inside the Python object.  This is not the preferred way to obtain the mapping.  Use 
+javascript value hidden away inside the Python object.  This is not the preferred way to obtain the mapping.  Use
 the `Sk.ffi` API.
 
 Skulpt is divided into several namespaces, you have already seen a couple of them, so here is the list
@@ -314,7 +314,7 @@ Another Example Naming Conventions
     y = 2
     z = x + y
     print z
-    
+
 
 ### Javascript
 
@@ -502,10 +502,10 @@ program. With a little bit of sleuthing you find:
     /*    38 */                     //
     /*    39 */                     Sk.currLineNo = 2;
     /*    40 */                     Sk.currColNo = 0
-    /*    41 */ 
-    /*    42 */ 
+    /*    41 */
+    /*    42 */
     /*    43 */                     Sk.currFilename = './sd.py';
-    /*    44 */ 
+    /*    44 */
     /*    45 */                     var $loadname8 = $loc.sorted !== undefined ? $loc.sorted : Sk.misceval.loadname('sorted', $gbl);
     /*    46 */                     var $loadname9 = $loc.x !== undefined ? $loc.x : Sk.misceval.loadname('x', $gbl);
     /*    47 */                     var $call10 = Sk.misceval.call($loadname8, undefined, undefined, ['reverse', Sk.builtin.bool.true$], $loadname9);
@@ -564,7 +564,7 @@ module:
             Sk.builtin.pyCheckArgs("plotk", arguments, 0, Infinity, true, false)
             args = new Sk.builtins['tuple'](Array.prototype.slice.call(arguments, 1)); /*vararg*/
             kwargs = new Sk.builtins['dict'](kwa);
-    
+
             return new Sk.builtins['tuple']([args, kwargs]);
         };
         plotk_f['co_kwargs'] = true;
@@ -583,7 +583,7 @@ skulpt-stdlib.js. Looking around the distribution you will not
 immediately find skulpt.min.js because you need to build it. You get a
 sculpt.js file by using the skulpty.py script that comes with the distribution.
 running `./skulpt.py --help` will give you the full list of commands, but the two
-that you probably most care about are `./skulpt.py dist` and `./skulpt.py docbi`
+that you probably most care about are `npm run build` and `npm run docbi`
 The dist command builds both skulpt.min.js and skulpt-stdlib.js docbi builds
 skulpt-stdlib.js and puts a new copy of it in the doc/static directory.
 Lets begin with a quick tour of the source tree:
@@ -604,9 +604,9 @@ Lets begin with a quick tour of the source tree:
     add modules to the simpler editor later in this article.
 -   test - this directory contains a bunch of files for testing the
     implementation in a batch mode. These tests are run whenever you run
-    `./skulpt.py dist`, or `./skulpt.py test`.
+    `npm run build`, or `npm test`.
 -   dist - This directory gets created and populated when you run the
-    `skulpt.py dist` command. It contains the built and compressed versions of
+    `npm run build` command. It contains the built and compressed versions of
     skulpt.min.js and skulpt-stdlib.js
 
 To illustrate how to make use of modules, here's an extended version of
@@ -617,23 +617,23 @@ my earlier hello world style example.
     <head>
     <script src="skulpt.min.js" type="text/javascript"></script>
     <script src="skulpt-stdlib.js" type="text/javascript"></script>
-    
+
     </head>
-    
+
     <body>
     <script type="text/javascript">
     function outf(text) {
        var mypre = document.getElementById("output");
        mypre.innerHTML = mypre.innerHTML + text;
     }
-    
+
     function builtinRead(x)
     {
         if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
             throw "File not found: '" + x + "'";
         return Sk.builtinFiles["files"][x];
     }
-    
+
     function runit() {
        var prog = document.getElementById("yourcode").value;
        var mypre = document.getElementById("output");
@@ -655,9 +655,9 @@ my earlier hello world style example.
     </textarea>
     <button onclick="runit()" type="button">Run</button>
     </form>
-    
+
     <pre id="output"></pre>
-    
+
     </body>
     </html>
 
@@ -757,8 +757,8 @@ function.js if you want more explanation of how the builtin.func method
 works.
 
 Well, I think this should be enough to get you going. It's worth
-repeating, if you made it this far, don't forget to call `./skulpt.py docbi` or
-`./skulpt.py dist` after you make changes in your module, it's easy to get into the
+repeating, if you made it this far, don't forget to call `npm run docbi` or
+`npm run build` after you make changes in your module, it's easy to get into the
 mode of thinking that the new javascript is automatically loaded. But
 skulpt-stdlib.js is not automatically rebuilt!
 
@@ -780,12 +780,12 @@ Here is the snippet that demonstrates
 
 
     var keywds = Sk.importModule("keyword", false, false);
-    
+
     mod.namedtuple = function (name, fields) {
         var nm = Sk.ffi.remapToJs(name);
         // fields could be a string or a tuple or list of strings
         var flds = Sk.ffi.remapToJs(fields);
-    
+
         if (typeof(flds) === 'string') {
             flds = flds.split(/\s+/);
         }
@@ -838,7 +838,7 @@ follow these handy instructions:
     <https://github.com/skulpt/skulpt/blob/master/src/import.js#L179>
     the line would like this:
     `finalcode += "\ndebugger;" + co.funcname + "(" + namestr + ");";`
--   run `./skulpt.py debugbrowser` wait until all tests have run
+-   run `npm run debugbrowser` wait until all tests have run
 -   startup the developer tools cmd+alt+i on a mac or F12 on a PC in
     chrome that is
 -   run the test I added before and it stops right before you enter the
@@ -960,7 +960,7 @@ in figuring out what skulpt is actually doing. Now you should run all of
 the unit tests to make sure you have broken anything else accidentally.
 This is really easy:
 
-    ./skulpt.py test
+    npm test
 
 If any tests fail it will be obvious that they did, and you'll have to
 do some investigation to figure out why. At the time of this writing you
@@ -1060,7 +1060,7 @@ directory. Like this:
     > git update-index --refresh
     > git rm --cached -r .
     > git reset --hard
-    
+
 
 Getting stack traces from an exception
 --------------------------------------

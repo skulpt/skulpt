@@ -2103,7 +2103,7 @@ function generateTurtleModule(_target) {
                 instance = scopeGenerator ? scopeGenerator() : args.shift().instance,
                 i, result, susp, resolution, lengthError;
 
-            if (args < minArgs || args.length > maxArgs) {
+            if (args.length < minArgs || args.length > maxArgs) {
                 lengthError = minArgs === maxArgs ?
                     "exactly " + maxArgs :
                     "between " + minArgs + " and " + maxArgs;

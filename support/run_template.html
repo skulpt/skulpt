@@ -76,7 +76,9 @@ function runit(myDiv) {
         read: builtinRead,
         inputfunTakesPrompt: true,
         debugout: showjs,
-        debugging: %(debug_mode)s
+        debugging: %(debug_mode)s,
+        python3: %(p3)s
+
     });
 
     var myPromise = Sk.misceval.asyncToPromise(function() {
