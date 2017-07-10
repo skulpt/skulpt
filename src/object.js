@@ -16,9 +16,9 @@ Sk.builtin.object = function () {
     return this;
 };
 
-Sk.builtin.object.__init__ = function __init__() { 
+Sk.builtin.object.prototype.__init__ = function __init__() { 
     return Sk.builtin.none.none$;
-}
+};
 
 var _tryGetSubscript = function(dict, pyName) {
     try {
