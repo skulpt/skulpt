@@ -20,7 +20,7 @@ class InputFunTests(unittest.TestCase):
         """)
 
 
-    def test_input_fun_should_return_promt_asynchronously(self):
+    def test_input_fun_should_return_prompt_asynchronously(self):
         res = input(">>> ")
         self.assertEqual(res, ">>> testing")
 
