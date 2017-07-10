@@ -32,6 +32,8 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
  * Sk.builtin.superbi
  */
 Sk.builtin.superbi = function superbi (a_type, self) {
+    Sk.builtin.pyCheckArgs("super", arguments, 1);
+
     var type, obj, obj_type;
 
     if (!(this instanceof Sk.builtin.superbi)) {
@@ -49,6 +51,10 @@ Sk.builtin.superbi.__init__ = new Sk.builtin.func(function(self, a_type, other_s
     
     if (!a_type.tp$mro) {
         throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
+    }
+
+    if (a_type.tp$mro.v.length == 1) {
+        throw new Sk.builtin.TypeError("must be type, not classobj");
     }
 
     self.obj_type = a_type.tp$mro.v[1];
