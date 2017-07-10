@@ -41,7 +41,7 @@ Sk.builtin.list = function (L, canSuspend) {
             }
         })(it.tp$iternext(canSuspend));
     } else {
-        throw new Sk.builtin.TypeError("expecting Array or iterable");
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L)+ "' " +"object is not iterable");
     }
 
     this["v"] = this.v = v;
@@ -50,26 +50,6 @@ Sk.builtin.list = function (L, canSuspend) {
 
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
 Sk.abstr.markUnhashable(Sk.builtin.list);
-
-Sk.builtin.list.prototype.list_iter_ = function () {
-    var ret =
-    {
-        tp$iter    : function () {
-            return ret;
-        },
-        $obj       : this,
-        $index     : 0,
-        tp$iternext: function () {
-            // todo; StopIteration
-            if (ret.$index >= ret.$obj.v.length) {
-                return undefined;
-            }
-            return ret.$obj.v[ret.$index++];
-        },
-        tp$name    : "list_iterator"
-    };
-    return ret;
-};
 
 Sk.builtin.list.prototype.list_concat_ = function (other) {
     // other not a list
@@ -241,7 +221,15 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     return Sk.misceval.richCompareBool(v[i], w[i], op);
 };
 
-Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
+Sk.builtin.list.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    return new Sk.builtin.list_iter_(self);
+});
+
+Sk.builtin.list.prototype.tp$iter = function () {
+    return new Sk.builtin.list_iter_(this);
+};
+
 Sk.builtin.list.prototype.sq$length = function () {
     return this.v.length;
 };
@@ -305,6 +293,11 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
     }
     return false;
 };
+
+Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    return Sk.builtin.list.prototype.sq$contains.call(self, item);
+});
+
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
@@ -415,6 +408,14 @@ Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function (self, inde
     return Sk.builtin.list.prototype.list_subscript_.call(self, index);
 });
 
+Sk.builtin.list.prototype.__setitem__ = new Sk.builtin.func(function (self, index, val) {
+    return Sk.builtin.list.prototype.list_ass_subscript_.call(self, index, val);
+});
+
+Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, index) {
+    return Sk.builtin.list.prototype.list_del_subscript_.call(self, index);
+});
+
 /**
  * @param {?=} self
  * @param {?=} cmp optional
@@ -518,11 +519,6 @@ Sk.builtin.list.prototype.list_reverse_ = function (self) {
 };
 
 //Sk.builtin.list.prototype.__reversed__ = todo;
-Sk.builtin.list.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
-
-    return self.list_iter_();
-});
 
 Sk.builtin.list.prototype["append"] = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgs("append", arguments, 2, 2);
@@ -648,3 +644,43 @@ Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototyp
 // why this was chosen - csev
 Sk.builtin.list.prototype["sort"].func_code["co_varnames"] = ["__self__", "cmp", "key", "reverse"];
 goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
+
+/**
+ * @constructor
+ * @param {Object} lst
+ */
+Sk.builtin.list_iter_ = function (lst) {
+    if (!(this instanceof Sk.builtin.list_iter_)) {
+        return new Sk.builtin.list_iter_(lst);
+    }
+    this.$index = 0;
+    this.lst = lst.v.slice();
+    this.sq$length = this.lst.length;
+    this.tp$iter = this;
+    this.tp$iternext = function () {
+        if (this.$index >= this.sq$length) {
+            return undefined;
+        }
+        return this.lst[this.$index++];
+    };
+    this.$r = function () {
+        return new Sk.builtin.str("listiterator");
+    };
+    return this;
+};
+
+Sk.abstr.setUpInheritance("listiterator", Sk.builtin.list_iter_, Sk.builtin.object);
+
+Sk.builtin.list_iter_.prototype.__class__ = Sk.builtin.list_iter_;
+
+Sk.builtin.list_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    return self;
+});
+
+Sk.builtin.list_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+});

@@ -24,19 +24,38 @@ function showjs(text) {
 }
 
 
-function builtinRead(x)
-{
-    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+function builtinRead(x) {
+    console.log(x);
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
         throw "File not found: '" + x + "'";
-    return Sk.builtinFiles["files"][x];
+    }
+
+    var file = Sk.builtinFiles["files"][x];
+
+    if (!file) {
+        return new Promise(function (accept, reject) {
+            function reqListener () {
+                console.log(this);
+                console.log(arguments)
+                accept(this.responseText);
+            }
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", reqListener);
+            oReq.open("GET", "%(root)s" + file);
+            oReq.send();
+        });
+    }
+
+    return file;
 }
 
 function runit(myDiv) {
    var prog = document.getElementById(myDiv+"_code").value;
    var mypre = document.getElementById(myDiv+"_pre");
 
-   Sk.inputfun = function() {
-       return new Promise(function (resolve) { resolve(window.prompt()); });
+   Sk.inputfun = function(prompt) {
+       return new Promise(function (resolve) { resolve(window.prompt(prompt)); });
    };
    //Sk.outputfun = alert;
 
@@ -57,7 +76,9 @@ function runit(myDiv) {
         output:outf,
         read: builtinRead,
         inputfunTakesPrompt: true,
-        debugout: showjs
+        debugout: showjs,
+        debugging: %(debug_mode)s,
+        python3: %(p3)s
     });
 
     var myPromise = Sk.misceval.asyncToPromise(function() {
@@ -80,7 +101,7 @@ function runit(myDiv) {
 <h3>Test Code</h3>
 <div id="runbrowser">
 <form>
-<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="15">
+<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="20" style="font-family: 'Lucida Console', Monaco, monospace;">
 %(code)s
 </textarea>
 <button onclick="runit('runbrowser')" type="button">Run</button>

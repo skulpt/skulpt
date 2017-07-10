@@ -29,9 +29,12 @@ var _tryGetSubscript = function(dict, pyName) {
 };
 
 /**
+ * Get an attribute
+ * @param {string} name JS name of the attribute
+ * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericGetAttr = function (name) {
+Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     var res;
     var f;
     var descr;
@@ -44,17 +47,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+    //print("getattr", tp.tp$name, name);
 
     // todo; assert? force?
     if (dict) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            try {
-                res = dict.mp$subscript(pyName);
-            } catch (x) {
-                res = undefined;
-            }
+            res = _tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
@@ -69,12 +69,12 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
-        // todo;
-    }
+        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
 
-    if (f) {
-        // non-data descriptor
-        return f.call(descr, this, this.ob$type);
+        if (f) {
+            // non-data descriptor
+            return f.call(descr, this, this.ob$type, canSuspend);
+        }
     }
 
     if (descr !== undefined) {
@@ -90,37 +90,35 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
-Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
+/**
+ * @param {string} name
+ * @param {undefined} value
+ * @param {boolean=} canSuspend
+ * @return {undefined}
+ */
+Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
     var pyname;
     var dict;
+    var tp = this.ob$type;
     var descr;
-    var tp;
     var f;
 
     goog.asserts.assert(typeof name === "string");
-
-    tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+
+    dict = this["$d"] || this.constructor["$d"];
 
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        // f = descr.ob$type.tp$descr_set;
-        if (!(f) && descr["__set__"]) {
-            f = descr["__set__"];
-            Sk.misceval.callsim(f, descr, this, value);
-            return;
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_set;
+        // todo; is this the right lookup priority for data descriptors?
+        if (f) {
+            return f.call(descr, this, value, canSuspend);
         }
-        // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
     }
-
-    // todo; lots o' stuff
-
-    dict = this["$d"] || this.constructor["$d"];
 
     if (dict.mp$ass_subscript) {
         pyname = new Sk.builtin.str(name);
@@ -128,7 +126,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
         if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
             dict.mp$lookup(pyname) === undefined) {
             // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
         }
         dict.mp$ass_subscript(new Sk.builtin.str(name), value);
     } else if (typeof dict === "object") {
@@ -166,8 +164,20 @@ Sk.builtin.object.prototype.tp$name = "object";
  */
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
+Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 
 /** Default implementations of dunder methods found in all Python objects */
+/**
+ * Default implementation of __new__ just calls the class constructor
+ * @name  __new__
+ * @memberOf Sk.builtin.object.prototype
+ * @instance
+ */
+Sk.builtin.object.prototype["__new__"] = function (cls) {
+    Sk.builtin.pyCheckArgs("__new__", arguments, 1, 1, false, false);
+
+    return new cls([], []);
+};
 
 /**
  * Python wrapper for `__repr__` method.
@@ -293,6 +303,7 @@ Sk.builtin.object.prototype["$r"] = function () {
 };
 
 Sk.builtin.hashCount = 1;
+Sk.builtin.idCount = 1;
 
 /**
  * Return the hash value of this instance.

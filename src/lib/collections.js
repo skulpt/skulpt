@@ -529,9 +529,8 @@ var $builtinmodule = function (name) {
                 o.constructor.apply(o, arguments);
                 return o;
             }
-
-            this.v = arguments;
             this.__class__ = mod.namedtuples[nm];
+            this.v = Array.prototype.slice.call(arguments);
         };
         mod.namedtuples[nm] = cons;
 

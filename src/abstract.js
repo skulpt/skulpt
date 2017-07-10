@@ -224,24 +224,14 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsim(vop, v, w); //  added to be like not-in-place... is this okay?
+            ret = Sk.misceval.callsim(vop, v, w);
         }
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
-    wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
-    if (wop !== undefined) {
-        if (wop.call) {
-            ret = wop.call(w, v);
-        } else { // assume that wop is an __xxx__ type method
-            ret = Sk.misceval.callsim(wop, w, v); //  added to be like not-in-place... is this okay?
-        }
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return ret;
-        }
-    }
-    Sk.abstr.binop_type_error(v, w, opname);
+    // If there wasn't an in-place operation, fall back to the binop
+    return Sk.abstr.binary_op_(v, w, opname);
 };
 Sk.abstr.unary_op_ = function (v, opname) {
     var ret;
@@ -833,6 +823,7 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
     return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
+
 
 Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;

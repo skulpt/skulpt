@@ -103,6 +103,7 @@ Files = [
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
+        'src/iterator.js',
         'src/enumerate.js',
         'src/tokenize.js',
         'gen/parse_tables.js',
@@ -238,7 +239,7 @@ def test(debug_mode=False):
         ret3 = os.system(jscscmd)
         #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits()
+        ret4 = rununits(debug_mode=debug_mode)
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -873,7 +874,7 @@ def make_skulpt_js(options,dest):
     if sys.platform != "win32":
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
-def run_in_browser(fn, options):
+def run_in_browser(fn, options, debug_mode=False, p3=False):
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -888,7 +889,7 @@ def run_in_browser(fn, options):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts)
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=str(p3).lower(),root="")
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1064,16 +1065,16 @@ def runopt(fn):
     run(fn, "", True)
 
 def run3(fn):
-    run(fn,p3=True)
+    run(fn, p3=True)
 
 def rundebug(fn):
-    run(fn,debug_mode=True)
+    run(fn, debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
+def rununits(opt=False, p3=False, debug_mode=False):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1090,7 +1091,7 @@ def rununits(opt=False, p3=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1098,7 +1099,7 @@ Sk.misceval.asyncToPromise(function() {
     print(e.stack);
     quit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
         if opt:
             p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
@@ -1336,7 +1337,11 @@ def main():
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
-        run_in_browser(sys.argv[2],options)
+        run_in_browser(sys.argv[2], options)
+    elif cmd == "brundebug":
+        run_in_browser(sys.argv[2], options, debug_mode=True)
+    elif cmd == "brun3":
+        run_in_browser(sys.argv[2], options, p3=True)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":

@@ -553,10 +553,9 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 };
 
 /**
- * **Run Python Code in Skulpt**
- *
- * When you want to hand Skulpt a string corresponding to a Python program this is the function.
- *
+ * Imports internal python files into the `__builin__` module. Used during startup 
+ * to compile and import all *.py files from the src/ directory. 
+ * 
  * @param name {string}  File name to use for messages related to this run
  * @param dumpJS {boolean} print out the compiled javascript
  * @param body {string} Python Code
@@ -596,7 +595,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         } else {
             // try to load the module from the file system if it is not present on the module itself
             var i;
-            var fromNameRet; // module returned
             var fromName; // name of current module for fromlist
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
@@ -619,8 +617,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 if (!foundFromName && fromName != "*" && ret.$d[fromName] == null && (ret.$d[lastDottedName] != null || ret.$d.__name__.v == lastDottedName)) {
                     // add the module name to our requiredImport list
                     fromImportName = "" + name + "." + fromName;
-                    fromNameRet = Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, true, currentDir);
-                    ret["$d"][fromName] = fromNameRet;
+                    Sk.importModuleInternal_(fromImportName, undefined, undefined, undefined, false, currentDir);
                 }
             }
         }

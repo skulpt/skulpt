@@ -23,7 +23,7 @@ Sk.misceval = {};
  * @param{Object=} data Data attached to this suspension. Will be copied from child if not supplied.
  */
 Sk.misceval.Suspension = function Suspension(resume, child, data) {
-    this.isSuspension = true;
+    this.$isSuspension = true;
     if (resume !== undefined && child !== undefined) {
         this.resume = function() { return resume(child.resume()); };
     }
@@ -693,9 +693,7 @@ Sk.misceval.loadname = function (name, other) {
         return bi;
     }
 
-    name = name.replace("_$rw$", "");
-    name = name.replace("_$rn$", "");
-    throw new Sk.builtin.NameError("name '" + name + "' is not defined");
+    throw new Sk.builtin.NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 
@@ -999,28 +997,43 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
-    // as per the discussion here: https://github.com/skulpt/skulpt/pull/552
-    // this is here for performance reasons. array.slice doesn't get optimized
-    var fs = new Array(arguments.length), i = 1;
+    // We try to minimse overhead when nothing suspends (the common case)
+    var i = 1, value = initialValue, j, fs;
 
-    for (i = 1; i < arguments.length; i++) {
-        fs[i] = arguments[i];
+    while (true) {
+        if (i == arguments.length) {
+            return value;
+        }
+        if (value && value.$isSuspension) { break; } // oops, slow case
+        value = arguments[i](value);
+        i++;
     }
 
-    i = 1;
+    // Okay, we've suspended at least once, so we're taking the slow(er) path.
+
+    // Copy our remaining arguments into an array (inline, because passing
+    // "arguments" out of a function kills the V8 optimiser).
+    // (discussion: https://github.com/skulpt/skulpt/pull/552)
+    fs = new Array(arguments.length - i);
+
+    for (j = 0; j < arguments.length - i; j++) {
+        fs[j] = arguments[i+j];
+    }
+
+    j = 0;
 
     return (function nextStep(r) {
-        while (i < fs.length) {
+        while (j < fs.length) {
             if (r instanceof Sk.misceval.Suspension) {
                 return new Sk.misceval.Suspension(nextStep, r);
             }
 
-            r = fs[i](r);
-            i++;
+            r = fs[j](r);
+            j++;
         }
 
         return r;
-    })(initialValue);
+    })(value);
 };
 goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
@@ -1135,22 +1148,11 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    } else if (typeof func === "function") {
-        // todo; i believe the only time this happens is the wrapper
-        // function around generators (that creates the iterator).
-        // should just make that a real function object and get rid
-        // of this case.
-        // alternatively, put it to more use, and perhaps use
-        // descriptors to create builtin.func's in other places.
-
-        // This actually happens for all builtin functions (in
-        // builtin.js, for example) as they are javascript functions,
+    } else if (typeof func === "function" && func.tp$call === undefined) {
+        // This happens in the wrapper functions around generators
+        // (that creates the iterator), and all the builtin functions
+        // (in builtin.js, for example) as they are javascript functions,
         // not Sk.builtin.func objects.
-
-        if (func.sk$klass) {
-            // klass wrapper around __init__ requires special handling
-            return func.apply(null, [kwdict, varargseq, kws, args, true]);
-        }
 
         if (varargseq) {
             for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {

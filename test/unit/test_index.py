@@ -1,5 +1,5 @@
 import unittest
-#from test import test_support
+from test import test_support
 import operator
 #from sys import maxint
 #maxsize = test_support.MAX_Py_ssize_t
@@ -13,13 +13,13 @@ class oldstyle:
 #     def __index__(self):
 #         return self.ind
 
-# class TrapInt(int):
-#     def __index__(self):
-#         return self
+class TrapInt(int):
+    def __index__(self):
+        return self
 
-# class TrapLong(long):
-#     def __index__(self):
-#         return self
+class TrapLong(long):
+    def __index__(self):
+        return self
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
@@ -52,12 +52,12 @@ class BaseTestCase(unittest.TestCase):
         #self.assertEqual(True.__index__(), 1)
         #self.assertEqual(False.__index__(), 0)
 
-    # def test_subclasses(self):
-    #     r = range(10)
-    #     self.assertEqual(r[TrapInt(5):TrapInt(10)], r[5:10])
-    #     self.assertEqual(r[TrapLong(5):TrapLong(10)], r[5:10])
-    #     self.assertEqual(slice(TrapInt()).indices(0), (0,0,1))
-    #     self.assertEqual(slice(TrapLong(0)).indices(0), (0,0,1))
+    def test_subclasses(self):
+        r = range(10)
+        self.assertEqual(r[TrapInt(5):TrapInt(10)], r[5:10])
+        self.assertEqual(r[TrapLong(5):TrapLong(10)], r[5:10])
+        self.assertEqual(slice(TrapInt()).indices(0), (0,0,1))
+        self.assertEqual(slice(TrapLong(0)).indices(0), (0,0,1))
 
     def test_error(self):
         self.o.ind = 'dumb'
@@ -120,19 +120,19 @@ class SeqTestCase(unittest.TestCase):
         self.assertEqual(self.o * self.seq, self.seq * 3)
         #self.assertEqual(self.n * self.seq, self.seq * 2)
 
-    # def test_wrappers(self):
-    #     self.o.ind = 4
-    #     self.n.ind = 5
-    #     self.assertEqual(self.seq.__getitem__(self.o), self.seq[4])
-    #     self.assertEqual(self.seq.__mul__(self.o), self.seq * 4)
-    #     self.assertEqual(self.seq.__rmul__(self.o), self.seq * 4)
-    #     self.assertEqual(self.seq.__getitem__(self.n), self.seq[5])
-    #     self.assertEqual(self.seq.__mul__(self.n), self.seq * 5)
-    #     self.assertEqual(self.seq.__rmul__(self.n), self.seq * 5)
+    def test_wrappers(self):
+        self.o.ind = 4
+        #self.n.ind = 5
+        self.assertEqual(self.seq.__getitem__(self.o), self.seq[4])
+        self.assertEqual(self.seq.__mul__(self.o), self.seq * 4)
+        self.assertEqual(self.seq.__rmul__(self.o), self.seq * 4)
+        #self.assertEqual(self.seq.__getitem__(self.n), self.seq[5])
+        #self.assertEqual(self.seq.__mul__(self.n), self.seq * 5)
+        #self.assertEqual(self.seq.__rmul__(self.n), self.seq * 5)
 
-    # def test_subclasses(self):
-    #     self.assertEqual(self.seq[TrapInt()], self.seq[0])
-    #     self.assertEqual(self.seq[TrapLong()], self.seq[0])
+    def test_subclasses(self):
+        self.assertEqual(self.seq[TrapInt()], self.seq[0])
+        self.assertEqual(self.seq[TrapLong()], self.seq[0])
 
     def test_error(self):
         self.o.ind = 'dumb'
@@ -304,25 +304,18 @@ class StringTestCase(SeqTestCase):
 
 
 def test_main():
-    tests = ["BaseTestCase",
-             "ListTestCase",
-             "TupleTestCase",
-             "StringTestCase"]
-
-    unittest.main(False, tests)
-
-    # test_support.run_unittest(
-    #     BaseTestCase,
-    #     ListTestCase,
-    #     TupleTestCase,
-    #     ByteArrayTestCase,
-    #     StringTestCase,
-    #     UnicodeTestCase,
-    #     ClassicSeqTestCase,
-    #     NewSeqTestCase,
-    #     XRangeTestCase,
-    #     OverflowTestCase,
-    # )
+    test_support.run_unittest(
+        BaseTestCase,
+        ListTestCase,
+        TupleTestCase,
+        # ByteArrayTestCase,
+        StringTestCase,
+        # UnicodeTestCase,
+        # ClassicSeqTestCase,
+        # NewSeqTestCase,
+        # XRangeTestCase,
+        # OverflowTestCase,
+    )
     # with test_support.check_py3k_warnings():
     #     test_support.run_unittest(
     #         ClassicSeqDeprecatedTestCase,
