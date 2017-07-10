@@ -11,6 +11,9 @@ class InputFunTests(unittest.TestCase):
             Sk.inputfunTakesPrompt = true;
             Sk.inputfun = function (prompt) { 
                 return new Promise(function (resolve, reject) {
+                    if (prompt === "error") {
+                        throw new Sk.builtin.ValueError("aarrrggg");
+                    }
                     resolve(Sk.builtin.str(prompt + "testing"));
                 });
             }
@@ -20,6 +23,17 @@ class InputFunTests(unittest.TestCase):
     def test_input_fun_should_return_promt_asynchronously(self):
         res = input(">>> ")
         self.assertEqual(res, ">>> testing")
+
+
+    def test_error_on_input(self):
+        threw = False
+        try: 
+            res = input("error")
+        except ValueError as e:
+            self.assertIsInstance(e, ValueError)
+            threw = True
+
+        self.assertTrue(threw)
 
 
     def tearDown(self):
