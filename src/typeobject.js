@@ -53,6 +53,10 @@ Sk.builtin.superbi.__init__ = new Sk.builtin.func(function(self, a_type, other_s
         throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
     }
 
+    if (!a_type.tp$mro.length == 1) {
+        throw new Sk.builtin.TypeError("must be type, not classobj");
+    }
+
     self.obj_type = a_type.tp$mro.v[1];
 
     if (!other_self) {
