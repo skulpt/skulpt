@@ -818,7 +818,7 @@ Sk.builtin.raw_input = function (prompt) {
 Sk.builtin.input = Sk.builtin.raw_input;
 
 Sk.builtin.jseval = function jseval (evalcode) {
-    goog.global["eval"](evalcode);
+    goog.global["eval"](Sk.ffi.remapToJs(evalcode));
 };
 
 Sk.builtin.jsmillis = function jsmillis () {
