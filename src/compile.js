@@ -1271,34 +1271,9 @@ Compiler.prototype.ctryexcept = function (s) {
     this.setBlock(end);
 };
 
-Compiler.prototype.ctryfinally = function (s) {
-
-    var finalBody = this.newBlock("finalbody");
-    var exceptionHandler = this.newBlock("finalexh")
-    var exceptionToReRaise = this._gr("finally_reraise", "undefined");
-    var thisFinally, nextFinally;
-    this.u.tempsToSave.push(exceptionToReRaise);
-
-    this.pushFinallyBlock(finalBody);
-    thisFinally = this.peekFinallyBlock();
-    this.setupExcept(exceptionHandler);
-    this.vseqstmt(s.body);
-    this.endExcept();
-    // Normal execution falls through to finally body
-    this._jump(finalBody);
-
-    this.setBlock(exceptionHandler);
-    // Exception handling also goes to the finally body,
-    // stashing the original exception to re-raise
-    out(exceptionToReRaise,"=$err;");
-    this._jump(finalBody);
-
-    this.setBlock(finalBody);
-    this.popFinallyBlock();
-    this.vseqstmt(s.finalbody);
-    // If finalbody executes normally, AND we have an exception
-    // to re-raise, we raise it.
-    out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+Compiler.prototype.outputFinallyCascade = function (thisFinally) {
+    var nextFinally;
+    
     if (this.u.finallyBlocks.length == 0) {
         out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
     } else {
@@ -1321,7 +1296,106 @@ Compiler.prototype.ctryfinally = function (s) {
                 "}",
             "}");
     }
+}
+
+Compiler.prototype.ctryfinally = function (s) {
+
+    var finalBody = this.newBlock("finalbody");
+    var exceptionHandler = this.newBlock("finalexh")
+    var exceptionToReRaise = this._gr("finally_reraise", "undefined");
+    var thisFinally;
+    this.u.tempsToSave.push(exceptionToReRaise);
+
+    this.pushFinallyBlock(finalBody);
+    thisFinally = this.peekFinallyBlock();
+    this.setupExcept(exceptionHandler);
+    this.vseqstmt(s.body);
+    this.endExcept();
+    // Normal execution falls through to finally body
+    this._jump(finalBody);
+
+    this.setBlock(exceptionHandler);
+    // Exception handling also goes to the finally body,
+    // stashing the original exception to re-raise
+    out(exceptionToReRaise,"=$err;");
+    this._jump(finalBody);
+
+    this.setBlock(finalBody);
+    this.popFinallyBlock();
+    this.vseqstmt(s.finalbody);
+    // If finalbody executes normally, AND we have an exception
+    // to re-raise, we raise it.
+    out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+
+    this.outputFinallyCascade(thisFinally);
     // Else, we continue from here.
+};
+
+Compiler.prototype.cwith = function (s) {
+    var mgr, exit, value, exception;
+    var exceptionHandler = this.newBlock("withexh"), tidyUp = this.newBlock("withtidyup");
+    var carryOn = this.newBlock("withcarryon");
+    var thisFinallyBlock;
+
+    // NB this does not *quite* match the semantics in PEP 343, which
+    // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
+    // presumably for performance reasons.
+
+    mgr = this._gr("mgr", this.vexpr(s.context_expr));
+
+    // exit = mgr.__exit__
+    out("$ret = Sk.abstr.gattr(",mgr,",'__exit__', true);");
+    this._checkSuspension(s);
+    exit = this._gr("exit", "$ret");
+    this.u.tempsToSave.push(exit);
+
+    // value = mgr.__enter__()
+    out("$ret = Sk.abstr.gattr(",mgr,",'__enter__', true);");
+    this._checkSuspension(s);
+    out("$ret = Sk.misceval.callsimOrSuspend($ret);");
+    this._checkSuspension(s);
+    value = this._gr("value", "$ret");
+
+    // try:
+    this.pushFinallyBlock(tidyUp);
+    thisFinallyBlock = this.u.finallyBlocks[this.u.finallyBlocks.length-1];
+    this.setupExcept(exceptionHandler);
+
+    //    VAR = value
+    if (s.optional_vars) {
+        this.nameop(s.optional_vars.id, Store, value);
+    }
+
+    //    (try body)
+    this.vseqstmt(s.body);
+    this.endExcept();
+    this._jump(tidyUp);
+
+    // except:
+    this.setBlock(exceptionHandler);
+
+    //   if not exit(*sys.exc_info()):
+    //     raise
+    out("$ret = Sk.misceval.applyOrSuspend(",exit,",undefined,Sk.builtin.getExcInfo($err),undefined,[]);");
+    this._checkSuspension(s);
+    this._jumptrue("$ret", carryOn);
+    out("throw $err;");
+
+    // finally: (kinda. NB that this is a "finally" that doesn't run in the
+    //           exception case!)
+    this.setBlock(tidyUp);
+    this.popFinallyBlock();
+
+    //   exit(None, None, None)
+    out("$ret = Sk.misceval.callsimOrSuspend(",exit,",Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$);");
+    this._checkSuspension(s);
+    // Ignore $ret.
+
+    this.outputFinallyCascade(thisFinallyBlock);
+
+    this._jump(carryOn);
+
+    this.setBlock(carryOn);
 };
 
 Compiler.prototype.cassert = function (s) {
@@ -2042,6 +2116,8 @@ Compiler.prototype.vstmt = function (s) {
             return this.ctryexcept(s);
         case TryFinally:
             return this.ctryfinally(s);
+        case With_:
+            return this.cwith(s);
         case Assert:
             return this.cassert(s);
         case Import_:
@@ -2065,7 +2141,7 @@ Compiler.prototype.vstmt = function (s) {
             out("debugger;");
             break;
         default:
-            goog.asserts.fail("unhandled case in vstmt");
+            goog.asserts.fail("unhandled case in vstmt: " + s.constructor.name);
     }
 };
 
