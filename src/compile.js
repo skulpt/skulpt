@@ -71,6 +71,7 @@ function CompilerUnit () {
     // stack of where to go on a continue
     this.continueBlocks = [];
     this.exceptBlocks = [];
+    // state of where to go on a return
     this.finallyBlocks = [];
 }
 
@@ -298,6 +299,10 @@ Compiler.prototype._jumpfalse = function (test, block) {
 
 Compiler.prototype._jumpundef = function (test, block) {
     out("if(", test, "===undefined){$blk=", block, ";continue;}");
+};
+
+Compiler.prototype._jumpnotundef = function (test, block) {
+    out("if(", test, "!==undefined){$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jumptrue = function (test, block) {
@@ -891,10 +896,13 @@ Compiler.prototype.popExceptBlock = function () {
 
 Compiler.prototype.pushFinallyBlock = function (n) {
     goog.asserts.assert(n >= 0 && n < this.u.blocknum);
-    this.u.finallyBlocks.push(n);
+    this.u.finallyBlocks.push({blk: n, breakDepth: this.u.breakBlocks.length, continueDepth: this.u.continueBlocks.length});
 };
 Compiler.prototype.popFinallyBlock = function () {
     this.u.finallyBlocks.pop();
+};
+Compiler.prototype.peekFinallyBlock = function() {
+    return (this.u.finallyBlocks.length > 0) ? this.u.finallyBlocks[this.u.finallyBlocks.length-1] : undefined;
 };
 
 Compiler.prototype.setupExcept = function (eb) {
@@ -939,7 +947,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; delete "+unit.scopename+".$wakingSuspension;" +
-                    "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err;" +
+                    "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
 
@@ -957,7 +965,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     output += "var $saveSuspension = function($child, $filename, $lineno, $colno) {" +
                 "var susp = new Sk.misceval.Suspension(); susp.child=$child;" +
                 "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+"("+(unit.ste.generator?"$gen":"")+"); };" +
-                "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;" +
+                "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;susp.$postfinally=$postfinally;" +
                 "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;" +
                 "susp.optional=susp.child.optional;" +
                 (hasCell ? "susp.$cell=$cell;" : "");
@@ -1245,7 +1253,6 @@ Compiler.prototype.ctryexcept = function (s) {
             this.vexpr(handler.name, "$err");
         }
 
-        // Need to execute finally before leaving body if an exception is raised
         this.vseqstmt(handler.body);
 
         // Should jump to finally, but finally is not implemented yet
@@ -1259,15 +1266,62 @@ Compiler.prototype.ctryexcept = function (s) {
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
-    // Should jump to finally, but finally is not implemented yet
     this._jump(end);
+
     this.setBlock(end);
 };
 
 Compiler.prototype.ctryfinally = function (s) {
-    out("/*todo; tryfinally*/");
-    // everything but the finally?
-    this.ctryexcept(s.body[0]);
+
+    var finalBody = this.newBlock("finalbody");
+    var exceptionHandler = this.newBlock("finalexh")
+    var exceptionToReRaise = this._gr("finally_reraise", "undefined");
+    var thisFinally, nextFinally;
+    this.u.tempsToSave.push(exceptionToReRaise);
+
+    this.pushFinallyBlock(finalBody);
+    thisFinally = this.peekFinallyBlock();
+    this.setupExcept(exceptionHandler);
+    this.vseqstmt(s.body);
+    this.endExcept();
+    // Normal execution falls through to finally body
+    this._jump(finalBody);
+
+    this.setBlock(exceptionHandler);
+    // Exception handling also goes to the finally body,
+    // stashing the original exception to re-raise
+    out(exceptionToReRaise,"=$err;");
+    this._jump(finalBody);
+
+    this.setBlock(finalBody);
+    this.popFinallyBlock();
+    this.vseqstmt(s.finalbody);
+    // If finalbody executes normally, AND we have an exception
+    // to re-raise, we raise it.
+    out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+    if (this.u.finallyBlocks.length == 0) {
+        out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
+    } else {
+        // If this was a nonlocal return, we need to work out where to go.
+        // If it's a return, we always continue the finally chain.
+        // If it's a break or continue, we need to work out whether our parent
+        // finally-block is at the same break/continue depth as us (ie whether there's
+        // a loop/breakable-block boundary between us and it).
+
+        nextFinally = this.peekFinallyBlock();
+        
+        out("if($postfinally!==undefined) {",
+                "if ($postfinally.returning",
+                    (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "",
+                    (nextFinally.continueDepth == thisFinally.continueDepth) ? "|| $postfinally.isContinue" : "", ") {",
+
+                        "$blk=",nextFinally.blk,";continue;",
+                "} else {",
+                    "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
+                "}",
+            "}");
+    }
+    // Else, we continue from here.
 };
 
 Compiler.prototype.cassert = function (s) {
@@ -1517,7 +1571,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -1855,7 +1909,7 @@ Compiler.prototype.cclass = function (s) {
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
     this.u.switchCode += "(function $" + s.name.v + "$_closure(){";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$currLineNo=undefined,$currColNo=undefined;"
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;"
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -1888,12 +1942,32 @@ Compiler.prototype.cclass = function (s) {
 };
 
 Compiler.prototype.ccontinue = function (s) {
-    if (this.u.continueBlocks.length === 0) {
+    var nextFinally = this.peekFinallyBlock(), gotoBlock;
+    if (this.u.continueBlocks.length == 0) {
         throw new SyntaxError("'continue' outside loop");
     }
     // todo; continue out of exception blocks
-    this._jump(this.u.continueBlocks[this.u.continueBlocks.length - 1]);
+    gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
+    if (nextFinally && nextFinally.continueDepth == this.u.continueBlocks.length) {
+        out("$postfinally={isContinue:true,gotoBlock:",gotoBlock,"};");
+    } else {
+        this._jump(gotoBlock);
+    }
 };
+
+Compiler.prototype.cbreak = function (s) {
+    var nextFinally = this.peekFinallyBlock(), gotoBlock;
+
+    if (this.u.breakBlocks.length === 0) {
+        throw new SyntaxError("'break' outside loop");
+    }
+    gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
+    if (nextFinally && nextFinally.breakDepth == this.u.breakBlocks.length) {
+        out("$postfinally={isBreak:true,gotoBlock:",gotoBlock,"};");
+    } else {
+        this._jump(gotoBlock);
+    }
+}
 
 /**
  * compiles a statement
@@ -1933,11 +2007,12 @@ Compiler.prototype.vstmt = function (s) {
             if (this.u.ste.blockType !== FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
-            if (s.value) {
-                out("return ", this.vexpr(s.value), ";");
-            }
-            else {
-                out("return Sk.builtin.none.none$;");
+            val = s.value ? this.vexpr(s.value) : "Sk.builtin.none.none$";
+            if (this.u.finallyBlocks.length == 0) {
+                out("return ", val, ";");
+            } else {
+                out("$postfinally={returning:",val,"};");
+                this._jump(this.peekFinallyBlock().blk);
             }
             break;
         case Delete_:
@@ -1981,10 +2056,7 @@ Compiler.prototype.vstmt = function (s) {
         case Pass:
             break;
         case Break_:
-            if (this.u.breakBlocks.length === 0) {
-                throw new SyntaxError("'break' outside loop");
-            }
-            this._jump(this.u.breakBlocks[this.u.breakBlocks.length - 1]);
+            this.cbreak(s);
             break;
         case Continue_:
             this.ccontinue(s);
@@ -2260,7 +2332,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.varDeclsCode =
         "var $gbl = {}, $blk=" + entryBlock +
         ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
-        "');var $ret=undefined,$currLineNo=undefined,$currColNo=undefined;";
+        "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
