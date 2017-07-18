@@ -896,7 +896,8 @@ Compiler.prototype.popExceptBlock = function () {
 
 Compiler.prototype.pushFinallyBlock = function (n) {
     goog.asserts.assert(n >= 0 && n < this.u.blocknum);
-    this.u.finallyBlocks.push({blk: n, breakDepth: this.u.breakBlocks.length, continueDepth: this.u.continueBlocks.length});
+    goog.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
+    this.u.finallyBlocks.push({blk: n, breakDepth: this.u.breakBlocks.length});
 };
 Compiler.prototype.popFinallyBlock = function () {
     this.u.finallyBlocks.pop();
@@ -1271,12 +1272,58 @@ Compiler.prototype.ctryexcept = function (s) {
     this.setBlock(end);
 };
 
+Compiler.prototype.outputFinallyCascade = function (thisFinally) {
+    var nextFinally;
+    
+    // What do we do when we're done executing a 'finally' block?
+    // Normally you just fall off the end. If we're 'return'ing,
+    // 'continue'ing or 'break'ing, $postfinally tells us what to do.
+    //
+    // But we might be in a nested pair of 'finally' blocks. If so, we need
+    // to work out whether to jump to the outer finally block.
+    //
+    // (NB we do NOT deal with re-raising exceptions here. That's handled
+    // elsewhere, because 'with' does special things with exceptions.)
+
+    if (this.u.finallyBlocks.length == 0) {
+        // No nested 'finally' block. Easy.
+        out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
+    } else {
+
+        // OK, we're nested. Do we jump straight to the outer 'finally' block?
+        // Depends on how we got here here.
+
+        // Normal execution ($postfinally===undefined)? No, we're done here.
+
+        // Returning ($postfinally.returning)? Yes, we want to execute all the
+        // 'finally' blocks on the way out.
+
+        // Breaking ($postfinally.isBreak)? It depends. Is the outer 'finally'
+        // block inside or outside the loop we're breaking out of? We compare
+        // its breakDepth to ours to find out. If we're at the same breakDepth,
+        // we're both inside the innermost loop, so we both need to execute.
+        // ('continue' is the same thing as 'break' for us)
+
+        nextFinally = this.peekFinallyBlock();
+        
+        out("if($postfinally!==undefined) {",
+                "if ($postfinally.returning",
+                    (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
+
+                        "$blk=",nextFinally.blk,";continue;",
+                "} else {",
+                    "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
+                "}",
+            "}");
+    }
+};
+
 Compiler.prototype.ctryfinally = function (s) {
 
     var finalBody = this.newBlock("finalbody");
     var exceptionHandler = this.newBlock("finalexh")
     var exceptionToReRaise = this._gr("finally_reraise", "undefined");
-    var thisFinally, nextFinally;
+    var thisFinally;
     this.u.tempsToSave.push(exceptionToReRaise);
 
     this.pushFinallyBlock(finalBody);
@@ -1299,29 +1346,76 @@ Compiler.prototype.ctryfinally = function (s) {
     // If finalbody executes normally, AND we have an exception
     // to re-raise, we raise it.
     out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
-    if (this.u.finallyBlocks.length == 0) {
-        out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
-    } else {
-        // If this was a nonlocal return, we need to work out where to go.
-        // If it's a return, we always continue the finally chain.
-        // If it's a break or continue, we need to work out whether our parent
-        // finally-block is at the same break/continue depth as us (ie whether there's
-        // a loop/breakable-block boundary between us and it).
 
-        nextFinally = this.peekFinallyBlock();
-        
-        out("if($postfinally!==undefined) {",
-                "if ($postfinally.returning",
-                    (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "",
-                    (nextFinally.continueDepth == thisFinally.continueDepth) ? "|| $postfinally.isContinue" : "", ") {",
-
-                        "$blk=",nextFinally.blk,";continue;",
-                "} else {",
-                    "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
-                "}",
-            "}");
-    }
+    this.outputFinallyCascade(thisFinally);
     // Else, we continue from here.
+};
+
+Compiler.prototype.cwith = function (s) {
+    var mgr, exit, value, exception;
+    var exceptionHandler = this.newBlock("withexh"), tidyUp = this.newBlock("withtidyup");
+    var carryOn = this.newBlock("withcarryon");
+    var thisFinallyBlock;
+
+    // NB this does not *quite* match the semantics in PEP 343, which
+    // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
+    // presumably for performance reasons.
+
+    mgr = this._gr("mgr", this.vexpr(s.context_expr));
+
+    // exit = mgr.__exit__
+    out("$ret = Sk.abstr.gattr(",mgr,",'__exit__', true);");
+    this._checkSuspension(s);
+    exit = this._gr("exit", "$ret");
+    this.u.tempsToSave.push(exit);
+
+    // value = mgr.__enter__()
+    out("$ret = Sk.abstr.gattr(",mgr,",'__enter__', true);");
+    this._checkSuspension(s);
+    out("$ret = Sk.misceval.callsimOrSuspend($ret);");
+    this._checkSuspension(s);
+    value = this._gr("value", "$ret");
+
+    // try:
+    this.pushFinallyBlock(tidyUp);
+    thisFinallyBlock = this.u.finallyBlocks[this.u.finallyBlocks.length-1];
+    this.setupExcept(exceptionHandler);
+
+    //    VAR = value
+    if (s.optional_vars) {
+        this.nameop(s.optional_vars.id, Store, value);
+    }
+
+    //    (try body)
+    this.vseqstmt(s.body);
+    this.endExcept();
+    this._jump(tidyUp);
+
+    // except:
+    this.setBlock(exceptionHandler);
+
+    //   if not exit(*sys.exc_info()):
+    //     raise
+    out("$ret = Sk.misceval.applyOrSuspend(",exit,",undefined,Sk.builtin.getExcInfo($err),undefined,[]);");
+    this._checkSuspension(s);
+    this._jumptrue("$ret", carryOn);
+    out("throw $err;");
+
+    // finally: (kinda. NB that this is a "finally" that doesn't run in the
+    //           exception case!)
+    this.setBlock(tidyUp);
+    this.popFinallyBlock();
+
+    //   exit(None, None, None)
+    out("$ret = Sk.misceval.callsimOrSuspend(",exit,",Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$);");
+    this._checkSuspension(s);
+    // Ignore $ret.
+
+    this.outputFinallyCascade(thisFinallyBlock);
+
+    this._jump(carryOn);
+
+    this.setBlock(carryOn);
 };
 
 Compiler.prototype.cassert = function (s) {
@@ -1948,8 +2042,9 @@ Compiler.prototype.ccontinue = function (s) {
     }
     // todo; continue out of exception blocks
     gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
-    if (nextFinally && nextFinally.continueDepth == this.u.continueBlocks.length) {
-        out("$postfinally={isContinue:true,gotoBlock:",gotoBlock,"};");
+    goog.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
+    if (nextFinally && nextFinally.breakDepth == this.u.continueBlocks.length) {
+        out("$postfinally={isBreak:true,gotoBlock:",gotoBlock,"};");
     } else {
         this._jump(gotoBlock);
     }
@@ -1967,7 +2062,7 @@ Compiler.prototype.cbreak = function (s) {
     } else {
         this._jump(gotoBlock);
     }
-}
+};
 
 /**
  * compiles a statement
@@ -2042,6 +2137,8 @@ Compiler.prototype.vstmt = function (s) {
             return this.ctryexcept(s);
         case TryFinally:
             return this.ctryfinally(s);
+        case With_:
+            return this.cwith(s);
         case Assert:
             return this.cassert(s);
         case Import_:
@@ -2065,7 +2162,7 @@ Compiler.prototype.vstmt = function (s) {
             out("debugger;");
             break;
         default:
-            goog.asserts.fail("unhandled case in vstmt");
+            goog.asserts.fail("unhandled case in vstmt: " + s.constructor.name);
     }
 };
 

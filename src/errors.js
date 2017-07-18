@@ -536,4 +536,15 @@ Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.
 goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
 
+// TODO: Extract into sys.exc_info(). Work out how the heck
+// to find out what exceptions are being processed by parent stack frames...
+Sk.builtin.getExcInfo = function(e) {
+    var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
+
+    // TODO create a Traceback object for the third tuple element
+
+    return new Sk.builtin.tuple(v);
+};
+// NOT exported
+
 goog.exportSymbol("Sk", Sk);
