@@ -211,17 +211,20 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test(debug_mode=False):
+def test(debug_mode=False, p3=False):
     """runs the unit tests."""
     if debug_mode:
         debugon = "--debug-mode"
     else:
         debugon = ""
-    buildNamedTestsFile()
-    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+    ret1 = 0
     ret2 = 0
     ret3 = 0
     ret4 = 0
+    if not p3:
+        buildNamedTestsFile()
+        ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+
     if ret1 == 0:
         print "Running jshint"
         base_dirs = ["src", "debugger"]
@@ -237,7 +240,7 @@ def test(debug_mode=False):
         ret3 = os.system(jscscmd)
         #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits(debug_mode=debug_mode)
+        ret4 = rununits(p3=p3, debug_mode=debug_mode)
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -1067,7 +1070,13 @@ def shell(fn):
 
 
 def rununits(opt=False, p3=False, debug_mode=False):
-    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    if p3:
+        unit_dir = 'test/unit3'
+        p3on = 'true'
+    else:
+        unit_dir = 'test/unit'
+        p3on = 'false'
+    testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
@@ -1076,10 +1085,6 @@ def rununits(opt=False, p3=False, debug_mode=False):
             os.mkdir("support/tmp")
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
-        if p3:
-            p3on = 'true'
-        else:
-            p3on = 'false'
         f.write("""
 var input = read('%s');
 print('%s');
@@ -1308,8 +1313,12 @@ def main():
 
     if cmd == "test":
         test()
+    elif cmd == "test3":
+        test(p3=True)
     elif cmd == "testdebug":
-        test(True)
+        test(debug_mode=True)
+    elif cmd == "test3debug":
+        test(debug_mode=True, p3=True)
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
