@@ -1497,7 +1497,7 @@ function generateTurtleModule(_target) {
 
     function ensureAnonymous() {
         if (!_anonymousTurtle) {
-            _anonymousTurtle = _module.Turtle();
+            _anonymousTurtle = Sk.misceval.callsim(_module.Turtle);
         }
 
         return _anonymousTurtle.instance;
