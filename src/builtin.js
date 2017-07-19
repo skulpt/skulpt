@@ -240,12 +240,25 @@ Sk.builtin.round = function round (number, ndigits) {
 };
 
 Sk.builtin.len = function len (item) {
+    var intcheck;
+    var special;
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     var int_ = function(i) { return new Sk.builtin.int_(i); };
+    intcheck = function(j) {
+        if (Sk.builtin.checkInt(j)) {
+            return int_(j);
+        } else {
+            if (Sk.python3) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
+            } else {
+                throw new Sk.builtin.TypeError("__len__() should return an int");
+            }
+        }
+    };
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(true), int_);
+        return Sk.misceval.chain(item.sq$length(true), intcheck);
     }
 
     if (item.mp$length) {
@@ -253,7 +266,20 @@ Sk.builtin.len = function len (item) {
     }
 
     if (item.tp$length) {
-        return Sk.misceval.chain(item.tp$length(true), int_);
+        if (Sk.builtin.checkFunction(item)) {
+            special = Sk.abstr.lookupSpecial(item, "__len__");
+            if (special != null) {
+                return Sk.misceval.callsim(special, item);
+            } else {
+                if (Sk.python3) {
+                    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
+                } else {
+                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
+                }
+            }
+        } else {
+            return Sk.misceval.chain(item.tp$length(true), intcheck);
+        }
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
