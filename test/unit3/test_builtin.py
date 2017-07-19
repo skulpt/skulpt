@@ -629,8 +629,8 @@ class BuiltinTest(unittest.TestCase):
         # #     def __len__(self):
         # #         return sys.maxsize + 1
         # # self.assertRaises(OverflowError, len, HugeLen())
-        # class NoLenMethod(object): pass
-        # self.assertRaises(TypeError, len, NoLenMethod())
+        class NoLenMethod(object): pass
+        self.assertRaises(TypeError, len, NoLenMethod())
 
     def test_map(self):
         self.assertEqual(
