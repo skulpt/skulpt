@@ -981,7 +981,7 @@ class BuiltinTest(unittest.TestCase):
         class TestNoRound:
             pass
 
-        # self.assertEqual(round(TestRound()), 23)
+        self.assertEqual(round(TestRound()), 23)
 
         self.assertRaises(TypeError, round, 1, 2, 3)
         self.assertRaises(TypeError, round, TestNoRound())

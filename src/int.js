@@ -970,23 +970,33 @@ Sk.builtin.int_.prototype.ob$ge = function (other) {
 Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
     Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
 
-    var result, multiplier, number;
+    var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
+    number = Sk.builtin.asnum$(self);
     if (ndigits === undefined) {
-        ndigits = 0;
+        ndigs = 0;
+    } else {
+        ndigs = Sk.misceval.asIndex(ndigits);
     }
 
-    number = Sk.builtin.asnum$(self);
-    ndigits = Sk.misceval.asIndex(ndigits);
+    if (Sk.python3) {
+        num10 = number * Math.pow(10, ndigs);
+        rounded = Math.round(num10);
+        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        result = bankRound / Math.pow(10, ndigs);
+        return new Sk.builtin.int_(result);
+    } else {
+        multiplier = Math.pow(10, ndigs);
+        result = Math.round(number * multiplier) / multiplier;
 
-    multiplier = Math.pow(10, ndigits);
-    result = Math.round(number * multiplier) / multiplier;
+        return new Sk.builtin.int_(result);
+    }
 
-    return new Sk.builtin.int_(result);
+
 };
 
 Sk.builtin.int_.prototype.conjugate = new Sk.builtin.func(function (self) {
