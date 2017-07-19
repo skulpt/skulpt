@@ -1095,9 +1095,15 @@ Sk.builtin.pow = function pow (a, b, c) {
             throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
         }
         if (b_num < 0) {
-            throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            if (Sk.python3) {
+                throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            } else {
+                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            }
         }
-
+        if (c_num === 0) {
+            throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
+        }
         if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng) ||
             (Math.pow(a_num, b_num) === Infinity)) {
             // convert a to a long so that we can use biginteger's modPowInt method
