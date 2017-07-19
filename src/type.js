@@ -341,7 +341,14 @@ Sk.builtin.type = function (name, bases, dict) {
         };
         klass.prototype.tp$iternext = function (canSuspend) {
             var self = this;
-            var r = Sk.misceval.chain(self.tp$getattr("next", canSuspend), function(/** {Object} */ iternextf) {
+            var next;
+
+            if (Sk.python3) {
+                next = "__next__";
+            } else {
+                next = "next";
+            }
+            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
                 if (iternextf === undefined) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
                 }

@@ -282,7 +282,7 @@ Sk.builtin.nmber.prototype.__ge__ = function (me, other) {
 /**
  * @deprecated Please use Sk.builtin.int_ or Sk.builtin.float_ instead.
  */
-Sk.builtin.nmber.prototype.__round__ = function (self, ndigits) {
+Sk.builtin.nmber.prototype.round$ = function (self, ndigits) {
     throw deprecatedError;
 };
 

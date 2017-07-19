@@ -228,13 +228,8 @@ Sk.builtin.round = function round (number, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    if (ndigits === undefined) {
-        ndigits = 0;
-    }
-
-    // for built-in types round is delegated to number.__round__
-    if(number.__round__) {
-        return number.__round__(number, ndigits);
+    if (!Sk.python3 && number.round$) {
+        return number.round$(number, ndigits);
     }
 
     // try calling internal magic method
