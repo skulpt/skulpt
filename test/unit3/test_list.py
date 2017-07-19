@@ -271,6 +271,14 @@ class IterInheritsTestCase(unittest.TestCase):
         a = self.type2test(range(10))
         del a[9::1<<333]
 
+    def test_contains(self):
+        a = self.type2test(range(15))
+        self.assertIn(12, a)
+        self.assertTrue(4 in a)
+        self.assertTrue(a.__contains__(8))
+        self.assertNotIn(42, a)
+        self.assertFalse(-3 in a)
+        self.assertFalse(a.__contains__(17))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
