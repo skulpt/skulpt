@@ -675,15 +675,10 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     var meth; // PyObject
     var result; // PyObject
 
-    // If no format_spec is provided, use an empty string
-    if(format_spec == null) {
-        format_spec = "";
-    }
-
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = Sk.abstr.lookupSpecial(obj, "__format__");
     if (meth == null) {
-        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
+        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + " doesn't define __format__");
     }
 
     // And call it

@@ -77,7 +77,27 @@ Sk.builtin.lng.prototype.nb$int_ = function() {
     return new Sk.builtin.int_(this.toInt$());
 };
 
-Sk.builtin.lng.prototype.__round__ = function (self, ndigits) {
+Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.python3) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(obj);
+};
+
+Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
     Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;

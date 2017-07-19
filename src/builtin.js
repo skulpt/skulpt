@@ -1228,6 +1228,10 @@ Sk.builtin.divmod = function divmod (a, b) {
 Sk.builtin.format = function format (value, format_spec) {
     Sk.builtin.pyCheckArgs("format", arguments, 1, 2);
 
+    if (format_spec === undefined) {
+        format_spec = Sk.builtin.str.$emptystr;
+    }
+
     return Sk.abstr.objectFormat(value, format_spec);
 };
 

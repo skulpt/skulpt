@@ -693,3 +693,10 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     }
     return r1.tp$richcompare(r2, op);
 };
+
+Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
+    Sk.builtin.pyCheckArgs("__format__", arguments, 1, 2);
+    return new Sk.builtin.str(self);
+};
+
+Sk.builtin.type.pythonFunctions = ["__format__"];
