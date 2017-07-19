@@ -211,11 +211,17 @@ Sk.builtin.asnum$nofloat = function (a) {
 goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round (number, ndigits) {
-    var result, multiplier, special;
+    var special;
     Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
 
     if (!Sk.builtin.checkNumber(number)) {
-        throw new Sk.builtin.TypeError("a float is required");
+        if (!Sk.builtin.checkFunction(number)) {
+            throw new Sk.builtin.TypeError("a float is required");
+        } else {
+            if (!Sk.python3) {
+                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
+            }
+        }
     }
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
@@ -235,7 +241,13 @@ Sk.builtin.round = function round (number, ndigits) {
     special = Sk.abstr.lookupSpecial(number, "__round__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, number, ndigits);
+        if (!Sk.builtin.checkFunction(number)) {
+            return Sk.misceval.callsim(special, number, ndigits);
+        } else {
+            return Sk.misceval.callsim(special, number);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("a float is required");
     }
 };
 

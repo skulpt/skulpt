@@ -77,6 +77,36 @@ Sk.builtin.lng.prototype.nb$int_ = function() {
     return new Sk.builtin.int_(this.toInt$());
 };
 
+Sk.builtin.lng.prototype.__round__ = function (self, ndigits) {
+    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+
+    var result, multiplier, number, num10, rounded, bankRound, ndigs;
+
+    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+    }
+
+    number = Sk.builtin.asnum$(self);
+    if (ndigits === undefined) {
+        ndigs = 0;
+    } else {
+        ndigs = Sk.misceval.asIndex(ndigits);
+    }
+
+    if (Sk.python3) {
+        num10 = number * Math.pow(10, ndigs);
+        rounded = Math.round(num10);
+        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        result = bankRound / Math.pow(10, ndigs);
+        return new Sk.builtin.lng(result);
+    } else {
+        multiplier = Math.pow(10, ndigs);
+        result = Math.round(number * multiplier) / multiplier;
+
+        return new Sk.builtin.lng(result);
+    }
+};
+
 Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
     return self.nb$int_(self);
 });
