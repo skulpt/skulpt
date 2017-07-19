@@ -188,6 +188,28 @@ Sk.builtin.object.prototype["__repr__"] = function (self) {
     return self["$r"]();
 };
 
+
+Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.python3) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(self);
+};
+
+
 /**
  * Python wrapper for `__str__` method.
  * @name  __str__
@@ -415,7 +437,9 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * @type {Array}
  */
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
+                                     "__eq__", "__ne__", "__lt__", "__le__",
+                                     "__gt__", "__ge__", "__getattr__",
+                                     "__setattr__", "__format__"];
 
 /**
  * @constructor

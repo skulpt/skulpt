@@ -236,6 +236,19 @@ Sk.doOneTimeInitialization = function () {
         proto[name] = new Sk.builtin.func(proto[name]);
     }
 
+    proto = Sk.builtin.type.prototype;
+
+    for (i = 0; i < Sk.builtin.type.pythonFunctions.length; i++) {
+        name = Sk.builtin.type.pythonFunctions[i];
+
+        if (proto[name] instanceof Sk.builtin.func) {
+            // If functions have already been initialized, do not wrap again.
+            break;
+        }
+
+        proto[name] = new Sk.builtin.func(proto[name]);
+    }
+
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
