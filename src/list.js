@@ -295,7 +295,8 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
 };
 
 Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    return Sk.builtin.list.prototype.sq$contains.call(self, item);
+    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
 });
 
 /*
