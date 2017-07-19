@@ -530,7 +530,11 @@ Sk.builtin.oct = function oct (x) {
     if (!Sk.misceval.isIndex(x)) {
         throw new Sk.builtin.TypeError("oct() argument can't be converted to hex");
     }
-    return Sk.builtin.int2str_(x, 8, "0");
+    if (Sk.python3) {
+        return Sk.builtin.int2str_(x, 8, "0o");
+    } else {
+        return Sk.builtin.int2str_(x, 8, "0");
+    }
 };
 
 Sk.builtin.bin = function bin (x) {
