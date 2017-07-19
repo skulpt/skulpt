@@ -967,7 +967,7 @@ Sk.builtin.int_.prototype.ob$ge = function (other) {
  * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
  * @return {Sk.builtin.int_} The rounded integer.
  */
-Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
+Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
