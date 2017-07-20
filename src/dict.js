@@ -49,8 +49,21 @@ Sk.builtin.dict = function dict (L) {
     }
 
     this.__class__ = Sk.builtin.dict;
+    this.tp$call = undefined; // Not callable, even though constructor is
 
     return this;
+};
+
+Sk.builtin.dict.tp$call = function(args, kw) {
+    var d, i;
+    Sk.builtin.pyCheckArgs("dict", args, 0, 1);
+    d = new Sk.builtin.dict(args[0]);
+    if (kw) {
+        for (i = 0; i < kw.length; i += 2) {
+            d.mp$ass_subscript(new Sk.builtin.str(kw[i]), kw[i+1]);
+        }
+    }
+    return d;
 };
 
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
