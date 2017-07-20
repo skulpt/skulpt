@@ -9,6 +9,8 @@ class DictTest(unittest.TestCase):
         self.assertEqual(dict(), {})
         self.assertIsNot(dict(), {})
 
+        self.assertEqual(dict(a='b', b='c'), {'a':'b', 'b': 'c'})
+
     def test_bool(self):
         self.assertIs(not {}, True)
         self.assertTrue({1: 2})
