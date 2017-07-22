@@ -23,7 +23,8 @@
 
     "build": "./skulpt.py dist",
     "build-min": "./skulpt.py dist -u",
-    "test": "./skulpt.py test"
+    "test": "./skulpt.py test",
+    "test3": "./skulpt.py test3"
   },
   "repository": {
     "type": "git",

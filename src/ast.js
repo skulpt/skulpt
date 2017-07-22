@@ -466,27 +466,45 @@ function astForDecorated (c, n) {
     return thing;
 }
 
-//note: with statements need to be updated to 2.7
-//see: ast.c lines: 3127 -> 3185
 
-function astForWithVar (c, n) {
+/* with_item: test ['as' expr] */
+function astForWithItem (c, n, content) {
+    var expr_ty, context_expr, optional_vars;
     REQ(n, SYM.with_item);
-    return astForExpr(c, CHILD(n, 1));
+    context_expr = astForExpr(c, CHILD(n, 0));
+    if (NCH(n) == 3) {
+        optional_vars = astForExpr(c, CHILD(n, 2));
+        setContext(c, optional_vars, Store, n);
+    }
+
+    return new With_(context_expr, optional_vars, content, n.lineno, n.col_offset);
 }
 
 function astForWithStmt (c, n) {
-    /* with_stmt: 'with' test [ with_var ] ':' suite */
-    var optionalVars;
-    var contextExpr;
-    var suiteIndex = 3; // skip with, test, :
-    goog.asserts.assert(n.type === SYM.with_stmt);
-    contextExpr = astForExpr(c, CHILD(n, 1));
-    if (CHILD(n, 2).type === SYM.with_item) {
-        optionalVars = astForWithVar(c, CHILD(n, 2));
-        setContext(c, optionalVars, Store, n);
-        suiteIndex = 4;
-    }
-    return new With_(contextExpr, optionalVars, astForSuite(c, CHILD(n, suiteIndex)), n.lineno, n.col_offset);
+    /* with_stmt: 'with' with_item (',' with_item)* ':' suite */
+    var i;
+    var ret
+    var inner;
+
+    REQ(n, SYM.with_stmt)
+
+    /* process the with items inside-out */
+    i = NCH(n) -1 
+    /* the suite of the innermost with item is the suite of the with stmt */
+    inner = astForSuite(c, CHILD(n,i));
+
+    while (true) {
+        i-=2;
+        ret = astForWithItem(c, CHILD(n, i), inner)
+        /* was this the last item? */
+        if (i == 1) {
+            break;
+        }
+
+        inner = [ret];
+    } 
+
+    return ret
 }
 
 function astForExecStmt (c, n) {
@@ -2197,8 +2215,8 @@ function astForStmt (c, n) {
     }
     else {
         /* compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt
-         | funcdef | classdef | decorated
-         */
+                        | funcdef | classdef | decorated
+        */
         ch = CHILD(n, 0);
         REQ(n, SYM.compound_stmt);
         switch (ch.type) {
