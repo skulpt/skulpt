@@ -1044,21 +1044,21 @@ function generateTurtleModule(_target) {
         proto.$window_width = function() {
             return this._screen.$window_width();
         };
-        
+
         proto.$window_height = function() {
             return this._screen.$window_height();
         };
-        
+
         proto.$tracer = function(n, delay) {
             return this._screen.$tracer(n, delay);
         };
         proto.$tracer.minArgs     = 0;
         proto.$tracer.keywordArgs = ["n", "delay"];
-        
+
         proto.$update = function() {
             return this._screen.$update();
         };
-        
+
         proto.$delay = function(delay) {
             return this._screen.$delay(delay);
         };
@@ -1273,7 +1273,7 @@ function generateTurtleModule(_target) {
                 SHAPES[name] = points;
             }
         };
-        proto.$setup.minArgs = 1;
+        proto.$register_shape.minArgs = 1;
 
         proto.$getshapes = function() {
             return Object.keys(SHAPES);
@@ -1491,7 +1491,7 @@ function generateTurtleModule(_target) {
                     delete(self._keyLogger[e.charCode || e.keyCode]);
                 }
             };
-            
+
             getTarget().addEventListener("keyup", this._keyUpListener);
         };
 
