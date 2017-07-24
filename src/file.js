@@ -72,9 +72,17 @@ Sk.builtin.file.prototype["$r"] = function () {
         "file '" +
         this.name +
         "', mode '" +
-        this.mode +
+        Sk.ffi.remapToJs(this.mode) +
         "'>");
 };
+
+Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(self) {
+    return self;
+});
+
+Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
+    return Sk.misceval.callsim(Sk.builtin.file.prototype.close, self);
+});
 
 Sk.builtin.file.prototype.tp$iter = function () {
     var allLines = this.lineList;
@@ -97,22 +105,23 @@ Sk.builtin.file.prototype.tp$iter = function () {
     return ret;
 };
 
-Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function close(self) {
     self.closed = true;
+    return Sk.builtin.none.none$;
 });
 
-Sk.builtin.file.prototype["flush"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["flush"] = new Sk.builtin.func(function flush(self) {
 });
 
-Sk.builtin.file.prototype["fileno"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["fileno"] = new Sk.builtin.func(function fileno(self) {
     return this.fileno;
 }); // > 0, not 1/2/3
 
-Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function isatty(self) {
     return false;
 });
 
-Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function read(self, size) {
     var ret;
     var len;
     if (self.closed) {
@@ -170,11 +179,11 @@ Sk.builtin.file.$readline = function (self, size, prompt) {
     }
 };
 
-Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) { 
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) { 
     return Sk.builtin.file.$readline(self, size, undefined); 
 });
 
-Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, sizehint) {
+Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(self, sizehint) {
     if (self.fileno === 0) {
         return new Sk.builtin.NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
     }
@@ -187,7 +196,7 @@ Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, siz
     return new Sk.builtin.list(arr);
 });
 
-Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function (self, offset, whence) {
+Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function seek(self, offset, whence) {
     if (whence === undefined) {
         whence = 1;
     }
@@ -198,16 +207,15 @@ Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function (self, offset, 
     }
 });
 
-Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function tell(self) {
     return self.pos$;
 });
 
-
-Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(self, size) {
     goog.asserts.fail();
 });
 
-Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
+Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, str) {
     var mode = Sk.ffi.remapToJs(self.mode);
     if (mode === "w" || mode === "wb" || mode === "a" || mode === "ab") {
         if (Sk.filewrite) {
