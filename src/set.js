@@ -152,6 +152,10 @@ Sk.builtin.set.prototype.nb$or = function(other){
     return this["union"].func_code(this, other);
 }
 
+Sk.builtin.set.prototype.nb$xor = function(other){
+    return this["symmetric_difference"].func_code(this, other);
+}
+
 Sk.builtin.set.prototype.nb$subtract = function(other){
     return this["difference"].func_code(this, other);
 }
