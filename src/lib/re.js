@@ -104,7 +104,7 @@ var $builtinmodule = function (name) {
         var index = 0;
         var splits = 0;
         while ((match = regex.exec(str)) != null) {
-            //print("Matched '" + match[0] + "' at position " + match.index + 
+            //print("Matched '" + match[0] + "' at position " + match.index +
             //      "; next search at " + regex.lastIndex);
             if (match.index === regex.lastIndex) {
                 // empty match
@@ -172,7 +172,7 @@ var $builtinmodule = function (name) {
         var result = [];
         var match;
         while ((match = regex.exec(str)) != null) {
-            //print("Matched '" + match[0] + "' at position " + match.index + 
+            //print("Matched '" + match[0] + "' at position " + match.index +
             //      "; next search at " + regex.lastIndex);
             // print("match: " + JSON.stringify(match));
             if (match.length < 2) {
@@ -227,7 +227,7 @@ var $builtinmodule = function (name) {
 
     mod.MatchObject = Sk.misceval.buildClass(mod, matchobj, 'MatchObject', []);
 
-    // Internal function to return a Python list of strings 
+    // Internal function to return a Python list of strings
     // From a JS regular expression string
     mod._findre = function (res, string) {
         res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
@@ -250,7 +250,9 @@ var $builtinmodule = function (name) {
         return retval;
     }
 
-    mod.search = new Sk.builtin.func(function (pattern, string, flags) {
+
+    // Internal search, shared between search function and RegexObject.search method
+    mod._search = function (pattern, string, flags) {
         Sk.builtin.pyCheckArgs('search', arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
@@ -275,7 +277,9 @@ var $builtinmodule = function (name) {
         }
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
-    });
+    };
+
+    mod.search = new Sk.builtin.func(mod._search);
 
     mod.match = new Sk.builtin.func(function (pattern, string, flags) {
         Sk.builtin.pyCheckArgs('match', arguments, 2, 3);
@@ -304,5 +308,39 @@ var $builtinmodule = function (name) {
         return mob;
     });
 
+    var regexobj = function ($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self, pattern, flags) {
+            self.re = pattern;
+            if (flags === undefined) {
+                self.flags = 0;
+            }
+            else {
+                self.flags = flags;
+            }
+        });
+
+        $loc.search = new Sk.builtin.func(function (self, string, pos, endpos) {
+            return mod._search(self.re, string, self.flags);
+        });
+
+    };
+
+    mod.RegexObject = Sk.misceval.buildClass(mod, regexobj, 'RegexObject', []);
+
+    mod.compile = new Sk.builtin.func(function (pattern, flags) {
+        Sk.builtin.pyCheckArgs('compile', arguments, 1, 2);
+        if (!Sk.builtin.checkString(pattern)) {
+            throw new Sk.builtin.TypeError("pattern must be a string");
+        }
+        if (flags === undefined) {
+            flags = 0;
+        }
+        if (!Sk.builtin.checkNumber(flags)) {
+            throw new Sk.builtin.TypeError("flags must be a number");
+        }
+        var rob = Sk.misceval.callsim(mod.RegexObject, pattern, flags);
+        return rob;
+    });
+
     return mod;
-}
+};
