@@ -273,17 +273,17 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$getattr = function(name, canSuspend) {
-            var r, /** @type {(Object|undefined)} */ getf;
+            var r, descr, /** @type {(Object|undefined)} */ getf;
 
-            getf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__getattribute__");
+            // Find __getattribute__ on this type if we can
+            descr = Sk.builtin.type.typeLookup(klass, "__getattribute__");
+
+            if (descr !== undefined && descr !== null && descr.tp$descr_get !== undefined) {
+                getf = descr.tp$descr_get.call(descr, this, klass);
+            }
+
             if (getf === undefined) {
-                getf = function(pyName) {
-                    var r = Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
-                    if (r === undefined) {
-                        throw new Sk.builtin.AttributeError(name);
-                    }
-                    return r;
-                }.bind(this);
+                getf = Sk.builtin.object.prototype.GenericPythonGetAttr.bind(null, this);
             }
 
             // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr

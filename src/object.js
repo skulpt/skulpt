@@ -84,7 +84,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
         if (f) {
-            getf = f.call(descr, this, this.ob$type, canSuspend);
+            getf = f.call(descr, this, this.ob$type);
         } else {
             getf = descr;
         }
