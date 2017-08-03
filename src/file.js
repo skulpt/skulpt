@@ -24,22 +24,8 @@ Sk.builtin.file = function (name, mode, buffering) {
     } else if (this.name === "/dev/stderr") {
         this.fileno = 2;
     } else {
-        if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
-            this.fileno = 10;
-            elem = document.getElementById(name.v);
-            if (elem == null) {
-                throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
-            } else {
-                if (elem.nodeName.toLowerCase() == "textarea") {
-                    this.data$ = elem.value;
-                } else {
-                    this.data$ = elem.textContent;
-                }
-            }
-        } else {
-            this.fileno = 11;
-            this.data$ = Sk.read(name.v);
-        }
+        this.fileno = 11;
+        this.data$ = Sk.read(name.v);
 
         this.lineList = this.data$.split("\n");
         this.lineList = this.lineList.slice(0, -1);
@@ -115,19 +101,24 @@ Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function isatty(self) 
 
 Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function read(self, size) {
     var ret;
-    var len;
+    var len = self.data$.length;
+    var l_size;
     if (self.closed) {
         throw new Sk.builtin.ValueError("I/O operation on closed file");
     }
-    len = self.data$.length;
+
     if (size === undefined) {
-        size = len;
+        l_size = len;
+    } else {
+        l_size = Sk.ffi.remapToJs(size);
     }
-    ret = new Sk.builtin.str(self.data$.substr(self.pos$, size));
+
+    ret = new Sk.builtin.str(self.data$.substr(self.pos$, l_size));
     self.pos$ += size;
     if (self.pos$ >= len) {
         self.pos$ = len;
     }
+
     return ret;
 });
 
@@ -189,18 +180,24 @@ Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(
 });
 
 Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function seek(self, offset, whence) {
+    var l_offset =  Sk.ffi.remapToJs(offset);
+
     if (whence === undefined) {
-        whence = 1;
+        whence = 0;
     }
-    if (whence == 1) {
-        self.pos$ = offset;
-    } else {
-        self.pos$ = self.data$ + offset;
+    if (whence == 0) {
+        self.pos$ = l_offset;
+    } else if (whence == 1) {
+        self.pos$ = self.data$.length + l_offset;
+    } else if (whence == 2) {
+        self.pos$ = self.data$.length + l_offset;
     }
+
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function tell(self) {
-    return self.pos$;
+    return Sk.ffi.remapToPy(self.pos$);
 });
 
 Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(self, size) {
