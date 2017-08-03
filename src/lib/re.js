@@ -1,6 +1,8 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
+    var validGroups, convert, getFlags, _split, _findall, matchobj, _search, _match, regexobj;
+
     // Constants (mostly unsupported)
     mod.I = 2;
     mod.IGNORECASE = 2;
@@ -15,9 +17,9 @@ var $builtinmodule = function (name) {
     // mod.X = 64;
     // mod.VERBOSE = 64;
 
-    var validGroups = ["(?:", "(?=", "(?!"];
+    validGroups = ["(?:", "(?=", "(?!"];
 
-    var convert = function (pattern) {
+    convert = function (pattern) {
         var newpattern;
         var match;
         var i;
@@ -30,79 +32,71 @@ var $builtinmodule = function (name) {
                     throw new Sk.builtin.ValueError("Disallowed group in pattern: '"
                         + match[i] + "'");
                 }
-                ;
             }
-            ;
         }
-        ;
 
-        newpattern = pattern.replace('/\\/g', '\\\\');
-        newpattern = pattern.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
+        newpattern = pattern.replace("/\\/g", "\\\\");
+        newpattern = pattern.replace(/([^\\]){,(?![^\[]*\])/g, "$1{0,");
 
         return newpattern;
     };
 
-    var getFlags = function (flags) {
+    getFlags = function (flags) {
         var jsflags = "g";
         if ((flags & mod.IGNORECASE) == mod.IGNORECASE) {
             jsflags += "i";
         }
-        ;
         if ((flags & mod.MULTILINE) == mod.MULTILINE) {
             jsflags += "m";
         }
-        ;
         return jsflags;
     };
 
-    mod.split = Sk.nativejs.func(function split (pattern, string, maxsplit, flags) {
+    _split = function (pattern, string, maxsplit, flags) {
+        var pat, str, captured, jsflags, regex;
+        var result, match, index, splits;
+
         Sk.builtin.pyCheckArgs("split", arguments, 2, 4);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
-        ;
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         }
-        ;
         if (maxsplit === undefined) {
             maxsplit = 0;
         }
-        ;
         if (!Sk.builtin.checkNumber(maxsplit)) {
             throw new Sk.builtin.TypeError("maxsplit must be a number");
         }
-        ;
         if (flags === undefined) {
             flags = 0;
         }
-        ;
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        ;
 
         maxsplit = Sk.builtin.asnum$(maxsplit);
-        var pat = Sk.ffi.unwrapo(pattern);
-        var str = Sk.ffi.unwrapo(string);
+        pat = Sk.ffi.unwrapo(pattern);
+        str = Sk.ffi.unwrapo(string);
 
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
         //print("Pat: " + pat);
         //print("Str: " + str);
 
-        var captured = !(pat.match(/^\(.*\)$/) === null);
+        captured = !(pat.match(/^\(.*\)$/) === null);
         //print("Captured: ", captured);
 
-        var jsflags = getFlags(flags);
+        jsflags = getFlags(flags);
         //print("Flags: ", jsflags);
 
-        var regex = new RegExp(pat, jsflags);
+        regex = new RegExp(pat, jsflags);
 
-        var result = [];
-        var match;
-        var index = 0;
-        var splits = 0;
+        result = [];
+        match;
+        index = 0;
+        splits = 0;
         while ((match = regex.exec(str)) != null) {
             //print("Matched '" + match[0] + "' at position " + match.index +
             //      "; next search at " + regex.lastIndex);
@@ -110,57 +104,57 @@ var $builtinmodule = function (name) {
                 // empty match
                 break;
             }
-            ;
             result.push(new Sk.builtin.str(str.substring(index, match.index)));
             if (captured) {
                 // Add matching pattern, too
                 result.push(new Sk.builtin.str(match[0]));
             }
-            ;
             index = regex.lastIndex;
             splits += 1;
             if (maxsplit && (splits >= maxsplit)) {
                 break;
             }
-            ;
         }
-        ;
         result.push(new Sk.builtin.str(str.substring(index)));
 
         return new Sk.builtin.list(result);
-    });
+    };
 
-    mod.findall = Sk.nativejs.func(function findall (pattern, string, flags) {
+    _split.co_varnames = ["maxsplit", "flags"];
+    _split.co_numargs = 4;
+    _split.$defaults = [ new Sk.builtin.int_(0), new Sk.builtin.int_(0) ];
+
+    mod.split = Sk.nativejs.func(_split);
+
+    _findall = function (pattern, string, flags) {
+        var pat, str, jsflags, regex, result, match;
+
         Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
-        ;
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         }
-        ;
         if (flags === undefined) {
             flags = 0;
         }
-        ;
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        ;
 
-        var pat = Sk.ffi.unwrapo(pattern);
-        var str = Sk.ffi.unwrapo(string);
+        pat = Sk.ffi.unwrapo(pattern);
+        str = Sk.ffi.unwrapo(string);
 
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
         //print("Pat: " + pat);
         //print("Str: " + str);
 
-        var jsflags = getFlags(flags);
+        jsflags = getFlags(flags);
         //print("Flags: ", jsflags);
 
-        var regex = new RegExp(pat, jsflags);
+        regex = new RegExp(pat, jsflags);
 
         if (pat.match(/\$/)) {
             var newline_at_end = new RegExp(/\n$/);
@@ -169,8 +163,8 @@ var $builtinmodule = function (name) {
             }
         }
 
-        var result = [];
-        var match;
+        result = [];
+        match;
         while ((match = regex.exec(str)) != null) {
             //print("Matched '" + match[0] + "' at position " + match.index +
             //      "; next search at " + regex.lastIndex);
@@ -184,30 +178,41 @@ var $builtinmodule = function (name) {
                 for (var i = 1; i < match.length; i++) {
                     groups.push(new Sk.builtin.str(match[i]));
                 }
-                ;
                 result.push(new Sk.builtin.tuple(groups));
             }
-            ;
             if (match.index === regex.lastIndex) {
                 regex.lastIndex += 1;
             }
-            ;
         }
-        ;
 
         return new Sk.builtin.list(result);
-    });
+    };
+
+    mod.findall = Sk.nativejs.func(_findall);
 
 
-    var matchobj = function ($gbl, $loc) {
+    matchobj = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, thematch, pattern, string) {
             self.thematch = thematch;
             self.re = pattern;
             self.string = string;
         });
 
-        $loc.groups = new Sk.builtin.func(function (self) {
-            return new Sk.builtin.tuple(self.thematch.v.slice(1))
+        $loc.groups = new Sk.builtin.func(function (self, def) {
+            var _groups = self.thematch.v.slice(1);
+
+            if (def == undefined) {
+                def = Sk.builtin.none.none$;
+            }
+
+            // Return none for empty group matches
+            for (var i in _groups) {
+                if (_groups[i].v == '') {
+                    _groups[i] = def;
+                }
+            }
+
+            return new Sk.builtin.tuple(_groups)
         });
 
         $loc.group = new Sk.builtin.func(function (self, grpnum) {
@@ -220,95 +225,97 @@ var $builtinmodule = function (name) {
             if (grpnum >= self.thematch.v.length) {
                 throw new Sk.builtin.IndexError("Index out of range: " + grpnum);
             }
-            return self.thematch.v[grpnum]
+            return self.thematch.v[grpnum];
         });
 
-    }
+    };
 
-    mod.MatchObject = Sk.misceval.buildClass(mod, matchobj, 'MatchObject', []);
+    mod.MatchObject = Sk.misceval.buildClass(mod, matchobj, "MatchObject", []);
 
     // Internal function to return a Python list of strings
     // From a JS regular expression string
     mod._findre = function (res, string) {
-        res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
+        res = res.replace(/([^\\]){,(?![^\[]*\])/g, "$1{0,");
+
+        var matches, sitem;
         var re = eval(res);
-        var patt = new RegExp('\n$');
+        var patt = new RegExp("\n$");
+
         if (string.v.match(patt)) {
-            var matches = string.v.slice(0, -1).match(re);
+            matches = string.v.slice(0, -1).match(re);
         }
         else {
-            var matches = string.v.match(re);
+            matches = string.v.match(re);
         }
         retval = new Sk.builtin.list();
         if (matches == null) {
             return retval;
         }
         for (var i = 0; i < matches.length; ++i) {
-            var sitem = new Sk.builtin.str(matches[i]);
+            sitem = new Sk.builtin.str(matches[i]);
             retval.v.push(sitem);
         }
         return retval;
-    }
+    };
 
 
     // Internal search, shared between search function and RegexObject.search method
-    mod._search = function (pattern, string, flags) {
-        Sk.builtin.pyCheckArgs('search', arguments, 2, 3);
+    _search = function (pattern, string, flags) {
+        var mob, res;
+
+        Sk.builtin.pyCheckArgs("search", arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
-        ;
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         }
-        ;
         if (flags === undefined) {
             flags = 0;
         }
-        ;
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        ;
-        var res = "/" + pattern.v.replace(/\//g, "\\/") + "/";
+        res = "/" + pattern.v.replace(/\//g, "\\/") + "/";
         lst = mod._findre(res, string);
-        if (lst.v.length < 1) {
+        if (Sk.ffi.remapToJs(lst) == "") {
             return Sk.builtin.none.none$;
         }
-        var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     };
 
-    mod.search = new Sk.builtin.func(mod._search);
+    mod.search = new Sk.builtin.func(_search);
 
-    mod.match = new Sk.builtin.func(function (pattern, string, flags) {
-        Sk.builtin.pyCheckArgs('match', arguments, 2, 3);
+    _match = function (pattern, string, flags) {
+        var mob, res;
+        Sk.builtin.pyCheckArgs("match", arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
-        ;
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         }
-        ;
         if (flags === undefined) {
             flags = 0;
         }
-        ;
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        ;
-        var res = "/^" + pattern.v.replace(/\//g, "\\/") + "/";
+        res = "/^" + pattern.v.replace(/\//g, "\\/") + "/";
         lst = mod._findre(res, string);
         if (lst.v.length < 1) {
             return Sk.builtin.none.none$;
         }
-        var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
-    });
+    };
 
-    var regexobj = function ($gbl, $loc) {
+    mod.match = new Sk.builtin.func(_match);
+
+    regexobj = function ($gbl, $loc) {
+        var _re_split, _re_findall, _repr;
+
         $loc.__init__ = new Sk.builtin.func(function (self, pattern, flags) {
             self.re = pattern;
             if (flags === undefined) {
@@ -319,16 +326,79 @@ var $builtinmodule = function (name) {
             }
         });
 
-        $loc.search = new Sk.builtin.func(function (self, string, pos, endpos) {
-            return mod._search(self.re, string, self.flags);
+        _repr = new Sk.builtin.func( function (self) {
+            var ret = "re.compile('" + self.re.v + "')";
+            return Sk.ffi.remapToPy(ret.substring(0,212));
         });
+
+        $loc.__str__ = _repr;
+
+        $loc.__repr__ = _repr;
+
+        $loc.search = new Sk.builtin.func(function (self, string, pos, endpos) {
+            Sk.builtin.pyCheckArgs("search", arguments, 2, 4);
+
+            // Todo: handle pos, endpos
+            // complexity: ^
+
+            return _search(self.re, string, self.flags);
+        });
+
+        // Todo: pos, endpos argument handling
+
+        $loc.match = new Sk.builtin.func(function (self, string, pos, endpos) {
+            Sk.builtin.pyCheckArgs("match", arguments, 2, 4);
+
+            // Todo: handle pos, endpos
+            // complexity: ^
+
+            return _match(self.re, string, self.flags);
+        });
+
+        // Todo: pos, endpos argument handling
+
+        _re_split = function (self, string, maxsplit) {
+            Sk.builtin.pyCheckArgs("split", arguments, 2, 3);
+
+            // Todo: handle pos, endpos
+            // complexity: ^
+
+            if (maxsplit === undefined) {
+                maxsplit = 0;
+            }
+            if (!Sk.builtin.checkInt(maxsplit)) {
+                throw new Sk.builtin.TypeError("maxsplit must be an integer");
+            }
+
+            return _split(self.re, string, maxsplit, self.flags);
+        };
+
+        _re_split.co_varnames = ["maxsplit"];
+        _re_split.co_numargs = 2;
+        _re_split.$defaults = [ new Sk.builtin.int_(0) ];
+
+        $loc.split = new Sk.builtin.func(_re_split);
+
+        _re_findall = function (self, string, pos, endpos) {
+            Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
+
+            // Todo: handle pos, endpos
+            // complexity: ^
+
+            return _findall(self.re, string, self.flags);
+        };
+
+        // Todo: pos, endpos argument handling
+
+        $loc.findall = new Sk.builtin.func(_re_findall);
 
     };
 
-    mod.RegexObject = Sk.misceval.buildClass(mod, regexobj, 'RegexObject', []);
+    mod.RegexObject = Sk.misceval.buildClass(mod, regexobj, "RegexObject", []);
 
     mod.compile = new Sk.builtin.func(function (pattern, flags) {
-        Sk.builtin.pyCheckArgs('compile', arguments, 1, 2);
+        var rob;
+        Sk.builtin.pyCheckArgs("compile", arguments, 1, 2);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -338,9 +408,12 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        var rob = Sk.misceval.callsim(mod.RegexObject, pattern, flags);
+        rob = Sk.misceval.callsim(mod.RegexObject, pattern, flags);
         return rob;
     });
+
+    // No need to purge since we don't cache
+    mod.purge = new Sk.builtin.func(function () {});
 
     return mod;
 };
