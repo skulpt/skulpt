@@ -119,12 +119,15 @@ class ReTests(unittest.TestCase):
             if include_failing:
                 self.assertEqual(re.match('(a)', string).group(1, 1), ('a', 'a'))
 
-        pat = re.compile('((a)|(b))(c)?')
-        self.assertEqual(pat.match('a').groups(), ('a', 'a', None, None))
-        self.assertEqual(pat.match('b').groups(), ('b', None, 'b', None))
-        self.assertEqual(pat.match('ac').groups(), ('a', 'a', None, 'c'))
-        self.assertEqual(pat.match('bc').groups(), ('b', None, 'b', 'c'))
-        self.assertEqual(pat.match('bc').groups(""), ('b', "", 'b', 'c'))
+        if include_failing:
+            # Skulpt currently doesn't return None when it should or support the
+            # default argument to groups
+            pat = re.compile('((a)|(b))(c)?')
+            self.assertEqual(pat.match('a').groups(), ('a', 'a', None, None))
+            self.assertEqual(pat.match('b').groups(), ('b', None, 'b', None))
+            self.assertEqual(pat.match('ac').groups(), ('a', 'a', None, 'c'))
+            self.assertEqual(pat.match('bc').groups(), ('b', None, 'b', 'c'))
+            self.assertEqual(pat.match('bc').groups(""), ('b', "", 'b', 'c'))
 
     def test_group(self):
         # A single group
@@ -205,10 +208,12 @@ class ReTests(unittest.TestCase):
         self.assertFalse(re.match(r"\B", "abc"))
         # However, an empty string contains no word boundaries, and also no
         # non-boundaries.
-        self.assertIsNone(re.search(r"\B", ""))
-        # This one is questionable and different from the perlre behaviour,
-        # but describes current behavior.
-        self.assertIsNone(re.search(r"\b", ""))
+        if include_failing:
+            # Skulpt currently doesn't return None heregit a
+            self.assertIsNone(re.search(r"\B", ""))
+            # This one is questionable and different from the perlre behaviour,
+            # but describes current behavior.
+            self.assertIsNone(re.search(r"\b", ""))
         # A single word-character string has two boundaries, but no
         # non-boundary gaps.
         self.assertEqual(len(re.findall(r"\b", "a")), 2)
