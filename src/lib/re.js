@@ -198,19 +198,8 @@ var $builtinmodule = function (name) {
             self.string = string;
         });
 
-        $loc.groups = new Sk.builtin.func(function (self, def) {
+        $loc.groups = new Sk.builtin.func(function (self) {
             var _groups = self.thematch.v.slice(1);
-
-            if (def == undefined) {
-                def = Sk.builtin.none.none$;
-            }
-
-            // Return none for empty group matches
-            for (var i in _groups) {
-                if (_groups[i].v == '') {
-                    _groups[i] = def;
-                }
-            }
 
             return new Sk.builtin.tuple(_groups)
         });
@@ -278,7 +267,7 @@ var $builtinmodule = function (name) {
         }
         res = "/" + pattern.v.replace(/\//g, "\\/") + "/";
         lst = mod._findre(res, string);
-        if (Sk.ffi.remapToJs(lst) == "") {
+        if (lst.v.length < 1) {
             return Sk.builtin.none.none$;
         }
         mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
