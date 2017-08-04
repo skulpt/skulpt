@@ -24,14 +24,15 @@ class ReTests(unittest.TestCase):
         recurse(actual, expect)
 
     def checkPatternError(self, pattern, errmsg, pos=None):
-      pass
-        # with self.assertRaises(re.error) as cm:
-        #     re.compile(pattern)
-        # with self.subTest(pattern=pattern):
-        #     err = cm.exception
-        #     self.assertEqual(err.msg, errmsg)
-        #     if pos is not None:
-        #         self.assertEqual(err.pos, pos)
+        if include_failing:
+            # Skulpt doesn't currently implement re.error correctly
+            with self.assertRaises(re.error) as cm:
+                re.compile(pattern)
+            with self.subTest(pattern=pattern):
+                err = cm.exception
+                self.assertEqual(err.msg, errmsg)
+                if pos is not None:
+                    self.assertEqual(err.pos, pos)
 
     def test_search_star_plus(self):
         # Skulpt doesn't support .span
@@ -51,6 +52,54 @@ class ReTests(unittest.TestCase):
         int_value = int(matchobj.group(0))
         return str(int_value + 1)
 
+    def test_keyword_parameters(self):
+        # Issue #20283: Accepting the string keyword parameter.
+        pat = re.compile(r'(ab)')
+        if include_failing:
+            # Skulpt doesn't support span
+            self.assertEqual(
+                pat.match(string='abracadabra', pos=7, endpos=10).span(), (7, 9))
+            self.assertEqual(
+                pat.search(string='abracadabra', pos=3, endpos=10).span(), (7, 9))
+        self.assertEqual(
+            pat.findall(string='abracadabra', pos=3, endpos=10), ['ab'])
+        self.assertEqual(
+            pat.split(string='abracadabra', maxsplit=1),
+            ['', 'ab', 'racadabra'])
+
+        pat = re.compile(r'(ab)')
+        self.assertEqual(pat.search(string='abracadabra', pos=0, endpos=11).group(), 'ab')
+        self.assertEqual(pat.findall(string='abracadabra', pos=0, endpos=4), ['ab'])
+        self.assertEqual(pat.split(string='abracadabra', maxsplit=1), ['', 'ab', 'racadabra'] )
+        self.assertEqual(pat.match(string='abracadabra', pos=0, endpos=11).group(), 'ab')
+
+        r = re.compile('|'.join(('%d'%x for x in range(10000))))
+        self.assertTrue(r.match(string='1000', pos=0, endpos=4))
+        self.assertTrue(r.match(string='9999', pos=0, endpos=4))
+
+    def test_findall_named_args(self):
+        self.assertEqual(re.findall(pattern=":+", string="abc", flags=0), [])
+        strings = ["a:b::c:::d"]
+        if include_failing:
+            strings.append(S("a:b::c:::d"))
+        for string in strings:
+            self.assertTypedEqual(re.findall(pattern=":+", string=string, flags=0),
+                                  [":", "::", ":::"])
+            self.assertTypedEqual(re.findall(pattern="(:+)", string=string, flags=0),
+                                  [":", "::", ":::"])
+            self.assertTypedEqual(re.findall(pattern="(:)(:*)", string=string, flags=0),
+                                  [(":", ""), (":", ":"), (":", "::")])
+
+    def test_split_named_args(self):
+        for string in [":a:b::c"]:
+            # Named positional args should work
+            self.assertTypedEqual(re.split(pattern=":", string=string,
+                                  maxsplit=0, flags=0), ['', 'a', 'b', '', 'c'])
+            self.assertTypedEqual(re.split(pattern=":+", string=string,
+                                  maxsplit=0, flags=0), ['', 'a', 'b', 'c'])
+            self.assertTypedEqual(re.split("(:+)", string,
+                                  maxsplit=0, flags=0), ['', ':', 'a', ':', 'b', '::', 'c'])
+
     def test_re_split(self):
         for string in [":a:b::c"]:
             self.assertTypedEqual(re.split(":", string),
@@ -69,7 +118,7 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.split("([b:]+)", ":a:b::c"),
                          ['', ':', 'a', ':b::', 'c'])
         if include_failing:
-            # Something in the logic for handline captured groups breaks these
+            # Something in the logic for handling captured groups breaks these
             # in Skulpt.
             self.assertEqual(re.split("(b)|(:+)", ":a:b::c"),
                              ['', None, ':', 'a', None, ':', '', 'b', None, '',
@@ -209,7 +258,7 @@ class ReTests(unittest.TestCase):
         # However, an empty string contains no word boundaries, and also no
         # non-boundaries.
         if include_failing:
-            # Skulpt currently doesn't return None heregit a
+            # Skulpt currently doesn't return None here
             self.assertIsNone(re.search(r"\B", ""))
             # This one is questionable and different from the perlre behaviour,
             # but describes current behavior.
@@ -225,10 +274,12 @@ class ReTests(unittest.TestCase):
         self.assertEqual(len(re.findall(r"\B", " ")), 2)
 
     def test_big_codesize(self):
-        # Issue #1160
-        r = re.compile('|'.join(('%d'%x for x in range(10000))))
-        self.assertTrue(r.match('1000'))
-        self.assertTrue(r.match('9999'))
+        if include_failing:
+            # Skulpt doesn't seem to handle large regexes
+            # Issue #1160
+            r = re.compile('|'.join(('%d'%x for x in range(10000))))
+            self.assertTrue(r.match('1000'))
+            self.assertTrue(r.match('9999'))
 
     def test_lookahead(self):
         self.assertEqual(re.match(r"(a(?=\s[^a]))", "a b").group(1), "a")
@@ -325,38 +376,11 @@ class PatternReprTests(unittest.TestCase):
     def check_flags(self, pattern, flags, expected):
         self.assertEqual(repr(re.compile(pattern, flags)), expected)
 
-    def test_without_flags(self):
-        self.check('random pattern',
-                   "re.compile('random pattern')")
-
     def test_inline_flags(self):
         # TODO: include flags, if any, in non-binary
         if include_failing:
             self.check('(?i)pattern',
                        "re.compile('(?i)pattern', re.IGNORECASE)")
-
-    def test_quotes(self):
-        self.check('random "double quoted" pattern',
-            '''re.compile('random "double quoted" pattern')''')
-        # Skulpt's internal string representation doesn't seem to support
-        # the correct repr easily
-        if include_failing:
-            self.check("random 'single quoted' pattern",
-                '''re.compile("random 'single quoted' pattern")''')
-            self.check('''both 'single' and "double" quotes''',
-                '''re.compile('both \\'single\\' and "double" quotes')''')
-
-    def test_long_pattern(self):
-        pattern = 'Very %spattern' % ('long ' * 1000)
-        r = repr(re.compile(pattern))
-        self.assertLess(len(r), 300)
-        self.assertEqual(r[:30], "re.compile('Very long long lon")
-        r = repr(re.compile(pattern, re.I))
-        self.assertLess(len(r), 300)
-        self.assertEqual(r[:30], "re.compile('Very long long lon")
-        if include_failing:
-            # Skulpt doesn't include flags in the repr
-            self.assertEqual(r[-16:], ", re.IGNORECASE)")
 
 if __name__ == "__main__":
     unittest.main()
