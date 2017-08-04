@@ -230,15 +230,16 @@ var $builtinmodule = function (name) {
     mod._findre = function (res, string) {
         res = res.replace(/([^\\]){,(?![^\[]*\])/g, "$1{0,");
 
-        var matches, sitem;
+        var matches, sitem, retval;
         var re = eval(res);
         var patt = new RegExp("\n$");
+        var str = Sk.ffi.remapToJs(string);
 
-        if (string.v.match(patt)) {
-            matches = string.v.slice(0, -1).match(re);
+        if (str.match(patt)) {
+            matches = str.slice(0, -1).match(re);
         }
         else {
-            matches = string.v.match(re);
+            matches = str.match(re);
         }
         retval = new Sk.builtin.list();
         if (matches == null) {
@@ -351,7 +352,7 @@ var $builtinmodule = function (name) {
             if (end == Sk.builtin.none.none$) {
                 end = str.length;
             }
-            return Sk.ffi.remapToPy(str.slice(start, end));
+            return Sk.ffi.remapToPy(str.substring(start, end));
 
         };
 
@@ -372,8 +373,8 @@ var $builtinmodule = function (name) {
         _re_match = function (self, string, pos, endpos) {
             Sk.builtin.pyCheckArgs("match", arguments, 2, 4);
 
-            //var str = _slice(string, pos, endpos);
-            var str = string;
+            var str = _slice(string, pos, endpos);
+            // var str = string;
 
             return _match(self.re, str, self.flags);
         };
