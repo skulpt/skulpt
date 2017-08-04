@@ -120,11 +120,11 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.list(result);
     };
 
-    _split.co_varnames = ["maxsplit", "flags"];
+    _split.co_varnames = ["pattern", "string", "maxsplit", "flags"];
     _split.co_numargs = 4;
     _split.$defaults = [ new Sk.builtin.int_(0), new Sk.builtin.int_(0) ];
 
-    mod.split = Sk.nativejs.func(_split);
+    mod.split = new Sk.builtin.func(_split);
 
     _findall = function (pattern, string, flags) {
         var pat, str, jsflags, regex, result, match;
@@ -188,7 +188,11 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.list(result);
     };
 
-    mod.findall = Sk.nativejs.func(_findall);
+    _findall.co_varnames = ["pattern", "string", "flags"];
+    _findall.co_numargs = 3;
+    _findall.$defaults = [ new Sk.builtin.int_(0) ];
+
+    mod.findall = new Sk.builtin.func(_findall);
 
 
     matchobj = function ($gbl, $loc) {
@@ -274,6 +278,10 @@ var $builtinmodule = function (name) {
         return mob;
     };
 
+    _search.co_varnames = ["pattern", "string", "flags"];
+    _search.co_numargs = 3;
+    _search.$defaults = [ new Sk.builtin.int_(0) ];
+
     mod.search = new Sk.builtin.func(_search);
 
     _match = function (pattern, string, flags) {
@@ -291,19 +299,24 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        res = "/^" + pattern.v.replace(/\//g, "\\/") + "/";
+        pat = Sk.ffi.remapToJs(pattern);
+        res = "/^" + pat.replace(/\//g, "\\/") + "/";
         lst = mod._findre(res, string);
-        if (lst.v.length < 1) {
+        if (Sk.ffi.remapToJs(lst).length < 1) {
             return Sk.builtin.none.none$;
         }
         mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     };
 
+    _match.co_varnames = ["pattern", "string", "flags"];
+    _match.co_numargs = 3;
+    _match.$defaults = [ new Sk.builtin.int_(0) ];
+
     mod.match = new Sk.builtin.func(_match);
 
     regexobj = function ($gbl, $loc) {
-        var _re_split, _re_findall, _repr;
+        var _slice, _re_search, _re_match, _re_split, _re_findall, _repr;
 
         $loc.__init__ = new Sk.builtin.func(function (self, pattern, flags) {
             self.re = pattern;
@@ -316,7 +329,7 @@ var $builtinmodule = function (name) {
         });
 
         _repr = new Sk.builtin.func( function (self) {
-            var ret = "re.compile('" + self.re.v + "')";
+            var ret = "re.compile('" + Sk.ffi.remapToPy(self.re) + "')";
             return Sk.ffi.remapToPy(ret.substring(0,212));
         });
 
@@ -324,33 +337,55 @@ var $builtinmodule = function (name) {
 
         $loc.__repr__ = _repr;
 
-        $loc.search = new Sk.builtin.func(function (self, string, pos, endpos) {
+        // Given a string, start, and end position, return sliced string
+        _slice = function(string, pos, endpos) {
+            // Per docs, ^ should match index after newlines.
+            // this matches the first
+            var str = Sk.ffi.remapToJs(string);
+            var start = Sk.ffi.remapToJs(pos);
+            var end = Sk.ffi.remapToJs(endpos)
+
+            if (start == "^") {
+                start = str.indexOf('\n') + 1;
+            }
+            if (end == Sk.builtin.none.none$) {
+                end = str.length;
+            }
+            return Sk.ffi.remapToPy(str.slice(start, end));
+
+        };
+
+        _re_search = function (self, string, pos, endpos) {
             Sk.builtin.pyCheckArgs("search", arguments, 2, 4);
 
-            // Todo: handle pos, endpos
-            // complexity: ^
+            var str = _slice(string, pos, endpos);
 
-            return _search(self.re, string, self.flags);
-        });
+            return _search(self.re, str, self.flags);
+        };
 
-        // Todo: pos, endpos argument handling
+        _re_search.co_varnames = ["self", "string", "pos", "endpos"];
+        _re_search.co_numargs = 4;
+        _re_search.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
-        $loc.match = new Sk.builtin.func(function (self, string, pos, endpos) {
+        $loc.search = new Sk.builtin.func(_re_search);
+
+        _re_match = function (self, string, pos, endpos) {
             Sk.builtin.pyCheckArgs("match", arguments, 2, 4);
 
-            // Todo: handle pos, endpos
-            // complexity: ^
+            //var str = _slice(string, pos, endpos);
+            var str = string;
 
-            return _match(self.re, string, self.flags);
-        });
+            return _match(self.re, str, self.flags);
+        };
 
-        // Todo: pos, endpos argument handling
+        _re_match.co_varnames = ["self", "string", "pos", "endpos"];
+        _re_match.co_numargs = 4;
+        _re_match.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
+
+        $loc.match = new Sk.builtin.func(_re_match);
 
         _re_split = function (self, string, maxsplit) {
             Sk.builtin.pyCheckArgs("split", arguments, 2, 3);
-
-            // Todo: handle pos, endpos
-            // complexity: ^
 
             if (maxsplit === undefined) {
                 maxsplit = 0;
@@ -362,29 +397,29 @@ var $builtinmodule = function (name) {
             return _split(self.re, string, maxsplit, self.flags);
         };
 
-        _re_split.co_varnames = ["maxsplit"];
-        _re_split.co_numargs = 2;
+        _re_split.co_varnames = ["self", "string", "maxsplit"];
+        _re_split.co_numargs = 3;
         _re_split.$defaults = [ new Sk.builtin.int_(0) ];
 
         $loc.split = new Sk.builtin.func(_re_split);
 
         _re_findall = function (self, string, pos, endpos) {
-            Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
+            Sk.builtin.pyCheckArgs("findall", arguments, 2, 4);
 
-            // Todo: handle pos, endpos
-            // complexity: ^
+            var str = _slice(string, pos, endpos);
 
-            return _findall(self.re, string, self.flags);
+            return _findall(self.re, str, self.flags);
         };
 
-        // Todo: pos, endpos argument handling
+        _re_findall.co_varnames = ["self", "string", "pos", "endpos"];
+        _re_findall.co_numargs = 4;
+        _re_findall.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.findall = new Sk.builtin.func(_re_findall);
 
     };
 
     mod.RegexObject = Sk.misceval.buildClass(mod, regexobj, "RegexObject", []);
-
     mod.compile = new Sk.builtin.func(function (pattern, flags) {
         var rob;
         Sk.builtin.pyCheckArgs("compile", arguments, 1, 2);

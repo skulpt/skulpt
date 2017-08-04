@@ -195,6 +195,12 @@ goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
  *
  */
 Sk.builtin.func = function (code, globals, closure, closure2) {
+    if (!(this instanceof Sk.builtin.func)) {
+        // otherwise it assigned .func_code and .func_globals somewhere and in certain
+        // situations that will cause a lot of strange errors.
+        throw new Error("builtin func should be called as a class with `new`")
+    }
+
     var k;
     this.func_code = code;
     this.func_globals = globals || null;
