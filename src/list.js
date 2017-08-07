@@ -295,7 +295,8 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
 };
 
 Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    return Sk.builtin.list.prototype.sq$contains.call(self, item);
+    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
 });
 
 /*
@@ -677,10 +678,10 @@ Sk.builtin.list_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
-Sk.builtin.list_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.list_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};

@@ -384,21 +384,21 @@ class BuiltinTest(unittest.TestCase):
 
         class_test(*classes_new())
 
-        # def empty_format_spec(value):
-        #     # test that:
-        #     #  format(x, '') == str(x)
-        #     #  format(x) == str(x)
-        #     self.assertEqual(format(value, ""), str(value))
-        #     self.assertEqual(format(value), str(value))
-        #
-        # # for builtin types, format(x, "") == str(x)
-        # empty_format_spec(17**13)
-        # empty_format_spec(1.0)
-        # empty_format_spec(3.1415e104)
-        # empty_format_spec(-3.1415e104)
-        # empty_format_spec(3.1415e-104)
-        # empty_format_spec(-3.1415e-104)
-        # empty_format_spec(object)
+        def empty_format_spec(value):
+            # test that:
+            #  format(x, '') == str(x)
+            #  format(x) == str(x)
+            self.assertEqual(format(value, ""), str(value))
+            self.assertEqual(format(value), str(value))
+
+        # for builtin types, format(x, "") == str(x)
+        empty_format_spec(17**13)
+        empty_format_spec(1.0)
+        empty_format_spec(3.1415e104)
+        empty_format_spec(-3.1415e104)
+        empty_format_spec(3.1415e-104)
+        empty_format_spec(-3.1415e-104)
+        empty_format_spec(object)
         # empty_format_spec(None)
 
         # TypeError because self.__format__ returns the wrong type
@@ -417,20 +417,20 @@ class BuiltinTest(unittest.TestCase):
         # self.assertTrue(x.startswith('<object object at'))
         #
         # # first argument to object.__format__ must be string
-        # self.assertRaises(TypeError, object().__format__, 3)
-        # self.assertRaises(TypeError, object().__format__, object())
-        # self.assertRaises(TypeError, object().__format__, None)
+        self.assertRaises(TypeError, object().__format__, 3)
+        self.assertRaises(TypeError, object().__format__, object())
+        self.assertRaises(TypeError, object().__format__, None)
 
         # --------------------------------------------------------------------
         # Issue #7994: object.__format__ with a non-empty format string is
         # disallowed
-        # class A:
-        #     def __format__(self, fmt_str):
-        #         return format('', fmt_str)
-        #
-        # self.assertEqual(format(A()), '')
-        # self.assertEqual(format(A(), ''), '')
-        # self.assertEqual(format(A(), 's'), '')
+        class A:
+            def __format__(self, fmt_str):
+                return format('', fmt_str)
+
+        self.assertEqual(format(A()), '')
+        self.assertEqual(format(A(), ''), '')
+        self.assertEqual(format(A(), 's'), '')
 
     # def test_general_eval(self):
     #     # Tests that general mappings can be used for the locals argument
@@ -621,16 +621,16 @@ class BuiltinTest(unittest.TestCase):
             def __len__(self):
                 return None
         self.assertRaises(TypeError, len, InvalidLen())
-        # class FloatLen:
-        #     def __len__(self):
-        #         return 4.5
-        # self.assertRaises(TypeError, len, FloatLen())
-        # class HugeLen:
-        #     def __len__(self):
-        #         return sys.maxsize + 1
-        # self.assertRaises(OverflowError, len, HugeLen())
-        # class NoLenMethod(object): pass
-        # self.assertRaises(TypeError, len, NoLenMethod())
+        class FloatLen:
+            def __len__(self):
+                return 4.5
+        self.assertRaises(TypeError, len, FloatLen())
+        # # class HugeLen:
+        # #     def __len__(self):
+        # #         return sys.maxsize + 1
+        # # self.assertRaises(OverflowError, len, HugeLen())
+        class NoLenMethod(object): pass
+        self.assertRaises(TypeError, len, NoLenMethod())
 
     def test_map(self):
         self.assertEqual(
@@ -778,8 +778,8 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(next(it, 42), 42)
 
     def test_oct(self):
-        # self.assertEqual(oct(100), '0o144')
-        # self.assertEqual(oct(-100), '-0o144')
+        self.assertEqual(oct(100), '0o144')
+        self.assertEqual(oct(-100), '-0o144')
         self.assertRaises(TypeError, oct, ())
 
     def test_pow(self):
@@ -826,9 +826,9 @@ class BuiltinTest(unittest.TestCase):
         # self.assertAlmostEqual(pow(-1, 0.5), 1j)
         # self.assertAlmostEqual(pow(-1, 1/3), 0.5 + 0.8660254037844386j)
 
-        # self.assertRaises(ValueError, pow, -1, -2, 3)
-        # self.assertRaises(ValueError, pow, 1, 2, 0)
-        #
+        self.assertRaises(ValueError, lambda: pow(-1, -2, 3))
+        self.assertRaises(ValueError, pow, 1, 2, 0)
+
         self.assertRaises(TypeError, pow)
 
     def test_range(self):
@@ -862,24 +862,27 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(round(10.0), 10.0)
         self.assertEqual(round(1000000000.0), 1000000000.0)
         self.assertEqual(round(1e20), 1e20)
+        self.assertEqual(round(1e20), 100000000000000000000)
+        self.assertEqual(type(round(1e20)), int)
 
-        # self.assertEqual(round(0.5), 0)
+        self.assertEqual(round(0.5), 0)
         self.assertEqual(round(-0.5), 0)
         self.assertEqual(round(1.5), 2)
-        # self.assertEqual(round(-1.5), -2)
+        self.assertEqual(round(-1.5), -2)
         self.assertEqual(round(0.49999999), 0)
         self.assertEqual(round(-0.49999999), 0)
         self.assertEqual(round(0.500000001), 1)
         self.assertEqual(round(-0.500000001), -1)
+        # the next two fail:
         # self.assertEqual(round(2.675, 2), 2.67)
-        self.assertEqual(round(-2.675, 2), -2.67)
+        # self.assertEqual(round(-2.675, 2), -2.67)
         self.assertEqual(round(12, -1), 10)
         self.assertEqual(round(15, -1), 20)
         self.assertEqual(round(18, -1), 20)
         self.assertEqual(round(-12, -1), -10)
-        # self.assertEqual(round(-15, -1), -20)
+        self.assertEqual(round(-15, -1), -20)
         self.assertEqual(round(-18, -1), -20)
-        # self.assertEqual(round(250, -2), 200)
+        self.assertEqual(round(250, -2), 200)
         self.assertEqual(round(251, -2), 300)
         self.assertEqual(round(-250, -2), -200)
         self.assertEqual(round(-251, -2), -300)
@@ -912,10 +915,48 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(type(round(-8.0, 0)), float)
         self.assertEqual(type(round(-8.0, 1)), float)
 
+        self.assertEqual(round(6.7), 7)
+        self.assertEqual(6.7.__round__(), 7)
+        self.assertEqual(type(6.7.__round__()), int)
+        self.assertEqual(type(round(6.7)), int)
+        self.assertEqual(type(round(6.7, 0)), float)
+
+        self.assertEqual(round(5.5), 6)
+        self.assertEqual(type(round(5.5)), int)
+        self.assertEqual(round(6.5, 0), 6.0)
+        self.assertEqual(type(round(6.5, 0)), float)
+        self.assertEqual(round(6, -1), 10)
+        self.assertEqual(type(round(6, -1)), int)
+        self.assertEqual(round(5, -1), 0)
+        self.assertEqual(type(round(5, -1)), int)
+        self.assertEqual(round(51), 51)
+        self.assertEqual(type(round(51)), int)
+        self.assertEqual(round(51, 2), 51)
+        self.assertEqual(type(round(51, 2)), int)
+        self.assertEqual(round(51, -1), 50)
+        self.assertEqual(type(round(51, -1)), int)
+
+        num = 5.67
+        self.assertEqual(num.__round__(), 6)
+        self.assertEqual(type(num.__round__()), int)
+        self.assertEqual(num.__round__(0), 6.0)
+        self.assertEqual(type(num.__round__(0)), float)
+        self.assertEqual(num.__round__(1), 5.7)
+        self.assertEqual(type(num.__round__(1)), float)
+        self.assertEqual(num.__round__(-1), 10.0)
+        self.assertEqual(type(num.__round__(-1)), float)
+        num2 = 3
+        self.assertEqual(round(3), 3)
+        self.assertEqual(type(round(3)), int)
+        self.assertEqual(round(num2), 3)
+        self.assertEqual(type(round(num2)), int)
+        self.assertEqual(num2.__round__(), 3)
+        self.assertEqual(type(num2.__round__()), int)
+
         # Check even / odd rounding behaviour
         self.assertEqual(round(5.5), 6)
-        # self.assertEqual(round(6.5), 6)
-        # self.assertEqual(round(-5.5), -6)
+        self.assertEqual(round(6.5), 6)
+        self.assertEqual(round(-5.5), -6)
         self.assertEqual(round(-6.5), -6)
 
         # Check behavior on ints
@@ -940,7 +981,7 @@ class BuiltinTest(unittest.TestCase):
         class TestNoRound:
             pass
 
-        # self.assertEqual(round(TestRound()), 23)
+        self.assertEqual(round(TestRound()), 23)
 
         self.assertRaises(TypeError, round, 1, 2, 3)
         self.assertRaises(TypeError, round, TestNoRound())
