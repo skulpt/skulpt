@@ -139,7 +139,6 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
 };
 
 Sk.builtin.dict.prototype.sq$contains = function (ob) {
-    Sk.builtin.pyCheckArgs("__contains__()", arguments, 1, 1, false, false);
     var res = this.mp$lookup(ob);
 
     return (res !== undefined);
@@ -419,8 +418,8 @@ update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
 Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("__contains__", arguments, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.sq$contains.call(self, item);
+    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
 });
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
@@ -605,10 +604,10 @@ Sk.builtin.dict_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
-Sk.builtin.dict_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.dict_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};

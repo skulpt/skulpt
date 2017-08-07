@@ -97,9 +97,9 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
     })(ret);
 };
 
-Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.generator.prototype.next$ = function (self) {
     return self.tp$iternext(true);
-});
+};
 
 Sk.builtin.generator.prototype["$r"] = function () {
     return new Sk.builtin.str("<generator object " + this.func_code["co_name"].v + ">");

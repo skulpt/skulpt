@@ -211,41 +211,61 @@ Sk.builtin.asnum$nofloat = function (a) {
 goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round (number, ndigits) {
-    var result, multiplier, special;
+    var special;
     Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
 
     if (!Sk.builtin.checkNumber(number)) {
-        throw new Sk.builtin.TypeError("a float is required");
+        if (!Sk.builtin.checkFunction(number)) {
+            throw new Sk.builtin.TypeError("a float is required");
+        } else {
+            if (!Sk.python3) {
+                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
+            }
+        }
     }
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    if (ndigits === undefined) {
-        ndigits = 0;
-    }
-
-    // for built-in types round is delegated to number.__round__
-    if(number.__round__) {
-        return number.__round__(number, ndigits);
+    if (!Sk.python3 && number.round$) {
+        return number.round$(number, ndigits);
     }
 
     // try calling internal magic method
     special = Sk.abstr.lookupSpecial(number, "__round__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, number, ndigits);
+        if (!Sk.builtin.checkFunction(number)) {
+            return Sk.misceval.callsim(special, number, ndigits);
+        } else {
+            return Sk.misceval.callsim(special, number);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("a float is required");
     }
 };
 
 Sk.builtin.len = function len (item) {
+    var intcheck;
+    var special;
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     var int_ = function(i) { return new Sk.builtin.int_(i); };
+    intcheck = function(j) {
+        if (Sk.builtin.checkInt(j)) {
+            return int_(j);
+        } else {
+            if (Sk.python3) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
+            } else {
+                throw new Sk.builtin.TypeError("__len__() should return an int");
+            }
+        }
+    };
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(true), int_);
+        return Sk.misceval.chain(item.sq$length(true), intcheck);
     }
 
     if (item.mp$length) {
@@ -253,7 +273,20 @@ Sk.builtin.len = function len (item) {
     }
 
     if (item.tp$length) {
-        return Sk.misceval.chain(item.tp$length(true), int_);
+        if (Sk.builtin.checkFunction(item)) {
+            special = Sk.abstr.lookupSpecial(item, "__len__");
+            if (special != null) {
+                return Sk.misceval.callsim(special, item);
+            } else {
+                if (Sk.python3) {
+                    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
+                } else {
+                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
+                }
+            }
+        } else {
+            return Sk.misceval.chain(item.tp$length(true), intcheck);
+        }
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
@@ -530,7 +563,11 @@ Sk.builtin.oct = function oct (x) {
     if (!Sk.misceval.isIndex(x)) {
         throw new Sk.builtin.TypeError("oct() argument can't be converted to hex");
     }
-    return Sk.builtin.int2str_(x, 8, "0");
+    if (Sk.python3) {
+        return Sk.builtin.int2str_(x, 8, "0o");
+    } else {
+        return Sk.builtin.int2str_(x, 8, "0");
+    }
 };
 
 Sk.builtin.bin = function bin (x) {
@@ -1091,9 +1128,15 @@ Sk.builtin.pow = function pow (a, b, c) {
             throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
         }
         if (b_num < 0) {
-            throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            if (Sk.python3) {
+                throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            } else {
+                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            }
         }
-
+        if (c_num === 0) {
+            throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
+        }
         if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng) ||
             (Math.pow(a_num, b_num) === Infinity)) {
             // convert a to a long so that we can use biginteger's modPowInt method
@@ -1184,6 +1227,10 @@ Sk.builtin.divmod = function divmod (a, b) {
  */
 Sk.builtin.format = function format (value, format_spec) {
     Sk.builtin.pyCheckArgs("format", arguments, 1, 2);
+
+    if (format_spec === undefined) {
+        format_spec = Sk.builtin.str.$emptystr;
+    }
 
     return Sk.abstr.objectFormat(value, format_spec);
 };
