@@ -2026,6 +2026,8 @@ Compiler.prototype.cclass = function (s) {
 
     this.u.private_ = s.name;
 
+    this.annotateClassBodyForSuperCall(s.body);
+
     this.cbody(s.body);
     out("return;");
 
@@ -2040,6 +2042,16 @@ Compiler.prototype.cclass = function (s) {
 
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
+};
+
+Compiler.prototype.annotateClassBodyForSuperCall = function annotateClassBodyForSuperCall(s) {
+    var functionDefs = s.filter(function (d) {
+        return d instanceof FunctionDef;
+    });
+
+    var functionDefsContainingSuperCall = functionDefs.filter(function (d) {
+        d.body
+    })
 };
 
 Compiler.prototype.ccontinue = function (s) {
