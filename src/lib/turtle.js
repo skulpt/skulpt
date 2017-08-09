@@ -1100,7 +1100,7 @@ function generateTurtleModule(_target) {
         proto.$ondrag.keywordArgs = ["btn","add"];
 
         proto.$getscreen = function() {
-            return _module.Screen();
+            return Sk.misceval.callsim(_module.Screen);
         };
         proto.$getscreen.isSk = true;
 
