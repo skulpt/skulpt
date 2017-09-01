@@ -196,13 +196,12 @@ var $builtinmodule = function (name) {
     function mktime_f(time) {
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
-            var d = new Date();
-            d.setFullYear(Sk.builtin.asnum$(time.v[0]));
-            d.setMonth(Sk.builtin.asnum$(time.v[1])-1);
-            d.setDate(Sk.builtin.asnum$(time.v[2]));
-            d.setHours(Sk.builtin.asnum$(time.v[3]));
-            d.setMinutes(Sk.builtin.asnum$(time.v[4]));
-            d.setSeconds(Sk.builtin.asnum$(time.v[5]));
+            var d = new Date(Sk.builtin.asnum$(time.v[0]),
+                             Sk.builtin.asnum$(time.v[1])-1,
+                             Sk.builtin.asnum$(time.v[2]),
+                             Sk.builtin.asnum$(time.v[3]),
+                             Sk.builtin.asnum$(time.v[4]),
+                             Sk.builtin.asnum$(time.v[5]));
             return Sk.builtin.assk$(d.getTime() / 1000, undefined);
         } else {
             throw new Sk.builtin.TypeError("mktime() requires a struct_time or 9-tuple");
