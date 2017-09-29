@@ -26,5 +26,19 @@ class ImportFromModulesTest(unittest.TestCase):
         from unittest import gui as mystuff
         self.assertTrue(mystuff is not None)
 
+
+class ImportRelativeTest(unittest.TestCase):
+
+    def test_relative_import(self):
+        import importable_module
+
+        self.assertEqual(importable_module.version, "toplevel")
+
+        import subpackage
+
+        self.assertEqual(subpackage.imported_version, "subpackage")
+
+
+
 if __name__ == '__main__':
     unittest.main()
