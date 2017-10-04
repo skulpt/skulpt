@@ -323,7 +323,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         // - compile source to (function(){...});
         // - run module and set the module locals returned to the module __dict__
         module = new Sk.builtin.module();
-        Sk.sysmodules.mp$ass_subscript(modname, module);
 
         if (suppliedPyBody) {
             filename = name + ".py";
@@ -382,6 +381,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         var withLineNumbers;
         var modscope;
 
+        // Now we know this module exists, we can add it to the cache
+        Sk.sysmodules.mp$ass_subscript(modname, module);
+
         module.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
 
@@ -427,7 +429,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             "__name__": new Sk.builtin.str(modname),
             "__doc__": Sk.builtin.none.none$,
             "__package__": co.packagePath ? new Sk.builtin.str(modname) :
-                                parentModName ? new Sk.builtin.str(parentModName) : Sk.builtin.none.none$
+                                parentModName ? new Sk.builtin.str(absolutePackagePrefix + parentModName) :
+                                relativePackageName ? relativePackageName : Sk.builtin.none.none$
         };
         if (co.packagePath) {
             module["$d"]["__path__"] = new Sk.builtin.tuple([new Sk.builtin.str(co.packagePath)]);
