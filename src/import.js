@@ -273,6 +273,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var filename;
     var prev;
     var parentModName;
+    var parentModule;
     var modNameSplit;
     var ret;
     var module;
@@ -313,9 +314,17 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
     ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
         var codeAndPath, co, googClosure, external;
+        var searchFileName = name;
         var result;
 
         topLevelModuleToReturn = topLevelModuleToReturn_;
+
+        // If we're inside a package, look search using its __path__
+        if (modNameSplit.length > 1) {
+            parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
+            searchFileName = modNameSplit[modNameSplit.length-1];
+            searchPath = parentModule.tp$getattr("__path__");
+        }
 
         // otherwise:
         // - create module object
@@ -353,12 +362,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 // ToDo: check if this is a dotted name or import from ...
             } else {
                 // Try loading as a builtin (i.e. already in JS) module, then try .py files
-                co = Sk.misceval.chain(Sk.importSearchPathForName(name, ".js", searchPath), function(codeAndPath) {
+                co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
                     if (codeAndPath) {
                         return {funcname: "$builtinmodule", code: codeAndPath.code,
                                 filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
                     } else {
-                        return Sk.misceval.chain(Sk.importSearchPathForName(name, ".py", searchPath), function(codeAndPath_) {
+                        return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
                             codeAndPath = codeAndPath_; // We'll want it in a moment
                             if (!codeAndPath) {
                                 throw new Sk.builtin.ImportError("No module named " + name);
@@ -440,7 +449,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
     }, function (modlocs) {
         var i;
-        var parentModule;
 
         // Some builtin modules replace their globals entirely.
         // For their benefit, we copy over any of the standard
@@ -467,7 +475,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         if (topLevelModuleToReturn) {
             // if we were a dotted name, then we want to return the top-most
             // package. we store ourselves into our parent as an attribute
-            parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
             parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
             //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
             return topLevelModuleToReturn;
