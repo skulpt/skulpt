@@ -266,9 +266,10 @@ if (COMPILED) {
  * @param {string=} suppliedPyBody use as the body of the text for the module
  * rather than Sk.read'ing it.
  * @param {Object=} relativeToPackage perform import relative to this package
+ * @param {boolean=} returnUndefinedOnNotFound return 'undefined' rather than throwing ImportError if the load failed
  * @param {boolean=} canSuspend whether we may return a Suspension object
  */
-Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, relativeToPackage, canSuspend) {
+Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, relativeToPackage, returnUndefinedOnNotFound, canSuspend) {
     //dumpJS = true;
     var filename;
     var prev;
@@ -309,7 +310,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         // all parent packages. so, here we're importing 'a.b', which will in
         // turn import 'a', and then return 'a' eventually.
         parentModName = modNameSplit.slice(0, modNameSplit.length - 1).join(".");
-        topLevelModuleToReturn = Sk.importModuleInternal_(parentModName, dumpJS, undefined, undefined, relativeToPackage, canSuspend);
+        topLevelModuleToReturn = Sk.importModuleInternal_(parentModName, dumpJS, undefined, undefined, relativeToPackage, returnUndefinedOnNotFound, canSuspend);
     }
 
     ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
@@ -369,13 +370,14 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                     } else {
                         return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
                             codeAndPath = codeAndPath_; // We'll want it in a moment
-                            if (!codeAndPath) {
-                                throw new Sk.builtin.ImportError("No module named " + name);
+                            if (codeAndPath) {
+                                return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
                             }
-                            return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
                         }, function(co) {
-                            co.packagePath = codeAndPath.packagePath;
-                            return co;
+                            if (co) {
+                                co.packagePath = codeAndPath.packagePath;
+                                return co;
+                            }
                         });
                     }
                 });
@@ -389,6 +391,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         var finalcode;
         var withLineNumbers;
         var modscope;
+
+        if (!co) {
+            return undefined;
+        }
 
         // Now we know this module exists, we can add it to the cache
         Sk.sysmodules.mp$ass_subscript(modname, module);
@@ -450,6 +456,14 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     }, function (modlocs) {
         var i;
 
+        if (modlocs === undefined) {
+            if (returnUndefinedOnNotFound) {
+                return undefined;
+            } else {
+                throw new Sk.builtin.ImportError("No module named " + name);
+            }
+        }
+
         // Some builtin modules replace their globals entirely.
         // For their benefit, we copy over any of the standard
         // dunder-values they didn't supply.
@@ -494,7 +508,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
  * @param {boolean=} canSuspend can this function suspend and return a Suspension object?
  */
 Sk.importModule = function (name, dumpJS, canSuspend) {
-    return Sk.importModuleInternal_(name, dumpJS, undefined, undefined, undefined, canSuspend);
+    return Sk.importModuleInternal_(name, dumpJS, undefined, undefined, undefined, false, canSuspend);
 };
 
 Sk.importMain = function (name, dumpJS, canSuspend) {
@@ -506,7 +520,7 @@ Sk.importMain = function (name, dumpJS, canSuspend) {
 
     Sk.resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, undefined, canSuspend);
+    return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, undefined, false, canSuspend);
 };
 
 /**
@@ -529,7 +543,7 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 
     Sk.resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__", body, undefined, canSuspend);
+    return Sk.importModuleInternal_(name, dumpJS, "__main__", body, undefined, false, canSuspend);
 };
 
 /**
@@ -543,7 +557,7 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
  *
  */
 Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
-    return Sk.importModuleInternal_(name, dumpJS, "__builtin__."+name, body, undefined, canSuspend);
+    return Sk.importModuleInternal_(name, dumpJS, "__builtin__."+name, body, undefined, false, canSuspend);
 };
 
 Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
@@ -577,11 +591,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 isPackageRelative = true;
                 absolutePackagePrefix = globals["__package__"].v + ".";
                 return Sk.misceval.chain(
-                    Sk.misceval.tryCatch(function() {
-                        return Sk.importModuleInternal_(firstDottedName, undefined, absolutePackagePrefix + firstDottedName, undefined, currentPackage, true);
-                    }, function(e) {
-                        if (e instanceof Sk.builtin.ImportError) { return undefined; } else { throw e; }
-                    }),
+                    Sk.importModuleInternal_(firstDottedName, undefined, absolutePackagePrefix + firstDottedName, undefined, currentPackage, true, true),
                     function(ret) {
                         // Did relative import of the top package succeed?
                         if (ret === undefined) {
@@ -591,7 +601,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                         } else {
                             // Yes, and now we need to do the rest of the import.
                             // If this fails now, the whole import fails.
-                            return  Sk.importModuleInternal_(name, undefined, absolutePackagePrefix + name, undefined, currentPackage, true);
+                            return  Sk.importModuleInternal_(name, undefined, absolutePackagePrefix + name, undefined, currentPackage, false, true);
                         }
                     }
                 );
@@ -601,7 +611,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 // If that didn't work, try an absolute import
                 isPackageRelative = false;
                 absolutePackagePrefix = "";
-                return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, true);
+                return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, false, true);
             } else {
                 return ret;
             }
@@ -636,7 +646,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                         fromImportName = "" + name + "." + fromName;
                         fromImportModName = absolutePackagePrefix + fromImportName;
                         importChain = Sk.misceval.chain(importChain, function() {
-                            return Sk.importModuleInternal_(fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, true);
+                            return Sk.importModuleInternal_(fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, false, true);
                         });
                     }
                 }
