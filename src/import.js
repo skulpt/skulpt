@@ -547,6 +547,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // module.__package__ contains its name, so we use that to look it up in sys.modules.
 
     var currentPackage;
+    var absolutePackagePrefix = "";
 
     if (globals["__package__"] && globals["__package__"] !== Sk.builtin.none.none$) {
         try {
@@ -554,19 +555,42 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         } catch(e) {}
     }
 
+    // This is a hack to emulate the actual Python behaviour. If the first name
+    // can be found relatively, we do the whole lookup relatively. If not, we fall
+    // back to global.
+
+    var dottedName = name.split(".");
+    var firstDottedName = dottedName[0];
+
     return Sk.misceval.chain(undefined, function() {
             if (currentPackage !== undefined) {
                 isPackageRelative = true;
-                return Sk.misceval.tryCatch(function() {
-                    return Sk.importModuleInternal_(name, undefined, globals["__package__"].v + "." + name, undefined, currentPackage, true);
-                }, function(e) {
-                    if (e instanceof Sk.builtin.ImportError) { return undefined; } else { throw e; }
-                })
+                absolutePackagePrefix = globals["__package__"].v + ".";
+                return Sk.misceval.chain(
+                    Sk.misceval.tryCatch(function() {
+                        return Sk.importModuleInternal_(firstDottedName, undefined, absolutePackagePrefix + firstDottedName, undefined, currentPackage, true);
+                    }, function(e) {
+                        if (e instanceof Sk.builtin.ImportError) { return undefined; } else { throw e; }
+                    }),
+                    function(ret) {
+                        // Did relative import of the top package succeed?
+                        if (ret === undefined) {
+                            return undefined; // No; fall back to absolute import
+                        } else if (dottedName.length == 1) {
+                            return ret; // yes, and we've already done all we need to do
+                        } else {
+                            // Yes, and now we need to do the rest of the import.
+                            // If this fails now, the whole import fails.
+                            return  Sk.importModuleInternal_(name, undefined, absolutePackagePrefix + name, undefined, currentPackage, true);
+                        }
+                    }
+                );
             }
         }, function(ret) {
             if (ret === undefined) {
                 // If that didn't work, try an absolute import
                 isPackageRelative = false;
+                absolutePackagePrefix = "";
                 return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, true);
             } else {
                 return ret;
@@ -580,7 +604,6 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 var i;
                 var fromName; // name of current module for fromlist
                 var fromImportName, fromImportModName; // dotted name
-                var dottedName = name.split("."); // get last module in dotted path
                 var lastDottedName = dottedName[dottedName.length-1];
                 
                 var found; // Contains sysmodules the "name"
@@ -601,7 +624,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                     if (!foundFromName && fromName != "*" && ret["$d"][fromName] == null && (ret["$d"][lastDottedName] != null || ret["$d"].__name__.v == lastDottedName)) {
                         // add the module name to our requiredImport list
                         fromImportName = "" + name + "." + fromName;
-                        fromImportModName = isPackageRelative ? globals["__package__"].v + "." + fromImportName : fromImportName;
+                        fromImportModName = absolutePackagePrefix + fromImportName;
                         importChain = Sk.misceval.chain(importChain, function() {
                             return Sk.importModuleInternal_(fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, true);
                         });
@@ -611,7 +634,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 return Sk.misceval.chain(importChain, function() {
                     // if there's a fromlist we want to return the actual module, not the
                     // toplevel namespace
-                    ret = Sk.sysmodules.mp$subscript(name);
+                    ret = Sk.sysmodules.mp$subscript(absolutePackagePrefix + name);
                     goog.asserts.assert(ret);
                     return ret;
                 });
