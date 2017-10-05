@@ -239,17 +239,12 @@ def test(debug_mode=False, p3=False):
             jshintcmd = "jshint " + folders
             jscscmd = "jscs " + folders + " --reporter=inline"
 
-        print jshintcmd
-        print jscscmd
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
-        print ret3
-        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
         ret4 = rununits(p3=p3, debug_mode=debug_mode)
 
-    print (ret1, ret2, ret3, ret4)
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):

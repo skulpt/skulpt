@@ -146,19 +146,19 @@ Sk.builtin.set.prototype.ob$ge = function (other) {
 
 Sk.builtin.set.prototype.nb$and = function(other){
     return this["intersection"].func_code(this, other);
-}
+};
 
 Sk.builtin.set.prototype.nb$or = function(other){
     return this["union"].func_code(this, other);
-}
+};
 
 Sk.builtin.set.prototype.nb$xor = function(other){
     return this["symmetric_difference"].func_code(this, other);
-}
+};
 
 Sk.builtin.set.prototype.nb$subtract = function(other){
     return this["difference"].func_code(this, other);
-}
+};
 
 Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
@@ -244,7 +244,7 @@ Sk.builtin.set.prototype["union"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
     var S, i, new_args;
-    
+
     Sk.builtin.pyCheckArgs("intersection", arguments, 1);
 
     S = Sk.builtin.set.prototype["copy"].func_code(self);
@@ -259,7 +259,7 @@ Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, other) {
     var S, i, new_args;
-    
+
     Sk.builtin.pyCheckArgs("difference", arguments, 2);
 
     S = Sk.builtin.set.prototype["copy"].func_code(self);
