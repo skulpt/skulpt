@@ -21,6 +21,7 @@ import pprint
 import json
 import shutil
 import time
+from itertools import chain
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -228,19 +229,22 @@ def test(debug_mode=False, p3=False):
     if ret1 == 0:
         print "Running jshint"
         base_dirs = ["src", "debugger"]
-        for base_dir in base_dirs:
-            if sys.platform == "win32":
-                jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-                jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-            else:
-                jshintcmd = "jshint " + base_dir + "/*.js"
-                jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
+
+        if sys.platform == "win32":
+            files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
+            jshintcmd = "jshint {1}".format(' '.join(files))
+            jscscmd = "jscs {1} --reporter=inline".format(' '.join(files))
+        else:
+            folders = ' '.join([ d + "/*.js" for d in base_dirs ])
+            jshintcmd = "jshint " + folders
+            jscscmd = "jscs " + folders + " --reporter=inline"
+
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
-        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
         ret4 = rununits(p3=p3, debug_mode=debug_mode)
+
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -1312,13 +1316,13 @@ def main():
         f.write(getInternalCodeAsJson() + ";")
 
     if cmd == "test":
-        test()
+        exit(bool(test()))
     elif cmd == "test3":
-        test(p3=True)
+        exit(bool(test(p3=True)))
     elif cmd == "testdebug":
-        test(debug_mode=True)
+        exit(bool(test(debug_mode=True)))
     elif cmd == "test3debug":
-        test(debug_mode=True, p3=True)
+        exit(bool(test(debug_mode=True, p3=True)))
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":

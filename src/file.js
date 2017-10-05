@@ -162,8 +162,8 @@ Sk.builtin.file.$readline = function (self, size, prompt) {
     }
 };
 
-Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) { 
-    return Sk.builtin.file.$readline(self, size, undefined); 
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) {
+    return Sk.builtin.file.$readline(self, size, undefined);
 });
 
 Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(self, sizehint) {
@@ -185,7 +185,7 @@ Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function seek(self, offs
     if (whence === undefined) {
         whence = 0;
     }
-    if (whence == 0) {
+    if (whence === 0) {
         self.pos$ = l_offset;
     } else if (whence == 1) {
         self.pos$ = self.data$.length + l_offset;

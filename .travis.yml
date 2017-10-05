@@ -7,9 +7,7 @@ install:
 - nvm use node
 - npm install npm@latest -g
 - npm install
-- jscs -V
-- jshint -v
-- pip install "GitPython>=0.2.0-beta1" --use-mirrors
+- pip install "GitPython>=0.2.0-beta1"
 - mkdir -p vendors
 script:
 - npm run build-min
