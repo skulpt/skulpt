@@ -52,6 +52,8 @@ Sk.ffi.remapToPy = function (obj) {
 
     if (typeof obj === "boolean") {
         return new Sk.builtin.bool(obj);
+    } else if (typeof obj === "undefined") {
+        return Sk.builtin.none.none$;
     }
 
     if (typeof obj === "function") {

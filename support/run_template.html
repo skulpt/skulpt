@@ -87,13 +87,13 @@ function runit(myDiv) {
     myPromise.then(function(mod) {}, function(err) {
         if (err.message) {
             outf(err.message + "\n");
-            outf(err.stack);  
+            outf(err.stack);
         } else if (err.nativeError) {
             outf(err.nativeError.message + "\n");
-            outf(err.nativeError.stack);  
+            outf(err.nativeError.stack);
         } else {
             outf(err.toString());
-        }   
+        }
     });
 }
 </script>
