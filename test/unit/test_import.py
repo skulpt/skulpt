@@ -38,6 +38,8 @@ class ImportRelativeTest(unittest.TestCase):
 
         self.assertEqual(subpackage.imported_version, "subpackage")
 
+        self.assertEqual(subpackage.implicit_import.__name__, "subpackage.implicit_import")
+
 
 
 if __name__ == '__main__':

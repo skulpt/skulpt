@@ -6,3 +6,5 @@ if __package__ != "subpackage":
 
 if __name__ != "subpackage.importable_module":
     raise Exception("__name__ not set correctly (" + __name__ + ")")
+
+from implicit_import import *

@@ -494,6 +494,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             return topLevelModuleToReturn;
         }
 
+        if (relativeToPackage) {
+            relativeToPackage.tp$setattr(name, module);
+        }
+
         //print("name", name, "modname", modname, "returning leaf");
         // otherwise we return the actual module that we just imported
         return module;
