@@ -37,6 +37,8 @@ Sk.ffi.remapToPy = function (obj) {
         return Sk.builtin.assk$(obj);
     } else if (typeof obj === "boolean") {
         return new Sk.builtin.bool(obj);
+    } else if (typeof obj === "undefined") {
+        return Sk.builtin.none.none$;
     }
     goog.asserts.fail("unhandled remap type " + typeof(obj));
 };
