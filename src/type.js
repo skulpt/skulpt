@@ -269,7 +269,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
-            return Sk.builtin.object.prototype.GenericSetAttr.call(this, name, data);
+            return Sk.builtin.object.prototype.GenericSetAttr.call(this, name, data, canSuspend);
         };
 
         klass.prototype.tp$getattr = function(name, canSuspend) {
