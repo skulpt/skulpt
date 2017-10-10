@@ -132,7 +132,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
                 }
             }
         );
-    }
+    };
 
     if (searchPath === undefined) {
         searchPath = Sk.realsyspath;
@@ -632,7 +632,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 
                 var found; // Contains sysmodules the "name"
                 var foundFromName; // Contains the sysmodules[name] the current item from the fromList
-                var importChain = undefined;
+                var importChain;
 
                 for (i = 0; i < fromlist.length; i++) {
                     fromName = fromlist[i];
@@ -649,9 +649,9 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                         // add the module name to our requiredImport list
                         fromImportName = "" + name + "." + fromName;
                         fromImportModName = absolutePackagePrefix + fromImportName;
-                        importChain = Sk.misceval.chain(importChain, function() {
-                            return Sk.importModuleInternal_(fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, false, true);
-                        });
+                        importChain = Sk.misceval.chain(importChain,
+                            Sk.importModuleInternal_.bind(null, fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, false, true)
+                        );
                     }
                 }
 
