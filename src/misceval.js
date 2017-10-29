@@ -1274,8 +1274,6 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
 
     klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
 
-    l_cell["__class__"] == klass["__class__"];
-
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);

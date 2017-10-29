@@ -531,7 +531,7 @@ Compiler.prototype.ccall = function (e) {
             // so we should probably add self to the mangling
             // TODO: feel free to ignore the above
             out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
-            args.push("$cell.__class__");
+            args.push("$gbl.__class__");
             args.push("self");
         }
         out ("$ret = Sk.misceval.callsimOrSuspend(", func, args.length > 0 ? "," : "", args, ");");
@@ -1549,6 +1549,7 @@ Compiler.prototype.cfromimport = function (s) {
  * @param {Array} decorator_list ast of decorators if any
  * @param {arguments_} args arguments to function, if any
  * @param {Function} callback called after setup to do actual work of function
+ * @param {Sk.builtin.str=} class_for_super
  *
  * @returns the name of the newly created function or generator object.
  *
@@ -1748,7 +1749,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // inject __class__ cell
     if (class_for_super) {
-        this.u.varDeclsCode += "$cell.__class__=this." + class_for_super.v + ";";
+        this.u.varDeclsCode += "$gbl.__class__=this." + class_for_super.v + ";";
     }
 
     //
@@ -2077,6 +2078,8 @@ Compiler.prototype.cbreak = function (s) {
 
 /**
  * compiles a statement
+ * @param {Object} s
+ * @param {Sk.builtin.str=} class_for_super
  */
 Compiler.prototype.vstmt = function (s, class_for_super) {
     var i;
@@ -2404,6 +2407,10 @@ Compiler.prototype.exitScope = function () {
     }
 };
 
+/**
+ * @param {Array} stmts
+ * @param {Sk.builtin.str=} class_for_super
+ */
 Compiler.prototype.cbody = function (stmts, class_for_super) {
     var i;
     for (i = 0; i < stmts.length; ++i) {
