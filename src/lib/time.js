@@ -59,12 +59,12 @@ var $builtinmodule = function (name) {
     mod.sleep = new Sk.builtin.func(function(delay) {
         Sk.builtin.pyCheckArgs("sleep", arguments, 1, 1);
         Sk.builtin.pyCheckType("delay", "float", Sk.builtin.checkNumber(delay));
-        var susp = new Sk.misceval.Suspension();
-        susp.resume = function() { return Sk.builtin.none.none$; }
-        susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
-            Sk.setTimeout(resolve, Sk.ffi.remapToJs(delay)*1000);
-        })};
-        return susp;
+
+        return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
+            Sk.setTimeout(function() {
+                resolve(Sk.builtin.none.none$);
+            }, Sk.ffi.remapToJs(delay)*1000);
+        }));
     });
 
     function padLeft(str, l, c) {
