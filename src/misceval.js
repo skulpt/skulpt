@@ -685,6 +685,9 @@ Sk.misceval.loadname = function (name, other) {
     var bi;
     var v = other[name];
     if (v !== undefined) {
+        if (typeof v === "function" && v["$d"] === undefined && v["tp$name"] === undefined) {
+            return v();
+        }
         return v;
     }
 
