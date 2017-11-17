@@ -104,7 +104,8 @@ var $builtinmodule = function (name) {
     }
 
     function timeZoneName(date) {
-        return /\((.*)\)/.exec(date.toString())[1];
+        var i = /\((.*)\)/.exec(date.toString());
+        return i ? i[1] : "UTC";
     }
 
     function timeZoneNames() {
