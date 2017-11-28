@@ -345,6 +345,14 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
     return self.ob$ge(other);
 };
 
+Sk.builtin.object.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+
+    var l_owner = !owner ? instance.ob$type : owner;
+
+    return self.tp$descr_get(instance, l_owner)
+}
+
 /** Default implementations of Javascript functions used in dunder methods */
 
 /**
@@ -478,7 +486,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
                                      "__eq__", "__ne__", "__lt__", "__le__",
                                      "__gt__", "__ge__", "__getattribute__",
-                                     "__setattr__", "__format__"];
+                                     "__setattr__", "__format__", "__get__"];
 
 /**
  * @constructor
