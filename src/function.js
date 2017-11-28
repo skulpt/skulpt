@@ -210,13 +210,18 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
             closure[k] = closure2[k];
         }
     }
+
+    this.__class__ = Sk.builtin.func;
     this.func_closure = closure;
     return this;
 };
+
+Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
+
 goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
-
 Sk.builtin.func.prototype.tp$name = "function";
+
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     goog.asserts.assert(obj !== undefined && objtype !== undefined);
     if (obj === Sk.builtin.none.none$) {
@@ -224,6 +229,7 @@ Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     }
     return new Sk.builtin.method(this, obj, objtype);
 };
+
 Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var j;
     var i;
@@ -296,17 +302,6 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
     // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
 };
-
-Sk.builtin.func.prototype.tp$getattr = function (key) {
-    return this[key];
-};
-Sk.builtin.func.prototype.tp$setattr = function (key, value) {
-    this[key] = value;
-};
-
-//todo; investigate why the other doesn't work
-//Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
-Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj("function", new Sk.builtin.func(null, null));
 
 Sk.builtin.func.prototype["$r"] = function () {
     var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
