@@ -350,8 +350,8 @@ Sk.builtin.object.prototype.__get__ = function __get__(self, instance, owner) {
 
     var l_owner = !owner ? instance.ob$type : owner;
 
-    return self.tp$descr_get(instance, l_owner)
-}
+    return self.tp$descr_get(instance, l_owner);
+};
 
 /** Default implementations of Javascript functions used in dunder methods */
 
