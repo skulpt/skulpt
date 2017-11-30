@@ -1,9 +1,11 @@
 Sk.builtin.type_is_subtype_base_chain = function type_is_subtype_base_chain(a, b) {
     do {
-        if (a == b)
+        if (a == b) {
             return true;
+        }
+
         a = a.tp$base;
-    } while (!a === undefined);
+    } while (a !== undefined);
 
     return (b == Sk.builtin.object);
 };
@@ -16,16 +18,15 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
         goog.asserts.assert(mro instanceof Sk.builtin.tuple);
         for (var i = 0; i < mro.v.length; i++) {
             if (mro.v[i] == b) {
-                return true; 
+                return true;
             }
         }
-        return false; 
-    }
-    else {
+        return false;
+    } else {
         /* a is not completely initilized yet; follow tp_base */
         return Sk.builtin.type_is_subtype_base_chain(a, b);
     }
-}
+};
 
 /**
  * @constructor
@@ -40,14 +41,14 @@ Sk.builtin.super_ = function super_ (a_type, self) {
         return new Sk.builtin.super_(a_type, self);
     }
 
-    Sk.misceval.callsim(Sk.builtin.super_.__init__, this, a_type, self)
+    Sk.misceval.callsim(Sk.builtin.super_.__init__, this, a_type, self);
 
     return this;
 };
 
 Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_self) {
     self.obj = other_self;
-    self.type = a_type
+    self.type = a_type;
 
     if (!a_type.tp$mro) {
         throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
@@ -62,7 +63,7 @@ Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_se
     }
 
     if (!Sk.builtin.PyType_IsSubtype(self.obj.ob$type, self.type)) {
-        throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance of subtype of type")
+        throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance of subtype of type");
     }
 
     return Sk.builtin.none.none$;
@@ -95,7 +96,7 @@ Sk.builtin.super_.prototype.tp$getattr = function (name, canSuspend) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            res = _tryGetSubscript(dict, pyName);
+            res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
@@ -125,14 +126,13 @@ Sk.builtin.super_.prototype.tp$getattr = function (name, canSuspend) {
     return undefined;
 };
 
-Sk.builtin.super_.prototype["$r"] = function super_repr(self)
-{
+Sk.builtin.super_.prototype["$r"] = function super_repr(self) {
     if (this.obj) {
         return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, <" + this.obj.tp$name + " object>>");
     }
 
     return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, NULL>");
-}
+};
 
 Sk.builtin.super_.__doc__ = new Sk.builtin.str(
     "super(type, obj) -> bound super object; requires isinstance(obj, type)\n" +
