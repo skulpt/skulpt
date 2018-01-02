@@ -231,8 +231,8 @@ def test(debug_mode=False, p3=False):
 
         if sys.platform == "win32":
             files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
-            jshintcmd = "jshint {1}".format(' '.join(files))
-            jscscmd = "jscs {1} --reporter=inline".format(' '.join(files))
+            jshintcmd = "jshint {0}".format(' '.join(files))
+            jscscmd = "jscs {0} --reporter=inline".format(' '.join(files))
         else:
             folders = ' '.join([ d + "/*.js" for d in base_dirs ])
             jshintcmd = "jshint " + folders
