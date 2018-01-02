@@ -21,7 +21,7 @@
     "host": "./skulpt.py host",
     "repl": "./skulpt.py repl",
 
-    "build": "./skulpt.py dist",
+    "build": "skulpt dist",
     "build-min": "./skulpt.py dist -u",
     "test": "./skulpt.py test",
     "test3": "./skulpt.py test3"

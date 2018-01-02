@@ -31,13 +31,13 @@ __credits__ = \
 
 import string, re
 from codecs import BOM_UTF8, lookup
-from lib2to3.pgen2.token import *
+#from lib2to3.pgen2.token import *
 
 import token
 __all__ = [x for x in dir(token) if x[0] != '_'] + ["tokenize",
            "generate_tokens", "untokenize"]
 del token
-
+from token  import *
 def group(*choices): return '(' + '|'.join(choices) + ')'
 def any(*choices): return group(*choices) + '*'
 def maybe(*choices): return group(*choices) + '?'
