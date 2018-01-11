@@ -1257,7 +1257,7 @@ var $builtinmodule = function (name) {
         if (typeof(b) !== "undefined") {
             b = b.v;
         }
-		if (typeof(alpha) !== "undefined") {
+        if (typeof(alpha) !== "undefined") {
             alpha = alpha.v;
         }
 
