@@ -773,7 +773,7 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
 Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
     Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
 
-    var result, multiplier, number, num10, rounded, bankRound, ndigs;
+    var result, multiplier, number, num10, rounded, bankRound, ndigs, numberAbs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
@@ -797,8 +797,12 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
             return new Sk.builtin.float_(result);
         }
     } else {
+        numberAbs = Math.abs(number);
         multiplier = Math.pow(10, ndigs);
-        result = Math.round(number * multiplier) / multiplier;
+        result = Math.round(numberAbs * multiplier) / multiplier;
+        if (number<0) {
+            result = result * -1;
+        }
 
         return new Sk.builtin.float_(result);
     }
