@@ -736,7 +736,7 @@ def dist(options):
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
     debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
-    
+
     if options.disabletests == False:
         # Run tests on uncompressed.
         if options.verbose:
@@ -881,6 +881,10 @@ def make_skulpt_js(options,dest):
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
 def run_in_browser(fn, options, debug_mode=False, p3=False):
+    if p3:
+        p3_str = "Sk.python3"
+    else:
+        p3_str = "Sk.python2"
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -895,7 +899,7 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=str(p3).lower(),root="")
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=p3_str,root="")
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1039,9 +1043,9 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
-        p3on = 'true'
+        p3on = 'Sk.python3'
     else:
-        p3on = 'false'
+        p3on = 'Sk.python2'
     if debug_mode:
         debugon = 'true'
     else:
@@ -1051,7 +1055,7 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", %s, true);
 }).then(function () {
@@ -1083,10 +1087,10 @@ def shell(fn):
 def rununits(opt=False, p3=False, debug_mode=False):
     if p3:
         unit_dir = 'test/unit3'
-        p3on = 'true'
+        p3on = 'Sk.python3'
     else:
         unit_dir = 'test/unit'
-        p3on = 'false'
+        p3on = 'Sk.python2'
     testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1099,7 +1103,7 @@ def rununits(opt=False, p3=False, debug_mode=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugging: %s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {

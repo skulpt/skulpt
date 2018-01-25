@@ -83,7 +83,7 @@ function runit(myDiv) {
         inputfunTakesPrompt: true,
         debugout: showjs,
         debugging: %(debug_mode)s,
-        python3: %(p3)s
+        __future__: %(p3)s
     });
 
     var myPromise = Sk.misceval.asyncToPromise(function() {

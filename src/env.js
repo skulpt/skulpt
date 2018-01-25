@@ -27,7 +27,43 @@ Sk.bool_check = function(variable, name) {
     if (variable === undefined || variable === null || typeof variable !== "boolean") {
         throw new Error("must specify " + name + " and it must be a boolean");
     }
-}
+};
+
+Sk.python2 = {
+    print_function: false,
+    division: false,
+    absolute_import: null,
+    unicode_literals: false,
+    // skulpt specific
+    set_repr: false,
+    class_repr: false,
+    inherit_from_object: false,
+    super_args: false,
+    octal_number_literal: false,
+    bankers_rounding: false,
+    python_version: false,
+    dunder_next: false,
+    dunder_round: false,
+    exceptions: false
+};
+
+Sk.python3 = {
+    print_function: true,
+    division: true,
+    absolute_import: null,
+    unicode_literals: true,
+    // skulpt specific
+    set_repr: true,
+    class_repr: true,
+    inherit_from_object: true,
+    super_args: true,
+    octal_number_literal: true,
+    bankers_rounding: true,
+    python_version: true,
+    dunder_next: true,
+    dunder_round: true,
+    exceptions: true
+};
 
 Sk.configure = function (options) {
     "use strict";
@@ -59,23 +95,7 @@ Sk.configure = function (options) {
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
-    Sk.__future__ = options["__future__"] || {
-        print_function: false,
-        division: false,
-        absolute_import: null,
-        unicode_literals: false,
-        // skulpt specific
-        set_repr: false,
-        class_repr: false,
-        inherit_from_object: false,
-        super_args: false,
-        octal_number_literal: false,
-        bankers_rounding: false,
-        python_version: false,
-        dunder_next: false,
-        dunder_round: false,
-        exceptions: false
-    };
+    Sk.__future__ = options["__future__"] || Sk.python2;
 
     Sk.bool_check(Sk.__future__.print_function, "Sk.__future__.print_function");
     Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
@@ -172,7 +192,7 @@ Sk.configure = function (options) {
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);
-}
+};
 
 goog.exportSymbol("Sk.configure", Sk.configure);
 
@@ -314,21 +334,21 @@ Sk.setup_method_mappings = function () {
 };
 
 Sk.switch_version = function (method_to_map, python3) {
-    var internal, klass, classes, idx, len, newmeth, oldmeth, mappings;
+    var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
     mappings = Sk.setup_method_mappings();
 
-    internal = mappings[method_to_map];
+    mapping = mappings[method_to_map];
 
     if (python3) {
-        newmeth = internal[3];
-        oldmeth = internal[2];
+        newmeth = mapping[3];
+        oldmeth = mapping[2];
     } else {
-        newmeth = internal[2];
-        oldmeth = internal[3];
+        newmeth = mapping[2];
+        oldmeth = mapping[3];
     }
 
-    classes = internal["classes"];
+    classes = mapping["classes"];
     len = classes.length;
     for (idx = 0; idx < len; idx++) {
         klass = classes[idx];
@@ -336,7 +356,7 @@ Sk.switch_version = function (method_to_map, python3) {
             delete klass.prototype[oldmeth];
         }
         if (newmeth) {
-            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[internal]);
+            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
         }
     }
 };
