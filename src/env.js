@@ -170,13 +170,8 @@ Sk.configure = function (options) {
 
     Sk.misceval.softspace_ = false;
 
-    if (Sk.future.dunder_round) {
-        Sk.switch_version("round$");
-    }
-
-    if (Sk.future.dunder_next) {
-        Sk.switch_version("next$");
-    }
+    Sk.switch_version("round$", Sk.__future__.dunder_round);
+    Sk.switch_version("next$", Sk.__future__.dunder_next);
 }
 
 goog.exportSymbol("Sk.configure", Sk.configure);
@@ -318,7 +313,7 @@ Sk.setup_method_mappings = function () {
     };
 };
 
-Sk.switch_version = function (method_to_map) {
+Sk.switch_version = function (method_to_map, python3) {
     var internal, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
     mappings = Sk.setup_method_mappings();
@@ -326,14 +321,14 @@ Sk.switch_version = function (method_to_map) {
     internal = mappings[method_to_map];
 
     if (python3) {
-        newmeth = mappings[internal][3];
-        oldmeth = mappings[internal][2];
+        newmeth = internal[3];
+        oldmeth = internal[2];
     } else {
-        newmeth = mappings[internal][2];
-        oldmeth = mappings[internal][3];
+        newmeth = internal[2];
+        oldmeth = internal[3];
     }
 
-    classes = mappings[internal]["classes"];
+    classes = internal["classes"];
     len = classes.length;
     for (idx = 0; idx < len; idx++) {
         klass = classes[idx];
@@ -347,6 +342,5 @@ Sk.switch_version = function (method_to_map) {
 };
 
 goog.exportSymbol("Sk.__future__", Sk.__future__);
-goog.exportSymbol("Sk.python3", Sk.python3);
 goog.exportSymbol("Sk.inputfun", Sk.inputfun);
 goog.require("goog.asserts");
