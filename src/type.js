@@ -339,7 +339,7 @@ Sk.builtin.type = function (name, bases, dict) {
             var self = this;
             var next;
 
-            if (Sk.python3) {
+            if (Sk.future.dunder_next) {
                 next = "__next__";
             } else {
                 next = "next";

@@ -218,7 +218,7 @@ Sk.builtin.round = function round (number, ndigits) {
         if (!Sk.builtin.checkFunction(number)) {
             throw new Sk.builtin.TypeError("a float is required");
         } else {
-            if (!Sk.python3) {
+            if (!Sk.future.exceptions) {
                 throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
             }
         }
@@ -228,7 +228,7 @@ Sk.builtin.round = function round (number, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    if (!Sk.python3 && number.round$) {
+    if (!Sk.future.dunder_round && number.round$) {
         return number.round$(number, ndigits);
     }
 
@@ -256,7 +256,7 @@ Sk.builtin.len = function len (item) {
         if (Sk.builtin.checkInt(j)) {
             return int_(j);
         } else {
-            if (Sk.python3) {
+            if (Sk.future.exceptions) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
             } else {
                 throw new Sk.builtin.TypeError("__len__() should return an int");
@@ -278,7 +278,7 @@ Sk.builtin.len = function len (item) {
             if (special != null) {
                 return Sk.misceval.callsim(special, item);
             } else {
-                if (Sk.python3) {
+                if (Sk.future.exceptions) {
                     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
                 } else {
                     throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
@@ -563,7 +563,7 @@ Sk.builtin.oct = function oct (x) {
     if (!Sk.misceval.isIndex(x)) {
         throw new Sk.builtin.TypeError("oct() argument can't be converted to hex");
     }
-    if (Sk.python3) {
+    if (Sk.future.octal_number_literal) {
         return Sk.builtin.int2str_(x, 8, "0o");
     } else {
         return Sk.builtin.int2str_(x, 8, "0");
@@ -1111,7 +1111,7 @@ Sk.builtin.pow = function pow (a, b, c) {
             throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
         }
         if (b_num < 0) {
-            if (Sk.python3) {
+            if (Sk.future.exceptions) {
                 throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
             } else {
                 throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");

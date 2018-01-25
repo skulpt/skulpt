@@ -61,7 +61,13 @@ Sk.configure = function (options) {
         set_repr: false,
         class_repr: false,
         inherit_from_object: false,
-        super_args: false
+        super_args: false,
+        octal_number_literal: false,
+        bankers_rounding: false,
+        python_version: false,
+        dunder_next: false,
+        dunder_round: false,
+        exceptions: false
     };
 
     if (Sk.__future__.print_function === undefined || Sk.__future__.print_function === null || typeof Sk.__future__.print_function !== "boolean") {
@@ -171,8 +177,15 @@ Sk.configure = function (options) {
 
     Sk.misceval.softspace_ = false;
 
-    Sk.switch_version(Sk.python3);
-};
+    if (Sk.future.dunder_round) {
+        Sk.switch_version("round$");
+    }
+
+    if (Sk.future.dunder_next) {
+        Sk.switch_version("next$");
+    }
+}
+
 goog.exportSymbol("Sk.configure", Sk.configure);
 
 /*
@@ -289,7 +302,7 @@ Sk.inputfun = function (args) {
 //   ...
 
 Sk.setup_method_mappings = function () {
-    Sk.methodMappings = {
+    return {
         "round$": {
             "classes": [Sk.builtin.float_,
                         Sk.builtin.int_,
@@ -312,31 +325,30 @@ Sk.setup_method_mappings = function () {
     };
 };
 
-Sk.switch_version = function (python3) {
-    var internal, klass, classes, idx, len, newmeth, oldmeth;
+Sk.switch_version = function (method_to_map) {
+    var internal, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
-    if (!Sk.hasOwnProperty("methodMappings")) {
-        Sk.setup_method_mappings();
+    mappings = Sk.setup_method_mappings();
+
+    internal = mappings[method_to_map];
+
+    if (python3) {
+        newmeth = mappings[internal][3];
+        oldmeth = mappings[internal][2];
+    } else {
+        newmeth = mappings[internal][2];
+        oldmeth = mappings[internal][3];
     }
 
-    for (internal in Sk.methodMappings) {
-        if (python3) {
-            newmeth = Sk.methodMappings[internal][3];
-            oldmeth = Sk.methodMappings[internal][2];
-        } else {
-            newmeth = Sk.methodMappings[internal][2];
-            oldmeth = Sk.methodMappings[internal][3];
+    classes = mappings[internal]["classes"];
+    len = classes.length;
+    for (idx = 0; idx < len; idx++) {
+        klass = classes[idx];
+        if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
+            delete klass.prototype[oldmeth];
         }
-        classes = Sk.methodMappings[internal]["classes"];
-        len = classes.length;
-        for (idx = 0; idx < len; idx++) {
-            klass = classes[idx];
-            if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
-                delete klass.prototype[oldmeth];
-            }
-            if (newmeth) {
-                klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[internal]);
-            }
+        if (newmeth) {
+            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[internal]);
         }
     }
 };
