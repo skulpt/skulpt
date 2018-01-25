@@ -207,9 +207,9 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         for (base = parent; base !== undefined; base = base.tp$base) {
             bases.push(base);
         }
-        
+
         child.tp$mro = new Sk.builtin.tuple([child]);
-        if (!child.tp$base){ 
+        if (!child.tp$base){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
@@ -241,10 +241,24 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         proto[name] = new Sk.builtin.func(proto[name]);
     }
 
+    proto = Sk.builtin.type.prototype;
+
+    for (i = 0; i < Sk.builtin.type.pythonFunctions.length; i++) {
+        name = Sk.builtin.type.pythonFunctions[i];
+
+        if (proto[name] instanceof Sk.builtin.func) {
+            // If functions have already been initialized, do not wrap again.
+            break;
+        }
+
+        proto[name] = new Sk.builtin.func(proto[name]);
+    }
+
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], canSuspend);
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
     }
@@ -553,9 +567,9 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 };
 
 /**
- * Imports internal python files into the `__builin__` module. Used during startup 
- * to compile and import all *.py files from the src/ directory. 
- * 
+ * Imports internal python files into the `__builin__` module. Used during startup
+ * to compile and import all *.py files from the src/ directory.
+ *
  * @param name {string}  File name to use for messages related to this run
  * @param dumpJS {boolean} print out the compiled javascript
  * @param body {string} Python Code
@@ -599,7 +613,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
             var fromImportName; // dotted name
             var dottedName = name.split("."); // get last module in dotted path
             var lastDottedName = dottedName[dottedName.length-1];
-            
+
             var found; // Contains sysmodules the "name"
             var foundFromName; // Contains the sysmodules[name] the current item from the fromList
 

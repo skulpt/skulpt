@@ -343,8 +343,8 @@ var $builtinmodule = function (name) {
             // Per docs, ^ should match index after newlines.
             // this matches the first
             var str = Sk.ffi.remapToJs(string);
-            var start = Sk.ffi.remapToJs(pos);
-            var end = Sk.ffi.remapToJs(endpos)
+            var start = pos == undefined ? 0 : Sk.ffi.remapToJs(pos);
+            var end = endpos == undefined ? str.length : Sk.ffi.remapToJs(endpos);
 
             if (start == "^") {
                 start = str.indexOf('\n') + 1;

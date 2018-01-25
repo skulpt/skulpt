@@ -3,11 +3,10 @@ sudo: false
 python:
 - '2.7'
 install:
-- npm install jscs -g
-- npm install jshint -g
+- nvm install 'lts/*'
+- nvm use 'lts/*'
+- npm install npm@latest -g
 - npm install
-- jscs -V
-- jshint -v
 - pip install "GitPython>=0.2.0-beta1"
 - mkdir -p vendors
 script:

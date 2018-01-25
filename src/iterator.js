@@ -91,12 +91,12 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
 
-Sk.builtin.iterator.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.iterator.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (!ret) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};
 
 goog.exportSymbol("Sk.builtin.iterator", Sk.builtin.iterator);

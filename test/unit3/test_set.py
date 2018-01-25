@@ -322,8 +322,6 @@ class TestSet(TestJointOps, unittest.TestCase):
         # SF Issue #26020 -- Expect left to right insertion
         s = {1, 1.0, True}
         self.assertEqual(len(s), 1)
-        stored_value = s.pop()
-        self.assertEqual(type(stored_value), int)
 
     def test_set_literal_evaluation_order(self):
         # Expect left to right expression evaluation
