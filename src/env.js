@@ -22,6 +22,13 @@ var Sk = Sk || {}; //jshint ignore:line
  *
  * Any variables that aren't set will be left alone.
  */
+
+Sk.bool_check = function(variable, name) {
+    if (variable === undefined || variable === null || typeof variable !== "boolean") {
+        throw new Error("must specify " + name + " and it must be a boolean");
+    }
+}
+
 Sk.configure = function (options) {
     "use strict";
     Sk.output = options["output"] || Sk.output;
@@ -70,33 +77,19 @@ Sk.configure = function (options) {
         exceptions: false
     };
 
-    if (Sk.__future__.print_function === undefined || Sk.__future__.print_function === null || typeof Sk.__future__.print_function !== "boolean") {
-        throw new Error("must specify Sk.__future__.print_function and it must be a boolean");
-    }
-
-    if (Sk.__future__.division === undefined || Sk.__future__.division === null || typeof Sk.__future__.division !== "boolean") {
-        throw new Error("must specify Sk.__future__.division and it must be a boolean");
-    }
-
-    if (Sk.__future__.unicode_literals === undefined || Sk.__future__.unicode_literals === null || typeof Sk.__future__.unicode_literals !== "boolean") {
-        throw new Error("must specify Sk.__future__.unicode_literals and it must be a boolean");
-    }
-
-    if (Sk.__future__.set_repr === undefined || Sk.__future__.set_repr === null || typeof Sk.__future__.set_repr !== "boolean") {
-        throw new Error("must specify Sk.__future__.set_repr and it must be a boolean");
-    }
-
-    if (Sk.__future__.class_repr === undefined || Sk.__future__.class_repr === null || typeof Sk.__future__.class_repr !== "boolean") {
-        throw new Error("must specify Sk.__future__.class_repr and it must be a boolean");
-    }
-
-    if (Sk.__future__.inherit_from_object === undefined || Sk.__future__.inherit_from_object === null || typeof Sk.__future__.inherit_from_object !== "boolean") {
-        throw new Error("must specify Sk.__future__.inherit_from_object and it must be a boolean");
-    }
-
-    if (Sk.__future__.super_args === undefined || Sk.__future__.super_args === null || typeof Sk.__future__.super_args !== "boolean") {
-        throw new Error("must specify Sk.__future__.super_args and it must be a boolean");
-    }
+    Sk.bool_check(Sk.__future__.print_function, "Sk.__future__.print_function");
+    Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
+    Sk.bool_check(Sk.__future__.unicode_literals, "Sk.__future__.unicode_literals");
+    Sk.bool_check(Sk.__future__.set_repr, "Sk.__future__.set_repr");
+    Sk.bool_check(Sk.__future__.class_repr, "Sk.__future__.class_repr");
+    Sk.bool_check(Sk.__future__.inherit_from_object, "Sk.__future__.inherit_from_object");
+    Sk.bool_check(Sk.__future__.super_args, "Sk.__future__.super_args");
+    Sk.bool_check(Sk.__future__.octal_number_literal, "Sk.__future__.octal_number_literal");
+    Sk.bool_check(Sk.__future__.bankers_rounding, "Sk.__future__.bankers_rounding");
+    Sk.bool_check(Sk.__future__.python_version, "Sk.__future__.python_version");
+    Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
+    Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
+    Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
 
     // in __future__ add checks for absolute_import
 
