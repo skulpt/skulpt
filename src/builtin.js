@@ -1049,26 +1049,7 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
         if (obj.tp$getattr(attr.v)) {
             return Sk.builtin.bool.true$;
         } else {
-            special = Sk.abstr.lookupSpecial(obj, "__getattr__");
-            if (special) {
-                ret = Sk.misceval.tryCatch(function () {
-                    var val = Sk.misceval.callsim(special, obj, attr);
-                    if (val) {
-                        return Sk.builtin.bool.true$;
-                    } else {
-                        return Sk.builtin.bool.false$;
-                    }
-                }, function(e) {
-                    if (e instanceof Sk.builtin.AttributeError) {
-                        return Sk.builtin.bool.false$;
-                    } else {
-                        throw e;
-                    }
-                });
-                return ret;
-            } else {
-                return Sk.builtin.bool.false$;
-            }
+            return Sk.builtin.bool.false$;
         }
     } else {
         throw new Sk.builtin.AttributeError("Object has no tp$getattr method");

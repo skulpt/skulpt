@@ -3,6 +3,7 @@
 
 import sys
 import unittest
+import time
 
 class PropertyBase(Exception):
     pass
@@ -301,6 +302,28 @@ class TestDecorators(unittest.TestCase):
         ff = classmethod(f)
         self.assertEqual(ff.__get__(0, int)(42), (int, 42))
         self.assertEqual(ff.__get__(0)(42), (int, 42))
+
+
+class PST(unittest.TestCase):
+    def test_foo(self):
+        class X:
+            def __init__(self):
+                self._foo = 0
+
+            @property
+            def foo(self):
+                time.sleep(0.001)
+                return self._foo
+
+            @foo.setter
+            def foo(self, new_value):
+                time.sleep(0.001)
+                self._foo = new_value + 2
+
+        x = X()
+        self.assertEqual(x.foo, 0)
+        x.foo = 42
+        self.assertEqual(x.foo, 44)
 
 if __name__ == '__main__':
     unittest.main()

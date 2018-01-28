@@ -3,7 +3,7 @@ __author__ = 'mchat'
 import unittest
 
 object_methods = ["__repr__", "__str__", "__hash__", "__eq__", "__ne__",
-    "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"]
+    "__lt__", "__le__", "__gt__", "__ge__", "__getattribute__", "__setattr__"]
 
 numeric_methods = ["__abs__", "__neg__", "__pos__", "__int__", "__long__",
     "__float__", "__add__", "__radd__", "__sub__", "__rsub__", "__mul__",
