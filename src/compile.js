@@ -2467,13 +2467,14 @@ Compiler.prototype.cprint = function (s) {
     n = s.values.length;
     // todo; dest disabled
     for (i = 0; i < n; ++i) {
-        out("ret = Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
+        out("$ret = Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
+        this._checkSuspension(s);
     }
     if (s.nl) {
-        out("ret = Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
+        out("$ret = Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
+        this._checkSuspension(s);
     }
 
-    this._checkSuspension(s);
 };
 
 Compiler.prototype.cmod = function (mod) {

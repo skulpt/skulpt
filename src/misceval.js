@@ -671,7 +671,7 @@ Sk.misceval.print_ = function (x) {
 
     s = new Sk.builtin.str(x);
 
-    Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
+    return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
         return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
     }, function () {
         if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
