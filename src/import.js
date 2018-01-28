@@ -288,7 +288,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__name__") : undefined;
     var absolutePackagePrefix = relativePackageName !== undefined ? relativePackageName.v + "." : "";
     var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__path__") : undefined;
-    Sk.importSetUpPath();
+    Sk.importSetUpPath(canSuspend);
 
     // if no module name override, supplied, use default name
     if (modname === undefined) {
