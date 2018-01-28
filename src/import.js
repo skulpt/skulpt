@@ -219,7 +219,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     }
 
     ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
-        var codeAndPath, co, googClosure, external;
+        var codeAndPath, co, googClosure;
         var searchFileName = name;
         var result;
 

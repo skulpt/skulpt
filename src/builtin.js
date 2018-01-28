@@ -851,14 +851,13 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 };
 
 Sk.builtin.raw_input = function (prompt) {
-    var sys = Sk.importModule("sys");
     var lprompt = prompt ? prompt : "";
 
     if (Sk.inputfunTakesPrompt) {
         return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
     }
 
-    return Sk.misceval.chain(undefined, function () {
+    return Sk.misceval.chain(Sk.importModule("sys"), function (sys) {
         return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(prompt));
     }, function () {
         return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
