@@ -638,16 +638,12 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
 };
 
 Sk.importStar = function (module, loc, global) {
-    // from the global scope, globals and locals can be the same.  So the loop below
-    // could accidentally overwrite __name__, erasing __main__.
     var i;
-    var nn = global["__name__"];
     var props = Object["getOwnPropertyNames"](module["$d"]);
     for (i in props) {
-        loc[props[i]] = module["$d"][props[i]];
-    }
-    if (global["__name__"] !== nn) {
-        global["__name__"] = nn;
+        if (props[i].charAt(0) != "_") {
+            loc[props[i]] = module["$d"][props[i]];
+        }
     }
 };
 
