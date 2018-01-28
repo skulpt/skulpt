@@ -6,107 +6,6 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
-Sk.externalLibraryCache = {};
-
-Sk.loadExternalLibraryInternal_ = function (path, inject) {
-    var scriptElement;
-    var request, result;
-
-    if (path == null) {
-        return void(0);
-    }
-
-    if (Sk.externalLibraryCache[path]) {
-        return Sk.externalLibraryCache[path];
-    }
-
-    request = new XMLHttpRequest();
-    request.open("GET", path, false);
-    request.send();
-
-    if (request.status !== 200) {
-        return void(0);
-    }
-
-    result = request.responseText;
-
-    if (inject) {
-        scriptElement = document.createElement("script");
-        scriptElement.type = "text/javascript";
-        scriptElement.text = result;
-        document.getElementsByTagName("head")[0].appendChild(scriptElement);
-    }
-
-    return result;
-};
-
-Sk.loadExternalLibrary = function (name) {
-    var i;
-    var externalLibraryInfo, path,  module,
-        dependencies, dep, ext, extMatch, co;
-
-    // check if the library has already been loaded and cached
-    if (Sk.externalLibraryCache[name]) {
-        return Sk.externalLibraryCache[name];
-    }
-
-    externalLibraryInfo = Sk.externalLibraries && Sk.externalLibraries[name];
-
-    // if no external library info can be found, bail out
-    if (!externalLibraryInfo) {
-        return void(0);
-    }
-
-    // if the external library info is just a string, assume it is the path
-    // otherwise dig into the info to find the path
-    path = typeof externalLibraryInfo === "string" ?
-        externalLibraryInfo :
-        externalLibraryInfo.path;
-
-    if (typeof path !== "string") {
-        throw new Sk.builtin.ImportError("Invalid path specified for " + name);
-    }
-
-    // attempt to determine the type of the library (js or py)
-    // which is either specified explicitly in the library info
-    // or inferred from the file extension
-    ext = externalLibraryInfo.type;
-    if (!ext) {
-        extMatch = path.match(/\.(js|py)$/);
-        ext = extMatch && extMatch[1];
-    }
-
-    if (!ext) {
-        throw new Sk.builtin.ImportError("Invalid file extension specified for " + name);
-    }
-
-    module = Sk.loadExternalLibraryInternal_(path, false);
-
-    if (!module) {
-        throw new Sk.builtin.ImportError("Failed to load remote module '" + name + "'");
-    }
-
-    // if the library has any js dependencies, load them in now
-    dependencies = externalLibraryInfo.dependencies;
-    if (dependencies && dependencies.length) {
-        for (i = 0; i < dependencies.length; i++) {
-            dep = Sk.loadExternalLibraryInternal_(dependencies[i], true);
-            if (!dep) {
-                throw new Sk.builtin.ImportError("Failed to load dependencies required for " + name);
-            }
-        }
-    }
-
-    if (ext === "js") {
-        co = { funcname: "$builtinmodule", code: module };
-    } else {
-        co = Sk.compile(module, path, "exec", true);
-    }
-
-    Sk.externalLibraryCache[name] = co;
-
-    return co;
-};
 
 /**
  * @param {string} name to look for
@@ -357,38 +256,26 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 }
             }
 
-            // check first for an externally loaded library
-            external = Sk.loadExternalLibrary(name);
-            if (external) {
-                co = external;
-                if (Sk.externalLibraries) {
-                    filename = Sk.externalLibraries[name].path; // get path from config
+            // Try loading as a builtin (i.e. already in JS) module, then try .py files
+            co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
+                if (codeAndPath) {
+                    return {funcname: "$builtinmodule", code: codeAndPath.code,
+                            filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
                 } else {
-                    filename = "unknown";
+                    return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
+                        codeAndPath = codeAndPath_; // We'll want it in a moment
+                        if (codeAndPath) {
+                            return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
+                        }
+                    }, function(co) {
+                        if (co) {
+                            co.packagePath = codeAndPath.packagePath;
+                            return co;
+                        }
+                    });
                 }
-                // ToDo: check if this is a dotted name or import from ...
-            } else {
-                // Try loading as a builtin (i.e. already in JS) module, then try .py files
-                co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
-                    if (codeAndPath) {
-                        return {funcname: "$builtinmodule", code: codeAndPath.code,
-                                filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
-                    } else {
-                        return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
-                            codeAndPath = codeAndPath_; // We'll want it in a moment
-                            if (codeAndPath) {
-                                return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
-                            }
-                        }, function(co) {
-                            if (co) {
-                                co.packagePath = codeAndPath.packagePath;
-                                return co;
-                            }
-                        });
-                    }
-                });
+            });
 
-            }
         }
         return co;
 
