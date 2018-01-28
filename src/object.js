@@ -20,13 +20,15 @@ Sk.builtin.object.prototype.__init__ = function __init__() {
     return Sk.builtin.none.none$;
 };
 
-var _tryGetSubscript = function(dict, pyName) {
+Sk.builtin._tryGetSubscript = function(dict, pyName) {
     try {
         return dict.mp$subscript(pyName);
     } catch (x) {
         return undefined;
     }
 };
+goog.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
+
 
 /**
  * Get an attribute
@@ -55,7 +57,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            res = _tryGetSubscript(dict, pyName);
+            res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             res = dict[name];
         }

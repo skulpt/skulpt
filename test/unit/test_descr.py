@@ -59,23 +59,23 @@ class ClassPropertiesAndMethods(unittest.TestCase):
                 ScrollingMixin, EditingMixin, object))
 
 
-    # def test_staticmethods(self):
-    #     # Testing static methods...
-    #     class C(object):
-    #         def foo(*a): return a
-    #         goo = staticmethod(foo)
-    #     c = C()
-    #     self.assertEqual(C.goo(1), (1,))
-    #     self.assertEqual(c.goo(1), (1,))
-    #     self.assertEqual(c.foo(1), (c, 1,))
-    #     class D(C):
-    #         pass
-    #     d = D()
-    #     self.assertEqual(D.goo(1), (1,))
-    #     self.assertEqual(d.goo(1), (1,))
-    #     self.assertEqual(d.foo(1), (d, 1))
-    #     self.assertEqual(D.foo(d, 1), (d, 1))
-    
+    def test_staticmethods(self):
+        # Testing static methods...
+        class C(object):
+            def foo(*a): return a
+            goo = staticmethod(foo)
+        c = C()
+        self.assertEqual(C.goo(1), (1,))
+        self.assertEqual(c.goo(1), (1,))
+        self.assertEqual(c.foo(1), (c, 1,))
+        class D(C):
+            pass
+        d = D()
+        self.assertEqual(D.goo(1), (1,))
+        self.assertEqual(d.goo(1), (1,))
+        self.assertEqual(d.foo(1), (d, 1))
+        self.assertEqual(D.foo(d, 1), (d, 1))
+
 
     def test_compattr(self):
         # Testing computed attributes...
@@ -112,23 +112,23 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         # del a.x
         # self.assertNotHasAttr(a, 'x')
 
-    # def test_newslots(self):
-    #     # Testing __new__ slot override...
-    #     class C(list):
-    #         def __new__(cls):
-    #             self = list.__new__(cls)
-    #             self.foo = 1
-    #             return self
-    #         def __init__(self):
-    #             self.foo = self.foo + 2
-    #     a = C()
-    #     self.assertEqual(a.foo, 3)
-    #     self.assertEqual(a.__class__, C)
-    #     class D(C):
-    #         pass
-    #     b = D()
-    #     self.assertEqual(b.foo, 3)
-    #     self.assertEqual(b.__class__, D)
+    def test_newslots(self):
+        # Testing __new__ slot override...
+        class C(list):
+            def __new__(cls):
+                self = list.__new__(cls)
+                self.foo = 1
+                return self
+            def __init__(self):
+                self.foo = self.foo + 2
+        a = C()
+        self.assertEqual(a.foo, 3)
+        self.assertEqual(a.__class__, C)
+        class D(C):
+            pass
+        b = D()
+        self.assertEqual(b.foo, 3)
+        self.assertEqual(b.__class__, D)
 
 
     def test_supers(self):
@@ -160,7 +160,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         class D(C, B):
             def meth(self, a):
                 return "D(%r)" % a + super(D, self).meth(a)
-        
+
         # because I don't walk the MRO correctly
         # self.assertEqual(D().meth(4), "D(4)C(4)B(4)A(4)")
 
@@ -236,11 +236,11 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         class Base(object):
             aProp = property(lambda self: "foo")
 
-        # class Sub(Base):
-        #     @classmethod
-        #     def test(klass):
-        #         pass
-        #         #return super(Sub,klass).aProp
+        class Sub(Base):
+            @classmethod
+            def test(klass):
+                pass
+                #return super(Sub,klass).aProp
 
         # because calling super with a class as a second variable doesn't work yet
         # self.assertEqual(Sub.test(), Base.aProp)
@@ -336,17 +336,17 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual((C.__module__, C.__name__), (mod, 'D.E'))
 
 
-    # def test_init(self):
-    #     # SF 1155938
-    #     class Foo(object):
-    #         def __init__(self):
-    #             return 10
-    #     try:
-    #         Foo()
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("did not test __init__() for None return")
+    def test_init(self):
+        # SF 1155938
+        class Foo(object):
+            def __init__(self):
+                return 10
+        try:
+            Foo()
+        except TypeError:
+            pass
+        else:
+            self.fail("did not test __init__() for None return")
 
 
     def test_type___getattribute__(self):

@@ -1309,6 +1309,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     _locals = new Sk.builtin.dict(_locals);
 
     klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
+
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
