@@ -261,7 +261,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 }
 
                 // Try loading as a builtin (i.e. already in JS) module, then try .py files
-                return Sk.importSearchPathForName(searchFileName, ".js", searchPath)
+                return Sk.importSearchPathForName(searchFileName, ".js", searchPath);
             }, function(codeAndPath) {
                 if (codeAndPath) {
                     return {funcname: "$builtinmodule", code: codeAndPath.code,
