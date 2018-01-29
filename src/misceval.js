@@ -660,7 +660,7 @@ Sk.misceval.print_ = function (x) {
 
     function isspace(c) {
         return c === "\n" || c === "\t" || c === "\r";
-    };
+    }
 
     if (Sk.misceval.softspace_) {
         if (x !== "\n") {
