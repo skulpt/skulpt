@@ -853,8 +853,10 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
 Sk.builtin.raw_input = function (prompt) {
     var lprompt = prompt ? prompt : "";
 
-    return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
-        return Sk.misceval.chain(function() { 
+    return Sk.misceval.chain(
+        Sk.importModule("sys", false, true),
+    function (sys) {
+        return Sk.misceval.chain(undefined, function() {
             if (Sk.inputfunTakesPrompt) {
                 return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
             }
