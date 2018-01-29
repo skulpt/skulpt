@@ -243,21 +243,26 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             filename = name + ".py";
             co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
         } else {
-            // If an onBeforeImport method is supplied, call it and if
-            // the result is false or a string, prevent the import.
-            // This allows for a user to conditionally prevent the usage
-            // of certain libraries.
-            if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
-                result = Sk.onBeforeImport(name);
+            co = Sk.misceval.chain(undefined, function() {
+                // If an onBeforeImport method is supplied, call it and if
+                // the result is false or a string, prevent the import.
+                // This allows for a user to conditionally prevent the usage
+                // of certain libraries.
+                if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
+                    return Sk.onBeforeImport(name);
+                }
+
+                return;
+            }, function(result) {
                 if (result === false) {
                     throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
                 } else if (typeof result === "string") {
                     throw new Sk.builtin.ImportError(result);
                 }
-            }
 
-            // Try loading as a builtin (i.e. already in JS) module, then try .py files
-            co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
+                // Try loading as a builtin (i.e. already in JS) module, then try .py files
+                return Sk.importSearchPathForName(searchFileName, ".js", searchPath)
+            }, function(codeAndPath) {
                 if (codeAndPath) {
                     return {funcname: "$builtinmodule", code: codeAndPath.code,
                             filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
