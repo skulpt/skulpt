@@ -56,12 +56,16 @@ while (true) {
     write(isBalanced(lines) ? '>>> ' : '... ');
 
     //Read
-    lines.push(readline());
-	
+    var l = readline();
+    if(l===undefined){
+        quit();
+    }
+    lines.push(l);
+
     //See if it is ready to be evaluated;
     if (!isBalanced(lines)) { continue; }
 
-    //it's a onliner
+    //it's a one-liner
     if (lines.length === 1) {
         //if it's a statement that should be printed (not containing an = or def or class or an empty line)
         if (!assignment.test(lines[0]) && !defre.test(lines[0]) && !importre.test(lines[0]) && !comment.test(lines[0]) && lines[0].length > 0) {
