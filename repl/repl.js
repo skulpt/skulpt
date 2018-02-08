@@ -57,7 +57,7 @@ while (true) {
 
     //Read
     var l = readline();
-    if(l===undefined){
+    if (l === undefined) {
         quit();
     }
     lines.push(l);
