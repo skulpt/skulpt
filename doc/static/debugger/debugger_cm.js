@@ -1,6 +1,5 @@
 $(function () {
     var repl = new CodeMirrorREPL('debugger_cm', {
-            mode: "python",
             theme: "solarized light",
         }),
 
