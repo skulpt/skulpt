@@ -134,6 +134,17 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
 
     dict = this["$d"] || this.constructor["$d"];
 
+    if (name == "__class__") {
+        if (value.tp$mro === undefined || value.tp$name === undefined ||
+            value.tp$name === undefined) {
+              throw new Sk.builtin.TypeError(
+                      "attempted to assign non-class to __class__");
+        }
+        this.ob$type = value;
+        this.tp$name = value.tp$name;
+        return;
+    }
+
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
