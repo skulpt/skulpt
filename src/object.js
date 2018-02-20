@@ -135,8 +135,8 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
     dict = this["$d"] || this.constructor["$d"];
 
     if (name == "__class__") {
-        if (value.tp$mro === undefined || value.tp$name === undefined ||
-            value.tp$name === undefined) {
+        if (value["tp$mro"] === undefined || value["tp$name"] === undefined ||
+            value["tp$name"] === undefined) {
             throw new Sk.builtin.TypeError(
                       "attempted to assign non-class to __class__");
         }
