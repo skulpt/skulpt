@@ -1,4 +1,4 @@
-__author__ = 'You'
+__author__ = 'Paul Prescod'
 
 # unit test files should be named test_<your name here>.py
 # this ensures they will automatically be included in the
