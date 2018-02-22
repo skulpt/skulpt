@@ -284,7 +284,15 @@ class IterInheritsTestCase(unittest.TestCase):
         self.assertTrue(list.__contains__(l, 42))
 
 
+    def test_list_modification_loop(self):
+        L = ['a', 'b', 'c', 'd']
+        counter = 0
+        for _ in L:
+            L.pop()
+            counter += 1
 
+        self.assertEqual(counter, 2)
+        self.assertEqual(L, ['a', 'b'])
 
 
 if __name__ == "__main__":

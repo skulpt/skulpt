@@ -655,7 +655,7 @@ Sk.builtin.list_iter_ = function (lst) {
         return new Sk.builtin.list_iter_(lst);
     }
     this.$index = 0;
-    this.lst = lst.v.slice();
+    this.lst = lst.v;
     this.sq$length = this.lst.length;
     this.tp$iter = this;
     this.tp$iternext = function () {
