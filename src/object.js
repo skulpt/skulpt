@@ -117,7 +117,7 @@ goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin
 
 /**
  * @param {string} name
- * @param {object} value
+ * @param {Object} value
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
