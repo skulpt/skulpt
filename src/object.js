@@ -117,7 +117,7 @@ goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin
 
 /**
  * @param {string} name
- * @param {undefined} value
+ * @param {object} value
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
@@ -135,8 +135,8 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
     dict = this["$d"] || this.constructor["$d"];
 
     if (name == "__class__") {
-        if (value["tp$mro"] === undefined || value["tp$name"] === undefined ||
-            value["tp$name"] === undefined) {
+        if (value.tp$mro === undefined || value.tp$name === undefined ||
+            value.tp$name === undefined) {
             throw new Sk.builtin.TypeError(
                       "attempted to assign non-class to __class__");
         }
@@ -196,7 +196,7 @@ Sk.builtin.object.prototype.tp$name = "object";
 
 /**
  * The type object of this class.
- * @type {Sk.builtin.type}
+ * @type {Sk.builtin.type|Object}
  */
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
