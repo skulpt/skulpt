@@ -123,19 +123,24 @@ Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function isatty(self) 
 
 Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function read(self, size) {
     var ret;
-    var len;
+    var len = self.data$.length;
+    var l_size;
     if (self.closed) {
         throw new Sk.builtin.ValueError("I/O operation on closed file");
     }
-    len = self.data$.length;
+
     if (size === undefined) {
-        size = len;
+        l_size = len;
+    } else {
+        l_size = Sk.ffi.remapToJs(size);
     }
-    ret = new Sk.builtin.str(self.data$.substr(self.pos$, size));
+
+    ret = new Sk.builtin.str(self.data$.substr(self.pos$, l_size));
     self.pos$ += size;
     if (self.pos$ >= len) {
         self.pos$ = len;
     }
+
     return ret;
 });
 
@@ -179,8 +184,8 @@ Sk.builtin.file.$readline = function (self, size, prompt) {
     }
 };
 
-Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) { 
-    return Sk.builtin.file.$readline(self, size, undefined); 
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) {
+    return Sk.builtin.file.$readline(self, size, undefined);
 });
 
 Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(self, sizehint) {
@@ -197,18 +202,24 @@ Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(
 });
 
 Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function seek(self, offset, whence) {
+    var l_offset =  Sk.ffi.remapToJs(offset);
+
     if (whence === undefined) {
-        whence = 1;
+        whence = 0;
     }
-    if (whence == 1) {
-        self.pos$ = offset;
-    } else {
-        self.pos$ = self.data$ + offset;
+    if (whence === 0) {
+        self.pos$ = l_offset;
+    } else if (whence == 1) {
+        self.pos$ = self.data$.length + l_offset;
+    } else if (whence == 2) {
+        self.pos$ = self.data$.length + l_offset;
     }
+
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function tell(self) {
-    return self.pos$;
+    return Sk.ffi.remapToPy(self.pos$);
 });
 
 Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(self, size) {

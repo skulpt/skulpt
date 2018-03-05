@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Sk.builtin.module = function () {
+Sk.builtin.module = function module () {
 };
 goog.exportSymbol("Sk.builtin.module", Sk.builtin.module);
 

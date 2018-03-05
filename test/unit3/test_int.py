@@ -415,9 +415,6 @@ class IntTestCases(unittest.TestCase):
 
         bad_int = BadInt()
         # self.assertWarns(DeprecationWarning, lambda: int(bad_int))
-        n = int(bad_int)
-        self.assertEqual(n, 1)
-        self.assertIs(type(n), int)
 
         # bad_int = BadInt2()
         # self.assertWarns(DeprecationWarning, lambda: int(bad_int))

@@ -22,6 +22,49 @@ var Sk = Sk || {}; //jshint ignore:line
  *
  * Any variables that aren't set will be left alone.
  */
+
+Sk.bool_check = function(variable, name) {
+    if (variable === undefined || variable === null || typeof variable !== "boolean") {
+        throw new Error("must specify " + name + " and it must be a boolean");
+    }
+};
+
+Sk.python2 = {
+    print_function: false,
+    division: false,
+    absolute_import: null,
+    unicode_literals: false,
+    // skulpt specific
+    set_repr: false,
+    class_repr: false,
+    inherit_from_object: false,
+    super_args: false,
+    octal_number_literal: false,
+    bankers_rounding: false,
+    python_version: false,
+    dunder_next: false,
+    dunder_round: false,
+    exceptions: false
+};
+
+Sk.python3 = {
+    print_function: true,
+    division: true,
+    absolute_import: null,
+    unicode_literals: true,
+    // skulpt specific
+    set_repr: true,
+    class_repr: true,
+    inherit_from_object: true,
+    super_args: true,
+    octal_number_literal: true,
+    bankers_rounding: true,
+    python_version: true,
+    dunder_next: true,
+    dunder_round: true,
+    exceptions: true
+};
+
 Sk.configure = function (options) {
     "use strict";
     Sk.output = options["output"] || Sk.output;
@@ -52,45 +95,21 @@ Sk.configure = function (options) {
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
-    Sk.__future__ = options["__future__"] || {
-        print_function: false,
-        division: false,
-        absolute_import: null,
-        unicode_literals: false,
-        // skulpt specific
-        set_repr: false,
-        class_repr: false,
-        inherit_from_object: false,
-        super_args: false
-    };
+    Sk.__future__ = options["__future__"] || Sk.python2;
 
-    if (Sk.__future__.print_function === undefined || Sk.__future__.print_function === null || typeof Sk.__future__.print_function !== "boolean") {
-        throw new Error("must specify Sk.__future__.print_function and it must be a boolean");
-    }
-
-    if (Sk.__future__.division === undefined || Sk.__future__.division === null || typeof Sk.__future__.division !== "boolean") {
-        throw new Error("must specify Sk.__future__.division and it must be a boolean");
-    }
-
-    if (Sk.__future__.unicode_literals === undefined || Sk.__future__.unicode_literals === null || typeof Sk.__future__.unicode_literals !== "boolean") {
-        throw new Error("must specify Sk.__future__.unicode_literals and it must be a boolean");
-    }
-
-    if (Sk.__future__.set_repr === undefined || Sk.__future__.set_repr === null || typeof Sk.__future__.set_repr !== "boolean") {
-        throw new Error("must specify Sk.__future__.set_repr and it must be a boolean");
-    }
-
-    if (Sk.__future__.class_repr === undefined || Sk.__future__.class_repr === null || typeof Sk.__future__.class_repr !== "boolean") {
-        throw new Error("must specify Sk.__future__.class_repr and it must be a boolean");
-    }
-
-    if (Sk.__future__.inherit_from_object === undefined || Sk.__future__.inherit_from_object === null || typeof Sk.__future__.inherit_from_object !== "boolean") {
-        throw new Error("must specify Sk.__future__.inherit_from_object and it must be a boolean");
-    }
-
-    if (Sk.__future__.super_args === undefined || Sk.__future__.super_args === null || typeof Sk.__future__.super_args !== "boolean") {
-        throw new Error("must specify Sk.__future__.super_args and it must be a boolean");
-    }
+    Sk.bool_check(Sk.__future__.print_function, "Sk.__future__.print_function");
+    Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
+    Sk.bool_check(Sk.__future__.unicode_literals, "Sk.__future__.unicode_literals");
+    Sk.bool_check(Sk.__future__.set_repr, "Sk.__future__.set_repr");
+    Sk.bool_check(Sk.__future__.class_repr, "Sk.__future__.class_repr");
+    Sk.bool_check(Sk.__future__.inherit_from_object, "Sk.__future__.inherit_from_object");
+    Sk.bool_check(Sk.__future__.super_args, "Sk.__future__.super_args");
+    Sk.bool_check(Sk.__future__.octal_number_literal, "Sk.__future__.octal_number_literal");
+    Sk.bool_check(Sk.__future__.bankers_rounding, "Sk.__future__.bankers_rounding");
+    Sk.bool_check(Sk.__future__.python_version, "Sk.__future__.python_version");
+    Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
+    Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
+    Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
 
     // in __future__ add checks for absolute_import
 
@@ -99,7 +118,7 @@ Sk.configure = function (options) {
 
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
-    
+
     Sk.inputfunTakesPrompt = options["inputfunTakesPrompt"] || false;
     goog.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
 
@@ -170,7 +189,11 @@ Sk.configure = function (options) {
     }
 
     Sk.misceval.softspace_ = false;
+
+    Sk.switch_version("round$", Sk.__future__.dunder_round);
+    Sk.switch_version("next$", Sk.__future__.dunder_next);
 };
+
 goog.exportSymbol("Sk.configure", Sk.configure);
 
 /*
@@ -273,6 +296,69 @@ if (!Sk.inBrowser) {
 
 Sk.inputfun = function (args) {
     return window.prompt(args);
+};
+
+// Information about method names and their internal functions for
+// methods that differ (in visibility or name) between Python 2 and 3.
+//
+// Format:
+//   internal function: {
+//     "classes" : <array of affected classes>,
+//     2 : <visible Python 2 method name> or null if none
+//     3 : <visible Python 3 method name> or null if none
+//   },
+//   ...
+
+Sk.setup_method_mappings = function () {
+    return {
+        "round$": {
+            "classes": [Sk.builtin.float_,
+                        Sk.builtin.int_,
+                        Sk.builtin.nmber],
+            2: null,
+            3: "__round__"
+        },
+        "next$": {
+            "classes": [Sk.builtin.dict_iter_,
+                        Sk.builtin.list_iter_,
+                        Sk.builtin.set_iter_,
+                        Sk.builtin.str_iter_,
+                        Sk.builtin.tuple_iter_,
+                        Sk.builtin.generator,
+                        Sk.builtin.enumerate,
+                        Sk.builtin.iterator],
+            2: "next",
+            3: "__next__"
+        }
+    };
+};
+
+Sk.switch_version = function (method_to_map, python3) {
+    var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
+
+    mappings = Sk.setup_method_mappings();
+
+    mapping = mappings[method_to_map];
+
+    if (python3) {
+        newmeth = mapping[3];
+        oldmeth = mapping[2];
+    } else {
+        newmeth = mapping[2];
+        oldmeth = mapping[3];
+    }
+
+    classes = mapping["classes"];
+    len = classes.length;
+    for (idx = 0; idx < len; idx++) {
+        klass = classes[idx];
+        if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
+            delete klass.prototype[oldmeth];
+        }
+        if (newmeth) {
+            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
+        }
+    }
 };
 
 goog.exportSymbol("Sk.__future__", Sk.__future__);

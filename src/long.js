@@ -11,7 +11,7 @@
  * Constructor for Python long. Also used for builtin long().
  *
  * @extends {Sk.builtin.numtype}
- * 
+ *
  * @param {*} x Object or number to convert to Python long.
  * @param {number=} base Optional base.
  * @return {Sk.builtin.lng} Python long
@@ -75,6 +75,56 @@ Sk.builtin.lng.prototype.nb$int_ = function() {
     }
 
     return new Sk.builtin.int_(this.toInt$());
+};
+
+Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.__future__.exceptions) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(obj);
+};
+
+Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
+    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+
+    var result, multiplier, number, num10, rounded, bankRound, ndigs;
+
+    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+    }
+
+    number = Sk.builtin.asnum$(self);
+    if (ndigits === undefined) {
+        ndigs = 0;
+    } else {
+        ndigs = Sk.misceval.asIndex(ndigits);
+    }
+
+    if (Sk.__future__.bankers_rounding) {
+        num10 = number * Math.pow(10, ndigs);
+        rounded = Math.round(num10);
+        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        result = bankRound / Math.pow(10, ndigs);
+        return new Sk.builtin.lng(result);
+    } else {
+        multiplier = Math.pow(10, ndigs);
+        result = Math.round(number * multiplier) / multiplier;
+
+        return new Sk.builtin.lng(result);
+    }
 };
 
 Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
@@ -204,7 +254,7 @@ Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtr
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
     var thisAsFloat;
-    
+
     if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$multiply(other);
@@ -443,7 +493,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
         return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
     }
 
-    if (n instanceof Sk.builtin.float_ || 
+    if (n instanceof Sk.builtin.float_ ||
         (n instanceof Sk.builtin.int_ && n.v < 0)) {
         thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$power(n);
@@ -684,7 +734,7 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
         other = new Sk.builtin.lng(other);
     }
 
-    if (other instanceof Sk.builtin.int_ || 
+    if (other instanceof Sk.builtin.int_ ||
         (other instanceof Sk.builtin.float_ && other.v % 1 === 0)) {
         otherAsLong = new Sk.builtin.lng(other.v);
         return this.longCompare(otherAsLong);

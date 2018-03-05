@@ -656,24 +656,28 @@ goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
 Sk.misceval.print_ = function (x) {
-    // this was function print(x)   not sure why...
-    var isspace;
     var s;
+
+    function isspace(c) {
+        return c === "\n" || c === "\t" || c === "\r";
+    }
+
     if (Sk.misceval.softspace_) {
         if (x !== "\n") {
             Sk.output(" ");
         }
         Sk.misceval.softspace_ = false;
     }
+
     s = new Sk.builtin.str(x);
-    var sys = Sk.importModule("sys");
-    Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
-    isspace = function (c) {
-        return c === "\n" || c === "\t" || c === "\r";
-    };
-    if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
-        Sk.misceval.softspace_ = true;
-    }
+
+    return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
+        return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
+    }, function () {
+        if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
+            Sk.misceval.softspace_ = true;
+        }
+    });
 };
 goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 
@@ -1239,6 +1243,29 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
 
 /**
+ * Do the boilerplate suspension stuff.
+ */
+Sk.misceval.promiseToSuspension = function(promise) {
+    var suspension = new Sk.misceval.Suspension();
+
+    suspension.resume = function() {
+        if (suspension.data["error"]) {
+            throw suspension.data["error"];
+        }
+
+        return suspension.data["result"];
+    };
+
+    suspension.data = {
+        type: "Sk.promise",
+        promise: promise
+    };
+
+    return suspension;
+};
+goog.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
+
+/**
  * Constructs a class object given a code object representing the body
  * of the class, the name of the class, and the list of bases.
  *
@@ -1286,6 +1313,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     _locals = new Sk.builtin.dict(_locals);
 
     klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
+
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
