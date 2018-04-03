@@ -78,7 +78,6 @@ Files = [
         'src/builtin.js',
         'src/fromcodepoint.js',   # should become unnecessary, eventually
         'src/errors.js',
-        'src/native.js',
         'src/method.js',
         'src/misceval.js',
         'src/seqtype.js',

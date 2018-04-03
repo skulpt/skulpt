@@ -1249,7 +1249,7 @@ var $builtinmodule = function (name) {
     });
 
 
-    mod.stroke = new Sk.builtin.func(function (r, g, b) {
+    mod.stroke = new Sk.builtin.func(function (r, g, b, alpha) {
 
         if (typeof(g) !== "undefined") {
             g = g.v;
@@ -1257,8 +1257,11 @@ var $builtinmodule = function (name) {
         if (typeof(b) !== "undefined") {
             b = b.v;
         }
+        if (typeof(alpha) !== "undefined") {
+            alpha = alpha.v;
+        }
 
-        mod.processing.stroke(r.v, g, b);
+        mod.processing.stroke(r.v, g, b, alpha);
 
     });
 

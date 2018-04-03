@@ -1226,6 +1226,29 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
 
 /**
+ * Do the boilerplate suspension stuff.
+ */
+Sk.misceval.promiseToSuspension = function(promise) {
+    var suspension = new Sk.misceval.Suspension();
+
+    suspension.resume = function() {
+        if (suspension.data["error"]) {
+            throw suspension.data["error"];
+        }
+
+        return suspension.data["result"];
+    };
+
+    suspension.data = {
+        type: "Sk.promise",
+        promise: promise
+    };
+
+    return suspension;
+};
+goog.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
+
+/**
  * Constructs a class object given a code object representing the body
  * of the class, the name of the class, and the list of bases.
  *

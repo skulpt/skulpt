@@ -662,8 +662,8 @@ my earlier hello world style example.
     </html>
 
 
-There are some important differences between this version, and the
-version and the non-module version. First off, the call to Sk.configure
+There are some important differences between this version
+and the non-module version. First off, the call to Sk.configure
 contains another key value pair which sets up a specialized read
 function. This is the function that is responsible for returning your
 module out of the large array of files that are contained in the
