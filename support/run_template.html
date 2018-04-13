@@ -71,6 +71,15 @@ function runit(myDiv) {
         __future__: %(p3)s
     });
 
+    Sk.onBeforeImport = function() {
+        debugger;
+        return Sk.misceval.promiseToSuspension(new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                resolve();
+            }, 10);
+        }));
+    };
+
     var myPromise = Sk.misceval.asyncToPromise(function() {
             return Sk.importMainWithBody("<stdin>",true,prog,true);
     });
