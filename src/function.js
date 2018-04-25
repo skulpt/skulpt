@@ -211,7 +211,10 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
         }
     }
 
-    this.__class__ = Sk.builtin.func;
+    this["$d"] = {
+        "__name__": code["co_name"], 
+        "__class__": Sk.builtin.func
+    };
     this.func_closure = closure;
     return this;
 };
