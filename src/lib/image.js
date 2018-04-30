@@ -109,6 +109,19 @@ $builtinmodule = function (name) {
             }
         });
 
+        // adding pep8 compliant alias to function
+        $loc.set_delay = new Sk.builtin.func(function (self, delay, interval) {
+            var i;
+            Sk.builtin.pyCheckArgs("set_delay", arguments, 2, 3);
+            self.delay = Sk.ffi.remapToJs(delay);
+            i = Sk.builtin.asnum$(interval);
+            if (!i) {
+                self.updateInterval = 1;
+            } else {
+                self.updateInterval = i;
+            }
+        });
+
 
         //get a one-dimensional array of pixel objects - Zhu
         $loc.getPixels = new Sk.builtin.func(function (self) {
@@ -123,6 +136,21 @@ $builtinmodule = function (name) {
             }
             return new Sk.builtin.tuple(arr);
         });
+
+        // adding pep8 compliant alias to function
+        $loc.get_pixels = new Sk.builtin.func(function (self) {
+            var arr = [];//initial array
+            var i;
+            Sk.builtin.pyCheckArgs("get_pixels", arguments, 1, 1);
+
+            for (i = 0; i < self.image.height * self.image.width; i++) {
+
+                arr[i] = Sk.misceval.callsim(self.getPixel, self,
+                    i % self.image.width, Math.floor(i / self.image.width));
+            }
+            return new Sk.builtin.tuple(arr);
+        });
+
 
         $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
             var red;
@@ -139,6 +167,24 @@ $builtinmodule = function (name) {
             blue = self.imagedata.data[index + 2];
             return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
         });
+
+        // adding pep8 compliant alias to function
+        $loc.get_pixel = new Sk.builtin.func(function (self, x, y) {
+            var red;
+            var blue;
+            var green;
+            var index;
+            Sk.builtin.pyCheckArgs("get_pixel", arguments, 3, 3);
+            x = Sk.builtin.asnum$(x);
+            y = Sk.builtin.asnum$(y);
+            checkPixelRange(self, x, y);
+            index = (y * 4) * self.width + (x * 4);
+            red = self.imagedata.data[index];
+            green = self.imagedata.data[index + 1];
+            blue = self.imagedata.data[index + 2];
+            return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
+        });
+
 
         updateCanvasAndSuspend = function (self, x, y) {
             var susp = new Sk.misceval.Suspension();
@@ -192,6 +238,22 @@ $builtinmodule = function (name) {
             return updateCanvasAndSuspend(self, x, y);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.set_pixel = new Sk.builtin.func(function (self, x, y, pix) {
+            var index;
+            Sk.builtin.pyCheckArgs("set_pixel", arguments, 4, 4);
+            x = Sk.builtin.asnum$(x);
+            y = Sk.builtin.asnum$(y);
+            checkPixelRange(self, x, y);
+            index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getRed, pix));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
+            self.imagedata.data[index + 3] = 255;
+            return updateCanvasAndSuspend(self, x, y);
+        });
+
+
         // update the image with the pixel at the given count - Zhu
         $loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel) {
             var x;
@@ -210,6 +272,25 @@ $builtinmodule = function (name) {
             return updateCanvasAndSuspend(self, x, y);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.set_pixel_at = new Sk.builtin.func(function (self, count, pixel) {
+            var x;
+            var y;
+            var index;
+            Sk.builtin.pyCheckArgs("set_pixel_at", arguments, 3, 3);
+            count = Sk.builtin.asnum$(count);
+            x = count % self.image.width;
+            y = Math.floor(count / self.image.width);
+            checkPixelRange(self, x, y);
+            index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index + 3] = 255;
+            return updateCanvasAndSuspend(self, x, y);
+        });
+
+
         // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
         $loc.updatePixel = new Sk.builtin.func(function (self, pixel) {
             var x;
@@ -227,15 +308,47 @@ $builtinmodule = function (name) {
             return updateCanvasAndSuspend(self, x, y);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.update_pixel = new Sk.builtin.func(function (self, pixel) {
+            var x;
+            var y;
+            var index;
+            Sk.builtin.pyCheckArgs("update_pixel", arguments, 2, 2);
+            x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
+            y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
+            checkPixelRange(self, x, y);
+            index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index + 3] = 255;
+            return updateCanvasAndSuspend(self, x, y);
+        });
+
+
         $loc.getHeight = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getHeight", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.height);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.get_height = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_height", arguments, 1, 1);
+            return new Sk.builtin.int_(self.image.height);
+        });
+
+
         $loc.getWidth = new Sk.builtin.func(function (self, titlestring) {
             Sk.builtin.pyCheckArgs("getWidth", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.width);
         });
+
+        // adding pep8 compliant alias to function
+        $loc.get_width = new Sk.builtin.func(function (self, titlestring) {
+            Sk.builtin.pyCheckArgs("get_width", arguments, 1, 1);
+            return new Sk.builtin.int_(self.image.width);
+        });
+
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
             var susp;
@@ -315,8 +428,20 @@ $builtinmodule = function (name) {
             return Sk.builtin.assk$(self.red);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.get_red = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_red", arguments, 1, 1);
+            return Sk.builtin.assk$(self.red);
+        });
+
         $loc.getGreen = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getGreen", arguments, 1, 1);
+            return Sk.builtin.assk$(self.green);
+        });
+
+        // adding pep8 compliant alias to function
+        $loc.get_green = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_green", arguments, 1, 1);
             return Sk.builtin.assk$(self.green);
         });
 
@@ -325,8 +450,20 @@ $builtinmodule = function (name) {
             return Sk.builtin.assk$(self.blue);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.get_blue = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_blue", arguments, 1, 1);
+            return Sk.builtin.assk$(self.blue);
+        });
+
         $loc.getX = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgs("getX", arguments, 1, 1);
+            return Sk.builtin.assk$(self.x);
+        });
+
+        // adding pep8 compliant alias to function
+        $loc.get_x = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_x", arguments, 1, 1);
             return Sk.builtin.assk$(self.x);
         });
 
@@ -335,8 +472,20 @@ $builtinmodule = function (name) {
             return Sk.builtin.assk$(self.y);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.get_y = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgs("get_y", arguments, 1, 1);
+            return Sk.builtin.assk$(self.y);
+        });
+
         $loc.setRed = new Sk.builtin.func(function (self, r) {
             Sk.builtin.pyCheckArgs("setRed", arguments, 2, 2);
+            self.red = Sk.builtin.asnum$(r);
+        });
+
+        // adding pep8 compliant alias to function
+        $loc.set_red = new Sk.builtin.func(function (self, r) {
+            Sk.builtin.pyCheckArgs("set_red", arguments, 2, 2);
             self.red = Sk.builtin.asnum$(r);
         });
 
@@ -345,8 +494,20 @@ $builtinmodule = function (name) {
             self.green = Sk.builtin.asnum$(g);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.set_green = new Sk.builtin.func(function (self, g) {
+            Sk.builtin.pyCheckArgs("set_green", arguments, 2, 2);
+            self.green = Sk.builtin.asnum$(g);
+        });
+
         $loc.setBlue = new Sk.builtin.func(function (self, b) {
             Sk.builtin.pyCheckArgs("setBlue", arguments, 2, 2);
+            self.blue = Sk.builtin.asnum$(b);
+        });
+
+        // adding pep8 compliant alias to function
+        $loc.set_blue = new Sk.builtin.func(function (self, b) {
+            Sk.builtin.pyCheckArgs("set_blue", arguments, 2, 2);
             self.blue = Sk.builtin.asnum$(b);
         });
 
@@ -355,8 +516,20 @@ $builtinmodule = function (name) {
             self.x = Sk.builtin.asnum$(x);
         });
 
+        // adding pep8 compliant alias to function
+        $loc.set_x = new Sk.builtin.func(function (self, x) {
+            Sk.builtin.pyCheckArgs("set_x", arguments, 2, 2);
+            self.x = Sk.builtin.asnum$(x);
+        });
+
         $loc.setY = new Sk.builtin.func(function (self, y) {
             Sk.builtin.pyCheckArgs("setY", arguments, 2, 2);
+            self.y = Sk.builtin.asnum$(y);
+        });
+
+        // adding pep8 compliant alias to function
+        $loc.set_y = new Sk.builtin.func(function (self, y) {
+            Sk.builtin.pyCheckArgs("set_y", arguments, 2, 2);
             self.y = Sk.builtin.asnum$(y);
         });
 
