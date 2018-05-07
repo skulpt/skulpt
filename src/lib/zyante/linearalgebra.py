@@ -61,8 +61,8 @@ def latexMatrix(matrix):
         latexOutput += str(matrix[i][0])
         for j in range(1, numCols):
             latexOutput += ' & %s' % matrix[i][j]
-        latexOutput += ' \\\\\\\\ '
-    return '\\\\begin{bmatrix} %s \\end{bmatrix}' % latexOutput
+        latexOutput += ' \\\\ '
+    return '\\begin{bmatrix} %s \\end{bmatrix}' % latexOutput
 
 def create_identity_matrix(n):
     '''
@@ -182,7 +182,7 @@ def generate_equations_from_matrix(matrix):
     number_of_equations = len(matrix)
     number_of_variables = len(matrix[0]) - 1
 
-    latex_output = '\\\\begin{align}'
+    latex_output = '\\begin{align}'
     for i in range(number_of_equations):
 
         '''
@@ -191,7 +191,7 @@ def generate_equations_from_matrix(matrix):
         Then add =, the constant term, then skip to the next equation.
         '''
         if all([j == 0 for j in matrix[i][:-1]]):
-            latex_output += '0 &= %d \\\\\\\\ ' % matrix[i][-1]
+            latex_output += '0 &= %d \\\\ ' % matrix[i][-1]
             continue
 
         # |is_first_term_reached| is a flag used to prevent + from appearing in the first coefficient of an equation.
@@ -230,6 +230,6 @@ def generate_equations_from_matrix(matrix):
             is_first_term_reached = True
 
         latex_output += '&= %d' % matrix[i][number_of_variables]
-        latex_output += ' \\\\\\\\ '
-    latex_output += '\\\\end{align}'
+        latex_output += ' \\\\ '
+    latex_output += '\\end{align}'
     return latex_output
