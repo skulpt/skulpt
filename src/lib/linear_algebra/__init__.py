@@ -233,3 +233,71 @@ def generate_equations_from_matrix(matrix):
         latex_output += ' \\\\ '
     latex_output += '\\end{align}'
     return latex_output
+
+def transpose_matrix(matrix):
+    '''
+    Returns the transpose of a matrix.
+    '''
+    return map(list,zip(matrix))
+
+def get_minor_matrix(matrix, row_in_matrix, col_in_matrix):
+    '''
+    Returns the submatrix of m used to calculate the minor corresponding to m[i][j].
+    Example: Let m = [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ], i = 0, j = 0
+    Function returns: [ [5, 6], [8, 9] ]
+    More info: https://en.wikipedia.org/wiki/Minor_(linear_algebra)
+    '''
+    return [ row[:col_in_matrix] + row[col_in_matrix + 1:] for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) ]
+
+def get_determinant(matrix):
+    '''
+    Recursively finds the determinant of a matrix using the Laplace expansion.
+    Base case: the determinant of a 1 x 1 matrix is the single entry of the matrix.
+    More info: https://en.wikipedia.org/wiki/Laplace_expansion
+    Raises ValueError if the matrix is non-square.
+    '''
+    if len(matrix) != len(matrix[0]):
+        raise ValueError('Determinant of a non-square matrix is undefined')
+
+    size_of_matrix = len(matrix)
+
+    # Base case: the determinant of a 1 x 1 matrix is the single entry of the matrix
+    if size_of_matrix == 1:
+        return matrix[0][0]
+
+    # Recursive case: the determinant of an n x n matrix is the sum of cofactors along the top row
+    determinant = 0
+    for cofactor in range(size_of_matrix):
+        determinant += ((-1) ** cofactor ) * matrix[0][cofactor] * get_determinant(get_minor_matrix(matrix, 0, cofactor))
+    return determinant
+
+def invert_matrix(matrix):
+    '''
+    Finds the inverse of a matrix using the adjugate method.
+    Raises ValueError if the matrix is non-square.
+    Raises ValueError if the matrix is singular i.e. determinant is 0.
+    More info: https://en.wikipedia.org/wiki/Invertible_matrix#Analytic_solution
+    '''
+    if len(matrix) != len(matrix[0]):
+        raise ValueError('Inverse of a non-square matrix is undefined')
+
+    determinant = get_determinant(matrix)
+    if determinant == 0:
+        raise ValueError('Matrix is singular, inverse does not exist')
+
+    size_of_matrix = len(matrix)
+    adjugate_matrix = [ [get_determinant(get_minor_matrix(matrix, col, row)) * (-1) ** (col + row) for col in range(size_of_matrix)] for row in range(size_of_matrix) ]
+    inverse_matrix = [ [adjugate_matrix[row][col] / float(determinant) for col in range(size_of_matrix)] for row in range(size_of_matrix) ]
+    return inverse_matrix
+
+def matrix_to_ints(matrix):
+    '''
+    Converts all of the entries in a matrix to integers.
+    This is useful so that student responses in matrix questions are checked precisely.
+    Ex:
+    matrix = [ [1.0, 2.0], [-1.0, 0.0] ]
+    int_matrix = matrix_to_ints(matrix)
+    int_matrix is [ [1, 2], [-1, 0] ]
+    '''
+    int_matrix = [ [int(matrix[i][j]) for j in range(len(matrix[0]))] for i in range(len(matrix)) ]
+    return int_matrix
