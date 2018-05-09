@@ -247,7 +247,10 @@ def get_minor_matrix(matrix, row_in_matrix, column_in_matrix):
     Function returns: [ [5, 6], [8, 9] ]
     More info: https://en.wikipedia.org/wiki/Minor_(linear_algebra)
     '''
-    return [ row[:column_in_matrix] + row[column_in_matrix + 1:] for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) ]
+    return [ 
+        row[:column_in_matrix] + row[column_in_matrix + 1:] 
+        for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) 
+    ]
 
 def get_determinant(matrix):
     '''
@@ -266,10 +269,11 @@ def get_determinant(matrix):
         return matrix[0][0]
 
     # Recursive case: the determinant of an n x n matrix is the sum of cofactors along the top row
-    determinant = 0
-    for cofactor in range(size_of_matrix):
-        determinant += ((-1) ** cofactor ) * matrix[0][cofactor] * get_determinant(get_minor_matrix(matrix, 0, cofactor))
-    return determinant
+    determinant_of_minors = [
+        ((-1) ** cofactor ) * matrix[0][cofactor] * get_determinant(get_minor_matrix(matrix, 0, cofactor))
+        for cofactor in range(size_of_matrix)
+    ]
+    return sum(determinant_of_minors)
 
 def invert_matrix(matrix):
     '''
