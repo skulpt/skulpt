@@ -240,14 +240,14 @@ def transpose_matrix(matrix):
     '''
     return map(list, zip(*matrix))
 
-def get_minor_matrix(matrix, row_in_matrix, col_in_matrix):
+def get_minor_matrix(matrix, row_in_matrix, column_in_matrix):
     '''
-    Returns the submatrix of m used to calculate the minor corresponding to m[i][j].
-    Example: Let m = [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ], i = 0, j = 0
+    Returns the submatrix of matrix used to calculate the minor corresponding to matrix[row_in_matrix][column_in_matrix].
+    Example: Let matrix = [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ], row_in_matrix = 0, column_in_matrix = 0
     Function returns: [ [5, 6], [8, 9] ]
     More info: https://en.wikipedia.org/wiki/Minor_(linear_algebra)
     '''
-    return [ row[:col_in_matrix] + row[col_in_matrix + 1:] for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) ]
+    return [ row[:column_in_matrix] + row[column_in_matrix + 1:] for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) ]
 
 def get_determinant(matrix):
     '''
