@@ -238,7 +238,7 @@ def transpose_matrix(matrix):
     '''
     Returns the transpose of a matrix.
     '''
-    return map(list,zip(*matrix))
+    return map(list, zip(*matrix))
 
 def get_minor_matrix(matrix, row_in_matrix, col_in_matrix):
     '''
