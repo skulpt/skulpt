@@ -286,9 +286,20 @@ def invert_matrix(matrix):
         raise ValueError('Matrix is singular, inverse does not exist')
 
     size_of_matrix = len(matrix)
-    adjugate_matrix = [ [get_determinant(get_minor_matrix(matrix, col, row)) * (-1) ** (col + row) for col in range(size_of_matrix)] for row in range(size_of_matrix) ]
-    inverse_matrix = [ [adjugate_matrix[row][col] / float(determinant) for col in range(size_of_matrix)] for row in range(size_of_matrix) ]
-    return inverse_matrix
+    adjugate_matrix = [
+        [ 
+            get_determinant(get_minor_matrix(matrix, column, row)) * ((-1) ** (column + row)) 
+            for column in range(size_of_matrix) 
+        ] 
+        for row in range(size_of_matrix) 
+    ]
+    return [ 
+        [
+            adjugate_matrix[row][column] / float(determinant)
+            for column in range(size_of_matrix)
+        ] 
+        for row in range(size_of_matrix)
+    ]
 
 def matrix_to_ints(matrix):
     '''
@@ -299,5 +310,9 @@ def matrix_to_ints(matrix):
     int_matrix = matrix_to_ints(matrix)
     int_matrix is [ [1, 2], [-1, 0] ]
     '''
-    int_matrix = [ [int(matrix[i][j]) for j in range(len(matrix[0]))] for i in range(len(matrix)) ]
-    return int_matrix
+    return [ 
+        [
+            int(element) for element in row_elements
+        ]
+        for row_elements in matrix
+    ]
