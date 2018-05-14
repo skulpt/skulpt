@@ -97,7 +97,7 @@ $builtinmodule = function (name) {
             }
         };
 
-        let setdelay = new Sk.builtin.func(function (self, delay, interval) {
+        var setdelay = new Sk.builtin.func(function (self, delay, interval) {
             var i;
             Sk.builtin.pyCheckArgs("setdelay", arguments, 2, 3);
             self.delay = Sk.ffi.remapToJs(delay);
@@ -115,7 +115,7 @@ $builtinmodule = function (name) {
 
 
         //get a one-dimensional array of pixel objects - Zhu
-        let getpixels = function (self) {
+        var getpixels = function (self) {
             var arr = [];//initial array
             var i;
             Sk.builtin.pyCheckArgs("getpixels", arguments, 1, 1);
@@ -133,7 +133,7 @@ $builtinmodule = function (name) {
         $loc.getPixels = new Sk.builtin.func(getpixels);
 
 
-        let getpixel = function (self, x, y) {
+        var getpixel = function (self, x, y) {
             var red;
             var blue;
             var green;
@@ -192,7 +192,7 @@ $builtinmodule = function (name) {
             return susp;
         };
 
-        let setpixel = function (self, x, y, pix) {
+        var setpixel = function (self, x, y, pix) {
             var index;
             Sk.builtin.pyCheckArgs("setpixel", arguments, 4, 4);
             x = Sk.builtin.asnum$(x);
@@ -212,7 +212,7 @@ $builtinmodule = function (name) {
 
 
         // update the image with the pixel at the given count - Zhu
-        let setpixelat = function (self, count, pixel) {
+        var setpixelat = function (self, count, pixel) {
             var x;
             var y;
             var index;
@@ -235,7 +235,7 @@ $builtinmodule = function (name) {
 
 
         // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
-        let updatepixel = function (self, pixel) {
+        var updatepixel = function (self, pixel) {
             var x;
             var y;
             var index;
@@ -256,7 +256,7 @@ $builtinmodule = function (name) {
         $loc.updatePixel = new Sk.builtin.func(updatepixel);
 
 
-        let getheight = function (self) {
+        var getheight = function (self) {
             Sk.builtin.pyCheckArgs("getheight", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.height);
         };
@@ -266,7 +266,7 @@ $builtinmodule = function (name) {
         $loc.getHeight = new Sk.builtin.func(getheight);
 
 
-        let getwidth = function (self, titlestring) {
+        var getwidth = function (self, titlestring) {
             Sk.builtin.pyCheckArgs("getwidth", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.width);
         };
@@ -349,7 +349,7 @@ $builtinmodule = function (name) {
             self.y = Sk.builtin.asnum$(y);
         });
 
-        let getred = function (self) {
+        var getred = function (self) {
             Sk.builtin.pyCheckArgs("getred", arguments, 1, 1);
             return Sk.builtin.assk$(self.red);
         };
@@ -358,7 +358,7 @@ $builtinmodule = function (name) {
         $loc.get_red = new Sk.builtin.func(getred);
         $loc.getRed = new Sk.builtin.func(getred);
 
-        let getgreen = function (self) {
+        var getgreen = function (self) {
             Sk.builtin.pyCheckArgs("getgreen", arguments, 1, 1);
             return Sk.builtin.assk$(self.green);
         };
@@ -367,7 +367,7 @@ $builtinmodule = function (name) {
         $loc.get_green = new Sk.builtin.func(getgreen);
         $loc.getGreen = new Sk.builtin.func(getgreen);
 
-        let getblue = function (self) {
+        var getblue = function (self) {
             Sk.builtin.pyCheckArgs("getblue", arguments, 1, 1);
             return Sk.builtin.assk$(self.blue);
         };
@@ -376,7 +376,7 @@ $builtinmodule = function (name) {
         $loc.get_blue = new Sk.builtin.func(getblue);
         $loc.getBlue = new Sk.builtin.func(getblue);
 
-        let getx = function (self) {
+        var getx = function (self) {
             Sk.builtin.pyCheckArgs("getx", arguments, 1, 1);
             return Sk.builtin.assk$(self.x);
         };
@@ -385,7 +385,7 @@ $builtinmodule = function (name) {
         $loc.get_x = new Sk.builtin.func(getx);
         $loc.getX = new Sk.builtin.func(getx);
 
-        let gety = function (self) {
+        var gety = function (self) {
             Sk.builtin.pyCheckArgs("gety", arguments, 1, 1);
             return Sk.builtin.assk$(self.y);
         };
@@ -394,7 +394,7 @@ $builtinmodule = function (name) {
         $loc.get_y = new Sk.builtin.func(gety);
         $loc.getY = new Sk.builtin.func(gety);
 
-        let setred = function (self, r) {
+        var setred = function (self, r) {
             Sk.builtin.pyCheckArgs("setred", arguments, 2, 2);
             self.red = Sk.builtin.asnum$(r);
         };
@@ -403,7 +403,7 @@ $builtinmodule = function (name) {
         $loc.set_red = new Sk.builtin.func(setred);
         $loc.setRed = new Sk.builtin.func(setred);
 
-        let setgreen = function (self, g) {
+        var setgreen = function (self, g) {
             Sk.builtin.pyCheckArgs("setgreen", arguments, 2, 2);
             self.green = Sk.builtin.asnum$(g);
         };
@@ -412,7 +412,7 @@ $builtinmodule = function (name) {
         $loc.set_green = new Sk.builtin.func(setgreen);
         $loc.setGreen = new Sk.builtin.func(setgreen);
 
-        let setblue = function (self, b) {
+        var setblue = function (self, b) {
             Sk.builtin.pyCheckArgs("setblue", arguments, 2, 2);
             self.blue = Sk.builtin.asnum$(b);
         };
@@ -421,7 +421,7 @@ $builtinmodule = function (name) {
         $loc.set_blue = new Sk.builtin.func(setblue);
         $loc.setBlue = new Sk.builtin.func(setblue);
 
-        let setx = function (self, x) {
+        var setx = function (self, x) {
             Sk.builtin.pyCheckArgs("setx", arguments, 2, 2);
             self.x = Sk.builtin.asnum$(x);
         };
@@ -430,7 +430,7 @@ $builtinmodule = function (name) {
         $loc.set_x = new Sk.builtin.func(setx);
         $loc.setX = new Sk.builtin.func(setx);
 
-        let sety = function (self, y) {
+        var sety = function (self, y) {
             Sk.builtin.pyCheckArgs("sety", arguments, 2, 2);
             self.y = Sk.builtin.asnum$(y);
         };
