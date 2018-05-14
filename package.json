@@ -2,7 +2,9 @@
   "name": "skulpt",
   "version": "1.0.0",
   "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
-  "keywords": ["skulpt"],
+  "keywords": [
+    "skulpt"
+  ],
   "scripts": {
     "testdebug": "./skulpt.py testdebug",
     "regengooglocs": "./skulpt.py regengooglocs",
@@ -20,7 +22,6 @@
     "vfs": "./skulpt.py vfs",
     "host": "./skulpt.py host",
     "repl": "./skulpt.py repl",
-
     "build": "./skulpt.py dist",
     "build-min": "./skulpt.py dist -u",
     "test": "./skulpt.py test",
@@ -42,6 +43,6 @@
   "devDependencies": {
     "jshint": "~2.5.2",
     "jscs": "~1.12",
-    "jsdoc": "~3.3.2"
+    "jsdoc": ">=3.5.5"
   }
 }
