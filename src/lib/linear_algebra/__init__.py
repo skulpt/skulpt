@@ -1,5 +1,6 @@
 import math, random
 
+
 def makeRandomMatrix(row, column, exclusion_list=[]):
     '''
     Return a matrix with the given number of rows and columns, and randomly-generated, unique values.
@@ -41,6 +42,7 @@ def makeRandomMatrix(row, column, exclusion_list=[]):
     # Build matrix from the shuffled values.
     return [[numeric_list.pop() for i in range(column)] for j in range (row)]
 
+
 def dot_product(x_vector, y_vector):
     '''
     Calculates the dot product of x_vector and y_vector.
@@ -50,6 +52,7 @@ def dot_product(x_vector, y_vector):
     if x_length != len(y_vector):
         raise IndexError('Vectors in dot product must have same dimensions')
     return sum([x_vector[i] * y_vector[i] for i in range(x_length)])
+
 
 def latexMatrix(matrix):
     '''Return a string of LaTex that prints the given matrix.'''
@@ -64,6 +67,7 @@ def latexMatrix(matrix):
         latexOutput += ' \\\\ '
     return '\\begin{bmatrix} %s \\end{bmatrix}' % latexOutput
 
+
 def create_identity_matrix(n):
     '''
     Generates an n by n identity matrix. Ex: If n is 3, return:
@@ -74,6 +78,7 @@ def create_identity_matrix(n):
     ]
     '''
     return [ [ 1 if i == j else 0 for i in range(n) ] for j in range(n) ]
+
 
 def create_swap_elementary_matrix(n, row1 = None, row2 = None):
     '''
@@ -93,6 +98,7 @@ def create_swap_elementary_matrix(n, row1 = None, row2 = None):
     elementary_matrix[row1 - 1], elementary_matrix[row2 - 1] = elementary_matrix[row2 - 1], elementary_matrix[row1 - 1]
 
     return elementary_matrix
+
 
 def create_scale_elementary_matrix(n, row = None, factor = None):
     '''
@@ -114,6 +120,7 @@ def create_scale_elementary_matrix(n, row = None, factor = None):
     elementary_matrix[row - 1] = [ factor * i for i in elementary_matrix[row - 1] ]
 
     return elementary_matrix
+
 
 def create_add_elementary_matrix(n, factor = None, from_row = None, to_row = None):
     '''
@@ -144,6 +151,7 @@ def create_add_elementary_matrix(n, factor = None, from_row = None, to_row = Non
 
     return elementary_matrix
 
+
 def multiply_matrix(left_matrix, right_matrix):
     '''
     Multiplies two matrices left_matrix and right_matrix.
@@ -165,6 +173,7 @@ def multiply_matrix(left_matrix, right_matrix):
                 product_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j]
 
     return product_matrix
+
 
 def generate_equations_from_matrix(matrix):
     '''
@@ -234,11 +243,13 @@ def generate_equations_from_matrix(matrix):
     latex_output += '\\end{align}'
     return latex_output
 
+
 def transpose_matrix(matrix):
     '''
     Returns the transpose of a matrix.
     '''
     return map(list, zip(*matrix))
+
 
 def get_minor_matrix(matrix, row_in_matrix, column_in_matrix):
     '''
@@ -251,6 +262,7 @@ def get_minor_matrix(matrix, row_in_matrix, column_in_matrix):
         row[:column_in_matrix] + row[column_in_matrix + 1:] 
         for row in (matrix[:row_in_matrix] + matrix[row_in_matrix + 1:]) 
     ]
+
 
 def get_determinant(matrix):
     '''
@@ -274,6 +286,7 @@ def get_determinant(matrix):
         for cofactor in range(size_of_matrix)
     ]
     return sum(determinant_of_minors)
+
 
 def invert_matrix(matrix):
     '''
@@ -305,6 +318,7 @@ def invert_matrix(matrix):
         for row in range(size_of_matrix)
     ]
 
+
 def matrix_to_ints(matrix):
     '''
     Converts all of the entries in a matrix to integers.
@@ -321,6 +335,7 @@ def matrix_to_ints(matrix):
         for row_elements in matrix
     ]
 
+
 def copy_matrix(matrix):
     '''
     Makes a deep copy of a matrix (2D list), particularly useful when augmenting with another matrix or a vector (1D list).
@@ -329,6 +344,7 @@ def copy_matrix(matrix):
         [ element for element in row ]
         for row in matrix
     ]
+
 
 def augment_matrix_to_matrix(left_matrix, right_matrix):
     '''
@@ -363,6 +379,7 @@ def augment_matrix_to_matrix(left_matrix, right_matrix):
 
     return augmented_matrix
 
+
 def augment_vector_to_matrix_as_column(matrix, vector):
     '''
     Append a vector (1D list) to a matrix (2D list) as the rightmost column.
@@ -394,6 +411,7 @@ def augment_vector_to_matrix_as_column(matrix, vector):
         matrix_row.append(vector[row_index])
 
     return augmented_matrix
+
 
 def get_column_from_matrix_as_vector(matrix, column):
     '''
