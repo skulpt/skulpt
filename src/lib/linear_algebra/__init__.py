@@ -364,13 +364,10 @@ def augment_matrix_to_matrix(left_matrix, right_matrix):
         
     # Different function should be used to augment two matrices
     if type(right_matrix) is not list:
-        raise TypeError, "Right matrix should be a matrix, not a list. To augment a vector, use XXX() instead"
+        raise TypeError, "Right matrix should be a matrix, not a list. To augment a vector, use augment_vector_to_matrix_as_column() instead"
 
     # Deep copy the matrix to allow the original matrix to remain as is
-    augmented_matrix = [
-        [ element for element in row ]
-        for row in left_matrix
-    ]
+    augmented_matrix = copy_matrix(left_matrix)
     
     # Append elements of right_matrix to augmented_matrix row by row
     for row, matrix_row in enumerate(augmented_matrix):
@@ -398,13 +395,10 @@ def augment_vector_to_matrix_as_column(matrix, vector):
 
     # Different function should be used to augment two matrices
     if type(vector[row]) is list:
-        raise TypeError, "Vector should be a list, not a matrix. To augment matrices, use XXX() instead"
+        raise TypeError, "Vector should be a list, not a matrix. To augment matrices, use augment_matrix_to_matrix() instead"
 
     # Deep copy the matrix to allow the original matrix to remain as is
-    augmented_matrix = [
-        [ element for element in row ]
-        for row in matrix
-    ]
+    augmented_matrix = copy_matrix(matrix)
     
     # Append vector as columns to augmented_matrix
     for row_index, matrix_row in enumerate(augmented_matrix):
