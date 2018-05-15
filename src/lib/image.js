@@ -97,9 +97,9 @@ $builtinmodule = function (name) {
             }
         };
 
-        $loc.setDelay = new Sk.builtin.func(function (self, delay, interval) {
+        var setdelay = new Sk.builtin.func(function (self, delay, interval) {
             var i;
-            Sk.builtin.pyCheckArgs("setDelay", arguments, 2, 3);
+            Sk.builtin.pyCheckArgs("setdelay", arguments, 2, 3);
             self.delay = Sk.ffi.remapToJs(delay);
             i = Sk.builtin.asnum$(interval);
             if (!i) {
@@ -109,12 +109,16 @@ $builtinmodule = function (name) {
             }
         });
 
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_delay = new Sk.builtin.func(setdelay);
+        $loc.setDelay = new Sk.builtin.func(setdelay);
+
 
         //get a one-dimensional array of pixel objects - Zhu
-        $loc.getPixels = new Sk.builtin.func(function (self) {
+        var getpixels = function (self) {
             var arr = [];//initial array
             var i;
-            Sk.builtin.pyCheckArgs("getPixels", arguments, 1, 1);
+            Sk.builtin.pyCheckArgs("getpixels", arguments, 1, 1);
 
             for (i = 0; i < self.image.height * self.image.width; i++) {
 
@@ -122,14 +126,19 @@ $builtinmodule = function (name) {
                     i % self.image.width, Math.floor(i / self.image.width));
             }
             return new Sk.builtin.tuple(arr);
-        });
+        };
 
-        $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_pixels = new Sk.builtin.func(getpixels);
+        $loc.getPixels = new Sk.builtin.func(getpixels);
+
+
+        var getpixel = function (self, x, y) {
             var red;
             var blue;
             var green;
             var index;
-            Sk.builtin.pyCheckArgs("getPixel", arguments, 3, 3);
+            Sk.builtin.pyCheckArgs("getpixel", arguments, 3, 3);
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
@@ -138,7 +147,12 @@ $builtinmodule = function (name) {
             green = self.imagedata.data[index + 1];
             blue = self.imagedata.data[index + 2];
             return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
-        });
+        };
+
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_pixel = new Sk.builtin.func(getpixel);
+        $loc.getPixel = new Sk.builtin.func(getpixel);
+
 
         updateCanvasAndSuspend = function (self, x, y) {
             var susp = new Sk.misceval.Suspension();
@@ -178,9 +192,9 @@ $builtinmodule = function (name) {
             return susp;
         };
 
-        $loc.setPixel = new Sk.builtin.func(function (self, x, y, pix) {
+        var setpixel = function (self, x, y, pix) {
             var index;
-            Sk.builtin.pyCheckArgs("setPixel", arguments, 4, 4);
+            Sk.builtin.pyCheckArgs("setpixel", arguments, 4, 4);
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
@@ -190,14 +204,19 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
-        });
+        };
+
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_pixel = new Sk.builtin.func(setpixel);
+        $loc.setPixel = new Sk.builtin.func(setpixel);
+
 
         // update the image with the pixel at the given count - Zhu
-        $loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel) {
+        var setpixelat = function (self, count, pixel) {
             var x;
             var y;
             var index;
-            Sk.builtin.pyCheckArgs("setPixelAt", arguments, 3, 3);
+            Sk.builtin.pyCheckArgs("setpixelat", arguments, 3, 3);
             count = Sk.builtin.asnum$(count);
             x = count % self.image.width;
             y = Math.floor(count / self.image.width);
@@ -208,14 +227,19 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
-        });
+        };
+
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_pixel_at = new Sk.builtin.func(setpixelat);
+        $loc.setPixelAt = new Sk.builtin.func(setpixelat);
+
 
         // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
-        $loc.updatePixel = new Sk.builtin.func(function (self, pixel) {
+        var updatepixel = function (self, pixel) {
             var x;
             var y;
             var index;
-            Sk.builtin.pyCheckArgs("updatePixel", arguments, 2, 2);
+            Sk.builtin.pyCheckArgs("updatepixel", arguments, 2, 2);
             x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
             y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
             checkPixelRange(self, x, y);
@@ -225,17 +249,32 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
-        });
+        };
 
-        $loc.getHeight = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getHeight", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.update_pixel = new Sk.builtin.func(updatepixel);
+        $loc.updatePixel = new Sk.builtin.func(updatepixel);
+
+
+        var getheight = function (self) {
+            Sk.builtin.pyCheckArgs("getheight", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.height);
-        });
+        };
 
-        $loc.getWidth = new Sk.builtin.func(function (self, titlestring) {
-            Sk.builtin.pyCheckArgs("getWidth", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_height = new Sk.builtin.func(getheight);
+        $loc.getHeight = new Sk.builtin.func(getheight);
+
+
+        var getwidth = function (self, titlestring) {
+            Sk.builtin.pyCheckArgs("getwidth", arguments, 1, 1);
             return new Sk.builtin.int_(self.image.width);
-        });
+        };
+
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_width = new Sk.builtin.func(getwidth);
+        $loc.getWidth = new Sk.builtin.func(getwidth);
+
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
             var susp;
@@ -310,55 +349,95 @@ $builtinmodule = function (name) {
             self.y = Sk.builtin.asnum$(y);
         });
 
-        $loc.getRed = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getRed", arguments, 1, 1);
+        var getred = function (self) {
+            Sk.builtin.pyCheckArgs("getred", arguments, 1, 1);
             return Sk.builtin.assk$(self.red);
-        });
+        };
 
-        $loc.getGreen = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getGreen", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_red = new Sk.builtin.func(getred);
+        $loc.getRed = new Sk.builtin.func(getred);
+
+        var getgreen = function (self) {
+            Sk.builtin.pyCheckArgs("getgreen", arguments, 1, 1);
             return Sk.builtin.assk$(self.green);
-        });
+        };
 
-        $loc.getBlue = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getBlue", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_green = new Sk.builtin.func(getgreen);
+        $loc.getGreen = new Sk.builtin.func(getgreen);
+
+        var getblue = function (self) {
+            Sk.builtin.pyCheckArgs("getblue", arguments, 1, 1);
             return Sk.builtin.assk$(self.blue);
-        });
+        };
 
-        $loc.getX = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getX", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_blue = new Sk.builtin.func(getblue);
+        $loc.getBlue = new Sk.builtin.func(getblue);
+
+        var getx = function (self) {
+            Sk.builtin.pyCheckArgs("getx", arguments, 1, 1);
             return Sk.builtin.assk$(self.x);
-        });
+        };
 
-        $loc.getY = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("getY", arguments, 1, 1);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_x = new Sk.builtin.func(getx);
+        $loc.getX = new Sk.builtin.func(getx);
+
+        var gety = function (self) {
+            Sk.builtin.pyCheckArgs("gety", arguments, 1, 1);
             return Sk.builtin.assk$(self.y);
-        });
+        };
 
-        $loc.setRed = new Sk.builtin.func(function (self, r) {
-            Sk.builtin.pyCheckArgs("setRed", arguments, 2, 2);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.get_y = new Sk.builtin.func(gety);
+        $loc.getY = new Sk.builtin.func(gety);
+
+        var setred = function (self, r) {
+            Sk.builtin.pyCheckArgs("setred", arguments, 2, 2);
             self.red = Sk.builtin.asnum$(r);
-        });
+        };
 
-        $loc.setGreen = new Sk.builtin.func(function (self, g) {
-            Sk.builtin.pyCheckArgs("setGreen", arguments, 2, 2);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_red = new Sk.builtin.func(setred);
+        $loc.setRed = new Sk.builtin.func(setred);
+
+        var setgreen = function (self, g) {
+            Sk.builtin.pyCheckArgs("setgreen", arguments, 2, 2);
             self.green = Sk.builtin.asnum$(g);
-        });
+        };
 
-        $loc.setBlue = new Sk.builtin.func(function (self, b) {
-            Sk.builtin.pyCheckArgs("setBlue", arguments, 2, 2);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_green = new Sk.builtin.func(setgreen);
+        $loc.setGreen = new Sk.builtin.func(setgreen);
+
+        var setblue = function (self, b) {
+            Sk.builtin.pyCheckArgs("setblue", arguments, 2, 2);
             self.blue = Sk.builtin.asnum$(b);
-        });
+        };
 
-        $loc.setX = new Sk.builtin.func(function (self, x) {
-            Sk.builtin.pyCheckArgs("setX", arguments, 2, 2);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_blue = new Sk.builtin.func(setblue);
+        $loc.setBlue = new Sk.builtin.func(setblue);
+
+        var setx = function (self, x) {
+            Sk.builtin.pyCheckArgs("setx", arguments, 2, 2);
             self.x = Sk.builtin.asnum$(x);
-        });
+        };
 
-        $loc.setY = new Sk.builtin.func(function (self, y) {
-            Sk.builtin.pyCheckArgs("setY", arguments, 2, 2);
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_x = new Sk.builtin.func(setx);
+        $loc.setX = new Sk.builtin.func(setx);
+
+        var sety = function (self, y) {
+            Sk.builtin.pyCheckArgs("sety", arguments, 2, 2);
             self.y = Sk.builtin.asnum$(y);
-        });
+        };
+
+        // alias the function with pep8 compliant snake_case and legacy camelCase
+        $loc.set_y = new Sk.builtin.func(sety);
+        $loc.setY = new Sk.builtin.func(sety);
 
         $loc.__getitem__ = new Sk.builtin.func(function (self, k) {
             k = Sk.builtin.asnum$(k);
