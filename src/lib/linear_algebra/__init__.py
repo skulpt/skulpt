@@ -340,10 +340,7 @@ def copy_matrix(matrix):
     '''
     Makes a deep copy of a matrix (2D list), particularly useful when augmenting with another matrix or a vector (1D list).
     '''
-    return [
-        [ element for element in row ]
-        for row in matrix
-    ]
+    return [ row[:] for row in matrix ]
 
 
 def augment_matrix_to_matrix(left_matrix, right_matrix):
@@ -360,19 +357,19 @@ def augment_matrix_to_matrix(left_matrix, right_matrix):
     '''
     # The two matrices must have the same number of rows
     if len(left_matrix) != len(right_matrix):
-        raise TypeError, "Matrices must have the same number of rows"
+        raise TypeError('Matrices must have the same number of rows')
         
-    # Different function should be used to augment two matrices
-    if type(right_matrix) is not list:
-        raise TypeError, "Right matrix should be a matrix, not a list. To augment a vector, use augment_vector_to_matrix_as_column() instead"
+    # Different function should be used to augment two matrices (anything that is not a list of lists)
+    if (any(type(entry) is not list for entry in right_matrix)):
+        raise TypeError('Right matrix should be a matrix, but it\'s not. To augment a vector, use augment_vector_to_matrix_as_column() instead')
 
     # Deep copy the matrix to allow the original matrix to remain as is
     augmented_matrix = copy_matrix(left_matrix)
     
     # Append elements of right_matrix to augmented_matrix row by row
-    for row, matrix_row in enumerate(augmented_matrix):
-        for column in range(len(right_matrix)):
-            matrix_row.append(right_matrix[row][column])
+    for row_index, matrix_row in enumerate(augmented_matrix):
+        for column_index in range(len(right_matrix[0])):
+            matrix_row.append(right_matrix[row_index][column_index])
 
     return augmented_matrix
 
@@ -383,7 +380,7 @@ def augment_vector_to_matrix_as_column(matrix, vector):
     Ex: 
     matrix = [ [1, 0, 0], [0, 1, 0], [0, 0, 1] ]
     vector = [1, 2, 3]
-    append_vector_as_column_to_matrix(matrix, vector)
+    augment_vector_to_matrix_as_column(matrix, vector)
     [ [1, 0, 0, 1],
       [0, 1, 0, 2],
       [0, 0, 1, 3] ]
@@ -391,11 +388,11 @@ def augment_vector_to_matrix_as_column(matrix, vector):
     '''
     # Matrix length (number of rows) must match vector length
     if len(matrix) != len(vector):
-        raise TypeError, "Number of rows in matrix must match number of elements in matrix"
+        raise TypeError('Number of rows in matrix must match number of elements in vector')
 
     # Different function should be used to augment two matrices
-    if type(vector[row]) is list:
-        raise TypeError, "Vector should be a list, not a matrix. To augment matrices, use augment_matrix_to_matrix() instead"
+    if type(vector[0]) is list:
+        raise TypeError('Vector should be a list, not a matrix. To augment matrices, use augment_matrix_to_matrix() instead')
 
     # Deep copy the matrix to allow the original matrix to remain as is
     augmented_matrix = copy_matrix(matrix)
@@ -412,7 +409,7 @@ def get_column_from_matrix_as_vector(matrix, column):
     Returns the 1-indexed column of a matrix (2D list) as a vector (1D list).
     Ex: To get the 2nd column of the matrix:
     matrix = [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ]
-    get_column_as_vector_from_matrix(matrix, 2)
+    get_column_from_matrix_as_vector(matrix, 2)
     [2, 5, 8]
     '''
     return [ row[column - 1] for row in matrix ]
