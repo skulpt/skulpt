@@ -359,9 +359,10 @@ def augment_matrix_to_matrix(left_matrix, right_matrix):
     if len(left_matrix) != len(right_matrix):
         raise TypeError('Matrices must have the same number of rows')
         
-    # Different function should be used to augment two matrices (anything that is not a list of lists)
-    if (any(type(entry) is not list for entry in right_matrix)):
-        raise TypeError('Right matrix should be a matrix, but it\'s not. To augment a vector, use augment_vector_to_matrix_as_column() instead')
+    # Ensure that right_matrix is a matrix (list of lists)
+    if any([ type(entry) is not list for entry in right_matrix ]):
+        raise TypeError('Right matrix should be a matrix, but it\'s not. One or more rows is not a list. \
+            To augment a vector, use augment_vector_to_matrix_as_column() instead')
 
     # Deep copy the matrix to allow the original matrix to remain as is
     augmented_matrix = copy_matrix(left_matrix)
