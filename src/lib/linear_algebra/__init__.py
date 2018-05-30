@@ -9,9 +9,9 @@ def makeRandomMatrix(row, column, exclusion_list=[]):
 
     # Find a range of values that are sufficient for the size of the matrix to have unique values.
     number_of_matrix_elements = row * column
-    numeric_bound = int(math.ceil(number_of_matrix_elements / 2))
+    numeric_bound = number_of_matrix_elements if suppress_negative_numbers else int(math.ceil(number_of_matrix_elements / 2))
     numeric_max = max(9, numeric_bound)
-    numeric_min = -1 * numeric_max
+    numeric_min = 0 if suppress_negative_numbers else -1 * numeric_max
 
     # Build a list of values in that range.
     numeric_list = range(numeric_min, numeric_max + 1)
