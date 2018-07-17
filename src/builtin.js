@@ -1329,6 +1329,45 @@ Sk.builtin.delattr = function delattr (obj, attr) {
     throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
 
+var extractDict = function(obj) {
+    ret = {};
+    for (iter = obj.tp$iter(), k = iter.tp$iternext();
+         k !== undefined;
+         k = iter.tp$iternext()) {
+        v = obj.mp$subscript(k);
+        if (v === undefined) {
+            v = null;
+        }
+        kAsJs = Sk.ffi.remapToJs(k);
+        // todo; assert that this is a reasonble lhs?
+        ret[kAsJs] = v;
+    }
+    return ret;
+}
+Sk.builtin.execf = function execf(python_code, new_globals) {
+    Sk.builtin.pyCheckArgs("execf", arguments, 1, 2);
+    var backupRG = Sk.retainGlobals;
+    Sk.retainGlobals = true;
+    var filename = 'test.py';
+    new_globals_copy = extractDict(new_globals);
+    if (!new_globals_copy.__file__) {
+        new_globals_copy.__file__ = Sk.ffi.remapToPy(filename);
+    }
+    if (!new_globals_copy.__name__) {
+        new_globals_copy.__name__ = Sk.ffi.remapToPy(filename);
+    }
+    var backupGlobals = Sk.globals;
+    Sk.globals = new_globals_copy; // Possibly copy over some "default" ones?
+    python_code = Sk.ffi.remapToJs(python_code);
+    Sk.importMainWithBody(filename, false, python_code, true);
+    Sk.globals = backupGlobals;
+    for (var key in new_globals_copy) {
+        pykey = Sk.ffi.remapToPy(key);
+        Sk.builtin.dict.prototype.mp$ass_subscript.call(new_globals, pykey, new_globals_copy[key])
+    }
+    Sk.retainGlobals = backupRG;
+};
+
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };

@@ -92,6 +92,7 @@ Sk.builtins = {
     "delattr"   : Sk.builtin.delattr,
     "eval_$rn$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,
+    "execf"     : Sk.builtin.execf,
     "frozenset" : Sk.builtin.frozenset,
     "help"      : Sk.builtin.help,
     "locals"    : Sk.builtin.locals,
