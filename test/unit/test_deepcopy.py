@@ -683,6 +683,15 @@ class TestCopy(unittest.TestCase):
         # self.assertFalse(im == im_dc)
         # self.assertFalse(im is im_dc)
 
+    def test_deepcopy_instance_methods(self):
+        class potato:
+            def cut(self):
+                pass
+        mashed = potato()
+        d1 = {"mashed": mashed}
+        d2 = copy.deepcopy(d1)
+        d2["mashed"].cut()
+
 def global_foo(x, y): return x+y
 
 if __name__ == "__main__":
