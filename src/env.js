@@ -120,7 +120,7 @@ Sk.configure = function (options) {
     // in __future__ add checks for absolute_import
 
     Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
-    goog.asserts.assert(typeof Sk.imageProxy === "string");
+    goog.asserts.assert(typeof Sk.imageProxy === "string" || typeof Sk.imageProxy === "function");
 
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
