@@ -882,8 +882,8 @@ Sk.builtin.eval_ = function eval_ () {
 };
 
 Sk.builtin.map = function map (fun, seq) {
-    var iter, item;
-    var retval;
+    var iter;
+    var retval = [];
     var next;
     var nones;
     var args;
@@ -927,15 +927,26 @@ Sk.builtin.map = function map (fun, seq) {
         }
         seq = new Sk.builtin.list(combined);
     }
+
     if (!Sk.builtin.checkIterable(seq)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    retval = [];
+    iter = Sk.abstr.iter(seq);
 
-    for (iter = Sk.abstr.iter(seq), item = iter.tp$iternext();
-         item !== undefined;
-         item = iter.tp$iternext()) {
+    return (function loopDeLoop(i) {
+        var item = i.tp$iternext();
+
+        if (item === undefined) {
+            return new Sk.builtin.list(retval);
+        }
+
+        if (!(item instanceof Array)) {
+            // If there was only one iterable, convert to Javascript
+            // Array for call to apply.
+            item = [item];
+        }
+
         if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
                 // With None function and multiple sequences,
@@ -943,17 +954,14 @@ Sk.builtin.map = function map (fun, seq) {
                 item = new Sk.builtin.tuple(item);
             }
             retval.push(item);
-        } else {
-            if (!(item instanceof Array)) {
-                // If there was only one iterable, convert to Javascript
-                // Array for call to apply.
-                item = [item];
-            }
-            retval.push(Sk.misceval.apply(fun, undefined, undefined, undefined, item));
+            return loopDeLoop();
         }
-    }
 
-    return new Sk.builtin.list(retval);
+        return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
+            retval.push(result);
+            return loopDeLoop();
+        });
+    }(iter));
 };
 
 Sk.builtin.reduce = function reduce (fun, seq, initializer) {
