@@ -941,12 +941,6 @@ Sk.builtin.map = function map (fun, seq) {
             return new Sk.builtin.list(retval);
         }
 
-        if (!(item instanceof Array)) {
-            // If there was only one iterable, convert to Javascript
-            // Array for call to apply.
-            item = [item];
-        }
-
         if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
                 // With None function and multiple sequences,
@@ -955,6 +949,12 @@ Sk.builtin.map = function map (fun, seq) {
             }
             retval.push(item);
             return loopDeLoop(iter);
+        } 
+        
+        if (!(item instanceof Array)) {
+            // If there was only one iterable, convert to Javascript
+            // Array for call to apply.
+            item = [item];
         }
 
         return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
