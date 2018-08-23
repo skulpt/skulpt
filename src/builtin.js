@@ -954,12 +954,12 @@ Sk.builtin.map = function map (fun, seq) {
                 item = new Sk.builtin.tuple(item);
             }
             retval.push(item);
-            return loopDeLoop();
+            return loopDeLoop(iter);
         }
 
         return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
             retval.push(result);
-            return loopDeLoop();
+            return loopDeLoop(iter);
         });
     }(iter));
 };
