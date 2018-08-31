@@ -69,7 +69,7 @@ Sk.builtin.dict.tp$call = function(args, kw) {
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
-var kf = Sk.builtin.hash;
+var kf = Sk.internal.hash;
 
 Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {
     var item;
@@ -407,7 +407,7 @@ var update_f = function (kwargs, self, other) {
 
     // apply all key/value pairs of kwargs
     // create here kwargs_dict, there could be exceptions in other cases before
-    var kwargs_dict = new Sk.builtins.dict(kwargs);
+    var kwargs_dict = new Sk.builtin.dict(kwargs);
     self.dict_merge(kwargs_dict);
 
     // returns none, when successful or throws exception

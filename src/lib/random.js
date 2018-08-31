@@ -228,7 +228,7 @@ var $builtinmodule = function (name) {
 
     mod.seed = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
-        x = Sk.builtin.asnum$(x);
+        x = Sk.internal.asnum$(x);
 
         if (arguments.length > 0) {
             myGenerator = new MersenneTwister(x);
@@ -317,25 +317,25 @@ var $builtinmodule = function (name) {
     mod.randint = new Sk.builtin.func(function (a, b) {
         Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
 
-        a = Sk.builtin.asnum$(a);
-        b = Sk.builtin.asnum$(b);
+        a = Sk.internal.asnum$(a);
+        b = Sk.internal.asnum$(b);
         return randrange(a, b + 1);
     });
 
     mod.randrange = new Sk.builtin.func(function (start, stop, step) {
         Sk.builtin.pyCheckArgs("randrange", arguments, 1, 3);
 
-        start = Sk.builtin.asnum$(start);
-        stop = Sk.builtin.asnum$(stop);
-        step = Sk.builtin.asnum$(step);
+        start = Sk.internal.asnum$(start);
+        stop = Sk.internal.asnum$(stop);
+        step = Sk.internal.asnum$(step);
         return randrange(start, stop, step);
     });
   
     mod.uniform = new Sk.builtin.func(function (a, b) {
         Sk.builtin.pyCheckArgs("uniform", arguments, 2, 2);
 
-        a = Sk.builtin.asnum$(a);
-        b = Sk.builtin.asnum$(b);
+        a = Sk.internal.asnum$(a);
+        b = Sk.internal.asnum$(b);
         var rnd = myGenerator.genrand_res53();
         c = a + rnd * (b - a)
         return new Sk.builtin.float_(c);
@@ -348,8 +348,8 @@ var $builtinmodule = function (name) {
 
         var rnd, sample, swap;
 
-        low = Sk.builtin.asnum$(low);
-        high = Sk.builtin.asnum$(high);
+        low = Sk.internal.asnum$(low);
+        high = Sk.internal.asnum$(high);
         if (low > high) {
             swap = low;
             low = high;
@@ -359,7 +359,7 @@ var $builtinmodule = function (name) {
             mode = (high - low)/2.0;
         } else {
             Sk.builtin.pyCheckType("mode", "number", Sk.builtin.checkNumber(mode));
-            mode = Sk.builtin.asnum$(mode);
+            mode = Sk.internal.asnum$(mode);
         }
 
         // https://en.wikipedia.org/wiki/Triangular_distribution
@@ -402,8 +402,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
         Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
-        mu = Sk.builtin.asnum$(mu);
-        sigma = Sk.builtin.asnum$(sigma);
+        mu = Sk.internal.asnum$(mu);
+        sigma = Sk.internal.asnum$(sigma);
 
         return new Sk.builtin.float_(normalSample(mu, sigma));
     });
@@ -418,8 +418,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
         Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
-        mu = Sk.builtin.asnum$(mu);
-        sigma = Sk.builtin.asnum$(sigma);
+        mu = Sk.internal.asnum$(mu);
+        sigma = Sk.internal.asnum$(sigma);
 
         return new Sk.builtin.float_(Math.exp(normalSample(mu, sigma)));
     });
@@ -428,7 +428,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgs("expovariate", arguments, 1, 1);
         Sk.builtin.pyCheckType("lambd", "number", Sk.builtin.checkNumber(lambd));
 
-        lambd = Sk.builtin.asnum$(lambd);
+        lambd = Sk.internal.asnum$(lambd);
 
         var rnd = myGenerator.genrand_res53();
         return new Sk.builtin.float_(-Math.log(rnd)/lambd);
@@ -477,7 +477,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgs("sample", arguments, 2, 2);
         Sk.builtin.pyCheckType("population", "iterable", Sk.builtin.checkIterable(population));
         Sk.builtin.pyCheckType("k", "integer", Sk.builtin.checkInt(k));
-        k = Sk.builtin.asnum$(k);
+        k = Sk.internal.asnum$(k);
         
         // "Algorithm R" in
         // https://en.wikipedia.org/wiki/Reservoir_sampling

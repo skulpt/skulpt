@@ -42,9 +42,9 @@ Sk.builtin.slice = function slice (start, stop, step) {
 Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
 
 Sk.builtin.slice.prototype["$r"] = function () {
-    var a = Sk.builtin.repr(this.start).v;
-    var b = Sk.builtin.repr(this.stop).v;
-    var c = Sk.builtin.repr(this.step).v;
+    var a = Sk.misceval.objectRepr(this.start).v;
+    var b = Sk.misceval.objectRepr(this.stop).v;
+    var c = Sk.misceval.objectRepr(this.step).v;
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
 
@@ -148,7 +148,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
 Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, length) {
     Sk.builtin.pyCheckArgs("indices", arguments, 2, 2, false, false);
 
-    length = Sk.builtin.asnum$(length);
+    length = Sk.internal.asnum$(length);
     var sss = self.slice_indices_(length);
 
     return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), 
@@ -158,7 +158,7 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
 
 Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
     var i;
-    var wrtv = Sk.builtin.asnum$(wrt);
+    var wrtv = Sk.internal.asnum$(wrt);
     var sss = this.slice_indices_(typeof wrtv === "number" ? wrtv : wrt.v.length);
     if (sss[2] > 0) {
         for (i = sss[0]; i < sss[1]; i += sss[2]) {

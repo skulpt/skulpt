@@ -169,7 +169,7 @@ var $builtinmodule = function (name) {
         var d = new Date();
         if (secs) {
             Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
-            var seconds = Sk.builtin.asnum$(secs);
+            var seconds = Sk.internal.asnum$(secs);
             d.setTime(seconds * 1000);
         }
         return date_to_struct_time(d);
@@ -182,7 +182,7 @@ var $builtinmodule = function (name) {
         var d = new Date();
         if (secs) {
             Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
-            var seconds = Sk.builtin.asnum$(secs);
+            var seconds = Sk.internal.asnum$(secs);
             d.setTime(seconds * 1000);
         }
         return date_to_struct_time(d, true);
@@ -202,15 +202,15 @@ var $builtinmodule = function (name) {
         {
             // todo: test validity??
             var parts = [];
-            parts.push(daynames[Sk.builtin.asnum$(time.v[6])]);
-            parts.push(monthnames[Sk.builtin.asnum$(time.v[1])-1]);
-            parts.push(padLeft(Sk.builtin.asnum$(time.v[2]).toString(), 2, '0'));
+            parts.push(daynames[Sk.internal.asnum$(time.v[6])]);
+            parts.push(monthnames[Sk.internal.asnum$(time.v[1])-1]);
+            parts.push(padLeft(Sk.internal.asnum$(time.v[2]).toString(), 2, '0'));
             parts.push(
-                padLeft(Sk.builtin.asnum$(time.v[3]).toString(), 2, '0') + ":" +
-                padLeft(Sk.builtin.asnum$(time.v[4]).toString(), 2, '0') + ":" +
-                padLeft(Sk.builtin.asnum$(time.v[5]).toString(), 2, '0')
+                padLeft(Sk.internal.asnum$(time.v[3]).toString(), 2, '0') + ":" +
+                padLeft(Sk.internal.asnum$(time.v[4]).toString(), 2, '0') + ":" +
+                padLeft(Sk.internal.asnum$(time.v[5]).toString(), 2, '0')
             );
-            parts.push(padLeft(Sk.builtin.asnum$(time.v[0]).toString(), 4, '0'));
+            parts.push(padLeft(Sk.internal.asnum$(time.v[0]).toString(), 4, '0'));
 
             return Sk.builtin.str(parts.join(" "));
         }
@@ -225,12 +225,12 @@ var $builtinmodule = function (name) {
     function mktime_f(time) {
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
-            var d = new Date(Sk.builtin.asnum$(time.v[0]),
-                             Sk.builtin.asnum$(time.v[1])-1,
-                             Sk.builtin.asnum$(time.v[2]),
-                             Sk.builtin.asnum$(time.v[3]),
-                             Sk.builtin.asnum$(time.v[4]),
-                             Sk.builtin.asnum$(time.v[5]));
+            var d = new Date(Sk.internal.asnum$(time.v[0]),
+                             Sk.internal.asnum$(time.v[1])-1,
+                             Sk.internal.asnum$(time.v[2]),
+                             Sk.internal.asnum$(time.v[3]),
+                             Sk.internal.asnum$(time.v[4]),
+                             Sk.internal.asnum$(time.v[5]));
             return Sk.builtin.assk$(d.getTime() / 1000, undefined);
         } else {
             throw new Sk.builtin.TypeError("mktime() requires a struct_time or 9-tuple");

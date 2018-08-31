@@ -423,7 +423,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     } else if (v instanceof Sk.builtin.bool) {
-        value = Sk.builtin.asnum$(v);
+        value = Sk.internal.asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.int_(-value);
         }
@@ -454,7 +454,7 @@ goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 //
 
 Sk.abstr.fixSeqIndex_ = function (seq, i) {
-    i = Sk.builtin.asnum$(i);
+    i = Sk.internal.asnum$(i);
     if (i < 0 && seq.sq$length) {
         i += seq.sq$length();
     }
@@ -590,7 +590,7 @@ Sk.abstr.sequenceDelItem = function (seq, i) {
 Sk.abstr.sequenceRepeat = function (f, seq, n) {
     var ntypename;
     var count;
-    n = Sk.builtin.asnum$(n);
+    n = Sk.internal.asnum$(n);
     count = Sk.misceval.asIndex(n);
     if (count === undefined) {
         ntypename = Sk.abstr.typeName(n);
@@ -705,7 +705,7 @@ Sk.abstr.objectAdd = function (a, b) {
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectNegative = function (obj) {
     var objtypename;
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+    var obj_asnum = Sk.internal.asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
         obj = new Sk.builtin.int_(obj_asnum);
@@ -722,7 +722,7 @@ Sk.abstr.objectNegative = function (obj) {
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectPositive = function (obj) {
     var objtypename = Sk.abstr.typeName(obj);
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+    var obj_asnum = Sk.internal.asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
         obj = new Sk.builtin.int_(obj_asnum);

@@ -163,7 +163,7 @@ var $builtinmodule = function(name)
 
     $loc.clearColor = new Sk.builtin.func(
       function(self, red, green, blue, alpha) {
-        self.gl.clearColor(Sk.builtin.asnum$(red), Sk.builtin.asnum$(green), Sk.builtin.asnum$(blue), Sk.builtin.asnum$(alpha));
+        self.gl.clearColor(Sk.internal.asnum$(red), Sk.internal.asnum$(green), Sk.internal.asnum$(blue), Sk.internal.asnum$(alpha));
       }
     );
 
@@ -187,19 +187,19 @@ var $builtinmodule = function(name)
 
     $loc.drawArrays = new Sk.builtin.func(
       function(self, mode, first, count) {
-        self.gl.drawArrays(Sk.builtin.asnum$(mode), Sk.builtin.asnum$(first), Sk.builtin.asnum$(count));
+        self.gl.drawArrays(Sk.internal.asnum$(mode), Sk.internal.asnum$(first), Sk.internal.asnum$(count));
       }
     );
 
     $loc.vertexAttribPointer = new Sk.builtin.func(
       function(self, index, size, type, normalized, stride, dunno) {
-        self.gl.vertexAttribPointer(index, Sk.builtin.asnum$(size), Sk.builtin.asnum$(type), normalized, Sk.builtin.asnum$(stride), Sk.builtin.asnum$(dunno));
+        self.gl.vertexAttribPointer(index, Sk.internal.asnum$(size), Sk.internal.asnum$(type), normalized, Sk.internal.asnum$(stride), Sk.internal.asnum$(dunno));
       }
     );
 
     $loc.viewport = new Sk.builtin.func(
       function(self, x, y, width, height) {
-        self.gl.viewport(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y), Sk.builtin.asnum$(width), Sk.builtin.asnum$(height));
+        self.gl.viewport(Sk.internal.asnum$(x), Sk.internal.asnum$(y), Sk.internal.asnum$(width), Sk.internal.asnum$(height));
       }
     );
 
@@ -208,7 +208,7 @@ var $builtinmodule = function(name)
 //        console.log("location  " + (typeof location));
 //        console.log("transpose " + (typeof transpose));
 //        console.log("values.v  " + (typeof values.v));
-        self.gl.uniformMatrix4fv(Sk.builtin.asnum$(location), transpose, values.v);
+        self.gl.uniformMatrix4fv(Sk.internal.asnum$(location), transpose, values.v);
       }
     );
 
@@ -287,10 +287,10 @@ var $builtinmodule = function(name)
     $loc.perspective = new Sk.builtin.func(
       function(self, fov, aspect, near, far) {
         
-        var t = Math.tan(Math.PI * 0.5 - 0.5 * (Sk.builtin.asnum$(fov) * Math.PI / 180));
-        var a = Sk.builtin.asnum$(aspect)
-        var n = Sk.builtin.asnum$(near)
-        var f = Sk.builtin.asnum$(far)
+        var t = Math.tan(Math.PI * 0.5 - 0.5 * (Sk.internal.asnum$(fov) * Math.PI / 180));
+        var a = Sk.internal.asnum$(aspect)
+        var n = Sk.internal.asnum$(near)
+        var f = Sk.internal.asnum$(far)
         var k = 1.0 / (n - f);
 
         var m = self.v;

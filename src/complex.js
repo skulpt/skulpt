@@ -79,9 +79,9 @@ Sk.builtin.complex = function (real, imag) {
     // this check either returns a javascript number or the passed object
     // but it actually, should check for r->ob_type->tp_as_number
     // this check is useless
-    nbr = Sk.builtin.asnum$(r);
+    nbr = Sk.internal.asnum$(r);
     if (i != null) {
-        nbi = Sk.builtin.asnum$(i);
+        nbi = Sk.internal.asnum$(i);
     }
 
     // this function mimics the tp_as_number->nb_float check in cpython
@@ -671,7 +671,7 @@ Sk.builtin.complex._complex_check = function (op) {
     }
 
     // check if type of ob is a subclass
-    if (Sk.builtin.issubclass(new Sk.builtin.type(op), Sk.builtin.complex)) {
+    if (Sk.internal.issubclass(new Sk.builtin.type(op), Sk.builtin.complex)) {
         return true;
     }
 

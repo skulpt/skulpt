@@ -31,7 +31,7 @@ Sk.builtin.float_ = function (x) {
 
     // Floats are just numbers
     if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
-        tmp = Sk.builtin.asnum$(x);
+        tmp = Sk.internal.asnum$(x);
         if (typeof tmp === "string") {
             return Sk.builtin._str_to_float(tmp);
         }
@@ -41,7 +41,7 @@ Sk.builtin.float_ = function (x) {
 
     // Convert booleans
     if (x instanceof Sk.builtin.bool) {
-        this.v = Sk.builtin.asnum$(x);
+        this.v = Sk.internal.asnum$(x);
         return this;
     }
 
@@ -129,7 +129,7 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
         return true;
     }
 
-    if (Sk.builtin.issubclass(op.ob$type, Sk.builtin.float_)) {
+    if (Sk.internal.issubclass(op.ob$type, Sk.builtin.float_)) {
         return true;
     }
 
@@ -221,7 +221,7 @@ Sk.builtin.float_.prototype.clone = function () {
  * @return {string}   The string representation of this instance's value.
  */
 Sk.builtin.float_.prototype.toFixed = function (x) {
-    x = Sk.builtin.asnum$(x);
+    x = Sk.internal.asnum$(x);
     return this.v.toFixed(x);
 };
 
@@ -779,7 +779,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    number = Sk.builtin.asnum$(self);
+    number = Sk.internal.asnum$(self);
     if (ndigits === undefined) {
         ndigs = 0;
     } else {

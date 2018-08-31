@@ -88,7 +88,7 @@ Sk.builtin.tuple.prototype.tp$hash = function () {
     var x = 0x345678;
     var len = this.v.length;
     for (i = 0; i < len; ++i) {
-        y = Sk.builtin.hash(this.v[i]).v;
+        y = Sk.internal.hash(this.v[i]).v;
         if (y === -1) {
             return new Sk.builtin.int_(-1);
         }
@@ -138,7 +138,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     var vl;
     var v;
     if (!w.__class__ ||
-        !Sk.misceval.isTrue(Sk.builtin.isinstance(w, Sk.builtin.tuple))) {
+        !Sk.misceval.isTrue(Sk.internal.isinstance(w, Sk.builtin.tuple))) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;

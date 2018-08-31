@@ -58,7 +58,7 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     if (x instanceof Sk.builtin.str) {
-        base = Sk.builtin.asnum$(base);
+        base = Sk.internal.asnum$(base);
 
         val = Sk.str2number(x.v, base, parseInt, function (x) {
             return -x;
@@ -116,7 +116,7 @@ Sk.builtin.int_ = function (x, base) {
         throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
     }
 
-    x = Sk.builtin.asnum$(x);
+    x = Sk.internal.asnum$(x);
     if (x > Sk.builtin.int_.threshold$ || x < -Sk.builtin.int_.threshold$) {
         return new Sk.builtin.lng(x);
     }
@@ -520,7 +520,7 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
-        other = Sk.builtin.asnum$(other);
+        other = Sk.internal.asnum$(other);
         tmp = this.v & other;
         if ((tmp !== undefined) && (tmp < 0)) {
             tmp = tmp + 4294967296; // convert back to unsigned
@@ -556,7 +556,7 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
-        other = Sk.builtin.asnum$(other);
+        other = Sk.internal.asnum$(other);
         tmp = this.v | other;
         if ((tmp !== undefined) && (tmp < 0)) {
             tmp = tmp + 4294967296; // convert back to unsigned
@@ -592,7 +592,7 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
-        other = Sk.builtin.asnum$(other);
+        other = Sk.internal.asnum$(other);
         tmp = this.v ^ other;
         if ((tmp !== undefined) && (tmp < 0)) {
             tmp = tmp + 4294967296; // convert back to unsigned
@@ -632,7 +632,7 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
-        var shift = Sk.builtin.asnum$(other);
+        var shift = Sk.internal.asnum$(other);
 
         if (shift !== undefined) {
             if (shift < 0) {
@@ -687,7 +687,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
-        var shift = Sk.builtin.asnum$(other);
+        var shift = Sk.internal.asnum$(other);
 
         if (shift !== undefined) {
             if (shift < 0) {
@@ -976,7 +976,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    number = Sk.builtin.asnum$(self);
+    number = Sk.internal.asnum$(self);
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
