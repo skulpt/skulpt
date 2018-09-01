@@ -307,6 +307,6 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
 };
 
 Sk.builtin.func.prototype["$r"] = function () {
-    var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
+    var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
     return new Sk.builtin.str("<function " + name + ">");
 };
