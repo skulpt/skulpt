@@ -224,6 +224,14 @@ Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     return new Sk.builtin.method(this, obj, objtype);
 };
 
+Sk.builtin.func.pythonFunctions = ['__get__'];
+
+Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+     var l_owner = !owner ? instance.ob$type : owner;
+     return self.tp$descr_get(instance, l_owner)
+};
+
 Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var j;
     var i;
