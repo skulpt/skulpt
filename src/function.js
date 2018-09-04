@@ -207,6 +207,7 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
 
     this.__class__ = Sk.builtin.func;
     this.func_closure = closure;
+    this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
     return this;
 };
 
@@ -218,18 +219,24 @@ Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    if (obj === Sk.builtin.none.none$) {
-        return this;
+    if (objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
+        // it's a builtin
+        return new Sk.builtin.method(this, obj, objtype, true);
     }
     return new Sk.builtin.method(this, obj, objtype);
 };
 
-Sk.builtin.func.pythonFunctions = ['__get__'];
+Sk.builtin.func.pythonFunctions = ["__get__"];
 
 Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
     Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
-     var l_owner = !owner ? instance.ob$type : owner;
-     return self.tp$descr_get(instance, l_owner)
+    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+    }
+
+    var l_owner = owner && owner !== Sk.builtin.none.none$ ? owner : instance.ob$types;
+    
+    return self.tp$descr_get(instance, l_owner)
 };
 
 Sk.builtin.func.prototype.tp$call = function (args, kw) {
@@ -247,8 +254,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
     kwargsarr = [];
 
     if (this.func_code["no_kw"] && kw) {
-        name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
+        throw new Sk.builtin.TypeError(this.tp$name + "() takes no keyword arguments");
     }
 
     if (kw) {
@@ -265,8 +271,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
             }
             if (varnames && j !== numvarnames) {
                 if (j in args) {
-                    name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-                    throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
+                    throw new Sk.builtin.TypeError(this.tp$name + "() got multiple values for keyword argument '" + kw[i] + "'");
                 }
                 args[j] = kw[i + 1];
             } else if (expectskw) {
@@ -274,8 +279,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
             } else {
-                name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+                throw new Sk.builtin.TypeError(this.tp$name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }
         }
     }
@@ -306,6 +310,5 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
 };
 
 Sk.builtin.func.prototype["$r"] = function () {
-    var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-    return new Sk.builtin.str("<function " + name + ">");
+    return new Sk.builtin.str("<function " + this.tp$name + ">");
 };

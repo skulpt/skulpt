@@ -222,7 +222,7 @@ Sk.doOneTimeInitialization = function () {
 
     // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
     // Sk.builtin.func, as that class was undefined when these functions were declared
-    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func];
+    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
 
     for (i = 0; i < typesWithFunctionsToWrap.length; i++) {
         builtin_type = typesWithFunctionsToWrap[i];
