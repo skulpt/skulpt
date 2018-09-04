@@ -236,7 +236,7 @@ Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
 
     var l_owner = owner && owner !== Sk.builtin.none.none$ ? owner : instance.ob$types;
     
-    return self.tp$descr_get(instance, l_owner)
+    return self.tp$descr_get(instance, l_owner);
 };
 
 Sk.builtin.func.prototype.tp$call = function (args, kw) {

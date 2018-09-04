@@ -523,7 +523,7 @@ Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function fromkeys(self, seq, value) {
-    var k, iter, val, res;
+    var k, iter, val, res, iterable;
 
     if (self instanceof Sk.builtin.dict) {
         // instance call

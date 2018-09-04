@@ -189,7 +189,7 @@ Sk.importSearchPathForName = function (name, ext, failok, canSuspend, currentDir
  * @return {undefined}
  */
 Sk.doOneTimeInitialization = function () {
-    var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type;
+    var proto, name, i, j, x, func, typesWithFunctionsToWrap, builtin_type;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.

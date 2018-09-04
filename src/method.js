@@ -29,7 +29,7 @@ Sk.builtin.method = function (func, self, klass, builtin) {
 goog.exportSymbol("Sk.builtin.method", Sk.builtin.method);
 Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object);
 
-Sk.builtin.method.prototype.tp$name = "method"
+Sk.builtin.method.prototype.tp$name = "method";
 
 Sk.builtin.method.prototype.tp$call = function (args, kw) {
     goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
@@ -77,7 +77,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
         }
 
         // if it's not we're not bound
-        return self
+        return self;
     }
 
     // use the original type to get a bound object
@@ -86,13 +86,13 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
 
 Sk.builtin.method.prototype["$r"] = function () {
     if (this.im_builtin) {
-        return new Sk.builtin.str("<built-in method " + this.tp$name + " of type object>")
+        return new Sk.builtin.str("<built-in method " + this.tp$name + " of type object>");
     }
 
     if (this.im_self === Sk.builtin.none.none$) {
         return new Sk.builtin.str("<unbound method " + Sk.abstr.typeName(this.im_class) + "." + this.tp$name + ">");
     } 
 
-    var owner = this.im_class !== Sk.builtin.none.none$ ? Sk.abstr.typeName(this.im_class) : "?"
+    var owner = this.im_class !== Sk.builtin.none.none$ ? Sk.abstr.typeName(this.im_class) : "?";
     return new Sk.builtin.str("<bound method " + owner  + "." + this.tp$name + " of " + Sk.ffi.remapToJs(Sk.misceval.objectRepr(this.im_self)) + ">");
 };

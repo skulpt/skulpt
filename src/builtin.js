@@ -1171,7 +1171,7 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
             if (klass["$d"].sq$contains(Sk.builtin.type.basesStr_)) {
                 bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
             } else {
-                return false
+                return false;
             }
         } else {
             return false;
