@@ -40,8 +40,10 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
         args.unshift(this.im_self);
     }
 
-    if (args.length === 0 || this.im_class !== args[0].ob$type) {
-        var reason = args.length === 0 ? "nothing" : Sk.abstr.typeName(args[0].ob$type) + "instance";
+    // if there is no first argument or
+    // if the first argument is not a subclass of the class this method belongs to we throw an error
+    if (args.length === 0 || !Sk.builtin.issubclass(args[0].ob$type, this.im_class)) {
+        var reason = args.length === 0 ? "nothing" : Sk.abstr.typeName(args[0].ob$type) + " instance";
         throw new Sk.builtin.TypeError("unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)");
     }
 
