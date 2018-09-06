@@ -93,7 +93,7 @@ Sk.builtin.list.prototype.list_extend_ = function (other) {
 };
 
 Sk.builtin.list.prototype.list_del_item_ = function (i) {
-    i = Sk.internal.asnum$(i);
+    i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length) {
         throw new Sk.builtin.IndexError("list assignment index out of range");
     }
@@ -102,8 +102,8 @@ Sk.builtin.list.prototype.list_del_item_ = function (i) {
 
 Sk.builtin.list.prototype.list_del_slice_ = function (ilow, ihigh) {
     var args;
-    ilow = Sk.internal.asnum$(ilow);
-    ihigh = Sk.internal.asnum$(ihigh);
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
     args = [];
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
@@ -111,7 +111,7 @@ Sk.builtin.list.prototype.list_del_slice_ = function (ilow, ihigh) {
 };
 
 Sk.builtin.list.prototype.list_ass_item_ = function (i, v) {
-    i = Sk.internal.asnum$(i);
+    i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length) {
         throw new Sk.builtin.IndexError("list assignment index out of range");
     }
@@ -120,8 +120,8 @@ Sk.builtin.list.prototype.list_ass_item_ = function (i, v) {
 
 Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
     var args;
-    ilow = Sk.internal.asnum$(ilow);
-    ihigh = Sk.internal.asnum$(ihigh);
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
 
     if (Sk.builtin.checkIterable(v)) {
         args = new Sk.builtin.list(v, false).v.slice(0);
@@ -534,7 +534,7 @@ Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) 
         throw new Sk.builtin.TypeError("an integer is required");
     }
 
-    i = Sk.internal.asnum$(i);
+    i = Sk.builtin.asnum$(i);
     if (i < 0) {
         i = i + self.v.length;
     }
@@ -564,7 +564,7 @@ Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
 
-    i = Sk.internal.asnum$(i);
+    i = Sk.builtin.asnum$(i);
     if (i < 0) {
         i = i + self.v.length;
     }
@@ -581,7 +581,7 @@ Sk.builtin.list.prototype["remove"] = new Sk.builtin.func(function (self, item) 
     Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
 
     idx = Sk.builtin.list.prototype["index"].func_code(self, item);
-    self.v.splice(Sk.internal.asnum$(idx), 1);
+    self.v.splice(Sk.builtin.asnum$(idx), 1);
     return Sk.builtin.none.none$;
 });
 

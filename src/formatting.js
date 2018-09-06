@@ -11,8 +11,8 @@ var format = function (kwa) {
     Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
 
 
-    args = new Sk.builtin.tuple(Array.prototype.slice.call(arguments, 1)); /*vararg*/
-    kwargs = new Sk.builtin.dict(kwa);
+    args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
+    kwargs = new Sk.builtins["dict"](kwa);
 
     if (arguments[1] === undefined) {
         return args.v;
@@ -76,8 +76,8 @@ var format = function (kwa) {
         var convName;
         var convValue;
         var percent;
-        fieldWidth = Sk.internal.asnum$(fieldWidth);
-        precision = Sk.internal.asnum$(precision);
+        fieldWidth = Sk.builtin.asnum$(fieldWidth);
+        precision = Sk.builtin.asnum$(precision);
 
         if(element_index !== undefined && element_index !== ""){
             value = arg_dict[arg_name][element_index].v;
@@ -146,7 +146,7 @@ var format = function (kwa) {
                 return value;
             } else if( conversion == "r"){
                 s = new Sk.builtin.str(value);
-                r = Sk.misceval.objectRepr(s);
+                r = Sk.builtin.repr(s);
                 return r.v;
             } else if(conversion == "s"){
                 r = new Sk.builtin.str(value);
@@ -205,7 +205,7 @@ var format = function (kwa) {
             var neg;
             var r;
 
-            base = Sk.internal.asnum$(base);
+            base = Sk.builtin.asnum$(base);
             neg = false;
 
             if(format_spec === undefined){
@@ -287,7 +287,7 @@ var format = function (kwa) {
             if(alternateForm){
                 throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
             }
-            convValue = Sk.internal.asnum$(value);
+            convValue = Sk.builtin.asnum$(value);
             if (typeof convValue === "string") {
                 convValue = Number(convValue);
             }

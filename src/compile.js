@@ -1290,7 +1290,7 @@ Compiler.prototype.ctryexcept = function (s) {
             // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
             // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
 
-            check = this._gr("instance", "Sk.misceval.isTrue(Sk.internal.isinstance($err, ", handlertype, "))");
+            check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
             this._jumpfalse(check, next);
         }
 

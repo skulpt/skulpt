@@ -74,9 +74,9 @@ Files = [
         'src/env.js',
         'src/type.js',
         'src/abstract.js',
-        'src/internal.js',
         'src/object.js',
         'src/function.js',
+        'src/builtin.js',
         'src/fromcodepoint.js',   # should become unnecessary, eventually
         'src/errors.js',
         'src/method.js',
@@ -116,7 +116,6 @@ Files = [
         'src/timsort.js',
         'src/sorted.js',
         'src/typeobject.js',
-        'src/builtin.js',
         'src/builtindict.js',
         'src/constants.js',
         'src/internalpython.js',

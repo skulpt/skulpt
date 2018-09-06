@@ -363,7 +363,7 @@ Sk.builtin.object.prototype["$r"] = function () {
     return new Sk.builtin.str("<object>");
 };
 
-Sk.internal.hashCount = 1;
+Sk.builtin.hashCount = 1;
 Sk.builtin.idCount = 1;
 
 /**
@@ -375,7 +375,7 @@ Sk.builtin.idCount = 1;
  */
 Sk.builtin.object.prototype.tp$hash = function () {
     if (!this.$savedHash_) {
-        this.$savedHash_ = new Sk.builtin.int_(Sk.internal.hashCount++);
+        this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
     }
 
     return this.$savedHash_;

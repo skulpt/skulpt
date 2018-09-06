@@ -109,7 +109,7 @@ $builtinmodule = function (name) {
             var i;
             Sk.builtin.pyCheckArgs("setDelay", arguments, 2, 3);
             self.delay = Sk.ffi.remapToJs(delay);
-            i = Sk.internal.asnum$(interval);
+            i = Sk.builtin.asnum$(interval);
             if (!i) {
                 self.updateInterval = 1;
             } else {
@@ -162,8 +162,8 @@ $builtinmodule = function (name) {
             var green;
             var index;
             Sk.builtin.pyCheckArgs("getPixel", arguments, 3, 3);
-            x = Sk.internal.asnum$(x);
-            y = Sk.internal.asnum$(y);
+            x = Sk.builtin.asnum$(x);
+            y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
             red = self.imagedata.data[index];
@@ -213,13 +213,13 @@ $builtinmodule = function (name) {
         $loc.setPixel = new Sk.builtin.func(function (self, x, y, pix) {
             var index;
             Sk.builtin.pyCheckArgs("setPixel", arguments, 4, 4);
-            x = Sk.internal.asnum$(x);
-            y = Sk.internal.asnum$(y);
+            x = Sk.builtin.asnum$(x);
+            y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.internal.asnum$(Sk.misceval.callsim(pix.getRed, pix));
-            self.imagedata.data[index + 1] = Sk.internal.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
-            self.imagedata.data[index + 2] = Sk.internal.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getRed, pix));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         });
@@ -230,14 +230,14 @@ $builtinmodule = function (name) {
             var y;
             var index;
             Sk.builtin.pyCheckArgs("setPixelAt", arguments, 3, 3);
-            count = Sk.internal.asnum$(count);
+            count = Sk.builtin.asnum$(count);
             x = count % self.image.width;
             y = Math.floor(count / self.image.width);
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-            self.imagedata.data[index + 1] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-            self.imagedata.data[index + 2] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         });
@@ -248,13 +248,13 @@ $builtinmodule = function (name) {
             var y;
             var index;
             Sk.builtin.pyCheckArgs("updatePixel", arguments, 2, 2);
-            x = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
-            y = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
+            x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
+            y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-            self.imagedata.data[index + 1] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-            self.imagedata.data[index + 2] = Sk.internal.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         });
@@ -281,9 +281,9 @@ $builtinmodule = function (name) {
                 promise: new Promise(function (resolve, reject) {
                     var can;
                     var ctx;
-                    win = Sk.internal.asnum$(win);
-                    ulx = Sk.internal.asnum$(ulx);
-                    uly = Sk.internal.asnum$(uly);
+                    win = Sk.builtin.asnum$(win);
+                    ulx = Sk.builtin.asnum$(ulx);
+                    uly = Sk.builtin.asnum$(uly);
                     can = Sk.misceval.callsim(win.getWin, win);
                     ctx = can.getContext("2d");
                     if (!ulx) {
@@ -316,8 +316,8 @@ $builtinmodule = function (name) {
     eImage = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
             Sk.builtin.pyCheckArgs("__init__", arguments, 3, 3);
-            self.width = Sk.internal.asnum$(width);
-            self.height = Sk.internal.asnum$(height);
+            self.width = Sk.builtin.asnum$(width);
+            self.height = Sk.builtin.asnum$(height);
             self.canvas = document.createElement("canvas");
             self.ctx = self.canvas.getContext("2d");
             self.canvas.height = self.height;
@@ -335,11 +335,11 @@ $builtinmodule = function (name) {
     pixel = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, r, g, b, x, y) {
             Sk.builtin.pyCheckArgs("__init__", arguments, 4, 6);
-            self.red = Sk.internal.asnum$(r);
-            self.green = Sk.internal.asnum$(g);
-            self.blue = Sk.internal.asnum$(b);
-            self.x = Sk.internal.asnum$(x);
-            self.y = Sk.internal.asnum$(y);
+            self.red = Sk.builtin.asnum$(r);
+            self.green = Sk.builtin.asnum$(g);
+            self.blue = Sk.builtin.asnum$(b);
+            self.x = Sk.builtin.asnum$(x);
+            self.y = Sk.builtin.asnum$(y);
         });
 
         $loc.getRed = new Sk.builtin.func(function (self) {
@@ -369,31 +369,31 @@ $builtinmodule = function (name) {
 
         $loc.setRed = new Sk.builtin.func(function (self, r) {
             Sk.builtin.pyCheckArgs("setRed", arguments, 2, 2);
-            self.red = Sk.internal.asnum$(r);
+            self.red = Sk.builtin.asnum$(r);
         });
 
         $loc.setGreen = new Sk.builtin.func(function (self, g) {
             Sk.builtin.pyCheckArgs("setGreen", arguments, 2, 2);
-            self.green = Sk.internal.asnum$(g);
+            self.green = Sk.builtin.asnum$(g);
         });
 
         $loc.setBlue = new Sk.builtin.func(function (self, b) {
             Sk.builtin.pyCheckArgs("setBlue", arguments, 2, 2);
-            self.blue = Sk.internal.asnum$(b);
+            self.blue = Sk.builtin.asnum$(b);
         });
 
         $loc.setX = new Sk.builtin.func(function (self, x) {
             Sk.builtin.pyCheckArgs("setX", arguments, 2, 2);
-            self.x = Sk.internal.asnum$(x);
+            self.x = Sk.builtin.asnum$(x);
         });
 
         $loc.setY = new Sk.builtin.func(function (self, y) {
             Sk.builtin.pyCheckArgs("setY", arguments, 2, 2);
-            self.y = Sk.internal.asnum$(y);
+            self.y = Sk.builtin.asnum$(y);
         });
 
         $loc.__getitem__ = new Sk.builtin.func(function (self, k) {
-            k = Sk.internal.asnum$(k);
+            k = Sk.builtin.asnum$(k);
             if (k === 0) {
                 return self.red;
             } else if (k == 1) {
@@ -414,7 +414,7 @@ $builtinmodule = function (name) {
 
         //setRange -- change from 0..255 to 0.0 .. 1.0
         $loc.setRange = new Sk.builtin.func(function (self, mx) {
-            self.max = Sk.internal.asnum$(mx);
+            self.max = Sk.builtin.asnum$(mx);
         });
 
     };

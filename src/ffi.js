@@ -105,11 +105,11 @@ Sk.ffi.remapToJs = function (obj) {
     } else if (obj instanceof Sk.builtin.bool) {
         return obj.v ? true : false;
     } else if (obj instanceof Sk.builtin.int_) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.float_) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.lng) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
     } else if (obj === undefined) {
@@ -143,13 +143,13 @@ goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
  */
 Sk.ffi.basicwrap = function (obj) {
     if (obj instanceof Sk.builtin.int_) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     }
     if (obj instanceof Sk.builtin.float_) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     }
     if (obj instanceof Sk.builtin.lng) {
-        return Sk.internal.asnum$(obj);
+        return Sk.builtin.asnum$(obj);
     }
     if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;

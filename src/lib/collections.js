@@ -161,7 +161,7 @@ var $builtinmodule = function (name) {
                 }
             }
 
-            n = Sk.internal.asnum$(n);
+            n = Sk.builtin.asnum$(n);
             n = n <= length ? n : length;
             n = n >= 0 ? n : 0;
         }

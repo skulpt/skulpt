@@ -36,7 +36,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.NotImplementedError("Execution limiting is not enabled");
         }
         if (t !== undefined) {
-            Sk.execLimit = Sk.internal.asnum$(t);
+            Sk.execLimit = Sk.builtin.asnum$(t);
         }
     });
 
@@ -56,7 +56,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.NotImplementedError("Yielding is not enabled");
         }
         if (t !== undefined) {
-            Sk.yieldLimit = Sk.internal.asnum$(t);
+            Sk.yieldLimit = Sk.builtin.asnum$(t);
         }
     });
 

@@ -76,7 +76,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
 
-        maxsplit = Sk.internal.asnum$(maxsplit);
+        maxsplit = Sk.builtin.asnum$(maxsplit);
         pat = Sk.ffi.unwrapo(pattern);
         str = Sk.ffi.unwrapo(string);
 
@@ -213,7 +213,7 @@ var $builtinmodule = function (name) {
                 grpnum = 0;
             }
             else {
-                grpnum = Sk.internal.asnum$(grpnum);
+                grpnum = Sk.builtin.asnum$(grpnum);
             }
             if (grpnum >= self.thematch.v.length) {
                 throw new Sk.builtin.IndexError("Index out of range: " + grpnum);

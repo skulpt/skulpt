@@ -950,7 +950,7 @@ function generateTurtleModule(_target) {
 
         proto.$dot = function(size, color, g, b, a) {
             pushUndo(this);
-            size = Sk.internal.asnum$(size);
+            size = Sk.builtin.asnum$(size);
             size = (typeof size === "number") ?
                 Math.max(1, Math.abs(size) | 0) :
                 Math.max(this._size + 4, this._size * 2);
