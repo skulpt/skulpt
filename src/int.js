@@ -25,7 +25,6 @@
  * @return {(Sk.builtin.int_|Sk.builtin.lng)}      Python int (or long, if overflow)
  */
 Sk.builtin.int_ = function (x, base) {
-    "use strict";
     var val;
     var ret; // return value
     var magicName; // name of magic method
@@ -45,7 +44,7 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     // if base is not of type int, try calling .__index__
-    if(base !== undefined && !Sk.builtin.checkInt(base)) {
+    if(base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else if (base.__index__) {
@@ -73,7 +72,7 @@ Sk.builtin.int_ = function (x, base) {
         return this;
     }
 
-    if (base !== undefined) {
+    if (base !== undefined && base !== Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     }
 
@@ -1101,7 +1100,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         s = s.substring(1);
     }
 
-    if (base === undefined) {
+    if (base === null || base === undefined || base === Sk.builtin.none.none$) {
         base = 10;
     } // default radix is 10, not dwim
 

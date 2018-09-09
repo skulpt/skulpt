@@ -326,9 +326,10 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
 };
 
 Sk.builtin.func.prototype["$r"] = function () {
-    if (this.tp$getname() in Sk.builtins && this === Sk.builtins[name]) {
-        return new Sk.builtin.str("<built-in function " + this.tp$getname() + ">");
+    var name = this.tp$getname()
+    if (name in Sk.builtins && this === Sk.builtins[name]) {
+        return new Sk.builtin.str("<built-in function " + name + ">");
     } else {
-        return new Sk.builtin.str("<function " + this.tp$getname() + ">");        
+        return new Sk.builtin.str("<function " + name + ">");        
     }
 };

@@ -1148,16 +1148,18 @@ goog.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
  */
 Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
-    var kwix;
-    var argsToFill;
     var it, i;
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    } else if (typeof func === "function" && func.tp$call === undefined) {
-        // This happens in the wrapper functions around generators
-        // (that creates the iterator)
+    }
+    
+    if (typeof func === "function" && func.tp$call === undefined) {
+        func = new Sk.builtin.func(func);
+    }
 
+    fcall = func.tp$call;
+    if (fcall !== undefined) {
         if (varargseq) {
             for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 args.push(i);
@@ -1173,70 +1175,20 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                 kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
             }
         }
-
-        //goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
-        //print('kw args location: '+ kws + ' args ' + args.length)
-        if (kws !== undefined && kws.length > 0) {
-            if (!func.co_varnames && !func.co_kwargs) {
-                throw new Sk.builtin.ValueError("Keyword arguments are not supported by this function");
-            } else if (func.co_varnames) {
-                //number of positionally placed optional parameters
-                argsToFill = args.length - func.co_varnames.length;
-
-                //add defaults
-                args = args.concat(func.$defaults.slice(argsToFill));
-
-                for (i = 0; i < kws.length; i = i + 2) {
-                    kwix = func.co_varnames.indexOf(kws[i]);
-
-                    if (kwix === -1) {
-                        throw new Sk.builtin.TypeError("'" + kws[i] + "' is an invalid keyword argument for this function");
-                    }
-
-                    if (!args[kwix]) {
-                        throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + func.co_varnames.length - func.$defaults.length + 1) + ")");
-                    }
-
-                    args[kwix] = kws[i + 1];
-                }
-            } else {
-                args.push(kws);
-            }
-        }
-        //append kw args to args, filling in the default value where none is provided.
-        return func.apply(null, args);
-    } else {
-        fcall = func.tp$call;
-        if (fcall !== undefined) {
-            if (varargseq) {
-                for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                    args.push(i);
-                }
-            }
-
-            if (kwdict) {
-                for (it = Sk.abstr.iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
-                    if (!Sk.builtin.checkString(i)) {
-                        throw new Sk.builtin.TypeError("Function keywords must be strings");
-                    }
-                    kws.push(i.v);
-                    kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
-                }
-            }
-            return fcall.call(func, args, kws, kwdict);
-        }
-
-        // todo; can we push this into a tp$call somewhere so there's
-        // not redundant checks everywhere for all of these __x__ ones?
-        fcall = func.__call__;
-        if (fcall !== undefined) {
-            // func is actually the object here because we got __call__
-            // from it. todo; should probably use descr_get here
-            args.unshift(func);
-            return Sk.misceval.apply(fcall, kwdict, varargseq, kws, args);
-        }
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
+        return fcall.call(func, args, kws, kwdict);
     }
+
+    // todo; can we push this into a tp$call somewhere so there's
+    // not redundant checks everywhere for all of these __x__ ones?
+    fcall = func.__call__;
+    if (fcall !== undefined) {
+        // func is actually the object here because we got __call__
+        // from it. todo; should probably use descr_get here
+        args.unshift(func);
+        return Sk.misceval.apply(fcall, kwdict, varargseq, kws, args);
+    }
+
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
 };
 goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
 
