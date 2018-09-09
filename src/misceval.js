@@ -1156,9 +1156,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     } else if (typeof func === "function" && func.tp$call === undefined) {
         // This happens in the wrapper functions around generators
-        // (that creates the iterator), and all the builtin functions
-        // (in builtin.js, for example) as they are javascript functions,
-        // not Sk.builtin.func objects.
+        // (that creates the iterator)
 
         if (varargseq) {
             for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
@@ -1196,7 +1194,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                     }
 
                     if (!args[kwix]) {
-                        throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + numNonOptParams + 1) + ")");
+                        throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + func.co_varnames.length - func.$defaults.length + 1) + ")");
                     }
 
                     args[kwix] = kws[i + 1];
