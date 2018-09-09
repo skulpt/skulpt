@@ -1149,8 +1149,7 @@ goog.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
 Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
     var kwix;
-    var numPosParams;
-    var numNonOptParams;
+    var argsToFill;
     var it, i;
 
     if (func === null || func instanceof Sk.builtin.none) {
@@ -1184,11 +1183,10 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                 throw new Sk.builtin.ValueError("Keyword arguments are not supported by this function");
             } else if (func.co_varnames) {
                 //number of positionally placed optional parameters
-                numNonOptParams = func.co_numargs - func.co_varnames.length;
-                numPosParams = args.length - numNonOptParams;
+                argsToFill = args.length - func.co_varnames.length;
 
                 //add defaults
-                args = args.concat(func.$defaults.slice(numPosParams));
+                args = args.concat(func.$defaults.slice(argsToFill));
 
                 for (i = 0; i < kws.length; i = i + 2) {
                     kwix = func.co_varnames.indexOf(kws[i]);
@@ -1197,11 +1195,11 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                         throw new Sk.builtin.TypeError("'" + kws[i] + "' is an invalid keyword argument for this function");
                     }
 
-                    if (kwix < numPosParams) {
+                    if (!args[kwix]) {
                         throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + numNonOptParams + 1) + ")");
                     }
 
-                    args[kwix + numNonOptParams] = kws[i + 1];
+                    args[kwix] = kws[i + 1];
                 }
             } else {
                 args.push(kws);
