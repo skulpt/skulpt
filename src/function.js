@@ -326,7 +326,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
 };
 
 Sk.builtin.func.prototype["$r"] = function () {
-    var name = this.tp$getname()
+    var name = this.tp$getname();
     if (name in Sk.builtins && this === Sk.builtins[name]) {
         return new Sk.builtin.str("<built-in function " + name + ">");
     } else {
