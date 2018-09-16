@@ -10,7 +10,6 @@ Sk.builtins = {
     "sum"       : new Sk.builtin.func(Sk.builtin.sum),
     "zip"       : new Sk.builtin.func(Sk.builtin.zip),
     "abs"       : new Sk.builtin.func(Sk.builtin.abs),
-    "fabs"      : new Sk.builtin.func(Sk.builtin.abs),
     "ord"       : new Sk.builtin.func(Sk.builtin.ord),
     "chr"       : new Sk.builtin.func(Sk.builtin.chr),
     "hex"       : new Sk.builtin.func(Sk.builtin.hex),
