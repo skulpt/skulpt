@@ -1,6 +1,11 @@
 /**
  * @constructor
  *
+ * @param {Sk.builtin.func|Sk.builtin.method} func
+ * @param {Object} self
+ * @param {Sk.builtin.type|Sk.builtin.none} klass
+ * @param {boolean=} builtin
+ * 
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.method = function (func, self, klass, builtin) {
@@ -22,7 +27,7 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     this["$d"] = {
         im_func: func,
         im_self: self,
-        im_class: klass,
+        im_class: klass
     };
 };
 
@@ -32,7 +37,7 @@ Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object
 Sk.builtin.method.prototype.tp$name = "method";
 
 Sk.builtin.method.prototype.tp$call = function (args, kw) {
-    goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
+    // goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
 
     // 'args' and 'kw' get mucked around with heavily in applyOrSuspend();
     // changing it here is OK.
@@ -42,7 +47,9 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
 
     // if there is no first argument or
     // if the first argument is not a subclass of the class this method belongs to we throw an error
-    if (args.length === 0 || !Sk.builtin.issubclass(args[0].ob$type, this.im_class)) {
+    // unless it's a builtin method, because they shouldn't have been __get__ and left in this unbound
+    // state. 
+    if (args.length === 0 || (!Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin)) {
         var reason = args.length === 0 ? "nothing" : Sk.abstr.typeName(args[0].ob$type) + " instance";
         throw new Sk.builtin.TypeError("unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)");
     }
@@ -73,7 +80,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
     // if the owner is specified it needs to be a a subclass of im_self
     if (owner && owner !== Sk.builtin.none.none$) {
         if (Sk.builtin.issubclass(owner, self.im_class)) {
-            return self.tp$descr_get(instance, owner);
+            return self.tp$descr_get(instance, owner, self.im_builtin);
         }
 
         // if it's not we're not bound
@@ -81,7 +88,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
     }
 
     // use the original type to get a bound object
-    return self.tp$descr_get(instance, Sk.builtin.none.none$);
+    return self.tp$descr_get(instance, self.im_class, self.im_builtin);
 };
 
 Sk.builtin.method.prototype["$r"] = function () {

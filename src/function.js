@@ -234,7 +234,7 @@ Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }
 
-    var l_owner = owner && owner !== Sk.builtin.none.none$ ? owner : instance.ob$types;
+    var l_owner = owner && owner !== Sk.builtin.none.none$ ? owner : instance.ob$type;
     
     return self.tp$descr_get(instance, l_owner);
 };

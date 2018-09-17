@@ -490,7 +490,7 @@ var $builtinmodule = function (name) {
       childCtor.prototype.constructor = childCtor;
     };
 
-    mod.namedtuple = function (name, fields) {
+    mod.namedtuple = new Sk.builtin.func(function (name, fields) {
         if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],name ))) {
             throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + name.v);
         }
@@ -568,7 +568,7 @@ var $builtinmodule = function (name) {
         };
 
         return cons;
-    };
+    });
 
     return mod;
 };

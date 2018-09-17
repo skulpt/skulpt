@@ -536,7 +536,7 @@ Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function fromkeys(se
         // static call
         Sk.builtin.pyCheckArgs("fromkeys", arguments, 1, 2, false, false);
 
-        res = new Sk.builtin.dict();
+        res = new Sk.builtin.dict([]);
         iterable = self;
         val = seq === undefined ? Sk.builtin.none.none$ : seq;
     }
