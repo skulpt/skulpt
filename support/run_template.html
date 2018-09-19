@@ -23,7 +23,8 @@ function outf(text) {
 
 function showjs(text) {
    var mypre = document.getElementById("runbrowser_jsout");
-   mypre.innerHTML = mypre.innerHTML + text;
+   mypre.innerHTML = '';
+   mypre.appendChild(document.createTextNode(text));
 }
 
 
@@ -39,13 +40,12 @@ function builtinRead(x) {
 }
 
 function runit(myDiv) {
-    var prog = document.getElementById(myDiv+"_code").value;
-    var mypre = document.getElementById(myDiv+"_pre");
+    var prog = document.getElementById(myDiv + "_code").value;
+    var mypre = document.getElementById(myDiv + "_pre");
 
     Sk.inputfun = function(prompt) {
         return new Promise(function (resolve) { resolve(window.prompt(prompt)); });
     };
-
 
     mypre.innerHTML = '';
     var can = document.getElementById("turtle");
@@ -72,7 +72,6 @@ function runit(myDiv) {
     });
 
     Sk.onBeforeImport = function() {
-        debugger;
         return Sk.misceval.promiseToSuspension(new Promise(function(resolve, reject) {
             setTimeout(function() {
                 resolve();
@@ -81,7 +80,7 @@ function runit(myDiv) {
     };
 
     var myPromise = Sk.misceval.asyncToPromise(function() {
-            return Sk.importMainWithBody("<stdin>",true,prog,true);
+        return Sk.importMainWithBody("<stdin>", true, prog, true);
     });
 
     myPromise.then(function(mod) {}, function(err) {

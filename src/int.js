@@ -21,11 +21,10 @@
  * @extends {Sk.builtin.numtype}
  *
  * @param  {!(Object|number)} x    Python object or Javascript number to convert to Python int
- * @param  {!(Object|number)=} base Optional base, can only be used when x is Sk.builtin.str
+ * @param  {!(Object|number|Sk.builtin.none)=} base Optional base, can only be used when x is Sk.builtin.str
  * @return {(Sk.builtin.int_|Sk.builtin.lng)}      Python int (or long, if overflow)
  */
 Sk.builtin.int_ = function (x, base) {
-    "use strict";
     var val;
     var ret; // return value
     var magicName; // name of magic method
@@ -45,7 +44,7 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     // if base is not of type int, try calling .__index__
-    if(base !== undefined && !Sk.builtin.checkInt(base)) {
+    if(base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else if (base.__index__) {
@@ -59,6 +58,9 @@ Sk.builtin.int_ = function (x, base) {
 
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
+        if (base === Sk.builtin.none.none$) {
+            base = 10;
+        }
 
         val = Sk.str2number(x.v, base, parseInt, function (x) {
             return -x;
@@ -73,7 +75,7 @@ Sk.builtin.int_ = function (x, base) {
         return this;
     }
 
-    if (base !== undefined) {
+    if (base !== undefined && base !== Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     }
 
@@ -1069,8 +1071,8 @@ Sk.builtin.int_.prototype.str$ = function (base, sign) {
  * Takes a JavaScript string and returns a number using the parser and negater
  *  functions (for int/long right now)
  * @param  {string} s       Javascript string to convert to a number.
- * @param  {number} base    The base of the number.
- * @param  {function(string, number): number} parser  Function which should take
+ * @param  {(number)} base    The base of the number.
+ * @param  {function(*, (number|undefined)): number} parser  Function which should take
  *  a string that is a postive number which only contains characters that are
  *  valid in the given base and a base and return a number.
  * @param  {function((number|Sk.builtin.biginteger)): number} negater Function which should take a
@@ -1079,7 +1081,6 @@ Sk.builtin.int_.prototype.str$ = function (base, sign) {
  * @return {number}         The number equivalent of the string in the given base
  */
 Sk.str2number = function (s, base, parser, negater, fname) {
-    "use strict";
     var origs = s,
         neg = false,
         i,
@@ -1101,7 +1102,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         s = s.substring(1);
     }
 
-    if (base === undefined) {
+    if (base === null || base === undefined) {
         base = 10;
     } // default radix is 10, not dwim
 

@@ -248,8 +248,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         # Verify that super() doesn't allow keyword args
         try:
             super(Base, kw=1)
-            # we throw a ValueError not a TypeError I can't change this because it happens in the compiler
-        except ValueError:
+        except TypeError:
             pass
         else:
             self.assertEqual("super shouldn't accept keyword args")
