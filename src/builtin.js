@@ -482,6 +482,10 @@ Sk.builtin.abs = function abs (x) {
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
+// fabs belongs in the math module but has been a Skulpt builtin since 41665a97d (2012).
+// Left in for backwards compatibility for now
+Sk.builtin.fabs = Sk.builtin.abs;
+
 Sk.builtin.ord = function ord (x) {
     Sk.builtin.pyCheckArgs("ord", arguments, 1, 1);
 
@@ -949,8 +953,8 @@ Sk.builtin.map = function map (fun, seq) {
             }
             retval.push(item);
             return loopDeLoop(iter);
-        } 
-        
+        }
+
         if (!(item instanceof Array)) {
             // If there was only one iterable, convert to Javascript
             // Array for call to apply.

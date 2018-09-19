@@ -40,6 +40,7 @@ var builtinNames = [
     "sum",
     "zip",
     "abs",
+    "fabs",
     "ord",
     "chr",
     "hex",

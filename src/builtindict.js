@@ -10,6 +10,7 @@ Sk.builtins = {
     "sum"       : new Sk.builtin.func(Sk.builtin.sum),
     "zip"       : new Sk.builtin.func(Sk.builtin.zip),
     "abs"       : new Sk.builtin.func(Sk.builtin.abs),
+    "fabs"      : new Sk.builtin.func(Sk.builtin.fabs),
     "ord"       : new Sk.builtin.func(Sk.builtin.ord),
     "chr"       : new Sk.builtin.func(Sk.builtin.chr),
     "hex"       : new Sk.builtin.func(Sk.builtin.hex),
@@ -23,7 +24,7 @@ Sk.builtins = {
     "getattr"   : new Sk.builtin.func(Sk.builtin.getattr),
     "hasattr"   : new Sk.builtin.func(Sk.builtin.hasattr),
     "id"        : new Sk.builtin.func(Sk.builtin.id),
-    
+
     "map"       : new Sk.builtin.func(Sk.builtin.map),
     "filter"    : new Sk.builtin.func(Sk.builtin.filter),
     "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
@@ -70,7 +71,7 @@ Sk.builtins = {
     "set"       : Sk.builtin.set,
     "tuple"     : Sk.builtin.tuple,
     "type"      : Sk.builtin.type,
-    
+
     "input"     : new Sk.builtin.func(Sk.builtin.input),
     "raw_input" : new Sk.builtin.func(Sk.builtin.raw_input),
     "setattr"   : new Sk.builtin.func(Sk.builtin.setattr),
