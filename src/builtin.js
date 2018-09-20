@@ -484,9 +484,9 @@ Sk.builtin.abs = function abs (x) {
 
 // fabs belongs in the math module but has been a Skulpt builtin since 41665a97d (2012).
 // Left in for backwards compatibility for now
-Sk.builtin.fabs = function fabs(x) { 
+Sk.builtin.fabs = function fabs(x) {
     return Sk.builtin.abs(x);
-}
+};
 
 Sk.builtin.ord = function ord (x) {
     Sk.builtin.pyCheckArgs("ord", arguments, 1, 1);
