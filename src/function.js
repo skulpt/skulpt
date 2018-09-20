@@ -218,8 +218,8 @@ goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    if (objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
+    goog.asserts.assert(!(obj === undefined && objtype === undefined));
+    if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);
     }
@@ -234,9 +234,7 @@ Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }
 
-    var l_owner = owner && owner !== Sk.builtin.none.none$ ? owner : instance.ob$type;
-    
-    return self.tp$descr_get(instance, l_owner);
+    return self.tp$descr_get(instance, owner);
 };
 
 Sk.builtin.func.prototype.tp$call = function (args, kw) {

@@ -21,8 +21,8 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     }
     this.tp$name = func.tp$name;
     this.im_func = func;
-    this.im_self = self;
-    this.im_class = klass;
+    this.im_self = self || Sk.builtin.none.none$;
+    this.im_class = klass || Sk.builtin.none.none$;
     this.im_builtin = builtin;
     this["$d"] = {
         im_func: func,
@@ -49,7 +49,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     // if the first argument is not a subclass of the class this method belongs to we throw an error
     // unless it's a builtin method, because they shouldn't have been __get__ and left in this unbound
     // state. 
-    if (args.length === 0 || (!Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin)) {
+    if (args.length === 0 || (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin)) {
         var reason = args.length === 0 ? "nothing" : Sk.abstr.typeName(args[0].ob$type) + " instance";
         throw new Sk.builtin.TypeError("unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)");
     }
@@ -72,11 +72,6 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }
 
-    // if instance is null or None or instance is not a subclass of im_class
-    if (!instance || instance === Sk.builtin.none.none$) {
-        return self;
-    }
-
     // if the owner is specified it needs to be a a subclass of im_self
     if (owner && owner !== Sk.builtin.none.none$) {
         if (Sk.builtin.issubclass(owner, self.im_class)) {
@@ -88,7 +83,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
     }
 
     // use the original type to get a bound object
-    return self.tp$descr_get(instance, self.im_class, self.im_builtin);
+    return self.tp$descr_get(instance, Sk.builtin.none.none$, self.im_builtin);
 };
 
 Sk.builtin.method.prototype["$r"] = function () {

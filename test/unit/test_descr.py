@@ -1,56 +1,6 @@
 import unittest
 
-class OperatorsTest(unittest.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
-        self.binops = {
-            'add': '+',
-            'sub': '-',
-            'mul': '*',
-            'div': '/',
-            'divmod': 'divmod',
-            'pow': '**',
-            'lshift': '<<',
-            'rshift': '>>',
-            'and': '&',
-            'xor': '^',
-            'or': '|',
-            'cmp': 'cmp',
-            'lt': '<',
-            'le': '<=',
-            'eq': '==',
-            'ne': '!=',
-            'gt': '>',
-            'ge': '>=',
-        }
-
-        for name, expr in self.binops.items():
-            if expr.islower():
-                expr = expr + "(a, b)"
-            else:
-                expr = 'a %s b' % expr
-            self.binops[name] = expr
-
-        self.unops = {
-            'pos': '+',
-            'neg': '-',
-            'abs': 'abs',
-            'invert': '~',
-            'int': 'int',
-            'long': 'long',
-            'float': 'float',
-            'oct': 'oct',
-            'hex': 'hex',
-        }
-
-        for name, expr in self.unops.items():
-            if expr.islower():
-                expr = expr + "(a)"
-            else:
-                expr = '%s a' % expr
-            self.unops[name] = expr
-
+class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_meth_class_get(self):
         # Testing __get__ method of METH_CLASS C methods...
