@@ -38,6 +38,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
     #build skulpt at this tag
     cd $HOME/skulpt
     git checkout tags/$TAG
+    echo -n "running npm install"
     npm install
     npm run build-min
     #create zip and tarbals
