@@ -1411,7 +1411,6 @@ Sk.builtin.intern = function intern () {
     throw new Sk.builtin.NotImplementedError("intern is not yet implemented");
 };
 
-
 /*
  Sk.builtinFiles = {};
  Sk.builtin.read = function read(x) {
