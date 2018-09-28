@@ -72,6 +72,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
   #build skulpt
   cd skulpt
   git reset HEAD --hard
+  npm install
   npm run build-min
   cd dist
   cp *.js ../../dist/
