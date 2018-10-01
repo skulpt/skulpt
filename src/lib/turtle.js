@@ -2206,7 +2206,7 @@ function generateTurtleModule(_target) {
         wrapperFn.$defaults = [];
 
         for (var i = minArgs; i < co_varnames.length; i++) {
-            wrapperFn.push(Sk.builtin.none.none$);
+            wrapperFn.$defaults.push(Sk.builtin.none.none$);
         }
 
         if (!scopeGenerator) {
