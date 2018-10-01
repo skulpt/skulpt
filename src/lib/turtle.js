@@ -611,7 +611,7 @@ function generateTurtleModule(_target) {
             );
         };
         proto.$degrees.minArgs     = 0;
-        proto.$degrees.keywordArgs = ["fullcircle"];
+        proto.$degrees.co_varnames = ["fullcircle"];
         proto.$degrees.returnType  = Types.FLOAT;
 
         proto.$radians = function() {
@@ -642,8 +642,9 @@ function generateTurtleModule(_target) {
 
             return angle;
         };
-        proto.$towards.minArgs    = 1;
-        proto.$towards.returnType = Types.FLOAT;
+        proto.$towards.co_varnames = ["x", "y"];
+        proto.$towards.minArgs     = 1;
+        proto.$towards.returnType  = Types.FLOAT;
 
         proto.$distance = function(x,y) {
             var coords = getCoordinates(x,y),
@@ -652,8 +653,9 @@ function generateTurtleModule(_target) {
 
             return Math.sqrt(dx * dx + dy * dy);
         };
-        proto.$distance.minArgs    = 1;
-        proto.$distance.returnType = Types.FLOAT;
+        proto.$distance.co_varnames = ["x", "y"];
+        proto.$distance.minArgs     = 1;
+        proto.$distance.returnType  = Types.FLOAT;
 
         proto.$heading = function() {
             return Math.abs(this._angle) < 1e-13 ? 0 : this._angle;
@@ -674,6 +676,7 @@ function generateTurtleModule(_target) {
             pushUndo(this);
             return this.queueMoveBy(this._x, this._y, this._radians, distance);
         };
+        proto.$forward.co_varnames = proto.$fd.co_varnames = ["distance"];
 
         proto.$undo = function() {
             popUndo(this);
@@ -688,11 +691,13 @@ function generateTurtleModule(_target) {
                 Math.min(Math.abs(size), 1000) :
                 0;
         };
+        proto.$distance.co_varnames = ["size"];
 
         proto.$backward = proto.$back = proto.$bk = function(distance) {
             pushUndo(this);
             return this.queueMoveBy(this._x, this._y, this._radians, -distance);
         };
+        proto.$backward.co_varnames = proto.$bk.co_varnames = ["distance"];
 
         proto.$goto_$rw$ = proto.$setpos = proto.$setposition = function(x,y) {
             var coords = getCoordinates(x,y);
@@ -705,15 +710,19 @@ function generateTurtleModule(_target) {
                 true
             );
         };
-        proto.$goto_$rw$.minArgs = 1;
+        proto.$goto_$rw$.co_varnames = proto.$setpos.co_varnames = proto.$setposition.co_varnames = ["x", "y"];
+        proto.$goto_$rw$.minArgs = proto.$setpos.minArgs = proto.$setposition.minArgs = 1;
 
         proto.$setx = function(x) {
             return this.translate(this._x, this._y, x - this._x, 0, true);
         };
+        proto.$setx.co_varnames = ["x"];
+
 
         proto.$sety = function(y) {
             return this.translate(this._x, this._y, 0, y - this._y, true);
         };
+        proto.$sety.co_varnames = ["y"];
 
         proto.$home = function() {
             var self  = this,
@@ -733,16 +742,19 @@ function generateTurtleModule(_target) {
             pushUndo(this);
             return this.rotate(this._angle, -angle);
         };
+        proto.$right.co_varnames = proto.$rt.co_varnames = ["angle"];
 
         proto.$left = proto.$lt = function(angle) {
             pushUndo(this);
             return this.rotate(this._angle, angle);
         };
+        proto.$left.co_varnames = proto.$lt.co_varnames = ["angle"];
 
         proto.$setheading = proto.$seth = function(angle) {
             pushUndo(this);
             return this.queueTurnTo(this._angle, angle);
         };
+        proto.$setheading.co_varnames = proto.$seth.co_varnames = ["angle"];
 
         function circleRotate(turtle, angle, radians) {
             return function() {
@@ -819,7 +831,7 @@ function generateTurtleModule(_target) {
 
             return promise;
         };
-        proto.$circle.keywordArgs = ["extent", "steps"];
+        proto.$circle.co_varnames = ["radius", "extent", "steps"];
         proto.$circle.minArgs     = 1;
 
         proto.$penup = proto.$up = proto.$pu = function() {
@@ -846,11 +858,9 @@ function generateTurtleModule(_target) {
             return this._speed;
         };
         proto.$speed.minArgs = 0;
-        proto.$speed.keywordArgs = ["speed"];
+        proto.$speed.co_varnames = ["speed"];
 
         proto.$pencolor = function(r,g,b,a) {
-            var color;
-
             if (arguments.length) {
                 this._color = createColor(r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {color : this._color});
@@ -858,12 +868,11 @@ function generateTurtleModule(_target) {
 
             return hexToRGB(this._color);
         };
+        proto.$pencolor.co_varnames = ["r", "g", "b", "a"];
         proto.$pencolor.minArgs = 0;
         proto.$pencolor.returnType = Types.COLOR;
 
         proto.$fillcolor = function(r,g,b,a) {
-            var color;
-
             if (arguments.length) {
                 this._fill = createColor(r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {fill : this._fill});
@@ -871,6 +880,7 @@ function generateTurtleModule(_target) {
 
             return hexToRGB(this._fill);
         };
+        proto.$fillcolor.co_varnames = ["r", "g", "b", "a"];
         proto.$fillcolor.minArgs = 0;
         proto.$fillcolor.returnType = Types.COLOR;
 
@@ -892,6 +902,7 @@ function generateTurtleModule(_target) {
             return [this.$pencolor(), this.$fillcolor()];
         };
         proto.$color.minArgs = 0;
+        proto.$color.co_varnames = ["color", "fill", "b", "a"];
         proto.$color.returnType = function(value) {
             return new Sk.builtin.tuple([
                 Types.COLOR(value[0]),
@@ -931,6 +942,7 @@ function generateTurtleModule(_target) {
 
             return this._filling;
         };
+        proto.$fill.co_varnames = ["flag"];
         proto.$fill.minArgs = 0;
 
         proto.$begin_fill = function() {
@@ -961,8 +973,9 @@ function generateTurtleModule(_target) {
 
             return this.addUpdate(drawDot, true, undefined, size, color);
         };
+        proto.$dor.co_varnames = ["size", "color", "g", "b", "a"];
 
-        proto.$write = function(message,move,align,font) {
+        proto.$write = function(message, move, align, font) {
             var self = this,
                 promise, face, size, type, width;
 
@@ -1002,7 +1015,7 @@ function generateTurtleModule(_target) {
 
             return promise;
         };
-        proto.$write.keywordArgs = ["move","align","font"];
+        proto.$write.co_varnames = ["message", "move", "align", "font"];
         proto.$write.minArgs     = 1;
 
         proto.$pensize = proto.$width = function(size) {
@@ -1014,7 +1027,7 @@ function generateTurtleModule(_target) {
             return this._size;
         };
         proto.$pensize.minArgs = proto.$width.minArgs = 0;
-        proto.$pensize.keywordArgs = proto.$width.keywordArgs = ["width"];
+        proto.$pensize.co_varnames = proto.$width.co_varnames = ["width"];
 
         proto.$showturtle = proto.$st = function() {
             this._shown = true;
@@ -1039,7 +1052,7 @@ function generateTurtleModule(_target) {
             return this._shape;
         };
         proto.$shape.minArgs     = 0;
-        proto.$shape.keywordArgs = ["name"];
+        proto.$shape.co_varnames = ["name"];
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1053,7 +1066,7 @@ function generateTurtleModule(_target) {
             return this._screen.$tracer(n, delay);
         };
         proto.$tracer.minArgs     = 0;
-        proto.$tracer.keywordArgs = ["n", "delay"];
+        proto.$tracer.co_varnames = ["n", "delay"];
 
         proto.$update = function() {
             return this._screen.$update();
@@ -1063,7 +1076,7 @@ function generateTurtleModule(_target) {
             return this._screen.$delay(delay);
         };
         proto.$delay.minArgs     = 0;
-        proto.$delay.keywordArgs = ["delay"];
+        proto.$delay.co_varnames = ["delay"];
 
         proto.$reset = function() {
             this.reset();
@@ -1081,23 +1094,23 @@ function generateTurtleModule(_target) {
         };
         proto.$dot.minArgs = 0;
 
-        proto.$onclick = function(method,btn,add) {
+        proto.$onclick = function(method, btn, add) {
             this.getManager("mousedown").addHandler(method, add);
         };
         proto.$onclick.minArgs = 1;
-        proto.$onclick.keywordArgs = ["btn","add"];
+        proto.$onclick.co_varnames = ["method", "btn", "add"];
 
-        proto.$onrelease = function(method,btn,add) {
+        proto.$onrelease = function(method, btn, add) {
             this.getManager("mouseup").addHandler(method, add);
         };
         proto.$onrelease.minArgs = 1;
-        proto.$onrelease.keywordArgs = ["btn","add"];
+        proto.$onrelease.co_varnames = ["method", "btn", "add"];
 
-        proto.$ondrag = function(method,btn,add) {
+        proto.$ondrag = function(method, btn, add) {
             this.getManager("mousemove").addHandler(method, add);
         };
         proto.$ondrag.minArgs = 1;
-        proto.$ondrag.keywordArgs = ["btn","add"];
+        proto.$ondrag.co_varnames = ["method", "btn", "add"];
 
         proto.$getscreen = function() {
             return Sk.misceval.callsim(_module.Screen);
@@ -1261,7 +1274,7 @@ function generateTurtleModule(_target) {
             return this._setworldcoordinates(-width/2, -height/2, width/2, height/2);
         };
         proto.$setup.minArgs     = 0;
-        proto.$setup.keywordArgs = ["width", "height", "startx", "starty"];
+        proto.$setup.co_varnames = ["width", "height", "startx", "starty"];
 
         proto.$register_shape = proto.$addshape = function(name, points) {
             if (!points) {
@@ -1295,6 +1308,7 @@ function generateTurtleModule(_target) {
 
             return this._frames;
         };
+        proto.$tracer.co_varnames = ["frames", "delay"];
         proto.$tracer.minArgs = 0;
 
         proto.$delay = function(delay) {
@@ -1304,6 +1318,7 @@ function generateTurtleModule(_target) {
 
             return this._delay === undefined ? OPTIMAL_FRAME_RATE : this._delay;
         };
+        proto.$delay.co_varnames = ["delay"];
 
         proto._setworldcoordinates = function(llx, lly, urx, ury) {
             var world     = this,
@@ -1326,6 +1341,8 @@ function generateTurtleModule(_target) {
             this._mode = "world";
             return this._setworldcoordinates(llx, lly, urx, ury);
         };
+        proto.$setworldcoordinates = ["llx", "lly", "urx", "ury"];
+        proto.minArgs = 4;
 
         proto.$clear = proto.$clearscreen = function() {
             this.reset();
@@ -1376,6 +1393,7 @@ function generateTurtleModule(_target) {
             return this._bgpic;
         };
         proto.$bgpic.minArgs = 0;
+        proto.$bgpic.co_varnames = ["name"];
 
         proto.$bgcolor = function(color, g, b, a) {
             if (arguments.length) {
@@ -1387,6 +1405,7 @@ function generateTurtleModule(_target) {
             return hexToRGB(this._bgcolor);
         };
         proto.$bgcolor.minArgs = 0;
+        proto.$bgcolor.co_varnames = ["color", "g", "b", "a"];
         proto.$bgcolor.returnType = Types.COLOR;
 
         // no-op - just defined for consistency with python version
@@ -1405,12 +1424,12 @@ function generateTurtleModule(_target) {
             }, false);
         };
 
-        proto.$onclick = function(method,btn,add) {
+        proto.$onclick = function(method, btn, add) {
             if (this._exitOnClick) return;
             this.getManager("mousedown").addHandler(method, add);
         };
         proto.$onclick.minArgs = 1;
-        proto.$onclick.keywordArgs = ["btn","add"];
+        proto.$onclick.co_varnames = ["method", "btn", "add"];
 
         var KEY_MAP = {
             "8"  : /^back(space)?$/i,
@@ -1517,12 +1536,14 @@ function generateTurtleModule(_target) {
                 delete this._keyListeners[keyValue];
             }
         };
+        proto.$onkey.minArgs = 2;
+        proto.$onkey.co_varnames = ["method", "keyValue"]
 
-        proto.$onscreenclick = function(method,btn,add) {
+        proto.$onscreenclick = function(method, btn, add) {
             this.getManager("mousedown").addHandler(method, add);
         };
         proto.$onscreenclick.minArgs = 1;
-        proto.$onscreenclick.keywordArgs = ["btn","add"];
+        proto.$onscreenclick.co_varnames = ["method", "btn", "add"];
 
         proto.$ontimer = function(method, interval) {
             if (this._timer) {
@@ -1535,7 +1556,7 @@ function generateTurtleModule(_target) {
             }
         };
         proto.$ontimer.minArgs = 0;
-
+        proto.$ontimer.co_varnames = ["method", "interval"];
     })(Screen.prototype);
 
     function ensureAnonymous() {
@@ -2078,6 +2099,7 @@ function generateTurtleModule(_target) {
             if (typeof(scope) !== "undefined") {
                 argsPy.unshift(scope);
             }
+
             return Sk.misceval.applyAsync(
                 undefined, pyValue, undefined, undefined, undefined, argsPy
             ).catch(Sk.uncaughtException);
@@ -2089,7 +2111,7 @@ function generateTurtleModule(_target) {
             displayName      = publicMethodName.replace(/_\$[a-z]+\$$/i, ""),
             maxArgs          = klass.prototype[method].length,
             minArgs          = klass.prototype[method].minArgs,
-            keywordArgs      = klass.prototype[method].keywordArgs,
+            co_varnames      = klass.prototype[method].co_varnames || [],
             returnType       = klass.prototype[method].returnType,
             isSk             = klass.prototype[method].isSk,
             wrapperFn;
@@ -2112,7 +2134,7 @@ function generateTurtleModule(_target) {
             }
 
             for (i = args.length; --i >= 0;) {
-                if (args[i] !== undefined) {
+                if (args[i] !== undefined && args[i] !== Sk.builtin.none.none$) {
                     if (args[i] instanceof Sk.builtin.func) {
                         args[i] = pythonToJavascriptFunction(args[i]);
                     }
@@ -2180,16 +2202,16 @@ function generateTurtleModule(_target) {
             }
         };
 
-        if (keywordArgs) {
-            wrapperFn.co_varnames = keywordArgs.slice();
-            // make room for required arguments
-            for(var i = 0; i < minArgs; i++) {
-                wrapperFn.co_varnames.unshift("");
-            }
-            if (!scopeGenerator) {
-                // make room for the "self" argument
-                wrapperFn.co_varnames.unshift("");
-            }
+        wrapperFn.co_varnames = co_varnames;
+        wrapperFn.$defaults = [];
+
+        for (var i = minArgs; i < co_varnames.length; i++) {
+            wrapperFn.push(Sk.builtin.none.none$);
+        }
+
+        if (!scopeGenerator) {
+            // make room for the "self" argument
+            wrapperFn.co_varnames.unshift("self");
         }
 
         module[publicMethodName] = new Sk.builtin.func(wrapperFn);
