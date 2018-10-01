@@ -691,13 +691,13 @@ function generateTurtleModule(_target) {
                 Math.min(Math.abs(size), 1000) :
                 0;
         };
-        proto.$distance.co_varnames = ["size"];
+        proto.$setundobuffer.co_varnames = ["size"];
 
         proto.$backward = proto.$back = proto.$bk = function(distance) {
             pushUndo(this);
             return this.queueMoveBy(this._x, this._y, this._radians, -distance);
         };
-        proto.$backward.co_varnames = proto.$bk.co_varnames = ["distance"];
+        proto.$backward.co_varnames = proto.$back.co_varnames = proto.$bk.co_varnames = ["distance"];
 
         proto.$goto_$rw$ = proto.$setpos = proto.$setposition = function(x,y) {
             var coords = getCoordinates(x,y);
@@ -973,7 +973,7 @@ function generateTurtleModule(_target) {
 
             return this.addUpdate(drawDot, true, undefined, size, color);
         };
-        proto.$dor.co_varnames = ["size", "color", "g", "b", "a"];
+        proto.$dot.co_varnames = ["size", "color", "g", "b", "a"];
 
         proto.$write = function(message, move, align, font) {
             var self = this,
