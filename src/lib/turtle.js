@@ -2134,7 +2134,7 @@ function generateTurtleModule(_target) {
             }
 
             for (i = args.length; --i >= 0;) {
-                if (args[i] !== undefined && args[i] !== Sk.builtin.none.none$) {
+                if (args[i] !== undefined) {
                     if (args[i] instanceof Sk.builtin.func) {
                         args[i] = pythonToJavascriptFunction(args[i]);
                     }
@@ -2148,6 +2148,18 @@ function generateTurtleModule(_target) {
                         args[i] = Sk.ffi.remapToJs(args[i]);
                     }
                 }
+            }
+
+            // filter out undefines in a previous implementation of function calls
+            // non required args were not specified, where as now they are filled with
+            // default values of None which are translated to null's
+            var tmp_args = args.slice();
+            args = [];
+            for (i = tmp_args.length; i >= 0; --i) {
+                if (tmp_args[i] === null) {
+                    continue;
+                }
+                args[i] = tmp_args[i];
             }
 
             try {
@@ -2202,7 +2214,7 @@ function generateTurtleModule(_target) {
             }
         };
 
-        wrapperFn.co_varnames = co_varnames;
+        wrapperFn.co_varnames = co_varnames.slice();
         wrapperFn.$defaults = [];
 
         for (var i = minArgs; i < co_varnames.length; i++) {
