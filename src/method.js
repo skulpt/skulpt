@@ -48,10 +48,19 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     // if there is no first argument or
     // if the first argument is not a subclass of the class this method belongs to we throw an error
     // unless it's a builtin method, because they shouldn't have been __get__ and left in this unbound
-    // state. 
-    if (args.length === 0 || (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin)) {
-        var reason = args.length === 0 ? "nothing" : Sk.abstr.typeName(args[0].ob$type) + " instance";
-        throw new Sk.builtin.TypeError("unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)");
+    // state.
+    if (this.im_self === Sk.builtin.none.none$) {
+        var getMessage = (function (reason) {
+            return "unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)";
+        }).bind(this);
+
+        if (args.length > 0) {
+            if (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin) {
+                throw new Sk.builtin.TypeError(getMessage(Sk.abstr.typeName(args[0].ob$type) + " instance"));
+            }
+        } else {
+            throw new Sk.builtin.TypeError(getMessage("nothing"));
+        }
     }
 
     // A method call is just a call to this.im_func with 'self' on the beginning of the args.
@@ -61,7 +70,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
 
 Sk.builtin.method.prototype.tp$descr_get = function (obj, objtype) {
     goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    return new Sk.builtin.method(this, obj, objtype);
+    return new Sk.builtin.method(this, obj, objtype, this.im_builtin);
 };
 
 Sk.builtin.method.pythonFunctions = ["__get__"];
@@ -75,7 +84,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
     // if the owner is specified it needs to be a a subclass of im_self
     if (owner && owner !== Sk.builtin.none.none$) {
         if (Sk.builtin.issubclass(owner, self.im_class)) {
-            return self.tp$descr_get(instance, owner, self.im_builtin);
+            return self.tp$descr_get(instance, owner);
         }
 
         // if it's not we're not bound
@@ -83,7 +92,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
     }
 
     // use the original type to get a bound object
-    return self.tp$descr_get(instance, Sk.builtin.none.none$, self.im_builtin);
+    return self.tp$descr_get(instance, Sk.builtin.none.none$);
 };
 
 Sk.builtin.method.prototype["$r"] = function () {
@@ -93,7 +102,7 @@ Sk.builtin.method.prototype["$r"] = function () {
 
     if (this.im_self === Sk.builtin.none.none$) {
         return new Sk.builtin.str("<unbound method " + Sk.abstr.typeName(this.im_class) + "." + this.tp$name + ">");
-    } 
+    }
 
     var owner = this.im_class !== Sk.builtin.none.none$ ? Sk.abstr.typeName(this.im_class) : "?";
     return new Sk.builtin.str("<bound method " + owner  + "." + this.tp$name + " of " + Sk.ffi.remapToJs(Sk.misceval.objectRepr(this.im_self)) + ">");
