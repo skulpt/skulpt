@@ -109,7 +109,7 @@ Sk.builtin.checkCallable = function (obj) {
     // go up the prototype chain to see if the class has a __call__ method
     if (Sk.abstr.lookupSpecial(obj, "__call__") !== undefined) {
         return true;
-    } 
+    }
     return false;
 };
 

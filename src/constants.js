@@ -30,3 +30,7 @@ Sk.builtin.lng.$defaults = [ new Sk.builtin.int_(10) ];
 Sk.builtin.sorted.co_varnames = ["cmp", "key", "reverse"];
 Sk.builtin.sorted.co_numargs = 4;
 Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.bool.false$];
+
+// Sk.builtin.dict.fromkeys
+Sk.builtin.dict.$fromkeys.co_name = new Sk.builtin.str("fromkeys");
+Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(Sk.builtin.dict.$fromkeys);

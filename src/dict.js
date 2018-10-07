@@ -522,7 +522,7 @@ Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
 });
 
-Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function fromkeys(self, seq, value) {
+Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
     var k, iter, val, res, iterable;
 
     if (self instanceof Sk.builtin.dict) {
@@ -549,10 +549,11 @@ Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function fromkeys(se
             k !== undefined;
             k = iter.tp$iternext()) {
         res.mp$ass_subscript(k, val);
-    } 
+    }
 
     return res;
-});
+};
+
 
 Sk.builtin.dict.prototype["iteritems"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
