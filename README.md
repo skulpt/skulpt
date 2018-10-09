@@ -28,16 +28,13 @@ We are coordinating sprints on some of the ideas below, builtins, stdlib, third 
 
 4. Currently builtin types (list, tuple, string, etc) are not subclassable.  Making the builtins subclassable would eliminate several known bugs in Skulpt.
 
-5. Implement decorators.  This would enable a whole bunch of pure python modules to be added to skulpt, plus allow us to add things like properties in a nice way.
+5. Do a better job of supporting Python3 semantics, but make Python2/Python3 behavior configurable with a single flag. Sk.python3 is already there for this purpose.  Another positive step in this direction would be to update our grammar to Python2.7.  Updating the grammar would allow us to add set literals, dictionary comprehensions, and other features present in 2.7.x and Python 3.3.x.  This would be an excellent project for a student interested in language design, parsing, and the use of abstract syntax trees.
 
-6. Do a better job of supporting Python3 semantics, but make Python2/Python3 behavior configurable with a single flag. Sk.python3 is already there for this purpose.  Another positive step in this direction would be to update our grammar to Python2.7.  Updating the grammar would allow us to add set literals, dictionary comprehensions, and other features present in 2.7.x and Python 3.3.x.  This would be an excellent project for a student interested in language design, parsing, and the use of abstract syntax trees.
+6. Make fully workable, and expand support for DOM access as part of the standard library.
 
-7. Make fully workable, and expand support for DOM access as part of the standard library.
+7. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
 
-
-8. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
-
-9.  Implement the hooks for a debugger. This may be a half step towards 1 or may be in a completely different direction, but allowing students to debug line by line a program they have written would have some real benefit.
+8. Implement the hooks for a debugger. This may be a half step towards 1 or may be in a completely different direction, but allowing students to debug line by line a program they have written would have some real benefit.
 
 
 ### Building Skulpt
