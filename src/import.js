@@ -224,7 +224,8 @@ Sk.doOneTimeInitialization = function () {
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], false);
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
     }
@@ -674,16 +675,12 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
 };
 
 Sk.importStar = function (module, loc, global) {
-    // from the global scope, globals and locals can be the same.  So the loop below
-    // could accidentally overwrite __name__, erasing __main__.
     var i;
-    var nn = global["__name__"];
     var props = Object["getOwnPropertyNames"](module["$d"]);
     for (i in props) {
-        loc[props[i]] = module["$d"][props[i]];
-    }
-    if (global["__name__"] !== nn) {
-        global["__name__"] = nn;
+        if (props[i].charAt(0) != "_") {
+            loc[props[i]] = module["$d"][props[i]];
+        }
     }
 };
 

@@ -269,38 +269,34 @@ Sk.builtin.type = function (name, bases, dict) {
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
-            return Sk.builtin.object.prototype.GenericSetAttr.call(this, name, data);
+            return Sk.builtin.object.prototype.GenericSetAttr.call(this, name, data, canSuspend);
         };
 
         klass.prototype.tp$getattr = function(name, canSuspend) {
-            var r, /** @type {(Object|undefined)} */ getf;
+            var r, descr, /** @type {(Object|undefined)} */ getf;
+
+            // Find __getattribute__ on this type if we can
+            descr = Sk.builtin.type.typeLookup(klass, "__getattribute__");
+
+            if (descr !== undefined && descr !== null && descr.tp$descr_get !== undefined) {
+                getf = descr.tp$descr_get.call(descr, this, klass);
+            }
+
+            if (getf === undefined) {
+                getf = Sk.builtin.object.prototype.GenericPythonGetAttr.bind(null, this);
+            }
+
             // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
             // convention
-            var callCatchUndefined = function() {
-                return Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new Sk.builtin.str(name));
-                }, function (e) {
-                    if (e instanceof Sk.builtin.AttributeError) {
-                        return undefined;
-                    } else {
-                        throw e;
-                    }
-                });
-            };
-
-            getf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__getattribute__");
-
-            if (getf !== undefined) {
-                r = callCatchUndefined();
-            } else {
-                r = Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
-                if (r === undefined) {
-                    getf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__getattr__");
-                    if (getf !== undefined) {
-                        r = callCatchUndefined();
-                    }
+            r = Sk.misceval.tryCatch(function() {
+                return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new Sk.builtin.str(name));
+            }, function (e) {
+                if (e instanceof Sk.builtin.AttributeError) {
+                    return undefined;
+                } else {
+                    throw e;
                 }
-            }
+            });
             
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
