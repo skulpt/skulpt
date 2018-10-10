@@ -2425,10 +2425,11 @@ Compiler.prototype.cmod = function (mod) {
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0, this.canSuspend);
 
     var entryBlock = this.newBlock("module entry");
-    this.u.prefixCode = "var " + modf + "=(function($modname){";
+    this.u.prefixCode = "var " + modf + "=(function($forcegbl){";
     this.u.varDeclsCode =
-        "var $gbl = {}, $blk=" + entryBlock +
-        ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;$loc.__file__=new Sk.builtins.str('" + this.filename +
+        "var $gbl = $forcegbl || {}, $blk=" + entryBlock +
+        ",$exc=[],$loc=$gbl,$err=undefined;" + 
+        "$loc.__file__=new Sk.builtins.str('" + this.filename +
         "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
