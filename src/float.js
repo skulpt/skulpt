@@ -626,6 +626,11 @@ Sk.builtin.float_.prototype.nb$negative = function () {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$positive = function () {
+    // -0 -> 0 (but JavaScript behaves differently)
+    if (Sk.builtin.isNegativeZero(this.v)) {
+        return new Sk.builtin.float_(0);
+    }
+
     return this.clone();
 };
 
@@ -917,7 +922,7 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
     }
 
     // restore negative zero sign
-    if(this.v === 0 && 1/this.v === -Infinity) {
+    if(Sk.builtin.isNegativeZero(this.v)) {
         tmp = "-" + tmp;
     }
 
