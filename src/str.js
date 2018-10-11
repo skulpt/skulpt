@@ -381,6 +381,26 @@ Sk.builtin.str.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) 
     return new Sk.builtin.str(self.v.replace(pattern, ""));
 });
 
+Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.python3) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "" && formatstr !== "s") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(self);
+});
+
 Sk.builtin.str.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
@@ -1159,10 +1179,10 @@ Sk.builtin.str_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
-Sk.builtin.str_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};

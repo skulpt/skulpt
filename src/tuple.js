@@ -288,10 +288,10 @@ Sk.builtin.tuple_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) 
     return self;
 });
 
-Sk.builtin.tuple_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.tuple_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};

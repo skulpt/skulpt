@@ -59,12 +59,12 @@ var $builtinmodule = function (name) {
     mod.sleep = new Sk.builtin.func(function(delay) {
         Sk.builtin.pyCheckArgs("sleep", arguments, 1, 1);
         Sk.builtin.pyCheckType("delay", "float", Sk.builtin.checkNumber(delay));
-        var susp = new Sk.misceval.Suspension();
-        susp.resume = function() { return Sk.builtin.none.none$; }
-        susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
-            Sk.setTimeout(resolve, Sk.ffi.remapToJs(delay)*1000);
-        })};
-        return susp;
+
+        return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
+            Sk.setTimeout(function() {
+                resolve(Sk.builtin.none.none$);
+            }, Sk.ffi.remapToJs(delay)*1000);
+        }));
     });
 
     function padLeft(str, l, c) {
@@ -104,7 +104,8 @@ var $builtinmodule = function (name) {
     }
 
     function timeZoneName(date) {
-        return /\((.*)\)/.exec(date.toString())[1];
+        var i = /\((.*)\)/.exec(date.toString());
+        return i ? i[1] : "UTC";
     }
 
     function timeZoneNames() {
@@ -196,13 +197,12 @@ var $builtinmodule = function (name) {
     function mktime_f(time) {
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
-            var d = new Date();
-            d.setFullYear(Sk.builtin.asnum$(time.v[0]));
-            d.setMonth(Sk.builtin.asnum$(time.v[1])-1);
-            d.setDate(Sk.builtin.asnum$(time.v[2]));
-            d.setHours(Sk.builtin.asnum$(time.v[3]));
-            d.setMinutes(Sk.builtin.asnum$(time.v[4]));
-            d.setSeconds(Sk.builtin.asnum$(time.v[5]));
+            var d = new Date(Sk.builtin.asnum$(time.v[0]),
+                             Sk.builtin.asnum$(time.v[1])-1,
+                             Sk.builtin.asnum$(time.v[2]),
+                             Sk.builtin.asnum$(time.v[3]),
+                             Sk.builtin.asnum$(time.v[4]),
+                             Sk.builtin.asnum$(time.v[5]));
             return Sk.builtin.assk$(d.getTime() / 1000, undefined);
         } else {
             throw new Sk.builtin.TypeError("mktime() requires a struct_time or 9-tuple");

@@ -1497,7 +1497,7 @@ function generateTurtleModule(_target) {
 
     function ensureAnonymous() {
         if (!_anonymousTurtle) {
-            _anonymousTurtle = _module.Turtle();
+            _anonymousTurtle = Sk.misceval.callsim(_module.Turtle);
         }
 
         return _anonymousTurtle.instance;
@@ -2048,7 +2048,7 @@ function generateTurtleModule(_target) {
                 instance = scopeGenerator ? scopeGenerator() : args.shift().instance,
                 i, result, susp, resolution, lengthError;
 
-            if (args < minArgs || args.length > maxArgs) {
+            if (args.length < minArgs || args.length > maxArgs) {
                 lengthError = minArgs === maxArgs ?
                     "exactly " + maxArgs :
                     "between " + minArgs + " and " + maxArgs;

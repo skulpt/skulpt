@@ -80,6 +80,15 @@ Sk.builtin.BaseException.prototype.toString = function () {
     return this.tp$str().v;
 };
 
+// Create a descriptor to return the 'args' of an exception.
+// This is a hack to get around a weird mismatch between builtin
+// objects and proper types
+Sk.builtin.BaseException.prototype.args = {
+    "tp$descr_get": function(self, clstype) {
+        return self.args;
+    }
+};
+
 goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
 /**
@@ -526,5 +535,16 @@ Sk.builtin.StopIteration = function (args) {
 Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
 goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
+
+// TODO: Extract into sys.exc_info(). Work out how the heck
+// to find out what exceptions are being processed by parent stack frames...
+Sk.builtin.getExcInfo = function(e) {
+    var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
+
+    // TODO create a Traceback object for the third tuple element
+
+    return new Sk.builtin.tuple(v);
+};
+// NOT exported
 
 goog.exportSymbol("Sk", Sk);

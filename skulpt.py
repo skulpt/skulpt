@@ -21,6 +21,7 @@ import pprint
 import json
 import shutil
 import time
+from itertools import chain
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -77,7 +78,6 @@ Files = [
         'src/builtin.js',
         'src/fromcodepoint.js',   # should become unnecessary, eventually
         'src/errors.js',
-        'src/native.js',
         'src/method.js',
         'src/misceval.js',
         'src/seqtype.js',
@@ -211,33 +211,39 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test(debug_mode=False):
+def test(debug_mode=False, p3=False):
     """runs the unit tests."""
     if debug_mode:
         debugon = "--debug-mode"
     else:
         debugon = ""
-    buildNamedTestsFile()
-    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+    ret1 = 0
     ret2 = 0
     ret3 = 0
     ret4 = 0
+    if not p3:
+        buildNamedTestsFile()
+        ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+
     if ret1 == 0:
         print "Running jshint"
         base_dirs = ["src", "debugger"]
-        for base_dir in base_dirs:
-            if sys.platform == "win32":
-                jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-                jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-            else:
-                jshintcmd = "jshint " + base_dir + "/*.js"
-                jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
+
+        if sys.platform == "win32":
+            files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
+            jshintcmd = "jshint {1}".format(' '.join(files))
+            jscscmd = "jscs {1} --reporter=inline".format(' '.join(files))
+        else:
+            folders = ' '.join([ d + "/*.js" for d in base_dirs ])
+            jshintcmd = "jshint " + folders
+            jscscmd = "jscs " + folders + " --reporter=inline"
+
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
-        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits(debug_mode=debug_mode)
+        ret4 = rununits(p3=p3, debug_mode=debug_mode)
+
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -866,7 +872,7 @@ def make_skulpt_js(options,dest):
     if sys.platform != "win32":
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
-def run_in_browser(fn, options, debug_mode=False):
+def run_in_browser(fn, options, debug_mode=False, p3=False):
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -881,7 +887,7 @@ def run_in_browser(fn, options, debug_mode=False):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),root="")
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=str(p3).lower(),root="")
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1067,7 +1073,13 @@ def shell(fn):
 
 
 def rununits(opt=False, p3=False, debug_mode=False):
-    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    if p3:
+        unit_dir = 'test/unit3'
+        p3on = 'true'
+    else:
+        unit_dir = 'test/unit'
+        p3on = 'false'
+    testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
@@ -1076,10 +1088,6 @@ def rununits(opt=False, p3=False, debug_mode=False):
             os.mkdir("support/tmp")
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
-        if p3:
-            p3on = 'true'
-        else:
-            p3on = 'false'
         f.write("""
 var input = read('%s');
 print('%s');
@@ -1307,9 +1315,13 @@ def main():
         f.write(getInternalCodeAsJson() + ";")
 
     if cmd == "test":
-        test()
+        exit(bool(test()))
+    elif cmd == "test3":
+        exit(bool(test(p3=True)))
     elif cmd == "testdebug":
-        test(True)
+        exit(bool(test(debug_mode=True)))
+    elif cmd == "test3debug":
+        exit(bool(test(debug_mode=True, p3=True)))
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
@@ -1330,7 +1342,9 @@ def main():
     elif cmd == "brun":
         run_in_browser(sys.argv[2], options)
     elif cmd == "brundebug":
-        run_in_browser(sys.argv[2], options, True)
+        run_in_browser(sys.argv[2], options, debug_mode=True)
+    elif cmd == "brun3":
+        run_in_browser(sys.argv[2], options, p3=True)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":

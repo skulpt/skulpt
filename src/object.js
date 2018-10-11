@@ -38,6 +38,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     var descr;
     var tp;
     var dict;
+    var getf;
     var pyName = new Sk.builtin.str(name);
     goog.asserts.assert(typeof name === "string");
 
@@ -53,7 +54,6 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         } else if (dict.mp$subscript) {
             res = _tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
         }
         if (res !== undefined) {
@@ -78,18 +78,46 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         return descr;
     }
 
+    // OK, try __getattr__
+
+    descr = Sk.builtin.type.typeLookup(tp, "__getattr__");
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_get;
+        if (f) {
+            getf = f.call(descr, this, this.ob$type);
+        } else {
+            getf = descr;
+        }
+
+        res = Sk.misceval.tryCatch(function() {
+            return Sk.misceval.callsimOrSuspend(getf, pyName);
+        }, function(e) {
+            if (e instanceof Sk.builtin.AttributeError) {
+                return undefined;
+            } else {
+                throw e;
+            }
+        });
+        return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+    }
+
+
     return undefined;
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
 Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
-    return Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v);
+    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v, true);
+    if (r === undefined) {
+        throw new Sk.builtin.AttributeError(name);
+    }
+    return r;
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 /**
  * @param {string} name
- * @param {undefined} value
+ * @param {Object} value
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
@@ -105,6 +133,17 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+
+    if (name == "__class__") {
+        if (value.tp$mro === undefined || value.tp$name === undefined ||
+            value.tp$name === undefined) {
+            throw new Sk.builtin.TypeError(
+                      "attempted to assign non-class to __class__");
+        }
+        this.ob$type = value;
+        this.tp$name = value.tp$name;
+        return;
+    }
 
     descr = Sk.builtin.type.typeLookup(tp, name);
 
@@ -133,7 +172,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
 goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
 Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
-    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value);
+    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value, true);
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 
@@ -145,8 +184,8 @@ Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetA
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
-// overriding __getattr__ etc need to be able to call object.__getattr__ etc from Python
-Sk.builtin.object.prototype["__getattr__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
+// overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
+Sk.builtin.object.prototype["__getattribute__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
 Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
 
 /**
@@ -157,7 +196,7 @@ Sk.builtin.object.prototype.tp$name = "object";
 
 /**
  * The type object of this class.
- * @type {Sk.builtin.type}
+ * @type {Sk.builtin.type|Object}
  */
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
@@ -187,6 +226,28 @@ Sk.builtin.object.prototype["__repr__"] = function (self) {
 
     return self["$r"]();
 };
+
+
+Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.python3) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(self);
+};
+
 
 /**
  * Python wrapper for `__str__` method.
@@ -415,7 +476,9 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * @type {Array}
  */
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
+                                     "__eq__", "__ne__", "__lt__", "__le__",
+                                     "__gt__", "__ge__", "__getattribute__",
+                                     "__setattr__", "__format__"];
 
 /**
  * @constructor

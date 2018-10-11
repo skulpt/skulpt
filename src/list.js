@@ -293,6 +293,12 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
     }
     return false;
 };
+
+Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
+});
+
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
@@ -401,6 +407,14 @@ Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.list_del_
 
 Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
     return Sk.builtin.list.prototype.list_subscript_.call(self, index);
+});
+
+Sk.builtin.list.prototype.__setitem__ = new Sk.builtin.func(function (self, index, val) {
+    return Sk.builtin.list.prototype.list_ass_subscript_.call(self, index, val);
+});
+
+Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, index) {
+    return Sk.builtin.list.prototype.list_del_subscript_.call(self, index);
 });
 
 /**
@@ -664,10 +678,10 @@ Sk.builtin.list_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
-Sk.builtin.list_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.list_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};

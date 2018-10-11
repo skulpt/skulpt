@@ -49,8 +49,21 @@ Sk.builtin.dict = function dict (L) {
     }
 
     this.__class__ = Sk.builtin.dict;
+    this.tp$call = undefined; // Not callable, even though constructor is
 
     return this;
+};
+
+Sk.builtin.dict.tp$call = function(args, kw) {
+    var d, i;
+    Sk.builtin.pyCheckArgs("dict", args, 0, 1);
+    d = new Sk.builtin.dict(args[0]);
+    if (kw) {
+        for (i = 0; i < kw.length; i += 2) {
+            d.mp$ass_subscript(new Sk.builtin.str(kw[i]), kw[i+1]);
+        }
+    }
+    return d;
 };
 
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
@@ -126,7 +139,6 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
 };
 
 Sk.builtin.dict.prototype.sq$contains = function (ob) {
-    Sk.builtin.pyCheckArgs("__contains__()", arguments, 1, 1, false, false);
     var res = this.mp$lookup(ob);
 
     return (res !== undefined);
@@ -406,8 +418,8 @@ update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
 Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("__contains__", arguments, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.sq$contains.call(self, item);
+    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
 });
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
@@ -440,9 +452,9 @@ Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
     return Sk.builtin.dict.prototype.mp$length.call(self);
 });
 
-Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr) {
-    Sk.builtin.pyCheckArgs("__getattr__", arguments, 1, 1, false, true);
-    if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattr__ requires a string"); }
+Sk.builtin.dict.prototype.__getattribute__ = new Sk.builtin.func(function (self, attr) {
+    Sk.builtin.pyCheckArgs("__getattribute__", arguments, 1, 1, false, true);
+    if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattribute__ requires a string"); }
     return Sk.builtin.dict.prototype.tp$getattr.call(self, Sk.ffi.remapToJs(attr));
 });
 
@@ -592,10 +604,10 @@ Sk.builtin.dict_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
-Sk.builtin.dict_iter_.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.dict_iter_.prototype.next$ = function (self) {
     var ret = self.tp$iternext();
     if (ret === undefined) {
         throw new Sk.builtin.StopIteration();
     }
     return ret;
-});
+};
