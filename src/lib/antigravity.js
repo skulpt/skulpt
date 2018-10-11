@@ -1,0 +1,1 @@
+window.open("https://xkcd.com/353/", "_blank");
