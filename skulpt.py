@@ -176,7 +176,7 @@ def is64bit():
 
 if sys.platform == "win32":
     winbase = ".\\support\\d8\\x32"
-    if not os.path.exists(winbase):
+    if not os.path.exists(winbase + "\\d8.exe"):
         winbase = ".\\support\\d8"
     os.environ["D8_PATH"] = winbase
     jsengine = winbase + "\\d8.exe --debugger --harmony"
@@ -231,8 +231,8 @@ def test(debug_mode=False, p3=False):
 
         if sys.platform == "win32":
             files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
-            jshintcmd = "jshint {1}".format(' '.join(files))
-            jscscmd = "jscs {1} --reporter=inline".format(' '.join(files))
+            jshintcmd = "jshint {0}".format(' '.join(files))
+            jscscmd = "jscs {0} --reporter=inline".format(' '.join(files))
         else:
             folders = ' '.join([ d + "/*.js" for d in base_dirs ])
             jshintcmd = "jshint " + folders
@@ -811,10 +811,14 @@ def dist(options):
         print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
 
-    path_list = os.environ.get('PATH','').split(':')
+    path_list = os.environ.get('PATH','').split(os.pathsep)
+    if sys.platform == "win32":
+        gzip_filename = "gzip.exe"
+    else:
+        gzip_filename = "gzip"
     has_gzip = False
     for p in path_list:
-        has_gzip = os.access(os.path.join(p,"gzip"), os.X_OK)
+        has_gzip = os.access(os.path.join(p,gzip_filename), os.X_OK)
         if has_gzip:
             break
 
