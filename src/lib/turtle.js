@@ -1341,7 +1341,7 @@ function generateTurtleModule(_target) {
             this._mode = "world";
             return this._setworldcoordinates(llx, lly, urx, ury);
         };
-        proto.$setworldcoordinates = ["llx", "lly", "urx", "ury"];
+        proto.$setworldcoordinates.co_varnames = ["llx", "lly", "urx", "ury"];
         proto.minArgs = 4;
 
         proto.$clear = proto.$clearscreen = function() {
