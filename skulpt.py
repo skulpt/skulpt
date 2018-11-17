@@ -718,7 +718,7 @@ def dist(options):
         print "+----------------------------------------------------------------------------+"
         print "GitPython is not installed for Python 2.6"
         print "The 'dist' command will not work without it.  Get it using pip or easy_install"
-        print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
+        print "or see:  https://gitpython.readthedocs.io/en/stable/intro.html"
         print "+----------------------------------------------------------------------------+"
 
     if options.verbose:
