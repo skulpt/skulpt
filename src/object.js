@@ -1,3 +1,5 @@
+import { typeName, setUpInheritance } from './abstract';
+
 /**
  * @constructor
  * Sk.builtin.object
@@ -128,7 +130,7 @@ goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin
  * @return {undefined}
  */
 Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
-    var objname = Sk.abstr.typeName(this);
+    var objname = typeName(this);
     var pyname;
     var dict;
     var tp = this.ob$type;
@@ -183,7 +185,7 @@ Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 
 Sk.builtin.object.prototype.HashNotImplemented = function () {
-    throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
+    throw new Sk.builtin.TypeError("unhashable type: '" + typeName(this) + "'");
 };
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
@@ -242,7 +244,7 @@ Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
         if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = Sk.ffi.remapToJs(format_spec);
@@ -495,7 +497,7 @@ Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
 Sk.builtin.none = function () {
     this.v = null;
 };
-Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
+setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
 /** @override */
 Sk.builtin.none.prototype["$r"] = function () { return new Sk.builtin.str("None"); };
@@ -518,7 +520,7 @@ Sk.builtin.none.none$ = new Sk.builtin.none();
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.NotImplemented = function() { };
-Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
+setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
 /** @override */
 Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.str("NotImplemented"); };

@@ -1,3 +1,5 @@
+import { lookupSpecial, setUpInheritance, typeName } from './abstract';
+
 /**
  * @namespace Sk.builtin
  */
@@ -57,7 +59,7 @@ Sk.builtin.float_ = function (x) {
     }
 
     // try calling __float__
-    var special = Sk.abstr.lookupSpecial(x, "__float__");
+    var special = lookupSpecial(x, "__float__");
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsim(special, x);
@@ -66,7 +68,7 @@ Sk.builtin.float_ = function (x) {
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
-Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
+setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
 Sk.builtin._str_to_float = function (str) {
     var tmp;
@@ -776,7 +778,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     number = Sk.builtin.asnum$(self);
@@ -812,7 +814,7 @@ Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
         if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = Sk.ffi.remapToJs(format_spec);

@@ -1,3 +1,5 @@
+import { iter, lookupSpecial } from './abstract';
+
 /**
  * @namespace Sk.builtin
  */
@@ -75,7 +77,7 @@ Sk.builtin.checkIterable = function (arg) {
     var ret = false;
     if (arg !== null ) {
         try {
-            ret = Sk.abstr.iter(arg);
+            ret = iter(arg);
             if (ret) {
                 return true;
             } else {
@@ -107,7 +109,7 @@ Sk.builtin.checkCallable = function (obj) {
         return true;
     }
     // go up the prototype chain to see if the class has a __call__ method
-    if (Sk.abstr.lookupSpecial(obj, "__call__") !== undefined) {
+    if (lookupSpecial(obj, "__call__") !== undefined) {
         return true;
     }
     return false;

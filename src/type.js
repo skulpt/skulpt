@@ -1,6 +1,4 @@
-if(Sk.builtin === undefined) {
-    Sk.builtin = {};
-}
+import { typeName, gattr, superConstructor } from './abstract'
 
 /**
  * Maps Python dunder names to the Skulpt Javascript function names that
@@ -8,7 +6,7 @@ if(Sk.builtin === undefined) {
  *
  * Note: __add__, __mul__, and __rmul__ can be used for either numeric or
  * sequence types. Here, they default to the numeric versions (i.e. nb$add,
- * nb$multiply, and nb$reflected_multiply). This works because Sk.abstr.binary_op_
+ * nb$multiply, and nb$reflected_multiply). This works because binary_op_
  * checks for the numeric shortcuts and not the sequence shortcuts when computing
  * a binary operation.
  *
@@ -89,17 +87,17 @@ Sk.builtin.type = function (name, bases, dict) {
 
         // argument dict must be of type dict
         if(dict.tp$name !== "dict") {
-            throw new Sk.builtin.TypeError("type() argument 3 must be dict, not " + Sk.abstr.typeName(dict));
+            throw new Sk.builtin.TypeError("type() argument 3 must be dict, not " + typeName(dict));
         }
 
         // checks if name must be string
         if(!Sk.builtin.checkString(name)) {
-            throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName(name));
+            throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + typeName(name));
         }
 
         // argument bases must be of type tuple
         if(bases.tp$name !== "tuple") {
-            throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
+            throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + typeName(bases));
         }
 
         // type building version of type
@@ -124,7 +122,7 @@ Sk.builtin.type = function (name, bases, dict) {
                     // Call super constructor if subclass of a builtin
                     args_copy = args.slice();
                     args_copy.unshift(klass, this);
-                    Sk.abstr.superConstructor.apply(undefined, args_copy);
+                    superConstructor.apply(undefined, args_copy);
                 }
             }
 
@@ -170,7 +168,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 }
             }, function(r) {
                 if (r !== Sk.builtin.none.none$ && r !== undefined) {
-                    throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(r));
+                    throw new Sk.builtin.TypeError("__init__() should return None, not " + typeName(r));
                 } else {
                     return self;
                 }
@@ -315,7 +313,7 @@ Sk.builtin.type = function (name, bases, dict) {
             return this["$r"]();
         };
         klass.prototype.tp$length = function (canSuspend) {
-            var r = Sk.misceval.chain(Sk.abstr.gattr(this, "__len__", canSuspend), function(lenf) {
+            var r = Sk.misceval.chain(gattr(this, "__len__", canSuspend), function(lenf) {
                 return Sk.misceval.applyOrSuspend(lenf, undefined, undefined, undefined, []);
             });
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
@@ -323,7 +321,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.tp$call = function (args, kw) {
             return Sk.misceval.chain(this.tp$getattr("__call__", true), function(callf) {
                 if (callf === undefined) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
+                    throw new Sk.builtin.TypeError("'" + typeName(this) + "' object is not callable");
                 }
                 return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
             });
@@ -331,7 +329,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.tp$iter = function () {
             var iterf = this.tp$getattr("__iter__");
             if (iterf === undefined) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
+                throw new Sk.builtin.TypeError("'" + typeName(this) + "' object is not iterable");
             }
             return Sk.misceval.callsim(iterf);
         };
@@ -346,7 +344,7 @@ Sk.builtin.type = function (name, bases, dict) {
             }
             var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
                 if (iternextf === undefined) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
+                    throw new Sk.builtin.TypeError("'" + typeName(self) + "' object is not iterable");
                 }
 
                 return Sk.misceval.tryCatch(function() {
@@ -369,7 +367,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
+            throw new Sk.builtin.TypeError("'" + typeName(this) + "' object does not support indexing");
         };
         klass.prototype.tp$setitem = function (key, value, canSuspend) {
             var setf = this.tp$getattr("__setitem__", canSuspend), r;
@@ -377,7 +375,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
+            throw new Sk.builtin.TypeError("'" + typeName(this) + "' object does not support item assignment");
         };
 
         if (bases) {

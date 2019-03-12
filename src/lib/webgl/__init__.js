@@ -1,3 +1,5 @@
+import { objectSetItem } from '../../abstract';
+
 var $builtinmodule = function(name)
 {
   var mod = {};
@@ -19,7 +21,7 @@ var $builtinmodule = function(name)
   var NEED_HARDWARE = '' +
     "It doesn't appear your computer can support WebGL.<br/>" +
     '<a href="http://get.webgl.org">Click here for more information.</a>';
-  
+
   var create3DContext = function(canvas) {
     var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
     var gl = null;
@@ -102,10 +104,10 @@ var $builtinmodule = function(name)
 
         self.gl = gl;
 
-        // Copy symbolic constants and functions from native WebGL, encapsulating where necessary.       
+        // Copy symbolic constants and functions from native WebGL, encapsulating where necessary.
         for (var k in gl.__proto__) {
           if (typeof gl.__proto__[k] === 'number') {
-            Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str(k), gl.__proto__[k]);
+            objectSetItem(self['$d'], new Sk.builtin.str(k), gl.__proto__[k]);
           }
           else if (typeof gl.__proto__[k] === "function") {
             switch(k) {
@@ -138,7 +140,7 @@ var $builtinmodule = function(name)
               break;
               default: {
                 (function(key) {
-                  Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str(k), new Sk.builtin.func(function() {
+                  objectSetItem(self['$d'], new Sk.builtin.str(k), new Sk.builtin.func(function() {
                     var f = gl.__proto__[key];
                     return f.apply(gl, arguments);
                   }));
@@ -286,7 +288,7 @@ var $builtinmodule = function(name)
 
     $loc.perspective = new Sk.builtin.func(
       function(self, fov, aspect, near, far) {
-        
+
         var t = Math.tan(Math.PI * 0.5 - 0.5 * (Sk.builtin.asnum$(fov) * Math.PI / 180));
         var a = Sk.builtin.asnum$(aspect)
         var n = Sk.builtin.asnum$(near)

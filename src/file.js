@@ -1,3 +1,5 @@
+import { setUpInheritance } from "./abstract";
+
 /**
  * @constructor
  * @param {Sk.builtin.str} name
@@ -64,7 +66,7 @@ Sk.builtin.file = function (name, mode, buffering) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("file", Sk.builtin.file, Sk.builtin.object);
+setUpInheritance("file", Sk.builtin.file, Sk.builtin.object);
 
 Sk.builtin.file.prototype["$r"] = function () {
     return new Sk.builtin.str("<" +

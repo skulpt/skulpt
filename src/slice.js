@@ -1,3 +1,5 @@
+import { setUpInheritance } from './abstract';
+
 /**
  * @constructor
  * @param {Object} start
@@ -39,7 +41,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
+setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
 
 Sk.builtin.slice.prototype["$r"] = function () {
     var a = Sk.builtin.repr(this.start).v;
@@ -151,8 +153,8 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     length = Sk.builtin.asnum$(length);
     var sss = self.slice_indices_(length);
 
-    return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), 
-                                 new Sk.builtin.int_(sss[1]), 
+    return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]),
+                                 new Sk.builtin.int_(sss[1]),
                                  new Sk.builtin.int_(sss[2])]);
 });
 

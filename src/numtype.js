@@ -1,3 +1,5 @@
+import { setUpInheritance } from './abstract';
+
 /**
  * @constructor
  * Sk.builtin.numtype
@@ -15,9 +17,9 @@ Sk.builtin.numtype = function () {
 
 };
 
-Sk.abstr.setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
+setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
 
-Sk.builtin.numtype.sk$abstract = true;
+Sk.builtin.numtype.ct = true;
 
 /**
  * Python wrapper of `__abs__` method.

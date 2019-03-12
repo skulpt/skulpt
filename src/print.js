@@ -1,3 +1,5 @@
+import { typeName } from './abstract';
+
 /*
 	Implementation of the Python3 print version. Due to Python2 grammar we have
 	to mimic the named keywords after *args as kwargs. Though this does not change
@@ -27,7 +29,7 @@ var print_f = function function_print(kwa) {
         if(Sk.builtin.checkString(remap_val) || is_none) {
             kw_list["sep"] = is_none ? kw_list["sep"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
         } else {
-            throw new Sk.builtin.TypeError("sep must be None or a string, not " + Sk.abstr.typeName(remap_val));
+            throw new Sk.builtin.TypeError("sep must be None or a string, not " + typeName(remap_val));
         }
     }
 
@@ -38,7 +40,7 @@ var print_f = function function_print(kwa) {
         if(Sk.builtin.checkString(remap_val) || is_none) {
             kw_list["end"] = is_none ? kw_list["end"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
         } else {
-            throw new Sk.builtin.TypeError("end must be None or a string, not " + Sk.abstr.typeName(remap_val));
+            throw new Sk.builtin.TypeError("end must be None or a string, not " + typeName(remap_val));
         }
     }
 
@@ -50,7 +52,7 @@ var print_f = function function_print(kwa) {
         if(is_none || remap_val.tp$getattr("write") !== undefined) {
             kw_list["file"] = is_none ? kw_list["file"] : remap_val;
         } else {
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(remap_val) + "' object has no attribute 'write'");
+            throw new Sk.builtin.AttributeError("'" + typeName(remap_val) + "' object has no attribute 'write'");
         }
     }
 

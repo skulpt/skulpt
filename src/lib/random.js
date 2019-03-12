@@ -1,3 +1,5 @@
+import { iter } from '../abstract';
+
 /*
  I've wrapped Makoto Matsumoto and Takuji Nishimura's code in a namespace
  so it's better encapsulated. Now you can have multiple random number generators
@@ -21,7 +23,7 @@
  Sean McCullough (banksean@gmail.com)
  */
 
-/* 
+/*
  A C-program for MT19937, with initialization improved 2002/1/26.
  Coded by Takuji Nishimura and Makoto Matsumoto.
 
@@ -330,7 +332,7 @@ var $builtinmodule = function (name) {
         step = Sk.builtin.asnum$(step);
         return randrange(start, stop, step);
     });
-  
+
     mod.uniform = new Sk.builtin.func(function (a, b) {
         Sk.builtin.pyCheckArgs("uniform", arguments, 2, 2);
 
@@ -396,7 +398,7 @@ var $builtinmodule = function (name) {
 
         return mu + sigma*s;
     };
-    
+
     mod.gauss = new Sk.builtin.func(function (mu, sigma) {
         Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
         Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
@@ -478,7 +480,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("population", "iterable", Sk.builtin.checkIterable(population));
         Sk.builtin.pyCheckType("k", "integer", Sk.builtin.checkInt(k));
         k = Sk.builtin.asnum$(k);
-        
+
         // "Algorithm R" in
         // https://en.wikipedia.org/wiki/Reservoir_sampling
         //
@@ -492,7 +494,7 @@ var $builtinmodule = function (name) {
         // len(population). A similar optimization could be
         // implemented here.
         reservoir = [];
-        iter = Sk.abstr.iter(population);
+        iter = iter(population);
         for (i = 0, elem = iter.tp$iternext();
              elem !== undefined;
              i++, elem = iter.tp$iternext()) {
@@ -513,7 +515,7 @@ var $builtinmodule = function (name) {
                 }
             }
         }
-        
+
         if (i < k) {
             throw new Sk.builtin.ValueError("sample larger than population");
         }

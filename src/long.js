@@ -1,3 +1,5 @@
+import { typeName, setUpInheritance } from './abstract';
+
 /* global Sk: true, goog:true */
 
 // long aka "bignumber" implementation
@@ -48,7 +50,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         } else if (x === false) {
             x = 0;
         } else {
-            throw new Sk.builtin.TypeError("long() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
+            throw new Sk.builtin.TypeError("long() argument must be a string or a number, not '" + typeName(x) + "'");
         }
     }
 
@@ -57,7 +59,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     return this;
 };
 
-Sk.abstr.setUpInheritance("long", Sk.builtin.lng, Sk.builtin.numtype);
+setUpInheritance("long", Sk.builtin.lng, Sk.builtin.numtype);
 
 /* NOTE: See constants used for kwargs in constants.js */
 
@@ -85,7 +87,7 @@ Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
         if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = Sk.ffi.remapToJs(format_spec);
@@ -103,7 +105,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     number = Sk.builtin.asnum$(self);

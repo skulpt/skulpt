@@ -1,3 +1,5 @@
+import { setUpInheritance, lookupSpecial, typeName } from './abstract';
+
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
  */
@@ -24,7 +26,7 @@ Math.hypot = Math.hypot || function() {
  * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
  *
  * FIXME: it seems that we somehow need to call __float__/__int__ if arguments provide those methods
- * 
+ *
  */
 Sk.builtin.complex = function (real, imag) {
     Sk.builtin.pyCheckArgs("complex", arguments, 0, 2);
@@ -163,7 +165,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // adjust for negated imaginary literal
     if (cr.real === 0 && (ci.real < 0 || Sk.builtin.complex._isNegativeZero(ci.real))) {
-        cr.real = -0;   
+        cr.real = -0;
     }
 
     // save them as properties
@@ -175,7 +177,7 @@ Sk.builtin.complex = function (real, imag) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
+setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
 Sk.builtin.complex.prototype.nb$int_ = function () {
@@ -214,7 +216,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
     }
 
     // the lookup special method does already all the magic
-    f = Sk.abstr.lookupSpecial(op, "__complex__");
+    f = lookupSpecial(op, "__complex__");
 
     if (f != null) {
         // method on builtin, provide this arg
@@ -233,7 +235,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
 Sk.builtin.complex.check_number_or_complex = function (other) {
     /* exit early */
     if (!Sk.builtin.checkNumber(other) && other.tp$name !== "complex") {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: 'complex' and '" + Sk.abstr.typeName(other) + "'");
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: 'complex' and '" + typeName(other) + "'");
     }
 
     /* converting to complex allows us to use always only one formula */
@@ -265,7 +267,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
 
     /* This is an python specific error, this does not do any harm in js, but we want
      * to be as close to the orginial impl. as possible.
-     * 
+     *
      * Check also for empty strings. They are not allowed.
      */
     if (val.indexOf("\0") !== -1 || val.length === 0 || val === "") {
@@ -530,7 +532,7 @@ Sk.builtin.complex.prototype.nb$power = function (other, z) {
 
     // none is allowed
     if (z != null && !Sk.builtin.checkNone(z)) {
-        throw new Sk.builtin.ValueError("complex modulo");  
+        throw new Sk.builtin.ValueError("complex modulo");
     }
 
     a = this;
@@ -743,23 +745,23 @@ Sk.builtin.complex.prototype.__ne__ = function (me, other) {
 };
 
 /**
- * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular 
+ * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular
  * expcetion is thrown.git co
  */
 Sk.builtin.complex.prototype.__lt__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " < " + Sk.abstr.typeName(other));
+    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " < " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__le__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " <= " + Sk.abstr.typeName(other));
+    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " <= " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__gt__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " > " + Sk.abstr.typeName(other));
+    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " > " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__ge__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " >= " + Sk.abstr.typeName(other));
+    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " >= " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__float__ = function (self) {
@@ -850,7 +852,7 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
         re = pre;
 
         im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN, null);
-        
+
         if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
             im = "-" + im; // force negative zero sign
         }

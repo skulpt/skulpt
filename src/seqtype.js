@@ -1,3 +1,5 @@
+import { setUpInheritance, typeName } from './abstract';
+
 /**
  * @constructor
  * Sk.builtin.seqtype
@@ -15,9 +17,9 @@ Sk.builtin.seqtype = function () {
 
 };
 
-Sk.abstr.setUpInheritance("SequenceType", Sk.builtin.seqtype, Sk.builtin.object);
+setUpInheritance("SequenceType", Sk.builtin.seqtype, Sk.builtin.object);
 
-Sk.builtin.seqtype.sk$abstract = true;
+Sk.builtin.seqtype.ct = true;
 
 /**
  * Python wrapper of `__len__` method.
@@ -30,7 +32,7 @@ Sk.builtin.seqtype.prototype["__len__"] = new Sk.builtin.func(function (self) {
 
     Sk.builtin.pyCheckArgs("__len__", arguments, 0, 0, false, true);
 
-    return new Sk.builtin.int_(self.sq$length());    
+    return new Sk.builtin.int_(self.sq$length());
 
 });
 
@@ -110,7 +112,7 @@ Sk.builtin.seqtype.prototype["__mul__"] = new Sk.builtin.func(function (self, n)
     Sk.builtin.pyCheckArgs("__mul__", arguments, 1, 1, false, true);
 
     if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
     }
 
     return self.sq$repeat(n);
@@ -128,6 +130,6 @@ Sk.builtin.seqtype.prototype["__rmul__"] = new Sk.builtin.func(function (self, n
 
     Sk.builtin.pyCheckArgs("__rmul__", arguments, 1, 1, false, true);
 
-    return self.sq$repeat(n);    
+    return self.sq$repeat(n);
 
 });

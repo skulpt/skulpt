@@ -1,3 +1,5 @@
+import { iter } from './abstract';
+
 Sk.builtin.structseq_types = {};
 
 Sk.builtin.make_structseq = function (module, name, fields, doc) {
@@ -24,7 +26,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
             v = arg;
         } else {
             v = [];
-            for (it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            for (it = iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 v.push(i);
             }
             if (v.length != flds.length) {

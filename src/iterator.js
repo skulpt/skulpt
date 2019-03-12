@@ -1,3 +1,5 @@
+import { lookupSpecial, setUpInheritance } from './abstract';
+
 /**
   * Builds an iterator that outputs the items from the inputted object
   * @constructor
@@ -16,7 +18,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     if (obj instanceof Sk.builtin.generator) {
         return obj;
     }
-    objit = Sk.abstr.lookupSpecial(obj, "__iter__");
+    objit = lookupSpecial(obj, "__iter__");
     if (objit) {
         return Sk.misceval.callsim(objit, obj);
     }
@@ -25,12 +27,12 @@ Sk.builtin.iterator = function (obj, sentinel) {
     this.idx = 0;
     this.obj = obj;
     if (sentinel === undefined) {
-        this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+        this.getitem = lookupSpecial(obj, "__getitem__");
         this.$r = function () {
             return new Sk.builtin.str("<iterator object>");
         };
     } else {
-        this.call = Sk.abstr.lookupSpecial(obj, "__call__");
+        this.call = lookupSpecial(obj, "__call__");
         this.$r = function () {
             return new Sk.builtin.str("<callable-iterator object>");
         };
@@ -38,7 +40,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("iterator", Sk.builtin.iterator, Sk.builtin.object);
+setUpInheritance("iterator", Sk.builtin.iterator, Sk.builtin.object);
 
 Sk.builtin.iterator.prototype.__class__ = Sk.builtin.iterator;
 

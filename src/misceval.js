@@ -1,3 +1,16 @@
+import {
+    lookupSpecial,
+    typeName,
+    sequenceGetSlice,
+    objectGetItem,
+    sequenceDelSlice,
+    sequenceSetSlice,
+    objectDelItem,
+    objectSetItem,
+    iter,
+    sequenceContains
+} from './abstract';
+
 /**
  * @namespace Sk.misceval
  *
@@ -64,7 +77,7 @@ Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (Sk.abstr.lookupSpecial(o, "__index__")) {
+    if (lookupSpecial(o, "__index__")) {
         return true;
     }
     return false;
@@ -98,12 +111,12 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    idxfn = Sk.abstr.lookupSpecial(o, "__index__");
+    idxfn = lookupSpecial(o, "__index__");
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
-                                           Sk.abstr.typeName(ret) + ")");
+                                           typeName(ret) + ")");
         }
         return Sk.builtin.asnum$(ret);
     }
@@ -125,9 +138,9 @@ Sk.misceval.applySlice = function (u, v, w, canSuspend) {
         if (ihigh === undefined) {
             ihigh = 1e100;
         }
-        return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
+        return sequenceGetSlice(u, ilow, ihigh);
     }
-    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
+    return objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
 };
 goog.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
 
@@ -142,16 +155,16 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
         ilow = Sk.misceval.asIndex(v) || 0;
         ihigh = Sk.misceval.asIndex(w) || 1e100;
         if (x === null) {
-            Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
+            sequenceDelSlice(u, ilow, ihigh);
         } else {
-            Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
+            sequenceSetSlice(u, ilow, ihigh, x);
         }
     } else {
         slice = new Sk.builtin.slice(v, w);
         if (x === null) {
-            return Sk.abstr.objectDelItem(u, slice);
+            return objectDelItem(u, slice);
         } else {
-            return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
+            return objectSetItem(u, slice, x, canSuspend);
         }
     }
 };
@@ -184,14 +197,14 @@ Sk.misceval.arrayFromArguments = function (args) {
     } else if (Sk.builtin.checkIterable(arg)) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
-        for (it = Sk.abstr.iter(arg), i = it.tp$iternext();
+        for (it = iter(arg), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
             res.push(i);
         }
         return res;
     }
 
-    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
+    throw new Sk.builtin.TypeError("'" + typeName(arg) + "' object is not iterable");
 };
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
@@ -368,10 +381,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     }
 
     if (op === "In") {
-        return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend), Sk.misceval.isTrue);
+        return Sk.misceval.chain(sequenceContains(w, v, canSuspend), Sk.misceval.isTrue);
     }
     if (op === "NotIn") {
-        return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend),
+        return Sk.misceval.chain(sequenceContains(w, v, canSuspend),
                                  function(x) { return !Sk.misceval.isTrue(x); });
     }
 
@@ -429,7 +442,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         "LtE"  : "__le__"
     };
 
-    method = Sk.abstr.lookupSpecial(v, op2method[op]);
+    method = lookupSpecial(v, op2method[op]);
     if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsim(method, v, w);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -437,7 +450,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    swapped_method = lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
         ret = Sk.misceval.callsim(swapped_method, w, v);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -445,7 +458,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
+    vcmp = lookupSpecial(v, "__cmp__");
     if (vcmp) {
         try {
             ret = Sk.misceval.callsim(vcmp, v, w);
@@ -474,7 +487,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
+    wcmp = lookupSpecial(w, "__cmp__");
     if (wcmp) {
         // note, flipped on return value and call
         try {
@@ -546,8 +559,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         return v !== w;
     }
 
-    vname = Sk.abstr.typeName(v);
-    wname = Sk.abstr.typeName(w);
+    vname = typeName(v);
+    wname = typeName(w);
     throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
@@ -1153,7 +1166,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
-    
+
     if (typeof func === "function" && func.tp$call === undefined) {
         func = new Sk.builtin.func(func);
     }
@@ -1167,12 +1180,12 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         }
 
         if (kwdict) {
-            for (it = Sk.abstr.iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
+            for (it = iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
                 if (!Sk.builtin.checkString(i)) {
                     throw new Sk.builtin.TypeError("Function keywords must be strings");
                 }
                 kws.push(i.v);
-                kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
+                kws.push(objectGetItem(kwdict, i, false));
             }
         }
         return fcall.call(func, args, kws, kwdict);

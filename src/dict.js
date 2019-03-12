@@ -1,3 +1,5 @@
+import { iter, setUpInheritance, typeName, markUnhashable } from './abstract';
+
 /**
  * @constructor
  * @param {Array.<Object>} L
@@ -25,7 +27,7 @@ Sk.builtin.dict = function dict (L) {
         }
     } else if (L instanceof Sk.builtin.dict) {
         // Handle calls of type "dict(mapping)" from Python code
-        for (it = Sk.abstr.iter(L), k = it.tp$iternext();
+        for (it = iter(L), k = it.tp$iternext();
              k !== undefined;
              k = it.tp$iternext()) {
             v = L.mp$subscript(k);
@@ -37,7 +39,7 @@ Sk.builtin.dict = function dict (L) {
         }
     } else if (Sk.builtin.checkIterable(L)) {
         // Handle calls of type "dict(iterable)" from Python code
-        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        for (it = iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (i.mp$subscript) {
                 this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
             } else {
@@ -66,8 +68,8 @@ Sk.builtin.dict.tp$call = function(args, kw) {
     return d;
 };
 
-Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
-Sk.abstr.markUnhashable(Sk.builtin.dict);
+setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
+markUnhashable(Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
 
@@ -195,7 +197,7 @@ Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
     var ret = [];
-    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
+    for (iter = iter(this), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
@@ -270,7 +272,7 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
+    for (iter = iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -288,7 +290,7 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
+    for (iter = iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         ret.push(k);
@@ -302,7 +304,7 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
+    for (iter = iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -319,7 +321,7 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     var k;
     var iter;
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
+    for (iter = iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         self.mp$del_subscript(k);
@@ -358,7 +360,7 @@ Sk.builtin.dict.prototype.dict_merge = function(b) {
     } else {
         // generic slower way
         var keys = Sk.misceval.callsim(b["keys"], b);
-        for (iter = Sk.abstr.iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+        for (iter = iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
             v = b.tp$getitem(k); // get value
             if (v === undefined) {
                 throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
@@ -382,7 +384,7 @@ var update_f = function (kwargs, self, other) {
         var iter;
         var k, v;
         var seq_i = 0; // index of current sequence item
-        for (iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
+        for (iter = iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
             // check if value is iter
             if (!Sk.builtin.checkIterable(k)) {
                 throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
@@ -391,7 +393,7 @@ var update_f = function (kwargs, self, other) {
             // cpython impl. would transform iterable into sequence
             // we just call iternext twice if k has length of 2
             if(k.sq$length() === 2) {
-                var k_iter = Sk.abstr.iter(k);
+                var k_iter = iter(k);
                 var k_key = k_iter.tp$iternext();
                 var k_value = k_iter.tp$iternext();
                 self.mp$ass_subscript(k_key, k_value);
@@ -402,7 +404,7 @@ var update_f = function (kwargs, self, other) {
         }
     } else if(other !== undefined) {
         // other is not a dict or iterable
-        throw new Sk.builtin.TypeError("'" +Sk.abstr.typeName(other) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" +typeName(other) + "' object is not iterable");
     }
 
     // apply all key/value pairs of kwargs
@@ -642,7 +644,7 @@ Sk.builtin.dict_iter_ = function (obj) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
+setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
 
 Sk.builtin.dict_iter_.prototype.__class__ = Sk.builtin.dict_iter_;
 

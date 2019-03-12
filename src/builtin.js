@@ -1,3 +1,5 @@
+import { typeName, lookupSpecial, iter, numberBinOp, objectFormat } from './abstract'
+
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
@@ -225,7 +227,7 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     if (!Sk.__future__.dunder_round && number.round$) {
@@ -233,7 +235,7 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     // try calling internal magic method
-    special = Sk.abstr.lookupSpecial(number, "__round__");
+    special = lookupSpecial(number, "__round__");
     if (special != null) {
         // method on builtin, provide this arg
         if (!Sk.builtin.checkFunction(number)) {
@@ -274,14 +276,14 @@ Sk.builtin.len = function len (item) {
 
     if (item.tp$length) {
         if (Sk.builtin.checkFunction(item)) {
-            special = Sk.abstr.lookupSpecial(item, "__len__");
+            special = lookupSpecial(item, "__len__");
             if (special != null) {
                 return Sk.misceval.callsim(special, item);
             } else {
                 if (Sk.__future__.exceptions) {
                     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
                 } else {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
+                    throw new Sk.builtin.AttributeError(typeName(item) + " instance has no attribute '__len__'");
                 }
             }
         } else {
@@ -289,7 +291,7 @@ Sk.builtin.len = function len (item) {
         }
     }
 
-    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
+    throw new Sk.builtin.TypeError("object of type '" + typeName(item) + "' has no len()");
 };
 
 Sk.builtin.min = function min () {
@@ -339,11 +341,11 @@ Sk.builtin.any = function any (iter) {
 
     Sk.builtin.pyCheckArgs("any", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
+        throw new Sk.builtin.TypeError("'" + typeName(iter) +
             "' object is not iterable");
     }
 
-    it = Sk.abstr.iter(iter);
+    it = iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.isTrue(i)) {
             return Sk.builtin.bool.true$;
@@ -358,11 +360,11 @@ Sk.builtin.all = function all (iter) {
 
     Sk.builtin.pyCheckArgs("all", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
+        throw new Sk.builtin.TypeError("'" + typeName(iter) +
             "' object is not iterable");
     }
 
-    it = Sk.abstr.iter(iter);
+    it = iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.misceval.isTrue(i)) {
             return Sk.builtin.bool.false$;
@@ -389,7 +391,7 @@ Sk.builtin.sum = function sum (iter, start) {
         tot = start;
     }
 
-    it = Sk.abstr.iter(iter);
+    it = iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (i instanceof Sk.builtin.float_) {
             has_float = true;
@@ -413,8 +415,8 @@ Sk.builtin.sum = function sum (iter, start) {
         }
 
         throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-                    Sk.abstr.typeName(tot) + "' and '" +
-                    Sk.abstr.typeName(i) + "'");
+                    typeName(tot) + "' and '" +
+                    typeName(i) + "'");
     }
 
     return tot;
@@ -434,7 +436,7 @@ Sk.builtin.zip = function zip () {
     iters = [];
     for (i = 0; i < arguments.length; i++) {
         if (Sk.builtin.checkIterable(arguments[i])) {
-            iters.push(Sk.abstr.iter(arguments[i]));
+            iters.push(iter(arguments[i]));
         } else {
             throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
         }
@@ -479,7 +481,7 @@ Sk.builtin.abs = function abs (x) {
         return Sk.misceval.callsim(f);
     }
 
-    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
+    throw new TypeError("bad operand type for abs(): '" + typeName(x) + "'");
 };
 
 // fabs belongs in the math module but has been a Skulpt builtin since 41665a97d (2012).
@@ -492,7 +494,7 @@ Sk.builtin.ord = function ord (x) {
     Sk.builtin.pyCheckArgs("ord", arguments, 1, 1);
 
     if (!Sk.builtin.checkString(x)) {
-        throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
+        throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + typeName(x) + " found");
     } else if (x.v.length !== 1) {
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
@@ -579,7 +581,7 @@ Sk.builtin.oct = function oct (x) {
 Sk.builtin.bin = function bin (x) {
     Sk.builtin.pyCheckArgs("bin", arguments, 1, 1);
     if (!Sk.misceval.isIndex(x)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(x) + "' object can't be interpreted as an index");
+        throw new Sk.builtin.TypeError("'" + typeName(x) + "' object can't be interpreted as an index");
     }
     return Sk.builtin.int2str_(x, 2, "0b");
 };
@@ -622,7 +624,7 @@ Sk.builtin.dir = function dir (x) {
     var _seq;
 
     // try calling magic method
-    var special = Sk.abstr.lookupSpecial(x, "__dir__");
+    var special = lookupSpecial(x, "__dir__");
     if(special != null) {
         // method on builtin, provide this arg
         _seq = Sk.misceval.callsim(special, x);
@@ -796,7 +798,7 @@ Sk.builtin.hash = function hash (value) {
     if (value instanceof Object) {
         if (Sk.builtin.checkNone(value.tp$hash)) {
             // python sets the hash function to None , so we have to catch this case here
-            throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+            throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + typeName(value) + "'"));
         } else if (value.tp$hash !== undefined) {
             if (value.$savedHash_) {
                 return value.$savedHash_;
@@ -832,7 +834,7 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
         if (default_ !== undefined) {
             return default_;
         } else {
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + name.v + "'");
+            throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + name.v + "'");
         }
     }
     return ret;
@@ -917,7 +919,7 @@ Sk.builtin.map = function map (fun, seq) {
                 argnum = parseInt(i, 10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
             }
-            iterables[i] = Sk.abstr.iter(iterables[i]);
+            iterables[i] = iter(iterables[i]);
         }
 
         while (true) {
@@ -943,11 +945,10 @@ Sk.builtin.map = function map (fun, seq) {
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
     return Sk.misceval.chain(Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
-
         if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
                 // With None function and multiple sequences,
@@ -977,10 +978,10 @@ Sk.builtin.reduce = function reduce (fun, seq, initializer) {
     var iter;
     Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
     if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
-    iter = Sk.abstr.iter(seq);
+    iter = iter(seq);
     if (initializer === undefined) {
         initializer = iter.tp$iternext();
         if (initializer === undefined) {
@@ -1007,7 +1008,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
     Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
 
     if (!Sk.builtin.checkIterable(iterable)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + typeName(iterable) + "' object is not iterable");
     }
 
     ctor = function () {
@@ -1039,7 +1040,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
     retval = ctor();
 
-    for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
+    for (iter = iter(iterable), item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
@@ -1100,9 +1101,9 @@ Sk.builtin.pow = function pow (a, b, c) {
 
     if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
         if (c === undefined) {
-            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
+            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "' and '" + typeName(b) + "'");
         }
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "', '" + typeName(b) + "', '" + typeName(c) + "'");
     }
     if (a_num < 0 && b instanceof Sk.builtin.float_) {
         throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
@@ -1225,7 +1226,7 @@ Sk.builtin.globals = function globals () {
 };
 
 Sk.builtin.divmod = function divmod (a, b) {
-    return Sk.abstr.numberBinOp(a, b, "DivMod");
+    return numberBinOp(a, b, "DivMod");
 };
 
 /**
@@ -1240,18 +1241,18 @@ Sk.builtin.format = function format (value, format_spec) {
         format_spec = Sk.builtin.str.$emptystr;
     }
 
-    return Sk.abstr.objectFormat(value, format_spec);
+    return objectFormat(value, format_spec);
 };
 
 Sk.builtin.reversed = function reversed (seq) {
     Sk.builtin.pyCheckArgs("reversed", arguments, 1, 1);
 
-    var special = Sk.abstr.lookupSpecial(seq, "__reversed__");
+    var special = lookupSpecial(seq, "__reversed__");
     if (special != null) {
         return Sk.misceval.callsim(special, seq);
     } else {
         if (!Sk.builtin.checkSequence(seq)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
+            throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not a sequence");
         }
 
         /**
@@ -1262,7 +1263,7 @@ Sk.builtin.reversed = function reversed (seq) {
         var reverseIter = function (obj) {
             this.idx = obj.sq$length() - 1;
             this.myobj = obj;
-            this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+            this.getitem = lookupSpecial(obj, "__getitem__");
             this.tp$iter = function() {
                 return this;
             },
@@ -1329,7 +1330,7 @@ Sk.builtin.delattr = function delattr (obj, attr) {
                 return try2;
             }, function(e) {
                 if (e instanceof Sk.builtin.AttributeError) {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+                    throw new Sk.builtin.AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
                 } else {
                     throw e;
                 }
@@ -1342,7 +1343,7 @@ Sk.builtin.delattr = function delattr (obj, attr) {
             obj[attr.v] = undefined;
             return Sk.builtin.none.none$;
         }
-        throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+        throw new Sk.builtin.AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
     }
     throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
@@ -1363,7 +1364,7 @@ Sk.builtin.iter = function iter (obj, sentinel) {
     Sk.builtin.pyCheckArgs("iter", arguments, 1, 2);
     if (arguments.length === 1) {
         if (!Sk.builtin.checkIterable(obj)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) +
+            throw new Sk.builtin.TypeError("'" + typeName(obj) +
                 "' object is not iterable");
         } else {
             return new Sk.builtin.iterator(obj);
@@ -1388,7 +1389,7 @@ Sk.builtin.next_ = function next_ (iter, default_) {
     var nxt;
     Sk.builtin.pyCheckArgs("next", arguments, 1, 2);
     if (!iter.tp$iternext) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
+        throw new Sk.builtin.TypeError("'" + typeName(iter) +
             "' object is not an iterator");
     }
     nxt = iter.tp$iternext();

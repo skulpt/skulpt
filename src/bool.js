@@ -1,3 +1,5 @@
+import { setUpInheritance } from './abstract';
+
 /**
  * @constructor
  * Sk.builtin.bool
@@ -5,11 +7,11 @@
  * @description
  * Constructor for Python bool. Also used for builtin bool() function.
  *
- * Where possible, do not create a new instance but use the constants 
+ * Where possible, do not create a new instance but use the constants
  * Sk.builtin.bool.true$ or Sk.builtin.bool.false$. These are defined in src/constant.js
  *
  * @extends {Sk.builtin.object}
- * 
+ *
  * @param  {(Object|number|boolean)} x Value to evaluate as true or false
  * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
  */
@@ -22,7 +24,7 @@ Sk.builtin.bool = function (x) {
     }
 };
 
-Sk.abstr.setUpInheritance("bool", Sk.builtin.bool, Sk.builtin.int_);
+setUpInheritance("bool", Sk.builtin.bool, Sk.builtin.int_);
 
 Sk.builtin.bool.prototype["$r"] = function () {
     if (this.v) {

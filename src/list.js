@@ -1,3 +1,5 @@
+import { iter, typeName, setUpInheritance, markUnhashable } from './abstract';
+
 /**
  * @constructor
  * @param {Array.<Object>=} L
@@ -22,7 +24,7 @@ Sk.builtin.list = function (L, canSuspend) {
         v = L;
     } else if (Sk.builtin.checkIterable(L)) {
         v = [];
-        it = Sk.abstr.iter(L);
+        it = iter(L);
 
         thisList = this;
 
@@ -41,15 +43,15 @@ Sk.builtin.list = function (L, canSuspend) {
             }
         })(it.tp$iternext(canSuspend));
     } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L)+ "' " +"object is not iterable");
+        throw new Sk.builtin.TypeError("'" + typeName(L)+ "' " +"object is not iterable");
     }
 
     this["v"] = this.v = v;
     return this;
 };
 
-Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
-Sk.abstr.markUnhashable(Sk.builtin.list);
+setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
+markUnhashable(Sk.builtin.list);
 
 Sk.builtin.list.prototype.list_concat_ = function (other) {
     // other not a list
@@ -70,21 +72,21 @@ Sk.builtin.list.prototype.list_extend_ = function (other) {
     var it, i;
     var newb;
     if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) +
+        throw new Sk.builtin.TypeError("'" + typeName(other) +
             "' object is not iterable");
     }
 
     if (this == other) {
         // Handle extending list with itself
         newb = [];
-        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        for (it = iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             newb.push(i);
         }
 
         // Concatenate
         this.v.push.apply(this.v, newb);
     } else {
-        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        for (it = iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             this.v.push(i);
         }
     }
@@ -136,7 +138,7 @@ Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
 Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
-    for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if(i === this) {
             ret.push("[...]");
         } else {
@@ -241,7 +243,7 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     var i;
     var ret;
     if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
     }
 
     n = Sk.misceval.asIndex(n);
@@ -259,7 +261,7 @@ Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
     var i;
     var len;
     if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
     }
 
     // works on list itself --> inplace
@@ -326,7 +328,7 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
         return new Sk.builtin.list(ret, false);
     }
 
-    throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + typeName(index));
 };
 
 Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
@@ -364,7 +366,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
         return;
     }
 
-    throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + typeName(index));
 };
 
 Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
@@ -667,7 +669,7 @@ Sk.builtin.list_iter_ = function (lst) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("listiterator", Sk.builtin.list_iter_, Sk.builtin.object);
+setUpInheritance("listiterator", Sk.builtin.list_iter_, Sk.builtin.object);
 
 Sk.builtin.list_iter_.prototype.__class__ = Sk.builtin.list_iter_;
 

@@ -1,3 +1,5 @@
+import { setUpInheritance } from "./abstract";
+
 /**
  * @constructor
  * @param {Function} code javascript code object for the function
@@ -49,7 +51,7 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
 };
 goog.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
-Sk.abstr.setUpInheritance("generator", Sk.builtin.generator, Sk.builtin.object);
+setUpInheritance("generator", Sk.builtin.generator, Sk.builtin.object);
 
 
 Sk.builtin.generator.prototype.tp$iter = function () {

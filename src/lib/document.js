@@ -1,3 +1,5 @@
+import { objectSetItem } from '../abstract';
+
 var $builtinmodule = function (name) {
     var elementClass;
     var mod = {};
@@ -73,16 +75,16 @@ var $builtinmodule = function (name) {
             self.innerText = elem.innerText
             if (elem.value !== undefined) {
                 self.value = elem.value
-                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('value'), new Sk.builtin.str(self.value))
+                objectSetItem(self['$d'], new Sk.builtin.str('value'), new Sk.builtin.str(self.value))
             }
 
             if (elem.checked !== undefined) {
                 self.checked = elem.checked
-                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('checked'), new Sk.builtin.str(self.checked))
+                objectSetItem(self['$d'], new Sk.builtin.str('checked'), new Sk.builtin.str(self.checked))
             }
 
-            Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('innerHTML'), new Sk.builtin.str(self.innerHTML))
-            Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('innerText'), new Sk.builtin.str(self.innerText))
+            objectSetItem(self['$d'], new Sk.builtin.str('innerHTML'), new Sk.builtin.str(self.innerHTML))
+            objectSetItem(self['$d'], new Sk.builtin.str('innerText'), new Sk.builtin.str(self.innerText))
 
         })
 
@@ -93,12 +95,12 @@ var $builtinmodule = function (name) {
             if (key === 'innerHTML') {
                 self.innerHTML = value
                 self.v.innerHTML = value.v
-                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('innerHTML'), value)
+                objectSetItem(self['$d'], new Sk.builtin.str('innerHTML'), value)
             }
             if (key === 'innerText') {
                 self.innerText = value
                 self.v.innerText = value.v
-                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str('innerText'), value)
+                objectSetItem(self['$d'], new Sk.builtin.str('innerText'), value)
             }
         });
 

@@ -1,3 +1,5 @@
+import { setUpInheritance } from './abstract';
+
 /**
  * @constructor
  *
@@ -32,7 +34,7 @@ Sk.builtin.method = function (func, self, klass, builtin) {
 };
 
 goog.exportSymbol("Sk.builtin.method", Sk.builtin.method);
-Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object);
+setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object);
 
 Sk.builtin.method.prototype.tp$name = "method";
 

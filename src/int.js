@@ -1,3 +1,5 @@
+import { typeName, setUpInheritance, numberBinOp } from './abstract';
+
 /* jslint nomen: true, bitwise: true */
 /* global Sk: true */
 
@@ -46,13 +48,13 @@ Sk.builtin.int_ = function (x, base) {
     // if base is not of type int, try calling .__index__
     if(base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
-            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
+            throw new Sk.builtin.TypeError("integer argument expected, got " + typeName(base));
         } else if (base.__index__) {
             base = Sk.misceval.callsim(base.__index__, base);
         } else if(base.__int__) {
             base = Sk.misceval.callsim(base.__int__, base);
         } else {
-            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
+            throw new Sk.builtin.AttributeError(typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
     }
 
@@ -108,14 +110,14 @@ Sk.builtin.int_ = function (x, base) {
 
     // check return type of magic methods
     if(ret !== undefined && !Sk.builtin.checkInt(ret)) {
-        throw new Sk.builtin.TypeError(magicName + " returned non-Integral (type " + Sk.abstr.typeName(ret)+")");
+        throw new Sk.builtin.TypeError(magicName + " returned non-Integral (type " + typeName(ret)+")");
     } else if(ret !== undefined){
         x = ret; // valid return value, proceed in function
     }
 
     // check type even without magic numbers
     if(!Sk.builtin.checkNumber(x)) {
-        throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
+        throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + typeName(x) + "'");
     }
 
     x = Sk.builtin.asnum$(x);
@@ -132,7 +134,7 @@ Sk.builtin.int_ = function (x, base) {
 
 Sk.builtin.int_.$shiftconsts = [0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248, 4503599627370496, 9007199254740992];
 
-Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
+setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
 /* NOTE: See constants used for kwargs in constants.js */
 
@@ -379,9 +381,9 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         //  Javacript logic on negatives doesn't work for Python... do this instead
-        divResult = Sk.abstr.numberBinOp(this, other, "FloorDiv");
-        tmp = Sk.abstr.numberBinOp(divResult, other, "Mult");
-        tmp = Sk.abstr.numberBinOp(this, tmp, "Sub");
+        divResult = numberBinOp(this, other, "FloorDiv");
+        tmp = numberBinOp(divResult, other, "Mult");
+        tmp = numberBinOp(this, tmp, "Sub");
         tmp = tmp.v;
 
         if (other.v < 0 && tmp === 0) {
@@ -975,7 +977,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     number = Sk.builtin.asnum$(self);
@@ -1007,7 +1009,7 @@ Sk.builtin.int_.prototype.__format__= function (obj, format_spec) {
         if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = Sk.ffi.remapToJs(format_spec);

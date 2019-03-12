@@ -1,3 +1,5 @@
+import { typeName, setUpInheritance } from './abstract'
+
 /**
  * @constructor
  * @param {Object} iterable
@@ -13,11 +15,11 @@ Sk.builtin.enumerate = function (iterable, start) {
 
     Sk.builtin.pyCheckArgs("enumerate", arguments, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + typeName(iterable) + "' object is not iterable");
     }
     if (start !== undefined) {
         if (!Sk.misceval.isIndex(start)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
+            throw new Sk.builtin.TypeError("'" + typeName(start) + "' object cannot be interpreted as an index");
         } else {
             start = Sk.misceval.asIndex(start);
         }
@@ -47,7 +49,7 @@ Sk.builtin.enumerate = function (iterable, start) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
+setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
 
 Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     return self.tp$iter();

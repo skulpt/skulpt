@@ -1,3 +1,5 @@
+import { setUpInheritance } from './abstract';
+
 /*
  * The filename, line number, and column number of exceptions are
  * stored within the exception object.  Note that not all exceptions
@@ -42,7 +44,7 @@ Sk.builtin.BaseException = function (args) {
                              filename: this.args.v[1].v || "<unknown>"});
     }
 };
-Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
+setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
 
 Sk.builtin.BaseException.prototype.tp$str = function () {
     var i;
@@ -105,7 +107,7 @@ Sk.builtin.Exception = function (args) {
     }
     Sk.builtin.BaseException.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
+setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
 goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
 
 /**
@@ -122,7 +124,7 @@ Sk.builtin.StandardError = function (args) {
     }
     Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
+setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
 goog.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
 
 /**
@@ -139,7 +141,7 @@ Sk.builtin.AssertionError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.StandardError);
+setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
 
 /**
@@ -156,7 +158,7 @@ Sk.builtin.AttributeError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.StandardError);
+setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -172,7 +174,7 @@ Sk.builtin.ImportError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.StandardError);
+setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -188,7 +190,7 @@ Sk.builtin.IndentationError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.StandardError);
+setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -204,7 +206,7 @@ Sk.builtin.IndexError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.StandardError);
+setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -220,7 +222,7 @@ Sk.builtin.KeyError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.StandardError);
+setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -236,7 +238,7 @@ Sk.builtin.NameError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.StandardError);
+setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -252,7 +254,7 @@ Sk.builtin.UnboundLocalError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.StandardError);
+setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -268,7 +270,7 @@ Sk.builtin.OverflowError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.StandardError);
+setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.StandardError);
 
 
 /**
@@ -285,7 +287,7 @@ Sk.builtin.SyntaxError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
+setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -301,7 +303,7 @@ Sk.builtin.RuntimeError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.StandardError);
+setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
 
 
@@ -319,7 +321,7 @@ Sk.builtin.SuspensionError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.StandardError);
+setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
 
 
@@ -337,7 +339,7 @@ Sk.builtin.SystemExit = function (args) {
     }
     Sk.builtin.BaseException.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
+setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
 goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
 
@@ -355,7 +357,7 @@ Sk.builtin.TypeError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.StandardError);
+setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
 /**
  * @constructor
@@ -371,7 +373,7 @@ Sk.builtin.ValueError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.StandardError);
+setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
 
 /**
@@ -388,7 +390,7 @@ Sk.builtin.ZeroDivisionError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.StandardError);
+setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -404,7 +406,7 @@ Sk.builtin.TimeLimitError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.StandardError);
+setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
 
 /**
@@ -421,7 +423,7 @@ Sk.builtin.IOError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.StandardError);
+setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
 
 
@@ -439,7 +441,7 @@ Sk.builtin.NotImplementedError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.StandardError);
+setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
 
 /**
@@ -456,7 +458,7 @@ Sk.builtin.NegativePowerError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.StandardError);
+setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
 
 /**
@@ -481,7 +483,7 @@ Sk.builtin.ExternalError = function (nativeError, args) {
     }
     Sk.builtin.StandardError.apply(this, args);
 };
-Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.StandardError);
+setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
 
 /**
@@ -498,7 +500,7 @@ Sk.builtin.OperationError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.StandardError);
+setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
 
 /**
@@ -515,7 +517,7 @@ Sk.builtin.SystemError = function (args) {
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
+setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
 goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
@@ -532,7 +534,7 @@ Sk.builtin.StopIteration = function (args) {
     }
     Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
+setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
 goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
 

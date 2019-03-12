@@ -1,3 +1,5 @@
+import { setUpInheritance, typeName } from './abstract';
+
 Sk.builtin.interned = {};
 
 /**
@@ -64,7 +66,7 @@ Sk.builtin.str = function (x) {
 };
 goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
-Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
+setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
@@ -86,7 +88,7 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
         });
         return new Sk.builtin.str(ret);
     } else {
-        throw new Sk.builtin.TypeError("string indices must be integers, not " + Sk.abstr.typeName(index));
+        throw new Sk.builtin.TypeError("string indices must be integers, not " + typeName(index));
     }
 };
 
@@ -96,7 +98,7 @@ Sk.builtin.str.prototype.sq$length = function () {
 Sk.builtin.str.prototype.sq$concat = function (other) {
     var otypename;
     if (!other || !Sk.builtin.checkString(other)) {
-        otypename = Sk.abstr.typeName(other);
+        otypename = typeName(other);
         throw new Sk.builtin.TypeError("cannot concatenate 'str' and '" + otypename + "' objects");
     }
     return new Sk.builtin.str(this.v + other.v);
@@ -108,7 +110,7 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
     var ret;
 
     if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
     }
 
     n = Sk.misceval.asIndex(n);
@@ -389,7 +391,7 @@ Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, for
         if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = Sk.ffi.remapToJs(format_spec);
@@ -481,10 +483,10 @@ Sk.builtin.str.prototype["ljust"] = new Sk.builtin.func(function (self, len, fil
     var newstr;
     Sk.builtin.pyCheckArgs("ljust", arguments, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
+        throw new Sk.builtin.TypeError("integer argument exepcted, got " + typeName(len));
     }
     if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
+        throw new Sk.builtin.TypeError("must be char, not " + typeName(fillchar));
     }
     if (fillchar === undefined) {
         fillchar = " ";
@@ -504,10 +506,10 @@ Sk.builtin.str.prototype["rjust"] = new Sk.builtin.func(function (self, len, fil
     var newstr;
     Sk.builtin.pyCheckArgs("rjust", arguments, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
+        throw new Sk.builtin.TypeError("integer argument exepcted, got " + typeName(len));
     }
     if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
+        throw new Sk.builtin.TypeError("must be char, not " + typeName(fillchar));
     }
     if (fillchar === undefined) {
         fillchar = " ";
@@ -529,10 +531,10 @@ Sk.builtin.str.prototype["center"] = new Sk.builtin.func(function (self, len, fi
     var newstr1;
     Sk.builtin.pyCheckArgs("center", arguments, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
+        throw new Sk.builtin.TypeError("integer argument exepcted, got " + typeName(len));
     }
     if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
+        throw new Sk.builtin.TypeError("must be char, not " + typeName(fillchar));
     }
     if (fillchar === undefined) {
         fillchar = " ";
@@ -661,7 +663,7 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
     Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
     if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
         throw new Sk.builtin.TypeError("integer argument expected, got " +
-            Sk.abstr.typeName(count));
+            typeName(count));
     }
     count = Sk.builtin.asnum$(count);
     patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
@@ -692,7 +694,7 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
 
     Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
     if (! Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
+        throw new Sk.builtin.TypeError("integer argument exepected, got " + typeName(len));
     }
 
     // figure out how many zeroes are needed to make the proper length
@@ -735,7 +737,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
 
 
     if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
-        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
+        throw new Sk.builtin.TypeError("integer argument exepected, got " + typeName(tabsize));
     }
     if (tabsize === undefined) {
         tabsize = 8;
@@ -775,7 +777,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
     var slice;
     Sk.builtin.pyCheckArgs("splitlines", arguments, 1, 2);
     if ((keepends !== undefined) && ! Sk.builtin.checkBool(keepends)) {
-        throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
+        throw new Sk.builtin.TypeError("boolean argument expected, got " + typeName(keepends));
     }
     if (keepends === undefined) {
         keepends = false;
@@ -1170,7 +1172,7 @@ Sk.builtin.str_iter_ = function (obj) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("iterator", Sk.builtin.str_iter_, Sk.builtin.object);
+setUpInheritance("iterator", Sk.builtin.str_iter_, Sk.builtin.object);
 
 Sk.builtin.str_iter_.prototype.__class__ = Sk.builtin.str_iter_;
 

@@ -1,3 +1,5 @@
+import { iter, setUpInheritance, typeName } from './abstract';
+
 /**
  * @constructor
  * @param {Array.<Object>|Object} L
@@ -18,7 +20,7 @@ Sk.builtin.tuple = function (L) {
     } else {
         if (Sk.builtin.checkIterable(L)) {
             this.v = [];
-            for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            for (it = iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 this.v.push(i);
             }
         } else {
@@ -32,7 +34,7 @@ Sk.builtin.tuple = function (L) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
+setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
 
 Sk.builtin.tuple.prototype["$r"] = function () {
     var ret;
@@ -74,7 +76,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
         return new Sk.builtin.tuple(ret);
     }
 
-    throw new Sk.builtin.TypeError("tuple indices must be integers, not " + Sk.abstr.typeName(index));
+    throw new Sk.builtin.TypeError("tuple indices must be integers, not " + typeName(index));
 };
 
 // todo; the numbers and order are taken from python, but the answer's
@@ -202,7 +204,7 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     var msg;
     if (other.__class__ != Sk.builtin.tuple) {
         msg = "can only concatenate tuple (not \"";
-        msg += Sk.abstr.typeName(other) + "\") to tuple";
+        msg += typeName(other) + "\") to tuple";
         throw new Sk.builtin.TypeError(msg);
     }
 
@@ -280,7 +282,7 @@ Sk.builtin.tuple_iter_ = function (obj) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("tupleiterator", Sk.builtin.tuple_iter_, Sk.builtin.object);
+setUpInheritance("tupleiterator", Sk.builtin.tuple_iter_, Sk.builtin.object);
 
 Sk.builtin.tuple_iter_.prototype.__class__ = Sk.builtin.tuple_iter_;
 

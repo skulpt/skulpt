@@ -44,5 +44,9 @@
     "jshint": "~2.5.2",
     "jscs": "~1.12",
     "jsdoc": "~3.5.5"
+  },
+  "dependencies": {
+    "closure-compiler": "^0.2.12",
+    "webpack": "^4.29.6"
   }
 }
