@@ -1,4 +1,6 @@
 import { typeName, gattr, superConstructor } from './abstract'
+import { remapToJs } from './ffi';
+import { pyCheckArgs } from './function';
 
 /**
  * Maps Python dunder names to the Skulpt Javascript function names that
@@ -130,7 +132,7 @@ Sk.builtin.type = function (name, bases, dict) {
             this["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), this["$d"]);
         };
 
-        var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
+        var _name = remapToJs(name); // unwrap name string to js for latter use
 
         var inheritsBuiltin = false;
 
@@ -688,7 +690,7 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
 };
 
 Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
-    Sk.builtin.pyCheckArgs("__format__", arguments, 1, 2);
+    pyCheckArgs("__format__", arguments, 1, 2);
     return new Sk.builtin.str(self);
 };
 

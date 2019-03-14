@@ -1,4 +1,5 @@
 import { lookupSpecial, setUpInheritance } from './abstract';
+import { remapToPy } from './ffi';
 
 /**
   * Builds an iterator that outputs the items from the inputted object
@@ -63,7 +64,7 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
 
     if (this.getitem) {
         r = Sk.misceval.tryCatch(function() {
-            return Sk.misceval.callsimOrSuspend(self.getitem, self.obj, Sk.ffi.remapToPy(self.idx++));
+            return Sk.misceval.callsimOrSuspend(self.getitem, self.obj, remapToPy(self.idx++));
         }, function(e) {
             if (e instanceof Sk.builtin.StopIteration || e instanceof Sk.builtin.IndexError) {
                 return undefined;

@@ -1,3 +1,5 @@
+import { astFromParse } from './ast'
+
 /** @param {...*} x */
 var out;
 
@@ -2557,10 +2559,10 @@ Compiler.prototype.cmod = function (mod) {
  * @param {string} mode one of 'exec', 'eval', or 'single'
  * @param {boolean=} canSuspend if the generated code supports suspension
  */
-Sk.compile = function (source, filename, mode, canSuspend) {
+export function compile(source, filename, mode, canSuspend) {
     //print("FILE:", filename);
     var parse = Sk.parse(filename, source);
-    var ast = Sk.astFromParse(parse.cst, filename, parse.flags);
+    var ast = astFromParse(parse.cst, filename, parse.flags);
 
     // compilers flags, later we can add other ones too
     var flags = {};

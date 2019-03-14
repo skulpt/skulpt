@@ -1,4 +1,6 @@
 import { typeName, setUpInheritance } from './abstract';
+import { remapToJs } from './ffi';
+import { pyCheckArgs } from './function';
 
 /**
  * @constructor
@@ -218,7 +220,7 @@ Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure 
  * @instance
  */
 Sk.builtin.object.prototype["__new__"] = function (cls) {
-    Sk.builtin.pyCheckArgs("__new__", arguments, 1, 1, false, false);
+    pyCheckArgs("__new__", arguments, 1, 1, false, false);
 
     return new cls([], []);
 };
@@ -230,7 +232,7 @@ Sk.builtin.object.prototype["__new__"] = function (cls) {
  * @instance
  */
 Sk.builtin.object.prototype["__repr__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, false, true);
+    pyCheckArgs("__repr__", arguments, 0, 0, false, true);
 
     return self["$r"]();
 };
@@ -238,7 +240,7 @@ Sk.builtin.object.prototype["__repr__"] = function (self) {
 
 Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
     var formatstr;
-    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+    pyCheckArgs("__format__", arguments, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {
@@ -247,7 +249,7 @@ Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
-        formatstr = Sk.ffi.remapToJs(format_spec);
+        formatstr = remapToJs(format_spec);
         if (formatstr !== "") {
             throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
         }
@@ -264,7 +266,7 @@ Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
  * @instance
  */
 Sk.builtin.object.prototype["__str__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__str__", arguments, 0, 0, false, true);
+    pyCheckArgs("__str__", arguments, 0, 0, false, true);
 
     return self["$r"]();
 };
@@ -276,7 +278,7 @@ Sk.builtin.object.prototype["__str__"] = function (self) {
  * @instance
  */
 Sk.builtin.object.prototype["__hash__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__hash__", arguments, 0, 0, false, true);
+    pyCheckArgs("__hash__", arguments, 0, 0, false, true);
 
     return self.tp$hash();
 };
@@ -288,7 +290,7 @@ Sk.builtin.object.prototype["__hash__"] = function (self) {
  * @instance
  */
 Sk.builtin.object.prototype["__eq__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__eq__", arguments, 1, 1, false, true);
+    pyCheckArgs("__eq__", arguments, 1, 1, false, true);
 
     return self.ob$eq(other);
 };
@@ -300,7 +302,7 @@ Sk.builtin.object.prototype["__eq__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__ne__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__ne__", arguments, 1, 1, false, true);
+    pyCheckArgs("__ne__", arguments, 1, 1, false, true);
 
     return self.ob$ne(other);
 };
@@ -312,7 +314,7 @@ Sk.builtin.object.prototype["__ne__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__lt__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__lt__", arguments, 1, 1, false, true);
+    pyCheckArgs("__lt__", arguments, 1, 1, false, true);
 
     return self.ob$lt(other);
 };
@@ -324,7 +326,7 @@ Sk.builtin.object.prototype["__lt__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__le__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__le__", arguments, 1, 1, false, true);
+    pyCheckArgs("__le__", arguments, 1, 1, false, true);
 
     return self.ob$le(other);
 };
@@ -336,7 +338,7 @@ Sk.builtin.object.prototype["__le__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__gt__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__gt__", arguments, 1, 1, false, true);
+    pyCheckArgs("__gt__", arguments, 1, 1, false, true);
 
     return self.ob$gt(other);
 };
@@ -348,7 +350,7 @@ Sk.builtin.object.prototype["__gt__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__ge__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__ge__", arguments, 1, 1, false, true);
+    pyCheckArgs("__ge__", arguments, 1, 1, false, true);
 
     return self.ob$ge(other);
 };

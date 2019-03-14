@@ -489,7 +489,7 @@ function astForWithStmt (c, n) {
     REQ(n, SYM.with_stmt)
 
     /* process the with items inside-out */
-    i = NCH(n) -1 
+    i = NCH(n) -1
     /* the suite of the innermost with item is the suite of the with stmt */
     inner = astForSuite(c, CHILD(n,i));
 
@@ -502,7 +502,7 @@ function astForWithStmt (c, n) {
         }
 
         inner = [ret];
-    } 
+    }
 
     return ret
 }
@@ -1055,7 +1055,7 @@ function astForCall (c, n, func) {
 }
 
 function astForTrailer (c, n, leftExpr) {
-    /* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME 
+    /* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
      subscriptlist: subscript (',' subscript)* [',']
      subscript: '.' '.' '.' | test | [test] ':' [test] [sliceop]
      */
@@ -1085,7 +1085,7 @@ function astForTrailer (c, n, leftExpr) {
             return new Subscript(leftExpr, astForSlice(c, CHILD(n, 0)), Load, n.lineno, n.col_offset);
         }
         else {
-            /* The grammar is ambiguous here. The ambiguity is resolved 
+            /* The grammar is ambiguous here. The ambiguity is resolved
              by treating the sequence as a tuple literal if there are
              no slice features.
              */
@@ -1332,7 +1332,7 @@ function astForLambdef (c, n) {
 function astForComprehension(c, n) {
     /* testlist_comp: test ( comp_for | (',' test)* [','] )
        argument: test [comp_for] | test '=' test       # Really [keyword '='] test */
-    
+
     var j;
     var ifs;
     var nifs;
@@ -1573,7 +1573,7 @@ function astForExprStmt (c, n) {
     var expr1;
     var ch;
     REQ(n, SYM.expr_stmt);
-    /* expr_stmt: testlist (augassign (yield_expr|testlist) 
+    /* expr_stmt: testlist (augassign (yield_expr|testlist)
      | ('=' (yield_expr|testlist))*)
      testlist: test (',' test)* [',']
      augassign: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^='
@@ -1956,11 +1956,11 @@ function astForAtom(c, n) {
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA) {
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
-            } 
+            }
             return astForListcomp(c, ch);
-            
+
         case TOK.T_LBRACE:
-            /* dictorsetmaker: 
+            /* dictorsetmaker:
              *     (test ':' test (comp_for : (',' test ':' test)* [','])) |
              *     (test (comp_for | (',' test)* [',']))
              */
@@ -1970,7 +1970,7 @@ function astForAtom(c, n) {
             if (n.type === TOK.T_RBRACE) {
                 //it's an empty dict
                 return new Dict([], null, n.lineno, n.col_offset);
-            } 
+            }
             else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
                 //it's a simple set
                 elts = [];
@@ -1980,15 +1980,15 @@ function astForAtom(c, n) {
                     elts[i / 2] = expression;
                 }
                 return new Set(elts, n.lineno, n.col_offset);
-            } 
+            }
             else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
                 //it's a set comprehension
                 return astForSetComp(c, ch);
-            } 
+            }
             else if (NCH(ch) > 3 && CHILD(ch, 3).type === SYM.comp_for) {
                 //it's a dict compr. I think.
                 return astForDictComp(c, ch);
-            } 
+            }
             else {
                 size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
                 for (i = 0; i < NCH(ch); i += 4) {
@@ -2242,7 +2242,7 @@ function astForStmt (c, n) {
     }
 }
 
-Sk.astFromParse = function (n, filename, c_flags) {
+export function astFromParse (n, filename, c_flags) {
     var j;
     var num;
     var ch;
@@ -2280,7 +2280,7 @@ Sk.astFromParse = function (n, filename, c_flags) {
     }
 };
 
-Sk.astDump = function (node) {
+export function astDump(node) {
     var spaces = function (n) // todo; blurgh
     {
         var i;
@@ -2361,6 +2361,3 @@ Sk.astDump = function (node) {
 
     return _format(node, "");
 };
-
-goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);
-goog.exportSymbol("Sk.astDump", Sk.astDump);

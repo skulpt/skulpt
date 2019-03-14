@@ -1,8 +1,9 @@
+import { remapToPy } from './ffi';
 //
 // Number
 //
 
-function typeName(v) {
+export function typeName(v) {
     var vtypename;
     if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
@@ -861,7 +862,7 @@ export function iter(obj) {
         this.tp$iternext = function () {
             var ret;
             try {
-                ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+                ret = Sk.misceval.callsim(this.getitem, this.myobj, ToPy(this.idx));
             } catch (e) {
                 if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
@@ -953,7 +954,6 @@ export function markUnhashable(thisClass) {
  * @return {undefined}
  */
 export function setUpInheritance(childName, child, parent) {
-    goog.inherits(child, parent);
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);

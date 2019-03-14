@@ -1,3 +1,5 @@
+import { pyCheckArgs } from './function';
+
 var format = function (kwa) {
     // following PEP 3101
 
@@ -8,7 +10,7 @@ var format = function (kwa) {
     var replFunc;
     var arg_dict = {};
 
-    Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
+    pyCheckArgs("format", arguments, 0, Infinity, true, true);
 
 
     args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/

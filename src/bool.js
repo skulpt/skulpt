@@ -1,4 +1,10 @@
 import { setUpInheritance } from './abstract';
+import { int_ } from './int';
+import { str } from './str';
+import { float_ } from './float';
+import { func, pyCheckArgs } from './function';
+import { remapToJs } from './ffi';
+import { pyCheckArgs } from './function';
 
 /**
  * @constructor
@@ -15,36 +21,36 @@ import { setUpInheritance } from './abstract';
  * @param  {(Object|number|boolean)} x Value to evaluate as true or false
  * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
  */
-Sk.builtin.bool = function (x) {
-    Sk.builtin.pyCheckArgs("bool", arguments, 1);
-    if (Sk.misceval.isTrue(x)) {
-        return Sk.builtin.bool.true$;
-    } else {
-        return Sk.builtin.bool.false$;
+export class bool extends int_ {
+    constructor(x) {
+        pyCheckArgs("bool", arguments, 1);
+        if (Sk.misceval.isTrue(x)) {
+            return Sk.builtin.bool.true$;
+        } else {
+            return Sk.builtin.bool.false$;
+        }
     }
-};
 
-setUpInheritance("bool", Sk.builtin.bool, Sk.builtin.int_);
-
-Sk.builtin.bool.prototype["$r"] = function () {
-    if (this.v) {
-        return new Sk.builtin.str("True");
+    $r() {
+        if (this.v) {
+            return new str("True");
+        }
+        return new str("False");
     }
-    return new Sk.builtin.str("False");
-};
 
-Sk.builtin.bool.prototype.tp$hash = function () {
-    return new Sk.builtin.int_(this.v);
-};
+    tp$hash() {
+        return new int_(this.v);
+    }
 
-Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
-    var v = Sk.builtin.asnum$(self);
+    __int__ = new func(function (self) {
+        var v = Sk.builtin.asnum$(self);
 
-    return new Sk.builtin.int_(v);
-});
+        return new int_(v);
+    })
 
-Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
-    return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
-});
+    __float__ = new func(function(self) {
+        return new float_(remapToJs(self));
+    });
+}
 
-goog.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
+setUpInheritance("bool", bool, int_);

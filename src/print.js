@@ -1,4 +1,6 @@
 import { typeName } from './abstract';
+import { remapToJs } from './ffi';
+import { pyCheckArgs } from './function';
 
 /*
 	Implementation of the Python3 print version. Due to Python2 grammar we have
@@ -7,10 +9,10 @@ import { typeName } from './abstract';
 
 */
 var print_f = function function_print(kwa) {
-    Sk.builtin.pyCheckArgs("print", arguments, 0, Infinity, true, false);
+    pyCheckArgs("print", arguments, 0, Infinity, true, false);
     var args = Array.prototype.slice.call(arguments, 1);
     var kwargs = new Sk.builtins.dict(kwa);
-    var _kwargs = Sk.ffi.remapToJs(kwargs);
+    var _kwargs = remapToJs(kwargs);
 
     // defaults, null for None
     var kw_list = {
@@ -27,7 +29,7 @@ var print_f = function function_print(kwa) {
     if(remap_val !== undefined) {
         is_none = Sk.builtin.checkNone(remap_val);
         if(Sk.builtin.checkString(remap_val) || is_none) {
-            kw_list["sep"] = is_none ? kw_list["sep"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
+            kw_list["sep"] = is_none ? kw_list["sep"] : remapToJs(remap_val); // only reassign for string
         } else {
             throw new Sk.builtin.TypeError("sep must be None or a string, not " + typeName(remap_val));
         }
@@ -38,7 +40,7 @@ var print_f = function function_print(kwa) {
     if(remap_val !== undefined) {
         is_none = Sk.builtin.checkNone(remap_val);
         if(Sk.builtin.checkString(remap_val) || is_none) {
-            kw_list["end"] = is_none ? kw_list["end"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
+            kw_list["end"] = is_none ? kw_list["end"] : remapToJs(remap_val); // only reassign for string
         } else {
             throw new Sk.builtin.TypeError("end must be None or a string, not " + typeName(remap_val));
         }

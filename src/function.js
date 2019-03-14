@@ -19,7 +19,7 @@ import { iter, lookupSpecial } from './abstract';
  * @param {boolean=} free optional true if free vars, false otherwise
  * (default: false)
  */
-Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
+export function pyCheckArgs(name, args, minargs, maxargs, kwargs, free) {
     var nargs = args.length;
     var msg = "";
 
@@ -44,7 +44,6 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
         throw new Sk.builtin.TypeError(msg);
     }
 };
-goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
  * Check type of argument to Python functions.

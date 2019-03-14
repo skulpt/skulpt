@@ -1,4 +1,5 @@
 import { iter, setUpInheritance, typeName } from './abstract';
+import { pyCheckArgs } from './function';
 
 /**
  * @constructor
@@ -122,7 +123,7 @@ Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
 Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
+    pyCheckArgs("__iter__", arguments, 1, 1);
     return new Sk.builtin.tuple_iter_(self);
 });
 

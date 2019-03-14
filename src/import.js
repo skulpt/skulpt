@@ -1,3 +1,5 @@
+import { compile } from './compile';
+
 /**
  * @namespace Sk
  *

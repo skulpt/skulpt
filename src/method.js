@@ -1,4 +1,5 @@
 import { setUpInheritance } from './abstract';
+import { pyCheckArgs } from './function';
 
 /**
  * @constructor
@@ -12,7 +13,7 @@ import { setUpInheritance } from './abstract';
  */
 Sk.builtin.method = function (func, self, klass, builtin) {
     if (!(this instanceof Sk.builtin.method)) {
-        Sk.builtin.pyCheckArgs("method", arguments, 3, 3);
+        pyCheckArgs("method", arguments, 3, 3);
         if (!Sk.builtin.checkCallable(func)) {
             throw new Sk.builtin.TypeError("First argument must be callable");
         }

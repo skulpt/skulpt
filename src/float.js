@@ -1,4 +1,6 @@
 import { lookupSpecial, setUpInheritance, typeName } from './abstract';
+import { remapToJs } from './ffi';
+import { pyCheckArgs } from './function';
 
 /**
  * @namespace Sk.builtin
@@ -158,7 +160,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
 
     // it is a subclass or direct float
     if (op && Sk.builtin.float_.PyFloat_Check(op)) {
-        return Sk.ffi.remapToJs(op);
+        return remapToJs(op);
     }
 
     if (op == null) {
@@ -179,7 +181,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
         throw new Sk.builtin.TypeError("nb_float should return float object");
     }
 
-    val = Sk.ffi.remapToJs(fo);
+    val = remapToJs(fo);
 
     return val;
 };
@@ -773,7 +775,7 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
  */
 Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
-    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+    pyCheckArgs("__round__", arguments, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
@@ -808,7 +810,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
 
 Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
     var formatstr;
-    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+    pyCheckArgs("__format__", arguments, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {
@@ -817,7 +819,7 @@ Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
-        formatstr = Sk.ffi.remapToJs(format_spec);
+        formatstr = remapToJs(format_spec);
         if (formatstr !== "") {
             throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
         }

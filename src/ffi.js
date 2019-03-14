@@ -3,7 +3,6 @@
  *
  */
 
-Sk.ffi = Sk.ffi || {};
 
 /**
  * maps from Javascript Object/Array/string to Python dict/list/str.
@@ -11,7 +10,7 @@ Sk.ffi = Sk.ffi || {};
  * only works on basic objects that are being used as storage, doesn't handle
  * functions, etc.
  */
-Sk.ffi.remapToPy = function (obj) {
+export function remapToPy(obj) {
     var k;
     var kvs;
     var i;
@@ -32,7 +31,7 @@ Sk.ffi.remapToPy = function (obj) {
     if (Object.prototype.toString.call(obj) === "[object Array]") {
         arr = [];
         for (i = 0; i < obj.length; ++i) {
-            arr.push(Sk.ffi.remapToPy(obj[i]));
+            arr.push(remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
     }
@@ -40,8 +39,8 @@ Sk.ffi.remapToPy = function (obj) {
     if (typeof obj === "object") {
         kvs = [];
         for (k in obj) {
-            kvs.push(Sk.ffi.remapToPy(k));
-            kvs.push(Sk.ffi.remapToPy(obj[k]));
+            kvs.push(remapToPy(k));
+            kvs.push(remapToPy(obj[k]));
         }
         return new Sk.builtin.dict(kvs);
     }
@@ -66,7 +65,6 @@ Sk.ffi.remapToPy = function (obj) {
 
     goog.asserts.fail("unhandled remap type " + typeof(obj));
 };
-goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 
 /**
  * Maps from Python dict/list/str/number to Javascript Object/Array/string/number.
@@ -76,7 +74,7 @@ goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
  * @param obj {Object}  Any Python object (except a function)
  *
  */
-Sk.ffi.remapToJs = function (obj) {
+export function remapToJs(obj) {
     var i;
     var kAsJs;
     var v;
@@ -91,15 +89,15 @@ Sk.ffi.remapToJs = function (obj) {
             if (v === undefined) {
                 v = null;
             }
-            kAsJs = Sk.ffi.remapToJs(k);
+            kAsJs = remapToJs(k);
             // todo; assert that this is a reasonble lhs?
-            ret[kAsJs] = Sk.ffi.remapToJs(v);
+            ret[kAsJs] = remapToJs(v);
         }
         return ret;
     } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
         ret = [];
         for (i = 0; i < obj.v.length; ++i) {
-            ret.push(Sk.ffi.remapToJs(obj.v[i]));
+            ret.push(remapToJs(obj.v[i]));
         }
         return ret;
     } else if (obj instanceof Sk.builtin.bool) {
@@ -118,9 +116,8 @@ Sk.ffi.remapToJs = function (obj) {
         return obj.v;
     }
 };
-goog.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
 
-Sk.ffi.callback = function (fn) {
+export function callback(fn) {
     if (fn === undefined) {
         return fn;
     }
@@ -128,20 +125,18 @@ Sk.ffi.callback = function (fn) {
         return Sk.misceval.apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
     };
 };
-goog.exportSymbol("Sk.ffi.callback", Sk.ffi.callback);
 
-Sk.ffi.stdwrap = function (type, towrap) {
+export function stdwrap(type, towrap) {
     var inst = new type();
     inst["v"] = towrap;
     return inst;
 };
-goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
 
 /**
  * for when the return type might be one of a variety of basic types.
  * number|string, etc.
  */
-Sk.ffi.basicwrap = function (obj) {
+export function basicwrap(obj) {
     if (obj instanceof Sk.builtin.int_) {
         return Sk.builtin.asnum$(obj);
     }
@@ -159,20 +154,17 @@ Sk.ffi.basicwrap = function (obj) {
     }
     goog.asserts.fail("unexpected type for basicwrap");
 };
-goog.exportSymbol("Sk.ffi.basicwrap", Sk.ffi.basicwrap);
 
-Sk.ffi.unwrapo = function (obj) {
+export function unwrapo(obj) {
     if (obj === undefined) {
         return undefined;
     }
     return obj["v"];
 };
-goog.exportSymbol("Sk.ffi.unwrapo", Sk.ffi.unwrapo);
 
-Sk.ffi.unwrapn = function (obj) {
+export function unwrapn(obj) {
     if (obj === null) {
         return null;
     }
     return obj["v"];
 };
-goog.exportSymbol("Sk.ffi.unwrapn", Sk.ffi.unwrapn);
