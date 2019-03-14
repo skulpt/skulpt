@@ -297,7 +297,7 @@ Sk.builtin.type = function (name, bases, dict) {
                     throw e;
                 }
             });
-            
+
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 

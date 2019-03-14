@@ -1,6 +1,5 @@
 $(function () {
     var repl = new CodeMirrorREPL('debugger_cm', {
-            mode: "python",
             theme: "solarized light",
         }),
 
@@ -78,8 +77,9 @@ $(function () {
             "run": "Run / Restart the current program in the editor",
             "step": "Step Over to the next instruction",
             "cont": "Continue execution till next breakpoint is hit or application terminates",
+            "view bp": "View list of breakpoints",
             "view local(s) <var>": "View all the locals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
-            "view global(s) <var>": "View all the globals at the current execution point. 'view locals' shows all locals. 'view local <var>' shows just one var",
+            "view global(s) <var>": "View all the globals at the current execution point. 'view globals' shows all globals. 'view global <var>' shows just one var",
             "list": "List source code for the current file. Without arguments, list 11 lines around the current line or continue the previous listing."
         };
         
@@ -293,7 +293,6 @@ $(function () {
     };
     
     repl.display_help = function() {
-        repl.print("Help: refer to https://docs.python.org/2/library/pdb.html")
         for (var cmd in cmd_list) {
             repl.print(cmd + ": " + cmd_list[cmd]);
         }

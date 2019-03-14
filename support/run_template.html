@@ -32,21 +32,6 @@ function builtinRead(x) {
 
     var file = Sk.builtinFiles["files"][x];
 
-    if (!file) {
-        return new Promise(function (accept, reject) {
-            function reqListener () {
-                console.log(this);
-                console.log(arguments)
-                accept(this.responseText);
-            }
-
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.open("GET", "%(root)s" + file);
-            oReq.send();
-        });
-    }
-
     return file;
 }
 
