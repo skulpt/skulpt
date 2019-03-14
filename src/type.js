@@ -297,7 +297,7 @@ Sk.builtin.type = function (name, bases, dict) {
                     throw e;
                 }
             });
-            
+
             return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 
@@ -475,6 +475,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
 
 Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
+Sk.builtin.type.sk$type = true;
 Sk.builtin.type["$r"] = function () {
     if(Sk.python3) {
         return new Sk.builtin.str("<class 'type'>");

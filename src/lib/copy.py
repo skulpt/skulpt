@@ -179,10 +179,10 @@ def _deepcopy_dict(x, memo):
     return y
 d[dict] = _deepcopy_dict
 
-def _deepcopy_method(x, memo): # Copy instance methods
-    y = type(x)(x.im_func, deepcopy(x.im_self, memo), x.im_class);
-    return y
-d[types.MethodType] = _deepcopy_method
+# def _deepcopy_method(x, memo): # Copy instance methods
+#     y = type(x)(x.im_func, deepcopy(x.im_self, memo), x.im_class);
+#     return y
+d[types.MethodType] = _deepcopy_atomic
 
 def _deepcopy_inst(x, memo):
     if hasattr(x, '__deepcopy__'):
