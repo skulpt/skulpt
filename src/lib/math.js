@@ -139,6 +139,10 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgs("ceil", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
+        if (Sk.__future__.ceil_floor_int) {
+            return new Sk.builtin.int_(Math.ceil(Sk.builtin.asnum$(x)));
+        }
+
         return new Sk.builtin.float_(Math.ceil(Sk.builtin.asnum$(x)));
     });
 
@@ -187,6 +191,10 @@ var $builtinmodule = function (name) {
     mod.floor = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("floor", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        if (Sk.__future__.ceil_floor_int) {
+            return new Sk.builtin.int_(Math.floor(Sk.builtin.asnum$(x)));
+        }
 
         return new Sk.builtin.float_(Math.floor(Sk.builtin.asnum$(x)));
     });

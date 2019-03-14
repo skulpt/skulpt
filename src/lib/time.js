@@ -103,9 +103,37 @@ var $builtinmodule = function (name) {
         return date.getTimezoneOffset() < stdTimezoneOffset();
     }
 
+    /**
+     * ToDo: This is broken since FireFox Version 47 on Windows 10,
+     *       FIXED it by checking the result of the exec
+     *
+     * @param {any} date
+     * @returns
+     */
     function timeZoneName(date) {
-        var i = /\((.*)\)/.exec(date.toString());
-        return i ? i[1] : "UTC";
+        var result = /\((.*)\)/.exec(date.toString());
+        var language;
+
+        if (this.navigator != null) {
+            language = this.navigator.userLanguage || this.navigator.language;
+        }
+
+        if (result && result.length > 1) {
+            return result[1];
+        } else {
+            if (language === undefined) {
+                return null;
+            }
+
+            // Try 2nd way, using the locale string, this does not work in Safari (26.07.2016)
+            try {
+                var localeString = date.toLocaleString(language, { timeZoneName: "short" });
+                result = localeString.split(" ");
+                return result[result.length - 1];
+            } catch (e) {
+                return null;
+            }
+        }
     }
 
     function timeZoneNames() {

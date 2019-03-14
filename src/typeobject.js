@@ -3,7 +3,6 @@ Sk.builtin.type_is_subtype_base_chain = function type_is_subtype_base_chain(a, b
         if (a == b) {
             return true;
         }
-
         a = a.tp$base;
     } while (a !== undefined);
 
@@ -34,8 +33,6 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
  */
 Sk.builtin.super_ = function super_ (a_type, self) {
     Sk.builtin.pyCheckArgs("super", arguments, 1);
-
-    var type, obj, obj_type;
 
     if (!(this instanceof Sk.builtin.super_)) {
         return new Sk.builtin.super_(a_type, self);

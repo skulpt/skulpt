@@ -80,14 +80,22 @@ $builtinmodule = function (name) {
             // if imageId is the name of an image file prepend http://host/app/book/_static/
             // if image proxy server is configured construct url for proxy
             // return the final URL
+
+            var proxy = typeof(Sk.imageProxy) === "function"
+                        ? Sk.imageProxy : function (str) {
+                            url = document.createElement("a");
+                            url.href = ret;
+                            if (window.location.host !== url.host) {
+                              return Sk.imageProxy + "/" + str;
+                            }
+                            return str;
+                        };
+
             var url;
             var ret;
             ret = Sk.ffi.remapToJs(imageId);
-            url = document.createElement("a");
-            url.href = ret;
-            if (window.location.host !== url.host) {
-                ret = Sk.imageProxy + "/" + ret;
-            }
+            ret = proxy(ret);
+
             return ret;
         };
 
@@ -121,7 +129,6 @@ $builtinmodule = function (name) {
             Sk.builtin.pyCheckArgs("getpixels", arguments, 1, 1);
 
             for (i = 0; i < self.image.height * self.image.width; i++) {
-
                 arr[i] = Sk.misceval.callsim(self.getPixel, self,
                     i % self.image.width, Math.floor(i / self.image.width));
             }
@@ -132,8 +139,32 @@ $builtinmodule = function (name) {
         $loc.get_pixels = new Sk.builtin.func(getpixels);
         $loc.getPixels = new Sk.builtin.func(getpixels);
 
+        $loc.getData = new Sk.builtin.func(function (self) {
+            var arr = [];//initial array
+            var i;
+            var x;
+            var y;
+            var red;
+            var green;
+            var blue;
+            var index;
+            Sk.builtin.pyCheckArgs("getData", arguments, 1, 1);
 
-        var getpixel = function (self, x, y) {
+            for (i = 0; i < self.image.height * self.image.width; i++) {
+                x = i % self.image.width;
+                y = Math.floor(i / self.image.width);
+                checkPixelRange(self, x, y);
+                index = (y * 4) * self.width + (x * 4);
+                red = self.imagedata.data[index];
+                green = self.imagedata.data[index + 1];
+                blue = self.imagedata.data[index + 2];
+                arr[i] = new Sk.builtin.tuple([new Sk.builtin.int_(red), new Sk.builtin.int_(green), new Sk.builtin.int_(blue)]);
+            }
+
+            return new Sk.builtin.list(arr);
+        });
+
+        $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
             var red;
             var blue;
             var green;
@@ -451,7 +482,7 @@ $builtinmodule = function (name) {
         });
 
         $loc.__str__ = new Sk.builtin.func(function (self) {
-            return "[" + self.red + "," + self.green + "," + self.blue + "]";
+            return Sk.ffi.remapToPy("[" + self.red + "," + self.green + "," + self.blue + "]");
         });
 
         //getColorTuple

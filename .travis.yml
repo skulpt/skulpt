@@ -1,7 +1,7 @@
 language: python
 sudo: false
 python:
-- '2.6'
+- '2.7'
 install:
 - nvm install 'lts/*'
 - nvm use 'lts/*'
@@ -14,7 +14,3 @@ script:
 - npm test
 after_script:
 - ./dist-update.sh
-env:
-  global:
-  - secure: c4X6Fg9g3Z27vweDsb6q4Is7cwt4TdKX/H0T9MaGRZEcBvA2ke05B2m7jcwz0Ml0JfwBq1fWzOEj+VNOkXD1CqtzQwKgd7hO094Jk/tXYtfSSHD4nmJ0HyrKMBZfic/Q9eYQoTfhuKez34dzxBiwI818q5B6oedo9ayzK3M7k6w=
-  - secure: UEg/9heIZjo2Jws047OO07T+MurWyDiQ3Hp7ow1jgfhYitntsEzJwJrs/UFsZDP01QWAviLFtEY/JDBPEUzPyEbWJe2YE65CSt4AM9Kt5sMADEnFF9ButNMCg5oKRB1neqotuGy6U+lzUQsZN0rzsTuVqxK1ODHz+2LwyvpgpZ8=

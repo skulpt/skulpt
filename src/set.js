@@ -41,7 +41,8 @@ Sk.builtin.set.prototype["$r"] = function () {
     for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
-    if(Sk.python3) {
+
+    if(Sk.__future__.set_repr) {
         return new Sk.builtin.str("{" + ret.join(", ") + "}");
     } else {
         return new Sk.builtin.str("set([" + ret.join(", ") + "])");

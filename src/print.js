@@ -72,10 +72,10 @@ var print_f = function function_print(kwa) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
         Sk.misceval.callsim(kw_list.file.write, kw_list.file, new Sk.builtin.str(s)); // callsim to write function
     } else {
-        var sys = Sk.importModule("sys");
-        Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+        return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
+            return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+        });
     }
-
     // ToDo:
     // cpython print function may receive another flush kwarg that flushes the output stream immediatelly
 };

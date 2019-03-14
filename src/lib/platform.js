@@ -20,7 +20,7 @@ var $builtinmodule = function(name){
     mod.python_version = new Sk.builtin.func(function() {
         var vers;
         Sk.builtin.pyCheckArgs("python_version", arguments, 0, 0);
-        if (Sk.python3) {
+        if (Sk.__future__.python_version) {
             vers = "3.2.0";
         }
         else {

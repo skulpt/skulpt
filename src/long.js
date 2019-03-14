@@ -11,7 +11,7 @@
  * Constructor for Python long. Also used for builtin long().
  *
  * @extends {Sk.builtin.numtype}
- * 
+ *
  * @param {*} x Object or number to convert to Python long.
  * @param {number=} base Optional base.
  * @return {Sk.builtin.lng} Python long
@@ -82,7 +82,7 @@ Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
     Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.python3) {
+        if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
@@ -113,7 +113,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
         ndigs = Sk.misceval.asIndex(ndigits);
     }
 
-    if (Sk.python3) {
+    if (Sk.__future__.bankers_rounding) {
         num10 = number * Math.pow(10, ndigs);
         rounded = Math.round(num10);
         bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
@@ -254,7 +254,7 @@ Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtr
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
     var thisAsFloat;
-    
+
     if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$multiply(other);
@@ -493,7 +493,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
         return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
     }
 
-    if (n instanceof Sk.builtin.float_ || 
+    if (n instanceof Sk.builtin.float_ ||
         (n instanceof Sk.builtin.int_ && n.v < 0)) {
         thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$power(n);
@@ -734,7 +734,7 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
         other = new Sk.builtin.lng(other);
     }
 
-    if (other instanceof Sk.builtin.int_ || 
+    if (other instanceof Sk.builtin.int_ ||
         (other instanceof Sk.builtin.float_ && other.v % 1 === 0)) {
         otherAsLong = new Sk.builtin.lng(other.v);
         return this.longCompare(otherAsLong);

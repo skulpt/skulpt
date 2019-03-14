@@ -132,7 +132,6 @@ Sk.builtin.type = function (name, bases, dict) {
             this["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), this["$d"]);
         };
 
-
         var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
 
         var inheritsBuiltin = false;
@@ -178,8 +177,9 @@ Sk.builtin.type = function (name, bases, dict) {
             });
         };
 
-        if (bases.v.length === 0 && Sk.python3) {
+        if (bases.v.length === 0 && Sk.__future__.inherit_from_object) {
             // new style class, inherits from object by default
+            bases.v.push(Sk.builtin.object);
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
         }
 
@@ -339,7 +339,7 @@ Sk.builtin.type = function (name, bases, dict) {
             var self = this;
             var next;
 
-            if (Sk.python3) {
+            if (Sk.__future__.dunder_next) {
                 next = "__next__";
             } else {
                 next = "next";
@@ -459,7 +459,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
             cname = mod.v + ".";
         }
         ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.python3) {
+        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
             ctype = "type";
         }
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
@@ -477,7 +477,7 @@ Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
 Sk.builtin.type.sk$type = true;
 Sk.builtin.type["$r"] = function () {
-    if(Sk.python3) {
+    if(Sk.__future__.class_repr) {
         return new Sk.builtin.str("<class 'type'>");
     } else {
         return new Sk.builtin.str("<type 'type'>");
@@ -682,12 +682,10 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     if (!this["$r"] || !other["$r"]) {
         return undefined;
     }
-    r1 = new Sk.builtin.str(this["$r"]().v.slice(1,6));
-    r2 = new Sk.builtin.str(other["$r"]().v.slice(1,6));
-    if (this["$r"]().v.slice(1,6) !== "class") {
-        r1 = this["$r"]();
-        r2 = other["$r"]();
-    }
+
+    r1 = this["$r"]();
+    r2 = other["$r"]();
+
     return r1.tp$richcompare(r2, op);
 };
 

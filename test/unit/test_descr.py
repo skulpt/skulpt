@@ -125,7 +125,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual(d.goo(1), (1,))
         self.assertEqual(d.foo(1), (d, 1))
         self.assertEqual(D.foo(d, 1), (d, 1))
-    
+
 
     def test_compattr(self):
         # Testing computed attributes...
@@ -210,7 +210,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         class D(C, B):
             def meth(self, a):
                 return "D(%r)" % a + super(D, self).meth(a)
-        
+
         # because I don't walk the MRO correctly
         # self.assertEqual(D().meth(4), "D(4)C(4)B(4)A(4)")
 
@@ -298,8 +298,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         # Verify that super() doesn't allow keyword args
         try:
             super(Base, kw=1)
-            # we throw a ValueError not a TypeError I can't change this because it happens in the compiler
-        except ValueError:
+        except TypeError:
             pass
         else:
             self.assertEqual("super shouldn't accept keyword args")

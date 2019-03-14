@@ -121,7 +121,6 @@ var $builtinmodule = function (name) {
     };
 
     _split.co_varnames = ["pattern", "string", "maxsplit", "flags"];
-    _split.co_numargs = 4;
     _split.$defaults = [ new Sk.builtin.int_(0), new Sk.builtin.int_(0) ];
 
     mod.split = new Sk.builtin.func(_split);
@@ -189,7 +188,6 @@ var $builtinmodule = function (name) {
     };
 
     _findall.co_varnames = ["pattern", "string", "flags"];
-    _findall.co_numargs = 3;
     _findall.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.findall = new Sk.builtin.func(_findall);
@@ -280,7 +278,6 @@ var $builtinmodule = function (name) {
     };
 
     _search.co_varnames = ["pattern", "string", "flags"];
-    _search.co_numargs = 3;
     _search.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.search = new Sk.builtin.func(_search);
@@ -311,7 +308,6 @@ var $builtinmodule = function (name) {
     };
 
     _match.co_varnames = ["pattern", "string", "flags"];
-    _match.co_numargs = 3;
     _match.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.match = new Sk.builtin.func(_match);
@@ -365,7 +361,6 @@ var $builtinmodule = function (name) {
         };
 
         _re_search.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_search.co_numargs = 4;
         _re_search.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.search = new Sk.builtin.func(_re_search);
@@ -380,7 +375,6 @@ var $builtinmodule = function (name) {
         };
 
         _re_match.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_match.co_numargs = 4;
         _re_match.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.match = new Sk.builtin.func(_re_match);
@@ -399,7 +393,6 @@ var $builtinmodule = function (name) {
         };
 
         _re_split.co_varnames = ["self", "string", "maxsplit"];
-        _re_split.co_numargs = 3;
         _re_split.$defaults = [ new Sk.builtin.int_(0) ];
 
         $loc.split = new Sk.builtin.func(_re_split);
@@ -413,7 +406,6 @@ var $builtinmodule = function (name) {
         };
 
         _re_findall.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_findall.co_numargs = 4;
         _re_findall.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.findall = new Sk.builtin.func(_re_findall);

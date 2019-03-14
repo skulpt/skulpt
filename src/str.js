@@ -386,7 +386,7 @@ Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, for
     Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.python3) {
+        if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
