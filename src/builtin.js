@@ -879,10 +879,6 @@ Sk.builtin.jsmillis = function jsmillis () {
     return now.valueOf();
 };
 
-Sk.builtin.superbi = function superbi () {
-    throw new Sk.builtin.NotImplementedError("super is not yet implemented, please report your use case as a github issue.");
-};
-
 Sk.builtin.eval_ = function eval_ () {
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 };

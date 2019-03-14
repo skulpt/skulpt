@@ -525,6 +525,15 @@ Compiler.prototype.ccall = function (e) {
     }
     else {
         out ("$ret;"); // This forces a failure if $ret isn't defined
+        if (Sk.python3 && e.func.id && e.func.id.v === "super" && args.length == 0) {
+            // make sure there is a self variable
+            // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
+            // so we should probably add self to the mangling
+            // TODO: feel free to ignore the above
+            out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
+            args.push("$gbl.__class__");
+            args.push("self");
+        }
         out ("$ret = Sk.misceval.callsimOrSuspend(", func, args.length > 0 ? "," : "", args, ");");
     }
 
@@ -1274,7 +1283,7 @@ Compiler.prototype.ctryexcept = function (s) {
 
 Compiler.prototype.outputFinallyCascade = function (thisFinally) {
     var nextFinally;
-    
+
     // What do we do when we're done executing a 'finally' block?
     // Normally you just fall off the end. If we're 'return'ing,
     // 'continue'ing or 'break'ing, $postfinally tells us what to do.
@@ -1305,7 +1314,7 @@ Compiler.prototype.outputFinallyCascade = function (thisFinally) {
         // ('continue' is the same thing as 'break' for us)
 
         nextFinally = this.peekFinallyBlock();
-        
+
         out("if($postfinally!==undefined) {",
                 "if ($postfinally.returning",
                     (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
@@ -1540,11 +1549,12 @@ Compiler.prototype.cfromimport = function (s) {
  * @param {Array} decorator_list ast of decorators if any
  * @param {arguments_} args arguments to function, if any
  * @param {Function} callback called after setup to do actual work of function
+ * @param {Sk.builtin.str=} class_for_super
  *
  * @returns the name of the newly created function or generator object.
  *
  */
-Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, callback) {
+Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, callback, class_for_super) {
     var containingHasFree;
     var frees;
     var argnamesarr;
@@ -1653,13 +1663,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         entryBlock = "$gen.gi$resumeat";
         locals = "$gen.gi$locals";
     }
-    cells = "";
+    cells = ",$cell={}";
     if (hasCell) {
         if (isGenerator) {
             cells = ",$cell=$gen.gi$cells";
-        }
-        else {
-            cells = ",$cell={}";
         }
     }
 
@@ -1740,8 +1747,11 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "}";
 
+    // inject __class__ cell when running python3
+    if (Sk.python3 && class_for_super) {
+        this.u.varDeclsCode += "$gbl.__class__=this." + class_for_super.v + ";";
+    }
 
-    //
     // finally, set up the block switch that the jump code expects
     //
     // Old switch code
@@ -1858,13 +1868,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
 };
 
-Compiler.prototype.cfunction = function (s) {
+Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
     goog.asserts.assert(s instanceof FunctionDef);
     funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function (scopename) {
         this.vseqstmt(s.body);
         out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
-    });
+    }, class_for_super);
     this.nameop(s.name, Store, funcorgen);
 };
 
@@ -2001,9 +2011,10 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;";
     this.u.switchCode += "(function $" + s.name.v + "$_closure(){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;"
+
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2015,11 +2026,11 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}"
-    this.u.suffixCode += "}).apply(null,$rest);});";
+    this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
 
-    this.cbody(s.body);
+    this.cbody(s.body, s.name);
     out("return;");
 
     // build class
@@ -2029,7 +2040,7 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "])");
+    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
@@ -2066,8 +2077,10 @@ Compiler.prototype.cbreak = function (s) {
 
 /**
  * compiles a statement
+ * @param {Object} s
+ * @param {Sk.builtin.str=} class_for_super
  */
-Compiler.prototype.vstmt = function (s) {
+Compiler.prototype.vstmt = function (s, class_for_super) {
     var i;
     var val;
     var n;
@@ -2080,7 +2093,7 @@ Compiler.prototype.vstmt = function (s) {
         debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
         out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
             "var $susp = $saveSuspension({data: {type: 'Sk.debug'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
-            "$susp.$blk = "+debugBlock+";",
+            "$susp.$blk = " + debugBlock + ";",
             "$susp.optional = true;",
             "return $susp;",
             "}");
@@ -2093,7 +2106,7 @@ Compiler.prototype.vstmt = function (s) {
 
     switch (s.constructor) {
         case FunctionDef:
-            this.cfunction(s);
+            this.cfunction(s, class_for_super);
             break;
         case ClassDef:
             this.cclass(s);
@@ -2162,7 +2175,7 @@ Compiler.prototype.vstmt = function (s) {
             out("debugger;");
             break;
         default:
-            goog.asserts.fail("unhandled case in vstmt: " + s.constructor.name);
+            goog.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
     }
 };
 
@@ -2393,10 +2406,14 @@ Compiler.prototype.exitScope = function () {
     }
 };
 
-Compiler.prototype.cbody = function (stmts) {
+/**
+ * @param {Array} stmts
+ * @param {Sk.builtin.str=} class_for_super
+ */
+Compiler.prototype.cbody = function (stmts, class_for_super) {
     var i;
     for (i = 0; i < stmts.length; ++i) {
-        this.vstmt(stmts[i]);
+        this.vstmt(stmts[i], class_for_super);
     }
 };
 
@@ -2419,6 +2436,7 @@ Compiler.prototype.cprint = function (s) {
         out("Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
     }
 };
+
 Compiler.prototype.cmod = function (mod) {
     //print("-----");
     //print(Sk.astDump(mod));
@@ -2428,7 +2446,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.prefixCode = "var " + modf + "=(function($forcegbl){";
     this.u.varDeclsCode =
         "var $gbl = $forcegbl || {}, $blk=" + entryBlock +
-        ",$exc=[],$loc=$gbl,$err=undefined;" + 
+        ",$exc=[],$loc=$gbl,$cell={},$err=undefined;" +
         "$loc.__file__=new Sk.builtins.str('" + this.filename +
         "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 

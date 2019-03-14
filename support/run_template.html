@@ -14,7 +14,8 @@
 <script type="text/javascript">
 function outf(text) {
    var mypre = document.getElementById(Sk.pre);
-   mypre.innerHTML = mypre.innerHTML + text;
+   mypre.appendChild(document.createTextNode(text));
+   console.log(text);
 }
 
 function showjs(text) {
@@ -30,21 +31,6 @@ function builtinRead(x) {
     }
 
     var file = Sk.builtinFiles["files"][x];
-
-    if (!file) {
-        return new Promise(function (accept, reject) {
-            function reqListener () {
-                console.log(this);
-                console.log(arguments)
-                accept(this.responseText);
-            }
-
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.open("GET", "%(root)s" + file);
-            oReq.send();
-        });
-    }
 
     return file;
 }
@@ -85,7 +71,15 @@ function runit(myDiv) {
     });
 
     myPromise.then(function(mod) {}, function(err) {
-        console.log(err.toString());
+        if (err.message) {
+            outf(err.message + "\n");
+            outf(err.stack);  
+        } else if (err.nativeError) {
+            outf(err.nativeError.message + "\n");
+            outf(err.nativeError.stack);  
+        } else {
+            outf(err.toString());
+        }   
     });
 }
 </script>
