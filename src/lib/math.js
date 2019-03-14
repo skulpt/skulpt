@@ -293,16 +293,37 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.sqrt((x * x) + (y * y)));
     });
 
+    var MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
     mod.factorial = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("factorial", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         x = Math.floor(Sk.builtin.asnum$(x));
         var r = 1;
-        for (var i = 2; i <= x; i++) {
+        for (var i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
             r *= i;
         }
-        return new Sk.builtin.int_(r);
+        if(x<=MAX_SAFE_INTEGER_FACTORIAL){
+            return new Sk.builtin.int_(r);
+        }else{
+            // for big numbers (19 and larger) we first calculate 18! above
+            // and then use bigintegers to continue the process.
+
+            // This is inefficient as hell, but it produces correct answers.
+
+            // promotes an integer to a biginteger
+            function bigup(number){
+              var n = Sk.builtin.asnum$nofloat(number);
+              return new Sk.builtin.biginteger(number);
+            }
+
+            r = bigup(r);
+            for (var i = MAX_SAFE_INTEGER_FACTORIAL+1; i <= x; i++) {
+                var i_bigup = bigup(i);
+                r = r.multiply(i_bigup);
+            }
+            return new Sk.builtin.lng(r);
+        }
     });
 
     return mod;

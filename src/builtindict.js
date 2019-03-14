@@ -100,7 +100,7 @@ Sk.builtins = {
     "pow"       : Sk.builtin.pow,
     "reload"    : Sk.builtin.reload,
     "reversed"  : Sk.builtin.reversed,
-    "super"     : Sk.builtin.superbi,
+    "super"     : Sk.builtin.super_,
     "unichr"    : Sk.builtin.unichr,
     "vars"      : Sk.builtin.vars,
     "xrange"    : Sk.builtin.xrange,

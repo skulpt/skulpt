@@ -522,9 +522,38 @@ Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
 });
 
-Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function (seq, value) {
-    throw new Sk.builtin.NotImplementedError("dict.fromkeys is not yet implemented in Skulpt");
-});
+Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
+    var k, iter, val, res, iterable;
+
+    if (self instanceof Sk.builtin.dict) {
+        // instance call
+        Sk.builtin.pyCheckArgs("fromkeys", arguments, 1, 2, false, true);
+
+        res = self;
+        iterable = seq;
+        val = value === undefined ? Sk.builtin.none.none$ : value;
+    } else {
+        // static call
+        Sk.builtin.pyCheckArgs("fromkeys", arguments, 1, 2, false, false);
+
+        res = new Sk.builtin.dict([]);
+        iterable = self;
+        val = seq === undefined ? Sk.builtin.none.none$ : seq;
+    }
+
+    if (!Sk.builtin.checkIterable(iterable)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+    }
+
+    for (iter = Sk.abstr.iter(iterable), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext()) {
+        res.mp$ass_subscript(k, val);
+    }
+
+    return res;
+};
+
 
 Sk.builtin.dict.prototype["iteritems"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
