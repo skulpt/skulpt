@@ -172,7 +172,12 @@ class ComplexTest(unittest.TestCase):
         #self.assertRaises(TypeError, divmod, 1+1j, 0+0j)
         # dummy test
         c = 1+1j
-        self.assertEqual(str(c.__divmod__), "<bound method complex.<native JS> of (1.0000000000000000+1.0000000000000000j)>")
+        # the repr is closer to the real thing but still off, __divmod__ is a slot so 
+        # complex.__divmod__ returns <slot wrapper '__divmod__' of 'complex' objects>
+        # and
+        # c.__divmod__ return <method-wrapper '__divmod__' of complex object at 0x10d88d0f0>
+        # but since we don't do slots and the old one was also wrong I figured this was good too.
+        self.assertEqual(str(c.__divmod__), "<built-in method __divmod__ of type object>")
 
 
     def test_pow(self):

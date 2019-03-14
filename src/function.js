@@ -109,7 +109,7 @@ Sk.builtin.checkCallable = function (obj) {
     // go up the prototype chain to see if the class has a __call__ method
     if (Sk.abstr.lookupSpecial(obj, "__call__") !== undefined) {
         return true;
-    } 
+    }
     return false;
 };
 
@@ -204,20 +204,39 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
             closure[k] = closure2[k];
         }
     }
+
+    this.__class__ = Sk.builtin.func;
     this.func_closure = closure;
+    this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
     return this;
 };
+
+Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
+
 goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
-
 Sk.builtin.func.prototype.tp$name = "function";
+
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    if (obj === Sk.builtin.none.none$) {
-        return this;
+    goog.asserts.assert(!(obj === undefined && objtype === undefined));
+    if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
+        // it's a builtin
+        return new Sk.builtin.method(this, obj, objtype, true);
     }
     return new Sk.builtin.method(this, obj, objtype);
 };
+
+Sk.builtin.func.pythonFunctions = ["__get__"];
+
+Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+    }
+
+    return self.tp$descr_get(instance, owner);
+};
+
 Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var j;
     var i;
@@ -233,8 +252,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
     kwargsarr = [];
 
     if (this.func_code["no_kw"] && kw) {
-        name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
+        throw new Sk.builtin.TypeError(this.tp$name + "() takes no keyword arguments");
     }
 
     if (kw) {
@@ -251,8 +269,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
             }
             if (varnames && j !== numvarnames) {
                 if (j in args) {
-                    name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-                    throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
+                    throw new Sk.builtin.TypeError(this.tp$name + "() got multiple values for keyword argument '" + kw[i] + "'");
                 }
                 args[j] = kw[i + 1];
             } else if (expectskw) {
@@ -260,8 +277,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
             } else {
-                name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+                throw new Sk.builtin.TypeError(this.tp$name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }
         }
     }
@@ -291,18 +307,6 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
     return this.func_code.apply(this.func_globals, args);
 };
 
-Sk.builtin.func.prototype.tp$getattr = function (key) {
-    return this[key];
-};
-Sk.builtin.func.prototype.tp$setattr = function (key, value) {
-    this[key] = value;
-};
-
-//todo; investigate why the other doesn't work
-//Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
-Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj("function", new Sk.builtin.func(null, null));
-
 Sk.builtin.func.prototype["$r"] = function () {
-    var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-    return new Sk.builtin.str("<function " + name + ">");
+    return new Sk.builtin.str("<function " + this.tp$name + ">");
 };

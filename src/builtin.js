@@ -1145,8 +1145,12 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
     var i;
     var issubclass_internal;
     Sk.builtin.pyCheckArgs("issubclass", arguments, 2, 2);
+    if (!Sk.builtin.checkClass(c1)) {
+        throw new Sk.builtin.TypeError("issubclass() arg 1 must be a class");
+    }
+
     if (!Sk.builtin.checkClass(c2) && !(c2 instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("issubclass() arg 2 must be a classinfo, type, or tuple of classes and types");
+        throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
 
     issubclass_internal = function (klass, base) {
@@ -1159,7 +1163,12 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
             return false;
         }
         if (klass["$d"].mp$subscript) {
-            bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
+            // old style classes don't have bases
+            if (klass["$d"].sq$contains(Sk.builtin.type.basesStr_)) {
+                bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

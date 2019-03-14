@@ -36,15 +36,15 @@ function builtinRead(x) {
 }
 
 function runit(myDiv) {
-   var prog = document.getElementById(myDiv+"_code").value;
-   var mypre = document.getElementById(myDiv+"_pre");
+    var prog = document.getElementById(myDiv+"_code").value;
+    var mypre = document.getElementById(myDiv+"_pre");
 
-   Sk.inputfun = function(prompt) {
-       return new Promise(function (resolve) { resolve(window.prompt(prompt)); });
-   };
-   //Sk.outputfun = alert;
+    Sk.inputfun = function(prompt) {
+        return new Promise(function (resolve) { resolve(window.prompt(prompt)); });
+    };
 
-   mypre.innerHTML = '';
+
+    mypre.innerHTML = '';
     var can = document.getElementById("turtle");
     can.style.display = 'block';
     if (can) {
@@ -55,7 +55,10 @@ function runit(myDiv) {
         }
     }
 
+    Sk.canvas = "turtle";
+
     Sk.pre = myDiv+"_pre";
+
     Sk.configure({
         output:outf,
         read: builtinRead,
@@ -63,7 +66,6 @@ function runit(myDiv) {
         debugout: showjs,
         debugging: %(debug_mode)s,
         python3: %(p3)s
-
     });
 
     var myPromise = Sk.misceval.asyncToPromise(function() {
@@ -73,13 +75,13 @@ function runit(myDiv) {
     myPromise.then(function(mod) {}, function(err) {
         if (err.message) {
             outf(err.message + "\n");
-            outf(err.stack);  
+            outf(err.stack);
         } else if (err.nativeError) {
             outf(err.nativeError.message + "\n");
-            outf(err.nativeError.stack);  
+            outf(err.nativeError.stack);
         } else {
             outf(err.toString());
-        }   
+        }
     });
 }
 </script>

@@ -225,7 +225,7 @@ class TestCase:
 def main(verbosity=1):
     glob = globals() # globals() still needs work
     for name in glob:
-        if issubclass(glob[name],TestCase):
+        if type(glob[name]) == type and issubclass(glob[name], TestCase):
             try:
                 tc = glob[name]()
                 tc.verbosity = verbosity

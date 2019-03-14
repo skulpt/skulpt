@@ -161,8 +161,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * @return {undefined}
  */
 Sk.doOneTimeInitialization = function () {
-    var proto, name, i, x, func;
-    var builtins = [];
+    var proto, name, i, j, x, func, typesWithFunctionsToWrap, builtin_type;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
@@ -199,31 +198,23 @@ Sk.doOneTimeInitialization = function () {
 
     // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
     // Sk.builtin.func, as that class was undefined when these functions were declared
-    proto = Sk.builtin.object.prototype;
+    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
 
-    for (i = 0; i < Sk.builtin.object.pythonFunctions.length; i++) {
-        name = Sk.builtin.object.pythonFunctions[i];
+    for (i = 0; i < typesWithFunctionsToWrap.length; i++) {
+        builtin_type = typesWithFunctionsToWrap[i];
+        proto = builtin_type.prototype;
+        for (j = 0; j < builtin_type.pythonFunctions.length; j++) {
+            name = builtin_type.pythonFunctions[j];
 
-        if (proto[name] instanceof Sk.builtin.func) {
-            // If functions have already been initialized, do not wrap again.
-            break;
+            if (proto[name] instanceof Sk.builtin.func) {
+                // If functions have already been initialized, do not wrap again.
+                break;
+            }
+
+            proto[name] = new Sk.builtin.func(proto[name]);
         }
-
-        proto[name] = new Sk.builtin.func(proto[name]);
     }
 
-    proto = Sk.builtin.type.prototype;
-
-    for (i = 0; i < Sk.builtin.type.pythonFunctions.length; i++) {
-        name = Sk.builtin.type.pythonFunctions[i];
-
-        if (proto[name] instanceof Sk.builtin.func) {
-            // If functions have already been initialized, do not wrap again.
-            break;
-        }
-
-        proto[name] = new Sk.builtin.func(proto[name]);
-    }
 
     // compile internal python files and add them to the __builtin__ module
     for (var file in Sk.internalPy.files) {
