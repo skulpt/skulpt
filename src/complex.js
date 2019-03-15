@@ -17,7 +17,7 @@ Math.hypot = Math.hypot || function() {
     }
     return Math.sqrt(y);
 };
-§
+
 /**
  * complex_new see https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911
  * @constructor

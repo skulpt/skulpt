@@ -5,72 +5,73 @@ import { pyCheckArgs } from './function';
 /**
  * @namespace Sk.builtin
  */
-
-/**
- * @constructor
- * Sk.builtin.float_
- *
- * @description
- * Constructor for Python float. Also used for builtin float().
- *
- * @extends {Sk.builtin.numtype}
- *
- * @param {!(Object|number|string)} x Object or number to convert to Python float.
- * @return {Sk.builtin.float_} Python float
- */
-Sk.builtin.float_ = function (x) {
-    var tmp;
-    if (x === undefined) {
-        return new Sk.builtin.float_(0.0);
-    }
-
-    if (!(this instanceof Sk.builtin.float_)) {
-        return new Sk.builtin.float_(x);
-    }
-
-
-    if (x instanceof Sk.builtin.str) {
-        return Sk.builtin._str_to_float(x.v);
-    }
-
-    // Floats are just numbers
-    if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
-        tmp = Sk.builtin.asnum$(x);
-        if (typeof tmp === "string") {
-            return Sk.builtin._str_to_float(tmp);
+export class float_ {
+    /**
+     * @constructor
+     * Sk.builtin.float_
+     *
+     * @description
+     * Constructor for Python float. Also used for builtin float().
+     *
+     * @extends {Sk.builtin.numtype}
+     *
+     * @param {!(Object|number|string)} x Object or number to convert to Python float.
+     * @return {Sk.builtin.float_} Python float
+     */
+    constructor(x) {
+        var tmp;
+        if (x === undefined) {
+            return new Sk.builtin.float_(0.0);
         }
-        this.v = tmp;
-        return this;
+
+        if (!(this instanceof Sk.builtin.float_)) {
+            return new Sk.builtin.float_(x);
+        }
+
+
+        if (x instanceof Sk.builtin.str) {
+            return Sk.builtin._str_to_float(x.v);
+        }
+
+        // Floats are just numbers
+        if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
+            tmp = Sk.builtin.asnum$(x);
+            if (typeof tmp === "string") {
+                return Sk.builtin._str_to_float(tmp);
+            }
+            this.v = tmp;
+            return this;
+        }
+
+        // Convert booleans
+        if (x instanceof Sk.builtin.bool) {
+            this.v = Sk.builtin.asnum$(x);
+            return this;
+        }
+
+        // this is a special internal case
+        if(typeof x === "boolean") {
+            this.v = x ? 1.0 : 0.0;
+            return this;
+        }
+
+        if (typeof x === "string") {
+            this.v = parseFloat(x);
+            return this;
+        }
+
+        // try calling __float__
+        var special = lookupSpecial(x, "__float__");
+        if (special != null) {
+            // method on builtin, provide this arg
+            return Sk.misceval.callsim(special, x);
+        }
+
+        throw new Sk.builtin.TypeError("float() argument must be a string or a number");
     }
+}
 
-    // Convert booleans
-    if (x instanceof Sk.builtin.bool) {
-        this.v = Sk.builtin.asnum$(x);
-        return this;
-    }
-
-    // this is a special internal case
-    if(typeof x === "boolean") {
-        this.v = x ? 1.0 : 0.0;
-        return this;
-    }
-
-    if (typeof x === "string") {
-        this.v = parseFloat(x);
-        return this;
-    }
-
-    // try calling __float__
-    var special = lookupSpecial(x, "__float__");
-    if (special != null) {
-        // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, x);
-    }
-
-    throw new Sk.builtin.TypeError("float() argument must be a string or a number");
-};
-
-setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
+setUpInheritance("float", float_, Sk.builtin.numtype);
 
 Sk.builtin._str_to_float = function (str) {
     var tmp;

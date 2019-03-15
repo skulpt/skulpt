@@ -63,6 +63,7 @@ export class file extends object {
 
         this.__class__ = Sk.builtin.file;
     }
+
     $r() {
         return new Sk.builtin.str("<" +
             (this.closed ? "closed" : "open") +
