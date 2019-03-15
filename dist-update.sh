@@ -1,4 +1,4 @@
-if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
+if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRAVIS_BRANCH" == "master" ]]; then
   echo -e "Starting to update of dist folder\n"
   #configure git to commit as Travis
   git config --global user.email "travis@travis-ci.org"
@@ -38,6 +38,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
     #build skulpt at this tag
     cd $HOME/skulpt
     git checkout tags/$TAG
+    echo -n "running npm install"
     npm install
     npm run build-min
     #create zip and tarbals
@@ -71,6 +72,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   #build skulpt
   cd skulpt
   git reset HEAD --hard
+  npm install
   npm run build-min
   cd dist
   cp *.js ../../dist/
@@ -78,7 +80,6 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   cd ..
   cp bower.json ../dist
   cp .bowerrc ../dist
-
 
   #add, commit and push files to the dist repository
   cd ../dist
@@ -103,5 +104,5 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
 
   echo -e "Done magic with coverage\n"
 else
-  echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST and TRAVIS_TEST_RESULT = $TRAVIS_TEST_RESULT"
+  echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST and TRAVIS_TEST_RESULT = $TRAVIS_TEST_RESULT and TRAVIS_BRANCH $TRAVIS_BRANCH"
 fi

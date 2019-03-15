@@ -6,107 +6,6 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
-Sk.externalLibraryCache = {};
-
-Sk.loadExternalLibraryInternal_ = function (path, inject) {
-    var scriptElement;
-    var request, result;
-
-    if (path == null) {
-        return void(0);
-    }
-
-    if (Sk.externalLibraryCache[path]) {
-        return Sk.externalLibraryCache[path];
-    }
-
-    request = new XMLHttpRequest();
-    request.open("GET", path, false);
-    request.send();
-
-    if (request.status !== 200) {
-        return void(0);
-    }
-
-    result = request.responseText;
-
-    if (inject) {
-        scriptElement = document.createElement("script");
-        scriptElement.type = "text/javascript";
-        scriptElement.text = result;
-        document.getElementsByTagName("head")[0].appendChild(scriptElement);
-    }
-
-    return result;
-};
-
-Sk.loadExternalLibrary = function (name) {
-    var i;
-    var externalLibraryInfo, path,  module,
-        dependencies, dep, ext, extMatch, co;
-
-    // check if the library has already been loaded and cached
-    if (Sk.externalLibraryCache[name]) {
-        return Sk.externalLibraryCache[name];
-    }
-
-    externalLibraryInfo = Sk.externalLibraries && Sk.externalLibraries[name];
-
-    // if no external library info can be found, bail out
-    if (!externalLibraryInfo) {
-        return void(0);
-    }
-
-    // if the external library info is just a string, assume it is the path
-    // otherwise dig into the info to find the path
-    path = typeof externalLibraryInfo === "string" ?
-        externalLibraryInfo :
-        externalLibraryInfo.path;
-
-    if (typeof path !== "string") {
-        throw new Sk.builtin.ImportError("Invalid path specified for " + name);
-    }
-
-    // attempt to determine the type of the library (js or py)
-    // which is either specified explicitly in the library info
-    // or inferred from the file extension
-    ext = externalLibraryInfo.type;
-    if (!ext) {
-        extMatch = path.match(/\.(js|py)$/);
-        ext = extMatch && extMatch[1];
-    }
-
-    if (!ext) {
-        throw new Sk.builtin.ImportError("Invalid file extension specified for " + name);
-    }
-
-    module = Sk.loadExternalLibraryInternal_(path, false);
-
-    if (!module) {
-        throw new Sk.builtin.ImportError("Failed to load remote module '" + name + "'");
-    }
-
-    // if the library has any js dependencies, load them in now
-    dependencies = externalLibraryInfo.dependencies;
-    if (dependencies && dependencies.length) {
-        for (i = 0; i < dependencies.length; i++) {
-            dep = Sk.loadExternalLibraryInternal_(dependencies[i], true);
-            if (!dep) {
-                throw new Sk.builtin.ImportError("Failed to load dependencies required for " + name);
-            }
-        }
-    }
-
-    if (ext === "js") {
-        co = { funcname: "$builtinmodule", code: module };
-    } else {
-        co = Sk.compile(module, path, "exec", true);
-    }
-
-    Sk.externalLibraryCache[name] = co;
-
-    return co;
-};
 
 /**
  * @param {string} name to look for
@@ -160,8 +59,8 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  *
  * @return {undefined}
  */
-Sk.doOneTimeInitialization = function () {
-    var proto, name, i, j, x, func, typesWithFunctionsToWrap, builtin_type;
+Sk.doOneTimeInitialization = function (canSuspend) {
+    var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type, j;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
@@ -178,9 +77,9 @@ Sk.doOneTimeInitialization = function () {
         for (base = parent; base !== undefined; base = base.tp$base) {
             bases.push(base);
         }
-        
+
         child.tp$mro = new Sk.builtin.tuple([child]);
-        if (!child.tp$base){ 
+        if (!child.tp$base){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
@@ -211,6 +110,7 @@ Sk.doOneTimeInitialization = function () {
                 break;
             }
 
+            proto[name].co_kwargs = null;
             proto[name] = new Sk.builtin.func(proto[name]);
         }
     }
@@ -230,7 +130,7 @@ Sk.doOneTimeInitialization = function () {
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
  */
-Sk.importSetUpPath = function () {
+Sk.importSetUpPath = function (canSuspend) {
     var i;
     var paths;
     if (!Sk.realsyspath) {
@@ -244,7 +144,7 @@ Sk.importSetUpPath = function () {
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
 
-        Sk.doOneTimeInitialization();
+        Sk.doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -278,7 +178,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__name__") : undefined;
     var absolutePackagePrefix = relativePackageName !== undefined ? relativePackageName.v + "." : "";
     var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__path__") : undefined;
-    Sk.importSetUpPath();
+    Sk.importSetUpPath(canSuspend);
 
     // if no module name override, supplied, use default name
     if (modname === undefined) {
@@ -310,7 +210,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     }
 
     ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
-        var codeAndPath, co, googClosure, external;
+        var codeAndPath, co, googClosure;
         var searchFileName = name;
         var result;
 
@@ -334,51 +234,44 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             filename = name + ".py";
             co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
         } else {
-            // If an onBeforeImport method is supplied, call it and if
-            // the result is false or a string, prevent the import.
-            // This allows for a user to conditionally prevent the usage
-            // of certain libraries.
-            if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
-                result = Sk.onBeforeImport(name);
+            co = Sk.misceval.chain(undefined, function() {
+                // If an onBeforeImport method is supplied, call it and if
+                // the result is false or a string, prevent the import.
+                // This allows for a user to conditionally prevent the usage
+                // of certain libraries.
+                if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
+                    return Sk.onBeforeImport(name);
+                }
+
+                return;
+            }, function(result) {
                 if (result === false) {
                     throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
                 } else if (typeof result === "string") {
                     throw new Sk.builtin.ImportError(result);
                 }
-            }
 
-            // check first for an externally loaded library
-            external = Sk.loadExternalLibrary(name);
-            if (external) {
-                co = external;
-                if (Sk.externalLibraries) {
-                    filename = Sk.externalLibraries[name].path; // get path from config
-                } else {
-                    filename = "unknown";
-                }
-                // ToDo: check if this is a dotted name or import from ...
-            } else {
                 // Try loading as a builtin (i.e. already in JS) module, then try .py files
-                co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
-                    if (codeAndPath) {
-                        return {funcname: "$builtinmodule", code: codeAndPath.code,
-                                filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
-                    } else {
-                        return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
-                            codeAndPath = codeAndPath_; // We'll want it in a moment
-                            if (codeAndPath) {
-                                return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
-                            }
-                        }, function(co) {
-                            if (co) {
-                                co.packagePath = codeAndPath.packagePath;
-                                return co;
-                            }
-                        });
-                    }
-                });
+                return Sk.importSearchPathForName(searchFileName, ".js", searchPath);
+            }, function(codeAndPath) {
+                if (codeAndPath) {
+                    return {funcname: "$builtinmodule", code: codeAndPath.code,
+                            filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
+                } else {
+                    return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
+                        codeAndPath = codeAndPath_; // We'll want it in a moment
+                        if (codeAndPath) {
+                            return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
+                        }
+                    }, function(co) {
+                        if (co) {
+                            co.packagePath = codeAndPath.packagePath;
+                            return co;
+                        }
+                    });
+                }
+            });
 
-            }
         }
         return co;
 
@@ -547,9 +440,9 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 };
 
 /**
- * Imports internal python files into the `__builin__` module. Used during startup 
- * to compile and import all *.py files from the src/ directory. 
- * 
+ * Imports internal python files into the `__builin__` module. Used during startup
+ * to compile and import all *.py files from the src/ directory.
+ *
  * @param name {string}  File name to use for messages related to this run
  * @param dumpJS {boolean} print out the compiled javascript
  * @param body {string} Python Code
@@ -625,7 +518,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
                 var fromName; // name of current module for fromlist
                 var fromImportName, fromImportModName; // dotted name
                 var lastDottedName = dottedName[dottedName.length-1];
-                
+
                 var found; // Contains sysmodules the "name"
                 var foundFromName; // Contains the sysmodules[name] the current item from the fromList
                 var importChain;

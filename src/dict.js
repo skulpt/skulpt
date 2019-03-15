@@ -519,7 +519,24 @@ Sk.builtin.dict.prototype.ob$ne = function (other) {
 };
 
 Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
-    throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
+    Sk.builtin.pyCheckArgs("copy", arguments, 0, 0, false, true);
+
+    var it; // Iterator
+    var k; // Key of dict item
+    var v; // Value of dict item
+    var newCopy = new Sk.builtin.dict([]);
+
+    for (it = Sk.abstr.iter(self), k = it.tp$iternext();
+            k !== undefined;
+            k = it.tp$iternext()) {
+        v = self.mp$subscript(k);
+        if (v === undefined) {
+            v = null;
+        }
+        newCopy.mp$ass_subscript(k, v);
+    }
+
+    return newCopy;
 });
 
 Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {

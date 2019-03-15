@@ -16,6 +16,11 @@ Sk.builtin.object = function () {
     return this;
 };
 
+Sk.builtin.object.prototype.__init__ = function __init__() {
+    return Sk.builtin.none.none$;
+};
+Sk.builtin.object.prototype.__init__.co_kwargs = 1;
+
 Sk.builtin._tryGetSubscript = function(dict, pyName) {
     try {
         return dict.mp$subscript(pyName);
@@ -46,6 +51,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+    //print("getattr", tp.tp$name, name);
 
     // todo; assert? force?
     if (dict) {
@@ -233,7 +239,7 @@ Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
     Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.python3) {
+        if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
@@ -343,6 +349,14 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
     Sk.builtin.pyCheckArgs("__ge__", arguments, 1, 1, false, true);
 
     return self.ob$ge(other);
+};
+
+Sk.builtin.object.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+
+    var l_owner = !owner ? instance.ob$type : owner;
+
+    return self.tp$descr_get(instance, l_owner);
 };
 
 /** Default implementations of Javascript functions used in dunder methods */
@@ -478,7 +492,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
                                      "__eq__", "__ne__", "__lt__", "__le__",
                                      "__gt__", "__ge__", "__getattribute__",
-                                     "__setattr__", "__format__"];
+                                     "__setattr__", "__format__", "__get__"];
 
 /**
  * @constructor

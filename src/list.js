@@ -423,7 +423,7 @@ Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, inde
  * @param {?=} key optional
  * @param {?=} reverse optional
  */
-Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
+Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
     var mucked;
     var j;
     var keyvalue;
@@ -431,8 +431,8 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var i;
     var zero;
     var timsort;
-    var has_key = key !== undefined && key !== null;
-    var has_cmp = cmp !== undefined && cmp !== null;
+    var has_key = key !== undefined && key !== null && key !== Sk.builtin.none.none$;
+    var has_cmp = cmp !== undefined && cmp !== null && cmp !== Sk.builtin.none.none$;
     var rev;
 
     if (reverse === undefined) {
@@ -498,6 +498,8 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
 
     return Sk.builtin.none.none$;
 };
+Sk.builtin.list.prototype.list_sort_.co_varnames = ["__self__", "cmp", "key", "reverse"];
+Sk.builtin.list.prototype.list_sort_.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
 
 /**
  * @param {Sk.builtin.list=} self optional
@@ -637,13 +639,8 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
 });
 
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
-
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 
-// Make sure that key/value variations of lst.sort() work
-// See issue 45 on github as to possible alternate approaches to this and
-// why this was chosen - csev
-Sk.builtin.list.prototype["sort"].func_code["co_varnames"] = ["__self__", "cmp", "key", "reverse"];
 goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
 
 /**

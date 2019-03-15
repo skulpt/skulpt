@@ -146,12 +146,12 @@ class TestCase:
         else:
             if places is None:
                 places = 7
+
             res = round(a-b, places) != 0
 
         if not res and feedback == "":
             feedback = "Expected %s to not equal %s" % (str(a),str(b))
         self.appendResult(res, a, b, feedback)
-
 
     def assertGreater(self,a,b, feedback=""):
         res = a > b

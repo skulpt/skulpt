@@ -1737,7 +1737,7 @@ function parsestr (c, s) {
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
-    if((c.c_flags & Parser.CO_FUTURE_UNICODE_LITERALS || Sk.python3 === true)) {
+    if((c.c_flags & Parser.CO_FUTURE_UNICODE_LITERALS || Sk.__future__.unicode_literals === true)) {
         unicode = true;
     }
 
