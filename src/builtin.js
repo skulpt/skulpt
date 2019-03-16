@@ -897,7 +897,6 @@ Sk.builtin.eval_ = function eval_ () {
 };
 
 Sk.builtin.map = function map (fun, seq) {
-    var iter;
     var retval = [];
     var next;
     var nones;
@@ -947,14 +946,7 @@ Sk.builtin.map = function map (fun, seq) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    iter = Sk.abstr.iter(seq);
-
-    return (function loopDeLoop(i) {
-        var item = i.tp$iternext();
-
-        if (item === undefined) {
-            return new Sk.builtin.list(retval);
-        }
+    return Sk.misceval.chain(Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
 
         if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
@@ -963,20 +955,20 @@ Sk.builtin.map = function map (fun, seq) {
                 item = new Sk.builtin.tuple(item);
             }
             retval.push(item);
-            return loopDeLoop(iter);
-        }
+        } else {
+            if (!(item instanceof Array)) {
+                // If there was only one iterable, convert to Javascript
+                // Array for call to apply.
+                item = [item];
+            }
 
-        if (!(item instanceof Array)) {
-            // If there was only one iterable, convert to Javascript
-            // Array for call to apply.
-            item = [item];
+            return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
+                retval.push(result);
+            });
         }
-
-        return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
-            retval.push(result);
-            return loopDeLoop(iter);
-        });
-    }(iter));
+    }), function () {
+        return new Sk.builtin.list(retval);
+    });
 };
 
 Sk.builtin.reduce = function reduce (fun, seq, initializer) {
