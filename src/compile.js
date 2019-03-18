@@ -1510,7 +1510,7 @@ Compiler.prototype.cimport = function (s) {
     var n = s.names.length;
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        out("$ret = Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[]);");
+        out("$ret = Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[],",(Sk.__future__.absolute_import?0:-1),");");
 
         this._checkSuspension(s);
 
@@ -1539,10 +1539,14 @@ Compiler.prototype.cfromimport = function (s) {
     var i;
     var n = s.names.length;
     var names = [];
+    var level = s.level;
+    if (level == 0 && !Sk.__future__.absolute_import) {
+        level = -1;
+    }
     for (i = 0; i < n; ++i) {
         names[i] = "'" + fixReservedWords(s.names[i].name.v) + "'";
     }
-    out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
+    out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "],",level,");");
 
     this._checkSuspension(s);
 
