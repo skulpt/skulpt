@@ -536,6 +536,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
                 // try to load from-names as modules from the file system
                 // if they are not present on the module itself
                 var i;
+                var fromName;
                 var leafModule;
                 var importChain;
 
