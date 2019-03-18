@@ -1,5 +1,5 @@
 import { setUpInheritance } from './abstract';
-
+import { none } from './object';
 /*
  * The filename, line number, and column number of exceptions are
  * stored within the exception object.  Note that not all exceptions
@@ -541,7 +541,7 @@ goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 // TODO: Extract into sys.exc_info(). Work out how the heck
 // to find out what exceptions are being processed by parent stack frames...
 Sk.builtin.getExcInfo = function(e) {
-    var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
+    var v = [e.ob$type || none.none$, e, none.none$];
 
     // TODO create a Traceback object for the third tuple element
 

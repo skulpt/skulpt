@@ -1,7 +1,7 @@
 import { typeName, lookupSpecial, iter, numberBinOp, objectFormat } from './abstract'
 import { remapToJs, remapToPy } from './ffi';
 import { pyCheckArgs } from './function';
-
+import { none } from './object';
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
@@ -848,7 +848,7 @@ export function setattr (obj, name, value) {
         } else {
             throw new Sk.builtin.AttributeError("object has no attribute " + remapToJs(name));
         }
-        return Sk.builtin.none.none$;
+        return none.none$;
     }
 
     throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
@@ -878,7 +878,7 @@ export function jseval (evalcode) {
         return remapToPy(result);
     } catch (err) {
         if (err.constructor === goog.asserts.AssertionError) {
-            return Sk.builtin.none.none$;
+            return none.none$;
         }
 
         throw err;
@@ -928,7 +928,7 @@ export function map (fun, seq) {
             for (i in iterables) {
                 next = iterables[i].tp$iternext();
                 if (next === undefined) {
-                    args.push(Sk.builtin.none.none$);
+                    args.push(none.none$);
                     nones++;
                 } else {
                     args.push(next);
@@ -948,8 +948,12 @@ export function map (fun, seq) {
         throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
-    return Sk.misceval.chain(Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
-        if (fun === Sk.builtin.none.none$) {
+    retval = [];
+
+    for (iter = iter(seq), item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext()) {
+        if (fun === none.none$) {
             if (item instanceof Array) {
                 // With None function and multiple sequences,
                 // map should return a list of tuples
@@ -1043,7 +1047,7 @@ export function filter (fun, iterable) {
     for (iter = iter(iterable), item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
-        if (fun === Sk.builtin.none.none$) {
+        if (fun === none.none$) {
             result = new Sk.builtin.bool( item);
         } else {
             result = Sk.misceval.callsim(fun, item);
@@ -1342,7 +1346,7 @@ export function delattr (obj, attr) {
     if (obj["$r"]().v.slice(1,5) !== "type") {
         if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
             obj[attr.v] = undefined;
-            return Sk.builtin.none.none$;
+            return none.none$;
         }
         throw new Sk.builtin.AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
     }

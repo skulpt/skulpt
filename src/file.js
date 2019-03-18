@@ -1,6 +1,6 @@
 import { setUpInheritance } from "./abstract";
 import { func } from './function';
-import { object } from './object';
+import { object, none } from './object';
 import { remapToJs, remapToPy } from './ffi';
 
 export class file extends object {
@@ -23,7 +23,7 @@ export class file extends object {
         this.closed = false;
 
         if (this.name === "/dev/stdout") {
-            this.data$ = Sk.builtin.none.none$;
+            this.data$ = none.none$;
             this.fileno = 1;
         } else if (this.name === "/dev/stdin") {
             this.fileno = 0;
@@ -145,7 +145,7 @@ export class file extends object {
 
     close = new func(function close(self) {
         self.closed = true;
-        return Sk.builtin.none.none$;
+        return none.none$;
     })
 
     flush = new func(function flush(self) {
@@ -213,7 +213,7 @@ export class file extends object {
             self.pos$ = self.data$.length + l_offset;
         }
 
-        return Sk.builtin.none.none$;
+        return none.none$;
     })
 
     tell = new func(function tell(self) {

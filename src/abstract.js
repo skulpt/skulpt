@@ -1,5 +1,5 @@
-import { remapToPy } from './ffi';
-//
+import { none } from './object';
+
 // Number
 //
 
@@ -926,8 +926,8 @@ export function lookupSpecial(op, str) {
  */
 export function markUnhashable(thisClass) {
     var proto = thisClass.prototype;
-    proto.__hash__ = Sk.builtin.none.none$;
-    proto.tp$hash = Sk.builtin.none.none$;
+    proto.__hash__ = none.none$;
+    proto.tp$hash = none.none$;
 }
 
 /**

@@ -2,8 +2,9 @@ import { iter, setUpInheritance, typeName, markUnhashable } from './abstract';
 import { hash } from './builtin';
 import { func, pyCheckArgs } from './function';
 import { remapToJs } from './ffi';
+import { object, none } from './object';
 
-export class dict {
+export class dict extends object {
     /**
      * @constructor
      * @param {Array.<Object>} L
@@ -320,7 +321,7 @@ export class dict {
         var ret;
 
         if (d === undefined) {
-            d = Sk.builtin.none.none$;
+            d = none.none$;
         }
 
         ret = self.mp$lookup(k);
@@ -428,7 +429,7 @@ export class dict {
         }
         catch (e) {
             if (default_ === undefined) {
-                default_ = Sk.builtin.none.none$;
+                default_ = none.none$;
             }
             self.mp$ass_subscript(key, default_);
             return default_;
@@ -573,7 +574,7 @@ export class dict {
     })
 }
 
-setUpInheritance("dict", dict, Sk.builtin.object);
+setUpInheritance("dict", dict, object);
 markUnhashable(dict);
 
 
@@ -620,7 +621,7 @@ var update_f = function (kwargs, self, other) {
     self.dict_merge(kwargs_dict);
 
     // returns none, when successful or throws exception
-    return  Sk.builtin.none.none$;
+    return  none.none$;
 };
 
 update_f.co_kwargs = true;

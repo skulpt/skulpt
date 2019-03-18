@@ -1,3 +1,4 @@
+import { none } from './object'
 /**
  * @namespace Sk.ffi
  *
@@ -34,9 +35,9 @@ export function remapToPy(obj) {
             arr.push(remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
-    }
-
-    if (typeof obj === "object") {
+    } else if (obj === null) {
+        return none.none$;
+    } else if (typeof obj === "object") {
         kvs = [];
         for (k in obj) {
             kvs.push(remapToPy(k));
