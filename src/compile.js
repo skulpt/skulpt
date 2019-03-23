@@ -1,5 +1,6 @@
 import { astFromParse } from './ast'
-
+import { parse } from './parser';
+import { symboltable } from './symtable';
 /** @param {...*} x */
 var out;
 
@@ -2561,14 +2562,14 @@ Compiler.prototype.cmod = function (mod) {
  */
 export function compile(source, filename, mode, canSuspend) {
     //print("FILE:", filename);
-    var parse = Sk.parse(filename, source);
-    var ast = astFromParse(parse.cst, filename, parse.flags);
+    var p = parse(filename, source);
+    var ast = astFromParse(p.cst, filename, p.flags);
 
     // compilers flags, later we can add other ones too
     var flags = {};
-    flags.cf_flags = parse.flags;
+    flags.cf_flags = p.flags;
 
-    var st = Sk.symboltable(ast, filename);
+    var st = symboltable(ast, filename);
     var c = new Compiler(filename, st, flags.cf_flags, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
 

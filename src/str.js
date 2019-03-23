@@ -1,11 +1,31 @@
 import { setUpInheritance, typeName } from './abstract';
 import { remapToJs } from './ffi';
-import { pyCheckArgs, func } from './function';
+import {
+    pyCheckArgs,
+    func,
+    checkString,
+    checkInt,
+    checkFloat,
+    checkBool,
+    pyCheckType,
+    checkIterable
+} from './function';
 import { seqtype } from './seqtype';
-import { ValueError, IndexError, AttributeError } from './errors';
-import { NotImplementedError } from './object';
+import { ValueError, IndexError, AttributeError, StopIteration } from './errors';
+import { NotImplementedError, none, object } from './object';
+import { bool } from './bool';
+import { list } from './list';
+import { dict } from './dict';
+import { tuple } from './tuple';
+import { float_ } from './float';
+import { int_ } from './int';
+import { lng } from './long';
 
-Sk.builtin.interned = {};
+const mapInterned = typeof Map !== 'undefined';
+
+const interned = mapInterned ? new Map() : {};
+
+const has = mapInterned ? interned.has : e => interned[e];
 
 export class str extends seqtype {
     /**
@@ -24,15 +44,14 @@ export class str extends seqtype {
             return new str(x);
         }
 
-
         // convert to js string
         if (x === true) {
             ret = "True";
         } else if (x === false) {
             ret = "False";
-        } else if ((x === null) || (x instanceof Sk.builtin.none)) {
+        } else if ((x === null) || (x instanceof none)) {
             ret = "None";
-        } else if (x instanceof Sk.builtin.bool) {
+        } else if (x instanceof bool) {
             if (x.v) {
                 ret = "True";
             } else {
@@ -58,14 +77,14 @@ export class str extends seqtype {
         }
 
         // interning required for strings in py
-        if (Sk.builtin.interned["1" + ret]) {
-            return Sk.builtin.interned["1" + ret];
+        if (has("1" + ret)) {
+            return interned["1" + ret];
         }
 
         this.__class__ = str;
         this.v = ret;
         this["v"] = this.v;
-        Sk.builtin.interned["1" + ret] = this;
+        interned["1" + ret] = this;
     }
 
     mp$subscript(index) {
@@ -98,7 +117,7 @@ export class str extends seqtype {
 
     sq$concat(other) {
         var otypename;
-        if (!other || !Sk.builtin.checkString(other)) {
+        if (!other || !checkString(other)) {
             otypename = typeName(other);
             throw new TypeError("cannot concatenate 'str' and '" + otypename + "' objects");
         }
@@ -252,8 +271,8 @@ export class str extends seqtype {
         var replFunc;
         var index;
         var regex;
-        if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === str)) {
-            rhs = new Sk.builtin.tuple([rhs]);
+        if (rhs.constructor !== tuple && (rhs.mp$subscript === undefined || rhs.constructor === str)) {
+            rhs = new tuple([rhs]);
         }
 
         // general approach is to use a regex that matches the format above, and
@@ -330,16 +349,16 @@ export class str extends seqtype {
                         neg = true;
                     }
                     r = n.toString(base);
-                } else if (n instanceof Sk.builtin.float_) {
+                } else if (n instanceof float_) {
                     r = n.str$(base, false);
                     if (r.length > 2 && r.substr(-2) === ".0") {
                         r = r.substr(0, r.length - 2);
                     }
                     neg = n.nb$isnegative();
-                } else if (n instanceof Sk.builtin.int_) {
+                } else if (n instanceof int_) {
                     r = n.str$(base, false);
                     neg = n.nb$isnegative();
-                } else if (n instanceof Sk.builtin.lng) {
+                } else if (n instanceof lng) {
                     r = n.str$(base, false);
                     neg = n.nb$isnegative();	//	neg = n.size$ < 0;	RNL long.js change
                 }
@@ -403,13 +422,13 @@ export class str extends seqtype {
             };
 
             //print("Rhs:",rhs, "ctor", rhs.constructor);
-            if (rhs.constructor === Sk.builtin.tuple) {
+            if (rhs.constructor === tuple) {
                 value = rhs.v[i];
             } else if (rhs.mp$subscript !== undefined && mappingKey !== undefined) {
                 mk = mappingKey.substring(1, mappingKey.length - 1);
                 //print("mk",mk);
                 value = rhs.mp$subscript(new str(mk));
-            } else if (rhs.constructor === Sk.builtin.dict || rhs.constructor === Sk.builtin.list) {
+            } else if (rhs.constructor === dict || rhs.constructor === list) {
                 // new case where only one argument is provided
                 value = rhs;
             } else {
@@ -449,7 +468,7 @@ export class str extends seqtype {
                 result = (convValue)[convName](precision); // possible loose of negative zero sign
 
                 // apply sign to negative zeros, floats only!
-                if(Sk.builtin.checkFloat(value)) {
+                if(checkFloat(value)) {
                     if(convValue === 0 && 1/convValue === -Infinity) {
                         result = "-" + result; // add sign for zero
                     }
@@ -462,11 +481,11 @@ export class str extends seqtype {
             } else if (conversionType === "c") {
                 if (typeof value === "number") {
                     return String.fromCharCode(value);
-                } else if (value instanceof Sk.builtin.int_) {
+                } else if (value instanceof int_) {
                     return String.fromCharCode(value.v);
-                } else if (value instanceof Sk.builtin.float_) {
+                } else if (value instanceof float_) {
                     return String.fromCharCode(value.v);
-                } else if (value instanceof Sk.builtin.lng) {
+                } else if (value instanceof lng) {
                     return String.fromCharCode(value.str$(10, false)[0]);
                 } else if (value.constructor === str) {
                     return value.v.substr(0, 1);
@@ -533,7 +552,7 @@ export class str extends seqtype {
         var it, i;
         var arrOfStrs;
         pyCheckArgs("join", arguments, 2, 2);
-        Sk.builtin.pyCheckType("seq", "iterable", Sk.builtin.checkIterable(seq));
+        pyCheckType("seq", "iterable", checkIterable(seq));
         arrOfStrs = [];
         for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (i.constructor !== str) {
@@ -553,16 +572,16 @@ export class str extends seqtype {
         var str;
         var regex;
         pyCheckArgs("split", arguments, 1, 3);
-        if ((on === undefined) || (on instanceof Sk.builtin.none)) {
+        if ((on === undefined) || (on instanceof none)) {
             on = null;
         }
-        if ((on !== null) && !Sk.builtin.checkString(on)) {
+        if ((on !== null) && !checkString(on)) {
             throw new TypeError("expected a string");
         }
         if ((on !== null) && on.v === "") {
             throw new ValueError("empty separator");
         }
-        if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
+        if ((howmany !== undefined) && !checkInt(howmany)) {
             throw new TypeError("an integer is required");
         }
 
@@ -600,14 +619,14 @@ export class str extends seqtype {
             result.push(new str(str));
         }
 
-        return new Sk.builtin.list(result);
+        return new list(result);
     })
 
     strip = new func(function (self, chars) {
         var regex;
         var pattern;
         pyCheckArgs("strip", arguments, 1, 2);
-        if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        if ((chars !== undefined) && !checkString(chars)) {
             throw new TypeError("strip arg must be None or str");
         }
         if (chars === undefined) {
@@ -623,7 +642,7 @@ export class str extends seqtype {
         var regex;
         var pattern;
         pyCheckArgs("lstrip", arguments, 1, 2);
-        if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        if ((chars !== undefined) && !checkString(chars)) {
             throw new TypeError("lstrip arg must be None or str");
         }
         if (chars === undefined) {
@@ -639,7 +658,7 @@ export class str extends seqtype {
         var regex;
         var pattern;
         pyCheckArgs("rstrip", arguments, 1, 2);
-        if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        if ((chars !== undefined) && !checkString(chars)) {
             throw new TypeError("rstrip arg must be None or str");
         }
         if (chars === undefined) {
@@ -655,7 +674,7 @@ export class str extends seqtype {
         var formatstr;
         pyCheckArgs("__format__", arguments, 2, 2);
 
-        if (!Sk.builtin.checkString(format_spec)) {
+        if (!checkString(format_spec)) {
             if (Sk.__future__.exceptions) {
                 throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
             } else {
@@ -675,14 +694,14 @@ export class str extends seqtype {
         var pos;
         var sepStr;
         pyCheckArgs("partition", arguments, 2, 2);
-        Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
+        pyCheckType("sep", "string", checkString(sep));
         sepStr = new str(sep);
         pos = self.v.indexOf(sepStr.v);
         if (pos < 0) {
-            return new Sk.builtin.tuple([self, str.$emptystr, str.$emptystr]);
+            return new tuple([self, str.$emptystr, str.$emptystr]);
         }
 
-        return new Sk.builtin.tuple([
+        return new tuple([
             new str(self.v.substring(0, pos)),
             sepStr,
             new str(self.v.substring(pos + sepStr.v.length))]);
@@ -692,14 +711,14 @@ export class str extends seqtype {
         var pos;
         var sepStr;
         pyCheckArgs("rpartition", arguments, 2, 2);
-        Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
+        pyCheckType("sep", "string", checkString(sep));
         sepStr = new str(sep);
         pos = self.v.lastIndexOf(sepStr.v);
         if (pos < 0) {
-            return new Sk.builtin.tuple([str.$emptystr, str.$emptystr, self]);
+            return new tuple([str.$emptystr, str.$emptystr, self]);
         }
 
-        return new Sk.builtin.tuple([
+        return new tuple([
             new str(self.v.substring(0, pos)),
             sepStr,
             new str(self.v.substring(pos + sepStr.v.length))]);
@@ -711,13 +730,13 @@ export class str extends seqtype {
         var slice;
         var m;
         pyCheckArgs("count", arguments, 2, 4);
-        if (!Sk.builtin.checkString(pat)) {
+        if (!checkString(pat)) {
             throw new TypeError("expected a character buffer object");
         }
-        if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+        if ((start !== undefined) && !checkInt(start)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
-        if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+        if ((end !== undefined) && !checkInt(end)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
 
@@ -740,9 +759,9 @@ export class str extends seqtype {
         slice = self.v.slice(start, end);
         ctl = slice.match(m);
         if (!ctl) {
-            return  new Sk.builtin.int_(0);
+            return  new int_(0);
         } else {
-            return new Sk.builtin.int_(ctl.length);
+            return new int_(ctl.length);
         }
 
     })
@@ -750,10 +769,10 @@ export class str extends seqtype {
     ljust = new func(function (self, len, fillchar) {
         var newstr;
         pyCheckArgs("ljust", arguments, 2, 3);
-        if (!Sk.builtin.checkInt(len)) {
+        if (!checkInt(len)) {
             throw new TypeError("integer argument exepcted, got " + typeName(len));
         }
-        if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+        if ((fillchar !== undefined) && (!checkString(fillchar) || fillchar.v.length !== 1)) {
             throw new TypeError("must be char, not " + typeName(fillchar));
         }
         if (fillchar === undefined) {
@@ -773,10 +792,10 @@ export class str extends seqtype {
     rjust = new func(function (self, len, fillchar) {
         var newstr;
         pyCheckArgs("rjust", arguments, 2, 3);
-        if (!Sk.builtin.checkInt(len)) {
+        if (!checkInt(len)) {
             throw new TypeError("integer argument exepcted, got " + typeName(len));
         }
-        if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+        if ((fillchar !== undefined) && (!checkString(fillchar) || fillchar.v.length !== 1)) {
             throw new TypeError("must be char, not " + typeName(fillchar));
         }
         if (fillchar === undefined) {
@@ -798,10 +817,10 @@ export class str extends seqtype {
         var newstr;
         var newstr1;
         pyCheckArgs("center", arguments, 2, 3);
-        if (!Sk.builtin.checkInt(len)) {
+        if (!checkInt(len)) {
             throw new TypeError("integer argument exepcted, got " + typeName(len));
         }
-        if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+        if ((fillchar !== undefined) && (!checkString(fillchar) || fillchar.v.length !== 1)) {
             throw new TypeError("must be char, not " + typeName(fillchar));
         }
         if (fillchar === undefined) {
@@ -826,13 +845,13 @@ export class str extends seqtype {
     find = new func(function (self, tgt, start, end) {
         var idx;
         pyCheckArgs("find", arguments, 2, 4);
-        if (!Sk.builtin.checkString(tgt)) {
+        if (!checkString(tgt)) {
             throw new TypeError("expected a character buffer object");
         }
-        if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+        if ((start !== undefined) && !checkInt(start)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
-        if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+        if ((end !== undefined) && !checkInt(end)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
 
@@ -853,7 +872,7 @@ export class str extends seqtype {
         idx = self.v.indexOf(tgt.v, start);
         idx = ((idx >= start) && (idx < end)) ? idx : -1;
 
-        return new Sk.builtin.int_(idx);
+        return new int_(idx);
     })
 
     index = new func(function (self, tgt, start, end) {
@@ -869,13 +888,13 @@ export class str extends seqtype {
     rfind = new func(function (self, tgt, start, end) {
         var idx;
         pyCheckArgs("rfind", arguments, 2, 4);
-        if (!Sk.builtin.checkString(tgt)) {
+        if (!checkString(tgt)) {
             throw new TypeError("expected a character buffer object");
         }
-        if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+        if ((start !== undefined) && !checkInt(start)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
-        if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+        if ((end !== undefined) && !checkInt(end)) {
             throw new TypeError("slice indices must be integers or None or have an __index__ method");
         }
 
@@ -897,7 +916,7 @@ export class str extends seqtype {
         idx = (idx !== end) ? idx : self.v.lastIndexOf(tgt.v, end - 1);
         idx = ((idx >= start) && (idx < end)) ? idx : -1;
 
-        return new Sk.builtin.int_(idx);
+        return new int_(idx);
     })
 
     rindex = new func(function (self, tgt, start, end) {
@@ -912,24 +931,24 @@ export class str extends seqtype {
 
     startswith = new func(function (self, tgt) {
         pyCheckArgs("startswith", arguments, 2, 2);
-        Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-        return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
+        pyCheckType("tgt", "string", checkString(tgt));
+        return new bool( self.v.indexOf(tgt.v) === 0);
     })
 
     // http://stackoverflow.com/questions/280634/endswith-in-javascript
     endswith = new func(function (self, tgt) {
         pyCheckArgs("endswith", arguments, 2, 2);
-        Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-        return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+        pyCheckType("tgt", "string", checkString(tgt));
+        return new bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
     })
 
     replace = new func(function (self, oldS, newS, count) {
         var c;
         var patt;
         pyCheckArgs("replace", arguments, 3, 4);
-        Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
-        Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
-        if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
+        pyCheckType("oldS", "string", checkString(oldS));
+        pyCheckType("newS", "string", checkString(newS));
+        if ((count !== undefined) && !checkInt(count)) {
             throw new TypeError("integer argument expected, got " +
                 typeName(count));
         }
@@ -961,7 +980,7 @@ export class str extends seqtype {
         var pad = "";
 
         pyCheckArgs("zfill", arguments, 2, 2);
-        if (! Sk.builtin.checkInt(len)) {
+        if (! checkInt(len)) {
             throw new TypeError("integer argument exepected, got " + typeName(len));
         }
 
@@ -981,12 +1000,12 @@ export class str extends seqtype {
 
     isdigit = new func(function (self) {
         pyCheckArgs("isdigit", arguments, 1, 1);
-        return new Sk.builtin.bool( /^\d+$/.test(self.v));
+        return new bool( /^\d+$/.test(self.v));
     })
 
     isspace = new func(function (self) {
         pyCheckArgs("isspace", arguments, 1, 1);
-        return new Sk.builtin.bool( /^\s+$/.test(self.v));
+        return new bool( /^\s+$/.test(self.v));
     })
 
 
@@ -1004,13 +1023,13 @@ export class str extends seqtype {
         pyCheckArgs("expandtabs", arguments, 1, 2);
 
 
-        if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
+        if ((tabsize !== undefined) && ! .checkInt(tabsize)) {
             throw new TypeError("integer argument exepected, got " + typeName(tabsize));
         }
         if (tabsize === undefined) {
             tabsize = 8;
         } else {
-            tabsize = Sk.builtin.asnum$(tabsize);
+            tabsize = .asnum$(tabsize);
         }
 
         spaces = (new Array(tabsize + 1)).join(" ");
@@ -1044,7 +1063,7 @@ export class str extends seqtype {
         var sol = 0;
         var slice;
         pyCheckArgs("splitlines", arguments, 1, 2);
-        if ((keepends !== undefined) && ! Sk.builtin.checkBool(keepends)) {
+        if ((keepends !== undefined) && ! checkBool(keepends)) {
             throw new TypeError("boolean argument expected, got " + typeName(keepends));
         }
         if (keepends === undefined) {
@@ -1083,7 +1102,7 @@ export class str extends seqtype {
             }
             strs_w.push(new str(slice));
         }
-        return new Sk.builtin.list(strs_w);
+        return new list(strs_w);
     })
 
     title = new func(function (self) {
@@ -1100,28 +1119,28 @@ export class str extends seqtype {
 
     isalpha = new func(function (self) {
         pyCheckArgs("isalpha", arguments, 1, 1);
-        return new Sk.builtin.bool( self.v.length && goog.string.isAlpha(self.v));
+        return new bool( self.v.length && goog.string.isAlpha(self.v));
     })
 
     isalnum = new func(function (self) {
         pyCheckArgs("isalnum", arguments, 1, 1);
-        return new Sk.builtin.bool( self.v.length && goog.string.isAlphaNumeric(self.v));
+        return new bool( self.v.length && goog.string.isAlphaNumeric(self.v));
     })
 
     // does not account for unicode numeric values
     isnumeric = new func(function (self) {
         pyCheckArgs("isnumeric", arguments, 1, 1);
-        return new Sk.builtin.bool( self.v.length && goog.string.isNumeric(self.v));
+        return new bool( self.v.length && goog.string.isNumeric(self.v));
     })
 
     islower = new func(function (self) {
         pyCheckArgs("islower", arguments, 1, 1);
-        return new Sk.builtin.bool( self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
+        return new bool( self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
     })
 
     isupper = new func(function (self) {
         pyCheckArgs("isupper", arguments, 1, 1);
-        return new Sk.builtin.bool( self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
+        return new bool( self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
     })
 
     istitle = new func(function (self) {
@@ -1137,20 +1156,20 @@ export class str extends seqtype {
             ch = input.charAt(pos);
             if (! /[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
                 if (previous_is_cased) {
-                    return new Sk.builtin.bool( false);
+                    return new bool( false);
                 }
                 previous_is_cased = true;
                 cased = true;
             } else if (/[a-z]/.test(ch) && ! /[A-Z]/.test(ch)) {
                 if (! previous_is_cased) {
-                    return new Sk.builtin.bool( false);
+                    return new bool( false);
                 }
                 cased = true;
             } else {
                 previous_is_cased = false;
             }
         }
-        return new Sk.builtin.bool( cased);
+        return new bool( cased);
     })
 }
 
@@ -1186,13 +1205,13 @@ export class str_iter_ {
     next$(self) {
         var ret = self.tp$iternext();
         if (ret === undefined) {
-            throw new Sk.builtin.StopIteration();
+            throw new StopIteration();
         }
         return ret;
     };
 }
 
-setUpInheritance("iterator", str_iter_, Sk.builtin.object);
+setUpInheritance("iterator", str_iter_, object);
 
 /**
  * @constructor

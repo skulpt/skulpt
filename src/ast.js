@@ -1,5 +1,6 @@
 import { SyntaxError } from './errors';
-
+import { Tokens } from './tokenize';
+import { Parser } from './parser';
 //
 // This is pretty much a straight port of ast.c from CPython 2.6.5.
 //
@@ -11,7 +12,7 @@ import { SyntaxError } from './errors';
 //
 
 var SYM = Sk.ParseTables.sym;
-var TOK = Sk.Tokenizer.Tokens;
+var TOK = Tokens;
 var COMP_GENEXP = 0;
 var COMP_SETCOMP = 1;
 
