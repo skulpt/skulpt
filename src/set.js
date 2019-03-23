@@ -1,465 +1,465 @@
 import { setUpInheritance, markUnhashable, iter, sequenceContains, typeName } from './abstract';
-import { pyCheckArgs } from './function';
-import { TypeError, KeyError } from './errors';
+import { func, pyCheckArgs, checkIterable } from './function';
+import { TypeError, KeyError, StopIteration } from './errors';
+import { object, none } from './object';
+import { dict } from './dict';
+import { str } from './str';
+import { list } from './list';
 
-/**
- * @constructor
- * @param {Array.<Object>} S
- */
-Sk.builtin.set = function (S) {
-    var it, i;
-    var S_list;§
-    if (!(this instanceof Sk.builtin.set)) {
-        return new Sk.builtin.set(S);
+export class set {
+    /**
+     * @constructor
+     * @param {Array.<Object>} S
+     */
+    constructor(S) {
+        var it, i;
+        var S_list;
+
+        if (typeof(S) === "undefined") {
+            S = [];
+        }
+
+        this.set_reset_();
+        S_list = new list(S);
+        // python sorts sets on init, but not thereafter.
+        // Skulpt seems to init a new set each time you add/remove something
+        //Sk.builtin.list.prototype['sort'].func_code(S);
+        for (it = iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            this.add.func_code(this, i);
+        }
+
+        this.__class__ = set;
+
+        this["v"] = this.v;
+        return this;
     }
 
+    set_reset_() {
+        this.v = new dict([]);
+    };
 
-    if (typeof(S) === "undefined") {
-        S = [];
-    }
+    $r() {
+        var it, i;
+        var ret = [];
+        for (it = iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            ret.push(Sk.misceval.objectRepr(i).v);
+        }
+        if(Sk.__future__.set_repr) {
+            return new str("{" + ret.join(", ") + "}");
+        } else {
+            return new str("set([" + ret.join(", ") + "])");
+        }
+    };
 
-    this.set_reset_();
-    S_list = new Sk.builtin.list(S);
-    // python sorts sets on init, but not thereafter.
-    // Skulpt seems to init a new set each time you add/remove something
-    //Sk.builtin.list.prototype['sort'].func_code(S);
-    for (it = iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        Sk.builtin.set.prototype["add"].func_code(this, i);
-    }
+    ob$eq(other) {
 
-    this.__class__ = Sk.builtin.set;
+        if (this === other) {
+            return Sk.builtin.bool.true$;
+        }
 
-    this["v"] = this.v;
-    return this;
-};
-setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
-markUnhashable(Sk.builtin.set);
-
-Sk.builtin.set.prototype.set_reset_ = function () {
-    this.v = new Sk.builtin.dict([]);
-};
-
-Sk.builtin.set.prototype["$r"] = function () {
-    var it, i;
-    var ret = [];
-    for (it = iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        ret.push(Sk.misceval.objectRepr(i).v);
-    }
-
-    if(Sk.__future__.set_repr) {
-        return new Sk.builtin.str("{" + ret.join(", ") + "}");
-    } else {
-        return new Sk.builtin.str("set([" + ret.join(", ") + "])");
-    }
-};
-
-Sk.builtin.set.prototype.ob$eq = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (!(other instanceof Sk.builtin.set)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) !==
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.ob$ne = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (!(other instanceof Sk.builtin.set)) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) !==
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (this["issubset"].func_code(this, other).v) {
-        return Sk.builtin.bool.false$;
-    } else {
-        return Sk.builtin.bool.true$;
-    }
-};
-
-Sk.builtin.set.prototype.ob$lt = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) >=
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.ob$le = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) >
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.ob$gt = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) <=
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issuperset"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.ob$ge = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.set.prototype.sq$length.call(this) <
-        Sk.builtin.set.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issuperset"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.nb$and = function(other){
-    return this["intersection"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.nb$or = function(other){
-    return this["union"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.nb$xor = function(other){
-    return this["symmetric_difference"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype.nb$subtract = function(other){
-    return this["difference"].func_code(this, other);
-};
-
-Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    pyCheckArgs("__iter__", arguments, 0, 0, false, true);
-    return new Sk.builtin.set_iter_(self);
-});
-
-Sk.builtin.set.prototype.tp$iter = function () {
-    return new Sk.builtin.set_iter_(this);
-};
-
-Sk.builtin.set.prototype.sq$length = function () {
-    return this["v"].mp$length();
-};
-
-Sk.builtin.set.prototype.sq$contains = function(ob) {
-    return this["v"].sq$contains(ob);
-};
-
-Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, other) {
-    // requires all items in self to not be in other
-    var isIn;
-    var it, item;
-
-    pyCheckArgs("isdisjoint", arguments, 2, 2);
-    if (!Sk.builtin.checkIterable(other)) {
-        throw new TypeError("'" + typeName(other) + "' object is not iterable");
-    }
-
-    for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        isIn = sequenceContains(other, item);
-        if (isIn) {
+        if (!(other instanceof set)) {
             return Sk.builtin.bool.false$;
         }
-    }
-    return Sk.builtin.bool.true$;
-});
 
-Sk.builtin.set.prototype["issubset"] = new Sk.builtin.func(function (self, other) {
-    var isIn;
-    var it, item;
-    var selfLength, otherLength;
-
-    pyCheckArgs("issubset", arguments, 2, 2);
-    if (!Sk.builtin.checkIterable(other)) {
-        throw new TypeError("'" + typeName(other) + "' object is not iterable");
-    }
-
-    selfLength = self.sq$length();
-    otherLength = other.sq$length();
-
-    if (selfLength > otherLength) {
-        // every item in this set can't be in other if it's shorter!
-        return Sk.builtin.bool.false$;
-    }
-    for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        isIn = sequenceContains(other, item);
-        if (!isIn) {
+        if (this.sq$length() !== other.sq$length()) {
             return Sk.builtin.bool.false$;
         }
-    }
-    return Sk.builtin.bool.true$;
-});
 
-Sk.builtin.set.prototype["issuperset"] = new Sk.builtin.func(function (self, other) {
-    pyCheckArgs("issuperset", arguments, 2, 2);
-    return Sk.builtin.set.prototype["issubset"].func_code(other, self);
-});
+        return this.issubset.func_code(this, other);
+    };
 
-Sk.builtin.set.prototype["union"] = new Sk.builtin.func(function (self) {
-    var S, i, new_args;
+    ob$ne(other) {
 
-    pyCheckArgs("union", arguments, 1);
-
-    S = Sk.builtin.set.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    Sk.builtin.set.prototype["update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
-    var S, i, new_args;
-
-    pyCheckArgs("intersection", arguments, 1);
-
-    S = Sk.builtin.set.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    Sk.builtin.set.prototype["intersection_update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, other) {
-    var S, i, new_args;
-
-    pyCheckArgs("difference", arguments, 2);
-
-    S = Sk.builtin.set.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    Sk.builtin.set.prototype["difference_update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.set.prototype["symmetric_difference"] = new Sk.builtin.func(function (self, other) {
-    var it, item, S;
-
-    pyCheckArgs("symmetric_difference", arguments, 2, 2);
-
-    S = Sk.builtin.set.prototype["union"].func_code(self, other);
-    for (it = iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        if (sequenceContains(self, item) && sequenceContains(other, item)) {
-            Sk.builtin.set.prototype["discard"].func_code(S, item);
+        if (this === other) {
+            return Sk.builtin.bool.false$;
         }
-    }
-    return S;
-});
 
-Sk.builtin.set.prototype["copy"] = new Sk.builtin.func(function (self) {
-    pyCheckArgs("copy", arguments, 1, 1);
-    return new Sk.builtin.set(self);
-});
-
-Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) {
-    var i, it, item, arg;
-
-    pyCheckArgs("update", arguments, 2);
-
-    for (i = 1; i < arguments.length; i++) {
-        arg = arguments[i];
-        if (!Sk.builtin.checkIterable(arg)) {
-            throw new TypeError("'" + typeName(arg) + "' object is not iterable");
+        if (!(other instanceof set)) {
+            return Sk.builtin.bool.true$;
         }
-        for (it = iter(arg), item = it.tp$iternext();
-             item !== undefined;
-             item = it.tp$iternext()) {
-            Sk.builtin.set.prototype["add"].func_code(self, item);
+
+        if (this.sq$length() !==
+            other.sq$length()) {
+            return Sk.builtin.bool.true$;
         }
-    }
 
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (self, other) {
-    var i, it, item;
-
-    pyCheckArgs("intersection_update", arguments, 2);
-    for (i = 1; i < arguments.length; i++) {
-        if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new TypeError("'" + typeName(arguments[i]) +
-                                           "' object is not iterable");
+        if (this["issubset"].func_code(this, other).v) {
+            return Sk.builtin.bool.false$;
+        } else {
+            return Sk.builtin.bool.true$;
         }
-    }
+    };
 
-    for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        for (i = 1; i < arguments.length; i++) {
-            if (!sequenceContains(arguments[i], item)) {
-                Sk.builtin.set.prototype["discard"].func_code(self, item);
-                break;
+    ob$lt(other) {
+
+        if (this === other) {
+            return Sk.builtin.bool.false$;
+        }
+
+        if (this.sq$length() >=
+            other.sq$length()) {
+            return Sk.builtin.bool.false$;
+        }
+
+        return this["issubset"].func_code(this, other);
+    };
+
+    ob$le(other) {
+
+        if (this === other) {
+            return Sk.builtin.bool.true$;
+        }
+
+        if (this.sq$length() >
+            other.sq$length()) {
+            return Sk.builtin.bool.false$;
+        }
+
+        return this["issubset"].func_code(this, other);
+    };
+
+    ob$gt(other) {
+
+        if (this === other) {
+            return Sk.builtin.bool.false$;
+        }
+
+        if (this.sq$length() <=
+            other.sq$length()) {
+            return Sk.builtin.bool.false$;
+        }
+
+        return this["issuperset"].func_code(this, other);
+    };
+
+    ob$ge(other) {
+
+        if (this === other) {
+            return Sk.builtin.bool.true$;
+        }
+
+        if (this.sq$length() <
+            other.sq$length()) {
+            return Sk.builtin.bool.false$;
+        }
+
+        return this["issuperset"].func_code(this, other);
+    };
+
+    nb$and(other){
+        return this["intersection"].func_code(this, other);
+    };
+
+    nb$or(other){
+        return this["union"].func_code(this, other);
+    };
+
+    nb$xor(other){
+        return this["symmetric_difference"].func_code(this, other);
+    };
+
+    nb$subtract(other){
+        return this["difference"].func_code(this, other);
+    };
+
+    __iter__ = new func(function (self) {
+        pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+        return new set_iter_(self);
+    });
+
+    tp$iter() {
+        return new set_iter_(this);
+    };
+
+    sq$length() {
+        return this["v"].mp$length();
+    };
+
+    sq$contains(ob) {
+        return this["v"].sq$contains(ob);
+    };
+
+    isdisjoint = new func(function (self, other) {
+        // requires all items in self to not be in other
+        var isIn;
+        var it, item;
+
+        pyCheckArgs("isdisjoint", arguments, 2, 2);
+        if (!checkIterable(other)) {
+            throw new TypeError("'" + typeName(other) + "' object is not iterable");
+        }
+
+        for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+            isIn = sequenceContains(other, item);
+            if (isIn) {
+                return Sk.builtin.bool.false$;
             }
         }
-    }
-    return Sk.builtin.none.none$;
-});
+        return Sk.builtin.bool.true$;
+    });
 
-Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (self, other) {
-    var i, it, item;
+    issubset = new func(function (self, other) {
+        var isIn;
+        var it, item;
+        var selfLength, otherLength;
 
-    pyCheckArgs("difference_update", arguments, 2);
-    for (i = 1; i < arguments.length; i++) {
-        if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new TypeError("'" + typeName(arguments[i]) +
-                                           "' object is not iterable");
+        pyCheckArgs("issubset", arguments, 2, 2);
+        if (!checkIterable(other)) {
+            throw new TypeError("'" + typeName(other) + "' object is not iterable");
         }
-    }
 
-    for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        for (i = 1; i < arguments.length; i++) {
-            if (sequenceContains(arguments[i], item)) {
-                Sk.builtin.set.prototype["discard"].func_code(self, item);
-                break;
+        selfLength = self.sq$length();
+        otherLength = other.sq$length();
+
+        if (selfLength > otherLength) {
+            // every item in this set can't be in other if it's shorter!
+            return Sk.builtin.bool.false$;
+        }
+        for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+            isIn = sequenceContains(other, item);
+            if (!isIn) {
+                return Sk.builtin.bool.false$;
             }
         }
-    }
-    return Sk.builtin.none.none$;
-});
+        return Sk.builtin.bool.true$;
+    });
 
-Sk.builtin.set.prototype["symmetric_difference_update"] = new Sk.builtin.func(function (self, other) {
-    pyCheckArgs("symmetric_difference_update", arguments, 2, 2);
+    issuperset = new func(function (self, other) {
+        pyCheckArgs("issuperset", arguments, 2, 2);
+        return set.prototype["issubset"].func_code(other, self);
+    });
 
-    var sd = Sk.builtin.set.prototype["symmetric_difference"].func_code(self, other);
-    self.set_reset_();
-    Sk.builtin.set.prototype["update"].func_code(self, sd);
-    return Sk.builtin.none.none$;
-});
+    union = new func(function (self) {
+        var S, i, new_args;
 
+        pyCheckArgs("union", arguments, 1);
 
-Sk.builtin.set.prototype["add"] = new Sk.builtin.func(function (self, item) {
-    pyCheckArgs("add", arguments, 2, 2);
+        S = set.prototype["copy"].func_code(self);
+        new_args = [S];
+        for (i = 1; i < arguments.length; i++) {
+            new_args.push(arguments[i]);
+        }
 
-    self.v.mp$ass_subscript(item, true);
-    return Sk.builtin.none.none$;
-});
+        update.func_code.apply(null, new_args);
+        return S;
+    });
 
-Sk.builtin.set.prototype["discard"] = new Sk.builtin.func(function (self, item) {
-    pyCheckArgs("discard", arguments, 2, 2);
+    intersection = new func(function (self) {
+        var S, i, new_args;
 
-    Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
-        Sk.builtin.none.none$);
-    return Sk.builtin.none.none$;
-});
+        pyCheckArgs("intersection", arguments, 1);
 
-Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
-    var it, item;
+        S = set.prototype["copy"].func_code(self);
+        new_args = [S];
+        for (i = 1; i < arguments.length; i++) {
+            new_args.push(arguments[i]);
+        }
 
-    pyCheckArgs("pop", arguments, 1, 1);
+        intersection_update.func_code.apply(null, new_args);
+        return S;
+    });
 
-    if (self.sq$length() === 0) {
-        throw new KeyError("pop from an empty set");
-    }
+    difference = new func(function (self, other) {
+        var S, i, new_args;
 
-    it = iter(self);
-    item = it.tp$iternext();
-    Sk.builtin.set.prototype["discard"].func_code(self, item);
-    return item;
-});
+        pyCheckArgs("difference", arguments, 2);
 
-Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
-    pyCheckArgs("remove", arguments, 2, 2);
+        S = set.prototype["copy"].func_code(self);
+        new_args = [S];
+        for (i = 1; i < arguments.length; i++) {
+            new_args.push(arguments[i]);
+        }
 
-    self.v.mp$del_subscript(item);
-    return Sk.builtin.none.none$;
-});
+        difference_update.func_code.apply(null, new_args);
+        return S;
+    });
 
-goog.exportSymbol("Sk.builtin.set", Sk.builtin.set);
+    symmetric_difference = new func(function (self, other) {
+        var it, item, S;
 
-/**
- * @constructor
- * @param {Object} obj
- */
-Sk.builtin.set_iter_ = function (obj) {
-    var allkeys, k, i, bucket, buckets;
-    if (!(this instanceof Sk.builtin.set_iter_)) {
-        return new Sk.builtin.set_iter_(obj);
-    }
-    this.$obj = obj;
-    this.tp$iter = this;
-    allkeys = [];
-    buckets = obj.v.buckets;
-    for (k in buckets) {
-        if (buckets.hasOwnProperty(k)) {
-            bucket = buckets[k];
-            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
-                // skip internal stuff. todo; merge pyobj and this
-                for (i = 0; i < bucket.items.length; i++) {
-                    allkeys.push(bucket.items[i].lhs);
+        pyCheckArgs("symmetric_difference", arguments, 2, 2);
+
+        S = set.prototype["union"].func_code(self, other);
+        for (it = iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+            if (sequenceContains(self, item) && sequenceContains(other, item)) {
+                discard.func_code(S, item);
+            }
+        }
+        return S;
+    });
+
+    copy = new func(function (self) {
+        pyCheckArgs("copy", arguments, 1, 1);
+        return new set(self);
+    });
+
+    update = new func(function (self, other) {
+        var i, it, item, arg;
+
+        pyCheckArgs("update", arguments, 2);
+
+        for (i = 1; i < arguments.length; i++) {
+            arg = arguments[i];
+            if (!checkIterable(arg)) {
+                throw new TypeError("'" + typeName(arg) + "' object is not iterable");
+            }
+            for (it = iter(arg), item = it.tp$iternext();
+                item !== undefined;
+                item = it.tp$iternext()) {
+                add.func_code(self, item);
+            }
+        }
+
+        return none.none$;
+    });
+
+    intersection_update = new func(function (self, other) {
+        var i, it, item;
+
+        pyCheckArgs("intersection_update", arguments, 2);
+        for (i = 1; i < arguments.length; i++) {
+            if (!checkIterable(arguments[i])) {
+                throw new TypeError("'" + typeName(arguments[i]) +
+                                            "' object is not iterable");
+            }
+        }
+
+        for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+            for (i = 1; i < arguments.length; i++) {
+                if (!sequenceContains(arguments[i], item)) {
+                    discard.func_code(self, item);
+                    break;
                 }
             }
         }
-    }
-    this.$index = 0;
-    this.$keys = allkeys;
-    this.tp$iternext = function () {
-        if (this.$index >= this.$keys.length) {
-            return undefined;
+        return none.none$;
+    });
+
+    difference_update = new func(function (self, other) {
+        var i, it, item;
+
+        pyCheckArgs("difference_update", arguments, 2);
+        for (i = 1; i < arguments.length; i++) {
+            if (!checkIterable(arguments[i])) {
+                throw new TypeError("'" + typeName(arguments[i]) +
+                                            "' object is not iterable");
+            }
         }
-        return this.$keys[this.$index++];
-    };
-    this.$r = function () {
-        return new Sk.builtin.str("setiterator");
-    };
-    return this;
-};
 
-setUpInheritance("setiterator", Sk.builtin.set_iter_, Sk.builtin.object);
+        for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
+            for (i = 1; i < arguments.length; i++) {
+                if (sequenceContains(arguments[i], item)) {
+                    discard.func_code(self, item);
+                    break;
+                }
+            }
+        }
+        return none.none$;
+    });
 
-Sk.builtin.set_iter_.prototype.__class__ = Sk.builtin.set_iter_;
+    symmetric_difference_update = new func(function (self, other) {
+        pyCheckArgs("symmetric_difference_update", arguments, 2, 2);
 
-Sk.builtin.set_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    pyCheckArgs("__iter__", arguments, 0, 0, true, false);
-    return self;
-});
+        var sd = set.prototype["symmetric_difference"].func_code(self, other);
+        self.set_reset_();
+        update.func_code(self, sd);
+        return none.none$;
+    });
 
-Sk.builtin.set_iter_.prototype.next$ = function (self) {
-    var ret = self.tp$iternext();
-    if (ret === undefined) {
-        throw new Sk.builtin.StopIteration();
+
+    add = new func(function (self, item) {
+        pyCheckArgs("add", arguments, 2, 2);
+
+        self.v.mp$ass_subscript(item, true);
+        return none.none$;
+    });
+
+    discard = new func(function (self, item) {
+        pyCheckArgs("discard", arguments, 2, 2);
+
+        dict.prototype["pop"].func_code(self.v, item,
+            none.none$);
+        return none.none$;
+    });
+
+    pop = new func(function (self) {
+        var it, item;
+
+        pyCheckArgs("pop", arguments, 1, 1);
+
+        if (self.sq$length() === 0) {
+            throw new KeyError("pop from an empty set");
+        }
+
+        it = iter(self);
+        item = it.tp$iternext();
+        discard.func_code(self, item);
+        return item;
+    });
+
+    remove = new func(function (self, item) {
+        pyCheckArgs("remove", arguments, 2, 2);
+
+        self.v.mp$del_subscript(item);
+        return none.none$;
+    });
+}
+
+setUpInheritance("set", set, object);
+markUnhashable(set);
+
+export class set_iter_ {
+
+    /**
+     * @constructor
+     * @param {Object} obj
+     */
+    constructor(obj) {
+        var allkeys, k, i, bucket, buckets;
+
+        this.$obj = obj;
+        this.tp$iter = this;
+        allkeys = [];
+        buckets = obj.v.buckets;
+        for (k in buckets) {
+            if (buckets.hasOwnProperty(k)) {
+                bucket = buckets[k];
+                if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
+                    // skip internal stuff. todo; merge pyobj and this
+                    for (i = 0; i < bucket.items.length; i++) {
+                        allkeys.push(bucket.items[i].lhs);
+                    }
+                }
+            }
+        }
+        this.$index = 0;
+        this.$keys = allkeys;
+        this.tp$iternext = function () {
+            if (this.$index >= this.$keys.length) {
+                return undefined;
+            }
+            return this.$keys[this.$index++];
+        };
+        this.$r = function () {
+            return new str("setiterator");
+        };
+        return this;
     }
-    return ret;
-};
+
+    __class__ = set_iter_;
+
+    __iter__ = new func(function (self) {
+        pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+        return self;
+    });
+
+    next$(self) {
+        var ret = self.tp$iternext();
+        if (ret === undefined) {
+            throw new StopIteration();
+        }
+        return ret;
+    }
+}
+
+setUpInheritance("setiterator", set_iter_, object);
