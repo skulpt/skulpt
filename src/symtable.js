@@ -351,7 +351,7 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
         }
         else {
             // Tuple isn't supported
-            throw new Sk.builtin.SyntaxError("invalid expression in parameter list", this.filename);
+            throw new SyntaxError("invalid expression in parameter list", this.filename);
         }
     }
 };
@@ -382,7 +382,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
     val = this.cur.symFlags[mangled];
     if (val !== undefined) {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM)) {
-            throw new Sk.builtin.SyntaxError("duplicate argument '" + name.v + "' in function definition", this.filename, lineno);
+            throw new SyntaxError("duplicate argument '" + name.v + "' in function definition", this.filename, lineno);
         }
         val |= flag;
     }
@@ -468,7 +468,7 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
                 if (this.cur.generator) {
-                    throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
+                    throw new SyntaxError("'return' with argument inside generator", this.filename);
                 }
             }
             break;
@@ -558,10 +558,10 @@ SymbolTable.prototype.visitStmt = function (s) {
                 cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE)) {
                     if (cur & DEF_LOCAL) {
-                        throw new Sk.builtin.SyntaxError("name '" + name + "' is assigned to before global declaration", this.filename, s.lineno);
+                        throw new SyntaxError("name '" + name + "' is assigned to before global declaration", this.filename, s.lineno);
                     }
                     else {
-                        throw new Sk.builtin.SyntaxError("name '" + name + "' is used prior to global declaration", this.filename, s.lineno);
+                        throw new SyntaxError("name '" + name + "' is used prior to global declaration", this.filename, s.lineno);
                     }
                 }
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL, s.lineno);
@@ -626,7 +626,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.SEQExpr(e.values);
             break;
         case DictComp:
-        case SetComp:    
+        case SetComp:
             this.visitComprehension(e.generators, 0);
             break;
         case ListComp:
@@ -643,7 +643,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             }
             this.cur.generator = true;
             if (this.cur.returnsValue) {
-                throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
+                throw new SyntaxError("'return' with argument inside generator", this.filename);
             }
             break;
         case Compare:
@@ -723,7 +723,7 @@ SymbolTable.prototype.visitAlias = function (names, lineno) {
         }
         else {
             if (this.cur.blockType !== ModuleBlock) {
-                throw new Sk.builtin.SyntaxError("import * only allowed at module level", this.filename);
+                throw new SyntaxError("import * only allowed at module level", this.filename);
             }
         }
     }
@@ -890,7 +890,7 @@ SymbolTable.prototype.updateSymbols = function (symbols, scope, bound, free, cla
 SymbolTable.prototype.analyzeName = function (ste, dict, name, flags, bound, local, free, global) {
     if (flags & DEF_GLOBAL) {
         if (flags & DEF_PARAM) {
-            throw new Sk.builtin.SyntaxError("name '" + name + "' is local and global", this.filename, ste.lineno);
+            throw new SyntaxError("name '" + name + "' is local and global", this.filename, ste.lineno);
         }
         dict[name] = GLOBAL_EXPLICIT;
         global[name] = null;

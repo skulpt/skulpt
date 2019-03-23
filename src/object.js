@@ -1,6 +1,7 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { AttributeError, TypeError } from './errors';
 
 /**
  * @constructor
@@ -73,7 +74,7 @@ export class object {
             res = Sk.misceval.tryCatch(function() {
                 return Sk.misceval.callsimOrSuspend(getf, pyName);
             }, function(e) {
-                if (e instanceof Sk.builtin.AttributeError) {
+                if (e instanceof AttributeError) {
                     return undefined;
                 } else {
                     throw e;
@@ -89,7 +90,7 @@ export class object {
     GenericPythonGetAttr(self, name) {
         var r = this.GenericGetAttr.call(self, name.v, true);
         if (r === undefined) {
-            throw new Sk.builtin.AttributeError(name);
+            throw new AttributeError(name);
         }
         return r;
     }
@@ -116,7 +117,7 @@ export class object {
         if (name == "__class__") {
             if (value.tp$mro === undefined || value.tp$name === undefined ||
                 value.tp$name === undefined) {
-                throw new Sk.builtin.TypeError(
+                throw new TypeError(
                         "attempted to assign non-class to __class__");
             }
             this.ob$type = value;
@@ -141,7 +142,7 @@ export class object {
             if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
                 dict.mp$lookup(pyname) === undefined) {
                 // Cannot add new attributes to a builtin object
-                throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
+                throw new AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
             }
             dict.mp$ass_subscript(new Sk.builtin.str(name), value);
         } else if (typeof dict === "object") {
@@ -154,7 +155,7 @@ export class object {
     }
 
     HashNotImplemented() {
-        throw new Sk.builtin.TypeError("unhashable type: '" + typeName(this) + "'");
+        throw new TypeError("unhashable type: '" + typeName(this) + "'");
     }
 
     tp$getattr = this.GenericGetAttr;
@@ -210,14 +211,14 @@ export class object {
 
         if (!Sk.builtin.checkString(format_spec)) {
             if (Sk.__future__.exceptions) {
-                throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + typeName(format_spec));
+                throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
             } else {
-                throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
+                throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
             }
         } else {
             formatstr = remapToJs(format_spec);
             if (formatstr !== "") {
-                throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+                throw new NotImplementedError("format spec is not yet implemented");
             }
         }
 

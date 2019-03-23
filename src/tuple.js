@@ -25,7 +25,7 @@ Sk.builtin.tuple = function (L) {
                 this.v.push(i);
             }
         } else {
-            throw new Sk.builtin.TypeError("expecting Array or iterable");
+            throw new TypeError("expecting Array or iterable");
         }
     }
 
@@ -65,7 +65,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
                 i = this.v.length + i;
             }
             if (i < 0 || i >= this.v.length) {
-                throw new Sk.builtin.IndexError("tuple index out of range");
+                throw new IndexError("tuple index out of range");
             }
             return this.v[i];
         }
@@ -77,7 +77,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
         return new Sk.builtin.tuple(ret);
     }
 
-    throw new Sk.builtin.TypeError("tuple indices must be integers, not " + typeName(index));
+    throw new TypeError("tuple indices must be integers, not " + typeName(index));
 };
 
 // todo; the numbers and order are taken from python, but the answer's
@@ -206,7 +206,7 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     if (other.__class__ != Sk.builtin.tuple) {
         msg = "can only concatenate tuple (not \"";
         msg += typeName(other) + "\") to tuple";
-        throw new Sk.builtin.TypeError(msg);
+        throw new TypeError(msg);
     }
 
     return new Sk.builtin.tuple(this.v.concat(other.v));
@@ -241,7 +241,7 @@ Sk.builtin.tuple.prototype["index"] = new Sk.builtin.func(function (self, item) 
             return new Sk.builtin.int_(i);
         }
     }
-    throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
+    throw new ValueError("tuple.index(x): x not in tuple");
 });
 
 Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) {

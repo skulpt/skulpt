@@ -1,5 +1,7 @@
 import { setUpInheritance } from './abstract';
-import { none } from './object';
+import { none, object } from './object';
+import { str } from './str';
+import { tuple } from './tuple';
 /*
  * The filename, line number, and column number of exceptions are
  * stored within the exception object.  Note that not all exceptions
@@ -14,539 +16,409 @@ import { none } from './object';
  * @constructor
  * @param {...Object|null} args
  */
-Sk.builtin.BaseException = function (args) {
-    var i, o;
+export class BaseException extends object {
+    constructor(args) {
+        var i, o;
 
-    if (!(this instanceof Sk.builtin.BaseException)) {
-        o = Object.create(Sk.builtin.BaseException.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
+        args = Array.prototype.slice.call(arguments);
+        // hackage to allow shorter throws
+        for (i = 0; i < args.length; ++i) {
+            if (typeof args[i] === "string") {
+                args[i] = new str(args[i]);
+            }
+        }
+        this.args = new tuple(args);
+        this.traceback = [];
 
-    args = Array.prototype.slice.call(arguments);
-    // hackage to allow shorter throws
-    for (i = 0; i < args.length; ++i) {
-        if (typeof args[i] === "string") {
-            args[i] = new Sk.builtin.str(args[i]);
+        // For errors occurring during normal execution, the line/col/etc
+        // of the error are populated by each stack frame of the runtime code,
+        // but we can seed it with the supplied parameters.
+        if (this.args.sq$length() >= 3) {
+
+            // if !this.args[1].v, this is an error, and the exception that causes it
+            // probably needs to be fixed, but we mark as "<unknown>" for now
+            this.traceback.push({lineno: this.args.v[2],
+                                filename: this.args.v[1].v || "<unknown>"});
         }
     }
-    this.args = new Sk.builtin.tuple(args);
-    this.traceback = [];
 
-    // For errors occurring during normal execution, the line/col/etc
-    // of the error are populated by each stack frame of the runtime code,
-    // but we can seed it with the supplied parameters.
-    if (this.args.sq$length() >= 3) {
+    tp$str() {
+        var i;
+        var ret = "";
 
-        // if !this.args[1].v, this is an error, and the exception that causes it
-        // probably needs to be fixed, but we mark as "<unknown>" for now
-        this.traceback.push({lineno: this.args.v[2],
-                             filename: this.args.v[1].v || "<unknown>"});
-    }
-};
-setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
-
-Sk.builtin.BaseException.prototype.tp$str = function () {
-    var i;
-    var ret = "";
-
-    ret += this.tp$name;
-    if (this.args) {
-        ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
-    }
-    if (this.traceback.length !== 0) {
-        ret += " on line " + this.traceback[0].lineno;
-    } else {
-        ret += " at <unknown>";
-    }
-
-    if (this.args.v.length > 4) {
-        ret += "\n" + this.args.v[4].v + "\n";
-        for (i = 0; i < this.args.v[3]; ++i) {
-            ret += " ";
+        ret += this.tp$name;
+        if (this.args) {
+            ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
         }
-        ret += "^\n";
-    }
-
-    /*for (i = 0; i < this.traceback.length; i++) {
-        ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
-        if ("colno" in this.traceback[i]) {
-            ret += " column " + this.traceback[i].colno;
+        if (this.traceback.length !== 0) {
+            ret += " on line " + this.traceback[0].lineno;
+        } else {
+            ret += " at <unknown>";
         }
-    }*/
 
-    return new Sk.builtin.str(ret);
-};
+        if (this.args.v.length > 4) {
+            ret += "\n" + this.args.v[4].v + "\n";
+            for (i = 0; i < this.args.v[3]; ++i) {
+                ret += " ";
+            }
+            ret += "^\n";
+        }
 
-Sk.builtin.BaseException.prototype.toString = function () {
-    return this.tp$str().v;
-};
+        /*for (i = 0; i < this.traceback.length; i++) {
+            ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
+            if ("colno" in this.traceback[i]) {
+                ret += " column " + this.traceback[i].colno;
+            }
+        }*/
 
-// Create a descriptor to return the 'args' of an exception.
-// This is a hack to get around a weird mismatch between builtin
-// objects and proper types
-Sk.builtin.BaseException.prototype.args = {
-    "tp$descr_get": function(self, clstype) {
-        return self.args;
+        return new str(ret);
     }
-};
 
-goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
+    toString() {
+        return this.tp$str().v;
+    }
+
+    // Create a descriptor to return the 'args' of an exception.
+    // This is a hack to get around a weird mismatch between builtin
+    // objects and proper types
+    args = {
+        "tp$descr_get": function(self, clstype) {
+            return self.args;
+        }
+    };
+}
+
+setUpInheritance("BaseException", BaseException, object);
 
 /**
  * @constructor
- * @extends Sk.builtin.BaseException
+ * @extends BaseException
  * @param {...*} args
  */
-Sk.builtin.Exception = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.Exception)) {
-        o = Object.create(Sk.builtin.Exception.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class Exception extends BaseException {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.BaseException.apply(this, arguments);
-};
-setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
-goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
+}
+setUpInheritance("Exception", Exception, BaseException);
+
 
 /**
  * @constructor
- * @extends Sk.builtin.Exception
+ * @extends Exception
  * @param {...*} args
  */
-Sk.builtin.StandardError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.StandardError)) {
-        o = Object.create(Sk.builtin.StandardError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class StandardError extends Exception {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
-goog.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
+}
+setUpInheritance("StandardError", StandardError, Exception);
+
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.AssertionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.AssertionError)) {
-        o = Object.create(Sk.builtin.AssertionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class AssertionError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
+}
+setUpInheritance("AssertionError", AssertionError, StandardError);
+
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.AttributeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.AttributeError)) {
-        o = Object.create(Sk.builtin.AttributeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class AttributeError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.StandardError);
+}
+setUpInheritance("AttributeError", AttributeError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.ImportError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ImportError)) {
-        o = Object.create(Sk.builtin.ImportError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class ImportError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.StandardError);
+}
+setUpInheritance("ImportError", ImportError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.IndentationError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IndentationError)) {
-        o = Object.create(Sk.builtin.IndentationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class IndentationError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.StandardError);
+}
+setUpInheritance("IndentationError", IndentationError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.IndexError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IndexError)) {
-        o = Object.create(Sk.builtin.IndexError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class IndexError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.StandardError);
+}
+setUpInheritance("IndexError", IndexError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.KeyError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.KeyError)) {
-        o = Object.create(Sk.builtin.KeyError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class KeyError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.StandardError);
+}
+setUpInheritance("KeyError", KeyError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.NameError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NameError)) {
-        o = Object.create(Sk.builtin.NameError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class NameError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.StandardError);
+}
+setUpInheritance("NameError", NameError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.UnboundLocalError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnboundLocalError)) {
-        o = Object.create(Sk.builtin.UnboundLocalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class UnboundLocalError extends StandardError {
+    constructor(arguments) {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.StandardError);
+}
+setUpInheritance("UnboundLocalError", UnboundLocalError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.OverflowError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.OverflowError)) {
-        o = Object.create(Sk.builtin.OverflowError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class OverflowError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.StandardError);
-
+}
+setUpInheritance("OverflowError", OverflowError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.SyntaxError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SyntaxError)) {
-        o = Object.create(Sk.builtin.SyntaxError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class SyntaxError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
+}
+setUpInheritance("SyntaxError", SyntaxError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.RuntimeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.RuntimeError)) {
-        o = Object.create(Sk.builtin.RuntimeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class RuntimeError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
-
-
+}
+setUpInheritance("RuntimeError", RuntimeError, StandardError);
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.SuspensionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SuspensionError)) {
-        o = Object.create(Sk.builtin.SuspensionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class SuspensionError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
-
+}
+setUpInheritance("SuspensionError", SuspensionError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.BaseException
+ * @extends BaseException
  * @param {...*} args
  */
-Sk.builtin.SystemExit = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SystemExit)) {
-        o = Object.create(Sk.builtin.SystemExit.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class SystemExit extends BaseException {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.BaseException.apply(this, arguments);
-};
-setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
-goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
-
+}
+setUpInheritance("SystemExit", SystemExit, BaseException);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.TypeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TypeError)) {
-        o = Object.create(Sk.builtin.TypeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class TypeError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
+}
+setUpInheritance("TypeError", TypeError, StandardError);
+
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.ValueError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ValueError)) {
-        o = Object.create(Sk.builtin.ValueError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class ValueError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
+}
+setUpInheritance("ValueError", ValueError, StandardError);
+
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.ZeroDivisionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ZeroDivisionError)) {
-        o = Object.create(Sk.builtin.ZeroDivisionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class ZeroDivisionError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.StandardError);
+}
+setUpInheritance("ZeroDivisionError", ZeroDivisionError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.TimeLimitError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TimeLimitError)) {
-        o = Object.create(Sk.builtin.TimeLimitError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class TimeLimitError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
+}
+setUpInheritance("TimeLimitError", TimeLimitError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.IOError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IOError)) {
-        o = Object.create(Sk.builtin.IOError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class IOError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
-
+}
+setUpInheritance("IOError", IOError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.NotImplementedError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NotImplementedError)) {
-        o = Object.create(Sk.builtin.NotImplementedError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class NotImplementedError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
+}
+setUpInheritance("NotImplementedError", NotImplementedError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.NegativePowerError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NegativePowerError)) {
-        o = Object.create(Sk.builtin.NegativePowerError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class NegativePowerError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
+}
+setUpInheritance("NegativePowerError", NegativePowerError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {*} nativeError
  * @param {...*} args
  */
-Sk.builtin.ExternalError = function (nativeError, args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ExternalError)) {
-        o = Object.create(Sk.builtin.ExternalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class ExternalError extends StandardError {
+    constructor() {
+        // Make the first argument a string, so it can be printed in Python without errors,
+        // but save a reference to the real thing for Javascript consumption
+        var args = Array.prototype.slice.call(arguments);
+        this.nativeError = args[0];
+        if (!(args[0] instanceof str)) {
+            args[0] = "" + args[0];
+        }
+        super(args);
     }
-    // Make the first argument a string, so it can be printed in Python without errors,
-    // but save a reference to the real thing for Javascript consumption
-    args = Array.prototype.slice.call(arguments);
-    this.nativeError = args[0];
-    if (!(args[0] instanceof Sk.builtin.str)) {
-        args[0] = ""+args[0];
-    }
-    Sk.builtin.StandardError.apply(this, args);
-};
-setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
+}
+setUpInheritance("ExternalError", ExternalError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.OperationError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.OperationError)) {
-        o = Object.create(Sk.builtin.OperationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class OperationError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
+}
+setUpInheritance("OperationError", OperationError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends StandardError
  * @param {...*} args
  */
-Sk.builtin.SystemError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SystemError)) {
-        o = Object.create(Sk.builtin.SystemError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class SystemError extends StandardError {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
+}
+setUpInheritance("SystemError", SystemError, StandardError);
 
 /**
  * @constructor
- * @extends Sk.builtin.Exception
+ * @extends Exception
  * @param {...*} args
  */
-Sk.builtin.StopIteration = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.StopIteration)) {
-        o = Object.create(Sk.builtin.StopIteration.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+export class StopIteration extends Exception {
+    constructor() {
+        super(arguments);
     }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
-goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
-
+}
+setUpInheritance("StopIteration", StopIteration, Exception);
 
 // TODO: Extract into sys.exc_info(). Work out how the heck
 // to find out what exceptions are being processed by parent stack frames...
-Sk.builtin.getExcInfo = function(e) {
+export function getExcInfo(e) {
     var v = [e.ob$type || none.none$, e, none.none$];
 
     // TODO create a Traceback object for the third tuple element
 
-    return new Sk.builtin.tuple(v);
-};
-// NOT exported
-
-goog.exportSymbol("Sk", Sk);
+    return new tuple(v);
+}

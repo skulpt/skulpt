@@ -1,5 +1,6 @@
 import { setUpInheritance, markUnhashable, iter, sequenceContains, typeName } from './abstract';
 import { pyCheckArgs } from './function';
+import { TypeError, KeyError } from './errors';
 
 /**
  * @constructor
@@ -188,7 +189,7 @@ Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, oth
 
     pyCheckArgs("isdisjoint", arguments, 2, 2);
     if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + typeName(other) + "' object is not iterable");
+        throw new TypeError("'" + typeName(other) + "' object is not iterable");
     }
 
     for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
@@ -207,7 +208,7 @@ Sk.builtin.set.prototype["issubset"] = new Sk.builtin.func(function (self, other
 
     pyCheckArgs("issubset", arguments, 2, 2);
     if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + typeName(other) + "' object is not iterable");
+        throw new TypeError("'" + typeName(other) + "' object is not iterable");
     }
 
     selfLength = self.sq$length();
@@ -303,7 +304,7 @@ Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) 
     for (i = 1; i < arguments.length; i++) {
         arg = arguments[i];
         if (!Sk.builtin.checkIterable(arg)) {
-            throw new Sk.builtin.TypeError("'" + typeName(arg) + "' object is not iterable");
+            throw new TypeError("'" + typeName(arg) + "' object is not iterable");
         }
         for (it = iter(arg), item = it.tp$iternext();
              item !== undefined;
@@ -321,7 +322,7 @@ Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (
     pyCheckArgs("intersection_update", arguments, 2);
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new Sk.builtin.TypeError("'" + typeName(arguments[i]) +
+            throw new TypeError("'" + typeName(arguments[i]) +
                                            "' object is not iterable");
         }
     }
@@ -343,7 +344,7 @@ Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (se
     pyCheckArgs("difference_update", arguments, 2);
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new Sk.builtin.TypeError("'" + typeName(arguments[i]) +
+            throw new TypeError("'" + typeName(arguments[i]) +
                                            "' object is not iterable");
         }
     }
@@ -390,7 +391,7 @@ Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
     pyCheckArgs("pop", arguments, 1, 1);
 
     if (self.sq$length() === 0) {
-        throw new Sk.builtin.KeyError("pop from an empty set");
+        throw new KeyError("pop from an empty set");
     }
 
     it = iter(self);

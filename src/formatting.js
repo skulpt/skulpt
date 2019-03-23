@@ -1,6 +1,11 @@
 import { pyCheckArgs } from './function';
+import { str } from './str';
+import { tuple } from './tuple';
+import { dict } from './dict';
+import { func } from './function';
+import { ValueError } from './errors';
 
-var format = function (kwa) {
+function format(kwa) {
     // following PEP 3101
 
     var a, args, key, kwargs;
@@ -12,13 +17,13 @@ var format = function (kwa) {
 
     pyCheckArgs("format", arguments, 0, Infinity, true, true);
 
-
-    args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
-    kwargs = new Sk.builtins["dict"](kwa);
+    args = new tuple(Array.prototype.slice.call(arguments, 1)); /*vararg*/
+    kwargs = new dict(kwa);
 
     if (arguments[1] === undefined) {
         return args.v;
     }
+
     index = 0;
     regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:((?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?))?}/g;
     // ex: {o.name!r:*^+#030,.9b}
@@ -47,7 +52,7 @@ var format = function (kwa) {
 
     if(kwargs.size !== 0){
 
-        var kwItems = Sk.misceval.callsim(Sk.builtin.dict.prototype["items"], kwargs);
+        var kwItems = Sk.misceval.callsim(dict.prototype.items, kwargs);
 
         for (var n in kwItems.v){
 
@@ -94,9 +99,9 @@ var format = function (kwa) {
             return_str = arg_dict[index];
             index++;
             value = return_str;
-        } else if(field_name instanceof Sk.builtin.int_ ||
-                  field_name instanceof Sk.builtin.float_ ||
-                  field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
+        } else if(field_name instanceof int_ ||
+                  field_name instanceof float_ ||
+                  field_name instanceof lng || !isNaN(parseInt(field_name, 10))){
             return_str = arg_dict[field_name];
             index++;
             value = return_str;
@@ -147,11 +152,11 @@ var format = function (kwa) {
             if(conversion === undefined || conversion === ""){
                 return value;
             } else if( conversion == "r"){
-                s = new Sk.builtin.str(value);
+                s = new str(value);
                 r = Sk.builtin.repr(s);
                 return r.v;
             } else if(conversion == "s"){
-                r = new Sk.builtin.str(value);
+                r = new str(value);
                 return r.v;
             }
 
@@ -227,16 +232,16 @@ var format = function (kwa) {
                 }
                 n = Number(n.toString(base));
                 r = n.toFixed(precision);
-            } else if (n instanceof Sk.builtin.float_) {
+            } else if (n instanceof float_) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
                     r = r.substr(0, r.length - 2);
                 }
                 neg = n.nb$isnegative();
-            } else if (n instanceof Sk.builtin.int_) {
+            } else if (n instanceof int_) {
                 r = n.str$(base, false);
                 neg = n.nb$isnegative();
-            } else if (n instanceof Sk.builtin.lng) {
+            } else if (n instanceof lng) {
                 r = n.str$(base, false);
                 neg = n.nb$isnegative();    //  neg = n.size$ < 0;  RNL long.js change
             } else{
@@ -287,7 +292,7 @@ var format = function (kwa) {
             return formatNumber(value, 16).toUpperCase();
         } else if (conversionType === "f" || conversionType === "F" || conversionType === "e" || conversionType === "E" || conversionType === "g" || conversionType === "G") {
             if(alternateForm){
-                throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
+                throw new ValueError("Alternate form (#) not allowed in float format specifier");
             }
             convValue = Sk.builtin.asnum$(value);
             if (typeof convValue === "string") {
@@ -318,16 +323,16 @@ var format = function (kwa) {
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return handleWidth("", String.fromCharCode(value));
-            } else if (value instanceof Sk.builtin.int_) {
+            } else if (value instanceof int_) {
                 return handleWidth("", String.fromCharCode(value.v));
-            } else if (value instanceof Sk.builtin.float_) {
+            } else if (value instanceof float_) {
                 return handleWidth("", String.fromCharCode(value.v));
-            } else if (value instanceof Sk.builtin.lng) {
+            } else if (value instanceof lng) {
                 return handleWidth("", String.fromCharCode(value.str$(10, false)[0]));
-            } else if (value.constructor === Sk.builtin.str) {
+            } else if (value.constructor === str) {
                 return handleWidth("", value.v.substr(0, 1));
             } else {
-                throw new Sk.builtin.TypeError("an integer is required");
+                throw new TypeError("an integer is required");
             }
         } else if (percent) {
             if(precision === undefined){precision = parseInt(7,10);}
@@ -337,8 +342,8 @@ var format = function (kwa) {
     };
 
     ret = args.v[0].v.replace(regex, replFunc);
-    return new Sk.builtin.str(ret);
+    return new str(ret);
 };
 
 format["co_kwargs"] = true;
-Sk.builtin.str.prototype["format"] = new Sk.builtin.func(format);
+str.prototype.format = new func(format);

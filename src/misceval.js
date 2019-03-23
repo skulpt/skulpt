@@ -10,6 +10,7 @@ import {
     iter,
     sequenceContains
 } from './abstract';
+import { TypeError, ValueError, NameError } from './errors';
 
 /**
  * @namespace Sk.misceval
@@ -60,13 +61,12 @@ goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
     while (susp instanceof Sk.misceval.Suspension) {
         if (!susp.optional) {
-            throw new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
+            throw new SuspensionError(message || "Cannot call a function that blocks or suspends here");
         }
         susp = susp.resume();
     }
     return susp;
 };
-goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
 /**
  * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
@@ -82,7 +82,6 @@ Sk.misceval.isIndex = function (o) {
     }
     return false;
 };
-goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
 Sk.misceval.asIndex = function (o) {
     var idxfn, ret;
@@ -115,7 +114,7 @@ Sk.misceval.asIndex = function (o) {
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
+            throw new TypeError("__index__ returned non-(int,long) (type " +
                                            typeName(ret) + ")");
         }
         return Sk.builtin.asnum$(ret);
@@ -204,7 +203,7 @@ Sk.misceval.arrayFromArguments = function (args) {
         return res;
     }
 
-    throw new Sk.builtin.TypeError("'" + typeName(arg) + "' object is not iterable");
+    throw new TypeError("'" + typeName(arg) + "' object is not iterable");
 };
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
@@ -480,10 +479,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             }
 
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-                throw new Sk.builtin.TypeError("comparison did not return an int");
+                throw new TypeError("comparison did not return an int");
             }
         } catch (e) {
-            throw new Sk.builtin.TypeError("comparison did not return an int");
+            throw new TypeError("comparison did not return an int");
         }
     }
 
@@ -510,10 +509,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             }
 
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-                throw new Sk.builtin.TypeError("comparison did not return an int");
+                throw new TypeError("comparison did not return an int");
             }
         } catch (e) {
-            throw new Sk.builtin.TypeError("comparison did not return an int");
+            throw new TypeError("comparison did not return an int");
         }
     }
 
@@ -561,7 +560,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     vname = typeName(v);
     wname = typeName(w);
-    throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
+    throw new ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
@@ -646,14 +645,14 @@ Sk.misceval.isTrue = function (x) {
     if (x["__nonzero__"]) {
         ret = Sk.misceval.callsim(x["__nonzero__"], x);
         if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__nonzero__ should return an int");
+            throw new TypeError("__nonzero__ should return an int");
         }
         return Sk.builtin.asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
         ret = Sk.misceval.callsim(x["__len__"], x);
         if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__len__ should return an int");
+            throw new TypeError("__len__ should return an int");
         }
         return Sk.builtin.asnum$(ret) !== 0;
     }
@@ -713,7 +712,7 @@ Sk.misceval.loadname = function (name, other) {
         return bi;
     }
 
-    throw new Sk.builtin.NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
+    throw new NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 
@@ -971,7 +970,7 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
 
                         } else {
                             // Unhandled, non-optional suspension.
-                            throw new Sk.builtin.SuspensionError("Unhandled non-optional suspension of type '"+r.data["type"]+"'");
+                            throw new SuspensionError("Unhandled non-optional suspension of type '"+r.data["type"]+"'");
                         }
                     }
 
@@ -1164,7 +1163,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var it, i;
 
     if (func === null || func instanceof Sk.builtin.none) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
+        throw new TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 
     if (typeof func === "function" && func.tp$call === undefined) {
@@ -1182,7 +1181,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         if (kwdict) {
             for (it = iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
                 if (!Sk.builtin.checkString(i)) {
-                    throw new Sk.builtin.TypeError("Function keywords must be strings");
+                    throw new TypeError("Function keywords must be strings");
                 }
                 kws.push(i.v);
                 kws.push(objectGetItem(kwdict, i, false));

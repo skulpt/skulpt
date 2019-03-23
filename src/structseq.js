@@ -31,7 +31,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 v.push(i);
             }
             if (v.length != flds.length) {
-                throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
+                throw new TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
             }
         }
 
@@ -49,12 +49,15 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.ob$type["$d"] = new Sk.builtin.dict([]);
     cons.prototype.ob$type["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.tuple]));
+
     //var mro = Sk.builtin.type.buildMRO(cons.prototype.ob$type);
     //cons.prototype.ob$type["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
     //cons.prototype.ob$type.tp$mro = mro;
+
     cons.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
         return Sk.builtin.tuple.prototype.mp$subscript.call(self, index);
     });
+
     cons.prototype.__reduce__ = new Sk.builtin.func(function (self) {
         throw new Sk.builtin.Exception("__reduce__ is not implemented");
     });
@@ -77,7 +80,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
     cons.prototype.tp$setattr = function (name, value) {
-        throw new Sk.builtin.AttributeError("readonly property");
+        throw new AttributeError("readonly property");
     };
 
     cons.prototype.tp$getattr = function (name) {

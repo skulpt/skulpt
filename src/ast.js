@@ -1,3 +1,5 @@
+import { SyntaxError } from './errors';
+
 //
 // This is pretty much a straight port of ast.c from CPython 2.6.5.
 //
@@ -94,10 +96,10 @@ function numStmts (n) {
 
 function forbiddenCheck (c, n, x, lineno) {
     if (x === "None") {
-        throw new Sk.builtin.SyntaxError("assignment to None", c.c_filename, lineno);
+        throw new SyntaxError("assignment to None", c.c_filename, lineno);
     }
     if (x === "True" || x === "False") {
-        throw new Sk.builtin.SyntaxError("assignment to True or False is forbidden", c.c_filename, lineno);
+        throw new SyntaxError("assignment to True or False is forbidden", c.c_filename, lineno);
     }
 }
 
@@ -132,7 +134,7 @@ function setContext (c, e, ctx, n) {
             break;
         case Tuple:
             if (e.elts.length === 0) {
-                throw new Sk.builtin.SyntaxError("can't assign to ()", c.c_filename, n.lineno);
+                throw new SyntaxError("can't assign to ()", c.c_filename, n.lineno);
             }
             e.ctx = ctx;
             s = e.elts;
@@ -182,7 +184,7 @@ function setContext (c, e, ctx, n) {
             goog.asserts.fail("unhandled expression in assignment");
     }
     if (exprName) {
-        throw new Sk.builtin.SyntaxError("can't " + (ctx === Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
+        throw new SyntaxError("can't " + (ctx === Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
     }
 
     if (s) {
@@ -372,7 +374,7 @@ function astForTryStmt (c, n) {
         }
     }
     else if (CHILD(n, nc - 3).type !== SYM.except_clause) {
-        throw new Sk.builtin.SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
+        throw new SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
     }
 
     if (nexcept > 0) {
@@ -689,7 +691,7 @@ function aliasForImportName (c, n) {
             case TOK.T_STAR:
                 return new alias(strobj("*"), null);
             default:
-                throw new Sk.builtin.SyntaxError("unexpected import name", c.c_filename, n.lineno);
+                throw new SyntaxError("unexpected import name", c.c_filename, n.lineno);
         }
         break;
     }
@@ -756,11 +758,11 @@ function astForImportStmt (c, n) {
                 n = CHILD(n, idx);
                 nchildren = NCH(n);
                 if (nchildren % 2 === 0) {
-                    throw new Sk.builtin.SyntaxError("trailing comma not allowed without surrounding parentheses", c.c_filename, n.lineno);
+                    throw new SyntaxError("trailing comma not allowed without surrounding parentheses", c.c_filename, n.lineno);
                 }
                 break;
             default:
-                throw new Sk.builtin.SyntaxError("Unexpected node-type in from-import", c.c_filename, n.lineno);
+                throw new SyntaxError("Unexpected node-type in from-import", c.c_filename, n.lineno);
         }
         aliases = [];
         if (n.type === TOK.T_STAR) {
@@ -774,7 +776,7 @@ function astForImportStmt (c, n) {
         modname = mod ? mod.name.v : "";
         return new ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
     }
-    throw new Sk.builtin.SyntaxError("unknown import statement", c.c_filename, n.lineno);
+    throw new SyntaxError("unknown import statement", c.c_filename, n.lineno);
 }
 
 function astForTestlistComp(c, n) {
@@ -999,10 +1001,10 @@ function astForCall (c, n, func) {
         }
     }
     if (ngens > 1 || (ngens && (nargs || nkeywords))) {
-        throw new Sk.builtin.SyntaxError("Generator expression must be parenthesized if not sole argument", c.c_filename, n.lineno);
+        throw new SyntaxError("Generator expression must be parenthesized if not sole argument", c.c_filename, n.lineno);
     }
     if (nargs + nkeywords + ngens > 255) {
-        throw new Sk.builtin.SyntaxError("more than 255 arguments", c.c_filename, n.lineno);
+        throw new SyntaxError("more than 255 arguments", c.c_filename, n.lineno);
     }
     args = [];
     keywords = [];
@@ -1015,10 +1017,10 @@ function astForCall (c, n, func) {
         if (ch.type === SYM.argument) {
             if (NCH(ch) === 1) {
                 if (nkeywords) {
-                    throw new Sk.builtin.SyntaxError("non-keyword arg after keyword arg", c.c_filename, n.lineno);
+                    throw new SyntaxError("non-keyword arg after keyword arg", c.c_filename, n.lineno);
                 }
                 if (vararg) {
-                    throw new Sk.builtin.SyntaxError("only named arguments may follow *expression", c.c_filename, n.lineno);
+                    throw new SyntaxError("only named arguments may follow *expression", c.c_filename, n.lineno);
                 }
                 args[nargs++] = astForExpr(c, CHILD(ch, 0));
             }
@@ -1028,17 +1030,17 @@ function astForCall (c, n, func) {
             else {
                 e = astForExpr(c, CHILD(ch, 0));
                 if (e.constructor === Lambda) {
-                    throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
+                    throw new SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
                 }
                 else if (e.constructor !== Name) {
-                    throw new Sk.builtin.SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
+                    throw new SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
                 }
                 key = e.id;
                 forbiddenCheck(c, CHILD(ch, 0), key, n.lineno);
                 for (k = 0; k < nkeywords; ++k) {
                     tmp = keywords[k].arg;
                     if (tmp === key) {
-                        throw new Sk.builtin.SyntaxError("keyword argument repeated", c.c_filename, n.lineno);
+                        throw new SyntaxError("keyword argument repeated", c.c_filename, n.lineno);
                     }
                 }
                 keywords[nkeywords++] = new keyword(key, astForExpr(c, CHILD(ch, 2)));
@@ -1221,16 +1223,16 @@ function astForArguments (c, n) {
                         /* def f((x)=4): pass should raise an error.
                          def f((x, (y))): pass will just incur the tuple unpacking warning. */
                         if (parenthesized && !complexArgs) {
-                            throw new Sk.builtin.SyntaxError("parenthesized arg with default", c.c_filename, n.lineno);
+                            throw new SyntaxError("parenthesized arg with default", c.c_filename, n.lineno);
                         }
-                        throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
+                        throw new SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
                     }
 
                     if (NCH(ch) === 3) {
                         ch = CHILD(ch, 1);
                         // def foo((x)): is not complex, special case.
                         if (NCH(ch) !== 1) {
-                            throw new Sk.builtin.SyntaxError("tuple parameter unpacking has been removed", c.c_filename, n.lineno);
+                            throw new SyntaxError("tuple parameter unpacking has been removed", c.c_filename, n.lineno);
                         }
                         else {
                             /* def foo((x)): setup for checking NAME below. */
@@ -1249,7 +1251,7 @@ function astForArguments (c, n) {
                     }
                     i += 2;
                     if (parenthesized) {
-                        throw new Sk.builtin.SyntaxError("parenthesized argument names are invalid", c.c_filename, n.lineno);
+                        throw new SyntaxError("parenthesized argument names are invalid", c.c_filename, n.lineno);
                     }
                     break;
                 }
@@ -1588,9 +1590,9 @@ function astForExprStmt (c, n) {
         expr1 = astForTestlist(c, ch);
         switch (expr1.constructor) {
             case GeneratorExp:
-                throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
+                throw new SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
             case Yield:
-                throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
+                throw new SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             case Name:
                 varName = expr1.id;
                 forbiddenCheck(c, ch, varName, n.lineno);
@@ -1599,7 +1601,7 @@ function astForExprStmt (c, n) {
             case Subscript:
                 break;
             default:
-                throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
+                throw new SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
         }
         setContext(c, expr1, Store, ch);
 
@@ -1620,7 +1622,7 @@ function astForExprStmt (c, n) {
         for (i = 0; i < NCH(n) - 2; i += 2) {
             ch = CHILD(n, i);
             if (ch.type === SYM.yield_expr) {
-                throw new Sk.builtin.SyntaxError("assignment to yield expression not possible", c.c_filename, n.lineno);
+                throw new SyntaxError("assignment to yield expression not possible", c.c_filename, n.lineno);
             }
             e = astForTestlist(c, ch);
             setContext(c, e, Store, CHILD(n, i));
@@ -1779,7 +1781,7 @@ function parsestrplus (c, n) {
         try {
             ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
         } catch (x) {
-            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
+            throw new SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
     }
     return ret;
@@ -1998,7 +2000,7 @@ function astForAtom(c, n) {
                 return new Dict(keys, values, n.lineno, n.col_offset);
             }
         case TOK.T_BACKQUOTE:
-            //throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
+            //throw new SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
             return new Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
         default:
             goog.asserts.fail("unhandled atom", ch.type);

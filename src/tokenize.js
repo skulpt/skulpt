@@ -291,7 +291,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
 
     if (this.contstr.length > 0) {
         if (!line) {
-            throw new Sk.builtin.SyntaxError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
+            throw new SyntaxError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
         }
         this.endprog.lastIndex = 0;
         endmatch = this.endprog.test(line);
@@ -381,7 +381,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
         }
         while (column < this.indents[this.indents.length - 1]) {
             if (!contains(this.indents, column)) {
-                throw new Sk.builtin.IndentationError("unindent does not match any outer indentation level",
+                throw new IndentationError("unindent does not match any outer indentation level",
                     this.filename, this.lnum, pos, line);
             }
             this.indents.splice(this.indents.length - 1, 1);
@@ -394,7 +394,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
     else // continued statement
     {
         if (!line) {
-            throw new Sk.builtin.SyntaxError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
+            throw new SyntaxError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
         }
         this.continued = false;
     }

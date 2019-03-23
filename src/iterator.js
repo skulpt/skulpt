@@ -1,5 +1,6 @@
 import { lookupSpecial, setUpInheritance } from './abstract';
 import { remapToPy } from './ffi';
+import { StopIteration, IndexError } from './error';
 
 /**
   * Builds an iterator that outputs the items from the inputted object
@@ -66,7 +67,7 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
         r = Sk.misceval.tryCatch(function() {
             return Sk.misceval.callsimOrSuspend(self.getitem, self.obj, remapToPy(self.idx++));
         }, function(e) {
-            if (e instanceof Sk.builtin.StopIteration || e instanceof Sk.builtin.IndexError) {
+            if (e instanceof StopIteration || e instanceof IndexError) {
                 return undefined;
             } else {
                 throw e;

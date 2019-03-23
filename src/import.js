@@ -1,5 +1,5 @@
 import { compile } from './compile';
-
+import { ImportError } from './errors';
 /**
  * @namespace Sk
  *
@@ -259,9 +259,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 return;
             }, function(result) {
                 if (result === false) {
-                    throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
+                    throw new ImportError("Importing " + name + " is not allowed");
                 } else if (typeof result === "string") {
-                    throw new Sk.builtin.ImportError(result);
+                    throw new ImportError(result);
                 }
 
                 // Try loading as a builtin (i.e. already in JS) module, then try .py files
@@ -362,7 +362,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
                 return undefined;
             } else {
-                throw new Sk.builtin.ImportError("No module named " + name);
+                throw new ImportError("No module named " + name);
             }
         }
 

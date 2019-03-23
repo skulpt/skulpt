@@ -1,11 +1,13 @@
-var deprecatedError = new Sk.builtin.ExternalError("Sk.builtin.nmber is deprecated.");
+import { ExternalError } from './errors';
+
+var deprecatedError = new ExternalError("Sk.builtin.nmber is deprecated.");
 
 /**
  * @deprecated Please use Sk.builtin.int_ or Sk.builtin.float_ constructors instead.
  * If you do not know at complile time which type of number, use Sk.builtin.assk$.
  */
 Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
-    throw new Sk.builtin.ExternalError("Sk.builtin.nmber is deprecated. Please replace with Sk.builtin.int_, Sk.builtin.float_, or Sk.builtin.assk$.");
+    throw new ExternalError("Sk.builtin.nmber is deprecated. Please replace with Sk.builtin.int_, Sk.builtin.float_, or Sk.builtin.assk$.");
 };
 
 /**

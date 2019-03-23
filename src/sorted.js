@@ -1,4 +1,11 @@
-Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
+import { TypeError } from './errors';
+import { none } from './object';
+import { float_ } from './float';
+import { int_ } from './int';
+import { none } from './object';
+import { list as listType } from './list';
+
+export function sorted (iterable, cmp, key, reverse) {
     var arr;
     var next;
     var iter;
@@ -8,18 +15,18 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     if (reverse === undefined) {
         rev = false;
-    } else if (reverse instanceof Sk.builtin.float_) {
-        throw new Sk.builtin.TypeError("an integer is required, got float");
-    } else if (reverse instanceof Sk.builtin.int_ || reverse.prototype instanceof Sk.builtin.int_) {
+    } else if (reverse instanceof float_) {
+        throw new TypeError("an integer is required, got float");
+    } else if (reverse instanceof int_ || reverse.prototype instanceof int_) {
         rev = Sk.misceval.isTrue(reverse);
     } else {
-        throw new Sk.builtin.TypeError("an integer is required");
+        throw new TypeError("an integer is required");
     }
 
-    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
-        if (cmp instanceof Sk.builtin.none || cmp === undefined) {
+    if (key !== undefined && !(key instanceof none)) {
+        if (cmp instanceof none || cmp === undefined) {
             compare_func = function (a, b) {
-                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.int_(-1) : new Sk.builtin.int_(0);
+                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new int_(-1) : new int_(0);
             };
         } else {
             compare_func = function (a, b) {
@@ -33,12 +40,12 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             arr.push([Sk.misceval.callsim(key, next), next]);
             next = iter.tp$iternext();
         }
-        list = new Sk.builtin.list(arr);
+        list = new list(arr);
     } else {
-        if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
+        if (!(cmp instanceof none) && cmp !== undefined) {
             compare_func = cmp;
         }
-        list = new Sk.builtin.list(iterable);
+        list = new listType(iterable);
     }
 
     if (compare_func !== undefined) {
@@ -51,7 +58,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         list.list_reverse_(list);
     }
 
-    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
+    if (key !== undefined && !(key instanceof none)) {
         iter = list.tp$iter();
         next = iter.tp$iternext();
         arr = [];
@@ -59,7 +66,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             arr.push(next[1]);
             next = iter.tp$iternext();
         }
-        list = new Sk.builtin.list(arr);
+        list = new listType(arr);
     }
 
     return list;

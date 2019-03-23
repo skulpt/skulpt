@@ -3,6 +3,8 @@ import { makeTypeObj } from './type';
 import { str } from './str';
 import { none } from './object';
 import { bool } from './bool';
+import { method } from './method';
+import { TypeError } from './error';
 
 /**
  * Check arguments to Python functions to ensure the correct number of
@@ -40,7 +42,7 @@ export function pyCheckArgs(name, args, minargs, maxargs, kwargs, free) {
             msg = name + "() takes at most " + maxargs + " arguments";
         }
         msg += " (" + nargs + " given)";
-        throw new Sk.builtin.TypeError(msg);
+        throw new TypeError(msg);
     }
 };
 
@@ -53,7 +55,7 @@ export function pyCheckArgs(name, args, minargs, maxargs, kwargs, free) {
  */
 export function pyCheckType(name, exptype, check) {
     if (!check) {
-        throw new Sk.builtin.TypeError(name + " must be a " + exptype);
+        throw new TypeError(name + " must be a " + exptype);
     }
 };
 
@@ -80,7 +82,7 @@ export function checkIterable(arg) {
                 return false;
             }
         } catch (e) {
-            if (e instanceof Sk.builtin.TypeError) {
+            if (e instanceof TypeError) {
                 return false;
             } else {
                 throw e;
@@ -96,11 +98,11 @@ export function checkCallable(obj) {
         return true;
     }
     // takes care of python function, methods and lambdas
-    if (obj instanceof Sk.builtin.func) {
+    if (obj instanceof func) {
         return true;
     }
     // takes care of instances of methods
-    if (obj instanceof Sk.builtin.method) {
+    if (obj instanceof method) {
         return true;
     }
     // go up the prototype chain to see if the class has a __call__ method
@@ -112,9 +114,9 @@ export function checkCallable(obj) {
 
 export function checkNumber(arg) {
     return (arg !== null && (typeof arg === "number" ||
-        arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.float_ ||
-        arg instanceof Sk.builtin.lng));
+        arg instanceof int_ ||
+        arg instanceof float_ ||
+        arg instanceof lng));
 };
 
 /**
@@ -127,12 +129,12 @@ export function checkComplex(arg) {
 
 export function checkInt(arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.lng);
+        arg instanceof int_ ||
+        arg instanceof lng);
 };
 
 export function checkFloat(arg) {
-    return (arg !== null) && (arg instanceof Sk.builtin.float_);
+    return (arg !== null) && (arg instanceof float_);
 };
 
 export function checkString(arg) {
@@ -210,7 +212,7 @@ export class func {
             // it's a builtin
             return new Sk.builtin.method(this, obj, objtype, true);
         }
-        return new Sk.builtin.method(this, obj, objtype);
+        return new method(this, obj, objtype);
     }
 
     static pythonFunctions = ["__get__"];
@@ -242,7 +244,7 @@ export class func {
         var offset = varnames.length - defaults.length;
 
         if (this.func_code["no_kw"] && kw) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+            throw new TypeError(this.tp$getname() + "() takes no keyword arguments");
         }
 
         if (kw) {
@@ -251,9 +253,9 @@ export class func {
                     if (kwix < nargs) {
                         name = this.tp$getname();
                         if (name in Sk.builtins && this === Sk.builtins[name]) {
-                            throw new Sk.builtin.TypeError("Argument given by name ('" + kw[i] + "') and position (" + (kwix + 1) + ")");
+                            throw new TypeError("Argument given by name ('" + kw[i] + "') and position (" + (kwix + 1) + ")");
                         }
-                        throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
+                        throw new TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
                     }
                     varargs[kwix] = kw[i + 1];
                 } else if (expectskw) {
@@ -263,9 +265,9 @@ export class func {
                 } else {
                     name = this.tp$getname();
                     if (name in Sk.builtins && this === Sk.builtins[name]) {
-                        throw new Sk.builtin.TypeError("'" + kw[i] + "' is an invalid keyword argument for this function");
+                        throw new TypeError("'" + kw[i] + "' is an invalid keyword argument for this function");
                     }
-                    throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+                    throw new TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
                 }
             }
         }
@@ -290,7 +292,7 @@ export class func {
         if (kw && nargs < varnames.length - defaults.length) {
             for (i = nargs; i < varnames.length - defaults.length; i++) {
                 if (kw.indexOf(varnames[i]) === -1) {
-                    throw new Sk.builtin.TypeError(this.tp$getname() + "() takes atleast " + (varnames.length - defaults.length) + " arguments (" + (nargs + varargs.filter(function(x) { return x; }).length) +  " given)");
+                    throw new TypeError(this.tp$getname() + "() takes atleast " + (varnames.length - defaults.length) + " arguments (" + (nargs + varargs.filter(function(x) { return x; }).length) +  " given)");
                 }
             }
         }

@@ -1,6 +1,7 @@
 import { typeName } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { TypeError, AttributeError } from './errors';
 
 /*
 	Implementation of the Python3 print version. Due to Python2 grammar we have
@@ -31,7 +32,7 @@ var print_f = function function_print(kwa) {
         if(Sk.builtin.checkString(remap_val) || is_none) {
             kw_list["sep"] = is_none ? kw_list["sep"] : remapToJs(remap_val); // only reassign for string
         } else {
-            throw new Sk.builtin.TypeError("sep must be None or a string, not " + typeName(remap_val));
+            throw new TypeError("sep must be None or a string, not " + typeName(remap_val));
         }
     }
 
@@ -42,7 +43,7 @@ var print_f = function function_print(kwa) {
         if(Sk.builtin.checkString(remap_val) || is_none) {
             kw_list["end"] = is_none ? kw_list["end"] : remapToJs(remap_val); // only reassign for string
         } else {
-            throw new Sk.builtin.TypeError("end must be None or a string, not " + typeName(remap_val));
+            throw new TypeError("end must be None or a string, not " + typeName(remap_val));
         }
     }
 
@@ -54,7 +55,7 @@ var print_f = function function_print(kwa) {
         if(is_none || remap_val.tp$getattr("write") !== undefined) {
             kw_list["file"] = is_none ? kw_list["file"] : remap_val;
         } else {
-            throw new Sk.builtin.AttributeError("'" + typeName(remap_val) + "' object has no attribute 'write'");
+            throw new AttributeError("'" + typeName(remap_val) + "' object has no attribute 'write'");
         }
     }
 

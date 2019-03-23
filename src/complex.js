@@ -1,6 +1,8 @@
 import { setUpInheritance, lookupSpecial, typeName } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { TypeError, ZeroDivisionError, AttributeError, OverflowError } from './errors';
+import { NotImplementedError } from './object';
 
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
@@ -59,14 +61,14 @@ Sk.builtin.complex = function (real, imag) {
 
     if (r != null && Sk.builtin.checkString(r)) {
         if(i != null) {
-            throw new Sk.builtin.TypeError("complex() can't take second arg if first is a string");
+            throw new TypeError("complex() can't take second arg if first is a string");
         }
 
         return Sk.builtin.complex.complex_subtype_from_string(r);
     }
 
     if (i != null && Sk.builtin.checkString(i)) {
-        throw new Sk.builtin.TypeError("complex() second arg can't be a string");
+        throw new TypeError("complex() second arg can't be a string");
     }
 
 
@@ -74,7 +76,7 @@ Sk.builtin.complex = function (real, imag) {
     tmp = Sk.builtin.complex.try_complex_special_method(r);
     if (tmp != null && tmp !== Sk.builtin.NotImplemented.NotImplemented$) {
         if (!Sk.builtin.checkComplex(tmp)) {
-            throw new Sk.builtin.TypeError("__complex__ should return a complex object");
+            throw new TypeError("__complex__ should return a complex object");
         }
 
         r = tmp;
@@ -101,7 +103,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // check for valid arguments
     if (nbr == null || (!nb_float(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!nb_float(i) && !Sk.builtin.checkComplex(i))))) {
-        throw new Sk.builtin.TypeError("complex() argument must be a string or number");
+        throw new TypeError("complex() argument must be a string or number");
     }
 
     /* If we get this far, then the "real" and "imag" parts should
@@ -183,15 +185,15 @@ setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
 Sk.builtin.complex.prototype.nb$int_ = function () {
-    throw new Sk.builtin.TypeError("can't convert complex to int");
+    throw new TypeError("can't convert complex to int");
 };
 
 Sk.builtin.complex.prototype.nb$float_ = function() {
-    throw new Sk.builtin.TypeError("can't convert complex to float");
+    throw new TypeError("can't convert complex to float");
 };
 
 Sk.builtin.complex.prototype.nb$lng = function () {
-    throw new Sk.builtin.TypeError("can't convert complex to long");
+    throw new TypeError("can't convert complex to long");
 };
 
 Sk.builtin.complex.prototype.__doc__ = new Sk.builtin.str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
@@ -237,7 +239,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
 Sk.builtin.complex.check_number_or_complex = function (other) {
     /* exit early */
     if (!Sk.builtin.checkNumber(other) && other.tp$name !== "complex") {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: 'complex' and '" + typeName(other) + "'");
+        throw new TypeError("unsupported operand type(s) for +: 'complex' and '" + typeName(other) + "'");
     }
 
     /* converting to complex allows us to use always only one formula */
@@ -273,7 +275,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
      * Check also for empty strings. They are not allowed.
      */
     if (val.indexOf("\0") !== -1 || val.length === 0 || val === "") {
-        throw new Sk.builtin.ValueError("complex() arg is a malformed string");
+        throw new ValueError("complex() arg is a malformed string");
     }
 
     // transform to unicode
@@ -360,7 +362,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
             }
 
             if (val[index] !== "j" && val[index] !== "J") {
-                throw new Sk.builtin.ValueError("complex() arg is malformed string");
+                throw new ValueError("complex() arg is malformed string");
             }
 
             index++;
@@ -390,7 +392,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
         /* if there was an opening parenthesis, then the corresponding
            closing parenthesis should be right here */
         if (val[index] !== ")") {
-            throw new Sk.builtin.ValueError("complex() arg is malformed string");
+            throw new ValueError("complex() arg is malformed string");
         }
 
         index++;
@@ -402,7 +404,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
 
     /* we should now be at the end of the string */
     if (val.length !== index) {
-        throw new Sk.builtin.ValueError("complex() arg is malformed string");
+        throw new ValueError("complex() arg is malformed string");
     }
 
     // return here complex number parts
@@ -492,7 +494,7 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     if (abs_breal >= abs_bimag) {
         // divide tops and bottom by breal
         if (abs_breal === 0.0) {
-            throw new Sk.builtin.ZeroDivisionError("complex division by zero");
+            throw new ZeroDivisionError("complex division by zero");
         } else {
             ratio = bimag / breal;
             denom = breal + bimag * ratio;
@@ -516,11 +518,11 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
 };
 
 Sk.builtin.complex.prototype.nb$floor_divide = function (other) {
-    throw new Sk.builtin.TypeError("can't take floor of complex number.");
+    throw new TypeError("can't take floor of complex number.");
 };
 
 Sk.builtin.complex.prototype.nb$remainder = function (other) {
-    throw new Sk.builtin.TypeError("can't mod complex numbers.");
+    throw new TypeError("can't mod complex numbers.");
 };
 
 /**
@@ -534,7 +536,7 @@ Sk.builtin.complex.prototype.nb$power = function (other, z) {
 
     // none is allowed
     if (z != null && !Sk.builtin.checkNone(z)) {
-        throw new Sk.builtin.ValueError("complex modulo");
+        throw new ValueError("complex modulo");
     }
 
     a = this;
@@ -572,7 +574,7 @@ Sk.builtin.complex.c_pow = function (a, b) {
         imag = 0.0;
     } else if (areal === 0.0 && aimag === 0.0) {
         if(bimag !== 0.0 || breal < 0.0) {
-            throw new Sk.builtin.ZeroDivisionError("complex division by zero");
+            throw new ZeroDivisionError("complex division by zero");
         }
 
         real = 0.0;
@@ -689,7 +691,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
 
     if (op !== "Eq" && op !== "NotEq") {
         if(Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
-            throw new Sk.builtin.TypeError("no ordering relation is defined for complex numbers");
+            throw new TypeError("no ordering relation is defined for complex numbers");
         }
 
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -751,27 +753,27 @@ Sk.builtin.complex.prototype.__ne__ = function (me, other) {
  * expcetion is thrown.git co
  */
 Sk.builtin.complex.prototype.__lt__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " < " + typeName(other));
+    throw new TypeError("unorderable types: " + typeName(me) + " < " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__le__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " <= " + typeName(other));
+    throw new TypeError("unorderable types: " + typeName(me) + " <= " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__gt__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " > " + typeName(other));
+    throw new TypeError("unorderable types: " + typeName(me) + " > " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__ge__ = function (me, other) {
-    throw new Sk.builtin.TypeError("unorderable types: " + typeName(me) + " >= " + typeName(other));
+    throw new TypeError("unorderable types: " + typeName(me) + " >= " + typeName(other));
 };
 
 Sk.builtin.complex.prototype.__float__ = function (self) {
-    throw new Sk.builtin.TypeError("can't convert complex to float");
+    throw new TypeError("can't convert complex to float");
 };
 
 Sk.builtin.complex.prototype.__int__ = function (self) {
-    throw new Sk.builtin.TypeError("can't convert complex to int");
+    throw new TypeError("can't convert complex to int");
 };
 
 
@@ -813,12 +815,12 @@ Sk.builtin.complex.prototype.tp$setattr = function (name, value) {
         }
 
         if (_name === "real" || _name === "imag") {
-            throw new Sk.builtin.AttributeError("readonly attribute");
+            throw new AttributeError("readonly attribute");
         }
     }
 
     // builtin: --> all is readonly (I am not happy with this)
-    throw new Sk.builtin.AttributeError("'complex' object attribute '" + name + "' is readonly");
+    throw new AttributeError("'complex' object attribute '" + name + "' is readonly");
 };
 
 /**
@@ -897,13 +899,13 @@ Sk.builtin.complex.prototype.int$format = function __format__(self, format_spec)
     }
 
 
-    throw new Sk.builtin.TypeError("__format__ requires str or unicode");
+    throw new TypeError("__format__ requires str or unicode");
 };
 Sk.builtin.complex.prototype.int$format.co_name = new Sk.builtin.str("__format__");
 Sk.builtin.complex.prototype.__format__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$format);
 
 Sk.builtin.complex._PyComplex_FormatAdvanced = function(self, format_spec) {
-    throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex type.");
+    throw new NotImplementedError("__format__ is not implemented for complex type.");
 };
 
 /**
@@ -951,7 +953,7 @@ Sk.builtin.complex.prototype.int$abs = function __abs__(self) {
     result = Math.hypot(_real, _imag);
 
     if (!Sk.builtin.complex._is_finite(result)) {
-        throw new Sk.builtin.OverflowError("absolute value too large");
+        throw new OverflowError("absolute value too large");
     }
 
     return new Sk.builtin.float_(result);

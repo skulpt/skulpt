@@ -2,7 +2,8 @@ import { iter, setUpInheritance, typeName, markUnhashable } from './abstract';
 import { hash } from './builtin';
 import { func, pyCheckArgs } from './function';
 import { remapToJs } from './ffi';
-import { object, none } from './object';
+import { object, none, NotImplementedError } from './object';
+import { TypeError, KeyError, AttributeError, ValueError } from './errors';
 
 export class dict extends object {
     /**
@@ -48,11 +49,11 @@ export class dict extends object {
                 if (i.mp$subscript) {
                     this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
                 } else {
-                    throw new Sk.builtin.TypeError("element " + this.size + " is not a sequence");
+                    throw new TypeError("element " + this.size + " is not a sequence");
                 }
             }
         } else {
-            throw new Sk.builtin.TypeError("object is not iterable");
+            throw new TypeError("object is not iterable");
         }
 
         this.__class__ = dict;
@@ -134,7 +135,7 @@ export class dict extends object {
         } else {
             // Not found in dictionary
             s = new Sk.builtin.str(key);
-            throw new Sk.builtin.KeyError(s.v);
+            throw new KeyError(s.v);
         }
     }
 
@@ -188,7 +189,7 @@ export class dict extends object {
 
         // Not found in dictionary
         s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        throw new KeyError(s.v);
     }
 
     mp$del_subscript(key) {
@@ -209,7 +210,7 @@ export class dict extends object {
 
         // Not found in dictionary
         s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        throw new KeyError(s.v);
     }
 
     $r() {
@@ -252,7 +253,7 @@ export class dict extends object {
             for (iter = b.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 v = b.mp$subscript(k);
                 if (v === undefined) {
-                    throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
+                    throw new AttributeError("cannot get item for key: " + k.v);
                 }
                 this.mp$ass_subscript(k, v);
             }
@@ -262,7 +263,7 @@ export class dict extends object {
             for (iter = iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 v = b.tp$getitem(k); // get value
                 if (v === undefined) {
-                    throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
+                    throw new AttributeError("cannot get item for key: " + k.v);
                 }
                 this.mp$ass_subscript(k, v);
             }
@@ -353,7 +354,7 @@ export class dict extends object {
         }
 
         s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        throw new KeyError(s.v);
     })
 
     has_key = new func(function (self, k) {
@@ -475,7 +476,7 @@ export class dict extends object {
 
     __getattribute__ = new func(function (self, attr) {
         pyCheckArgs("__getattribute__", arguments, 1, 1, false, true);
-        if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattribute__ requires a string"); }
+        if (!Sk.builtin.checkString(attr)) { throw new TypeError("__getattribute__ requires a string"); }
         return dict.prototype.tp$getattr.call(self, remapToJs(attr));
     })
 
@@ -546,31 +547,31 @@ export class dict extends object {
     fromkeys = new func(dict.$fromkeys);
 
     iteritems = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
     })
 
     iterkeys = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.iterkeys is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.iterkeys is not yet implemented in Skulpt");
     })
 
     itervalues = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.itervalues is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.itervalues is not yet implemented in Skulpt");
     })
 
     popitem = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.popitem is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.popitem is not yet implemented in Skulpt");
     })
 
     viewitems = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.viewitems is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.viewitems is not yet implemented in Skulpt");
     })
 
     viewkeys = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.viewkeys is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.viewkeys is not yet implemented in Skulpt");
     })
 
     viewvalues = new func(function (self) {
-        throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
+        throw new NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
     })
 }
 
@@ -595,7 +596,7 @@ var update_f = function (kwargs, self, other) {
         for (iter = iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
             // check if value is iter
             if (!Sk.builtin.checkIterable(k)) {
-                throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
+                throw new TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
             }
 
             // cpython impl. would transform iterable into sequence
@@ -607,12 +608,12 @@ var update_f = function (kwargs, self, other) {
                 self.mp$ass_subscript(k_key, k_value);
             } else {
                 // throw exception
-                throw new Sk.builtin.ValueError("dictionary update sequence element #" + seq_i + " has length " + k.sq$length() + "; 2 is required");
+                throw new ValueError("dictionary update sequence element #" + seq_i + " has length " + k.sq$length() + "; 2 is required");
             }
         }
     } else if(other !== undefined) {
         // other is not a dict or iterable
-        throw new Sk.builtin.TypeError("'" +typeName(other) + "' object is not iterable");
+        throw new TypeError("'" +typeName(other) + "' object is not iterable");
     }
 
     // apply all key/value pairs of kwargs

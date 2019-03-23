@@ -1,6 +1,8 @@
 import { setUpInheritance } from './abstract';
 import { pyCheckArgs, func } from './function';
 import { object } from './object';
+import { ExternalError } from './errors';
+import { NotImplementedError } from './object';
 
 export class numtype extends object {
     /**
@@ -15,7 +17,7 @@ export class numtype extends object {
      * @return {undefined} Cannot instantiate a Sk.builtin.numtype object
      */
     constructor() {
-        throw new Sk.builtin.ExternalError("Cannot instantiate abstract Sk.builtin.numtype class");
+        throw new ExternalError("Cannot instantiate abstract Sk.builtin.numtype class");
     }
 
     /**
@@ -28,7 +30,7 @@ export class numtype extends object {
     __abs__ = new func(function (self) {
 
         if (self.nb$abs === undefined) {
-            throw new Sk.builtin.NotImplementedError("__abs__ is not yet implemented");
+            throw new NotImplementedError("__abs__ is not yet implemented");
         }
 
         pyCheckArgs("__abs__", arguments, 0, 0, false, true);
@@ -46,7 +48,7 @@ export class numtype extends object {
     __neg__ = new func(function (self) {
 
         if (self.nb$negative === undefined) {
-            throw new Sk.builtin.NotImplementedError("__neg__ is not yet implemented");
+            throw new NotImplementedError("__neg__ is not yet implemented");
         }
 
         pyCheckArgs("__neg__", arguments, 0, 0, false, true);
@@ -64,7 +66,7 @@ export class numtype extends object {
     __pos__ = new func(function (self) {
 
         if (self.nb$positive === undefined) {
-            throw new Sk.builtin.NotImplementedError("__pos__ is not yet implemented");
+            throw new NotImplementedError("__pos__ is not yet implemented");
         }
 
         pyCheckArgs("__pos__", arguments, 0, 0, false, true);
@@ -82,7 +84,7 @@ export class numtype extends object {
     __int__ = new func(function (self) {
 
         if (self.nb$int_ === undefined) {
-            throw new Sk.builtin.NotImplementedError("__int__ is not yet implemented");
+            throw new NotImplementedError("__int__ is not yet implemented");
         }
 
         pyCheckArgs("__int__", arguments, 0, 0, false, true);
@@ -100,7 +102,7 @@ export class numtype extends object {
     __long__ = new func(function (self) {
 
         if (self.nb$lng === undefined) {
-            throw new Sk.builtin.NotImplementedError("__long__ is not yet implemented");
+            throw new NotImplementedError("__long__ is not yet implemented");
         }
 
         pyCheckArgs("__long__", arguments, 0, 0, false, true);
@@ -118,7 +120,7 @@ export class numtype extends object {
     __float__ = new func(function (self) {
 
         if (self.nb$float_ === undefined) {
-            throw new Sk.builtin.NotImplementedError("__float__ is not yet implemented");
+            throw new NotImplementedError("__float__ is not yet implemented");
         }
 
         pyCheckArgs("__float__", arguments, 0, 0, false, true);
@@ -136,7 +138,7 @@ export class numtype extends object {
     __add__ = new func(function (self, other) {
 
         if (self.nb$add === undefined) {
-            throw new Sk.builtin.NotImplementedError("__add__ is not yet implemented");
+            throw new NotImplementedError("__add__ is not yet implemented");
         }
 
         pyCheckArgs("__add__", arguments, 1, 1, false, true);
@@ -154,7 +156,7 @@ export class numtype extends object {
     __radd__ = new func(function (self, other) {
 
         if (self.nb$reflected_add === undefined) {
-            throw new Sk.builtin.NotImplementedError("__radd__ is not yet implemented");
+            throw new NotImplementedError("__radd__ is not yet implemented");
         }
 
         pyCheckArgs("__radd__", arguments, 1, 1, false, true);
@@ -179,7 +181,7 @@ numtype.ct = true;
 Sk.builtin.numtype.prototype["__abs__"] = new func(function (self) {
 
     if (self.nb$abs === undefined) {
-        throw new Sk.builtin.NotImplementedError("__abs__ is not yet implemented");
+        throw new NotImplementedError("__abs__ is not yet implemented");
     }
 
     pyCheckArgs("__abs__", arguments, 0, 0, false, true);
@@ -197,7 +199,7 @@ Sk.builtin.numtype.prototype["__abs__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__neg__"] = new func(function (self) {
 
     if (self.nb$negative === undefined) {
-        throw new Sk.builtin.NotImplementedError("__neg__ is not yet implemented");
+        throw new NotImplementedError("__neg__ is not yet implemented");
     }
 
     pyCheckArgs("__neg__", arguments, 0, 0, false, true);
@@ -215,7 +217,7 @@ Sk.builtin.numtype.prototype["__neg__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__pos__"] = new func(function (self) {
 
     if (self.nb$positive === undefined) {
-        throw new Sk.builtin.NotImplementedError("__pos__ is not yet implemented");
+        throw new NotImplementedError("__pos__ is not yet implemented");
     }
 
     pyCheckArgs("__pos__", arguments, 0, 0, false, true);
@@ -233,7 +235,7 @@ Sk.builtin.numtype.prototype["__pos__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__int__"] = new func(function (self) {
 
     if (self.nb$int_ === undefined) {
-        throw new Sk.builtin.NotImplementedError("__int__ is not yet implemented");
+        throw new NotImplementedError("__int__ is not yet implemented");
     }
 
     pyCheckArgs("__int__", arguments, 0, 0, false, true);
@@ -251,7 +253,7 @@ Sk.builtin.numtype.prototype["__int__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__long__"] = new func(function (self) {
 
     if (self.nb$lng === undefined) {
-        throw new Sk.builtin.NotImplementedError("__long__ is not yet implemented");
+        throw new NotImplementedError("__long__ is not yet implemented");
     }
 
     pyCheckArgs("__long__", arguments, 0, 0, false, true);
@@ -269,7 +271,7 @@ Sk.builtin.numtype.prototype["__long__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__float__"] = new func(function (self) {
 
     if (self.nb$float_ === undefined) {
-        throw new Sk.builtin.NotImplementedError("__float__ is not yet implemented");
+        throw new NotImplementedError("__float__ is not yet implemented");
     }
 
     pyCheckArgs("__float__", arguments, 0, 0, false, true);
@@ -287,7 +289,7 @@ Sk.builtin.numtype.prototype["__float__"] = new func(function (self) {
 Sk.builtin.numtype.prototype["__add__"] = new func(function (self, other) {
 
     if (self.nb$add === undefined) {
-        throw new Sk.builtin.NotImplementedError("__add__ is not yet implemented");
+        throw new NotImplementedError("__add__ is not yet implemented");
     }
 
     pyCheckArgs("__add__", arguments, 1, 1, false, true);
@@ -305,7 +307,7 @@ Sk.builtin.numtype.prototype["__add__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__radd__"] = new func(function (self, other) {
 
     if (self.nb$reflected_add === undefined) {
-        throw new Sk.builtin.NotImplementedError("__radd__ is not yet implemented");
+        throw new NotImplementedError("__radd__ is not yet implemented");
     }
 
     pyCheckArgs("__radd__", arguments, 1, 1, false, true);
@@ -323,7 +325,7 @@ Sk.builtin.numtype.prototype["__radd__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__sub__"] = new func(function (self, other) {
 
     if (self.nb$subtract === undefined) {
-        throw new Sk.builtin.NotImplementedError("__sub__ is not yet implemented");
+        throw new NotImplementedError("__sub__ is not yet implemented");
     }
 
     pyCheckArgs("__sub__", arguments, 1, 1, false, true);
@@ -341,7 +343,7 @@ Sk.builtin.numtype.prototype["__sub__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rsub__"] = new func(function (self, other) {
 
     if (self.nb$reflected_subtract === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rsub__ is not yet implemented");
+        throw new NotImplementedError("__rsub__ is not yet implemented");
     }
 
     pyCheckArgs("__rsub__", arguments, 1, 1, false, true);
@@ -359,7 +361,7 @@ Sk.builtin.numtype.prototype["__rsub__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__mul__"] = new func(function (self, other) {
 
     if (self.nb$multiply === undefined) {
-        throw new Sk.builtin.NotImplementedError("__mul__ is not yet implemented");
+        throw new NotImplementedError("__mul__ is not yet implemented");
     }
 
     pyCheckArgs("__mul__", arguments, 1, 1, false, true);
@@ -377,7 +379,7 @@ Sk.builtin.numtype.prototype["__mul__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rmul__"] = new func(function (self, other) {
 
     if (self.nb$reflected_multiply === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rmul__ is not yet implemented");
+        throw new NotImplementedError("__rmul__ is not yet implemented");
     }
 
     pyCheckArgs("__rmul__", arguments, 1, 1, false, true);
@@ -395,7 +397,7 @@ Sk.builtin.numtype.prototype["__rmul__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__div__"] = new func(function (self, other) {
 
     if (self.nb$divide === undefined) {
-        throw new Sk.builtin.NotImplementedError("__div__ is not yet implemented");
+        throw new NotImplementedError("__div__ is not yet implemented");
     }
 
     pyCheckArgs("__div__", arguments, 1, 1, false, true);
@@ -413,7 +415,7 @@ Sk.builtin.numtype.prototype["__div__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rdiv__"] = new func(function (self, other) {
 
     if (self.nb$reflected_divide === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rdiv__ is not yet implemented");
+        throw new NotImplementedError("__rdiv__ is not yet implemented");
     }
 
     pyCheckArgs("__rdiv__", arguments, 1, 1, false, true);
@@ -431,7 +433,7 @@ Sk.builtin.numtype.prototype["__rdiv__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__floordiv__"] = new func(function (self, other) {
 
     if (self.nb$floor_divide === undefined) {
-        throw new Sk.builtin.NotImplementedError("__floordiv__ is not yet implemented");
+        throw new NotImplementedError("__floordiv__ is not yet implemented");
     }
 
     pyCheckArgs("__floordiv__", arguments, 1, 1, false, true);
@@ -449,7 +451,7 @@ Sk.builtin.numtype.prototype["__floordiv__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rfloordiv__"] = new func(function (self, other) {
 
     if (self.nb$reflected_floor_divide === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rfloordiv__ is not yet implemented");
+        throw new NotImplementedError("__rfloordiv__ is not yet implemented");
     }
 
     pyCheckArgs("__rfloordiv__", arguments, 1, 1, false, true);
@@ -467,7 +469,7 @@ Sk.builtin.numtype.prototype["__rfloordiv__"] = new func(function (self, other) 
 Sk.builtin.numtype.prototype["__mod__"] = new func(function (self, other) {
 
     if (self.nb$remainder === undefined) {
-        throw new Sk.builtin.NotImplementedError("__mod__ is not yet implemented");
+        throw new NotImplementedError("__mod__ is not yet implemented");
     }
 
     pyCheckArgs("__mod__", arguments, 1, 1, false, true);
@@ -485,7 +487,7 @@ Sk.builtin.numtype.prototype["__mod__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rmod__"] = new func(function (self, other) {
 
     if (self.nb$reflected_remainder === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rmod__ is not yet implemented");
+        throw new NotImplementedError("__rmod__ is not yet implemented");
     }
 
     pyCheckArgs("__rmod__", arguments, 1, 1, false, true);
@@ -503,7 +505,7 @@ Sk.builtin.numtype.prototype["__rmod__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__divmod__"] = new func(function (self, other) {
 
     if (self.nb$divmod === undefined) {
-        throw new Sk.builtin.NotImplementedError("__divmod__ is not yet implemented");
+        throw new NotImplementedError("__divmod__ is not yet implemented");
     }
 
     pyCheckArgs("__divmod__", arguments, 1, 1, false, true);
@@ -521,7 +523,7 @@ Sk.builtin.numtype.prototype["__divmod__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rdivmod__"] = new func(function (self, other) {
 
     if (self.nb$reflected_divmod === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rdivmod__ is not yet implemented");
+        throw new NotImplementedError("__rdivmod__ is not yet implemented");
     }
 
     pyCheckArgs("__rdivmod__", arguments, 1, 1, false, true);
@@ -539,7 +541,7 @@ Sk.builtin.numtype.prototype["__rdivmod__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__pow__"] = new func(function (self, other) {
 
     if (self.nb$power === undefined) {
-        throw new Sk.builtin.NotImplementedError("__pow__ is not yet implemented");
+        throw new NotImplementedError("__pow__ is not yet implemented");
     }
 
     pyCheckArgs("__pow__", arguments, 1, 1, false, true);
@@ -557,7 +559,7 @@ Sk.builtin.numtype.prototype["__pow__"] = new func(function (self, other) {
 Sk.builtin.numtype.prototype["__rpow__"] = new func(function (self, other) {
 
     if (self.nb$reflected_power === undefined) {
-        throw new Sk.builtin.NotImplementedError("__rpow__ is not yet implemented");
+        throw new NotImplementedError("__rpow__ is not yet implemented");
     }
 
     pyCheckArgs("__rpow__", arguments, 1, 1, false, true);
@@ -574,7 +576,7 @@ Sk.builtin.numtype.prototype["__rpow__"] = new func(function (self, other) {
  */
 Sk.builtin.numtype.prototype["__coerce__"] = new func(function (self, other) {
 
-    throw new Sk.builtin.NotImplementedError("__coerce__ is not yet implemented");
+    throw new NotImplementedError("__coerce__ is not yet implemented");
 
 });
 

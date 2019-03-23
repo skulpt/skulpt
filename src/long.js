@@ -1,6 +1,8 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { TypeError, ValueError } from './errors';
+import { NotImplementedError } from './object';
 
 /* global Sk: true, goog:true */
 
@@ -52,7 +54,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         } else if (x === false) {
             x = 0;
         } else {
-            throw new Sk.builtin.TypeError("long() argument must be a string or a number, not '" + typeName(x) + "'");
+            throw new TypeError("long() argument must be a string or a number, not '" + typeName(x) + "'");
         }
     }
 
@@ -87,14 +89,14 @@ Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {
-            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+            throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
+            throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = remapToJs(format_spec);
         if (formatstr !== "") {
-            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+            throw new NotImplementedError("format spec is not yet implemented");
         }
     }
 
@@ -107,7 +109,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     number = Sk.builtin.asnum$(self);
@@ -575,13 +577,13 @@ Sk.builtin.lng.prototype.nb$lshift = function (other) {
 
     if (other instanceof Sk.builtin.lng) {
         if (other.biginteger.signum() < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
     }
     if (other instanceof Sk.builtin.biginteger) {
         if (other.signum() < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
     }
@@ -612,13 +614,13 @@ Sk.builtin.lng.prototype.nb$rshift = function (other) {
 
     if (other instanceof Sk.builtin.lng) {
         if (other.biginteger.signum() < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
     }
     if (other instanceof Sk.builtin.biginteger) {
         if (other.signum() < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftRight(other));
     }

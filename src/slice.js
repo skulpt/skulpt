@@ -1,5 +1,6 @@
 import { setUpInheritance } from './abstract';
 import { pyCheckArgs } from './function';
+import { ValueError, TypeError } from './errors';
 
 /**
  * @constructor
@@ -11,7 +12,7 @@ Sk.builtin.slice = function slice (start, stop, step) {
     pyCheckArgs("slice", arguments, 1, 3, false, false);
 
     if ((step !== undefined) && Sk.misceval.isIndex(step) && (Sk.misceval.asIndex(step) === 0)) {
-        throw new Sk.builtin.ValueError("slice step cannot be zero");
+        throw new ValueError("slice step cannot be zero");
     }
 
     if (!(this instanceof Sk.builtin.slice)) {
@@ -83,7 +84,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
     } else if (Sk.misceval.isIndex(this.start)) {
         start = Sk.misceval.asIndex(this.start);
     } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        throw new TypeError("slice indices must be integers or None");
     }
 
     if (Sk.builtin.checkNone(this.stop)) {
@@ -91,7 +92,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
     } else if (Sk.misceval.isIndex(this.stop)) {
         stop = Sk.misceval.asIndex(this.stop);
     } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        throw new TypeError("slice indices must be integers or None");
     }
 
     if (Sk.builtin.checkNone(this.step)) {
@@ -99,7 +100,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
     } else if (Sk.misceval.isIndex(this.step)) {
         step = Sk.misceval.asIndex(this.step);
     } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        throw new TypeError("slice indices must be integers or None");
     }
 
     // this seems ugly, better way?

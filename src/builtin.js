@@ -1,7 +1,9 @@
 import { typeName, lookupSpecial, iter, numberBinOp, objectFormat } from './abstract'
 import { remapToJs, remapToPy } from './ffi';
 import { pyCheckArgs } from './function';
-import { none } from './object';
+import { none, NotImplementedError } from './object';
+import { ValueError, TypeError, AttributeError, RangeError } from './errors';
+
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
@@ -35,7 +37,7 @@ export function range (start, stop, step) {
     }
 
     if (step === 0) {
-        throw new Sk.builtin.ValueError("range() step argument must not be zero");
+        throw new ValueError("range() step argument must not be zero");
     }
 
     if (step > 0) {
@@ -220,16 +222,16 @@ export function round (number, ndigits) {
 
     if (!Sk.builtin.checkNumber(number)) {
         if (!Sk.builtin.checkFunction(number)) {
-            throw new Sk.builtin.TypeError("a float is required");
+            throw new TypeError("a float is required");
         } else {
             if (!Sk.__future__.exceptions) {
-                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
+                throw new AttributeError(typeName(number) + " instance has no attribute '__float__'");
             }
         }
     }
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     if (!Sk.__future__.dunder_round && number.round$) {
@@ -246,7 +248,7 @@ export function round (number, ndigits) {
             return Sk.misceval.callsim(special, number);
         }
     } else {
-        throw new Sk.builtin.TypeError("a float is required");
+        throw new TypeError("a float is required");
     }
 };
 
@@ -261,9 +263,9 @@ export function len (item) {
             return int_(j);
         } else {
             if (Sk.__future__.exceptions) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
+                throw new TypeError("'" + typeName(j) + "' object cannot be interpreted as an integer");
             } else {
-                throw new Sk.builtin.TypeError("__len__() should return an int");
+                throw new TypeError("__len__() should return an int");
             }
         }
     };
@@ -283,9 +285,9 @@ export function len (item) {
                 return Sk.misceval.callsim(special, item);
             } else {
                 if (Sk.__future__.exceptions) {
-                    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
+                    throw new TypeError("object of type '" + typeName(item) + "' has no len()");
                 } else {
-                    throw new Sk.builtin.AttributeError(typeName(item) + " instance has no attribute '__len__'");
+                    throw new AttributeError(typeName(item) + " instance has no attribute '__len__'");
                 }
             }
         } else {
@@ -293,7 +295,7 @@ export function len (item) {
         }
     }
 
-    throw new Sk.builtin.TypeError("object of type '" + typeName(item) + "' has no len()");
+    throw new TypeError("object of type '" + typeName(item) + "' has no len()");
 };
 
 export function min () {
@@ -306,7 +308,7 @@ export function min () {
     lowest = args[0];
 
     if (lowest === undefined) {
-        throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+        throw new ValueError("min() arg is an empty sequence");
     }
 
     for (i = 1; i < args.length; ++i) {
@@ -327,7 +329,7 @@ export function max () {
     highest = args[0];
 
     if (highest === undefined) {
-        throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+        throw new ValueError("max() arg is an empty sequence");
     }
 
     for (i = 1; i < args.length; ++i) {
@@ -343,7 +345,7 @@ export function any (iter) {
 
     pyCheckArgs("any", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + typeName(iter) +
+        throw new TypeError("'" + typeName(iter) +
             "' object is not iterable");
     }
 
@@ -362,7 +364,7 @@ export function all (iter) {
 
     pyCheckArgs("all", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + typeName(iter) +
+        throw new TypeError("'" + typeName(iter) +
             "' object is not iterable");
     }
 
@@ -385,7 +387,7 @@ export function sum (iter, start) {
     pyCheckArgs("sum", arguments, 1, 2);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
     if (start !== undefined && Sk.builtin.checkString(start)) {
-        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
+        throw new TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     }
     if (start === undefined) {
         tot = new Sk.builtin.int_(0);
@@ -416,7 +418,7 @@ export function sum (iter, start) {
             }
         }
 
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
+        throw new TypeError("unsupported operand type(s) for +: '" +
                     typeName(tot) + "' and '" +
                     typeName(i) + "'");
     }
@@ -440,7 +442,7 @@ export function zip () {
         if (Sk.builtin.checkIterable(arguments[i])) {
             iters.push(iter(arguments[i]));
         } else {
-            throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
+            throw new TypeError("argument " + i + " must support iteration");
         }
     }
     res = [];
@@ -490,9 +492,9 @@ export function ord (x) {
     pyCheckArgs("ord", arguments, 1, 1);
 
     if (!Sk.builtin.checkString(x)) {
-        throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + typeName(x) + " found");
+        throw new TypeError("ord() expected a string of length 1, but " + typeName(x) + " found");
     } else if (x.v.length !== 1) {
-        throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
+        throw new TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
     return new Sk.builtin.int_((x.v).charCodeAt(0));
 };
@@ -500,13 +502,13 @@ export function ord (x) {
 export function chr (x) {
     pyCheckArgs("chr", arguments, 1, 1);
     if (!Sk.builtin.checkInt(x)) {
-        throw new Sk.builtin.TypeError("an integer is required");
+        throw new TypeError("an integer is required");
     }
     x = Sk.builtin.asnum$(x);
 
 
     if ((x < 0) || (x > 255)) {
-        throw new Sk.builtin.ValueError("chr() arg not in range(256)");
+        throw new ValueError("chr() arg not in range(256)");
     }
 
     return new Sk.builtin.str(String.fromCharCode(x));
@@ -515,7 +517,7 @@ export function chr (x) {
 export function unichr (x) {
     pyCheckArgs("chr", arguments, 1, 1);
     if (!Sk.builtin.checkInt(x)) {
-        throw new Sk.builtin.TypeError("an integer is required");
+        throw new TypeError("an integer is required");
     }
     x = Sk.builtin.asnum$(x);
 
@@ -524,7 +526,7 @@ export function unichr (x) {
     }
     catch (err) {
         if (err instanceof RangeError) {
-            throw new Sk.builtin.ValueError(err.message);
+            throw new ValueError(err.message);
         }
         throw err;
     }
@@ -557,7 +559,7 @@ export function int2str_ (x, radix, prefix) {
 export function hex (x) {
     pyCheckArgs("hex", arguments, 1, 1);
     if (!Sk.misceval.isIndex(x)) {
-        throw new Sk.builtin.TypeError("hex() argument can't be converted to hex");
+        throw new TypeError("hex() argument can't be converted to hex");
     }
     return Sk.builtin.int2str_(x, 16, "0x");
 };
@@ -565,7 +567,7 @@ export function hex (x) {
 export function oct (x) {
     pyCheckArgs("oct", arguments, 1, 1);
     if (!Sk.misceval.isIndex(x)) {
-        throw new Sk.builtin.TypeError("oct() argument can't be converted to hex");
+        throw new TypeError("oct() argument can't be converted to hex");
     }
     if (Sk.__future__.octal_number_literal) {
         return Sk.builtin.int2str_(x, 8, "0o");
@@ -577,7 +579,7 @@ export function oct (x) {
 export function bin (x) {
     pyCheckArgs("bin", arguments, 1, 1);
     if (!Sk.misceval.isIndex(x)) {
-        throw new Sk.builtin.TypeError("'" + typeName(x) + "' object can't be interpreted as an index");
+        throw new TypeError("'" + typeName(x) + "' object can't be interpreted as an index");
     }
     return Sk.builtin.int2str_(x, 2, "0b");
 };
@@ -626,7 +628,7 @@ export function dir (x) {
         _seq = Sk.misceval.callsim(special, x);
 
         if (!Sk.builtin.checkSequence(_seq)) {
-            throw new Sk.builtin.TypeError("__dir__ must return sequence.");
+            throw new TypeError("__dir__ must return sequence.");
         }
 
         // proper unwrapping
@@ -729,7 +731,7 @@ export function isinstance (obj, type) {
     var i;
     pyCheckArgs("isinstance", arguments, 2, 2);
     if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
+        throw new TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
     }
 
     if (type === Sk.builtin.none.prototype.ob$type) {
@@ -794,7 +796,7 @@ export function hash (value) {
     if (value instanceof Object) {
         if (Sk.builtin.checkNone(value.tp$hash)) {
             // python sets the hash function to None , so we have to catch this case here
-            throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + typeName(value) + "'"));
+            throw new TypeError(new Sk.builtin.str("unhashable type: '" + typeName(value) + "'"));
         } else if (value.tp$hash !== undefined) {
             if (value.$savedHash_) {
                 return value.$savedHash_;
@@ -810,7 +812,7 @@ export function hash (value) {
         }
     } else if (typeof value === "number" || value === null ||
         value === true || value === false) {
-        throw new Sk.builtin.TypeError("unsupported Javascript type");
+        throw new TypeError("unsupported Javascript type");
     }
 
     return new Sk.builtin.str((typeof value) + " " + String(value));
@@ -821,7 +823,7 @@ export function getattr (obj, name, default_) {
     var ret, mangledName;
     pyCheckArgs("getattr", arguments, 2, 3);
     if (!Sk.builtin.checkString(name)) {
-        throw new Sk.builtin.TypeError("attribute name must be string");
+        throw new TypeError("attribute name must be string");
     }
 
     mangledName = Sk.fixReservedWords(remapToJs(name));
@@ -830,7 +832,7 @@ export function getattr (obj, name, default_) {
         if (default_ !== undefined) {
             return default_;
         } else {
-            throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + name.v + "'");
+            throw new AttributeError("'" + typeName(obj) + "' object has no attribute '" + name.v + "'");
         }
     }
     return ret;
@@ -841,17 +843,17 @@ export function setattr (obj, name, value) {
     // cannot set or del attr from builtin type
     if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
         if (!Sk.builtin.checkString(name)) {
-            throw new Sk.builtin.TypeError("attribute name must be string");
+            throw new TypeError("attribute name must be string");
         }
         if (obj.tp$setattr) {
             obj.tp$setattr(Sk.fixReservedWords(remapToJs(name)), value);
         } else {
-            throw new Sk.builtin.AttributeError("object has no attribute " + remapToJs(name));
+            throw new AttributeError("object has no attribute " + remapToJs(name));
         }
         return none.none$;
     }
 
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    throw new TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
 
 export function raw_input(prompt) {
@@ -891,11 +893,11 @@ export function jsmillis () {
 };
 
 export function superbi () {
-    throw new Sk.builtin.NotImplementedError("super is not yet implemented, please report your use case as a github issue.");
+    throw new NotImplementedError("super is not yet implemented, please report your use case as a github issue.");
 };
 
 export function eval_ () {
-    throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
+    throw new NotImplementedError("eval is not yet implemented");
 };
 
 export function map (fun, seq) {
@@ -917,7 +919,7 @@ export function map (fun, seq) {
         for (i in iterables) {
             if (!Sk.builtin.checkIterable(iterables[i])) {
                 argnum = parseInt(i, 10) + 2;
-                throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
+                throw new TypeError("argument " + argnum + " to map() must support iteration");
             }
             iterables[i] = iter(iterables[i]);
         }
@@ -945,7 +947,7 @@ export function map (fun, seq) {
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
+        throw new TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
     retval = [];
@@ -982,14 +984,14 @@ export function reduce (fun, seq, initializer) {
     var iter;
     pyCheckArgs("reduce", arguments, 2, 3);
     if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
+        throw new TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
     iter = iter(seq);
     if (initializer === undefined) {
         initializer = iter.tp$iternext();
         if (initializer === undefined) {
-            throw new Sk.builtin.TypeError("reduce() of empty sequence with no initial value");
+            throw new TypeError("reduce() of empty sequence with no initial value");
         }
     }
     accum_value = initializer;
@@ -1012,7 +1014,7 @@ export function filter (fun, iterable) {
     pyCheckArgs("filter", arguments, 2, 2);
 
     if (!Sk.builtin.checkIterable(iterable)) {
-        throw new Sk.builtin.TypeError("'" + typeName(iterable) + "' object is not iterable");
+        throw new TypeError("'" + typeName(iterable) + "' object is not iterable");
     }
 
     ctor = function () {
@@ -1065,7 +1067,7 @@ export function hasattr (obj, attr) {
     pyCheckArgs("hasattr", arguments, 2, 2);
     var special, ret;
     if (!Sk.builtin.checkString(attr)) {
-        throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
+        throw new TypeError("hasattr(): attribute name must be string");
     }
 
     if (obj.tp$getattr) {
@@ -1075,7 +1077,7 @@ export function hasattr (obj, attr) {
             return Sk.builtin.bool.false$;
         }
     } else {
-        throw new Sk.builtin.AttributeError("Object has no tp$getattr method");
+        throw new AttributeError("Object has no tp$getattr method");
     }
 };
 
@@ -1105,12 +1107,12 @@ export function pow (a, b, c) {
 
     if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
         if (c === undefined) {
-            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "' and '" + typeName(b) + "'");
+            throw new TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "' and '" + typeName(b) + "'");
         }
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "', '" + typeName(b) + "', '" + typeName(c) + "'");
+        throw new TypeError("unsupported operand type(s) for pow(): '" + typeName(a) + "', '" + typeName(b) + "', '" + typeName(c) + "'");
     }
     if (a_num < 0 && b instanceof Sk.builtin.float_) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+        throw new ValueError("negative number cannot be raised to a fractional power");
     }
 
     if (c === undefined) {
@@ -1129,17 +1131,17 @@ export function pow (a, b, c) {
         return res;
     } else {
         if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
-            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
+            throw new TypeError("pow() 3rd argument not allowed unless all arguments are integers");
         }
         if (b_num < 0) {
             if (Sk.__future__.exceptions) {
-                throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
+                throw new ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
             } else {
-                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+                throw new TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
             }
         }
         if (c_num === 0) {
-            throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
+            throw new ValueError("pow() 3rd argument cannot be 0");
         }
         if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng) ||
             (Math.pow(a_num, b_num) === Infinity)) {
@@ -1169,7 +1171,7 @@ export function issubclass (c1, c2) {
     }
 
     if (!Sk.builtin.checkClass(c2) && !(c2 instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
+        throw new TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
 
     issubclass_internal = function (klass, base) {
@@ -1257,7 +1259,7 @@ export function reversed (seq) {
         return Sk.misceval.callsim(special, seq);
     } else {
         if (!Sk.builtin.checkSequence(seq)) {
-            throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not a sequence");
+            throw new TypeError("'" + typeName(seq) + "' object is not a sequence");
         }
 
         /**
@@ -1282,7 +1284,7 @@ export function reversed (seq) {
                 try {
                     ret = Sk.misceval.callsim(this.getitem, this.myobj, remapToPy(this.idx));
                 } catch (e) {
-                    if (e instanceof Sk.builtin.IndexError) {
+                    if (e instanceof IndexError) {
                         return undefined;
                     } else {
                         throw e;
@@ -1309,7 +1311,7 @@ export function id(obj) {
 };
 
 export function bytearray () {
-    throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
+    throw new NotImplementedError("bytearray is not yet implemented");
 };
 
 export function callable (obj) {
@@ -1334,8 +1336,8 @@ export function delattr (obj, attr) {
 
                 return try2;
             }, function(e) {
-                if (e instanceof Sk.builtin.AttributeError) {
-                    throw new Sk.builtin.AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+                if (e instanceof AttributeError) {
+                    throw new AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
                 } else {
                     throw e;
                 }
@@ -1348,28 +1350,28 @@ export function delattr (obj, attr) {
             obj[attr.v] = undefined;
             return none.none$;
         }
-        throw new Sk.builtin.AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+        throw new AttributeError(typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
     }
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    throw new TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
 };
 
 export function execfile () {
-    throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
+    throw new NotImplementedError("execfile is not yet implemented");
 };
 
 export function frozenset () {
-    throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
+    throw new NotImplementedError("frozenset is not yet implemented");
 };
 
 export function help () {
-    throw new Sk.builtin.NotImplementedError("help is not yet implemented");
+    throw new NotImplementedError("help is not yet implemented");
 };
 
 export function iter (obj, sentinel) {
     pyCheckArgs("iter", arguments, 1, 2);
     if (arguments.length === 1) {
         if (!Sk.builtin.checkIterable(obj)) {
-            throw new Sk.builtin.TypeError("'" + typeName(obj) +
+            throw new TypeError("'" + typeName(obj) +
                 "' object is not iterable");
         } else {
             return new Sk.builtin.iterator(obj);
@@ -1384,17 +1386,17 @@ export function iter (obj, sentinel) {
 };
 
 export function locals () {
-    throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
+    throw new NotImplementedError("locals is not yet implemented");
 };
 export function memoryview () {
-    throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented");
+    throw new NotImplementedError("memoryview is not yet implemented");
 };
 
 export function next_ (iter, default_) {
     var nxt;
     pyCheckArgs("next", arguments, 1, 2);
     if (!iter.tp$iternext) {
-        throw new Sk.builtin.TypeError("'" + typeName(iter) +
+        throw new TypeError("'" + typeName(iter) +
             "' object is not an iterator");
     }
     nxt = iter.tp$iternext();
@@ -1408,23 +1410,23 @@ export function next_ (iter, default_) {
 };
 
 export function reload () {
-    throw new Sk.builtin.NotImplementedError("reload is not yet implemented");
+    throw new NotImplementedError("reload is not yet implemented");
 };
 export function vars () {
-    throw new Sk.builtin.NotImplementedError("vars is not yet implemented");
+    throw new NotImplementedError("vars is not yet implemented");
 };
 Sk.builtin.xrange = Sk.builtin.range;
 export function apply_ () {
-    throw new Sk.builtin.NotImplementedError("apply is not yet implemented");
+    throw new NotImplementedError("apply is not yet implemented");
 };
 export function buffer () {
-    throw new Sk.builtin.NotImplementedError("buffer is not yet implemented");
+    throw new NotImplementedError("buffer is not yet implemented");
 };
 export function coerce () {
-    throw new Sk.builtin.NotImplementedError("coerce is not yet implemented");
+    throw new NotImplementedError("coerce is not yet implemented");
 };
 export function intern () {
-    throw new Sk.builtin.NotImplementedError("intern is not yet implemented");
+    throw new NotImplementedError("intern is not yet implemented");
 };
 
 /*

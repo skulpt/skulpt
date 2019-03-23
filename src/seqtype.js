@@ -1,6 +1,7 @@
 import { setUpInheritance, typeName } from './abstract';
 import { pyCheckArgs, func } from './function';
 import { object } from './object';
+import { ExternalError, TypeError } from './errors';
 
 export class seqtype extends object {
     /**
@@ -15,7 +16,7 @@ export class seqtype extends object {
      * @return {undefined} Cannot instantiate a Sk.builtin.seqtype object
      */
     constructor() {
-        throw new Sk.builtin.ExternalError("Cannot instantiate abstract Sk.builtin.seqtype class");
+        throw new ExternalError("Cannot instantiate abstract Sk.builtin.seqtype class");
     }
 
     /**
@@ -109,7 +110,7 @@ export class seqtype extends object {
         pyCheckArgs("__mul__", arguments, 1, 1, false, true);
 
         if (!Sk.misceval.isIndex(n)) {
-            throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
+            throw new TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
         }
 
         return self.sq$repeat(n);

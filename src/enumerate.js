@@ -1,7 +1,7 @@
 import { typeName, setUpInheritance } from './abstract'
 import { object } from './object';
 import { pyCheckArgs, func } from './function';
-
+import { TypeError } from './errors';
 export class enumerate extends object {
     /**
      * @constructor
@@ -18,11 +18,11 @@ export class enumerate extends object {
 
         pyCheckArgs("enumerate", arguments, 1, 2);
         if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError("'" + typeName(iterable) + "' object is not iterable");
+            throw new TypeError("'" + typeName(iterable) + "' object is not iterable");
         }
         if (start !== undefined) {
             if (!Sk.misceval.isIndex(start)) {
-                throw new Sk.builtin.TypeError("'" + typeName(start) + "' object cannot be interpreted as an index");
+                throw new TypeError("'" + typeName(start) + "' object cannot be interpreted as an index");
             } else {
                 start = Sk.misceval.asIndex(start);
             }

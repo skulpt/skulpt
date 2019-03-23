@@ -2,6 +2,7 @@ import { setUpInheritance } from "./abstract";
 import { func } from './function';
 import { object, none } from './object';
 import { remapToJs, remapToPy } from './ffi';
+import { ValueError, NotImplementedError } from './errors';
 
 export class file extends object {
     /**
@@ -164,7 +165,7 @@ export class file extends object {
         var len = self.data$.length;
         var l_size;
         if (self.closed) {
-            throw new Sk.builtin.ValueError("I/O operation on closed file");
+            throw new ValueError("I/O operation on closed file");
         }
 
         if (size === undefined) {
@@ -188,7 +189,7 @@ export class file extends object {
 
     readlines = new func(function readlines(self, sizehint) {
         if (self.fileno === 0) {
-            return new Sk.builtin.NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
+            return new NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
         }
 
         var i;

@@ -1,6 +1,7 @@
 import { setUpInheritance } from './abstract';
 import { pyCheckArgs } from './function';
 import { object } from './object';
+import { TypeError } from './errors';
 
 export class method extends object {
     /**
@@ -17,10 +18,10 @@ export class method extends object {
         if (!(this instanceof Sk.builtin.method)) {
             pyCheckArgs("method", arguments, 3, 3);
             if (!Sk.builtin.checkCallable(func)) {
-                throw new Sk.builtin.TypeError("First argument must be callable");
+                throw new TypeError("First argument must be callable");
             }
             if (self.ob$type === undefined) {
-                throw new Sk.builtin.TypeError("Second argument must be object of known type");
+                throw new TypeError("Second argument must be object of known type");
             }
             return new Sk.builtin.method(func, self, klass);
         }

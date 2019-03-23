@@ -1,3 +1,5 @@
+import { SyntaxError } from './errors';
+
 // low level parser to a concrete syntax tree, derived from cpython's lib2to3
 
 /**
@@ -147,12 +149,12 @@ Parser.prototype.addtoken = function (type, value, context) {
             //print("WAA");
             this.pop();
             if (this.stack.length === 0) {
-                throw new Sk.builtin.SyntaxError("too much input", this.filename);
+                throw new SyntaxError("too much input", this.filename);
             }
         } else {
             // no transition
             errline = context[0][0];
-            throw new Sk.builtin.SyntaxError("bad input", this.filename, errline, context);
+            throw new SyntaxError("bad input", this.filename, errline, context);
         }
     }
 };
@@ -176,10 +178,10 @@ Parser.prototype.classify = function (type, value, context) {
     }
     ilabel = this.grammar.tokens.hasOwnProperty(type) && this.grammar.tokens[type];
     if (!ilabel) {
-        // throw new Sk.builtin.SyntaxError("bad token", type, value, context);
+        // throw new SyntaxError("bad token", type, value, context);
         // Questionable modification to put line number in position 2
         // like everywhere else and filename in position 1.
-        throw new Sk.builtin.SyntaxError("bad token", this.filename, context[0][0], context);
+        throw new SyntaxError("bad token", this.filename, context[0][0], context);
     }
     return ilabel;
 };
@@ -321,7 +323,7 @@ function makeParser (filename, style) {
         //print("tok:"+ret);
         if (ret) {
             if (ret !== "done") {
-                throw new Sk.builtin.SyntaxError("incomplete input", this.filename);
+                throw new SyntaxError("incomplete input", this.filename);
             }
             return p.rootnode;
         }

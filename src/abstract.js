@@ -1,5 +1,5 @@
 import { none } from './object';
-
+import { TypeError, NameError, ZeroDivisionError, AttributeError, IndexError } from './errors';
 // Number
 //
 
@@ -17,7 +17,7 @@ function binop_type_error(v, w, name) {
     var vtypename = typeName(v),
         wtypename = typeName(w);
 
-    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '" + vtypename + "' and '" + wtypename + "'");
+    throw new TypeError("unsupported operand type(s) for " + name + ": '" + vtypename + "' and '" + wtypename + "'");
 }
 
 function unop_type_error(v, name) {
@@ -28,7 +28,7 @@ function unop_type_error(v, name) {
             "Invert": "~"
         }[name];
 
-    throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
+    throw new TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
 }
 
 /**
@@ -265,7 +265,7 @@ function numOpAndPromote(a, b, opfn) {
             return ans;
         }
     } else if (a === undefined || b === undefined) {
-        throw new Sk.builtin.NameError("Undefined variable in expression");
+        throw new NameError("Undefined variable in expression");
     }
 
     if (a.constructor === Sk.builtin.lng) {
@@ -301,21 +301,21 @@ boNumPromote_ = {
     "Mod"     : function (a, b) {
         var m;
         if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
+            throw new ZeroDivisionError("division or modulo by zero");
         }
         m = a % b;
         return ((m * b) < 0 ? (m + b) : m);
     },
     "Div"     : function (a, b) {
         if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
+            throw new ZeroDivisionError("division or modulo by zero");
         } else {
             return a / b;
         }
     },
     "FloorDiv": function (a, b) {
         if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
+            throw new ZeroDivisionError("division or modulo by zero");
         } else {
             return Math.floor(a / b);
         } // todo; wrong? neg?
@@ -345,7 +345,7 @@ boNumPromote_ = {
     "LShift"  : function (a, b) {
         var m;
         if (b < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         m = a << b;
         if (m > a) {
@@ -358,7 +358,7 @@ boNumPromote_ = {
     "RShift"  : function (a, b) {
         var m;
         if (b < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
+            throw new ValueError("negative shift count");
         }
         m = a >> b;
         if ((a > 0) && (m < 0)) {
@@ -481,7 +481,7 @@ export function sequenceContains(seq, ob, canSuspend) {
 
     if (!Sk.builtin.checkIterable(seq)) {
         seqtypename = typeName(seq);
-        throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+        throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
     r = Sk.misceval.iterFor(iter(seq), function(i) {
@@ -501,7 +501,7 @@ export function sequenceConcat(seq1, seq2) {
         return seq1.sq$concat(seq2);
     }
     seq1typename = typeName(seq1);
-    throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
+    throw new TypeError("'" + seq1typename + "' object can't be concatenated");
 }
 
 export function sequenceGetIndexOf(seq, ob) {
@@ -520,11 +520,11 @@ export function sequenceGetIndexOf(seq, ob) {
             }
             index += 1;
         }
-        throw new Sk.builtin.ValueError("sequence.index(x): x not in sequence");
+        throw new ValueError("sequence.index(x): x not in sequence");
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+    throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
 }
 
 export function sequenceGetCountOf(seq, ob) {
@@ -546,7 +546,7 @@ export function sequenceGetCountOf(seq, ob) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+    throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
 }
 
 export function sequenceGetItem(seq, i, canSuspend) {
@@ -556,7 +556,7 @@ export function sequenceGetItem(seq, i, canSuspend) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
+    throw new TypeError("'" + seqtypename + "' object is unsubscriptable");
 }
 
 export function sequenceSetItem(seq, i, x, canSuspend) {
@@ -566,7 +566,7 @@ export function sequenceSetItem(seq, i, x, canSuspend) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
+    throw new TypeError("'" + seqtypename + "' object does not support item assignment");
 }
 
 export function sequenceDelItem(seq, i) {
@@ -578,7 +578,7 @@ export function sequenceDelItem(seq, i) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item deletion");
+    throw new TypeError("'" + seqtypename + "' object does not support item deletion");
 }
 
 export function sequenceRepeat(f, seq, n) {
@@ -588,7 +588,7 @@ export function sequenceRepeat(f, seq, n) {
     count = Sk.misceval.asIndex(n);
     if (count === undefined) {
         ntypename = typeName(n);
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
+        throw new TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
     }
     return f.call(seq, n);
 }
@@ -604,7 +604,7 @@ export function sequenceGetSlice(seq, i1, i2) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsliceable");
+    throw new TypeError("'" + seqtypename + "' object is unsliceable");
 }
 
 export function sequenceDelSlice(seq, i1, i2) {
@@ -617,7 +617,7 @@ export function sequenceDelSlice(seq, i1, i2) {
     }
 
     seqtypename = typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' doesn't support slice deletion");
+    throw new TypeError("'" + seqtypename + "' doesn't support slice deletion");
 }
 
 export function sequenceSetSlice(seq, i1, i2, x) {
@@ -630,7 +630,7 @@ export function sequenceSetSlice(seq, i1, i2, x) {
         seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
     } else {
         seqtypename = typeName(seq);
-        throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
+        throw new TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
 }
 
@@ -641,7 +641,7 @@ export function sequenceUnpack(seq, n) {
     var it, i;
 
     if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + typeName(seq) + "' object is not iterable");
+        throw new TypeError("'" + typeName(seq) + "' object is not iterable");
     }
 
     for (it = iter(seq), i = it.tp$iternext();
@@ -651,10 +651,10 @@ export function sequenceUnpack(seq, n) {
     }
 
     if (res.length < n) {
-        throw new Sk.builtin.ValueError("need more than " + res.length + " values to unpack");
+        throw new ValueError("need more than " + res.length + " values to unpack");
     }
     if (i !== undefined) {
-        throw new Sk.builtin.ValueError("too many values to unpack");
+        throw new ValueError("too many values to unpack");
     }
 
     // Return Javascript array of items
@@ -672,13 +672,13 @@ export function objectFormat(obj, format_spec) {
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = lookupSpecial(obj, "__format__");
     if (meth == null) {
-        throw new Sk.builtin.TypeError("Type " + typeName(obj) + " doesn't define __format__");
+        throw new TypeError("Type " + typeName(obj) + " doesn't define __format__");
     }
 
     // And call it
     result = Sk.misceval.callsim(meth, obj, format_spec);
     if (!Sk.builtin.checkString(result)) {
-        throw new Sk.builtin.TypeError("__format__ must return a str, not " + typeName(result));
+        throw new TypeError("__format__ must return a str, not " + typeName(result));
     }
 
     return result;
@@ -693,7 +693,7 @@ export function objectAdd(a, b) {
 
     atypename = typeName(a);
     btypename = typeName(b);
-    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
+    throw new TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
 }
 
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
@@ -710,7 +710,7 @@ export function objectNegative(obj) {
     }
 
     objtypename = typeName(obj);
-    throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
+    throw new TypeError("bad operand type for unary -: '" + objtypename + "'");
 }
 
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
@@ -726,7 +726,7 @@ export function objectPositive(obj) {
         return obj.nb$positive();
     }
 
-    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");
+    throw new TypeError("bad operand type for unary +: '" + objtypename + "'");
 }
 
 export function objectDelItem(o, key) {
@@ -742,7 +742,7 @@ export function objectDelItem(o, key) {
             keyValue = Sk.misceval.asIndex(key);
             if (keyValue === undefined) {
                 keytypename = typeName(key);
-                throw new Sk.builtin.TypeError("sequence index must be integer, not '" + keytypename + "'");
+                throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
             }
             sequenceDelItem(o, keyValue);
             return;
@@ -751,7 +751,7 @@ export function objectDelItem(o, key) {
     }
 
     otypename = typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
+    throw new TypeError("'" + otypename + "' object does not support item deletion");
 }
 
 export function objectGetItem(o, key, canSuspend) {
@@ -767,7 +767,7 @@ export function objectGetItem(o, key, canSuspend) {
     }
 
     otypename = typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
+    throw new TypeError("'" + otypename + "' does not support indexing");
 }
 
 export function objectSetItem(o, key, v, canSuspend) {
@@ -783,7 +783,7 @@ export function objectSetItem(o, key, v, canSuspend) {
     }
 
     otypename = typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
+    throw new TypeError("'" + otypename + "' does not support item assignment");
 }
 
 
@@ -792,7 +792,7 @@ export function gattr(obj, nameJS, canSuspend) {
     var objname = typeName(obj);
 
     if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
     if (obj.tp$getattr !== undefined) {
@@ -801,7 +801,7 @@ export function gattr(obj, nameJS, canSuspend) {
 
     ret = Sk.misceval.chain(ret, function(r) {
         if (r === undefined) {
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+            throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
         }
         return r;
     });
@@ -814,13 +814,13 @@ export function sattr(obj, nameJS, data, canSuspend) {
     var objname = typeName(obj), r, setf;
 
     if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
         return obj.tp$setattr(nameJS, data, canSuspend);
     } else {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 }
 
@@ -841,7 +841,7 @@ export function iternext(it, canSuspend) {
  *
  * @param obj
  *
- * @throws {Sk.builtin.TypeError}
+ * @throws {TypeError}
  * @returns {Object}
  */
 
@@ -864,7 +864,7 @@ export function iter(obj) {
             try {
                 ret = Sk.misceval.callsim(this.getitem, this.myobj, ToPy(this.idx));
             } catch (e) {
-                if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
+                if (e instanceof IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
                 } else {
                     throw e;
@@ -897,7 +897,7 @@ export function iter(obj) {
         // create internal iterobject if __getitem__
         return new seqIter(obj);
     }
-    throw new Sk.builtin.TypeError("'" + typeName(obj) + "' object is not iterable");
+    throw new TypeError("'" + typeName(obj) + "' object is not iterable");
 }
 
 /**

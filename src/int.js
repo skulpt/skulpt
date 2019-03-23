@@ -1,6 +1,8 @@
 import { typeName, setUpInheritance, numberBinOp } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { TypeError, AttributeError, ZeroDivisionError } from './errors';
+import { NotImplementedError } from './object';
 
 /* jslint nomen: true, bitwise: true */
 /* global Sk: true */
@@ -50,13 +52,13 @@ Sk.builtin.int_ = function (x, base) {
     // if base is not of type int, try calling .__index__
     if(base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
-            throw new Sk.builtin.TypeError("integer argument expected, got " + typeName(base));
+            throw new TypeError("integer argument expected, got " + typeName(base));
         } else if (base.__index__) {
             base = Sk.misceval.callsim(base.__index__, base);
         } else if(base.__int__) {
             base = Sk.misceval.callsim(base.__int__, base);
         } else {
-            throw new Sk.builtin.AttributeError(typeName(base) + " instance has no attribute '__index__' or '__int__'");
+            throw new AttributeError(typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
     }
 
@@ -80,7 +82,7 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     if (base !== undefined && base !== Sk.builtin.none.none$) {
-        throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
+        throw new TypeError("int() can't convert non-string with explicit base");
     }
 
     if (x === undefined || x === Sk.builtin.none) {
@@ -112,14 +114,14 @@ Sk.builtin.int_ = function (x, base) {
 
     // check return type of magic methods
     if(ret !== undefined && !Sk.builtin.checkInt(ret)) {
-        throw new Sk.builtin.TypeError(magicName + " returned non-Integral (type " + typeName(ret)+")");
+        throw new TypeError(magicName + " returned non-Integral (type " + typeName(ret)+")");
     } else if(ret !== undefined){
         x = ret; // valid return value, proceed in function
     }
 
     // check type even without magic numbers
     if(!Sk.builtin.checkNumber(x)) {
-        throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + typeName(x) + "'");
+        throw new TypeError("int() argument must be a string or a number, not '" + typeName(x) + "'");
     }
 
     x = Sk.builtin.asnum$(x);
@@ -347,7 +349,7 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     if (other instanceof Sk.builtin.int_) {
 
         if (other.v === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+            throw new ZeroDivisionError("integer division or modulo by zero");
         }
 
         return new Sk.builtin.int_(Math.floor(this.v / other.v));
@@ -475,7 +477,7 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
 
         if (mod !== undefined) {
             if (other.v < 0) {
-                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+                throw new TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
             }
 
             return ret.nb$remainder(mod);
@@ -642,7 +644,7 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
 
         if (shift !== undefined) {
             if (shift < 0) {
-                throw new Sk.builtin.ValueError("negative shift count");
+                throw new ValueError("negative shift count");
             }
 
             if (shift > 53) {
@@ -697,7 +699,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
 
         if (shift !== undefined) {
             if (shift < 0) {
-                throw new Sk.builtin.ValueError("negative shift count");
+                throw new ValueError("negative shift count");
             }
             tmp = this.v >> shift;
             if ((this.v > 0) && (tmp < 0)) {
@@ -979,7 +981,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
+        throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
     number = Sk.builtin.asnum$(self);
@@ -1009,14 +1011,14 @@ Sk.builtin.int_.prototype.__format__= function (obj, format_spec) {
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {
-            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+            throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
         } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
+            throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
         }
     } else {
         formatstr = remapToJs(format_spec);
         if (formatstr !== "") {
-            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+            throw new NotImplementedError("format spec is not yet implemented");
         }
     }
 
@@ -1112,7 +1114,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
 
     if (base < 2 || base > 36) {
         if (base !== 0) {
-            throw new Sk.builtin.ValueError(fname + "() base must be >= 2 and <= 36");
+            throw new ValueError(fname + "() base must be >= 2 and <= 36");
         }
     }
 
@@ -1121,21 +1123,21 @@ Sk.str2number = function (s, base, parser, negater, fname) {
             s = s.substring(2);
             base = 16;
         } else if (base < 34) {
-            throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+            throw new ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
     } else if (s.substring(0, 2).toLowerCase() === "0b") {
         if (base === 2 || base === 0) {
             s = s.substring(2);
             base = 2;
         } else if (base < 12) {
-            throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+            throw new ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
     } else if (s.substring(0, 2).toLowerCase() === "0o") {
         if (base === 8 || base === 0) {
             s = s.substring(2);
             base = 8;
         } else if (base < 25) {
-            throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+            throw new ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
     } else if (s.charAt(0) === "0") {
         if (s === "0") {
@@ -1151,7 +1153,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
     }
 
     if (s.length === 0) {
-        throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+        throw new ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
     }
 
     // check all characters are valid
@@ -1170,7 +1172,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         }
 
         if (val >= base) {
-            throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+            throw new ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
     }
 
