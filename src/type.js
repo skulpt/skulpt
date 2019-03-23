@@ -5,6 +5,7 @@ import { str } from './str';
 import { checkString } from './function';
 import { object, none } from './object';
 import { tuple } from './tuple';
+import { TypeError, AttributeError } from './errors';
 
 /**
  * Maps Python dunder names to the Skulpt Javascript function names that

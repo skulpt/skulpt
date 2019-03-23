@@ -2,6 +2,8 @@ import { setUpInheritance, typeName } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs, func } from './function';
 import { seqtype } from './seqtype';
+import { ValueError, IndexError, AttributeError } from './errors';
+import { NotImplementedError } from './object';
 
 Sk.builtin.interned = {};
 

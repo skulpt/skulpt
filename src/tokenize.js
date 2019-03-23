@@ -1,3 +1,5 @@
+import { SyntaxError, IndentationError } from './errors';
+
 /*
  * This is a port of tokenize.py by Ka-Ping Yee.
  *

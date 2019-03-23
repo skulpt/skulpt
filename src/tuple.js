@@ -1,5 +1,6 @@
 import { iter, setUpInheritance, typeName } from './abstract';
 import { pyCheckArgs } from './function';
+import { TypeError, IndexError, ValueError } from './errors';
 
 /**
  * @constructor

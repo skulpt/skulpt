@@ -1,3 +1,5 @@
+import { SyntaxError } from './errors';
+
 /* Flags for def-use information */
 
 var DEF_GLOBAL = 1;

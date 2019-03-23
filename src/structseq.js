@@ -1,5 +1,6 @@
 import { iter } from './abstract';
 import { pyCheckArgs } from './function';
+import { TypeError, AttributeError } from './errors';
 
 Sk.builtin.structseq_types = {};
 
