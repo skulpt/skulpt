@@ -1,11 +1,19 @@
 import { setUpInheritance, lookupSpecial, typeName } from './abstract';
 import { remapToJs } from './ffi';
-import { pyCheckArgs, checkString, checkComplex, checkNumber } from './function';
+import { func, pyCheckArgs, checkString, checkComplex, checkNumber, checkNone, checkInt, checkFloat } from './function';
 import { TypeError, ZeroDivisionError, AttributeError, OverflowError } from './errors';
 import { NotImplementedError, NotImplemented } from './object';
 import { asnum$ } from './builtin';
 import { false$, true$ } from './constants';
 import { numtype } from './numtype';
+import { typeLookup } from './type';
+import { float_ } from './float';
+import { int_ } from './int';
+import { bool } from './bool';
+import { tuple } from './tuple';
+import { type } from './type';
+import { issubclass } from './builtin';
+import { str } from './str';
 
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
@@ -90,17 +98,17 @@ export class complex {
 
         // this function mimics the tp_as_number->nb_float check in cpython
         var nb_float = function(op) {
-            if(Sk.builtin.checkNumber(op)) {
+            if(checkNumber(op)) {
                 return true;
             }
 
-            if(Sk.builtin.type.typeLookup(op.ob$type, "__float__") !== undefined) {
+            if(typeLookup(op.ob$type, "__float__") !== undefined) {
                 return true;
             }
         };
 
         // check for valid arguments
-        if (nbr == null || (!nb_float(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!nb_float(i) && !Sk.builtin.checkComplex(i))))) {
+        if (nbr == null || (!nb_float(r) && !ScheckComplex(r)) || ((i != null) && (nbi == null || (!nb_float(i) && !checkComplex(i))))) {
             throw new TypeError("complex() argument must be a string or number");
         }
 
@@ -112,7 +120,7 @@ export class complex {
         form; the "real" and "imag" parts might themselves be complex
         numbers, which slightly complicates the code below. */
 
-        if (Sk.builtin.complex._complex_check(r)) {
+        if (complex._complex_check(r)) {
             /* Note that if r is of a complex subtype, we're only
             retaining its real & imag parts here, and the return
             value is (properly) of the builtin complex type. */
@@ -123,7 +131,7 @@ export class complex {
             /* The "real" part really is entirely real, and contributes
             nothing in the imaginary direction.
             Just treat it as a double. */
-            tmp = Sk.builtin.float_.PyFloat_AsDouble(r); // tmp = PyNumber_Float(r);
+            tmp = float_.PyFloat_AsDouble(r); // tmp = PyNumber_Float(r);
 
             if (tmp == null) {
                 return null;
@@ -135,7 +143,7 @@ export class complex {
 
         if (i == null) {
             ci.real = 0.0;
-        } else if (Sk.builtin.complex._complex_check(i)) {
+        } else if (complex._complex_check(i)) {
             ci.real = i.real.v;
             ci.imag = i.imag.v;
             ci_is_complex = true;
@@ -143,7 +151,7 @@ export class complex {
             /* The "imag" part really is entirely imaginary, and
             contributes nothing in the real direction.
             Just treat it as a double. */
-            tmp = Sk.builtin.float_.PyFloat_AsDouble(i);
+            tmp = float_.PyFloat_AsDouble(i);
 
             if (tmp == null) {
                 return null;
@@ -166,15 +174,15 @@ export class complex {
         }
 
         // adjust for negated imaginary literal
-        if (cr.real === 0 && (ci.real < 0 || Sk.builtin.complex._isNegativeZero(ci.real))) {
+        if (cr.real === 0 && (ci.real < 0 || complex._isNegativeZero(ci.real))) {
             cr.real = -0;
         }
 
         // save them as properties
-        this.real = new Sk.builtin.float_(cr.real);
-        this.imag = new Sk.builtin.float_(ci.real);
+        this.real = new float_(cr.real);
+        this.imag = new float_(ci.real);
 
-        this.__class__ = Sk.builtin.complex;
+        this.__class__ = complex;
 
         return this;
     };
@@ -202,7 +210,7 @@ export class complex {
         var real;
         var imag;
 
-        other = Sk.builtin.complex.check_number_or_complex(other);
+        other = complex.check_number_or_complex(other);
 
         var ratio;
         var denom;
@@ -240,7 +248,7 @@ export class complex {
             imag = NaN;
         }
 
-        return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
+        return new complex(new float_(real), new float_(imag));
     }
 
     nb$floor_divide(other) {
@@ -261,19 +269,19 @@ export class complex {
         var a, b;
 
         // none is allowed
-        if (z != null && !Sk.builtin.checkNone(z)) {
+        if (z != null && !checkNone(z)) {
             throw new ValueError("complex modulo");
         }
 
         a = this;
-        b = Sk.builtin.complex.check_number_or_complex(other);
+        b = complex.check_number_or_complex(other);
 
         exponent = b;
         int_exponent = b.real.v | 0; // js convert to int
         if (exponent.imag.v === 0.0 && exponent.real.v === int_exponent) {
-            p = Sk.builtin.complex.c_powi(a, int_exponent);
+            p = complex.c_powi(a, int_exponent);
         } else {
-            p = Sk.builtin.complex.c_pow(a, exponent);
+            p = complex.c_pow(a, exponent);
         }
 
         return p;
@@ -283,13 +291,13 @@ export class complex {
         var result; // Py_complex
         var a, b; // Py_complex
 
-        a = Sk.builtin.complex.check_number_or_complex(this);
-        b = Sk.builtin.complex.check_number_or_complex(other);
+        a = complex.check_number_or_complex(this);
+        b = complex.check_number_or_complex(other);
 
-        result = Sk.builtin.complex._c_diff(a, b);
+        result = complex._c_diff(a, b);
 
         return result;
-    };
+    }
 
     nb$multiply(other) {
         var real;
@@ -297,13 +305,155 @@ export class complex {
         var a, b; // Py_complex
 
         a = this;
-        b = Sk.builtin.complex.check_number_or_complex(other);
+        b = complex.check_number_or_complex(other);
 
         real = a.real.v * b.real.v - a.imag.v * b.imag.v;
         imag = a.real.v * b.imag.v + a.imag.v * b.real.v;
 
-        return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
+        return new complex(new float_(real), new float_(imag));
     };
+
+    /**
+        _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
+    */
+    tp$hash() {
+        return new int_(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v);
+    }
+
+    nb$add(other) {
+        var real;
+        var imag;
+
+        other = complex.check_number_or_complex(other);
+
+        real = this.tp$getattr("real").v + other.tp$getattr("real").v;
+        imag = this.tp$getattr("imag").v + other.tp$getattr("imag").v;
+
+        return new complex(new float_(real), new float_(imag));
+    }
+
+    tp$str() {
+        return complex.complex_format(this, null, "g"); // g, 12 == Py_Float_STR_PRECISION
+    }
+
+    _internalGenericGetAttr = object.prototype.GenericGetAttr;
+
+    /**
+     * Custom getattr impl. to get the c.real and c.imag to work. Though we should
+     * consider to implement tp$members that always are attributs on the class and
+     * will be used in the genericgetattr method.
+     * Would be super easy to implement the readonly stuff too.
+     *
+     */
+    tp$getattr(name) {
+        if (name != null && (checkString(name) || typeof name === "string")) {
+            var _name = name;
+
+            // get javascript string
+            if (checkString(name)) {
+                _name = remapToJs(name);
+            }
+
+            if (_name === "real" || _name === "imag") {
+                return this[_name];
+            }
+        }
+
+        // if we have not returned yet, try the genericgetattr
+        return this._internalGenericGetAttr(name);
+    }
+
+    tp$setattr(name, value) {
+        if (name != null && (checkString(name) || typeof name === "string")) {
+            var _name = name;
+
+            // get javascript string
+            if (checkString(name)) {
+                _name = remapToJs(name);
+            }
+
+            if (_name === "real" || _name === "imag") {
+                throw new AttributeError("readonly attribute");
+            }
+        }
+
+        // builtin: --> all is readonly (I am not happy with this)
+        throw new AttributeError("'complex' object attribute '" + name + "' is readonly");
+    }
+
+    nb$negative() {
+        var real;
+        var imag;
+        // this == a
+        var areal = this.real.v;
+        var aimag = this.imag.v;
+
+        real = -areal;
+        imag = -aimag;
+
+        return new complex(new float_(real), new float_(imag));
+    }
+
+    nb$positive() {
+        return complex.check_number_or_complex(this);
+    }
+
+    tp$richcompare = function (w, op) {
+        var result;
+        var equal;
+        var i;
+
+        if (op !== "Eq" && op !== "NotEq") {
+            if(checkNumber(w) || complex._complex_check(w)) {
+                throw new TypeError("no ordering relation is defined for complex numbers");
+            }
+
+            return NotImplemented.NotImplemented$;
+        }
+
+        // assert(PyComplex_Check(v)));
+        i = complex.check_number_or_complex(this);
+        var _real = i.tp$getattr("real").v;
+        var _imag = i.tp$getattr("imag").v;
+
+        if (checkInt(w)) {
+            /* Check for 0.0 imaginary part first to avoid the rich
+             * comparison when possible.
+             */
+
+            // if true, the complex number has just a real part
+            if (_imag === 0.0) {
+                equal = Sk.misceval.richCompareBool(new float_(_real), w, op);
+                result = new bool( equal);
+                return result;
+            } else {
+                equal = false;
+            }
+        } else if (checkFloat(w)) {
+            equal = (_real === float_.PyFloat_AsDouble(w) && _imag === 0.0);
+        } else if (complex._complex_check(w)) {
+            // ToDo: figure if we need to call to_complex
+            var w_real = w.tp$getattr("real").v;
+            var w_imag = w.tp$getattr("imag").v;
+            equal = _real === w_real && _imag === w_imag;
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+
+        // invert result if op == NotEq
+        if(op === "NotEq") {
+            equal = !equal;
+        }
+
+        // wrap as bool
+        result = new bool( equal);
+
+        return result;
+    }
+
+    $r() {
+        return complex.complex_format(this, 0, "r");
+    }
 
     nb$inplace_add = complex.prototype.nb$add;
 
@@ -319,172 +469,226 @@ export class complex {
 
     nb$inplace_power = complex.prototype.nb$power;
 
-    __doc__ = new Sk.builtin.str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
+    __doc__ = new str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
 
-    __eq__ = function (me, other) {
+    __eq__ = func(function (me, other) {
         return complex.prototype.tp$richcompare.call(me, other, "Eq");
-    };
+    });
 
     __ne__ = func(function (me, other) {
         return complex.prototype.tp$richcompare.call(me, other, "NotEq");
     });
 
+        /**
+     * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular
+     * expcetion is thrown.git co
+     */
+    __lt__ = func(function (me, other) {
+        throw new TypeError("unorderable types: " + typeName(me) + " < " + typeName(other));
+    });
+
+    __le__ = func(function (me, other) {
+        throw new TypeError("unorderable types: " + typeName(me) + " <= " + typeName(other));
+    });
+
+    __gt__ = func(function (me, other) {
+        throw new TypeError("unorderable types: " + typeName(me) + " > " + typeName(other));
+    });
+
+    __ge__ = func(function (me, other) {
+        throw new TypeError("unorderable types: " + typeName(me) + " >= " + typeName(other));
+    });
+
+    __float__ = func(function (self) {
+        throw new TypeError("can't convert complex to float");
+    });
+
+    __int__ = func(function (self) {
+        throw new TypeError("can't convert complex to int");
+    });
+
     /**
      * @suppress {missingProperties}
      */
-    Sk.builtin.complex.prototype.__abs__  = new Sk.builtin.func(function (self) {
+    __abs__  = new func(function (self) {
         var result;
         var _real = self.real.v;
         var _imag = self.imag.v;
 
-        if (!Sk.builtin.complex._is_finite(_real) || !Sk.builtin.complex._is_finite(_imag)) {
+        if (!complex._is_finite(_real) || !complex._is_finite(_imag)) {
             /* C99 rules: if either the real or the imaginary part is an
             infinity, return infinity, even if the other part is a
             NaN.
             */
 
-            if (Sk.builtin.complex._is_infinity(_real)) {
+            if (complex._is_infinity(_real)) {
                 result = Math.abs(_real);
-                return new Sk.builtin.float_(result);
+                return new float_(result);
             }
 
-            if (Sk.builtin.complex._is_infinity(_imag)) {
+            if (complex._is_infinity(_imag)) {
                 result = Math.abs(_imag);
-                return new Sk.builtin.float_(result);
+                return new float_(result);
             }
 
             /* either the real or imaginary part is a NaN,
             and neither is infinite. Result should be NaN. */
 
-            return new Sk.builtin.float_(NaN);
+            return new float_(NaN);
         }
 
         result = hypot(_real, _imag);
 
-        if (!Sk.builtin.complex._is_finite(result)) {
+        if (!complex._is_finite(result)) {
             throw new OverflowError("absolute value too large");
         }
 
-        return new Sk.builtin.float_(result);
+        return new float_(result);
     });
 
-    Sk.builtin.complex.prototype.__bool__   = new Sk.builtin.func(function (self) {
-        return new Sk.builtin.bool( self.tp$getattr("real").v || self.tp$getattr("real").v);
+    __bool__   = new func(function (self) {
+        return new bool( self.tp$getattr("real").v || self.tp$getattr("real").v);
     });
 
-    Sk.builtin.complex.prototype.__truediv__ = new Sk.builtin.func(function (self, other){
+    __truediv__ = new func(function (self, other){
         pyCheckArgs("__truediv__", arguments, 1, 1, true);
         return self.nb$divide.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__hash__ = new Sk.builtin.func(function (self){
+    __hash__ = new func(function (self){
         pyCheckArgs("__hash__", arguments, 0, 0, true);
 
         return self.tp$hash.call(self);
     });
 
-    Sk.builtin.complex.prototype.__add__ = new Sk.builtin.func(function (self, other){
+    __add__ = new func(function (self, other){
         pyCheckArgs("__add__", arguments, 1, 1, true);
         return self.nb$add.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__repr__ = new Sk.builtin.func(function (self){
+    __repr__ = new func(function (self){
         pyCheckArgs("__repr__", arguments, 0, 0, true);
 
         return self["r$"].call(self);
     });
 
-    Sk.builtin.complex.prototype.__str__ = new Sk.builtin.func(function (self){
+    __str__ = new func(function (self){
         pyCheckArgs("__str__", arguments, 0, 0, true);
 
         return self.tp$str.call(self);
     });
 
-    Sk.builtin.complex.prototype.__sub__ = new Sk.builtin.func(function (self, other){
+    __sub__ = new func(function (self, other){
         pyCheckArgs("__sub__", arguments, 1, 1, true);
         return self.nb$subtract.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__mul__ = new Sk.builtin.func(function (self, other){
+    __mul__ = new func(function (self, other){
         pyCheckArgs("__mul__", arguments, 1, 1, true);
         return self.nb$multiply.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__div__ = new Sk.builtin.func(function (self, other){
+    __div__ = new func(function (self, other){
         pyCheckArgs("__div__", arguments, 1, 1, true);
         return self.nb$divide.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__floordiv__ = new Sk.builtin.func(function (self, other){
+    __floordiv__ = new func(function (self, other){
         pyCheckArgs("__floordiv__", arguments, 1, 1, true);
         return self.nb$floor_divide.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__mod__ = new Sk.builtin.func(function (self, other){
+    __mod__ = new func(function (self, other){
         pyCheckArgs("__mod__", arguments, 1, 1, true);
         return self.nb$remainder.call(self, other);
     });
 
-    Sk.builtin.complex.prototype.__pow__ = new Sk.builtin.func(function (self, other, z){
+    __pow__ = new func(function (self, other, z){
         pyCheckArgs("__pow__", arguments, 1, 2, true);
         return self.nb$power.call(self, other, z);
     });
 
-    Sk.builtin.complex.prototype.__neg__ = new Sk.builtin.func(function (self){
+    __neg__ = new func(function (self){
         pyCheckArgs("__neg__", arguments, 0, 0, true);
         return self.nb$negative.call(self);
     });
 
-    Sk.builtin.complex.prototype.__pos__ = new Sk.builtin.func(function (self){
+    __pos__ = new func(function (self){
         pyCheckArgs("__pos__", arguments, 0, 0, true);
         return self.nb$positive.call(self);
     });
 
-    Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(function (self){
+    conjugate = new func(function (self){
         pyCheckArgs("conjugate", arguments, 0, 0, true);
         var _imag = self.imag.v;
         _imag = -_imag;
 
-        return new Sk.builtin.complex(self.real, new Sk.builtin.float_(_imag));
+        return new complex(self.real, new float_(_imag));
     });
 
     // deprecated
-    Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(function (self, other){
+    __divmod__ = new func(function (self, other){
         pyCheckArgs("__divmod__", arguments, 1, 1, true);
 
         var div, mod; // Py_complex
         var d, m, z; // PyObject
         var a, b; // Py_complex
-        a = Sk.builtin.complex.check_number_or_complex(self);
-        b = Sk.builtin.complex.check_number_or_complex(other);
+        a = complex.check_number_or_complex(self);
+        b = complex.check_number_or_complex(other);
 
         div = a.nb$divide.call(a, b); // the raw divisor value
 
-        div.real = new Sk.builtin.float_(Math.floor(div.real.v));
-        div.imag = new Sk.builtin.float_(0.0);
+        div.real = new float_(Math.floor(div.real.v));
+        div.imag = new float_(0.0);
 
         mod = a.nb$subtract.call(a, b.nb$multiply.call(b, div));
 
-        z = new Sk.builtin.tuple([div, mod]);
+        z = new tuple([div, mod]);
 
         return z;
     });
 
-    Sk.builtin.complex.prototype.__getnewargs__ = new Sk.builtin.func(function (self){
+    __getnewargs__ = new func(function (self){
         pyCheckArgs("__getnewargs__", arguments, 0, 0, true);
 
-        return new Sk.builtin.tuple([self.real, self.imag]);
+        return new tuple([self.real, self.imag]);
     });
 
-    Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(function (self){
+    __nonzero__ = new func(function (self){
         pyCheckArgs("__nonzero__", arguments, 0, 0, true);
 
         if(self.real.v !== 0.0 || self.imag.v !== 0.0) {
-            return Sk.builtin.bool.true$;
+            return true$;
         } else {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
     });
+
+
+    /**
+     * https://hg.python.org/cpython/file/3cf2990d19ab/Objects/complexobject.c#l907
+     * also see _PyComplex_FormatAdvanced
+     *
+     * We currently use the signature (self, format_spec) instead of (self, args). So we do
+     * not need to unwrap the args.
+     */
+    __format__ = new func(function (self, format_spec){
+        var result; // PyObject
+
+        if (format_spec == null) {
+            return null;
+        }
+
+        if (checkString(format_spec)) {
+            result = complex._PyComplex_FormatAdvanced(self, format_spec);
+
+            return result;
+        }
+
+
+        throw new TypeError("__format__ requires str or unicode");
+    });
+
 
     static _isNegativeZero(val) {
         if (val !== 0) {
@@ -498,7 +702,7 @@ export class complex {
      * Internal method to check if op has __complex__
      */
     static try_complex_special_method(op) {
-        var complexstr = new Sk.builtin.str("__complex__");
+        var complexstr = new str("__complex__");
         var f; // PyObject
         var res;
 
@@ -526,13 +730,13 @@ export class complex {
     */
     static check_number_or_complex(other) {
         /* exit early */
-        if (!Sk.builtin.checkNumber(other) && other.tp$name !== "complex") {
+        if (!checkNumber(other) && other.tp$name !== "complex") {
             throw new TypeError("unsupported operand type(s) for +: 'complex' and '" + typeName(other) + "'");
         }
 
         /* converting to complex allows us to use always only one formula */
-        if (Sk.builtin.checkNumber(other)) {
-            other = new Sk.builtin.complex(other); // create complex
+        if (checkNumber(other)) {
+            other = new complex(other); // create complex
         }
 
         return other;
@@ -551,7 +755,7 @@ export class complex {
         var match;                // regex result
 
         // first check if val is javascript string or python string
-        if (Sk.builtin.checkString(val)) {
+        if (checkString(val)) {
             val = remapToJs(val);
         } else if (typeof val !== "string") {
             throw new TypeError("provided unsupported string-alike argument");
@@ -696,342 +900,175 @@ export class complex {
         }
 
         // return here complex number parts
-        return new Sk.builtin.complex(new Sk.builtin.float_(x), new Sk.builtin.float_(y));
+        return new complex(new float_(x), new float_(y));
     }
 
-}
+    /* internal subtract/diff function that calls internal float diff */
+    static _c_diff = function (a, b) {
+        var r, i; // Py_Float
+        r = a.real.nb$subtract.call(a.real, b.real);
+        i = a.imag.nb$subtract.call(a.imag, b.imag);
 
-setUpInheritance("complex", complex, numtype);
+        return new complex(r, i);
+    }
 
-/**
-    _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
- */
-Sk.builtin.complex.prototype.tp$hash = function () {
-    return new Sk.builtin.int_(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v);
-};
+    // power of complex a and complex exponent b
+    static c_pow = function (a, b) {
+        var real, imag; // Py_complex
 
-Sk.builtin.complex.prototype.nb$add = function (other) {
-    var real;
-    var imag;
+        var vabs;
+        var len;
+        var at;
+        var phase;
 
-    other = Sk.builtin.complex.check_number_or_complex(other);
+        // other == b
+        var breal = b.real.v;
+        var bimag = b.imag.v;
+        // this == a
+        var areal = a.real.v;
+        var aimag = a.imag.v;
 
-    real = this.tp$getattr("real").v + other.tp$getattr("real").v;
-    imag = this.tp$getattr("imag").v + other.tp$getattr("imag").v;
+        if (breal === 0.0 && bimag === 0.0) {
+            real = 1.0;
+            imag = 0.0;
+        } else if (areal === 0.0 && aimag === 0.0) {
+            if(bimag !== 0.0 || breal < 0.0) {
+                throw new ZeroDivisionError("complex division by zero");
+            }
 
-    return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
-};
+            real = 0.0;
+            imag = 0.0;
+        } else {
+            vabs = hypot(areal, aimag);
+            len = Math.pow(vabs, breal);
+            at = Math.atan2(aimag, areal);
+            phase = at * breal;
 
-/* internal subtract/diff function that calls internal float diff */
-Sk.builtin.complex._c_diff = function (a, b) {
-    var r, i; // Py_Float
-    r = a.real.nb$subtract.call(a.real, b.real);
-    i = a.imag.nb$subtract.call(a.imag, b.imag);
+            if(bimag !== 0.0) {
+                len /= Math.exp(at * bimag);
+                phase += bimag * Math.log(vabs);
+            }
 
-    return new Sk.builtin.complex(r, i);
-};
-
-
-
-
-
-// power of complex a and complex exponent b
-Sk.builtin.complex.c_pow = function (a, b) {
-    var real, imag; // Py_complex
-
-    var vabs;
-    var len;
-    var at;
-    var phase;
-
-    // other == b
-    var breal = b.real.v;
-    var bimag = b.imag.v;
-    // this == a
-    var areal = a.real.v;
-    var aimag = a.imag.v;
-
-    if (breal === 0.0 && bimag === 0.0) {
-        real = 1.0;
-        imag = 0.0;
-    } else if (areal === 0.0 && aimag === 0.0) {
-        if(bimag !== 0.0 || breal < 0.0) {
-            throw new ZeroDivisionError("complex division by zero");
+            real = len * Math.cos(phase);
+            imag = len * Math.sin(phase);
         }
 
-        real = 0.0;
-        imag = 0.0;
-    } else {
-        vabs = hypot(areal, aimag);
-        len = Math.pow(vabs, breal);
-        at = Math.atan2(aimag, areal);
-        phase = at * breal;
+        return new complex(new float_(real), new float_(imag));
+    }
 
-        if(bimag !== 0.0) {
-            len /= Math.exp(at * bimag);
-            phase += bimag * Math.log(vabs);
+    // power of complex x and integer exponent n
+    static c_powi = function (x, n) {
+        var cn; // Py_complex
+        var c1;
+
+        if (n > 100 || n < -100) {
+            cn = new complex(new float_(n), new float_(0.0));
+            return complex.c_pow(x, cn);
+        } else if (n > 0) {
+            return complex.c_powu(x, n);
+        } else {
+            //  return c_quot(c_1,c_powu(x,-n));
+            c1 = new complex(new float_(1.0), new float_(0.0));
+            return c1.nb$divide(complex.c_powu(x,-n));
+        }
+    };
+
+    static c_powu = function (x, n) {
+        var r, p; // Py_complex
+        var mask = 1;
+        r = new complex(new float_(1.0), new float_(0.0));
+        p = x;
+
+        while (mask > 0 && n >= mask) {
+            if (n & mask) {
+                r = r.nb$multiply(p);
+            }
+
+            mask <<= 1;
+            p = p.nb$multiply(p);
         }
 
-        real = len * Math.cos(phase);
-        imag = len * Math.sin(phase);
+        return r;
     }
 
-    return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
-};
-
-// power of complex x and integer exponent n
-Sk.builtin.complex.c_powi = function (x, n) {
-    var cn; // Py_complex
-    var c1;
-
-    if (n > 100 || n < -100) {
-        cn = new Sk.builtin.complex(new Sk.builtin.float_(n), new Sk.builtin.float_(0.0));
-        return Sk.builtin.complex.c_pow(x, cn);
-    } else if (n > 0) {
-        return Sk.builtin.complex.c_powu(x, n);
-    } else {
-        //  return c_quot(c_1,c_powu(x,-n));
-        c1 = new Sk.builtin.complex(new Sk.builtin.float_(1.0), new Sk.builtin.float_(0.0));
-        return c1.nb$divide(Sk.builtin.complex.c_powu(x,-n));
-    }
-};
-
-Sk.builtin.complex.c_powu = function (x, n) {
-    var r, p; // Py_complex
-    var mask = 1;
-    r = new Sk.builtin.complex(new Sk.builtin.float_(1.0), new Sk.builtin.float_(0.0));
-    p = x;
-
-    while (mask > 0 && n >= mask) {
-        if (n & mask) {
-            r = r.nb$multiply(p);
+    /**
+     *  check if op is instance of complex or a sub-type
+     */
+    static _complex_check = function (op) {
+        if (op === undefined) {
+            return false;
         }
 
-        mask <<= 1;
-        p = p.nb$multiply(p);
-    }
+        if (op instanceof complex || (op.tp$name && op.tp$name === "complex")) {
+            return true;
+        }
 
-    return r;
-};
+        // check if type of ob is a subclass
+        if (issubclass(new type(op), complex)) {
+            return true;
+        }
 
-
-Sk.builtin.complex.prototype.nb$negative = function () {
-    var real;
-    var imag;
-    // this == a
-    var areal = this.real.v;
-    var aimag = this.imag.v;
-
-    real = -areal;
-    imag = -aimag;
-
-    return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
-};
-
-Sk.builtin.complex.prototype.nb$positive = function () {
-    return Sk.builtin.complex.check_number_or_complex(this);
-};
-
-/**
- *  check if op is instance of complex or a sub-type
- */
-Sk.builtin.complex._complex_check = function (op) {
-    if (op === undefined) {
         return false;
     }
 
-    if (op instanceof Sk.builtin.complex || (op.tp$name && op.tp$name === "complex")) {
-        return true;
-    }
-
-    // check if type of ob is a subclass
-    if (Sk.builtin.issubclass(new Sk.builtin.type(op), Sk.builtin.complex)) {
-        return true;
-    }
-
-    return false;
-};
-
-Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
-    var result;
-    var equal;
-    var i;
-
-    if (op !== "Eq" && op !== "NotEq") {
-        if(Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
-            throw new TypeError("no ordering relation is defined for complex numbers");
+    /**
+     * Internal format function for repr and str
+     * It is not intended for __format__ calls
+     *
+     * This functions assumes, that v is always instance of complex
+     */
+    static complex_format = function (v, precision, format_code){
+        function copysign (a, b) {
+            return b < 0 ? -Math.abs(a) : Math.abs(a);
         }
 
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
+        if (v == null || !complex._complex_check(v)) {
+            throw new Error("Invalid internal method call: Sk.complex.complex_format() called with invalid value type.");
+        }
 
-    // assert(PyComplex_Check(v)));
-    i = Sk.builtin.complex.check_number_or_complex(this);
-    var _real = i.tp$getattr("real").v;
-    var _imag = i.tp$getattr("imag").v;
+        var result; // PyObject
 
-    if (Sk.builtin.checkInt(w)) {
-        /* Check for 0.0 imaginary part first to avoid the rich
-         * comparison when possible.
-         */
+        var pre = "";
+        var im = "";
+        var re = null;
+        var lead = "";
+        var tail = "";
 
-        // if true, the complex number has just a real part
-        if (_imag === 0.0) {
-            equal = Sk.misceval.richCompareBool(new Sk.builtin.float_(_real), w, op);
-            result = new Sk.builtin.bool( equal);
-            return result;
+        if (v.real.v === 0.0 && copysign(1.0, v.real.v) == 1.0) {
+            re = "";
+            im = complex.PyOS_double_to_string(v.imag.v, format_code, precision, 0, null);
+            // im = v.imag.v;
         } else {
-            equal = false;
-        }
-    } else if (Sk.builtin.checkFloat(w)) {
-        equal = (_real === Sk.builtin.float_.PyFloat_AsDouble(w) && _imag === 0.0);
-    } else if (Sk.builtin.complex._complex_check(w)) {
-        // ToDo: figure if we need to call to_complex
-        var w_real = w.tp$getattr("real").v;
-        var w_imag = w.tp$getattr("imag").v;
-        equal = _real === w_real && _imag === w_imag;
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
+            /* Format imaginary part with sign, real part without */
+            pre = complex.PyOS_double_to_string(v.real.v, format_code, precision, 0, null);
+            re = pre;
 
-    // invert result if op == NotEq
-    if(op === "NotEq") {
-        equal = !equal;
-    }
+            im = complex.PyOS_double_to_string(v.imag.v, format_code, precision, complex.PyOS_double_to_string.Py_DTSF_SIGN, null);
 
-    // wrap as bool
-    result = new Sk.builtin.bool( equal);
+            if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
+                im = "-" + im; // force negative zero sign
+            }
 
-    return result;
-};
-
-
-
-/**
- * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular
- * expcetion is thrown.git co
- */
-Sk.builtin.complex.prototype.__lt__ = function (me, other) {
-    throw new TypeError("unorderable types: " + typeName(me) + " < " + typeName(other));
-};
-
-Sk.builtin.complex.prototype.__le__ = function (me, other) {
-    throw new TypeError("unorderable types: " + typeName(me) + " <= " + typeName(other));
-};
-
-Sk.builtin.complex.prototype.__gt__ = function (me, other) {
-    throw new TypeError("unorderable types: " + typeName(me) + " > " + typeName(other));
-};
-
-Sk.builtin.complex.prototype.__ge__ = function (me, other) {
-    throw new TypeError("unorderable types: " + typeName(me) + " >= " + typeName(other));
-};
-
-Sk.builtin.complex.prototype.__float__ = function (self) {
-    throw new TypeError("can't convert complex to float");
-};
-
-Sk.builtin.complex.prototype.__int__ = function (self) {
-    throw new TypeError("can't convert complex to int");
-};
-
-
-Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
-
-/**
- * Custom getattr impl. to get the c.real and c.imag to work. Though we should
- * consider to implement tp$members that always are attributs on the class and
- * will be used in the genericgetattr method.
- * Would be super easy to implement the readonly stuff too.
- *
- */
-Sk.builtin.complex.prototype.tp$getattr = function (name) {
-    if (name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
-        var _name = name;
-
-        // get javascript string
-        if (Sk.builtin.checkString(name)) {
-            _name = remapToJs(name);
+            lead = "(";
+            tail = ")";
         }
 
-        if (_name === "real" || _name === "imag") {
-            return this[_name];
-        }
+        result = "" + lead + re + im + "j" + tail; // concat all parts
+
+        return new str(result);
     }
 
-    // if we have not returned yet, try the genericgetattr
-    return this._internalGenericGetAttr(name);
-};
-
-
-Sk.builtin.complex.prototype.tp$setattr = function (name, value) {
-    if (name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
-        var _name = name;
-
-        // get javascript string
-        if (Sk.builtin.checkString(name)) {
-            _name = remapToJs(name);
-        }
-
-        if (_name === "real" || _name === "imag") {
-            throw new AttributeError("readonly attribute");
-        }
+    static _PyComplex_FormatAdvanced = function(self, format_spec) {
+        throw new NotImplementedError("__format__ is not implemented for complex type.");
     }
 
-    // builtin: --> all is readonly (I am not happy with this)
-    throw new AttributeError("'complex' object attribute '" + name + "' is readonly");
-};
-
-/**
- * Internal format function for repr and str
- * It is not intended for __format__ calls
- *
- * This functions assumes, that v is always instance of Sk.builtin.complex
- */
-Sk.builtin.complex.complex_format = function (v, precision, format_code){
-    function copysign (a, b) {
-        return b < 0 ? -Math.abs(a) : Math.abs(a);
+    /**
+        Return true if float or double are is neither infinite nor NAN, else false
+        Value is already a Javascript object
+    */
+    static _is_finite = function (val) {
+        return !isNaN(val) && val !== Infinity && val !== -Infinity;
     }
-
-    if (v == null || !Sk.builtin.complex._complex_check(v)) {
-        throw new Error("Invalid internal method call: Sk.complex.complex_format() called with invalid value type.");
-    }
-
-    var result; // PyObject
-
-    var pre = "";
-    var im = "";
-    var re = null;
-    var lead = "";
-    var tail = "";
-
-    if (v.real.v === 0.0 && copysign(1.0, v.real.v) == 1.0) {
-        re = "";
-        im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, 0, null);
-        // im = v.imag.v;
-    } else {
-        /* Format imaginary part with sign, real part without */
-        pre = Sk.builtin.complex.PyOS_double_to_string(v.real.v, format_code, precision, 0, null);
-        re = pre;
-
-        im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN, null);
-
-        if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
-            im = "-" + im; // force negative zero sign
-        }
-
-        lead = "(";
-        tail = ")";
-    }
-
-    result = "" + lead + re + im + "j" + tail; // concat all parts
-
-    return new Sk.builtin.str(result);
-};
-
-Sk.builtin.complex.prototype["$r"] = function () {
-    return Sk.builtin.complex.complex_format(this, 0, "r");
-};
 
 Sk.builtin.complex.prototype.tp$str = function () {
     return Sk.builtin.complex.complex_format(this, null, "g"); // g, 12 == Py_Float_STR_PRECISION
@@ -1050,14 +1087,6 @@ Sk.builtin.complex.prototype.int$format = function __format__(self, format_spec)
     if (format_spec == null) {
         return null;
     }
-
-    if (Sk.builtin.checkString(format_spec)) {
-        result = Sk.builtin.complex._PyComplex_FormatAdvanced(self, format_spec);
-
-        return result;
-    }
-
-
     throw new TypeError("__format__ requires str or unicode");
 };
 Sk.builtin.complex.prototype.int$format.co_name = new Sk.builtin.str("__format__");
@@ -1274,121 +1303,124 @@ Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self){
 Sk.builtin.complex.prototype.int$nonzero.co_name = new Sk.builtin.str("__nonzero__");
 Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$nonzero);
 
-
-// ToDo: think about inplace methods too
-goog.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
-
-
-/**
- * Convert a double val to a string using supplied format_code, precision, and flags.
- *
- * format_code must be one of 'e', 'E', 'f', 'F', 'g', 'G' or 'r'. For 'r', the supplied precision must be 0 and is ignored. The 'r' format code specifies the standard repr() format.
- *
- * flags can be zero or more of the values Py_DTSF_SIGN, Py_DTSF_ADD_DOT_0, or Py_DTSF_ALT, or-ed together:
- *
- * Py_DTSF_SIGN means to always precede the returned string with a sign character, even if val is non-negative.
- * Py_DTSF_ADD_DOT_0 means to ensure that the returned string will not look like an integer.
- * Py_DTSF_ALT means to apply “alternate” formatting rules. See the documentation for the PyOS_snprintf() '#' specifier for details.
- * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
- * infinite number, or not a number, respectively.
- */
-Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision, flags, type) {
-    var format;
-    var buf;
-    var t;
-    var exp;
-    var upper = false;
-
-    // Validate format code, and map upper and lower case
-    switch(format_code) {
-        case "e": /* exponent */
-        case "f": /* fixed */
-        case "g": /* general */
-            break;
-        case "E":
-            upper = true;
-            format_code = "e";
-            break;
-        case "F":
-            upper = true;
-            format_code = "f";
-            break;
-        case "r": /* repr format */
-            // Supplied precision is unused, must be 0.
-            if(precision !== 0) {
-                throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
-            }
-
-            // repr() precision is 17 significant decimal digits
-            precision = 17;
-            format_code = "g";
-            break;
-        default:
-            throw new Error("Bad internall call");
-    }
-
-    // no need for buffer size calculation like in cpython
-
-    // Handle nan and inf
-    if(isNaN(val)) {
-        buf = "nan";
-        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_NAN;
-    } else if (val === Infinity) {
-        buf = "inf";
-        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE;
-    } else if (val === -Infinity) {
-        buf = "-inf";
-        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE;
-    } else {
-        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_FINITE;
-        if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
-            format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
-        }
-
-        // ToDo: call snprintf here
-        // ToDo: call ascii_formatd
-        var format_str = "%";
-        format_str += flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ALT ? "#" : "";
-
-        if(precision != null) {
-            format_str += ".";
-            format_str += precision;
-        }
-
-        format_str += format_code;
-        format_str = new Sk.builtin.str(format_str);
-
-        /**
-         * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
-         * already a javascript number. If we do not pass a float, we can't distinguish between ints and floats
-         * and therefore we can't adjust the sign of the zero accordingly
-         */
-        buf = format_str.nb$remainder(new Sk.builtin.float_(val));
-        buf = buf.v; // get javascript string
+    static _is_infinity = function (val) {
+        return val === Infinity || val === -Infinity;
     }
 
     /**
-     * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
-     * include sign even for inf and nan.
+     * Convert a double val to a string using supplied format_code, precision, and flags.
+     *
+     * format_code must be one of 'e', 'E', 'f', 'F', 'g', 'G' or 'r'. For 'r', the supplied precision must be 0 and is ignored. The 'r' format code specifies the standard repr() format.
+     *
+     * flags can be zero or more of the values Py_DTSF_SIGN, Py_DTSF_ADD_DOT_0, or Py_DTSF_ALT, or-ed together:
+     *
+     * Py_DTSF_SIGN means to always precede the returned string with a sign character, even if val is non-negative.
+     * Py_DTSF_ADD_DOT_0 means to ensure that the returned string will not look like an integer.
+     * Py_DTSF_ALT means to apply “alternate” formatting rules. See the documentation for the PyOS_snprintf() '#' specifier for details.
+     * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
+     * infinite number, or not a number, respectively.
      */
-    if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
-        buf = "+" + buf;
-    }
+    static PyOS_double_to_string = function(val, format_code, precision, flags, type) {
+        var format;
+        var buf;
+        var t;
+        var exp;
+        var upper = false;
 
-    if(upper) {
-        // Convert to upper case
-        buf = buf.toUpperCase();
-    }
+        // Validate format code, and map upper and lower case
+        switch(format_code) {
+            case "e": /* exponent */
+            case "f": /* fixed */
+            case "g": /* general */
+                break;
+            case "E":
+                upper = true;
+                format_code = "e";
+                break;
+            case "F":
+                upper = true;
+                format_code = "f";
+                break;
+            case "r": /* repr format */
+                // Supplied precision is unused, must be 0.
+                if(precision !== 0) {
+                    throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
+                }
 
-    return buf;
-};
+                // repr() precision is 17 significant decimal digits
+                precision = 17;
+                format_code = "g";
+                break;
+            default:
+                throw new Error("Bad internall call");
+        }
+
+        // no need for buffer size calculation like in cpython
+
+        // Handle nan and inf
+        if(isNaN(val)) {
+            buf = "nan";
+            t = complex.PyOS_double_to_string.Py_DTST_NAN;
+        } else if (val === Infinity) {
+            buf = "inf";
+            t = complex.PyOS_double_to_string.Py_DTST_INFINITE;
+        } else if (val === -Infinity) {
+            buf = "-inf";
+            t = complex.PyOS_double_to_string.Py_DTST_INFINITE;
+        } else {
+            t = complex.PyOS_double_to_string.Py_DTST_FINITE;
+            if(flags & complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
+                format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
+            }
+
+            // ToDo: call snprintf here
+            // ToDo: call ascii_formatd
+            var format_str = "%";
+            format_str += flags & complex.PyOS_double_to_string.Py_DTSF_ALT ? "#" : "";
+
+            if(precision != null) {
+                format_str += ".";
+                format_str += precision;
+            }
+
+            format_str += format_code;
+            format_str = new str(format_str);
+
+            /**
+             * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
+             * already a javascript number. If we do not pass a float, we can't distinguish between ints and floats
+             * and therefore we can't adjust the sign of the zero accordingly
+             */
+            buf = format_str.nb$remainder(new float_(val));
+            buf = buf.v; // get javascript string
+        }
+
+        /**
+         * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
+         * include sign even for inf and nan.
+         */
+        if(flags & complex.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
+            buf = "+" + buf;
+        }
+
+        if(upper) {
+            // Convert to upper case
+            buf = buf.toUpperCase();
+        }
+
+        return buf;
+    }
+}
 
 /* PyOS_double_to_string's "flags" parameter can be set to 0 or more of: */
-Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN = 0x01; // always add the sign
-Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0 = 0x02; // if the result is an integer add ".0"
-Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ALT = 0x04; // "alternate" formatting. it's format_code specific
+complex.PyOS_double_to_string.Py_DTSF_SIGN = 0x01; // always add the sign
+complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0 = 0x02; // if the result is an integer add ".0"
+complex.PyOS_double_to_string.Py_DTSF_ALT = 0x04; // "alternate" formatting. it's format_code specific
 
 /* PyOS_double_to_string's "type", if non-NULL, will be set to one of: */
-Sk.builtin.complex.PyOS_double_to_string.Py_DTST_FINITE = 0;
-Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE = 1;
-Sk.builtin.complex.PyOS_double_to_string.Py_DTST_NAN = 2;
+complex.PyOS_double_to_string.Py_DTST_FINITE = 0;
+complex.PyOS_double_to_string.Py_DTST_INFINITE = 1;
+complex.PyOS_double_to_string.Py_DTST_NAN = 2;
+
+setUpInheritance("complex", complex, numtype);
+
