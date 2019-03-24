@@ -3,6 +3,7 @@ import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
 import { TypeError, ZeroDivisionError, AttributeError, OverflowError } from './errors';
 import { NotImplementedError } from './object';
+import { asnum$ } from './builtin';
 
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
@@ -85,9 +86,9 @@ Sk.builtin.complex = function (real, imag) {
     // this check either returns a javascript number or the passed object
     // but it actually, should check for r->ob_type->tp_as_number
     // this check is useless
-    nbr = Sk.builtin.asnum$(r);
+    nbr = asnum$(r);
     if (i != null) {
-        nbi = Sk.builtin.asnum$(i);
+        nbi = asnum$(i);
     }
 
     // this function mimics the tp_as_number->nb_float check in cpython

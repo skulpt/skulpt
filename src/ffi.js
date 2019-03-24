@@ -1,4 +1,6 @@
 import { none } from './object'
+import { asnum$ } from './builtin';
+
 /**
  * @namespace Sk.ffi
  *
@@ -104,11 +106,11 @@ export function remapToJs(obj) {
     } else if (obj instanceof Sk.builtin.bool) {
         return obj.v ? true : false;
     } else if (obj instanceof Sk.builtin.int_) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     } else if (obj instanceof Sk.builtin.float_) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     } else if (obj instanceof Sk.builtin.lng) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
     } else if (obj === undefined) {
@@ -139,13 +141,13 @@ export function stdwrap(type, towrap) {
  */
 export function basicwrap(obj) {
     if (obj instanceof Sk.builtin.int_) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     }
     if (obj instanceof Sk.builtin.float_) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     }
     if (obj instanceof Sk.builtin.lng) {
-        return Sk.builtin.asnum$(obj);
+        return asnum$(obj);
     }
     if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;

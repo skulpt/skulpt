@@ -3,6 +3,7 @@ import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
 import { TypeError, ValueError } from './errors';
 import { NotImplementedError } from './object';
+import { asnum$ } from './builtin';
 
 /* global Sk: true, goog:true */
 
@@ -23,7 +24,7 @@ import { NotImplementedError } from './object';
  * @return {Sk.builtin.lng} Python long
  */
 Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
-    base = Sk.builtin.asnum$(base);
+    base = asnum$(base);
     if (!(this instanceof Sk.builtin.lng)) {
         return new Sk.builtin.lng(x, base);
     }
@@ -58,7 +59,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         }
     }
 
-    x = Sk.builtin.asnum$nofloat(x);
+    x = asnum$nofloat(x);
     this.biginteger = new Sk.builtin.biginteger(x);
     return this;
 };
@@ -112,7 +113,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
         throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    number = Sk.builtin.asnum$(self);
+    number = asnum$(self);
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
@@ -493,8 +494,8 @@ Sk.builtin.lng.prototype.nb$divmod = function (other) {
 Sk.builtin.lng.prototype.nb$power = function (n, mod) {
     var thisAsFloat;
     if (mod !== undefined) {
-        n = new Sk.builtin.biginteger(Sk.builtin.asnum$(n));
-        mod = new Sk.builtin.biginteger(Sk.builtin.asnum$(mod));
+        n = new Sk.builtin.biginteger(asnum$(n));
+        mod = new Sk.builtin.biginteger(asnum$(mod));
 
         return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
     }
@@ -512,8 +513,8 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.lng) {
         if (mod !== undefined) {
-            n = new Sk.builtin.biginteger(Sk.builtin.asnum$(n));
-            mod = new Sk.builtin.biginteger(Sk.builtin.asnum$(mod));
+            n = new Sk.builtin.biginteger(asnum$(n));
+            mod = new Sk.builtin.biginteger(asnum$(mod));
 
             return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
         }
@@ -527,7 +528,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.biginteger) {
         if (mod !== undefined) {
-            mod = new Sk.builtin.biginteger(Sk.builtin.asnum$(mod));
+            mod = new Sk.builtin.biginteger(asnum$(mod));
 
             return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
         }

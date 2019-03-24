@@ -4,6 +4,7 @@ import { pyCheckArgs } from './function';
 import { none, NotImplementedError } from './object';
 import { ValueError, TypeError, AttributeError, RangeError } from './errors';
 import { $emptystr } from './constants';
+import { asnum$ } from './builtin';
 
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
@@ -25,9 +26,9 @@ export function range (start, stop, step) {
         Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
     }
 
-    start = Sk.builtin.asnum$(start);
-    stop = Sk.builtin.asnum$(stop);
-    step = Sk.builtin.asnum$(step);
+    start = asnum$(start);
+    stop = asnum$(stop);
+    step = asnum$(step);
 
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
@@ -99,7 +100,7 @@ export function asnum$(a) {
     return a;
 };
 
-goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
+goog.exportSymbol("asnum$", asnum$);
 
 /**
  * Return a Python number (either float or int) from a Javascript number.
@@ -215,7 +216,7 @@ export function asnum$nofloat(a) {
 
     return mantissa;
 };
-goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
+goog.exportSymbol("asnum$nofloat", asnum$nofloat);
 
 export function round (number, ndigits) {
     var special;
@@ -401,7 +402,7 @@ export function sum (iter, start) {
         if (i instanceof Sk.builtin.float_) {
             has_float = true;
             if (!(tot instanceof Sk.builtin.float_)) {
-                tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
+                tot = new Sk.builtin.float_(asnum$(tot));
             }
         } else if (i instanceof Sk.builtin.lng) {
             if (!has_float) {
@@ -475,7 +476,7 @@ export function abs (x) {
         return new Sk.builtin.float_(Math.abs(x.v));
     }
     if (Sk.builtin.checkNumber(x)) {
-        return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)));
+        return Sk.builtin.assk$(Math.abs(asnum$(x)));
     } else if (Sk.builtin.checkComplex(x)) {
         return Sk.misceval.callsim(x.__abs__, x);
     }
@@ -505,7 +506,7 @@ export function chr (x) {
     if (!Sk.builtin.checkInt(x)) {
         throw new TypeError("an integer is required");
     }
-    x = Sk.builtin.asnum$(x);
+    x = asnum$(x);
 
 
     if ((x < 0) || (x > 255)) {
@@ -520,7 +521,7 @@ export function unichr (x) {
     if (!Sk.builtin.checkInt(x)) {
         throw new TypeError("an integer is required");
     }
-    x = Sk.builtin.asnum$(x);
+    x = asnum$(x);
 
     try {
         return new Sk.builtin.str(String.fromCodePoint(x));
@@ -1102,9 +1103,9 @@ export function pow (a, b, c) {
         return a.nb$power(b, c); // call complex pow function
     }
 
-    a_num = Sk.builtin.asnum$(a);
-    b_num = Sk.builtin.asnum$(b);
-    c_num = Sk.builtin.asnum$(c);
+    a_num = asnum$(a);
+    b_num = asnum$(b);
+    c_num = asnum$(c);
 
     if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
         if (c === undefined) {

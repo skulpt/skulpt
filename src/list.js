@@ -8,7 +8,8 @@ import { TypeError, IndexError, ValueError, OperationError, StopIteration } from
 import { timSort } from './timSort'
 import { str } from './str';
 import { slice } from './slice';
-
+import { asnum$ } from './builtin';
+§
 export class list extends object {
     /**
      * @constructor
@@ -96,7 +97,7 @@ export class list extends object {
     }
 
     list_del_item_(i) {
-        i = Sk.builtin.asnum$(i);
+        i = asnum$(i);
         if (i < 0 || i >= this.v.length) {
             throw new IndexError("list assignment index out of range");
         }
@@ -105,8 +106,8 @@ export class list extends object {
 
     list_del_slice_(ilow, ihigh) {
         var args;
-        ilow = Sk.builtin.asnum$(ilow);
-        ihigh = Sk.builtin.asnum$(ihigh);
+        ilow = asnum$(ilow);
+        ihigh = asnum$(ihigh);
         args = [];
         args.unshift(ihigh - ilow);
         args.unshift(ilow);
@@ -114,7 +115,7 @@ export class list extends object {
     }
 
     list_ass_item_(i, v) {
-        i = Sk.builtin.asnum$(i);
+        i = asnum$(i);
         if (i < 0 || i >= this.v.length) {
             throw new IndexError("list assignment index out of range");
         }
@@ -123,8 +124,8 @@ export class list extends object {
 
     list_ass_slice_(ilow, ihigh, v) {
         var args;
-        ilow = Sk.builtin.asnum$(ilow);
-        ihigh = Sk.builtin.asnum$(ihigh);
+        ilow = asnum$(ilow);
+        ihigh = asnum$(ihigh);
 
         if (checkIterable(v)) {
             args = new list(v, false).v.slice(0);
@@ -531,7 +532,7 @@ export class list extends object {
             throw new TypeError("an integer is required");
         }
 
-        i = Sk.builtin.asnum$(i);
+        i = asnum$(i);
         if (i < 0) {
             i = i + self.v.length;
         }
@@ -562,7 +563,7 @@ export class list extends object {
             throw new TypeError("an integer is required");
         }
 
-        i = Sk.builtin.asnum$(i);
+        i = asnum$(i);
         if (i < 0) {
             i = i + self.v.length;
         }
@@ -579,7 +580,7 @@ export class list extends object {
         pyCheckArgs("remove", arguments, 2, 2);
 
         idx = list.prototype.index.func_code(self, item);
-        self.v.splice(Sk.builtin.asnum$(idx), 1);
+        self.v.splice(asnum$(idx), 1);
         return none.none$;
     });
 

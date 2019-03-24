@@ -3,6 +3,7 @@ import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
 import { TypeError, ZeroDivisionError, NegativePowerError } from './errors';
 import { NotImplementedError } from './object';
+import { asnum$ } from './builtin';
 
 /**
  * @namespace Sk.builtin
@@ -37,7 +38,7 @@ export class float_ {
 
         // Floats are just numbers
         if (typeof x === "number" || x instanceof int_ || x instanceof lng || x instanceof float_) {
-            tmp = Sk.builtin.asnum$(x);
+            tmp = asnum$(x);
             if (typeof tmp === "string") {
                 return _str_to_float(tmp);
             }
@@ -47,7 +48,7 @@ export class float_ {
 
         // Convert booleans
         if (x instanceof Sk.builtin.bool) {
-            this.v = Sk.builtin.asnum$(x);
+            this.v = asnum$(x);
             return this;
         }
 
@@ -207,7 +208,7 @@ export class float_ {
      * @return {string}   The string representation of this instance's value.
      */
     toFixed(x) {
-        x = Sk.builtin.asnum$(x);
+        x = asnum$(x);
         return this.v.toFixed(x);
     }
 
@@ -752,7 +753,7 @@ export class float_ {
             throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
         }
 
-        number = Sk.builtin.asnum$(self);
+        number = asnum$(self);
         if (ndigits === undefined) {
             ndigs = 0;
         } else {

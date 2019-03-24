@@ -5,7 +5,7 @@ import { str } from './str';
 import { object, none } from './object';
 import { tuple } from './tuple';
 import { int_ } from './int';
-import { repr } from './builtin'
+import { repr, asnum$ } from './builtin'
 
 export class slice extends object {
     /**
@@ -152,7 +152,7 @@ export class slice extends object {
     indices = new func(function (self, length) {
         pyCheckArgs("indices", arguments, 2, 2, false, false);
 
-        length = Sk.builtin.asnum$(length);
+        length = asnum$(length);
         var sss = self.slice_indices_(length);
 
         return new tuple([
@@ -163,7 +163,7 @@ export class slice extends object {
 
     sssiter$(wrt, f) {
         var i;
-        var wrtv = Sk.builtin.asnum$(wrt);
+        var wrtv = asnum$(wrt);
         var sss = this.slice_indices_(typeof wrtv === "number" ? wrtv : wrt.v.length);
         if (sss[2] > 0) {
             for (i = sss[0]; i < sss[1]; i += sss[2]) {

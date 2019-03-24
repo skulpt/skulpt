@@ -1,5 +1,6 @@
 import { none } from './object';
 import { TypeError, NameError, ZeroDivisionError, AttributeError, IndexError } from './errors';
+import { asnum$ } from './builtin';
 // Number
 //
 
@@ -418,7 +419,7 @@ export function numberUnaryOp(v, op) {
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     } else if (v instanceof Sk.builtin.bool) {
-        value = Sk.builtin.asnum$(v);
+        value = asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.int_(-value);
         }
@@ -448,7 +449,7 @@ export function numberUnaryOp(v, op) {
 //
 
 export function fixSeqIndex_(seq, i) {
-    i = Sk.builtin.asnum$(i);
+    i = asnum$(i);
     if (i < 0 && seq.sq$length) {
         i += seq.sq$length();
     }
@@ -584,7 +585,7 @@ export function sequenceDelItem(seq, i) {
 export function sequenceRepeat(f, seq, n) {
     var ntypename;
     var count;
-    n = Sk.builtin.asnum$(n);
+    n = asnum$(n);
     count = Sk.misceval.asIndex(n);
     if (count === undefined) {
         ntypename = typeName(n);
@@ -699,7 +700,7 @@ export function objectAdd(a, b) {
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 export function objectNegative(obj) {
     var objtypename;
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+    var obj_asnum = asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
         obj = new Sk.builtin.int_(obj_asnum);
@@ -716,7 +717,7 @@ export function objectNegative(obj) {
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 export function objectPositive(obj) {
     var objtypename = typeName(obj);
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+    var obj_asnum = asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
         obj = new Sk.builtin.int_(obj_asnum);

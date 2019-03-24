@@ -11,6 +11,7 @@ import {
     sequenceContains
 } from './abstract';
 import { TypeError, ValueError, NameError } from './errors';
+import { asnum$ } from './builtin';
 
 /**
  * @namespace Sk.misceval
@@ -108,7 +109,7 @@ Sk.misceval.asIndex = function (o) {
         return o.tp$index();
     }
     if (o.constructor === Sk.builtin.bool) {
-        return Sk.builtin.asnum$(o);
+        return asnum$(o);
     }
     idxfn = lookupSpecial(o, "__index__");
     if (idxfn) {
@@ -117,7 +118,7 @@ Sk.misceval.asIndex = function (o) {
             throw new TypeError("__index__ returned non-(int,long) (type " +
                                            typeName(ret) + ")");
         }
-        return Sk.builtin.asnum$(ret);
+        return asnum$(ret);
     }
     goog.asserts.fail("todo asIndex;");
 };
@@ -462,7 +463,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         try {
             ret = Sk.misceval.callsim(vcmp, v, w);
             if (Sk.builtin.checkNumber(ret)) {
-                ret = Sk.builtin.asnum$(ret);
+                ret = asnum$(ret);
                 if (op === "Eq") {
                     return ret === 0;
                 } else if (op === "NotEq") {
@@ -492,7 +493,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         try {
             ret = Sk.misceval.callsim(wcmp, w, v);
             if (Sk.builtin.checkNumber(ret)) {
-                ret = Sk.builtin.asnum$(ret);
+                ret = asnum$(ret);
                 if (op === "Eq") {
                     return ret === 0;
                 } else if (op === "NotEq") {
@@ -647,20 +648,20 @@ Sk.misceval.isTrue = function (x) {
         if (!Sk.builtin.checkInt(ret)) {
             throw new TypeError("__nonzero__ should return an int");
         }
-        return Sk.builtin.asnum$(ret) !== 0;
+        return asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
         ret = Sk.misceval.callsim(x["__len__"], x);
         if (!Sk.builtin.checkInt(ret)) {
             throw new TypeError("__len__ should return an int");
         }
-        return Sk.builtin.asnum$(ret) !== 0;
+        return asnum$(ret) !== 0;
     }
     if (x.mp$length) {
-        return Sk.builtin.asnum$(x.mp$length()) !== 0;
+        return asnum$(x.mp$length()) !== 0;
     }
     if (x.sq$length) {
-        return Sk.builtin.asnum$(x.sq$length()) !== 0;
+        return asnum$(x.sq$length()) !== 0;
     }
     return true;
 };

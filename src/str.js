@@ -21,7 +21,7 @@ import { float_ } from './float';
 import { int_ } from './int';
 import { lng } from './long';
 import { $emptystr } from './constants';
-import { repr } from './builtin';
+import { repr, asnum$ } from './builtin';
 
 const mapInterned = typeof Map !== 'undefined';
 
@@ -153,8 +153,8 @@ export class str extends seqtype {
     }
 
     sq$slice(i1, i2) {
-        i1 = Sk.builtin.asnum$(i1);
-        i2 = Sk.builtin.asnum$(i2);
+        i1 = asnum$(i1);
+        i2 = asnum$(i2);
         if (i1 < 0) {
             i1 = 0;
         }
@@ -299,8 +299,8 @@ export class str extends seqtype {
             var leftAdjust;
             var zeroPad;
             var i;
-            fieldWidth = Sk.builtin.asnum$(fieldWidth);
-            precision = Sk.builtin.asnum$(precision);
+            fieldWidth = asnum$(fieldWidth);
+            precision = asnum$(precision);
 
             if (mappingKey === undefined || mappingKey === "") {
                 i = index++;
@@ -342,7 +342,7 @@ export class str extends seqtype {
                 var neg;
                 var r;
                 var j;
-                base = Sk.builtin.asnum$(base);
+                base = asnum$(base);
                 neg = false;
                 didSign = false;
                 if (typeof n === "number") {
@@ -446,7 +446,7 @@ export class str extends seqtype {
             } else if (conversionType === "X") {
                 return handleWidth(formatNumber(value, 16)).toUpperCase();
             } else if (conversionType === "f" || conversionType === "F" || conversionType === "e" || conversionType === "E" || conversionType === "g" || conversionType === "G") {
-                convValue = Sk.builtin.asnum$(value);
+                convValue = asnum$(value);
                 if (typeof convValue === "string") {
                     convValue = Number(convValue);
                 }
@@ -587,7 +587,7 @@ export class str extends seqtype {
             throw new TypeError("an integer is required");
         }
 
-        howmany = Sk.builtin.asnum$(howmany);
+        howmany = asnum$(howmany);
         regex = /[\s]+/g;
         str = self.v;
         if (on === null) {
@@ -745,14 +745,14 @@ export class str extends seqtype {
         if (start === undefined) {
             start = 0;
         } else {
-            start = Sk.builtin.asnum$(start);
+            start = asnum$(start);
             start = start >= 0 ? start : self.v.length + start;
         }
 
         if (end === undefined) {
             end = self.v.length;
         } else {
-            end = Sk.builtin.asnum$(end);
+            end = asnum$(end);
             end = end >= 0 ? end : self.v.length + end;
         }
 
@@ -782,7 +782,7 @@ export class str extends seqtype {
         } else {
             fillchar = fillchar.v;
         }
-        len = Sk.builtin.asnum$(len);
+        len = asnum$(len);
         if (self.v.length >= len) {
             return self;
         } else {
@@ -805,7 +805,7 @@ export class str extends seqtype {
         } else {
             fillchar = fillchar.v;
         }
-        len = Sk.builtin.asnum$(len);
+        len = asnum$(len);
         if (self.v.length >= len) {
             return self;
         } else {
@@ -830,7 +830,7 @@ export class str extends seqtype {
         } else {
             fillchar = fillchar.v;
         }
-        len = Sk.builtin.asnum$(len);
+        len = asnum$(len);
         if (self.v.length >= len) {
             return self;
         } else {
@@ -860,14 +860,14 @@ export class str extends seqtype {
         if (start === undefined) {
             start = 0;
         } else {
-            start = Sk.builtin.asnum$(start);
+            start = asnum$(start);
             start = start >= 0 ? start : self.v.length + start;
         }
 
         if (end === undefined) {
             end = self.v.length;
         } else {
-            end = Sk.builtin.asnum$(end);
+            end = asnum$(end);
             end = end >= 0 ? end : self.v.length + end;
         }
 
@@ -881,7 +881,7 @@ export class str extends seqtype {
         var idx;
         pyCheckArgs("index", arguments, 2, 4);
         idx = Sk.misceval.callsim(self["find"], self, tgt, start, end);
-        if (Sk.builtin.asnum$(idx) === -1) {
+        if (asnum$(idx) === -1) {
             throw new ValueError("substring not found");
         }
         return idx;
@@ -903,14 +903,14 @@ export class str extends seqtype {
         if (start === undefined) {
             start = 0;
         } else {
-            start = Sk.builtin.asnum$(start);
+            start = asnum$(start);
             start = start >= 0 ? start : self.v.length + start;
         }
 
         if (end === undefined) {
             end = self.v.length;
         } else {
-            end = Sk.builtin.asnum$(end);
+            end = asnum$(end);
             end = end >= 0 ? end : self.v.length + end;
         }
 
@@ -925,7 +925,7 @@ export class str extends seqtype {
         var idx;
         pyCheckArgs("rindex", arguments, 2, 4);
         idx = Sk.misceval.callsim(self["rfind"], self, tgt, start, end);
-        if (Sk.builtin.asnum$(idx) === -1) {
+        if (asnum$(idx) === -1) {
             throw new ValueError("substring not found");
         }
         return idx;
@@ -954,7 +954,7 @@ export class str extends seqtype {
             throw new TypeError("integer argument expected, got " +
                 typeName(count));
         }
-        count = Sk.builtin.asnum$(count);
+        count = asnum$(count);
         patt = new RegExp(str.re_escape_(oldS.v), "g");
 
         if ((count === undefined) || (count < 0)) {

@@ -5,6 +5,7 @@ import { dict } from './dict';
 import { func } from './function';
 import { ValueError } from './errors';
 import { repr } from './builtin';
+import { asnum$ } from './builtin';
 
 function format(kwa) {
     // following PEP 3101
@@ -84,8 +85,8 @@ function format(kwa) {
         var convName;
         var convValue;
         var percent;
-        fieldWidth = Sk.builtin.asnum$(fieldWidth);
-        precision = Sk.builtin.asnum$(precision);
+        fieldWidth = asnum$(fieldWidth);
+        precision = asnum$(precision);
 
         if(element_index !== undefined && element_index !== ""){
             value = arg_dict[arg_name][element_index].v;
@@ -213,7 +214,7 @@ function format(kwa) {
             var neg;
             var r;
 
-            base = Sk.builtin.asnum$(base);
+            base = asnum$(base);
             neg = false;
 
             if(format_spec === undefined){
@@ -295,7 +296,7 @@ function format(kwa) {
             if(alternateForm){
                 throw new ValueError("Alternate form (#) not allowed in float format specifier");
             }
-            convValue = Sk.builtin.asnum$(value);
+            convValue = asnum$(value);
             if (typeof convValue === "string") {
                 convValue = Number(convValue);
             }

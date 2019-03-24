@@ -5,6 +5,7 @@ import { float_ } from './float';
 import { func, pyCheckArgs } from './function';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
+import { asnum$ } from './builtin';
 
 /**
  * @constructor
@@ -43,7 +44,7 @@ export class bool extends int_ {
     }
 
     __int__ = new func(function (self) {
-        var v = Sk.builtin.asnum$(self);
+        var v = asnum$(self);
 
         return new int_(v);
     })
