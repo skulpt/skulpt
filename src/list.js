@@ -1,17 +1,20 @@
 import { iter, typeName, setUpInheritance, markUnhashable } from './abstract';
-import { pyCheckArgs, func, checkNumber } from './function';
-import { object } from './object';
+import { pyCheckArgs, func, checkNumber, checkIterable, checkInt } from './function';
+import { object, none } from './object';
 import { seqtype } from './seqtype';
 import { bool } from './bool';
 import { none } from './object';
-import { TypeError, IndexError, ValueError, OperationError } from './errors';
+import { TypeError, IndexError, ValueError, OperationError, StopIteration } from './errors';
+import { timSort } from './timSort'
+import { str } from './str';
+import { slice } from './slice';
 
 export class list extends object {
     /**
      * @constructor
      * @param {Array.<Object>=} L
      * @param {boolean=} canSuspend (defaults to true in this case, as list() is used directly from Python)
-     * @extends Sk.builtin.object
+     * @extends object
      */
     constructor(L, canSuspend) {
         var v, it, thisList;
@@ -24,7 +27,7 @@ export class list extends object {
             v = [];
         } else if (Object.prototype.toString.apply(L) === "[object Array]") {
             v = L;
-        } else if (Sk.builtin.checkIterable(L)) {
+        } else if (checkIterable(L)) {
             v = [];
             it = iter(L);
 
@@ -55,7 +58,7 @@ export class list extends object {
         // other not a list
         var i;
         var ret;
-        if (!other.__class__ || other.__class__ != Sk.builtin.list) {
+        if (!other.__class__ || other.__class__ != list) {
             throw new TypeError("can only concatenate list to list");
         }
 
@@ -63,13 +66,13 @@ export class list extends object {
         for (i = 0; i < other.v.length; ++i) {
             ret.push(other.v[i]);
         }
-        return new Sk.builtin.list(ret, false);
+        return new list(ret, false);
     }
 
     list_extend_(other) {
         var it, i;
         var newb;
-        if (!Sk.builtin.checkIterable(other)) {
+        if (!checkIterable(other)) {
             throw new TypeError("'" + typeName(other) +
                 "' object is not iterable");
         }
@@ -123,8 +126,8 @@ export class list extends object {
         ilow = Sk.builtin.asnum$(ilow);
         ihigh = Sk.builtin.asnum$(ihigh);
 
-        if (Sk.builtin.checkIterable(v)) {
-            args = new Sk.builtin.list(v, false).v.slice(0);
+        if (checkIterable(v)) {
+            args = new list(v, false).v.slice(0);
         } else {
             throw new TypeError("can only assign an iterable");
         }
@@ -143,7 +146,7 @@ export class list extends object {
                 ret.push(Sk.misceval.objectRepr(i).v);
             }
         }
-        return new Sk.builtin.str("[" + ret.join(", ") + "]");
+        return new str("[" + ret.join(", ") + "]");
     }
 
     tp$richcompare(w, op) {
@@ -162,7 +165,7 @@ export class list extends object {
         }
 
         // w not a list
-        if (!w.__class__ || w.__class__ != Sk.builtin.list) {
+        if (!w.__class__ || w.__class__ != list) {
             // shortcuts for eq/not
             if (op === "Eq") {
                 return false;
@@ -227,7 +230,7 @@ export class list extends object {
     });
 
     tp$iter() {
-        return new Sk.builtin.list_iter_(this);
+        return new list_iter_(this);
     }
 
     sq$length() {
@@ -253,7 +256,7 @@ export class list extends object {
                 ret.push(this.v[j]);
             }
         }
-        return new Sk.builtin.list(ret, false);
+        return new list(ret, false);
     }
 
     nb$multiply = list.prototype.sq$repeat;
@@ -313,12 +316,12 @@ export class list extends object {
                 }
                 return this.v[i];
             }
-        } else if (index instanceof Sk.builtin.slice) {
+        } else if (index instanceof slice) {
             ret = [];
             index.sssiter$(this, function (i, wrt) {
                 ret.push(wrt.v[i]);
             });
-            return new Sk.builtin.list(ret, false);
+            return new list(ret, false);
         }
 
         throw new TypeError("list indices must be integers, not " + typeName(index));
@@ -338,7 +341,7 @@ export class list extends object {
                 this.list_ass_item_(i, value);
                 return;
             }
-        } else if (index instanceof Sk.builtin.slice) {
+        } else if (index instanceof slice) {
             indices = index.slice_indices_(this.v.length);
             if (indices[2] === 1) {
                 this.list_ass_slice_(indices[0], indices[1], value);
@@ -377,7 +380,7 @@ export class list extends object {
                 this.list_del_item_(i);
                 return;
             }
-        } else if (index instanceof Sk.builtin.slice) {
+        } else if (index instanceof slice) {
             indices = index.slice_indices_(this.v.length);
             if (indices[2] === 1) {
                 this.list_del_slice_(indices[0], indices[1]);
@@ -433,13 +436,13 @@ export class list extends object {
 
         if (reverse === undefined) {
             rev = false;
-        } else if (reverse === Sk.builtin.none.none$) {
+        } else if (reverse === none.none$) {
             throw new TypeError("an integer is required");
         } else {
             rev = Sk.misceval.isTrue(reverse);
         }
 
-        timsort = new Sk.builtin.timSort(self);
+        timsort = new timSort(self);
 
         self.v = [];
         zero = new int_(0);
@@ -492,7 +495,7 @@ export class list extends object {
             throw new OperationError("list modified during sort");
         }
 
-        return Sk.builtin.none.none$;
+        return none.none$;
     }
 
     /**
@@ -512,14 +515,14 @@ export class list extends object {
             newarr.push(old[i]);
         }
         self["v"] = newarr;
-        return Sk.builtin.none.none$;
+        return none.none$;
     }
 
     append = new func(function (self, item) {
         pyCheckArgs("append", arguments, 2, 2);
 
         self.v.push(item);
-        return Sk.builtin.none.none$;
+        return none.none$;
     });
 
     insert = new func(function (self, i, x) {
@@ -544,7 +547,7 @@ export class list extends object {
     extend = new func(function (self, b) {
         pyCheckArgs("extend", arguments, 2, 2);
         self.list_extend_(b);
-        return Sk.builtin.none.none$;
+        return none.none$;
     });
 
 
@@ -585,10 +588,10 @@ export class list extends object {
         var obj;
         var len;
         pyCheckArgs("index", arguments, 2, 4);
-        if (start !== undefined && !Sk.builtin.checkInt(start)) {
+        if (start !== undefined && !checkInt(start)) {
             throw new TypeError("slice indices must be integers");
         }
-        if (stop !== undefined && !Sk.builtin.checkInt(stop)) {
+        if (stop !== undefined && !checkInt(stop)) {
             throw new TypeError("slice indices must be integers");
         }
 
@@ -676,7 +679,7 @@ export class list_iter extends object {
     next$(self) {
         var ret = self.tp$iternext();
         if (ret === undefined) {
-            throw new Sk.builtin.StopIteration();
+            throw new StopIteration();
         }
         return ret;
     };
