@@ -1,9 +1,14 @@
 import { iter, setUpInheritance, typeName, markUnhashable } from './abstract';
 import { hash } from './builtin';
-import { func, pyCheckArgs } from './function';
+import { func, pyCheckArgs, checkString, checkIterable } from './function';
 import { remapToJs } from './ffi';
-import { object, none, NotImplementedError } from './object';
-import { TypeError, KeyError, AttributeError, ValueError } from './errors';
+import { object, none, NotImplementedError, NotImplemented } from './object';
+import { TypeError, KeyError, AttributeError, ValueError, StopIteration } from './errors';
+import { str } from './str';
+import { bool } from './bool';
+import { tuple } from './tuple';
+import { dict } from './dict';
+import { true$, false$ } from './constants';
 
 export class dict extends object {
     /**
@@ -43,7 +48,7 @@ export class dict extends object {
                 }
                 this.mp$ass_subscript(k, v);
             }
-        } else if (Sk.builtin.checkIterable(L)) {
+        } else if (checkIterable(L)) {
             // Handle calls of type "dict(iterable)" from Python code
             for (it = iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 if (i.mp$subscript) {
@@ -66,7 +71,7 @@ export class dict extends object {
         d = new dict(args[0]);
         if (kw) {
             for (i = 0; i < kw.length; i += 2) {
-                d.mp$ass_subscript(new Sk.builtin.str(kw[i]), kw[i+1]);
+                d.mp$ass_subscript(new str(kw[i]), kw[i+1]);
             }
         }
         return d;
@@ -134,7 +139,7 @@ export class dict extends object {
             return res;
         } else {
             // Not found in dictionary
-            s = new Sk.builtin.str(key);
+            s = new str(key);
             throw new KeyError(s.v);
         }
     }
@@ -188,7 +193,7 @@ export class dict extends object {
         }
 
         // Not found in dictionary
-        s = new Sk.builtin.str(key);
+        s = new str(key);
         throw new KeyError(s.v);
     }
 
@@ -209,7 +214,7 @@ export class dict extends object {
         }
 
         // Not found in dictionary
-        s = new Sk.builtin.str(key);
+        s = new str(key);
         throw new KeyError(s.v);
     }
 
@@ -234,7 +239,7 @@ export class dict extends object {
                 ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
             }
         }
-        return new Sk.builtin.str("{" + ret.join(", ") + "}");
+        return new str("{" + ret.join(", ") + "}");
     }
 
     mp$length() {
@@ -273,12 +278,12 @@ export class dict extends object {
     ob$ne(other) {
         var isEqual = this.ob$eq(other);
 
-        if (isEqual instanceof Sk.builtin.NotImplemented) {
+        if (isEqual instanceof NotImplemented) {
             return isEqual;
         } else if (isEqual.v) {
-            return Sk.builtin.bool.false$;
+            return false$;
         } else {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
     }
 
@@ -288,15 +293,15 @@ export class dict extends object {
         var iter, k, v, otherv;
 
         if (this === other) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (!(other instanceof dict)) {
-            return Sk.builtin.NotImplemented.NotImplemented$;
+            return NotImplemented.NotImplemented$;
         }
 
         if (this.size !== other.size) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         for (iter = this.tp$iter(), k = iter.tp$iternext();
@@ -306,11 +311,11 @@ export class dict extends object {
             otherv = other.mp$subscript(k);
 
             if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
-                return Sk.builtin.bool.false$;
+                return false$;
             }
         }
 
-        return Sk.builtin.bool.true$;
+        return true$;
     }
 
     tp$iter() {
@@ -353,13 +358,13 @@ export class dict extends object {
             return d;
         }
 
-        s = new Sk.builtin.str(key);
+        s = new str(key);
         throw new KeyError(s.v);
     })
 
     has_key = new func(function (self, k) {
         pyCheckArgs("has_key()", arguments, 1, 1, false, true);
-        return new Sk.builtin.bool( self.sq$contains(k));
+        return new bool( self.sq$contains(k));
     })
 
     items = new func(function (self) {
@@ -376,9 +381,9 @@ export class dict extends object {
                 //print(k, "had undefined v");
                 v = null;
             }
-            ret.push(new Sk.builtin.tuple([k, v]));
+            ret.push(new tuple([k, v]));
         }
-        return new Sk.builtin.list(ret);
+        return new list(ret);
     })
 
     keys = new func(function (self) {
@@ -391,7 +396,7 @@ export class dict extends object {
              k = iter.tp$iternext()) {
             ret.push(k);
         }
-        return new Sk.builtin.list(ret);
+        return new list(ret);
     })
 
     values = new func(function (self) {
@@ -409,7 +414,7 @@ export class dict extends object {
             }
             ret.push(v);
         }
-        return new Sk.builtin.list(ret);
+        return new list(ret);
     })
 
     clear = new func(function (self) {
@@ -441,12 +446,12 @@ export class dict extends object {
 
     __contains__ = new func(function (self, item) {
         pyCheckArgs("__contains__", arguments, 2, 2);
-        return new Sk.builtin.bool(self.sq$contains(item));
+        return new bool(self.sq$contains(item));
     })
 
     __cmp__ = new func(function (self, other, op) {
         // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     })
 
     __delitem__ = new func(function (self, item) {
@@ -476,7 +481,7 @@ export class dict extends object {
 
     __getattribute__ = new func(function (self, attr) {
         pyCheckArgs("__getattribute__", arguments, 1, 1, false, true);
-        if (!Sk.builtin.checkString(attr)) { throw new TypeError("__getattribute__ requires a string"); }
+        if (!checkString(attr)) { throw new TypeError("__getattribute__ requires a string"); }
         return dict.prototype.tp$getattr.call(self, remapToJs(attr));
     })
 
@@ -588,14 +593,14 @@ var update_f = function (kwargs, self, other) {
     // case another dict or obj with keys and getitem has been provided
     if(other !== undefined && (other.tp$name === "dict" || other["keys"])) {
         self.dict_merge(other); // we merge with override
-    } else if(other !== undefined && Sk.builtin.checkIterable(other)) {
+    } else if(other !== undefined && checkIterable(other)) {
         // 2nd case, we expect an iterable that contains another iterable of length 2
         var iter;
         var k, v;
         var seq_i = 0; // index of current sequence item
         for (iter = iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
             // check if value is iter
-            if (!Sk.builtin.checkIterable(k)) {
+            if (!checkIterable(k)) {
                 throw new TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
             }
 
@@ -618,7 +623,7 @@ var update_f = function (kwargs, self, other) {
 
     // apply all key/value pairs of kwargs
     // create here kwargs_dict, there could be exceptions in other cases before
-    var kwargs_dict = new Sk.builtins.dict(kwargs);
+    var kwargs_dict = new dict(kwargs);
     self.dict_merge(kwargs_dict);
 
     // returns none, when successful or throws exception
@@ -663,7 +668,7 @@ export class dict_iter_ {
             // return this.$obj[this.$keys[this.$index++]].lhs;
         };
         this.$r = function () {
-            return new Sk.builtin.str("dictionary-keyiterator");
+            return new str("dictionary-keyiterator");
         };
     }
 
@@ -672,7 +677,7 @@ export class dict_iter_ {
     next$(self) {
         var ret = self.tp$iternext();
         if (ret === undefined) {
-            throw new Sk.builtin.StopIteration();
+            throw new StopIteration();
         }
         return ret;
     }
@@ -682,6 +687,6 @@ export class dict_iter_ {
     });
 }
 
-setUpInheritance("dictionary-keyiterator", dict_iter_, Sk.builtin.object);
+setUpInheritance("dictionary-keyiterator", dict_iter_, object);
 
 
