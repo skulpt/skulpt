@@ -5,12 +5,12 @@ import { TypeError, ValueError } from './errors';
 import { NotImplementedError } from './object';
 import { asnum$ } from './builtin';
 import { isIndex, asIndex } from './misceval';
+import biginteger from 'big-integer';
 
 /* global Sk: true, goog:true */
 
 // long aka "bignumber" implementation
 //
-//  Using javascript BigInteger by Tom Wu
 /**
  * @constructor
  * Sk.builtin.lng
@@ -32,14 +32,14 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
 
 
     if (x === undefined) {
-        this.biginteger = new Sk.builtin.biginteger(0);
+        this.biginteger = new biginteger(0);
         return this;
     }
     if (x instanceof Sk.builtin.lng) {
         this.biginteger = x.biginteger.clone();
         return this;
     }
-    if (x instanceof Sk.builtin.biginteger) {
+    if (x instanceof biginteger) {
         this.biginteger = x;
         return this;
     }
@@ -61,7 +61,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     }
 
     x = asnum$nofloat(x);
-    this.biginteger = new Sk.builtin.biginteger(x);
+    this.biginteger = new biginteger(x);
     return this;
 };
 
@@ -169,12 +169,12 @@ Sk.longFromStr = function (s, base) {
 
     var parser = function (s, base) {
             if (base === 10) {
-                return new Sk.builtin.biginteger(s);
+                return new biginteger(s);
             }
-            return new Sk.builtin.biginteger(s, base);
+            return new biginteger(s, base);
         },
         biginteger = Sk.str2number(s, base, parser, function (x) {
-            return x.negate();
+            return x.multiply(-1);
         }, "long");
 
     return new Sk.builtin.lng(biginteger);
@@ -182,7 +182,7 @@ Sk.longFromStr = function (s, base) {
 goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
-    return this.biginteger.intValue();
+    return this.biginteger.toJSNumber();
 };
 
 Sk.builtin.lng.prototype.clone = function () {
@@ -210,7 +210,7 @@ Sk.builtin.lng.prototype.nb$add = function (other) {
         return new Sk.builtin.lng(this.biginteger.add(other.biginteger));
     }
 
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.add(other));
     }
 
@@ -243,7 +243,7 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
         return new Sk.builtin.lng(this.biginteger.subtract(other.biginteger));
     }
 
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.subtract(other));
     }
 
@@ -276,7 +276,7 @@ Sk.builtin.lng.prototype.nb$multiply = function (other) {
         return new Sk.builtin.lng(this.biginteger.multiply(other.biginteger));
     }
 
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.multiply(other));
     }
 
@@ -314,12 +314,12 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
         if ((thisneg && !otherneg) || (otherneg && !thisneg)) {
             result = this.biginteger.divideAndRemainder(other.biginteger);
             //    If remainder is zero or positive, just return division result
-            if (result[1].trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
+            if (result[1].compare(biginteger.ZERO) === 0) {
                 //    No remainder, just return result
                 return new Sk.builtin.lng(result[0]);
             }
             //    Reminder... subtract 1 from the result (like rounding to neg infinity)
-            result = result[0].subtract(Sk.builtin.biginteger.ONE);
+            result = result[0].subtract(biginteger.ONE);
             return new Sk.builtin.lng(result);
         }
         return new Sk.builtin.lng(this.biginteger.divide(other.biginteger));
@@ -408,7 +408,7 @@ Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$f
 Sk.builtin.lng.prototype.nb$remainder = function (other) {
     var thisAsFloat, tmp;
 
-    if (this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
+    if (this.biginteger.compare(biginteger.ZERO) === 0) {
         if (other instanceof Sk.builtin.float_) {
             return new Sk.builtin.float_(0);
         }
@@ -495,10 +495,10 @@ Sk.builtin.lng.prototype.nb$divmod = function (other) {
 Sk.builtin.lng.prototype.nb$power = function (n, mod) {
     var thisAsFloat;
     if (mod !== undefined) {
-        n = new Sk.builtin.biginteger(asnum$(n));
-        mod = new Sk.builtin.biginteger(asnum$(mod));
+        n = new biginteger(asnum$(n));
+        mod = new biginteger(asnum$(mod));
 
-        return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
+        return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
     }
 
     if (n instanceof Sk.builtin.float_ ||
@@ -514,10 +514,10 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.lng) {
         if (mod !== undefined) {
-            n = new Sk.builtin.biginteger(asnum$(n));
-            mod = new Sk.builtin.biginteger(asnum$(mod));
+            n = new biginteger(asnum$(n));
+            mod = new biginteger(asnum$(mod));
 
-            return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
+            return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
         }
 
         if (n.nb$isnegative()) {
@@ -527,11 +527,11 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
         return new Sk.builtin.lng(this.biginteger.pow(n.biginteger));
     }
 
-    if (n instanceof Sk.builtin.biginteger) {
+    if (n instanceof biginteger) {
         if (mod !== undefined) {
-            mod = new Sk.builtin.biginteger(asnum$(mod));
+            mod = new biginteger(asnum$(mod));
 
-            return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
+            return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
         }
 
         if (n.isnegative()) {
@@ -567,7 +567,7 @@ Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
  * @return {Sk.builtin.lng} The absolute value
  */
 Sk.builtin.lng.prototype.nb$abs = function () {
-    return new Sk.builtin.lng(this.biginteger.bnAbs());
+    return new Sk.builtin.lng(this.biginteger.abs());
 };
 
 Sk.builtin.lng.prototype.nb$lshift = function (other) {
@@ -578,13 +578,13 @@ Sk.builtin.lng.prototype.nb$lshift = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.biginteger.signum() < 0) {
+        if (other.biginteger.isNegative()) {
             throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
     }
-    if (other instanceof Sk.builtin.biginteger) {
-        if (other.signum() < 0) {
+    if (other instanceof biginteger) {
+        if (other.isNegative()) {
             throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
@@ -615,13 +615,13 @@ Sk.builtin.lng.prototype.nb$rshift = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.biginteger.signum() < 0) {
+        if (other.biginteger.isNegative()) {
             throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
     }
-    if (other instanceof Sk.builtin.biginteger) {
-        if (other.signum() < 0) {
+    if (other instanceof biginteger) {
+        if (other.isNegative()) {
             throw new ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftRight(other));
@@ -654,7 +654,7 @@ Sk.builtin.lng.prototype.nb$and = function (other) {
     if (other instanceof Sk.builtin.lng) {
         return new Sk.builtin.lng(this.biginteger.and(other.biginteger));
     }
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.and(other));
     }
 
@@ -674,7 +674,7 @@ Sk.builtin.lng.prototype.nb$or = function (other) {
     if (other instanceof Sk.builtin.lng) {
         return new Sk.builtin.lng(this.biginteger.or(other.biginteger));
     }
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.or(other));
     }
 
@@ -695,7 +695,7 @@ Sk.builtin.lng.prototype.nb$xor = function (other) {
     if (other instanceof Sk.builtin.lng) {
         return new Sk.builtin.lng(this.biginteger.xor(other.biginteger));
     }
-    if (other instanceof Sk.builtin.biginteger) {
+    if (other instanceof biginteger) {
         return new Sk.builtin.lng(this.biginteger.xor(other));
     }
 
@@ -712,7 +712,7 @@ Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
  * @return {Sk.builtin.lng} A copy of this instance with the value negated.
  */
 Sk.builtin.lng.prototype.nb$negative = function () {
-    return new Sk.builtin.lng(this.biginteger.negate());
+    return new Sk.builtin.lng(this.biginteger.multiply(-1));
 };
 
 Sk.builtin.lng.prototype.nb$invert = function () {
@@ -724,15 +724,15 @@ Sk.builtin.lng.prototype.nb$positive = function () {
 };
 
 Sk.builtin.lng.prototype.nb$nonzero = function () {
-    return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) !== 0;
+    return this.biginteger.compare(biginteger.ZERO) !== 0;
 };
 
 Sk.builtin.lng.prototype.nb$isnegative = function () {
-    return this.biginteger.isnegative();
+    return this.biginteger.isNegative();
 };
 
 Sk.builtin.lng.prototype.nb$ispositive = function () {
-    return !this.biginteger.isnegative();
+    return !this.biginteger.isNegative();
 };
 
 Sk.builtin.lng.prototype.longCompare = function (other) {
@@ -755,7 +755,7 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
 
     if (other instanceof Sk.builtin.lng) {
         return this.biginteger.subtract(other.biginteger);
-    } else if (other instanceof Sk.builtin.biginteger) {
+    } else if (other instanceof biginteger) {
         return this.biginteger.subtract(other);
     }
 

@@ -5,6 +5,7 @@ import { TypeError, ZeroDivisionError, NegativePowerError } from './errors';
 import { NotImplementedError } from './object';
 import { asnum$ } from './builtin';
 import { callsim, isIndex, asIndex } from './misceval';
+import biginteger from 'big-integer';
 
 /**
  * @namespace Sk.builtin
@@ -299,7 +300,7 @@ export class float_ {
         }
 
         if (other instanceof lng) {
-            if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+            if (other.longCompare(biginteger.zero) === 0) {
                 throw new ZeroDivisionError("integer division or modulo by zero");
             }
 
@@ -370,7 +371,7 @@ export class float_ {
         }
 
         if (other instanceof lng) {
-            if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+            if (other.longCompare(biginteger.zero) === 0) {
                 throw new ZeroDivisionError("integer division or modulo by zero");
             }
 
@@ -448,7 +449,7 @@ export class float_ {
         }
 
         if (other instanceof lng) {
-            if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+            if (other.longCompare(biginteger.zero) === 0) {
                 throw new $1("integer division or modulo by zero");
             }
 
@@ -554,7 +555,7 @@ export class float_ {
         }
 
         if (other instanceof lng) {
-            if (this.v === 0 && other.longCompare(Sk.builtin.biginteger.ZERO) < 0) {
+            if (this.v === 0 && other.longCompare(biginteger.zero) < 0) {
                 throw new NegativePowerError("cannot raise zero to a negative power");
             }
 
@@ -653,7 +654,7 @@ export class float_ {
             if (diff instanceof float_) {
                 return diff.v;
             } else if (diff instanceof lng) {
-                return diff.longCompare(Sk.builtin.biginteger.ZERO);
+                return diff.longCompare(biginteger.zero);
             }
         }
 

@@ -40,6 +40,7 @@ import {
     callsimOrSuspend,
     objectRepr
 } from './misceval';
+import biginteger from 'big-integer';
 
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
@@ -124,9 +125,9 @@ export function asnum$(a) {
         }
         return a.toInt$();
     }
-    if (a.constructor === Sk.builtin.biginteger) {
-        if ((a.trueCompare(new Sk.builtin.biginteger(int_.threshold$)) > 0) ||
-            (a.trueCompare(new Sk.builtin.biginteger(-int_.threshold$)) < 0)) {
+    if (a.constructor === biginteger) {
+        if ((a.trueCompare(new biginteger(int_.threshold$)) > 0) ||
+            (a.trueCompare(new biginteger(-int_.threshold$)) < 0)) {
             return a.toString();
         }
         return a.intValue();
@@ -185,7 +186,7 @@ export function asnum$nofloat(a) {
     if (a.constructor === lng) {
         a = a.str$(10, true);
     }
-    if (a.constructor === Sk.builtin.biginteger) {
+    if (a.constructor === biginteger) {
         a = a.toString();
     }
 

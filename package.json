@@ -46,6 +46,7 @@
     "jsdoc": "~3.5.5"
   },
   "dependencies": {
+    "big-integer": "^1.6.43",
     "closure-compiler": "^0.2.12",
     "webpack": "^4.29.6"
   }
