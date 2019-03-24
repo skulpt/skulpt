@@ -1,169 +1,837 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
-import { pyCheckArgs } from './function';
+import { func, pyCheckArgs, checkString, checkNumber } from './function';
 import { TypeError, ValueError } from './errors';
-import { NotImplementedError } from './object';
+import { NotImplementedError, NotImplemented } from './object';
 import { asnum$ } from './builtin';
 import { isIndex, asIndex } from './misceval';
+import { numtype } from './numtype';
+import { str } from './str';
+import { int_, str2number } from './int';
+import { float_ } from './float';
+import { tuple } from './tuple';
+import { true$, false$ } from './constants';
+import { bool } from './bool'
+
 import biginteger from 'big-integer';
-
-/* global Sk: true, goog:true */
-
 // long aka "bignumber" implementation
 //
-/**
- * @constructor
- * Sk.builtin.lng
- *
- * @description
- * Constructor for Python long. Also used for builtin long().
- *
- * @extends {Sk.builtin.numtype}
- *
- * @param {*} x Object or number to convert to Python long.
- * @param {number=} base Optional base.
- * @return {Sk.builtin.lng} Python long
- */
-Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
-    base = asnum$(base);
-    if (!(this instanceof Sk.builtin.lng)) {
-        return new Sk.builtin.lng(x, base);
+
+export class lng extends numtype { /* long is a reserved word */
+    /**
+     * @constructor
+     * lng
+     *
+     * @description
+     * Constructor for Python long. Also used for builtin long().
+     *
+     * @extends {numtype}
+     *
+     * @param {*} x Object or number to convert to Python long.
+     * @param {number=} base Optional base.
+     * @return {lng} Python long
+     */
+    constructor(x, base) {
+        base = asnum$(base);
+
+        if (x === undefined) {
+            this.biginteger = new biginteger(0);
+            return this;
+        }
+        if (x instanceof lng) {
+            this.biginteger = x.biginteger.clone();
+            return this;
+        }
+        if (x instanceof biginteger) {
+            this.biginteger = x;
+            return this;
+        }
+        if (x instanceof String || typeof x === "string") {
+            return longFromStr(x, base);
+        }
+        if (x instanceof str) {
+            return longFromStr(x.v, base);
+        }
+
+        if ((x !== undefined) && (!checkString(x) && !checkNumber(x))) {
+            if (x === true) {
+                x = 1;
+            } else if (x === false) {
+                x = 0;
+            } else {
+                throw new TypeError("long() argument must be a string or a number, not '" + typeName(x) + "'");
+            }
+        }
+
+        x = asnum$nofloat(x);
+        this.biginteger = new biginteger(x);
+        return this;
     }
 
 
-    if (x === undefined) {
-        this.biginteger = new biginteger(0);
-        return this;
-    }
-    if (x instanceof Sk.builtin.lng) {
-        this.biginteger = x.biginteger.clone();
-        return this;
-    }
-    if (x instanceof biginteger) {
-        this.biginteger = x;
-        return this;
-    }
-    if (x instanceof String || typeof x === "string") {
-        return Sk.longFromStr(x, base);
-    }
-    if (x instanceof Sk.builtin.str) {
-        return Sk.longFromStr(x.v, base);
+    /* NOTE: See constants used for kwargs in constants.js */
+
+    tp$index() {
+        return parseInt(this.str$(10, true), 10);
     }
 
-    if ((x !== undefined) && (!Sk.builtin.checkString(x) && !Sk.builtin.checkNumber(x))) {
-        if (x === true) {
-            x = 1;
-        } else if (x === false) {
-            x = 0;
+    tp$hash() {
+        return new int_(this.tp$index());
+    }
+
+    nb$int_() {
+        if (this.cantBeInt()) {
+            return new lng(this);
+        }
+
+        return new int_(this.toInt$());
+    }
+
+    __format__(obj, format_spec) {
+        var formatstr;
+        pyCheckArgs("__format__", arguments, 2, 2);
+
+        if (!checkString(format_spec)) {
+            if (Sk.__future__.exceptions) {
+                throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
+            } else {
+                throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
+            }
         } else {
-            throw new TypeError("long() argument must be a string or a number, not '" + typeName(x) + "'");
+            formatstr = remapToJs(format_spec);
+            if (formatstr !== "") {
+                throw new NotImplementedError("format spec is not yet implemented");
+            }
+
+            return new str(obj);
         }
     }
 
-    x = asnum$nofloat(x);
-    this.biginteger = new biginteger(x);
-    return this;
-};
+    round$(self, ndigits) {
+        pyCheckArgs("__round__", arguments, 1, 2);
 
-setUpInheritance("long", Sk.builtin.lng, Sk.builtin.numtype);
+        var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
-/* NOTE: See constants used for kwargs in constants.js */
+        if ((ndigits !== undefined) && !isIndex(ndigits)) {
+            throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
+        }
 
-Sk.builtin.lng.prototype.tp$index = function () {
-    return parseInt(this.str$(10, true), 10);
-};
-
-Sk.builtin.lng.prototype.tp$hash = function () {
-    return new Sk.builtin.int_(this.tp$index());
-};
-
-Sk.builtin.lng.prototype.nb$int_ = function() {
-    if (this.cantBeInt()) {
-        return new Sk.builtin.lng(this);
-    }
-
-    return new Sk.builtin.int_(this.toInt$());
-};
-
-Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
-    var formatstr;
-    pyCheckArgs("__format__", arguments, 2, 2);
-
-    if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.__future__.exceptions) {
-            throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
+        number = asnum$(self);
+        if (ndigits === undefined) {
+            ndigs = 0;
         } else {
-            throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
+            ndigs = asIndex(ndigits);
         }
-    } else {
-        formatstr = remapToJs(format_spec);
-        if (formatstr !== "") {
-            throw new NotImplementedError("format spec is not yet implemented");
+
+        if (Sk.__future__.bankers_rounding) {
+            num10 = number * Math.pow(10, ndigs);
+            rounded = Math.round(num10);
+            bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+            result = bankRound / Math.pow(10, ndigs);
+            return new Sk.builtin.lng(result);
+        } else {
+            multiplier = Math.pow(10, ndigs);
+            result = Math.round(number * multiplier) / multiplier;
+
+            return new lng(result);
         }
     }
 
-    return new Sk.builtin.str(obj);
-};
+    __index__ = new func(function(self) {
+        return self.nb$int_(self);
+    });
 
-Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
-    pyCheckArgs("__round__", arguments, 1, 2);
-
-    var result, multiplier, number, num10, rounded, bankRound, ndigs;
-
-    if ((ndigits !== undefined) && !isIndex(ndigits)) {
-        throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
+    nb$lng_() {
+        return this;
     }
 
-    number = asnum$(self);
-    if (ndigits === undefined) {
-        ndigs = 0;
-    } else {
-        ndigs = asIndex(ndigits);
+    nb$float_() {
+        return new float_(remapToJs(this));
     }
 
-    if (Sk.__future__.bankers_rounding) {
-        num10 = number * Math.pow(10, ndigs);
-        rounded = Math.round(num10);
-        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
-        result = bankRound / Math.pow(10, ndigs);
-        return new Sk.builtin.lng(result);
-    } else {
-        multiplier = Math.pow(10, ndigs);
-        result = Math.round(number * multiplier) / multiplier;
+    //    Threshold to determine when types should be converted to long
+    static MAX_INT$ = new lng(int_.threshold$);
+    static MIN_INT$ = new lng(-int_.threshold$);
 
-        return new Sk.builtin.lng(result);
+    cantBeInt() {
+        return (this.longCompare(lng.MAX_INT$) > 0) || (this.longCompare(lng.MIN_INT$) < 0);
     }
-};
 
-Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
-    return self.nb$int_(self);
-});
+    static fromInt$(ival) {
+        return new lng(ival);
+    }
 
-Sk.builtin.lng.prototype.nb$lng_ = function () {
-    return this;
-};
 
-Sk.builtin.lng.prototype.nb$float_ = function() {
-    return new Sk.builtin.float_(remapToJs(this));
-};
+    toInt$() {
+        return this.biginteger.toJSNumber();
+    }
 
-//    Threshold to determine when types should be converted to long
-//Sk.builtin.lng.threshold$ = Sk.builtin.int_.threshold$;
+    clone() {
+        return new lng(this);
+    }
 
-Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.int_.threshold$);
-Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.int_.threshold$);
+    conjugate = new func(function (self) {
+        return self.clone();
+    });
 
-Sk.builtin.lng.prototype.cantBeInt = function () {
-    return (this.longCompare(Sk.builtin.lng.MAX_INT$) > 0) || (this.longCompare(Sk.builtin.lng.MIN_INT$) < 0);
-};
+    nb$add(other) {
+        var thisAsFloat;
 
-Sk.builtin.lng.fromInt$ = function (ival) {
-    return new Sk.builtin.lng(ival);
-};
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$add(other);
+        }
 
-// js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
+        if (other instanceof int_) {
+            //    Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.add(other.biginteger));
+        }
+
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.add(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    /** @override */
+    nb$reflected_add(other) {
+        // Should not automatically call this.nb$add, as nb$add may have
+        // been overridden by a subclass
+        return nb$add.call(this, other);
+    }
+
+    nb$inplace_add = lng.prototype.nb$add;
+
+    nb$subtract(other) {
+        var thisAsFloat;
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$subtract(other);
+        }
+
+        if (other instanceof int_) {
+            //    Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.subtract(other.biginteger));
+        }
+
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.subtract(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    /** @override */
+    nb$reflected_subtract(other) {
+        // Should not automatically call this.nb$add, as nb$add may have
+        // been overridden by a subclass
+        var negative_this = this.nb$negative();
+        return nb$add.call(negative_this, other);
+    }
+
+    nb$inplace_subtract = lng.prototype.nb$subtract;
+
+    nb$multiply(other) {
+        var thisAsFloat;
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$multiply(other);
+        }
+
+        if (other instanceof int_) {
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.multiply(other.biginteger));
+        }
+
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.multiply(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    /** @override */
+    nb$reflected_multiply(other) {
+        // Should not automatically call this.nb$multiply, as nb$multiply may have
+        // been overridden by a subclass
+        return nb$multiply.call(this, other);
+    }
+
+    nb$inplace_multiply = lng.prototype.nb$multiply;
+
+    nb$divide(other) {
+        var thisAsFloat, thisneg, otherneg, result;
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$divide(other);
+        }
+
+        if (other instanceof int_) {
+            //    Promote an int to long
+            other = new lng(other.v);
+        }
+
+        //    Standard, long result mode
+
+        if (other instanceof lng) {
+            //    Special logic to round DOWN towards negative infinity for negative results
+            thisneg = this.nb$isnegative();
+            otherneg = other.nb$isnegative();
+            if ((thisneg && !otherneg) || (otherneg && !thisneg)) {
+                result = this.biginteger.divmod(other.biginteger);
+                //    If remainder is zero or positive, just return division result
+                if (result.remainder.compare(biginteger.ZERO) === 0) {
+                    //    No remainder, just return result
+                    return new lng(result[0]);
+                }
+                //    Reminder... subtract 1 from the result (like rounding to neg infinity)
+                result = result.quotient.subtract(biginteger.ONE);
+                return new lng(result);
+            }
+            return new lng(this.biginteger.divide(other.biginteger));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_divide(other) {
+        var thisneg, otherneg, result;
+
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        //    Standard, long result mode
+        if (other instanceof lng) {
+            return other.nb$divide(this);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$floor_divide(other) {
+        var thisAsFloat;
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$floor_divide(other);
+        }
+
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        //    Standard, long result mode
+        if (other instanceof lng) {
+            return other.nb$divide(this);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$divmod(other) {
+        if (other instanceof int_) {
+            // Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new tuple([
+                this.nb$floor_divide(other),
+                this.nb$remainder(other)
+            ]);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_divmod(other) {
+        if (other instanceof int_) {
+            // Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new tuple([
+                other.nb$floor_divide(this),
+                other.nb$remainder(this)
+            ]);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$inplace_divide = lng.prototype.nb$divide;
+
+    nb$floor_divide = lng.prototype.nb$divide;
+
+    nb$reflected_floor_divide = lng.prototype.nb$reflected_divide;
+
+    nb$inplace_floor_divide = lng.prototype.nb$floor_divide;
+
+    nb$remainder(other) {
+        var thisAsFloat, tmp;
+
+        if (this.biginteger.compare(biginteger.ZERO) === 0) {
+            if (other instanceof float_) {
+                return new float_(0);
+            }
+            return new lng(0);
+        }
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$remainder(other);
+        }
+
+        if (other instanceof int_) {
+            //    Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+
+            tmp = new lng(this.biginteger.remainder(other.biginteger));
+            if (this.nb$isnegative()) {
+                if (other.nb$ispositive() && tmp.nb$nonzero()) {
+                    tmp = tmp.nb$add(other).nb$remainder(other);
+                }
+            } else {
+                if (other.nb$isnegative() && tmp.nb$nonzero()) {
+                    tmp = tmp.nb$add(other);
+                }
+            }
+            return tmp;
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_remainder(other) {
+        if (other instanceof int_) {
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return other.nb$remainder(this);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$inplace_remainder = lng.prototype.nb$remainder;
+
+    nb$divmod(other) {
+        var thisAsFloat;
+
+        if (other === true$) {
+            other = new lng(1);
+        }
+
+        if (other === false$) {
+            other = new lng(0);
+        }
+
+        if (other instanceof int_) {
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new tuple([
+                this.nb$floor_divide(other),
+                this.nb$remainder(other)
+            ]);
+        }
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$divmod(other);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    /**
+     * @param {number|Object} n
+     * @param {number|Object=} mod
+     * @suppress {checkTypes}
+     */
+    nb$power(n, mod) {
+        var thisAsFloat;
+        if (mod !== undefined) {
+            n = new biginteger(asnum$(n));
+            mod = new biginteger(asnum$(mod));
+
+            return new lng(this.biginteger.modPow(n, mod));
+        }
+
+        if (n instanceof float_ ||
+            (n instanceof int_ && n.v < 0)) {
+            thisAsFloat = new float_(this.str$(10, true));
+            return thisAsFloat.nb$power(n);
+        }
+
+        if (n instanceof int_) {
+            //    Promote an int to long
+            n = new lng(n.v);
+        }
+
+        if (n instanceof lng) {
+            if (mod !== undefined) {
+                n = new biginteger(asnum$(n));
+                mod = new biginteger(asnum$(mod));
+
+                return new lng(this.biginteger.modPow(n, mod));
+            }
+
+            if (n.nb$isnegative()) {
+                thisAsFloat = new float_(this.str$(10, true));
+                return thisAsFloat.nb$power(n);
+            }
+            return new lng(this.biginteger.pow(n.biginteger));
+        }
+
+        if (n instanceof biginteger) {
+            if (mod !== undefined) {
+                mod = new biginteger(asnum$(mod));
+
+                return new lng(this.biginteger.modPow(n, mod));
+            }
+
+            if (n.isnegative()) {
+                thisAsFloat = new float_(this.str$(10, true));
+                return thisAsFloat.nb$power(n);
+            }
+            return new lng(this.biginteger.pow(n));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_power(n, mod) {
+        if (n instanceof int_) {
+            // Promote an int to long
+            n = new lng(n.v);
+        }
+
+        if (n instanceof lng) {
+            return n.nb$power(this, mod);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$inplace_power = lng.prototype.nb$power;
+
+    /**
+     * Compute the absolute value of this instance and return.
+     *
+     * Javascript function, returns Python object.
+     *
+     * @return {lng} The absolute value
+     */
+    nb$abs() {
+        return new lng(this.biginteger.abs());
+    }
+
+    nb$lshift(other) {
+
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            if (other.biginteger.isNegative()) {
+                throw new ValueError("negative shift count");
+            }
+            return new lng(this.biginteger.shiftLeft(other.biginteger));
+        }
+        if (other instanceof biginteger) {
+            if (other.isNegative()) {
+                throw new ValueError("negative shift count");
+            }
+            return new lng(this.biginteger.shiftLeft(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_lshift(other) {
+        if (other instanceof int_) {
+            // Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return other.nb$lshift(this);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$inplace_lshift = lng.prototype.nb$lshift;
+
+    nb$rshift(other) {
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            if (other.biginteger.isNegative()) {
+                throw new ValueError("negative shift count");
+            }
+            return new lng(this.biginteger.shiftRight(other.biginteger));
+        }
+        if (other instanceof biginteger) {
+            if (other.isNegative()) {
+                throw new ValueError("negative shift count");
+            }
+            return new lng(this.biginteger.shiftRight(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_rshift(other) {
+        if (other instanceof int_) {
+            // Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return other.nb$rshift(this);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$inplace_rshift = lng.prototype.nb$rshift;
+
+    nb$and(other) {
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.and(other.biginteger));
+        }
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.and(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_and = lng.prototype.nb$and;
+
+    nb$inplace_and = lng.prototype.nb$and;
+
+    nb$or(other) {
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.or(other.biginteger));
+        }
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.or(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+
+    nb$reflected_or = lng.prototype.nb$or;
+
+    nb$inplace_or = lng.prototype.nb$or;
+
+    nb$xor(other) {
+        if (other instanceof int_) {
+            //  Promote an int to long
+            other = new lng(other.v);
+        }
+
+        if (other instanceof lng) {
+            return new lng(this.biginteger.xor(other.biginteger));
+        }
+        if (other instanceof biginteger) {
+            return new lng(this.biginteger.xor(other));
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    nb$reflected_xor = lng.prototype.nb$xor;
+
+    nb$inplace_xor = lng.prototype.nb$xor;
+
+    /**
+     * @override
+     *
+     * @return {lng} A copy of this instance with the value negated.
+     */
+    nb$negative() {
+        return new lng(this.biginteger.multiply(-1));
+    }
+
+    nb$invert() {
+        return new lng(this.biginteger.not());
+    }
+
+    nb$positive() {
+        return this.clone();
+    }
+
+    nb$nonzero() {
+        return this.biginteger.compare(biginteger.ZERO) !== 0;
+    }
+
+    nb$isnegative() {
+        return this.biginteger.isNegative();
+    }
+
+    nb$ispositive() {
+        return !this.biginteger.isNegative();
+    }
+
+    longCompare(other) {
+        var otherAsLong, thisAsFloat;
+
+        if (typeof other === "number") {
+            other = new lng(other);
+        }
+
+        if (other instanceof int_ ||
+            (other instanceof float_ && other.v % 1 === 0)) {
+            otherAsLong = new lng(other.v);
+            return this.longCompare(otherAsLong);
+        }
+
+        if (other instanceof float_) {
+            thisAsFloat = new float_(this);
+            return thisAsFloat.numberCompare(other);
+        }
+
+        if (other instanceof lng) {
+            return this.biginteger.subtract(other.biginteger);
+        } else if (other instanceof biginteger) {
+            return this.biginteger.subtract(other);
+        }
+
+        return NotImplemented.NotImplemented$;
+    }
+
+    //tests fail if ===
+    ob$eq(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) == 0); //jshint ignore:line
+        } else if (other instanceof none) {
+            return false$;
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    ob$ne(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) != 0); //jshint ignore:line
+        } else if (other instanceof none) {
+            return true$;
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    ob$lt(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) < 0);
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    ob$le(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) <= 0);
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    ob$gt(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) > 0);
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    ob$ge(other) {
+        if (other instanceof int_ || other instanceof lng ||
+            other instanceof float_) {
+            return new bool(this.longCompare(other) >= 0);
+        } else {
+            return NotImplemented.NotImplemented$;
+        }
+    }
+
+    $r() {
+        return new str(this.str$(10, true) + "L");
+    }
+
+    tp$str() {
+        return new str(this.str$(10, true));
+    }
+
+    str$(base, sign) {
+        var work;
+        if (sign === undefined) {
+            sign = true;
+        }
+
+        work = sign ? this.biginteger : this.biginteger.abs();
+
+        if (base === undefined || base === 10) {
+            return work.toString();
+        }
+
+        //    Another base... convert...
+        return work.toString(base);
+    }
+}
+
+setUpInheritance("long", lng, numtype);
+
+// js string (not str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
-Sk.longFromStr = function (s, base) {
+export function longFromStr(s, base) {
     // l/L are valid digits with base >= 22
     // goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
 
@@ -173,674 +841,9 @@ Sk.longFromStr = function (s, base) {
             }
             return new biginteger(s, base);
         },
-        biginteger = Sk.str2number(s, base, parser, function (x) {
+        b = str2number(s, base, parser, function (x) {
             return x.multiply(-1);
         }, "long");
 
-    return new Sk.builtin.lng(biginteger);
-};
-goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
-
-Sk.builtin.lng.prototype.toInt$ = function () {
-    return this.biginteger.toJSNumber();
-};
-
-Sk.builtin.lng.prototype.clone = function () {
-    return new Sk.builtin.lng(this);
-};
-
-Sk.builtin.lng.prototype.conjugate = new Sk.builtin.func(function (self) {
-    return self.clone();
-});
-
-Sk.builtin.lng.prototype.nb$add = function (other) {
-    var thisAsFloat;
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$add(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        //    Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.add(other.biginteger));
-    }
-
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.add(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_add = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    return Sk.builtin.lng.prototype.nb$add.call(this, other);
-};
-
-Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
-
-Sk.builtin.lng.prototype.nb$subtract = function (other) {
-    var thisAsFloat;
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$subtract(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        //    Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.subtract(other.biginteger));
-    }
-
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.subtract(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_subtract = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    var negative_this = this.nb$negative();
-    return Sk.builtin.lng.prototype.nb$add.call(negative_this, other);
-};
-
-Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
-
-Sk.builtin.lng.prototype.nb$multiply = function (other) {
-    var thisAsFloat;
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$multiply(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.multiply(other.biginteger));
-    }
-
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.multiply(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_multiply = function (other) {
-    // Should not automatically call this.nb$multiply, as nb$multiply may have
-    // been overridden by a subclass
-    return Sk.builtin.lng.prototype.nb$multiply.call(this, other);
-};
-
-Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
-
-Sk.builtin.lng.prototype.nb$divide = function (other) {
-    var thisAsFloat, thisneg, otherneg, result;
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$divide(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        //    Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    //    Standard, long result mode
-
-    if (other instanceof Sk.builtin.lng) {
-        //    Special logic to round DOWN towards negative infinity for negative results
-        thisneg = this.nb$isnegative();
-        otherneg = other.nb$isnegative();
-        if ((thisneg && !otherneg) || (otherneg && !thisneg)) {
-            result = this.biginteger.divideAndRemainder(other.biginteger);
-            //    If remainder is zero or positive, just return division result
-            if (result[1].compare(biginteger.ZERO) === 0) {
-                //    No remainder, just return result
-                return new Sk.builtin.lng(result[0]);
-            }
-            //    Reminder... subtract 1 from the result (like rounding to neg infinity)
-            result = result[0].subtract(biginteger.ONE);
-            return new Sk.builtin.lng(result);
-        }
-        return new Sk.builtin.lng(this.biginteger.divide(other.biginteger));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_divide = function (other) {
-    var thisneg, otherneg, result;
-
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    //    Standard, long result mode
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$divide(this);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
-    var thisAsFloat;
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$floor_divide(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    //    Standard, long result mode
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$divide(this);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$divmod = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.tuple([
-            this.nb$floor_divide(other),
-            this.nb$remainder(other)
-        ]);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_divmod = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.tuple([
-            other.nb$floor_divide(this),
-            other.nb$remainder(this)
-        ]);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
-
-Sk.builtin.lng.prototype.nb$floor_divide = Sk.builtin.lng.prototype.nb$divide;
-
-Sk.builtin.lng.prototype.nb$reflected_floor_divide = Sk.builtin.lng.prototype.nb$reflected_divide;
-
-Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
-
-Sk.builtin.lng.prototype.nb$remainder = function (other) {
-    var thisAsFloat, tmp;
-
-    if (this.biginteger.compare(biginteger.ZERO) === 0) {
-        if (other instanceof Sk.builtin.float_) {
-            return new Sk.builtin.float_(0);
-        }
-        return new Sk.builtin.lng(0);
-    }
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$remainder(other);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        //    Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-
-        tmp = new Sk.builtin.lng(this.biginteger.remainder(other.biginteger));
-        if (this.nb$isnegative()) {
-            if (other.nb$ispositive() && tmp.nb$nonzero()) {
-                tmp = tmp.nb$add(other).nb$remainder(other);
-            }
-        } else {
-            if (other.nb$isnegative() && tmp.nb$nonzero()) {
-                tmp = tmp.nb$add(other);
-            }
-        }
-        return tmp;
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$remainder(this);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
-
-Sk.builtin.lng.prototype.nb$divmod = function (other) {
-    var thisAsFloat;
-
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.lng(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.lng(0);
-    }
-
-    if (other instanceof Sk.builtin.int_) {
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.tuple([
-            this.nb$floor_divide(other),
-            this.nb$remainder(other)
-        ]);
-    }
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$divmod(other);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * @param {number|Object} n
- * @param {number|Object=} mod
- * @suppress {checkTypes}
- */
-Sk.builtin.lng.prototype.nb$power = function (n, mod) {
-    var thisAsFloat;
-    if (mod !== undefined) {
-        n = new biginteger(asnum$(n));
-        mod = new biginteger(asnum$(mod));
-
-        return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
-    }
-
-    if (n instanceof Sk.builtin.float_ ||
-        (n instanceof Sk.builtin.int_ && n.v < 0)) {
-        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-        return thisAsFloat.nb$power(n);
-    }
-
-    if (n instanceof Sk.builtin.int_) {
-        //    Promote an int to long
-        n = new Sk.builtin.lng(n.v);
-    }
-
-    if (n instanceof Sk.builtin.lng) {
-        if (mod !== undefined) {
-            n = new biginteger(asnum$(n));
-            mod = new biginteger(asnum$(mod));
-
-            return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
-        }
-
-        if (n.nb$isnegative()) {
-            thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-            return thisAsFloat.nb$power(n);
-        }
-        return new Sk.builtin.lng(this.biginteger.pow(n.biginteger));
-    }
-
-    if (n instanceof biginteger) {
-        if (mod !== undefined) {
-            mod = new biginteger(asnum$(mod));
-
-            return new Sk.builtin.lng(this.biginteger.modPow(n, mod));
-        }
-
-        if (n.isnegative()) {
-            thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
-            return thisAsFloat.nb$power(n);
-        }
-        return new Sk.builtin.lng(this.biginteger.pow(n));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_power = function (n, mod) {
-    if (n instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        n = new Sk.builtin.lng(n.v);
-    }
-
-    if (n instanceof Sk.builtin.lng) {
-        return n.nb$power(this, mod);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
-
-/**
- * Compute the absolute value of this instance and return.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.lng} The absolute value
- */
-Sk.builtin.lng.prototype.nb$abs = function () {
-    return new Sk.builtin.lng(this.biginteger.abs());
-};
-
-Sk.builtin.lng.prototype.nb$lshift = function (other) {
-
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        if (other.biginteger.isNegative()) {
-            throw new ValueError("negative shift count");
-        }
-        return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
-    }
-    if (other instanceof biginteger) {
-        if (other.isNegative()) {
-            throw new ValueError("negative shift count");
-        }
-        return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_lshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$lshift(this);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
-
-Sk.builtin.lng.prototype.nb$rshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        if (other.biginteger.isNegative()) {
-            throw new ValueError("negative shift count");
-        }
-        return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
-    }
-    if (other instanceof biginteger) {
-        if (other.isNegative()) {
-            throw new ValueError("negative shift count");
-        }
-        return new Sk.builtin.lng(this.biginteger.shiftRight(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_rshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$rshift(this);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
-
-Sk.builtin.lng.prototype.nb$and = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.and(other.biginteger));
-    }
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.and(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;
-
-Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
-
-Sk.builtin.lng.prototype.nb$or = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.or(other.biginteger));
-    }
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.or(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-
-Sk.builtin.lng.prototype.nb$reflected_or = Sk.builtin.lng.prototype.nb$or;
-
-Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
-
-Sk.builtin.lng.prototype.nb$xor = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.lng(this.biginteger.xor(other.biginteger));
-    }
-    if (other instanceof biginteger) {
-        return new Sk.builtin.lng(this.biginteger.xor(other));
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-Sk.builtin.lng.prototype.nb$reflected_xor = Sk.builtin.lng.prototype.nb$xor;
-
-Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
-
-/**
- * @override
- *
- * @return {Sk.builtin.lng} A copy of this instance with the value negated.
- */
-Sk.builtin.lng.prototype.nb$negative = function () {
-    return new Sk.builtin.lng(this.biginteger.multiply(-1));
-};
-
-Sk.builtin.lng.prototype.nb$invert = function () {
-    return new Sk.builtin.lng(this.biginteger.not());
-};
-
-Sk.builtin.lng.prototype.nb$positive = function () {
-    return this.clone();
-};
-
-Sk.builtin.lng.prototype.nb$nonzero = function () {
-    return this.biginteger.compare(biginteger.ZERO) !== 0;
-};
-
-Sk.builtin.lng.prototype.nb$isnegative = function () {
-    return this.biginteger.isNegative();
-};
-
-Sk.builtin.lng.prototype.nb$ispositive = function () {
-    return !this.biginteger.isNegative();
-};
-
-Sk.builtin.lng.prototype.longCompare = function (other) {
-    var otherAsLong, thisAsFloat;
-
-    if (typeof other === "number") {
-        other = new Sk.builtin.lng(other);
-    }
-
-    if (other instanceof Sk.builtin.int_ ||
-        (other instanceof Sk.builtin.float_ && other.v % 1 === 0)) {
-        otherAsLong = new Sk.builtin.lng(other.v);
-        return this.longCompare(otherAsLong);
-    }
-
-    if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this);
-        return thisAsFloat.numberCompare(other);
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        return this.biginteger.subtract(other.biginteger);
-    } else if (other instanceof biginteger) {
-        return this.biginteger.subtract(other);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-//tests fail if ===
-Sk.builtin.lng.prototype.ob$eq = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) == 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
-        return Sk.builtin.bool.false$;
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.ob$ne = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) != 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
-        return Sk.builtin.bool.true$;
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.ob$lt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) < 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.ob$le = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) <= 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.ob$gt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) > 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.ob$ge = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.longCompare(other) >= 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-Sk.builtin.lng.prototype.$r = function () {
-    return new Sk.builtin.str(this.str$(10, true) + "L");
-};
-
-Sk.builtin.lng.prototype.tp$str = function () {
-    return new Sk.builtin.str(this.str$(10, true));
-};
-
-Sk.builtin.lng.prototype.str$ = function (base, sign) {
-    var work;
-    if (sign === undefined) {
-        sign = true;
-    }
-
-    work = sign ? this.biginteger : this.biginteger.abs();
-
-    if (base === undefined || base === 10) {
-        return work.toString();
-    }
-
-    //    Another base... convert...
-    return work.toString(base);
-};
+    return new lng(b);
+}
