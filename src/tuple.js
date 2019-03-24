@@ -222,7 +222,6 @@ export class tuple {
     nb$multiply = tuple.prototype.sq$repeat;
     nb$inplace_multiply = tuple.prototype.sq$repeat;
 
-
     nb$add = tuple.prototype.sq$concat;
     nb$inplace_add = tuple.prototype.sq$concat;
 
