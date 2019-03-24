@@ -6,29 +6,30 @@ import { func, pyCheckArgs } from './function';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
 import { asnum$ } from './builtin';
+import { true$, false$ } from './constants';
 
 /**
  * @constructor
- * Sk.builtin.bool
+ * bool
  *
  * @description
  * Constructor for Python bool. Also used for builtin bool() function.
  *
  * Where possible, do not create a new instance but use the constants
- * Sk.builtin.bool.true$ or Sk.builtin.bool.false$. These are defined in src/constant.js
+ * bool.true$ or bool.false$. These are defined in src/constant.js
  *
- * @extends {Sk.builtin.object}
+ * @extends {object}
  *
  * @param  {(Object|number|boolean)} x Value to evaluate as true or false
- * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
+ * @return {bool} bool.true$ if x is true, bool.false$ otherwise
  */
 export class bool extends int_ {
     constructor(x) {
         pyCheckArgs("bool", arguments, 1);
         if (Sk.misceval.isTrue(x)) {
-            return Sk.builtin.bool.true$;
+            return true$;
         } else {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
     }
 

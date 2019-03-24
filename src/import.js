@@ -1,4 +1,4 @@
-import { compile } from './compile';
+import { compile, resetCompiler } from './compile';
 import { ImportError } from './errors';
 /**
  * @namespace Sk
@@ -424,7 +424,7 @@ Sk.importMain = function (name, dumpJS, canSuspend) {
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
 
-    Sk.resetCompiler();
+    resetCompiler();
 
     return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, undefined, false, canSuspend);
 };
@@ -447,7 +447,7 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
 
-    Sk.resetCompiler();
+    resetCompiler();
 
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body, undefined, false, canSuspend);
 };
