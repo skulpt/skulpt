@@ -5,13 +5,13 @@ import { AttributeError, TypeError } from './errors';
 
 /**
  * @constructor
- * Sk.builtin.object
+ * object
  *
  * @description
  * Constructor for Python object. All Python classes (builtin and user-defined)
  * should inherit from this class.
  *
- * @return {Sk.builtin.object} Python object
+ * @return {object} Python object
  */
 export class object {
     GenericGetAttr(name, canSuspend) {

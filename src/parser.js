@@ -1,6 +1,6 @@
 import { SyntaxError } from './errors';
 import { Tokens, tokenNames, Tokenizer } from './tokenize';
-
+import { str } from './str';
 // low level parser to a concrete syntax tree, derived from cpython's lib2to3
 
 function findInDfa (a, obj) {
@@ -371,7 +371,7 @@ export function parseTreeDump (n, indent) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
     } else {
-        ret += tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
+        ret += tokenNames[n.type] + ": " + new str(n.value)["$r"]().v + "\n";
     }
     return ret;
 }

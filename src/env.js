@@ -321,8 +321,7 @@ Sk.setup_method_mappings = function () {
     return {
         "round$": {
             "classes": [Sk.builtin.float_,
-                        Sk.builtin.int_,
-                        Sk.builtin.nmber],
+                        Sk.builtin.int_],
             2: null,
             3: "__round__"
         },

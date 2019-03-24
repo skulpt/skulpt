@@ -2,21 +2,23 @@ import { setUpInheritance, typeName } from './abstract';
 import { pyCheckArgs, func } from './function';
 import { object } from './object';
 import { ExternalError, TypeError } from './errors';
+import { int_ } from './int';
+import { true$, false$ } from './constants';
 
 export class seqtype extends object {
     /**
      * @constructor
-     * Sk.builtin.seqtype
+     * seqtype
      *
      * @description
      * Abstract class for Python sequence types.
      *
-     * @extends {Sk.builtin.object}
+     * @extends {object}
      *
-     * @return {undefined} Cannot instantiate a Sk.builtin.seqtype object
+     * @return {undefined} Cannot instantiate a seqtype object
      */
     constructor() {
-        throw new ExternalError("Cannot instantiate abstract Sk.builtin.seqtype class");
+        throw new ExternalError("Cannot instantiate abstract seqtype class");
     }
 
     /**
@@ -24,13 +26,13 @@ export class seqtype extends object {
      *
      * @name  __len__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __len__ = new func(function (self) {
 
         pyCheckArgs("__len__", arguments, 0, 0, false, true);
 
-        return new Sk.builtin.int_(self.sq$length());
+        return new int_(self.sq$length());
 
     });
 
@@ -39,7 +41,7 @@ export class seqtype extends object {
      *
      * @name  __iter__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __iter__ = new func(function (self) {
 
@@ -54,16 +56,16 @@ export class seqtype extends object {
      *
      * @name  __contains__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __contains__ = new func(function (self, item) {
 
         pyCheckArgs("__contains__", arguments, 1, 1, false, true);
 
         if (self.sq$contains(item)) {
-            return Sk.builtin.bool.true$;
+            return true$;
         } else {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
     });
@@ -73,7 +75,7 @@ export class seqtype extends object {
      *
      * @name  __getitem__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __getitem__ = new func(function (self, key) {
 
@@ -88,7 +90,7 @@ export class seqtype extends object {
      *
      * @name  __add__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __add__ = new func(function (self, other) {
 
@@ -103,7 +105,7 @@ export class seqtype extends object {
      *
      * @name  __mul__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __mul__ = new func(function (self, n) {
 
@@ -122,7 +124,7 @@ export class seqtype extends object {
      *
      * @name  __rmul__
      * @instance
-     * @memberOf Sk.builtin.seqtype.prototype
+     * @memberOf seqtype.prototype
      */
     __rmul__ = new func(function (self, n) {
 
@@ -133,7 +135,7 @@ export class seqtype extends object {
     })
 }
 
-setUpInheritance("SequenceType", Sk.builtin.seqtype, Sk.builtin.object);
+setUpInheritance("SequenceType", seqtype, object);
 
-Sk.builtin.seqtype.ct = true;
+seqtype.ct = true;
 
