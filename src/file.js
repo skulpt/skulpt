@@ -3,6 +3,7 @@ import { func } from './function';
 import { object, none } from './object';
 import { remapToJs, remapToPy } from './ffi';
 import { ValueError, NotImplementedError } from './errors';
+import { Suspension } from './misceval';
 
 export class file extends object {
     /**
@@ -107,7 +108,7 @@ export class file extends object {
             x = Sk.inputfun(lprompt);
 
             if (x instanceof Promise) {
-                susp = new Sk.misceval.Suspension();
+                susp = new Suspension();
 
                 susp.resume = function() {
                     if (susp.data.error) {

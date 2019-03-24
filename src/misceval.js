@@ -13,12 +13,6 @@ import {
 import { TypeError, ValueError, NameError } from './errors';
 import { asnum$ } from './builtin';
 
-/**
- * @namespace Sk.misceval
- *
- */
-Sk.misceval = {};
-
 /*
   Suspension object format:
   {resume: function() {...}, // the continuation - returns either another suspension or the return value
@@ -29,52 +23,53 @@ Sk.misceval = {};
   }
 */
 
-/**
- *
- * Hi kids lets make a suspension...
- * @constructor
- * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
- * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
- * @param{Object=} data Data attached to this suspension. Will be copied from child if not supplied.
- */
-Sk.misceval.Suspension = function Suspension(resume, child, data) {
-    this.$isSuspension = true;
-    if (resume !== undefined && child !== undefined) {
-        this.resume = function() { return resume(child.resume()); };
-    }
-    this.child = child;
-    this.optional = child !== undefined && child.optional;
-    if (data === undefined && child !== undefined) {
-        this.data = child.data;
-    } else {
-        this.data = data;
-    }
-};
-goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
+export class Suspension {
+    /**
+     *
+     * Hi kids lets make a suspension...
+     * @constructor
+     * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
+     * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
+     * @param{Object=} data Data attached to this suspension. Will be copied from child if not supplied.
+     */
+    constructor(resume, child, data) {
+        this.$isSuspension = true;
+        if (resume !== undefined && child !== undefined) {
+            this.resume = function() { return resume(child.resume()); };
+        }
+        this.child = child;
+        this.optional = child !== undefined && child.optional;
+        if (data === undefined && child !== undefined) {
+            this.data = child.data;
+        } else {
+            this.data = data;
+        }
+    };
+}
 
 /**
  *
  * Well this seems pretty obvious by the name what it should do..
  *
- * @param{Sk.misceval.Suspension} susp
+ * @param{Suspension} susp
  * @param{string=} message
  */
-Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
-    while (susp instanceof Sk.misceval.Suspension) {
+export function retryOptionalSuspensionOrThrow(susp, message) {
+    while (susp instanceof Suspension) {
         if (!susp.optional) {
             throw new SuspensionError(message || "Cannot call a function that blocks or suspends here");
         }
         susp = susp.resume();
     }
     return susp;
-};
+}
 
 /**
  * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
  * @param o
  * @returns {boolean}
  */
-Sk.misceval.isIndex = function (o) {
+export function isIndex(o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
@@ -82,9 +77,9 @@ Sk.misceval.isIndex = function (o) {
         return true;
     }
     return false;
-};
+}
 
-Sk.misceval.asIndex = function (o) {
+export function asIndex(o) {
     var idxfn, ret;
 
     if (!Sk.misceval.isIndex(o)) {
@@ -121,12 +116,12 @@ Sk.misceval.asIndex = function (o) {
         return asnum$(ret);
     }
     goog.asserts.fail("todo asIndex;");
-};
+}
 
 /**
  * return u[v:w]
  */
-Sk.misceval.applySlice = function (u, v, w, canSuspend) {
+export function applySlice(u, v, w, canSuspend) {
     var ihigh;
     var ilow;
     if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
@@ -141,13 +136,12 @@ Sk.misceval.applySlice = function (u, v, w, canSuspend) {
         return sequenceGetSlice(u, ilow, ihigh);
     }
     return objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
-};
-goog.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
+}
 
 /**
  * u[v:w] = x
  */
-Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
+export function assignSlice(u, v, w, x, canSuspend) {
     var slice;
     var ihigh;
     var ilow;
@@ -167,14 +161,13 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
             return objectSetItem(u, slice, x, canSuspend);
         }
     }
-};
-goog.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
+}
 
 /**
  * Used by min() and max() to get an array from arbitrary input.
  * Note that this does no validation, just coercion.
  */
-Sk.misceval.arrayFromArguments = function (args) {
+export function arrayFromArguments(args) {
     // If args is not a single thing return as is
     var it, i;
     var res;
@@ -205,8 +198,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     }
 
     throw new TypeError("'" + typeName(arg) + "' object is not iterable");
-};
-goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
+}
 
 /**
  * for reversed comparison: Gt -> Lt, etc.
@@ -230,7 +222,7 @@ Sk.misceval.swappedOp_ = {
 * @param{string} op
 * @param{boolean=} canSuspend
  */
-Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
+export function richCompareBool(v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
     var wname,
@@ -562,10 +554,9 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     vname = typeName(v);
     wname = typeName(w);
     throw new ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
-};
-goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
+}
 
-Sk.misceval.objectRepr = function (v) {
+export function objectRepr(v) {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if ((v === null) || (v instanceof Sk.builtin.none)) {
         return new Sk.builtin.str("None");
@@ -595,10 +586,9 @@ Sk.misceval.objectRepr = function (v) {
     } else {
         return v["$r"]();
     }
-};
-goog.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
+}
 
-Sk.misceval.opAllowsEquality = function (op) {
+export function opAllowsEquality(op) {
     switch (op) {
         case "LtE":
         case "Eq":
@@ -606,10 +596,9 @@ Sk.misceval.opAllowsEquality = function (op) {
             return true;
     }
     return false;
-};
-goog.exportSymbol("Sk.misceval.opAllowsEquality", Sk.misceval.opAllowsEquality);
+}
 
-Sk.misceval.isTrue = function (x) {
+export function isTrue(x) {
     var ret;
     if (x === true) {
         return true;
@@ -665,10 +654,11 @@ Sk.misceval.isTrue = function (x) {
     }
     return true;
 };
-goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
-Sk.misceval.print_ = function (x) {
+
+export function print_(x) {
+    // this was function print(x)   not sure why...
     var s;
 
     function isspace(c) {
@@ -692,13 +682,12 @@ Sk.misceval.print_ = function (x) {
         }
     });
 };
-goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 
 /**
  * @param {string} name
  * @param {Object=} other generally globals
  */
-Sk.misceval.loadname = function (name, other) {
+export function loadname(name, other) {
     var bi;
     var v = other[name];
     if (v !== undefined) {
@@ -714,8 +703,7 @@ Sk.misceval.loadname = function (name, other) {
     }
 
     throw new NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
-};
-goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
+}
 
 /**
  *
@@ -791,12 +779,11 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  *
  * TODO I think all the above is out of date.
  */
-Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
+export function call(func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.apply(func, kwdict, varargseq, kws, args);
-};
-goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
+}
 
 /**
  * @param {?Object} suspensionHandlers
@@ -809,66 +796,58 @@ goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
  *
  * TODO I think all the above is out of date.
  */
-
-Sk.misceval.callAsync = function (suspensionHandlers, func, kwdict, varargseq, kws, args) {
+export function callAsync(suspensionHandlers, func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 5);
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.applyAsync(suspensionHandlers, func, kwdict, varargseq, kws, args);
-};
-goog.exportSymbol("Sk.misceval.callAsync", Sk.misceval.callAsync);
+}
 
-
-Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args) {
+export function callOrSuspend(func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
-};
-goog.exportSymbol("Sk.misceval.callOrSuspend", Sk.misceval.callOrSuspend);
+}
 
 /**
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
  */
-Sk.misceval.callsim = function (func, args) {
+export function callsim(func, args) {
     args = Array.prototype.slice.call(arguments, 1);
     return Sk.misceval.apply(func, undefined, undefined, undefined, args);
-};
-goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
+}
 
 /**
  * @param {?Object} suspensionHandlers any custom suspension handlers
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
  */
-Sk.misceval.callsimAsync = function (suspensionHandlers, func, args) {
+export function callsimAsync(suspensionHandlers, func, args) {
     args = Array.prototype.slice.call(arguments, 2);
     return Sk.misceval.applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
-};
-goog.exportSymbol("Sk.misceval.callsimAsync", Sk.misceval.callsimAsync);
+}
 
 
 /**
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
  */
-Sk.misceval.callsimOrSuspend = function (func, args) {
+export function callsimOrSuspend(func, args) {
     args = Array.prototype.slice.call(arguments, 1);
     return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
-};
-goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+}
 
 /**
  * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
  */
-Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
+export function apply(func, kwdict, varargseq, kws, args) {
     var r = Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
     if (r instanceof Sk.misceval.Suspension) {
         return Sk.misceval.retryOptionalSuspensionOrThrow(r);
     } else {
         return r;
     }
-};
-goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
+}
 
 /**
  * Wraps anything that can return an Sk.misceval.Suspension, and returns a
@@ -903,7 +882,7 @@ goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  * @param{function()} suspendablefn returns either a result or a Suspension
  * @param{Object=} suspHandlers an object map of suspension handlers
  */
-Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
+export function asyncToPromise(suspendablefn, suspHandlers) {
     return new Promise(function(resolve, reject) {
         try {
             var r = suspendablefn();
@@ -985,15 +964,13 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
             reject(e);
         }
     });
-};
-goog.exportSymbol("Sk.misceval.asyncToPromise", Sk.misceval.asyncToPromise);
+}
 
-Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, args) {
+export function applyAsync(suspHandlers, func, kwdict, varargseq, kws, args) {
     return Sk.misceval.asyncToPromise(function() {
         return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
     }, suspHandlers);
-};
-goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
+}
 
 /**
  * Chain together a set of functions, each of which might return a value or
@@ -1015,8 +992,7 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  * @param {*}              initialValue
  * @param {...function(*)} chainedFns
  */
-
-Sk.misceval.chain = function (initialValue, chainedFns) {
+export function chain(initialValue, chainedFns) {
     // We try to minimse overhead when nothing suspends (the common case)
     var i = 1, value = initialValue, j, fs;
 
@@ -1054,9 +1030,7 @@ Sk.misceval.chain = function (initialValue, chainedFns) {
 
         return r;
     })(value);
-};
-goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
-
+}
 
 /**
  * Catch any exceptions thrown by a function, or by resuming any suspension it
@@ -1069,7 +1043,7 @@ goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
  * Because exceptions are returned asynchronously aswell you can't catch them
  * with a try/catch. That's what this function is for.
  */
-Sk.misceval.tryCatch = function (tryFn, catchFn) {
+export function tryCatch(tryFn, catchFn) {
     var r;
 
     try {
@@ -1085,8 +1059,7 @@ Sk.misceval.tryCatch = function (tryFn, catchFn) {
     } else {
         return r;
     }
-};
-goog.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
+}
 
 /**
  * Perform a suspension-aware for-each on an iterator, without
@@ -1110,7 +1083,7 @@ goog.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
  * @param {function(*,*=)} forFn
  * @param {*=} initialValue
  */
-Sk.misceval.iterFor = function (iter, forFn, initialValue) {
+export function iterFor(iter, forFn, initialValue) {
     var prevValue = initialValue;
 
     var breakOrIterNext = function(r) {
@@ -1135,31 +1108,31 @@ Sk.misceval.iterFor = function (iter, forFn, initialValue) {
         }
         return prevValue;
     })(iter.tp$iternext(true));
-};
-goog.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
+}
 
-/**
- * A special value to return from an iterFor() function,
- * to abort the iteration. Optionally supply a value for iterFor() to return
- * (defaults to 'undefined')
- *
- * @constructor
- * @param {*=}  brValue
- */
-Sk.misceval.Break = function(brValue) {
-    if (!(this instanceof Sk.misceval.Break)) {
-        return new Sk.misceval.Break(brValue);
-    }
+export class Break {
+    /**
+     * A special value to return from an iterFor() function,
+     * to abort the iteration. Optionally supply a value for iterFor() to return
+     * (defaults to 'undefined')
+     *
+     * @constructor
+     * @param {*=}  brValue
+     */
+    constructor(brValue) {
+        if (!(this instanceof Sk.misceval.Break)) {
+            return new Sk.misceval.Break(brValue);
+        }
 
-    this.brValue = brValue;
-};
-goog.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
+        this.brValue = brValue;
+    };
+}
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
  */
-Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
+export function applyOrSuspend(func, kwdict, varargseq, kws, args) {
     var fcall;
     var it, i;
 
@@ -1202,13 +1175,12 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     }
 
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-};
-goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
+}
 
 /**
  * Do the boilerplate suspension stuff.
  */
-Sk.misceval.promiseToSuspension = function(promise) {
+export function promiseToSuspension(promise) {
     var suspension = new Sk.misceval.Suspension();
 
     suspension.resume = function() {
@@ -1225,8 +1197,7 @@ Sk.misceval.promiseToSuspension = function(promise) {
     };
 
     return suspension;
-};
-goog.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
+}
 
 /**
  * Constructs a class object given a code object representing the body
@@ -1243,7 +1214,7 @@ goog.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspen
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
+export function buildClass(globals, func, name, bases, cell) {
     // todo; metaclass
     var klass;
     var meta = Sk.builtin.type;
@@ -1278,5 +1249,4 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
 
     return klass;
-};
-goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
+}

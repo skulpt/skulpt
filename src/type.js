@@ -6,6 +6,15 @@ import { checkString } from './function';
 import { object, none } from './object';
 import { tuple } from './tuple';
 import { TypeError, AttributeError } from './errors';
+import {
+    retryOptionalSuspensionOrThrow,
+    applyOrSuspend,
+    chain,
+    callsimOrSuspend,
+    tryCatch,
+    apply,
+    callsim
+} from './misceval';
 
 /**
  * Maps Python dunder names to the Skulpt Javascript function names that
@@ -164,17 +173,17 @@ export function type(name, bases, dict) {
                 } else {
                     newargs = args.slice();
                     newargs.unshift(klass);
-                    self = Sk.misceval.applyOrSuspend(newf, undefined, undefined, kws, newargs);
+                    self = applyOrSuspend(newf, undefined, undefined, kws, newargs);
                 }
 
-                return Sk.misceval.chain(self, function(s) {
+                return chain(self, function(s) {
                     var init = typeLookup(s.ob$type, "__init__");
 
                     self = s; // in case __new__ suspended
 
                     if (init !== undefined) {
                         args.unshift(self);
-                        return Sk.misceval.applyOrSuspend(init, undefined, undefined, kws, args);
+                        return applyOrSuspend(init, undefined, undefined, kws, args);
                     } else if (newf === undefined && (args.length !== 0 || kws.length !== 0) && !inheritsBuiltin) {
                         // We complain about spurious constructor arguments if neither __new__
                         // nor __init__ were overridden
@@ -194,7 +203,7 @@ export function type(name, bases, dict) {
                 var mod;
                 var reprf = this.tp$getattr("__repr__");
                 if (reprf !== undefined && reprf.im_func !== object.prototype["__repr__"]) {
-                    return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
+                    return apply(reprf, undefined, undefined, undefined, []);
                 }
 
                 if ((klass.prototype.tp$base !== undefined) &&
@@ -218,8 +227,8 @@ export function type(name, bases, dict) {
             tp$setattr(name, data, canSuspend) {
                 var r, /** @type {(Object|undefined)} */ setf = object.prototype.GenericGetAttr.call(this, "__setattr__");
                 if (setf !== undefined) {
-                    r = Sk.misceval.callsimOrSuspend(/** @type {Object} */ (setf), new str(name), data);
-                    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                    r = callsimOrSuspend(/** @type {Object} */ (setf), new str(name), data);
+                    return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
                 }
 
                 return object.prototype.GenericSetAttr.call(this, name, data, canSuspend);
@@ -241,8 +250,8 @@ export function type(name, bases, dict) {
 
                 // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
                 // convention
-                r = Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new str(name));
+                r = tryCatch(function() {
+                    return callsimOrSuspend(/** @type {Object} */ (getf), new str(name));
                 }, function (e) {
                     if (e instanceof AttributeError) {
                         return undefined;
@@ -251,13 +260,13 @@ export function type(name, bases, dict) {
                     }
                 });
 
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
             }
 
             tp$str() {
                 var strf = this.tp$getattr("__str__");
                 if (strf !== undefined && strf.im_func !== object.prototype["__str__"]) {
-                    return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
+                    return apply(strf, undefined, undefined, undefined, []);
                 }
                 if ((klass.prototype.tp$base !== undefined) &&
                     (klass.prototype.tp$base !== object) &&
@@ -269,18 +278,18 @@ export function type(name, bases, dict) {
             }
 
             tp$length(canSuspend) {
-                var r = Sk.misceval.chain(gattr(this, "__len__", canSuspend), function(lenf) {
-                    return Sk.misceval.applyOrSuspend(lenf, undefined, undefined, undefined, []);
+                var r = chain(gattr(this, "__len__", canSuspend), function(lenf) {
+                    return applyOrSuspend(lenf, undefined, undefined, undefined, []);
                 });
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
             }
 
             tp$call(args, kw) {
-                return Sk.misceval.chain(this.tp$getattr("__call__", true), function(callf) {
+                return chain(this.tp$getattr("__call__", true), function(callf) {
                     if (callf === undefined) {
                         throw new TypeError("'" + typeName(this) + "' object is not callable");
                     }
-                    return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
+                    return applyOrSuspend(callf, undefined, undefined, kw, args);
                 });
             }
 
@@ -289,7 +298,7 @@ export function type(name, bases, dict) {
                 if (iterf === undefined) {
                     throw new TypeError("'" + typeName(this) + "' object is not iterable");
                 }
-                return Sk.misceval.callsim(iterf);
+                return callsim(iterf);
             }
 
             tp$iternext(canSuspend) {
@@ -301,13 +310,13 @@ export function type(name, bases, dict) {
                 } else {
                     next = "next";
                 }
-                var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
+                var r = chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
                     if (iternextf === undefined) {
                         throw new TypeError("'" + typeName(self) + "' object is not iterable");
                     }
 
-                    return Sk.misceval.tryCatch(function() {
-                        return Sk.misceval.callsimOrSuspend(iternextf);
+                    return tryCatch(function() {
+                        return callsimOrSuspend(iternextf);
                     }, function(e) {
                         if (e instanceof Sk.builtin.StopIteration) {
                             return undefined;
@@ -317,14 +326,14 @@ export function type(name, bases, dict) {
                     });
                 });
 
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
             }
 
             tp$getitem(key, canSuspend) {
                 var getf = this.tp$getattr("__getitem__", canSuspend), r;
                 if (getf !== undefined) {
-                    r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
-                    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                    r = applyOrSuspend(getf, undefined, undefined, undefined, [key]);
+                    return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
                 }
                 throw new TypeError("'" + typeName(this) + "' object does not support indexing");
             }
@@ -332,8 +341,8 @@ export function type(name, bases, dict) {
             tp$setitem(key, value, canSuspend) {
                 var setf = this.tp$getattr("__setitem__", canSuspend), r;
                 if (setf !== undefined) {
-                    r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
-                    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                    r = applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
+                    return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
                 }
                 throw new TypeError("'" + typeName(this) + "' object does not support item assignment");
             }
@@ -420,10 +429,10 @@ export function type(name, bases, dict) {
                     args.splice(canSuspendIdx+1, 1);
 
                     if (canSuspend) {
-                        return Sk.misceval.callsimOrSuspend.apply(undefined, args);
+                        return callsimOrSuspend.apply(undefined, args);
                     }
                 }
-                return Sk.misceval.callsim.apply(undefined, args);
+                return callsim.apply(undefined, args);
             };
         };
 

@@ -1,4 +1,5 @@
 import { setUpInheritance } from "./abstract";
+import { Suspension } from './method';
 
 /**
  * @constructor
@@ -76,9 +77,9 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
     }
     ret = this.func_code.apply(this.func_globals, args);
     return (function finishIteration(ret) {
-        if (ret instanceof Sk.misceval.Suspension) {
+        if (ret instanceof Suspension) {
             if (canSuspend) {
-                return new Sk.misceval.Suspension(finishIteration, ret);
+                return new Suspension(finishIteration, ret);
             } else {
                 ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
             }
