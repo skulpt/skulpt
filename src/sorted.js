@@ -4,6 +4,7 @@ import { float_ } from './float';
 import { int_ } from './int';
 import { none } from './object';
 import { list as listType } from './list';
+import { false$ } from './constants'
 
 export function sorted (iterable, cmp, key, reverse) {
     var arr;
@@ -72,4 +73,8 @@ export function sorted (iterable, cmp, key, reverse) {
     return list;
 };
 
-/* NOTE: See constants used for kwargs in constants.js */
+// Sk.builtin.sorted
+sorted.co_varnames = ["cmp", "key", "reverse"];
+sorted.co_numargs = 4;
+sorted.$defaults = [none.none$, none.none$, false$];
+

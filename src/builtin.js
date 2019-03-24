@@ -3,6 +3,7 @@ import { remapToJs, remapToPy } from './ffi';
 import { pyCheckArgs } from './function';
 import { none, NotImplementedError } from './object';
 import { ValueError, TypeError, AttributeError, RangeError } from './errors';
+import { $emptystr } from './constants';
 
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
@@ -1245,7 +1246,7 @@ export function format (value, format_spec) {
     pyCheckArgs("format", arguments, 1, 2);
 
     if (format_spec === undefined) {
-        format_spec = Sk.builtin.str.$emptystr;
+        format_spec = $emptystr;
     }
 
     return objectFormat(value, format_spec);

@@ -5,6 +5,7 @@ import { object, none } from './object';
 import { dict } from './dict';
 import { str } from './str';
 import { list } from './list';
+import { true$, false$ } from './constants';
 
 export class set {
     /**
@@ -54,15 +55,15 @@ export class set {
     ob$eq(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (!(other instanceof set)) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         if (this.sq$length() !== other.sq$length()) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         return this.issubset.func_code(this, other);
@@ -71,34 +72,34 @@ export class set {
     ob$ne(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         if (!(other instanceof set)) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (this.sq$length() !==
             other.sq$length()) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (this["issubset"].func_code(this, other).v) {
-            return Sk.builtin.bool.false$;
+            return false$;
         } else {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
     };
 
     ob$lt(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         if (this.sq$length() >=
             other.sq$length()) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         return this["issubset"].func_code(this, other);
@@ -107,12 +108,12 @@ export class set {
     ob$le(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (this.sq$length() >
             other.sq$length()) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         return this["issubset"].func_code(this, other);
@@ -121,12 +122,12 @@ export class set {
     ob$gt(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         if (this.sq$length() <=
             other.sq$length()) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         return this["issuperset"].func_code(this, other);
@@ -135,12 +136,12 @@ export class set {
     ob$ge(other) {
 
         if (this === other) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
         if (this.sq$length() <
             other.sq$length()) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
         return this["issuperset"].func_code(this, other);
@@ -192,10 +193,10 @@ export class set {
         for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
             isIn = sequenceContains(other, item);
             if (isIn) {
-                return Sk.builtin.bool.false$;
+                return false$;
             }
         }
-        return Sk.builtin.bool.true$;
+        return true$;
     });
 
     issubset = new func(function (self, other) {
@@ -213,15 +214,15 @@ export class set {
 
         if (selfLength > otherLength) {
             // every item in this set can't be in other if it's shorter!
-            return Sk.builtin.bool.false$;
+            return false$;
         }
         for (it = iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
             isIn = sequenceContains(other, item);
             if (!isIn) {
-                return Sk.builtin.bool.false$;
+                return false$;
             }
         }
-        return Sk.builtin.bool.true$;
+        return true$;
     });
 
     issuperset = new func(function (self, other) {

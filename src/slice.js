@@ -2,9 +2,10 @@ import { setUpInheritance } from './abstract';
 import { pyCheckArgs, func, checkNone } from './function';
 import { ValueError, TypeError } from './errors';
 import { str } from './str';
-import { object } from './object';
+import { object, none } from './object';
 import { tuple } from './tuple';
 import { int_ } from './int';
+import { repr } from './builtin'
 
 export class slice extends object {
     /**
@@ -22,13 +23,13 @@ export class slice extends object {
 
         if (stop === undefined && step === undefined) {
             stop = start;
-            start = Sk.builtin.none.none$;
+            start = none.none$;
         }
         if (stop === undefined) {
-            stop = Sk.builtin.none.none$;
+            stop = none.none$;
         }
         if (step === undefined) {
-            step = Sk.builtin.none.none$;
+            step = none.none$;
         }
         this.start = start;
         this.stop = stop;
@@ -45,9 +46,9 @@ export class slice extends object {
     }
 
     $r() {
-        var a = Sk.builtin.repr(this.start).v;
-        var b = Sk.builtin.repr(this.stop).v;
-        var c = Sk.builtin.repr(this.step).v;
+        var a = repr(this.start).v;
+        var b = repr(this.stop).v;
+        var c = repr(this.step).v;
         return new str("slice(" + a + ", " + b + ", " + c + ")");
     }
 

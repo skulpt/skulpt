@@ -4,6 +4,7 @@ import { tuple } from './tuple';
 import { dict } from './dict';
 import { func } from './function';
 import { ValueError } from './errors';
+import { repr } from './builtin';
 
 function format(kwa) {
     // following PEP 3101
@@ -153,7 +154,7 @@ function format(kwa) {
                 return value;
             } else if( conversion == "r"){
                 s = new str(value);
-                r = Sk.builtin.repr(s);
+                r = repr(s);
                 return r.v;
             } else if(conversion == "s"){
                 r = new str(value);

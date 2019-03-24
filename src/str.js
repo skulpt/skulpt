@@ -20,6 +20,8 @@ import { tuple } from './tuple';
 import { float_ } from './float';
 import { int_ } from './int';
 import { lng } from './long';
+import { $emptystr } from './constants';
+import { repr } from './builtin';
 
 const mapInterned = typeof Map !== 'undefined';
 
@@ -493,7 +495,7 @@ export class str extends seqtype {
                     throw new TypeError("an integer is required");
                 }
             } else if (conversionType === "r") {
-                r = Sk.builtin.repr(value);
+                r = repr(value);
                 if (precision) {
                     return r.v.substr(0, precision);
                 }
@@ -698,7 +700,7 @@ export class str extends seqtype {
         sepStr = new str(sep);
         pos = self.v.indexOf(sepStr.v);
         if (pos < 0) {
-            return new tuple([self, str.$emptystr, str.$emptystr]);
+            return new tuple([self, $emptystr, $emptystr]);
         }
 
         return new tuple([
@@ -715,7 +717,7 @@ export class str extends seqtype {
         sepStr = new str(sep);
         pos = self.v.lastIndexOf(sepStr.v);
         if (pos < 0) {
-            return new tuple([str.$emptystr, str.$emptystr, self]);
+            return new tuple([$emptystr, $emptystr, self]);
         }
 
         return new tuple([
