@@ -4,6 +4,7 @@ import { pyCheckArgs } from './function';
 import { TypeError, ZeroDivisionError, NegativePowerError } from './errors';
 import { NotImplementedError } from './object';
 import { asnum$ } from './builtin';
+import { callsim, isIndex, asIndex } from './misceval';
 
 /**
  * @namespace Sk.builtin
@@ -67,7 +68,7 @@ export class float_ {
         var special = lookupSpecial(x, "__float__");
         if (special != null) {
             // method on builtin, provide this arg
-            return Sk.misceval.callsim(special, x);
+            return callsim(special, x);
         }
 
         throw new TypeError("float() argument must be a string or a number");
@@ -158,7 +159,7 @@ export class float_ {
         }
 
         // call internal float method
-        fo = Sk.misceval.callsim(f, op);
+        fo = callsim(f, op);
 
         // return value of __float__ must be a python float
         if (!float_.PyFloat_Check(fo)) {
@@ -749,7 +750,7 @@ export class float_ {
 
         var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
-        if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        if ((ndigits !== undefined) && !isIndex(ndigits)) {
             throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
         }
 
@@ -757,7 +758,7 @@ export class float_ {
         if (ndigits === undefined) {
             ndigs = 0;
         } else {
-            ndigs = Sk.misceval.asIndex(ndigits);
+            ndigs = asIndex(ndigits);
         }
 
         if (Sk.__future__.bankers_rounding) {

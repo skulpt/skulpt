@@ -1,6 +1,7 @@
 import { lookupSpecial, setUpInheritance } from './abstract';
 import { remapToPy } from './ffi';
 import { StopIteration, IndexError } from './error';
+import { callsim, tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow, richCompareBool } from './misceval';
 
 /**
   * Builds an iterator that outputs the items from the inputted object
@@ -22,7 +23,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     }
     objit = lookupSpecial(obj, "__iter__");
     if (objit) {
-        return Sk.misceval.callsim(objit, obj);
+        return callsim(objit, obj);
     }
     this.sentinel = sentinel;
     this.flag = false;
@@ -64,8 +65,8 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
     }
 
     if (this.getitem) {
-        r = Sk.misceval.tryCatch(function() {
-            return Sk.misceval.callsimOrSuspend(self.getitem, self.obj, remapToPy(self.idx++));
+        r = tryCatch(function() {
+            return callsimOrSuspend(self.getitem, self.obj, remapToPy(self.idx++));
         }, function(e) {
             if (e instanceof StopIteration || e instanceof IndexError) {
                 return undefined;
@@ -73,12 +74,12 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
                 throw e;
             }
         });
-        return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+        return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
     }
 
     var checkSentinel = function (ret) {
         // Iteration is complete if ret value is the sentinel
-        if (Sk.misceval.richCompareBool(ret, self.sentinel, "Eq")) {
+        if (richCompareBool(ret, self.sentinel, "Eq")) {
             self.flag = true;
             return undefined;
         }
@@ -86,13 +87,13 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
     };
 
     if (this.call) {
-        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspend(this.call, this.obj), checkSentinel);
+        r = chain(callsimOrSuspend(this.call, this.obj), checkSentinel);
     } else {
         var obj = /** @type {Object} */ (this.obj);
-        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspend(obj), checkSentinel);
+        r = chain(callsimOrSuspend(obj), checkSentinel);
     }
 
-    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+    return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
 };
 
 Sk.builtin.iterator.prototype.next$ = function (self) {

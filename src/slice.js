@@ -5,7 +5,8 @@ import { str } from './str';
 import { object, none } from './object';
 import { tuple } from './tuple';
 import { int_ } from './int';
-import { repr, asnum$ } from './builtin'
+import { repr, asnum$ } from './builtin';
+import { isIndex, asIndex } from './misceval';
 
 export class slice extends object {
     /**
@@ -17,7 +18,7 @@ export class slice extends object {
     constructor(start, stop, step) {
         pyCheckArgs("slice", arguments, 1, 3, false, false);
 
-        if ((step !== undefined) && Sk.misceval.isIndex(step) && (Sk.misceval.asIndex(step) === 0)) {
+        if ((step !== undefined) && isIndex(step) && (asIndex(step) === 0)) {
             throw new ValueError("slice step cannot be zero");
         }
 
@@ -81,24 +82,24 @@ export class slice extends object {
 
         if (checkNone(this.start)) {
             start = null;
-        } else if (Sk.misceval.isIndex(this.start)) {
-            start = Sk.misceval.asIndex(this.start);
+        } else if (isIndex(this.start)) {
+            start = asIndex(this.start);
         } else {
             throw new TypeError("slice indices must be integers or None");
         }
 
         if (checkNone(this.stop)) {
             stop = null;
-        } else if (Sk.misceval.isIndex(this.stop)) {
-            stop = Sk.misceval.asIndex(this.stop);
+        } else if (isIndex(this.stop)) {
+            stop = asIndex(this.stop);
         } else {
             throw new TypeError("slice indices must be integers or None");
         }
 
         if (checkNone(this.step)) {
             step = null;
-        } else if (Sk.misceval.isIndex(this.step)) {
-            step = Sk.misceval.asIndex(this.step);
+        } else if (isIndex(this.step)) {
+            step = asIndex(this.step);
         } else {
             throw new TypeError("slice indices must be integers or None");
         }

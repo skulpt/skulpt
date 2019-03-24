@@ -1,5 +1,7 @@
 import { compile, resetCompiler } from './compile';
 import { ImportError } from './errors';
+import { chain, tryCatch, Break, iterFor, retryOptionalSuspensionOrThrow } from './misceval';
+
 /**
  * @namespace Sk
  *
@@ -22,14 +24,14 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
     var it, i;
 
     var tryPathAndBreakOnSuccess = function(filename, packagePath) {
-        return Sk.misceval.chain(
-            Sk.misceval.tryCatch(function() {
+        return chain(
+            tryCatch(function() {
                 return Sk.read(filename);
             }, function(e) { /* Exceptions signal "not found" */ }),
             function(code) {
                 if (code !== undefined) {
                     // This will cause the iterFor() to return the specified value
-                    return new Sk.misceval.Break({filename: filename, code: code, packagePath: packagePath});
+                    return new Break({filename: filename, code: code, packagePath: packagePath});
                 }
             }
         );
@@ -39,10 +41,10 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
         searchPath = Sk.realsyspath;
     }
 
-    return Sk.misceval.iterFor(searchPath.tp$iter(), function(pathStr) {
+    return iterFor(searchPath.tp$iter(), function(pathStr) {
         // For each element of path, try loading the module, and if that
         // doesn't work, try the corresponding package.
-        return Sk.misceval.chain(
+        return chain(
             tryPathAndBreakOnSuccess(pathStr.v + "/" + nameAsPath + ext, false), // module
             function(r) {
                 return r ? r : tryPathAndBreakOnSuccess(pathStr.v + "/" + nameAsPath + "/__init__" + ext,
@@ -122,7 +124,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     for (var file in Sk.internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
         var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
+        mod = retryOptionalSuspensionOrThrow(mod);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
     }
@@ -219,7 +221,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         topLevelModuleToReturn = Sk.importModuleInternal_(parentModName, dumpJS, undefined, undefined, relativeToPackage, returnUndefinedOnTopLevelNotFound, canSuspend);
     }
 
-    ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
+    ret = chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
         var codeAndPath, co, googClosure;
         var searchFileName = name;
         var result;
@@ -405,7 +407,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         return module;
     });
 
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    return canSuspend ? ret : retryOptionalSuspensionOrThrow(ret);
 };
 
 /**
@@ -511,7 +513,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     var dottedName = name.split(".");
     var firstDottedName = dottedName[0];
 
-    return Sk.misceval.chain(undefined, function() {
+    return chain(undefined, function() {
             // Attempt local load first (and just fall through to global
             // case if level == -1 and we fail to load the top-level package)
             if (level !== 0 && relativeToPackage !== undefined) {

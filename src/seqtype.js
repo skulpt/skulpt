@@ -4,6 +4,7 @@ import { object } from './object';
 import { ExternalError, TypeError } from './errors';
 import { int_ } from './int';
 import { true$, false$ } from './constants';
+import { isIndex } from './misceval';
 
 export class seqtype extends object {
     /**
@@ -111,7 +112,7 @@ export class seqtype extends object {
 
         pyCheckArgs("__mul__", arguments, 1, 1, false, true);
 
-        if (!Sk.misceval.isIndex(n)) {
+        if (!isIndex(n)) {
             throw new TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
         }
 

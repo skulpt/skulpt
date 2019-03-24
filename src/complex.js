@@ -14,6 +14,7 @@ import { tuple } from './tuple';
 import { type } from './type';
 import { issubclass } from './builtin';
 import { str } from './str';
+import { richCompareBool, callsim } from './misceval';
 
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
@@ -423,7 +424,7 @@ export class complex {
 
             // if true, the complex number has just a real part
             if (_imag === 0.0) {
-                equal = Sk.misceval.richCompareBool(new float_(_real), w, op);
+                equal = richCompareBool(new float_(_real), w, op);
                 result = new bool( equal);
                 return result;
             } else {
@@ -716,7 +717,7 @@ export class complex {
 
         if (f != null) {
             // method on builtin, provide this arg
-            res = Sk.misceval.callsim(f, op);
+            res = callsim(f, op);
 
             return res;
         }

@@ -1,6 +1,18 @@
 import { none } from './object';
 import { TypeError, NameError, ZeroDivisionError, AttributeError, IndexError } from './errors';
 import { asnum$ } from './builtin';
+import {
+    callsim,
+    isTrue,
+    iterFor,
+    richCompareBool,
+    Break,
+    retryOptionalSuspensionOrThrow,
+    asIndex,
+    isIndex,
+    chain
+} from './misceval';
+
 // Number
 //
 
@@ -177,7 +189,7 @@ function binary_op_(v, w, opname) {
             if (wop.call) {
                 ret = wop.call(w, v);
             } else {
-                ret = Sk.misceval.callsim(wop, w, v);
+                ret = callsim(wop, w, v);
             }
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -190,7 +202,7 @@ function binary_op_(v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {
-            ret = Sk.misceval.callsim(vop, v, w);
+            ret = callsim(vop, v, w);
         }
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
@@ -203,7 +215,7 @@ function binary_op_(v, w, opname) {
             if (wop.call) {
                 ret = wop.call(w, v);
             } else {
-                ret = Sk.misceval.callsim(wop, w, v);
+                ret = callsim(wop, w, v);
             }
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -221,7 +233,7 @@ function binary_iop_(v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsim(vop, v, w);
+            ret = callsim(vop, v, w);
         }
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
@@ -238,7 +250,7 @@ function unary_op_(v, opname) {
         if (vop.call) {
             ret = vop.call(v);
         } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsim(vop, v); //  added to be like not-in-place... is this okay?
+            ret = callsim(vop, v); //  added to be like not-in-place... is this okay?
         }
         if (ret !== undefined) {
             return ret;
@@ -417,7 +429,7 @@ export function numberInplaceBinOp(v, w, op) {
 export function numberUnaryOp(v, op) {
     var value;
     if (op === "Not") {
-        return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+        return isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     } else if (v instanceof Sk.builtin.bool) {
         value = asnum$(v);
         if (op === "USub") {
@@ -477,7 +489,7 @@ export function sequenceContains(seq, ob, canSuspend) {
     special = lookupSpecial(seq, "__contains__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.isTrue(Sk.misceval.callsim(special, seq, ob));
+        return isTrue(callsim(special, seq, ob));
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
@@ -485,15 +497,15 @@ export function sequenceContains(seq, ob, canSuspend) {
         throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    r = Sk.misceval.iterFor(iter(seq), function(i) {
-        if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
-            return new Sk.misceval.Break(true);
+    r = iterFor(iter(seq), function(i) {
+        if (richCompareBool(i, ob, "Eq")) {
+            return new Break(true);
         } else {
             return false;
         }
     }, false);
 
-    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+    return canSuspend ? r : retryOptionalSuspensionOrThrow(r);
 }
 
 export function sequenceConcat(seq1, seq2) {
@@ -510,13 +522,13 @@ export function sequenceGetIndexOf(seq, ob) {
     var i, it;
     var index;
     if (seq.index) {
-        return Sk.misceval.callsim(seq.index, seq, ob);
+        return callsim(seq.index, seq, ob);
     }
     if (Sk.builtin.checkIterable(seq)) {
         index = 0;
         for (it = iter(seq), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+            if (richCompareBool(ob, i, "Eq")) {
                 return new Sk.builtin.int_(index);
             }
             index += 1;
@@ -533,13 +545,13 @@ export function sequenceGetCountOf(seq, ob) {
     var i, it;
     var count;
     if (seq.count) {
-        return Sk.misceval.callsim(seq.count, seq, ob);
+        return callsim(seq.count, seq, ob);
     }
     if (Sk.builtin.checkIterable(seq)) {
         count = 0;
         for (it = iter(seq), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+            if (richCompareBool(ob, i, "Eq")) {
                 count += 1;
             }
         }
@@ -586,7 +598,7 @@ export function sequenceRepeat(f, seq, n) {
     var ntypename;
     var count;
     n = asnum$(n);
-    count = Sk.misceval.asIndex(n);
+    count = asIndex(n);
     if (count === undefined) {
         ntypename = typeName(n);
         throw new TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
@@ -677,7 +689,7 @@ export function objectFormat(obj, format_spec) {
     }
 
     // And call it
-    result = Sk.misceval.callsim(meth, obj, format_spec);
+    result = callsim(meth, obj, format_spec);
     if (!Sk.builtin.checkString(result)) {
         throw new TypeError("__format__ must return a str, not " + typeName(result));
     }
@@ -740,7 +752,7 @@ export function objectDelItem(o, key) {
             return;
         }
         if (o.sq$ass_item) {
-            keyValue = Sk.misceval.asIndex(key);
+            keyValue = asIndex(key);
             if (keyValue === undefined) {
                 keytypename = typeName(key);
                 throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
@@ -762,8 +774,8 @@ export function objectGetItem(o, key, canSuspend) {
             return o.tp$getitem(key, canSuspend);
         } else if (o.mp$subscript) {
             return o.mp$subscript(key, canSuspend);
-        } else if (Sk.misceval.isIndex(key) && o.sq$item) {
-            return sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
+        } else if (isIndex(key) && o.sq$item) {
+            return sequenceGetItem(o, asIndex(key), canSuspend);
         }
     }
 
@@ -778,8 +790,8 @@ export function objectSetItem(o, key, v, canSuspend) {
             return o.tp$setitem(key, v, canSuspend);
         } else if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v, canSuspend);
-        } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
-            return sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
+        } else if (isIndex(key) && o.sq$ass_item) {
+            return sequenceSetItem(o, asIndex(key), v, canSuspend);
         }
     }
 
@@ -800,14 +812,14 @@ export function gattr(obj, nameJS, canSuspend) {
         ret = obj.tp$getattr(nameJS, canSuspend);
     }
 
-    ret = Sk.misceval.chain(ret, function(r) {
+    ret = chain(ret, function(r) {
         if (r === undefined) {
             throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
         }
         return r;
     });
 
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    return canSuspend ? ret : retryOptionalSuspensionOrThrow(ret);
 }
 
 
@@ -863,7 +875,7 @@ export function iter(obj) {
         this.tp$iternext = function () {
             var ret;
             try {
-                ret = Sk.misceval.callsim(this.getitem, this.myobj, ToPy(this.idx));
+                ret = callsim(this.getitem, this.myobj, ToPy(this.idx));
             } catch (e) {
                 if (e instanceof IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
@@ -879,7 +891,7 @@ export function iter(obj) {
     if (obj.tp$getattr) {
         iter =  lookupSpecial(obj,"__iter__");
         if (iter) {
-            ret = Sk.misceval.callsim(iter, obj);
+            ret = callsim(iter, obj);
             if (ret.tp$iternext) {
                 return ret;
             }

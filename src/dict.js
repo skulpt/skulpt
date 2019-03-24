@@ -9,6 +9,7 @@ import { bool } from './bool';
 import { tuple } from './tuple';
 import { dict } from './dict';
 import { true$, false$ } from './constants';
+import { richCompareBool, objectRepr, callsim } from './misceval';
 
 export class dict extends object {
     /**
@@ -84,7 +85,7 @@ export class dict extends object {
 
         for (i = 0; i < bucket.items.length; i++) {
             item = bucket.items[i];
-            eq = Sk.misceval.richCompareBool(item.lhs, key, "Eq");
+            eq = richCompareBool(item.lhs, key, "Eq");
             if (eq) {
                 return item;
             }
@@ -100,7 +101,7 @@ export class dict extends object {
 
         for (i = 0; i < bucket.items.length; i++) {
             item = bucket.items[i];
-            eq = Sk.misceval.richCompareBool(item.lhs, key, "Eq");
+            eq = richCompareBool(item.lhs, key, "Eq");
             if (eq) {
                 bucket.items.splice(i, 1);
                 this.size -= 1;
@@ -234,9 +235,9 @@ export class dict extends object {
             // we need to check if value is same as object
             // otherwise it would cause an stack overflow
             if(v === this) {
-                ret.push(Sk.misceval.objectRepr(k).v + ": {...}");
+                ret.push(objectRepr(k).v + ": {...}");
             } else {
-                ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
+                ret.push(objectRepr(k).v + ": " + objectRepr(v).v);
             }
         }
         return new str("{" + ret.join(", ") + "}");
@@ -264,7 +265,7 @@ export class dict extends object {
             }
         } else {
             // generic slower way
-            var keys = Sk.misceval.callsim(b["keys"], b);
+            var keys = callsim(b["keys"], b);
             for (iter = iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 v = b.tp$getitem(k); // get value
                 if (v === undefined) {
@@ -310,7 +311,7 @@ export class dict extends object {
             v = this.mp$subscript(k);
             otherv = other.mp$subscript(k);
 
-            if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
+            if (!richCompareBool(v, otherv, "Eq")) {
                 return false$;
             }
         }

@@ -4,6 +4,7 @@ import { pyCheckArgs } from './function';
 import { TypeError, ValueError } from './errors';
 import { NotImplementedError } from './object';
 import { asnum$ } from './builtin';
+import { isIndex, asIndex } from './misceval';
 
 /* global Sk: true, goog:true */
 
@@ -109,7 +110,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
-    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+    if ((ndigits !== undefined) && !isIndex(ndigits)) {
         throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
@@ -117,7 +118,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
-        ndigs = Sk.misceval.asIndex(ndigits);
+        ndigs = asIndex(ndigits);
     }
 
     if (Sk.__future__.bankers_rounding) {

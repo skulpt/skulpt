@@ -6,6 +6,7 @@ import { dict } from './dict';
 import { str } from './str';
 import { list } from './list';
 import { true$, false$ } from './constants';
+import { objectRepr } from './misceval';
 
 export class set {
     /**
@@ -43,7 +44,7 @@ export class set {
         var it, i;
         var ret = [];
         for (it = iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            ret.push(Sk.misceval.objectRepr(i).v);
+            ret.push(objectRepr(i).v);
         }
         if(Sk.__future__.set_repr) {
             return new str("{" + ret.join(", ") + "}");

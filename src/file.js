@@ -3,7 +3,7 @@ import { func } from './function';
 import { object, none } from './object';
 import { remapToJs, remapToPy } from './ffi';
 import { ValueError, NotImplementedError } from './errors';
-import { Suspension } from './misceval';
+import { Suspension, callsim } from './misceval';
 
 export class file extends object {
     /**
@@ -142,7 +142,7 @@ export class file extends object {
     })
 
     __exit__ = new func(function __exit__(self) {
-        return Sk.misceval.callsim(Sk.builtin.file.prototype["close"], self);
+        return callsim(Sk.builtin.file.prototype["close"], self);
     })
 
     close = new func(function close(self) {

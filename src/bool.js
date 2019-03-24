@@ -7,6 +7,7 @@ import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
 import { asnum$ } from './builtin';
 import { true$, false$ } from './constants';
+import { isTrue } from './misceval';
 
 /**
  * @constructor
@@ -26,7 +27,7 @@ import { true$, false$ } from './constants';
 export class bool extends int_ {
     constructor(x) {
         pyCheckArgs("bool", arguments, 1);
-        if (Sk.misceval.isTrue(x)) {
+        if (isTrue(x)) {
             return true$;
         } else {
             return false$;

@@ -3,6 +3,7 @@ import { pyCheckArgs, func } from './function';
 import { TypeError, IndexError, ValueError, StopIteration } from './errors';
 import { str } from './str';
 import { int_ } from './int';
+import { objectRepr, isIndex, asIndex, isTrue, richCompareBool } from './misceval';
 
 export class tuple {
     /**
@@ -44,7 +45,7 @@ export class tuple {
         }
         bits = [];
         for (i = 0; i < this.v.length; ++i) {
-            bits[i] = Sk.misceval.objectRepr(this.v[i]).v;
+            bits[i] = objectRepr(this.v[i]).v;
         }
         ret = bits.join(", ");
         if (this.v.length === 1) {
@@ -56,8 +57,8 @@ export class tuple {
     mp$subscript(index) {
         var ret;
         var i;
-        if (Sk.misceval.isIndex(index)) {
-            i = Sk.misceval.asIndex(index);
+        if (isIndex(index)) {
+            i = asIndex(index);
             if (i !== undefined) {
                 if (i < 0) {
                     i = this.v.length + i;
@@ -108,7 +109,7 @@ export class tuple {
         var i;
         var ret;
 
-        n = Sk.misceval.asIndex(n);
+        n = asIndex(n);
         ret = [];
         for (i = 0; i < n; ++i) {
             for (j = 0; j < this.v.length; ++j) {
@@ -132,7 +133,7 @@ export class tuple {
         var vl;
         var v;
         if (!w.__class__ ||
-            !Sk.misceval.isTrue(Sk.builtin.isinstance(w, Sk.builtin.tuple))) {
+            !isTrue(Sk.builtin.isinstance(w, Sk.builtin.tuple))) {
             // shortcuts for eq/not
             if (op === "Eq") {
                 return false;
@@ -151,7 +152,7 @@ export class tuple {
         wl = w.length;
 
         for (i = 0; i < vl && i < wl; ++i) {
-            k = Sk.misceval.richCompareBool(v[i], w[i], "Eq");
+            k = richCompareBool(v[i], w[i], "Eq");
             if (!k) {
                 break;
             }
@@ -189,7 +190,7 @@ export class tuple {
 
         // or, compare the differing element using the proper operator
         //print("  tup rcb end", i, v[i] instanceof Sk.builtin.str, JSON.stringify(v[i]), w[i] instanceof Sk.builtin.str, JSON.stringify(w[i]), op);
-        return Sk.misceval.richCompareBool(v[i], w[i], op);
+        return richCompareBool(v[i], w[i], op);
     }
 
     sq$concat(other) {
@@ -207,7 +208,7 @@ export class tuple {
         var it, i;
 
         for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+            if (richCompareBool(i, ob, "Eq")) {
                 return true;
             }
         }
@@ -235,7 +236,7 @@ export class tuple {
         var len = self.v.length;
         var obj = self.v;
         for (i = 0; i < len; ++i) {
-            if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+            if (richCompareBool(obj[i], item, "Eq")) {
                 return new int_(i);
             }
         }
@@ -248,7 +249,7 @@ export class tuple {
         var obj = self.v;
         var count = 0;
         for (i = 0; i < len; ++i) {
-            if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+            if (richCompareBool(obj[i], item, "Eq")) {
                 count += 1;
             }
         }

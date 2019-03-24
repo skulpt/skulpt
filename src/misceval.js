@@ -82,7 +82,7 @@ export function isIndex(o) {
 export function asIndex(o) {
     var idxfn, ret;
 
-    if (!Sk.misceval.isIndex(o)) {
+    if (!isIndex(o)) {
         return undefined;
     }
     if (o === null) {
@@ -108,7 +108,7 @@ export function asIndex(o) {
     }
     idxfn = lookupSpecial(o, "__index__");
     if (idxfn) {
-        ret = Sk.misceval.callsim(idxfn, o);
+        ret = callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
             throw new TypeError("__index__ returned non-(int,long) (type " +
                                            typeName(ret) + ")");
@@ -124,12 +124,12 @@ export function asIndex(o) {
 export function applySlice(u, v, w, canSuspend) {
     var ihigh;
     var ilow;
-    if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v);
+    if (u.sq$slice && isIndex(v) && isIndex(w)) {
+        ilow = asIndex(v);
         if (ilow === undefined) {
             ilow = 0;
         }
-        ihigh = Sk.misceval.asIndex(w);
+        ihigh = asIndex(w);
         if (ihigh === undefined) {
             ihigh = 1e100;
         }
@@ -145,9 +145,9 @@ export function assignSlice(u, v, w, x, canSuspend) {
     var slice;
     var ihigh;
     var ilow;
-    if (u.sq$ass_slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v) || 0;
-        ihigh = Sk.misceval.asIndex(w) || 1e100;
+    if (u.sq$ass_slice && isIndex(v) && isIndex(w)) {
+        ilow = asIndex(v) || 0;
+        ihigh = asIndex(w) || 1e100;
         if (x === null) {
             sequenceDelSlice(u, ilow, ihigh);
         } else {
@@ -203,7 +203,7 @@ export function arrayFromArguments(args) {
 /**
  * for reversed comparison: Gt -> Lt, etc.
  */
-Sk.misceval.swappedOp_ = {
+swappedOp_ = {
     "Eq"   : "Eq",
     "NotEq": "NotEq",
     "Lt"   : "GtE",
@@ -247,8 +247,8 @@ export function richCompareBool(v, w, op, canSuspend) {
         w_type,
         v_type;
 
-    goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
-    goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to richCompareBool");
+    goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to richCompareBool");
 
     v_type = new Sk.builtin.type(v);
     w_type = new Sk.builtin.type(w);
@@ -373,11 +373,11 @@ export function richCompareBool(v, w, op, canSuspend) {
     }
 
     if (op === "In") {
-        return Sk.misceval.chain(sequenceContains(w, v, canSuspend), Sk.misceval.isTrue);
+        return chain(sequenceContains(w, v, canSuspend), isTrue);
     }
     if (op === "NotIn") {
-        return Sk.misceval.chain(sequenceContains(w, v, canSuspend),
-                                 function(x) { return !Sk.misceval.isTrue(x); });
+        return chain(sequenceContains(w, v, canSuspend),
+                                 function(x) { return !isTrue(x); });
     }
 
     // Call Javascript shortcut method if exists for either object
@@ -395,29 +395,29 @@ export function richCompareBool(v, w, op, canSuspend) {
     v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
     if (v_has_shortcut) {
         if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
-    swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
+    swapped_shortcut = op2shortcut[swappedOp_[op]];
     w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
     if (w_has_shortcut) {
 
         if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
-    if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
+    if (w.tp$richcompare && (ret = w.tp$richcompare(v, swappedOp_[op])) !== undefined) {
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
@@ -436,24 +436,24 @@ export function richCompareBool(v, w, op, canSuspend) {
 
     method = lookupSpecial(v, op2method[op]);
     if (method && !v_has_shortcut) {
-        ret = Sk.misceval.callsim(method, v, w);
+        ret = callsim(method, v, w);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
-    swapped_method = lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    swapped_method = lookupSpecial(w, op2method[swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
-        ret = Sk.misceval.callsim(swapped_method, w, v);
+        ret = callsim(swapped_method, w, v);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
+            return isTrue(ret);
         }
     }
 
     vcmp = lookupSpecial(v, "__cmp__");
     if (vcmp) {
         try {
-            ret = Sk.misceval.callsim(vcmp, v, w);
+            ret = callsim(vcmp, v, w);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = asnum$(ret);
                 if (op === "Eq") {
@@ -483,7 +483,7 @@ export function richCompareBool(v, w, op, canSuspend) {
     if (wcmp) {
         // note, flipped on return value and call
         try {
-            ret = Sk.misceval.callsim(wcmp, w, v);
+            ret = callsim(wcmp, w, v);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = asnum$(ret);
                 if (op === "Eq") {
@@ -633,14 +633,14 @@ export function isTrue(x) {
         return x.v !== 0;
     }
     if (x["__nonzero__"]) {
-        ret = Sk.misceval.callsim(x["__nonzero__"], x);
+        ret = callsim(x["__nonzero__"], x);
         if (!Sk.builtin.checkInt(ret)) {
             throw new TypeError("__nonzero__ should return an int");
         }
         return asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
-        ret = Sk.misceval.callsim(x["__len__"], x);
+        ret = callsim(x["__len__"], x);
         if (!Sk.builtin.checkInt(ret)) {
             throw new TypeError("__len__ should return an int");
         }
@@ -655,7 +655,7 @@ export function isTrue(x) {
     return true;
 };
 
-Sk.misceval.softspace_ = false;
+export const softspace_ = false;
 
 export function print_(x) {
     // this was function print(x)   not sure why...
@@ -665,20 +665,20 @@ export function print_(x) {
         return c === "\n" || c === "\t" || c === "\r";
     }
 
-    if (Sk.misceval.softspace_) {
+    if (softspace_) {
         if (x !== "\n") {
             Sk.output(" ");
         }
-        Sk.misceval.softspace_ = false;
+        softspace_ = false;
     }
 
     s = new Sk.builtin.str(x);
 
-    return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
-        return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
+    return chain(Sk.importModule("sys", false, true), function(sys) {
+        return apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
     }, function () {
         if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
-            Sk.misceval.softspace_ = true;
+            softspace_ = true;
         }
     });
 };
@@ -782,7 +782,7 @@ export function loadname(name, other) {
 export function call(func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
-    return Sk.misceval.apply(func, kwdict, varargseq, kws, args);
+    return apply(func, kwdict, varargseq, kws, args);
 }
 
 /**
@@ -799,13 +799,13 @@ export function call(func, kwdict, varargseq, kws, args) {
 export function callAsync(suspensionHandlers, func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 5);
     // todo; possibly inline apply to avoid extra stack frame creation
-    return Sk.misceval.applyAsync(suspensionHandlers, func, kwdict, varargseq, kws, args);
+    return applyAsync(suspensionHandlers, func, kwdict, varargseq, kws, args);
 }
 
 export function callOrSuspend(func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
-    return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
+    return applyOrSuspend(func, kwdict, varargseq, kws, args);
 }
 
 /**
@@ -814,7 +814,7 @@ export function callOrSuspend(func, kwdict, varargseq, kws, args) {
  */
 export function callsim(func, args) {
     args = Array.prototype.slice.call(arguments, 1);
-    return Sk.misceval.apply(func, undefined, undefined, undefined, args);
+    return apply(func, undefined, undefined, undefined, args);
 }
 
 /**
@@ -824,7 +824,7 @@ export function callsim(func, args) {
  */
 export function callsimAsync(suspensionHandlers, func, args) {
     args = Array.prototype.slice.call(arguments, 2);
-    return Sk.misceval.applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
+    return applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
 }
 
 
@@ -834,23 +834,23 @@ export function callsimAsync(suspensionHandlers, func, args) {
  */
 export function callsimOrSuspend(func, args) {
     args = Array.prototype.slice.call(arguments, 1);
-    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
+    return applyOrSuspend(func, undefined, undefined, undefined, args);
 }
 
 /**
- * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
+ * Wrap applyOrSuspend, but throw an error if we suspend
  */
 export function apply(func, kwdict, varargseq, kws, args) {
-    var r = Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
-    if (r instanceof Sk.misceval.Suspension) {
-        return Sk.misceval.retryOptionalSuspensionOrThrow(r);
+    var r = applyOrSuspend(func, kwdict, varargseq, kws, args);
+    if (r instanceof Suspension) {
+        return retryOptionalSuspensionOrThrow(r);
     } else {
         return r;
     }
 }
 
 /**
- * Wraps anything that can return an Sk.misceval.Suspension, and returns a
+ * Wraps anything that can return an Suspension, and returns a
  * JS Promise with the result. Also takes an object map of suspension handlers:
  * pass in {"suspType": function (susp) {} }, and your function will be called
  * with the Suspension object if susp.type=="suspType". The type "*" will match
@@ -915,7 +915,7 @@ export function asyncToPromise(suspendablefn, suspHandlers) {
                     };
 
 
-                    while (r instanceof Sk.misceval.Suspension) {
+                    while (r instanceof Suspension) {
 
                         var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
 
@@ -967,27 +967,27 @@ export function asyncToPromise(suspendablefn, suspHandlers) {
 }
 
 export function applyAsync(suspHandlers, func, kwdict, varargseq, kws, args) {
-    return Sk.misceval.asyncToPromise(function() {
-        return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
+    return asyncToPromise(function() {
+        return applyOrSuspend(func, kwdict, varargseq, kws, args);
     }, suspHandlers);
 }
 
 /**
  * Chain together a set of functions, each of which might return a value or
- * an Sk.misceval.Suspension. Each function is called with the return value of
+ * an Suspension. Each function is called with the return value of
  * the preceding function, but does not see any suspensions. If a function suspends,
- * Sk.misceval.chain() returns a suspension that will resume the chain once an actual
+ * chain() returns a suspension that will resume the chain once an actual
  * return value is available.
  *
  * The idea is to allow a Promise-like chaining of possibly-suspending steps without
  * repeating boilerplate suspend-and-resume code.
  *
- * For example, imagine we call Sk.misceval.chain(x, f).
+ * For example, imagine we call chain(x, f).
  *  - If x is a value, we return f(x).
  *  - If x is a suspension, we suspend. We will suspend and resume until we get a
  *    return value, and then we will return f(<resumed-value).
  * This can be expanded to an arbitrary number of functions
- * (eg Sk.misceval.chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
+ * (eg chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
  *
  * @param {*}              initialValue
  * @param {...function(*)} chainedFns
@@ -1020,8 +1020,8 @@ export function chain(initialValue, chainedFns) {
 
     return (function nextStep(r) {
         while (j < fs.length) {
-            if (r instanceof Sk.misceval.Suspension) {
-                return new Sk.misceval.Suspension(nextStep, r);
+            if (r instanceof Suspension) {
+                return new Suspension(nextStep, r);
             }
 
             r = fs[j](r);
@@ -1036,7 +1036,7 @@ export function chain(initialValue, chainedFns) {
  * Catch any exceptions thrown by a function, or by resuming any suspension it
  * returns.
  *
- *     var result = Sk.misceval.tryCatch(asyncFunc, function(err) {
+ *     var result = tryCatch(asyncFunc, function(err) {
  *       console.log(err);
  *     });
  *
@@ -1052,9 +1052,9 @@ export function tryCatch(tryFn, catchFn) {
         return catchFn(e);
     }
 
-    if (r instanceof Sk.misceval.Suspension) {
-        var susp = new Sk.misceval.Suspension(undefined, r);
-        susp.resume = function() { return Sk.misceval.tryCatch(r.resume, catchFn); };
+    if (r instanceof Suspension) {
+        var susp = new Suspension(undefined, r);
+        susp.resume = function() { return tryCatch(r.resume, catchFn); };
         return susp;
     } else {
         return r;
@@ -1074,8 +1074,8 @@ export function tryCatch(tryFn, catchFn) {
  * initialValue will be returned.)
  *
  * The iteration can be terminated early, by returning
- * an instance of Sk.misceval.Break. If an argument is given to
- * the Sk.misceval.Break() constructor, that value will be
+ * an instance of Break. If an argument is given to
+ * the Break() constructor, that value will be
  * returned from iterFor(). It is therefore possible to use
  * iterFor() on infinite iterators.
  *
@@ -1088,20 +1088,20 @@ export function iterFor(iter, forFn, initialValue) {
 
     var breakOrIterNext = function(r) {
         prevValue = r;
-        return (r instanceof Sk.misceval.Break) ? r : iter.tp$iternext(true);
+        return (r instanceof Break) ? r : iter.tp$iternext(true);
     };
 
     return (function nextStep(i) {
         while (i !== undefined) {
-            if (i instanceof Sk.misceval.Suspension) {
-                return new Sk.misceval.Suspension(nextStep, i);
+            if (i instanceof Suspension) {
+                return new Suspension(nextStep, i);
             }
 
-            if (i === Sk.misceval.Break || i instanceof Sk.misceval.Break) {
+            if (i === Break || i instanceof Break) {
                 return i.brValue;
             }
 
-            i = Sk.misceval.chain(
+            i = chain(
                 forFn(i, prevValue),
                 breakOrIterNext
             );
@@ -1120,8 +1120,8 @@ export class Break {
      * @param {*=}  brValue
      */
     constructor(brValue) {
-        if (!(this instanceof Sk.misceval.Break)) {
-            return new Sk.misceval.Break(brValue);
+        if (!(this instanceof Break)) {
+            return new Break(brValue);
         }
 
         this.brValue = brValue;
@@ -1129,7 +1129,7 @@ export class Break {
 }
 
 /**
- * same as Sk.misceval.call except args is an actual array, rather than
+ * same as call except args is an actual array, rather than
  * varargs.
  */
 export function applyOrSuspend(func, kwdict, varargseq, kws, args) {
@@ -1181,7 +1181,7 @@ export function applyOrSuspend(func, kwdict, varargseq, kws, args) {
  * Do the boilerplate suspension stuff.
  */
 export function promiseToSuspension(promise) {
-    var suspension = new Sk.misceval.Suspension();
+    var suspension = new Suspension();
 
     suspension.resume = function() {
         if (suspension.data["error"]) {
@@ -1246,7 +1246,6 @@ export function buildClass(globals, func, name, bases, cell) {
     }
     _locals = new Sk.builtin.dict(_locals);
 
-    klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
-
+    klass = callsim(meta, _name, _bases, _locals);
     return klass;
 }

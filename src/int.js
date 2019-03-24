@@ -4,6 +4,7 @@ import { pyCheckArgs } from './function';
 import { TypeError, AttributeError, ZeroDivisionError } from './errors';
 import { NotImplementedError } from './object';
 import { asnum$ } from './builtin';
+import { callsim, isIndex, asIndex } from './misceval';
 
 /* jslint nomen: true, bitwise: true */
 /* global Sk: true */
@@ -55,9 +56,9 @@ Sk.builtin.int_ = function (x, base) {
         if (Sk.builtin.checkFloat(base)) {
             throw new TypeError("integer argument expected, got " + typeName(base));
         } else if (base.__index__) {
-            base = Sk.misceval.callsim(base.__index__, base);
+            base = callsim(base.__index__, base);
         } else if(base.__int__) {
-            base = Sk.misceval.callsim(base.__int__, base);
+            base = callsim(base.__int__, base);
         } else {
             throw new AttributeError(typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
@@ -98,18 +99,18 @@ Sk.builtin.int_ = function (x, base) {
     if(x !== undefined && (x.tp$getattr && x.tp$getattr("__int__"))) {
         // calling a method which contains im_self and im_func
         // causes skulpt to automatically map the im_self as first argument
-        ret = Sk.misceval.callsim(x.tp$getattr("__int__"));
+        ret = callsim(x.tp$getattr("__int__"));
         magicName = "__int__";
     } else if(x !== undefined && x.__int__) {
         // required for internal types
         // __int__ method is on prototype
-        ret = Sk.misceval.callsim(x.__int__, x);
+        ret = callsim(x.__int__, x);
         magicName = "__int__";
     } else if(x !== undefined && (x.tp$getattr && x.tp$getattr("__trunc__"))) {
-        ret = Sk.misceval.callsim(x.tp$getattr("__trunc__"));
+        ret = callsim(x.tp$getattr("__trunc__"));
         magicName = "__trunc__";
     } else if(x !== undefined && x.__trunc__) {
-        ret = Sk.misceval.callsim(x.__trunc__, x);
+        ret = callsim(x.__trunc__, x);
         magicName = "__trunc__";
     }
 
@@ -981,7 +982,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
-    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+    if ((ndigits !== undefined) && !isIndex(ndigits)) {
         throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
@@ -989,7 +990,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
-        ndigs = Sk.misceval.asIndex(ndigits);
+        ndigs = asIndex(ndigits);
     }
 
     if (Sk.__future__.bankers_rounding) {

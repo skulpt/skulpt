@@ -6,6 +6,7 @@ import { func } from './function';
 import { ValueError } from './errors';
 import { repr } from './builtin';
 import { asnum$ } from './builtin';
+import { callsim } from './misceval';
 
 function format(kwa) {
     // following PEP 3101
@@ -54,7 +55,7 @@ function format(kwa) {
 
     if(kwargs.size !== 0){
 
-        var kwItems = Sk.misceval.callsim(dict.prototype.items, kwargs);
+        var kwItems = callsim(dict.prototype.items, kwargs);
 
         for (var n in kwItems.v){
 

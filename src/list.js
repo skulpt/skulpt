@@ -9,7 +9,8 @@ import { timSort } from './timSort'
 import { str } from './str';
 import { slice } from './slice';
 import { asnum$ } from './builtin';
-§
+import { Suspension, objectRepr, opAllowsEquality, richCompareBool, isIndex, asIndex, isTrue, callsim } from './misceval';
+
 export class list extends object {
     /**
      * @constructor
@@ -36,8 +37,8 @@ export class list extends object {
 
             return (function next(i) {
                 while(true) {
-                    if (i instanceof Sk.misceval.Suspension) {
-                        return new Sk.misceval.Suspension(next, i);
+                    if (i instanceof Suspension) {
+                        return new Suspension(next, i);
                     } else if (i === undefined) {
                         // done!
                         thisList.v = v;
@@ -144,7 +145,7 @@ export class list extends object {
             if(i === this) {
                 ret.push("[...]");
             } else {
-                ret.push(Sk.misceval.objectRepr(i).v);
+                ret.push(objectRepr(i).v);
             }
         }
         return new str("[" + ret.join(", ") + "]");
@@ -161,7 +162,7 @@ export class list extends object {
         var wl;
         var vl;
         var v;
-        if (this === w && Sk.misceval.opAllowsEquality(op)) {
+        if (this === w && opAllowsEquality(op)) {
             return true;
         }
 
@@ -185,7 +186,7 @@ export class list extends object {
         wl = w.length;
 
         for (i = 0; i < vl && i < wl; ++i) {
-            k = Sk.misceval.richCompareBool(v[i], w[i], "Eq");
+            k = richCompareBool(v[i], w[i], "Eq");
             if (!k) {
                 break;
             }
@@ -222,7 +223,7 @@ export class list extends object {
         }
 
         // or, compare the differing element using the proper operator
-        return Sk.misceval.richCompareBool(v[i], w[i], op);
+        return richCompareBool(v[i], w[i], op);
     }
 
     __iter__ = new func(function (self) {
@@ -246,11 +247,11 @@ export class list extends object {
         var j;
         var i;
         var ret;
-        if (!Sk.misceval.isIndex(n)) {
+        if (!isIndex(n)) {
             throw new TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
         }
 
-        n = Sk.misceval.asIndex(n);
+        n = asIndex(n);
         ret = [];
         for (i = 0; i < n; ++i) {
             for (j = 0; j < this.v.length; ++j) {
@@ -266,12 +267,12 @@ export class list extends object {
         var j;
         var i;
         var len;
-        if (!Sk.misceval.isIndex(n)) {
+        if (!isIndex(n)) {
             throw new TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
         }
 
         // works on list itself --> inplace
-        n = Sk.misceval.asIndex(n);
+        n = asIndex(n);
         len = this.v.length;
         for (i = 1; i < n; ++i) {
             for (j = 0; j < len; ++j) {
@@ -291,7 +292,7 @@ export class list extends object {
         var it, i;
 
         for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(i, item, "Eq")) {
+            if (richCompareBool(i, item, "Eq")) {
                 return true;
             }
         }
@@ -306,8 +307,8 @@ export class list extends object {
     list_subscript_(index) {
         var ret;
         var i;
-        if (Sk.misceval.isIndex(index)) {
-            i = Sk.misceval.asIndex(index);
+        if (isIndex(index)) {
+            i = asIndex(index);
             if (i !== undefined) {
                 if (i < 0) {
                     i = this.v.length + i;
@@ -333,8 +334,8 @@ export class list extends object {
         var j;
         var tosub;
         var indices;
-        if (Sk.misceval.isIndex(index)) {
-            i = Sk.misceval.asIndex(index);
+        if (isIndex(index)) {
+            i = asIndex(index);
             if (i !== undefined) {
                 if (i < 0) {
                     i = this.v.length + i;
@@ -372,8 +373,8 @@ export class list extends object {
         var self;
         var indices;
         var i;
-        if (Sk.misceval.isIndex(index)) {
-            i = Sk.misceval.asIndex(index);
+        if (isIndex(index)) {
+            i = asIndex(index);
             if (i !== undefined) {
                 if (i < 0) {
                     i = this.v.length + i;
@@ -440,7 +441,7 @@ export class list extends object {
         } else if (reverse === none.none$) {
             throw new TypeError("an integer is required");
         } else {
-            rev = Sk.misceval.isTrue(reverse);
+            rev = isTrue(reverse);
         }
 
         timsort = new timSort(self);
@@ -451,23 +452,23 @@ export class list extends object {
         if (has_key) {
             if (has_cmp) {
                 timsort.lt = function (a, b) {
-                    var res = Sk.misceval.callsim(cmp, a[0], b[0]);
-                    return Sk.misceval.richCompareBool(res, zero, "Lt");
+                    var res = callsim(cmp, a[0], b[0]);
+                    return richCompareBool(res, zero, "Lt");
                 };
             } else {
                 timsort.lt = function (a, b) {
-                    return Sk.misceval.richCompareBool(a[0], b[0], "Lt");
+                    return richCompareBool(a[0], b[0], "Lt");
                 };
             }
             for (i = 0; i < timsort.listlength; i++) {
                 item = timsort.list.v[i];
-                keyvalue = Sk.misceval.callsim(key, item);
+                keyvalue = callsim(key, item);
                 timsort.list.v[i] = [keyvalue, item];
             }
         } else if (has_cmp) {
             timsort.lt = function (a, b) {
-                var res = Sk.misceval.callsim(cmp, a, b);
-                return Sk.misceval.richCompareBool(res, zero, "Lt");
+                var res = callsim(cmp, a, b);
+                return richCompareBool(res, zero, "Lt");
             };
         }
 
@@ -610,7 +611,7 @@ export class list extends object {
         }
 
         for (i = start; i < stop; ++i) {
-            if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+            if (richCompareBool(obj[i], item, "Eq")) {
                 return new int_(i);
             }
         }
@@ -628,7 +629,7 @@ export class list extends object {
         obj = self.v;
         count = 0;
         for (i = 0; i < len; ++i) {
-            if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+            if (richCompareBool(obj[i], item, "Eq")) {
                 count += 1;
             }
         }

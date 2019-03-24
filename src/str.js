@@ -22,6 +22,7 @@ import { int_ } from './int';
 import { lng } from './long';
 import { $emptystr } from './constants';
 import { repr, asnum$ } from './builtin';
+import { objectRepr, isIndex, asIndex, callsim } from './misceval';
 
 const mapInterned = typeof Map !== 'undefined';
 
@@ -75,7 +76,7 @@ export class str extends seqtype {
             }
             return ret;
         } else {
-            return Sk.misceval.objectRepr(x);
+            return objectRepr(x);
         }
 
         // interning required for strings in py
@@ -91,8 +92,8 @@ export class str extends seqtype {
 
     mp$subscript(index) {
         var ret;
-        if (Sk.misceval.isIndex(index)) {
-            index = Sk.misceval.asIndex(index);
+        if (isIndex(index)) {
+            index = asIndex(index);
             if (index < 0) {
                 index = this.v.length + index;
             }
@@ -133,11 +134,11 @@ export class str extends seqtype {
         var i;
         var ret;
 
-        if (!Sk.misceval.isIndex(n)) {
+        if (!isIndex(n)) {
             throw new TypeError("can't multiply sequence by non-int of type '" + typeName(n) + "'");
         }
 
-        n = Sk.misceval.asIndex(n);
+        n = asIndex(n);
         ret = "";
         for (i = 0; i < n; ++i) {
             ret += this.v;
@@ -880,7 +881,7 @@ export class str extends seqtype {
     index = new func(function (self, tgt, start, end) {
         var idx;
         pyCheckArgs("index", arguments, 2, 4);
-        idx = Sk.misceval.callsim(self["find"], self, tgt, start, end);
+        idx = callsim(self["find"], self, tgt, start, end);
         if (asnum$(idx) === -1) {
             throw new ValueError("substring not found");
         }
@@ -924,7 +925,7 @@ export class str extends seqtype {
     rindex = new func(function (self, tgt, start, end) {
         var idx;
         pyCheckArgs("rindex", arguments, 2, 4);
-        idx = Sk.misceval.callsim(self["rfind"], self, tgt, start, end);
+        idx = callsim(self["rfind"], self, tgt, start, end);
         if (asnum$(idx) === -1) {
             throw new ValueError("substring not found");
         }

@@ -4,7 +4,7 @@
  * below.
  */
 
-var Sk = Sk || {}; //jshint ignore:line
+ import { softspace_ } from './misceval';
 
 /**
  *
@@ -194,7 +194,7 @@ Sk.configure = function (options) {
         Sk.sysmodules = new Sk.builtin.dict([]);
     }
 
-    Sk.misceval.softspace_ = false;
+    softspace_ = false;
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);

@@ -6,6 +6,7 @@ import { TypeError, Exception } from './errors';
 import { str } from './str';
 import { dict } from './dict';
 import { object } from './object';
+import { objectRepr } from './misceval';
 
 const structseq_types = {};
 
@@ -73,7 +74,7 @@ export function make_structseq(module, name, fields, doc) {
             }
             bits = [];
             for (i = 0; i < this.v.length; ++i) {
-                bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]).v;
+                bits[i] = flds[i] + "=" + objectRepr(this.v[i]).v;
             }
             ret = bits.join(", ");
             if (this.v.length === 1) {

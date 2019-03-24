@@ -7,6 +7,7 @@ import { typeLookup, makeIntoTypeObj } from './type';
 import { object, NotImplemented } from './object';
 import { int_ } from './int';
 import { true$, false$ } from './constants';
+import { tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow } from './misceval';
 
 /**
  * @constructor
@@ -76,8 +77,8 @@ export class object {
                 getf = descr;
             }
 
-            res = Sk.misceval.tryCatch(function() {
-                return Sk.misceval.callsimOrSuspend(getf, pyName);
+            res = tryCatch(function() {
+                return callsimOrSuspend(getf, pyName);
             }, function(e) {
                 if (e instanceof AttributeError) {
                     return undefined;
@@ -85,7 +86,7 @@ export class object {
                     throw e;
                 }
             });
-            return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+            return canSuspend ? res : retryOptionalSuspensionOrThrow(res);
         }
 
 

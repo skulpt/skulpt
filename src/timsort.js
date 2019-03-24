@@ -1,4 +1,5 @@
 import { list } from './list';
+import { richCompareBool } from './misceval';
 
 export class timSort {
     /**
@@ -19,7 +20,7 @@ export class timSort {
     }
 
     lt(a, b) {
-        return Sk.misceval.richCompareBool(a, b, "Lt");
+        return richCompareBool(a, b, "Lt");
     }
 
     le(a, b) {

@@ -1,11 +1,6 @@
 import { none } from './object'
 import { asnum$ } from './builtin';
-
-/**
- * @namespace Sk.ffi
- *
- */
-
+import { apply } from './misceval';
 
 /**
  * maps from Javascript Object/Array/string to Python dict/list/str.
@@ -125,7 +120,7 @@ export function callback(fn) {
         return fn;
     }
     return function () {
-        return Sk.misceval.apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
+        return apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
     };
 };
 

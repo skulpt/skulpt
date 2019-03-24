@@ -5,6 +5,7 @@ import { TypeError, AttributeError } from './errors';
 import { dict } from './dict';
 import { str } from './str';
 import { func, checkNone, checkString } from './function';
+import { callsim, apply } from './misceval';
 
 /*
 	Implementation of the Python3 print version. Due to Python2 grammar we have
@@ -78,11 +79,16 @@ function print_f(kwa) {
 
     if(kw_list.file !== null) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
-        Sk.misceval.callsim(kw_list.file.write, kw_list.file, new str(s)); // callsim to write function
+        callsim(kw_list.file.write, kw_list.file, new str(s)); // callsim to write function
     } else {
+<<<<<<< HEAD
         return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
             return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
         });
+=======
+        var sys = Sk.importModule("sys");
+        apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new str(s)]);
+>>>>>>> misceval done
     }
     // ToDo:
     // cpython print function may receive another flush kwarg that flushes the output stream immediatelly

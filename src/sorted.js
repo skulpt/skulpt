@@ -5,6 +5,7 @@ import { int_ } from './int';
 import { none } from './object';
 import { list as listType } from './list';
 import { false$ } from './constants'
+import { isTrue, richCompareBool, callsim } from './misceval';
 
 export function sorted (iterable, cmp, key, reverse) {
     var arr;
@@ -19,7 +20,7 @@ export function sorted (iterable, cmp, key, reverse) {
     } else if (reverse instanceof float_) {
         throw new TypeError("an integer is required, got float");
     } else if (reverse instanceof int_ || reverse.prototype instanceof int_) {
-        rev = Sk.misceval.isTrue(reverse);
+        rev = isTrue(reverse);
     } else {
         throw new TypeError("an integer is required");
     }
@@ -27,18 +28,18 @@ export function sorted (iterable, cmp, key, reverse) {
     if (key !== undefined && !(key instanceof none)) {
         if (cmp instanceof none || cmp === undefined) {
             compare_func = function (a, b) {
-                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new int_(-1) : new int_(0);
+                return richCompareBool(a[0], b[0], "Lt") ? new int_(-1) : new int_(0);
             };
         } else {
             compare_func = function (a, b) {
-                return Sk.misceval.callsim(cmp, a[0], b[0]);
+                return callsim(cmp, a[0], b[0]);
             };
         }
         iter = iterable.tp$iter();
         next = iter.tp$iternext();
         arr = [];
         while (next !== undefined) {
-            arr.push([Sk.misceval.callsim(key, next), next]);
+            arr.push([callsim(key, next), next]);
             next = iter.tp$iternext();
         }
         list = new list(arr);
