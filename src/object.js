@@ -1,7 +1,12 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
-import { pyCheckArgs } from './function';
+import { pyCheckArgs, checkString } from './function';
 import { AttributeError, TypeError } from './errors';
+import { str } from './str';
+import { typeLookup, makeIntoTypeObj } from './type';
+import { object, NotImplemented } from './object';
+import { int_ } from './int';
+import { true$, false$ } from './constants';
 
 /**
  * @constructor
@@ -21,7 +26,7 @@ export class object {
         var tp;
         var dict;
         var getf;
-        var pyName = new Sk.builtin.str(name);
+        var pyName = new str(name);
         goog.asserts.assert(typeof name === "string");
 
         tp = this.ob$type;
@@ -43,7 +48,7 @@ export class object {
             }
         }
 
-        descr = Sk.builtin.type.typeLookup(tp, name);
+        descr = typeLookup(tp, name);
 
         // otherwise, look in the type for a descr
         if (descr !== undefined && descr !== null) {
@@ -62,7 +67,7 @@ export class object {
 
         // OK, try __getattr__
 
-        descr = Sk.builtin.type.typeLookup(tp, "__getattr__");
+        descr = typeLookup(tp, "__getattr__");
         if (descr !== undefined && descr !== null) {
             f = descr.tp$descr_get;
             if (f) {
@@ -125,7 +130,7 @@ export class object {
             return;
         }
 
-        descr = Sk.builtin.type.typeLookup(tp, name);
+        descr = typeLookup(tp, name);
 
         // otherwise, look in the type for a descr
         if (descr !== undefined && descr !== null) {
@@ -137,14 +142,14 @@ export class object {
         }
 
         if (dict.mp$ass_subscript) {
-            pyname = new Sk.builtin.str(name);
+            pyname = new str(name);
 
-            if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
+            if (this instanceof object && !(this.ob$type.sk$klass) &&
                 dict.mp$lookup(pyname) === undefined) {
                 // Cannot add new attributes to a builtin object
                 throw new AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
             }
-            dict.mp$ass_subscript(new Sk.builtin.str(name), value);
+            dict.mp$ass_subscript(new str(name), value);
         } else if (typeof dict === "object") {
             dict[name] = value;
         }
@@ -174,9 +179,9 @@ export class object {
 
     /**
      * The type object of this class.
-     * @type {Sk.builtin.type|Object}
+     * @type {type|Object}
      */
-    ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
+    ob$type = makeIntoTypeObj("object", object);
 
     tp$descr_set = undefined;   // Nonsense for closure compiler
 
@@ -184,7 +189,7 @@ export class object {
     /**
      * Default implementation of __new__ just calls the class constructor
      * @name  __new__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __new__(cls) {
@@ -196,7 +201,7 @@ export class object {
     /**
      * Python wrapper for `__repr__` method.
      * @name  __repr__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __repr__(self) {
@@ -209,7 +214,7 @@ export class object {
         var formatstr;
         pyCheckArgs("__format__", arguments, 2, 2);
 
-        if (!Sk.builtin.checkString(format_spec)) {
+        if (!checkString(format_spec)) {
             if (Sk.__future__.exceptions) {
                 throw new TypeError("format() argument 2 must be str, not " + typeName(format_spec));
             } else {
@@ -225,7 +230,7 @@ export class object {
         return new str(self);
     }
 
-    // Wrap the following functions in Sk.builtin.func once that class is initialized
+    // Wrap the following functions in func once that class is initialized
     /**
      * Array of all the Python functions which are methods of this class.
      * @type {Array}
@@ -238,7 +243,7 @@ export class object {
     /**
      * Python wrapper for `__str__` method.
      * @name  __str__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __str__(self) {
@@ -250,7 +255,7 @@ export class object {
     /**
      * Python wrapper for `__hash__` method.
      * @name  __hash__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __hash__(self) {
@@ -262,7 +267,7 @@ export class object {
     /**
      * Python wrapper for `__eq__` method.
      * @name  __eq__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __eq__(self, other) {
@@ -274,7 +279,7 @@ export class object {
     /**
      * Python wrapper for `__ne__` method.
      * @name  __ne__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __ne__(self, other) {
@@ -286,7 +291,7 @@ export class object {
     /**
      * Python wrapper for `__lt__` method.
      * @name  __lt__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __lt__(self, other) {
@@ -298,7 +303,7 @@ export class object {
     /**
      * Python wrapper for `__le__` method.
      * @name  __le__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __le__(self, other) {
@@ -310,7 +315,7 @@ export class object {
     /**
      * Python wrapper for `__gt__` method.
      * @name  __gt__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __gt__(self, other) {
@@ -322,7 +327,7 @@ export class object {
     /**
      * Python wrapper for `__ge__` method.
      * @name  __ge__
-     * @memberOf Sk.builtin.object.prototype
+     * @memberOf object.prototype
      * @instance
      */
     __ge__(self, other) {
@@ -339,11 +344,11 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @name  $r
-     * @memberOf Sk.builtin.object.prototype
-     * @return {Sk.builtin.str} The Python string representation of this instance.
+     * @memberOf object.prototype
+     * @return {str} The Python string representation of this instance.
      */
     $r() {
-        return new Sk.builtin.str("<object>");
+        return new str("<object>");
     };
 
 
@@ -352,11 +357,11 @@ export class object {
      *
      * Javascript function, returns Python object.
      *
-     * @return {Sk.builtin.int_} The hash value
+     * @return {int_} The hash value
      */
     tp$hash() {
         if (!this.$savedHash_) {
-            this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
+            this.$savedHash_ = new int_(hashCount++);
         }
 
         return this.$savedHash_;
@@ -370,14 +375,14 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to check for equality.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if equal, false otherwise
+     * @return {(bool|NotImplemented)} true if equal, false otherwise
      */
     ob$eq(other) {
         if (this === other) {
-            return Sk.builtin.bool.true$;
+            return true$;
         }
 
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 
     /**
@@ -388,14 +393,14 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to check for non-equality.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if not equal, false otherwise
+     * @return {(bool|NotImplemented)} true if not equal, false otherwise
      */
     ob$ne(other) {
         if (this === other) {
-            return Sk.builtin.bool.false$;
+            return false$;
         }
 
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 
     /**
@@ -406,10 +411,10 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to compare.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this < other, false otherwise
+     * @return {(bool|NotImplemented)} true if this < other, false otherwise
      */
     ob$lt(other) {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 
     /**
@@ -420,10 +425,10 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to compare.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
+     * @return {(bool|NotImplemented)} true if this <= other, false otherwise
      */
     ob$le(other) {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 
     /**
@@ -434,10 +439,10 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to compare.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this > other, false otherwise
+     * @return {(bool|NotImplemented)} true if this > other, false otherwise
      */
     ob$gt(other) {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 
     /**
@@ -448,10 +453,10 @@ export class object {
      * Javascript function, returns Python object.
      *
      * @param  {Object} other The Python object to compare.
-     * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
+     * @return {(bool|NotImplemented)} true if this >= other, false otherwise
      */
     ob$ge(other) {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        return NotImplemented.NotImplemented$;
     };
 }
 
@@ -463,13 +468,13 @@ function _tryGetSubscript(dict, pyName) {
     }
 }
 
-Sk.builtin.hashCount = 1;
-Sk.builtin.idCount = 1;
+export const hashCount = 1;
+export const idCount = 1;
 
 export class none extends object {
     /**
      * @constructor
-     * Sk.builtin.none
+     * none
      *
      * @extends {object}
      */
@@ -494,7 +499,7 @@ setUpInheritance("NoneType", none, object);
 
 /**
  * @constructor
- * Sk.builtin.NotImplemented
+ * NotImplemented
  *
  * @extends {object}
  */
@@ -503,9 +508,9 @@ export class NotImplemented extends object {
 
     /**
      * Python NotImplemented constant.
-     * @type {Sk.builtin.NotImplemented}
+     * @type {NotImplemented}
      */
-    static NotImplemented$ = new Sk.builtin.NotImplemented();
+    static NotImplemented$ = new NotImplemented();
 }
 
 setUpInheritance("NotImplementedType", NotImplemented, object);
