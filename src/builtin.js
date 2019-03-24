@@ -28,6 +28,18 @@ import { file } from './file';
 import { dict } from './dict';
 import { type } from './type';
 import { iterator } from './iterator';
+import {
+    isIndex,
+    callsim,
+    chain,
+    arrayFromArguments,
+    tryCatch,
+    richCompareBool,
+    apply,
+    isTrue,
+    callsimOrSuspend,
+    objectRepr
+} from './misceval';
 
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
@@ -255,7 +267,7 @@ export function round (number, ndigits) {
         }
     }
 
-    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+    if ((ndigits !== undefined) && !isIndex(ndigits)) {
         throw new TypeError("'" + typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
@@ -268,9 +280,9 @@ export function round (number, ndigits) {
     if (special != null) {
         // method on builtin, provide this arg
         if (!checkFunction(number)) {
-            return Sk.misceval.callsim(special, number, ndigits);
+            return callsim(special, number, ndigits);
         } else {
-            return Sk.misceval.callsim(special, number);
+            return callsim(special, number);
         }
     } else {
         throw new TypeError("a float is required");
@@ -296,18 +308,18 @@ export function len (item) {
     };
 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(true), intcheck);
+        return chain(item.sq$length(true), intcheck);
     }
 
     if (item.mp$length) {
-        return Sk.misceval.chain(item.mp$length(), int_);
+        return chain(item.mp$length(), int_);
     }
 
     if (item.tp$length) {
         if (checkFunction(item)) {
             special = lookupSpecial(item, "__len__");
             if (special != null) {
-                return Sk.misceval.callsim(special, item);
+                return callsim(special, item);
             } else {
                 if (Sk.__future__.exceptions) {
                     throw new TypeError("object of type '" + typeName(item) + "' has no len()");
@@ -316,7 +328,7 @@ export function len (item) {
                 }
             }
         } else {
-            return Sk.misceval.chain(item.tp$length(true), intcheck);
+            return chain(item.tp$length(true), intcheck);
         }
     }
 
@@ -329,7 +341,7 @@ export function min () {
     var args;
     pyCheckArgs("min", arguments, 1);
 
-    args = Sk.misceval.arrayFromArguments(arguments);
+    args = arrayFromArguments(arguments);
     lowest = args[0];
 
     if (lowest === undefined) {
@@ -337,7 +349,7 @@ export function min () {
     }
 
     for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
+        if (richCompareBool(args[i], lowest, "Lt")) {
             lowest = args[i];
         }
     }
@@ -350,7 +362,7 @@ export function max () {
     var args;
     pyCheckArgs("max", arguments, 1);
 
-    args = Sk.misceval.arrayFromArguments(arguments);
+    args = arrayFromArguments(arguments);
     highest = args[0];
 
     if (highest === undefined) {
@@ -358,7 +370,7 @@ export function max () {
     }
 
     for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], highest, "Gt")) {
+        if (richCompareBool(args[i], highest, "Gt")) {
             highest = args[i];
         }
     }
@@ -376,7 +388,7 @@ export function any (iter) {
 
     it = iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.isTrue(i)) {
+        if (isTrue(i)) {
             return bool.true$;
         }
     }
@@ -395,7 +407,7 @@ export function all (iter) {
 
     it = iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.misceval.isTrue(i)) {
+        if (!isTrue(i)) {
             return bool.false$;
         }
     }
@@ -501,13 +513,13 @@ export function abs (x) {
     if (checkNumber(x)) {
         return assk$(Math.abs(asnum$(x)));
     } else if (checkComplex(x)) {
-        return Sk.misceval.callsim(x.__abs__, x);
+        return callsim(x.__abs__, x);
     }
 
     // call custom __abs__ methods
     if (x.tp$getattr) {
         var f = x.tp$getattr("__abs__");
-        return Sk.misceval.callsim(f);
+        return callsim(f);
     }
 
     throw new TypeError("bad operand type for abs(): '" + typeName(x) + "'");
@@ -572,7 +584,7 @@ export function int2str_ (x, radix, prefix) {
         }
         return new str(prefix + str + suffix);
     } else {
-        x = Sk.misceval.asIndex(x);
+        x = asIndex(x);
         str = x.toString(radix);
         if (x < 0) {
             return new str("-" + prefix + str.slice(1));
@@ -583,7 +595,7 @@ export function int2str_ (x, radix, prefix) {
 
 export function hex (x) {
     pyCheckArgs("hex", arguments, 1, 1);
-    if (!Sk.misceval.isIndex(x)) {
+    if (!isIndex(x)) {
         throw new TypeError("hex() argument can't be converted to hex");
     }
     return int2str_(x, 16, "0x");
@@ -591,7 +603,7 @@ export function hex (x) {
 
 export function oct (x) {
     pyCheckArgs("oct", arguments, 1, 1);
-    if (!Sk.misceval.isIndex(x)) {
+    if (!isIndex(x)) {
         throw new TypeError("oct() argument can't be converted to hex");
     }
     if (Sk.__future__.octal_number_literal) {
@@ -603,7 +615,7 @@ export function oct (x) {
 
 export function bin (x) {
     pyCheckArgs("bin", arguments, 1, 1);
-    if (!Sk.misceval.isIndex(x)) {
+    if (!isIndex(x)) {
         throw new TypeError("'" + typeName(x) + "' object can't be interpreted as an index");
     }
     return int2str_(x, 2, "0b");
@@ -650,7 +662,7 @@ export function dir (x) {
     var special = lookupSpecial(x, "__dir__");
     if(special != null) {
         // method on builtin, provide this arg
-        _seq = Sk.misceval.callsim(special, x);
+        _seq = callsim(special, x);
 
         if (!checkSequence(_seq)) {
             throw new TypeError("__dir__ must return sequence.");
@@ -733,7 +745,7 @@ dir.slotNameToRichName = function (k) {
 export function repr (x) {
     pyCheckArgs("repr", arguments, 1, 1);
 
-    return Sk.misceval.objectRepr(x);
+    return objectRepr(x);
 };
 
 export function open (filename, mode, bufsize) {
@@ -775,7 +787,7 @@ export function isinstance (obj, type) {
     // Handle tuple type argument
     if (type instanceof tuple) {
         for (i = 0; i < type.v.length; ++i) {
-            if (Sk.misceval.isTrue(isinstance(obj, type.v[i]))) {
+            if (isTrue(isinstance(obj, type.v[i]))) {
                 return bool.true$;
             }
         }
@@ -799,7 +811,7 @@ export function isinstance (obj, type) {
         }
         bases = klass["$d"].mp$subscript(type.basesStr_);
         for (i = 0; i < bases.v.length; ++i) {
-            if (Sk.misceval.isTrue(issubclass(bases.v[i], base))) {
+            if (isTrue(issubclass(bases.v[i], base))) {
                 return bool.true$;
             }
         }
@@ -1022,7 +1034,7 @@ export function reduce (fun, seq, initializer) {
     for (item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
-        accum_value = Sk.misceval.callsim(fun, accum_value, item);
+        accum_value = callsim(fun, accum_value, item);
     }
 
     return accum_value;
@@ -1076,10 +1088,10 @@ export function filter (fun, iterable) {
         if (fun === none.none$) {
             result = new bool( item);
         } else {
-            result = Sk.misceval.callsim(fun, item);
+            result = callsim(fun, item);
         }
 
-        if (Sk.misceval.isTrue(result)) {
+        if (isTrue(result)) {
             retval = add(retval, item);
         }
     }
@@ -1279,7 +1291,7 @@ export function reversed (seq) {
 
     var special = lookupSpecial(seq, "__reversed__");
     if (special != null) {
-        return Sk.misceval.callsim(special, seq);
+        return callsim(special, seq);
     } else {
         if (!checkSequence(seq)) {
             throw new TypeError("'" + typeName(seq) + "' object is not a sequence");
@@ -1305,7 +1317,7 @@ export function reversed (seq) {
                 }
 
                 try {
-                    ret = Sk.misceval.callsim(this.getitem, this.myobj, remapToPy(this.idx));
+                    ret = callsim(this.getitem, this.myobj, remapToPy(this.idx));
                 } catch (e) {
                     if (e instanceof IndexError) {
                         return undefined;
@@ -1350,11 +1362,11 @@ export function callable (obj) {
 export function delattr (obj, attr) {
     pyCheckArgs("delattr", arguments, 2, 2);
     if (obj["$d"][attr.v] !== undefined) {
-        var ret = Sk.misceval.tryCatch(function() {
+        var ret = tryCatch(function() {
             var try1 = setattr(obj, attr, undefined);
             return try1;
         }, function(e) {
-            Sk.misceval.tryCatch(function() {
+            tryCatch(function() {
                 var try2 = setattr(obj["$d"], attr, undefined);
 
                 return try2;
