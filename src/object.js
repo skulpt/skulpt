@@ -1,10 +1,9 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs, checkString } from './function';
-import { AttributeError, TypeError } from './errors';
+import { AttributeError, TypeError, NotImplementedError } from './errors';
 import { str } from './str';
 import { typeLookup, makeIntoTypeObj } from './type';
-import { object, NotImplemented } from './object';
 import { int_ } from './int';
 import { true$, false$ } from './constants';
 import { tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow } from './misceval';

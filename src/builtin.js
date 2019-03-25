@@ -1,4 +1,4 @@
-import { typeName, lookupSpecial, iter, numberBinOp, objectFormat } from './abstract'
+import { typeName, lookupSpecial, iter as abstractIter, numberBinOp, objectFormat } from './abstract'
 import { remapToJs, remapToPy } from './ffi';
 import {
     pyCheckArgs,
@@ -13,10 +13,9 @@ import {
     checkNone,
     checkCallable
 } from './function';
-import { none, NotImplementedError, hashCount, idCount, none } from './object';
-import { ValueError, TypeError, AttributeError, RangeError, SystemExit } from './errors';
+import { hashCount, idCount, none } from './object';
+import { ValueError, TypeError, AttributeError, SystemExit, NotImplementedError } from './errors';
 import { $emptystr } from './constants';
-import { asnum$ } from './builtin';
 import { int_ } from './int';
 import { str } from './str';
 import { bool } from './bool';
@@ -136,8 +135,6 @@ export function asnum$(a) {
     return a;
 };
 
-goog.exportSymbol("asnum$", asnum$);
-
 /**
  * Return a Python number (either float or int) from a Javascript number.
  *
@@ -153,7 +150,6 @@ export function assk$(a) {
         return new float_(a);
     }
 };
-goog.exportSymbol("assk$", assk$);
 
 export function asnum$nofloat(a) {
     var decimal;
@@ -252,7 +248,6 @@ export function asnum$nofloat(a) {
 
     return mantissa;
 };
-goog.exportSymbol("asnum$nofloat", asnum$nofloat);
 
 export function round (number, ndigits) {
     var special;

@@ -1,8 +1,7 @@
 import { setUpInheritance } from './abstract';
 import { pyCheckArgs, func } from './function';
 import { object, NotImplemented } from './object';
-import { ExternalError } from './errors';
-import { NotImplementedError } from './object';
+import { ExternalError, NotImplementedError } from './errors';
 
 export class numtype extends object {
     /**

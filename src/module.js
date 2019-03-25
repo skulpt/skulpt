@@ -1,11 +1,12 @@
-/**
- * @constructor
- */
-Sk.builtin.module = function module () {
-};
-goog.exportSymbol("Sk.builtin.module", Sk.builtin.module);
+import { makeIntoTypeObj } from './type';
+import { object } from './object';
+export class module {
+    /**
+     * @constructor
+     */
 
-Sk.builtin.module.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("module", Sk.builtin.module);
-Sk.builtin.module.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.module.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-Sk.builtin.module.prototype.tp$name = "module";
+    ob$type = makeIntoTypeObj("module", module);
+    tp$getattr = object.prototype.GenericGetAttr;
+    tp$setattr = object.prototype.GenericSetAttr;
+    tp$name = "module";
+}

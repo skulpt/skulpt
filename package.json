@@ -41,9 +41,14 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "jshint": "~2.5.2",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "babel-loader": "^8.0.5",
     "jscs": "~1.12",
-    "jsdoc": "~3.5.5"
+    "jsdoc": "~3.5.5",
+    "jshint": "~2.5.2",
+    "webpack-cli": "^3.3.0"
   },
   "dependencies": {
     "big-integer": "^1.6.43",

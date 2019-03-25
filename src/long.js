@@ -1,8 +1,8 @@
 import { typeName, setUpInheritance } from './abstract';
 import { remapToJs } from './ffi';
 import { func, pyCheckArgs, checkString, checkNumber } from './function';
-import { TypeError, ValueError } from './errors';
-import { NotImplementedError, NotImplemented } from './object';
+import { TypeError, ValueError, NotImplementedError } from './errors';
+import { NotImplemented } from './object';
 import { asnum$ } from './builtin';
 import { isIndex, asIndex } from './misceval';
 import { numtype } from './numtype';

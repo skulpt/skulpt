@@ -182,7 +182,7 @@ setUpInheritance("IndexError", IndexError, StandardError);
  * @extends StandardError
  * @param {...*} args
  */
-export class KeyError {
+export class KeyError extends StandardError {
     constructor() {
         super(arguments);
     }
@@ -207,7 +207,7 @@ setUpInheritance("NameError", NameError, StandardError);
  * @param {...*} args
  */
 export class UnboundLocalError extends StandardError {
-    constructor(arguments) {
+    constructor() {
         super(arguments);
     }
 }

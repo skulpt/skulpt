@@ -1,5 +1,3 @@
-import { RangeError } from './errors';
-
 /*! https://mths.be/fromcodepoint v0.2.1 by @mathias */
 if (!String.fromCodePoint) {
     (function() {

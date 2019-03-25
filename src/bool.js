@@ -4,7 +4,6 @@ import { str } from './str';
 import { float_ } from './float';
 import { func, pyCheckArgs } from './function';
 import { remapToJs } from './ffi';
-import { pyCheckArgs } from './function';
 import { asnum$ } from './builtin';
 import { true$, false$ } from './constants';
 import { isTrue } from './misceval';

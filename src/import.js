@@ -1,22 +1,27 @@
 import { compile, resetCompiler } from './compile';
 import { ImportError } from './errors';
 import { chain, tryCatch, Break, iterFor, retryOptionalSuspensionOrThrow } from './misceval';
-
-/**
- * @namespace Sk
- *
- */
+import { dict } from './dict';
+import { type } from './type';
+import { str } from './str';
+import { tuple } from './tuple';
+import { object, none } from './object';
+import { func } from './function';
+import { list } from './list';
+import { read, syspath, onBeforeImport, onAfterImport } from './env';
+import { module } from './module';
+import { internalPy } from './internalpython';
 
 // this is stored into sys specially, rather than created by sys
-Sk.sysmodules = new Sk.builtin.dict([]);
-Sk.realsyspath = undefined;
+export let sysmodules = dict([]);
+let realsyspath = undefined;
 
 /**
  * @param {string} name to look for
  * @param {string} ext extension to use (.py or .js)
  * @param {Object=} searchPath an iterable set of path strings
  */
-Sk.importSearchPathForName = function (name, ext, searchPath) {
+export function importSearchPathForName(name, ext, searchPath) {
     var fn;
     var j;
     var fns = [];
@@ -26,7 +31,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
     var tryPathAndBreakOnSuccess = function(filename, packagePath) {
         return chain(
             tryCatch(function() {
-                return Sk.read(filename);
+                return read(filename);
             }, function(e) { /* Exceptions signal "not found" */ }),
             function(code) {
                 if (code !== undefined) {
@@ -38,7 +43,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
     };
 
     if (searchPath === undefined) {
-        searchPath = Sk.realsyspath;
+        searchPath = realsyspath;
     }
 
     return iterFor(searchPath.tp$iter(), function(pathStr) {
@@ -59,17 +64,17 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * dependencies.
  *
  * This includes making Python classes subclassable and ensuring that the
- * {@link Sk.builtin.object} magic methods are wrapped inside Python functions.
+ * {@link object} magic methods are wrapped inside Python functions.
  *
  * @return {undefined}
  */
-Sk.doOneTimeInitialization = function (canSuspend) {
+export function doOneTimeInitialization(canSuspend) {
     var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type, j;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
-    Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
-    Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
+    type.basesStr_ = new str("__bases__");
+    type.mroStr_ = new str("__mro__");
 
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
@@ -92,10 +97,10 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     };
 
     for (x in Sk.builtin) {
-        func = Sk.builtin[x];
-        if ((func.prototype instanceof Sk.builtin.object ||
-             func === Sk.builtin.object) && !func.sk$abstract) {
-            setUpClass(func);
+        f = Sk.builtin[x];
+        if ((f.prototype instanceof object ||
+             f === object) && !f.sk$abstract) {
+            setUpClass(f);
         }
     }
 
@@ -121,9 +126,9 @@ Sk.doOneTimeInitialization = function (canSuspend) {
 
 
     // compile internal python files and add them to the __builtin__ module
-    for (var file in Sk.internalPy.files) {
+    for (var file in internalPy.files) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+        var mod = importBuiltinWithBody(fileWithoutExtension, false, internalPy.files[file], true);
         mod = retryOptionalSuspensionOrThrow(mod);
         goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
@@ -134,21 +139,21 @@ Sk.doOneTimeInitialization = function (canSuspend) {
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
  */
-Sk.importSetUpPath = function (canSuspend) {
+export function importSetUpPath(canSuspend) {
     var i;
     var paths;
-    if (!Sk.realsyspath) {
+    if (!realsyspath) {
         paths = [
-            new Sk.builtin.str("src/builtin"),
-            new Sk.builtin.str("src/lib"),
-            new Sk.builtin.str(".")
+            new str("src/builtin"),
+            new str("src/lib"),
+            new str(".")
         ];
-        for (i = 0; i < Sk.syspath.length; ++i) {
-            paths.push(new Sk.builtin.str(Sk.syspath[i]));
+        for (i = 0; i < syspath.length; ++i) {
+            paths.push(new str(syspath[i]));
         }
-        Sk.realsyspath = new Sk.builtin.list(paths);
+        realsyspath = new list(paths);
 
-        Sk.doOneTimeInitialization(canSuspend);
+        doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -169,7 +174,7 @@ if (COMPILED) {
  * @param {boolean=} returnUndefinedOnTopLevelNotFound return 'undefined' rather than throwing ImportError if the *first* load failed
  * @param {boolean=} canSuspend whether we may return a Suspension object
  */
-Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, relativeToPackage, returnUndefinedOnTopLevelNotFound, canSuspend) {
+export function importModuleInternal_(name, dumpJS, modname, suppliedPyBody, relativeToPackage, returnUndefinedOnTopLevelNotFound, canSuspend) {
     //dumpJS = true;
     var filename;
     var prev;
@@ -177,12 +182,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var parentModule;
     var modNameSplit;
     var ret;
-    var module;
+    var mod;
     var topLevelModuleToReturn = null;
     var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__name__") : undefined;
     var absolutePackagePrefix = relativePackageName !== undefined ? relativePackageName.v + "." : "";
     var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__path__") : undefined;
-    Sk.importSetUpPath(canSuspend);
+    importSetUpPath(canSuspend);
 
     if (relativeToPackage && !relativePackageName) {
         if (returnUndefinedOnTopLevelNotFound) {
@@ -201,10 +206,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
     // if leaf is already in sys.modules, early out
     try {
-        prev = Sk.sysmodules.mp$subscript(modname);
+        prev = sysmodules.mp$subscript(modname);
         // if we're a dotted module, return the top level, otherwise ourselves
         if (modNameSplit.length > 1) {
-            return Sk.sysmodules.mp$subscript(absolutePackagePrefix + modNameSplit[0]);
+            return sysmodules.mp$subscript(absolutePackagePrefix + modNameSplit[0]);
         } else {
             return prev;
         }
@@ -243,11 +248,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         // - add module object to sys.modules
         // - compile source to (function(){...});
         // - run module and set the module locals returned to the module __dict__
-        module = new Sk.builtin.module();
+        mod = new module();
 
         if (suppliedPyBody) {
             filename = name + ".py";
-            co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
+            co = compile(suppliedPyBody, filename, "exec", canSuspend);
         } else {
             co = Sk.misceval.chain(undefined, function() {
                 // If an onBeforeImport method is supplied, call it and if
@@ -301,18 +306,18 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         }
 
         // Now we know this module exists, we can add it to the cache
-        Sk.sysmodules.mp$ass_subscript(modname, module);
+        sysmodules.mp$ass_subscript(modname, module);
 
-        module.$js = co.code; // todo; only in DEBUG?
+        mod.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
 
         if (filename == null) {
             filename = co.filename;
         }
 
-        if (Sk.dateSet == null || !Sk.dateSet) {
+        if (dateSet == null || !dateSet) {
             finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
-            Sk.dateSet = true;
+            dateSet = true;
         }
 
         // if (!COMPILED)
@@ -344,18 +349,18 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         modscope = goog.global["eval"](finalcode);
 
-        module["$d"] = {
-            "__name__": new Sk.builtin.str(modname),
-            "__doc__": Sk.builtin.none.none$,
-            "__package__": co.packagePath ? new Sk.builtin.str(modname) :
-                                parentModName ? new Sk.builtin.str(absolutePackagePrefix + parentModName) :
-                                relativePackageName ? relativePackageName : Sk.builtin.none.none$
+        mod["$d"] = {
+            "__name__": new str(modname),
+            "__doc__": none.none$,
+            "__package__": co.packagePath ? new str(modname) :
+                                parentModName ? new  str(absolutePackagePrefix + parentModName) :
+                                relativePackageName ? relativePackageName : none.none$
         };
         if (co.packagePath) {
-            module["$d"]["__path__"] = new Sk.builtin.tuple([new Sk.builtin.str(co.packagePath)]);
+            mod["$d"]["__path__"] = new tuple([new str(co.packagePath)]);
         }
 
-        return modscope(module["$d"]);
+        return modscope(mod["$d"]);
 
     }, function (modlocs) {
         var i;
@@ -371,21 +376,21 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         // Some builtin modules replace their globals entirely.
         // For their benefit, we copy over any of the standard
         // dunder-values they didn't supply.
-        if (modlocs !== module["$d"]) {
-            for (i in module["$d"]) {
+        if (modlocs !== mod["$d"]) {
+            for (i in mod["$d"]) {
                 if (!modlocs[i]) {
-                    modlocs[i] = module["$d"][i];
+                    modlocs[i] = mod["$d"][i];
                 }
             }
-            module["$d"] = modlocs;
+            mod["$d"] = modlocs;
         }
 
         // If an onAfterImport method is defined on the global Sk
         // then call it now after a library has been successfully imported
         // and compiled.
-        if (Sk.onAfterImport && typeof Sk.onAfterImport === "function") {
+        if (onAfterImport && typeof onAfterImport === "function") {
             try {
-                Sk.onAfterImport(name);
+                onAfterImport(name);
             } catch (e) {
             }
         }
@@ -404,7 +409,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         //print("name", name, "modname", modname, "returning leaf");
         // otherwise we return the actual module that we just imported
-        return module;
+        return mod;
     });
 
     return canSuspend ? ret : retryOptionalSuspensionOrThrow(ret);
@@ -415,20 +420,20 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
  * @param {boolean=} dumpJS print out the js code after compilation for debugging
  * @param {boolean=} canSuspend can this function suspend and return a Suspension object?
  */
-Sk.importModule = function (name, dumpJS, canSuspend) {
-    return Sk.importModuleInternal_(name, dumpJS, undefined, undefined, undefined, false, canSuspend);
+export function importModule(name, dumpJS, canSuspend) {
+    return importModuleInternal_(name, dumpJS, undefined, undefined, undefined, false, canSuspend);
 };
 
-Sk.importMain = function (name, dumpJS, canSuspend) {
-    Sk.dateSet = false;
-    Sk.filesLoaded = false;
+export function importMain(name, dumpJS, canSuspend) {
+    dateSet = false;
+    filesLoaded = false;
     //	Added to reset imports
-    Sk.sysmodules = new Sk.builtin.dict([]);
-    Sk.realsyspath = undefined;
+    sysmodules = new dict([]);
+    realsyspath = undefined;
 
     resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, undefined, false, canSuspend);
+    return importModuleInternal_(name, dumpJS, "__main__", undefined, undefined, false, canSuspend);
 };
 
 /**
@@ -442,16 +447,16 @@ Sk.importMain = function (name, dumpJS, canSuspend) {
  * @param canSuspend {boolean}  Use Suspensions for async execution
  *
  */
-Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
-    Sk.dateSet = false;
-    Sk.filesLoaded = false;
+export function importMainWithBody(name, dumpJS, body, canSuspend) {
+    dateSet = false;
+    filesLoaded = false;
     //	Added to reset imports
-    Sk.sysmodules = new Sk.builtin.dict([]);
-    Sk.realsyspath = undefined;
+    sysmodules = new dict([]);
+    realsyspath = undefined;
 
     resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__", body, undefined, false, canSuspend);
+    return importModuleInternal_(name, dumpJS, "__main__", body, undefined, false, canSuspend);
 };
 
 /**
@@ -464,14 +469,13 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
  * @param canSuspend {boolean}  Use Suspensions for async execution
  *
  */
-Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
-    return Sk.importModuleInternal_(name, dumpJS, "__builtin__."+name, body, undefined, false, canSuspend);
+export function importBuiltinWithBody(name, dumpJS, body, canSuspend) {
+    return importModuleInternal_(name, dumpJS, "__builtin__."+name, body, undefined, false, canSuspend);
 };
 
-Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
+export function __import__(name, globals, locals, fromlist, level) {
     //print("Importing: ", JSON.stringify(name), JSON.stringify(fromlist), level);
     //if (name == "") { debugger; }
-
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.
     var saveSk = Sk.globals;
@@ -565,10 +569,11 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
 
                 }
 
-                return Sk.misceval.chain(importChain, function() {
-                    // if there's a fromlist we want to return the leaf module
-                    // (ret), not the toplevel namespace
-                    goog.asserts.assert(leafModule);
+                return chain(importChain, function() {
+                    // if there's a fromlist we want to return the actual module, not the
+                    // toplevel namespace
+                    ret = sysmodules.mp$subscript(absolutePackagePrefix + name);
+                    goog.asserts.assert(ret);
                     return leafModule;
                 });
             }
@@ -582,18 +587,12 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     );
 };
 
-Sk.importStar = function (module, loc, global) {
+export function importStar(mod, loc, global) {
     var i;
-    var props = Object["getOwnPropertyNames"](module["$d"]);
+    var props = Object["getOwnPropertyNames"](mod["$d"]);
     for (i in props) {
         if (props[i].charAt(0) != "_") {
-            loc[props[i]] = module["$d"][props[i]];
+            loc[props[i]] = mod["$d"][props[i]];
         }
     }
 };
-
-goog.exportSymbol("Sk.importMain", Sk.importMain);
-goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
-goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
-goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
-goog.exportSymbol("Sk.importStar", Sk.importStar);

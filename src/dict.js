@@ -2,12 +2,11 @@ import { iter, setUpInheritance, typeName, markUnhashable } from './abstract';
 import { hash } from './builtin';
 import { func, pyCheckArgs, checkString, checkIterable } from './function';
 import { remapToJs } from './ffi';
-import { object, none, NotImplementedError, NotImplemented } from './object';
-import { TypeError, KeyError, AttributeError, ValueError, StopIteration } from './errors';
+import { object, none, NotImplemented } from './object';
+import { TypeError, KeyError, AttributeError, ValueError, StopIteration, NotImplementedError } from './errors';
 import { str } from './str';
 import { bool } from './bool';
 import { tuple } from './tuple';
-import { dict } from './dict';
 import { true$, false$ } from './constants';
 import { richCompareBool, objectRepr, callsim } from './misceval';
 

@@ -1,8 +1,7 @@
 import { lookupSpecial, setUpInheritance, typeName } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs } from './function';
-import { TypeError, ZeroDivisionError, NegativePowerError } from './errors';
-import { NotImplementedError } from './object';
+import { TypeError, ZeroDivisionError, NegativePowerError, NotImplementedError } from './errors';
 import { asnum$ } from './builtin';
 import { callsim, isIndex, asIndex } from './misceval';
 import biginteger from 'big-integer';

@@ -4,7 +4,7 @@ import { str } from './str';
 import { none } from './object';
 import { bool } from './bool';
 import { method } from './method';
-import { TypeError } from './error';
+import { TypeError } from './errors';
 
 /**
  * Check arguments to Python functions to ensure the correct number of

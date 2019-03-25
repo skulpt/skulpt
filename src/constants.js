@@ -1,5 +1,5 @@
-import bool from './bool';
-import str from './str';
+import { bool } from './bool';
+import { str } from './str';
 
 export const $emptystr = new str("");
 

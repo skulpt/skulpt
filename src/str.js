@@ -11,8 +11,8 @@ import {
     checkIterable
 } from './function';
 import { seqtype } from './seqtype';
-import { ValueError, IndexError, AttributeError, StopIteration } from './errors';
-import { NotImplementedError, none, object } from './object';
+import { ValueError, IndexError, AttributeError, StopIteration, NotImplementedError } from './errors';
+import { none, object } from './object';
 import { bool } from './bool';
 import { list } from './list';
 import { dict } from './dict';
@@ -1026,13 +1026,13 @@ export class str extends seqtype {
         pyCheckArgs("expandtabs", arguments, 1, 2);
 
 
-        if ((tabsize !== undefined) && ! .checkInt(tabsize)) {
+        if ((tabsize !== undefined) && ! checkInt(tabsize)) {
             throw new TypeError("integer argument exepected, got " + typeName(tabsize));
         }
         if (tabsize === undefined) {
             tabsize = 8;
         } else {
-            tabsize = .asnum$(tabsize);
+            tabsize = asnum$(tabsize);
         }
 
         spaces = (new Array(tabsize + 1)).join(" ");
@@ -1180,9 +1180,6 @@ setUpInheritance("str", str, seqtype);
 
 export class str_iter_ {
     constructor(obj) {
-        if (!(this instanceof str_iter_)) {
-            return new str_iter_(obj);
-        }
         this.$index = 0;
         this.$obj = obj.v.slice();
         this.sq$length = this.$obj.length;
@@ -1216,12 +1213,4 @@ export class str_iter_ {
 
 setUpInheritance("iterator", str_iter_, object);
 
-/**
- * @constructor
- * @param {Object} obj
- */
-str_iter_ = function (obj) {
-
-    return this;
-};
 

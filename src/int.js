@@ -1,8 +1,8 @@
 import { typeName, setUpInheritance, numberBinOp } from './abstract';
 import { remapToJs } from './ffi';
 import { pyCheckArgs, func, checkInt, checkNumber, checkString } from './function';
-import { TypeError, AttributeError, ZeroDivisionError } from './errors';
-import { NotImplementedError, none, NotImplemented } from './object';
+import { TypeError, AttributeError, ZeroDivisionError, NotImplementedError } from './errors';
+import { none, NotImplemented } from './object';
 import { asnum$ } from './builtin';
 import { callsim, isIndex, asIndex } from './misceval';
 import { numtype } from './numtype';

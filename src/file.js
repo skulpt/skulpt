@@ -139,19 +139,19 @@ export class file extends object {
 
     __enter__ = new func(function __enter__(self) {
         return self;
-    })
+    });
 
     __exit__ = new func(function __exit__(self) {
         return callsim(Sk.builtin.file.prototype["close"], self);
-    })
+    });
 
     close = new func(function close(self) {
         self.closed = true;
         return none.none$;
-    })
+    });
 
     flush = new func(function flush(self) {
-    })
+    });
 
     fileno = new func(function fileno(self) {
         return this.fileno;
@@ -159,7 +159,7 @@ export class file extends object {
 
     isatty = new func(function isatty(self) {
         return false;
-    })
+    });
 
     read = new func(function read(self, size) {
         var ret;
@@ -182,11 +182,11 @@ export class file extends object {
         }
 
         return ret;
-    })
+    });
 
     readline = new func(function readline(self, size) {
         return Sk.builtin.file.$readline(self, size, undefined);
-    })
+    });
 
     readlines = new func(function readlines(self, sizehint) {
         if (self.fileno === 0) {
@@ -199,7 +199,7 @@ export class file extends object {
             arr.push(new Sk.builtin.str(self.lineList[i]));
         }
         return new Sk.builtin.list(arr);
-    })
+    });
 
     seek = new func(function seek(self, offset, whence) {
         var l_offset =  remapToJs(offset);
@@ -216,11 +216,15 @@ export class file extends object {
         }
 
         return none.none$;
-    })
+    });
 
     tell = new func(function tell(self) {
         return remapToPy(self.pos$);
-    })
+    });
+
+    truncate = new func(function truncate(self, size) {
+        goog.asserts.fail();
+    });
 
     write = new func(function write(self, str) {
         var mode = remapToJs(self.mode);

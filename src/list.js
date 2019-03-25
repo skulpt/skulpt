@@ -3,7 +3,6 @@ import { pyCheckArgs, func, checkNumber, checkIterable, checkInt } from './funct
 import { object, none } from './object';
 import { seqtype } from './seqtype';
 import { bool } from './bool';
-import { none } from './object';
 import { TypeError, IndexError, ValueError, OperationError, StopIteration } from './errors';
 import { timSort } from './timSort'
 import { str } from './str';
