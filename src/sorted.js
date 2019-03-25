@@ -1,5 +1,4 @@
 import { TypeError } from './errors';
-import { none } from './object';
 import { float_ } from './float';
 import { int_ } from './int';
 import { none } from './object';

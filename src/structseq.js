@@ -1,8 +1,7 @@
 import { iter } from './abstract';
 import { func, pyCheckArgs } from './function';
-import { TypeError, AttributeError } from './errors';
+import { TypeError, AttributeError, Exception } from './errors';
 import { tuple } from './tuple';
-import { TypeError, Exception } from './errors';
 import { str } from './str';
 import { dict } from './dict';
 import { object } from './object';

@@ -13,6 +13,20 @@ import {
 import { TypeError, ValueError, NameError } from './errors';
 import { asnum$ } from './builtin';
 import { softspace_ } from './env';
+import { int_ } from './int';
+import { lng } from './long';
+import { bool } from './bool';
+import { checkInt, checkIterable, checkNumber, checkString } from './function';
+import { slice } from './slice';
+import { set } from './set';
+import { dict } from './dict';
+import { list } from './list';
+import { tuple } from './tuple';
+import { type } from './type';
+import { float_ } from './float';
+import { str } from './str';
+import { enumerate } from './enumerate';
+import { none, NotImplemented } from './object';
 
 /*
   Suspension object format:
@@ -71,7 +85,7 @@ export function retryOptionalSuspensionOrThrow(susp, message) {
  * @returns {boolean}
  */
 export function isIndex(o) {
-    if (Sk.builtin.checkInt(o)) {
+    if (checkInt(o)) {
         return true;
     }
     if (lookupSpecial(o, "__index__")) {
@@ -98,19 +112,19 @@ export function asIndex(o) {
     if (typeof o === "number") {
         return o;
     }
-    if (o.constructor === Sk.builtin.int_) {
+    if (o.constructor === int_) {
         return o.v;
     }
-    if (o.constructor === Sk.builtin.lng) {
+    if (o.constructor === lng) {
         return o.tp$index();
     }
-    if (o.constructor === Sk.builtin.bool) {
+    if (o.constructor === bool) {
         return asnum$(o);
     }
     idxfn = lookupSpecial(o, "__index__");
     if (idxfn) {
         ret = callsim(idxfn, o);
-        if (!Sk.builtin.checkInt(ret)) {
+        if (!checkInt(ret)) {
             throw new TypeError("__index__ returned non-(int,long) (type " +
                                            typeName(ret) + ")");
         }
@@ -136,7 +150,7 @@ export function applySlice(u, v, w, canSuspend) {
         }
         return sequenceGetSlice(u, ilow, ihigh);
     }
-    return objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
+    return objectGetItem(u, new slice(v, w, null), canSuspend);
 }
 
 /**
@@ -155,7 +169,7 @@ export function assignSlice(u, v, w, x, canSuspend) {
             sequenceSetSlice(u, ilow, ihigh, x);
         }
     } else {
-        slice = new Sk.builtin.slice(v, w);
+        slice = new slice(v, w);
         if (x === null) {
             return objectDelItem(u, slice);
         } else {
@@ -177,18 +191,18 @@ export function arrayFromArguments(args) {
         return args;
     }
     arg = args[0];
-    if (arg instanceof Sk.builtin.set) {
-        // this is a Sk.builtin.set
+    if (arg instanceof set) {
+        // this is a set
         arg = arg.tp$iter().$obj;
-    } else if (arg instanceof Sk.builtin.dict) {
-        // this is a Sk.builtin.list
-        arg = Sk.builtin.dict.prototype["keys"].func_code(arg);
+    } else if (arg instanceof dict) {
+        // this is a list
+        arg = dict.prototype["keys"].func_code(arg);
     }
 
     // shouldn't else if here as the above may output lists to arg.
-    if (arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple) {
+    if (arg instanceof list || arg instanceof tuple) {
         return arg.v;
-    } else if (Sk.builtin.checkIterable(arg)) {
+    } else if (checkIterable(arg)) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
         for (it = iter(arg), i = it.tp$iternext();
@@ -204,7 +218,7 @@ export function arrayFromArguments(args) {
 /**
  * for reversed comparison: Gt -> Lt, etc.
  */
-swappedOp_ = {
+const swappedOp_ = {
     "Eq"   : "Eq",
     "NotEq": "NotEq",
     "Lt"   : "GtE",
@@ -225,7 +239,7 @@ swappedOp_ = {
  */
 export function richCompareBool(v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
-    // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
+    // if you want to return a value from richCompareBool to Python you must wrap as bool first
     var wname,
         vname,
         ret,
@@ -251,8 +265,8 @@ export function richCompareBool(v, w, op, canSuspend) {
     goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to richCompareBool");
     goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to richCompareBool");
 
-    v_type = new Sk.builtin.type(v);
-    w_type = new Sk.builtin.type(w);
+    v_type = new type(v);
+    w_type = new type(w);
 
     // Python has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
@@ -260,15 +274,15 @@ export function richCompareBool(v, w, op, canSuspend) {
     if ((v_type !== w_type) &&
         (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
-        numeric_types = [Sk.builtin.float_.prototype.ob$type,
-            Sk.builtin.int_.prototype.ob$type,
-            Sk.builtin.lng.prototype.ob$type,
-            Sk.builtin.bool.prototype.ob$type];
-        sequence_types = [Sk.builtin.dict.prototype.ob$type,
-            Sk.builtin.enumerate.prototype.ob$type,
-            Sk.builtin.list.prototype.ob$type,
-            Sk.builtin.str.prototype.ob$type,
-            Sk.builtin.tuple.prototype.ob$type];
+        numeric_types = [float_.prototype.ob$type,
+            int_.prototype.ob$type,
+            lng.prototype.ob$type,
+            bool.prototype.ob$type];
+        sequence_types = [dict.prototype.ob$type,
+            enumerate.prototype.ob$type,
+            list.prototype.ob$type,
+            str.prototype.ob$type,
+            tuple.prototype.ob$type];
 
         v_num_type = numeric_types.indexOf(v_type);
         v_seq_type = sequence_types.indexOf(v_type);
@@ -278,7 +292,7 @@ export function richCompareBool(v, w, op, canSuspend) {
         // NoneTypes are considered less than any other type in Python
         // note: this only handles comparing NoneType with any non-NoneType.
         // Comparing NoneType with NoneType is handled further down.
-        if (v_type === Sk.builtin.none.prototype.ob$type) {
+        if (v_type === none.prototype.ob$type) {
             switch (op) {
                 case "Lt":
                     return true;
@@ -291,7 +305,7 @@ export function richCompareBool(v, w, op, canSuspend) {
             }
         }
 
-        if (w_type === Sk.builtin.none.prototype.ob$type) {
+        if (w_type === none.prototype.ob$type) {
             switch (op) {
                 case "Lt":
                     return false;
@@ -350,11 +364,11 @@ export function richCompareBool(v, w, op, canSuspend) {
 
     // handle identity and membership comparisons
     if (op === "Is") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+        if (v instanceof int_ && w instanceof int_) {
             return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+        } else if (v instanceof float_ && w instanceof float_) {
             return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        } else if (v instanceof lng && w instanceof lng) {
             return v.longCompare(w) === 0;
         }
 
@@ -362,11 +376,11 @@ export function richCompareBool(v, w, op, canSuspend) {
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+        if (v instanceof int_ && w instanceof int_) {
             return v.numberCompare(w) !== 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+        } else if (v instanceof float_ && w instanceof float_) {
             return v.numberCompare(w) !== 0;
-        }else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        }else if (v instanceof lng && w instanceof lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -395,7 +409,7 @@ export function richCompareBool(v, w, op, canSuspend) {
     shortcut = op2shortcut[op];
     v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
     if (v_has_shortcut) {
-        if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        if ((ret = v[shortcut](w)) !== NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
@@ -404,20 +418,20 @@ export function richCompareBool(v, w, op, canSuspend) {
     w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
     if (w_has_shortcut) {
 
-        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        if ((ret = w[swapped_shortcut](v)) !== NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret != NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
 
     if (w.tp$richcompare && (ret = w.tp$richcompare(v, swappedOp_[op])) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret != NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
@@ -438,7 +452,7 @@ export function richCompareBool(v, w, op, canSuspend) {
     method = lookupSpecial(v, op2method[op]);
     if (method && !v_has_shortcut) {
         ret = callsim(method, v, w);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret != NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
@@ -446,7 +460,7 @@ export function richCompareBool(v, w, op, canSuspend) {
     swapped_method = lookupSpecial(w, op2method[swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
         ret = callsim(swapped_method, w, v);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret != NotImplemented.NotImplemented$) {
             return isTrue(ret);
         }
     }
@@ -455,7 +469,7 @@ export function richCompareBool(v, w, op, canSuspend) {
     if (vcmp) {
         try {
             ret = callsim(vcmp, v, w);
-            if (Sk.builtin.checkNumber(ret)) {
+            if (checkNumber(ret)) {
                 ret = asnum$(ret);
                 if (op === "Eq") {
                     return ret === 0;
@@ -472,7 +486,7 @@ export function richCompareBool(v, w, op, canSuspend) {
                 }
             }
 
-            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+            if (ret !== NotImplemented.NotImplemented$) {
                 throw new TypeError("comparison did not return an int");
             }
         } catch (e) {
@@ -485,7 +499,7 @@ export function richCompareBool(v, w, op, canSuspend) {
         // note, flipped on return value and call
         try {
             ret = callsim(wcmp, w, v);
-            if (Sk.builtin.checkNumber(ret)) {
+            if (checkNumber(ret)) {
                 ret = asnum$(ret);
                 if (op === "Eq") {
                     return ret === 0;
@@ -502,7 +516,7 @@ export function richCompareBool(v, w, op, canSuspend) {
                 }
             }
 
-            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+            if (ret !== NotImplemented.NotImplemented$) {
                 throw new TypeError("comparison did not return an int");
             }
         } catch (e) {
@@ -511,8 +525,8 @@ export function richCompareBool(v, w, op, canSuspend) {
     }
 
     // handle special cases for comparing None with None or Bool with Bool
-    if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) ||
-        ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool))) {
+    if (((v instanceof none) && (w instanceof none)) ||
+        ((v instanceof bool) && (w instanceof bool))) {
         // Javascript happens to return the same values when comparing null
         // with null or true/false with true/false as Python does when
         // comparing None with None or True/False with True/False
@@ -540,13 +554,13 @@ export function richCompareBool(v, w, op, canSuspend) {
 
     // handle equality comparisons for any remaining objects
     if (op === "Eq") {
-        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str)) {
+        if ((v instanceof str) && (w instanceof str)) {
             return v.v === w.v;
         }
         return v === w;
     }
     if (op === "NotEq") {
-        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str)) {
+        if ((v instanceof str) && (w instanceof str)) {
             return v.v !== w.v;
         }
         return v !== w;
@@ -559,30 +573,30 @@ export function richCompareBool(v, w, op, canSuspend) {
 
 export function objectRepr(v) {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
-    if ((v === null) || (v instanceof Sk.builtin.none)) {
-        return new Sk.builtin.str("None");
+    if ((v === null) || (v instanceof none)) {
+        return new str("None");
     } else if (v === true) {
         // todo; these should be consts
-        return new Sk.builtin.str("True");
+        return new str("True");
     } else if (v === false) {
-        return new Sk.builtin.str("False");
+        return new str("False");
     } else if (typeof v === "number") {
-        return new Sk.builtin.str("" + v);
+        return new str("" + v);
     } else if (!v["$r"]) {
         if (v.tp$name) {
-            return new Sk.builtin.str("<" + v.tp$name + " object>");
+            return new str("<" + v.tp$name + " object>");
         } else {
-            return new Sk.builtin.str("<unknown>");
+            return new str("<unknown>");
         }
-    } else if (v.constructor === Sk.builtin.float_) {
+    } else if (v.constructor === float_) {
         if (v.v === Infinity) {
-            return new Sk.builtin.str("inf");
+            return new str("inf");
         } else if (v.v === -Infinity) {
-            return new Sk.builtin.str("-inf");
+            return new str("-inf");
         } else {
             return v["$r"]();
         }
-    } else if (v.constructor === Sk.builtin.int_) {
+    } else if (v.constructor === int_) {
         return v["$r"]();
     } else {
         return v["$r"]();
@@ -610,39 +624,39 @@ export function isTrue(x) {
     if (x === null) {
         return false;
     }
-    if (x.constructor === Sk.builtin.none) {
+    if (x.constructor === none) {
         return false;
     }
 
-    if (x.constructor === Sk.builtin.NotImplemented) {
+    if (x.constructor === NotImplemented) {
         return false;
     }
 
-    if (x.constructor === Sk.builtin.bool) {
+    if (x.constructor === bool) {
         return x.v;
     }
     if (typeof x === "number") {
         return x !== 0;
     }
-    if (x instanceof Sk.builtin.lng) {
+    if (x instanceof lng) {
         return x.nb$nonzero();
     }
-    if (x.constructor === Sk.builtin.int_) {
+    if (x.constructor === int_) {
         return x.v !== 0;
     }
-    if (x.constructor === Sk.builtin.float_) {
+    if (x.constructor === float_) {
         return x.v !== 0;
     }
     if (x["__nonzero__"]) {
         ret = callsim(x["__nonzero__"], x);
-        if (!Sk.builtin.checkInt(ret)) {
+        if (!checkInt(ret)) {
             throw new TypeError("__nonzero__ should return an int");
         }
         return asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
         ret = callsim(x["__len__"], x);
-        if (!Sk.builtin.checkInt(ret)) {
+        if (!checkInt(ret)) {
             throw new TypeError("__len__ should return an int");
         }
         return asnum$(ret) !== 0;
@@ -1153,7 +1167,7 @@ export function applyOrSuspend(func, kwdict, varargseq, kws, args) {
 
         if (kwdict) {
             for (it = iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
-                if (!Sk.builtin.checkString(i)) {
+                if (!checkString(i)) {
                     throw new TypeError("Function keywords must be strings");
                 }
                 kws.push(i.v);
@@ -1216,7 +1230,7 @@ export function promiseToSuspension(promise) {
 export function buildClass(globals, func, name, bases, cell) {
     // todo; metaclass
     var klass;
-    var meta = Sk.builtin.type;
+    var meta = type;
 
     var l_cell = cell === undefined ? {} : cell;
     var locals = {};
@@ -1229,8 +1243,8 @@ export function buildClass(globals, func, name, bases, cell) {
 
     // file's __name__ is class's __module__
     locals.__module__ = globals["__name__"];
-    var _name = new Sk.builtin.str(name);
-    var _bases = new Sk.builtin.tuple(bases);
+    var _name = new str(name);
+    var _bases = new tuple(bases);
     var _locals = [];
     var key;
 
@@ -1240,10 +1254,10 @@ export function buildClass(globals, func, name, bases, cell) {
             //The current property key not a direct property of p
             continue;
         }
-        _locals.push(new Sk.builtin.str(key)); // push key
+        _locals.push(new str(key)); // push key
         _locals.push(locals[key]); // push associated value
     }
-    _locals = new Sk.builtin.dict(_locals);
+    _locals = new dict(_locals);
 
     klass = callsim(meta, _name, _bases, _locals);
     return klass;

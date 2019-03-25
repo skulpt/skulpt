@@ -26,7 +26,7 @@ export class object {
         var tp;
         var dict;
         var getf;
-        var pyName = new str(name);
+        //var pyName = new str(name);
         goog.asserts.assert(typeof name === "string");
 
         tp = this.ob$type;

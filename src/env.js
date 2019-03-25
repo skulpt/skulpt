@@ -1,3 +1,6 @@
+import { func } from './function';
+import 'google-closure-library';
+
 /**
  * Base namespace for Skulpt. This is the only symbol that Skulpt adds to the
  * global namespace. Other user accessible symbols are noted and described
@@ -165,10 +168,7 @@ Sk.configure = function (options) {
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 
-    Sk.setTimeout = options["setTimeout"];
-    if (Sk.setTimeout === undefined) {
-
-    }
+    setTimeout = options["setTimeout"] || setTimeout;
     goog.asserts.assert(typeof Sk.setTimeout === "function");
 
     if ("execLimit" in options) {
@@ -222,12 +222,12 @@ export let timeoutMsg = function () {
 /*
  *  Hard execution timeout, throws an error. Set to null to disable
  */
-Sk.execLimit = Number.POSITIVE_INFINITY;
+export let execLimit = Number.POSITIVE_INFINITY;
 
 /*
  *  Soft execution timeout, returns a Suspension. Set to null to disable
  */
-Sk.yieldLimit = Number.POSITIVE_INFINITY;
+export let yieldLimit = Number.POSITIVE_INFINITY;
 
 /*
  * Replacable output redirection (called from print, etc).
@@ -271,9 +271,9 @@ export let softspace_ = false;
 
 export let setTimeout = typeof setTimeout === "function" ?
     (func, delay) => setTimeout(func, delay) :
-    (func, delay) => func();x
+    (func, delay) => func();
 
-Sk.inBrowser = goog.global["document"] !== undefined;
+export let inBrowser = goog.global["document"] !== undefined;
 
 /**
  * Internal function used for debug output.
@@ -299,7 +299,7 @@ export let debugout = function (args) {
 }());
 
 // override for closure to load stuff from the command line.
-if (!Sk.inBrowser) {
+if (!inBrowser) {
     goog.global.CLOSURE_IMPORT_SCRIPT = function (src) {
         goog.global["eval"](goog.global["read"]("support/closure-library/closure/goog/" + src));
         return true;
@@ -377,4 +377,4 @@ Sk.switch_version = function (method_to_map, python3) {
             klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
         }
     }
-};
+}
