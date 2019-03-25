@@ -267,9 +267,11 @@ export let debugging = false;
 
 export let breakpoints = () => true;
 
+export let softspace_ = false;
+
 export let setTimeout = typeof setTimeout === "function" ?
     (func, delay) => setTimeout(func, delay) :
-    (func, delay) => func();
+    (func, delay) => func();x
 
 Sk.inBrowser = goog.global["document"] !== undefined;
 
@@ -311,6 +313,9 @@ export let imageProxy = '';
 export let inputfun = function (args) {
     return window.prompt(args);
 };
+
+export let onBeforeImport;
+export let onAfterImport;
 
 // Information about method names and their internal functions for
 // methods that differ (in visibility or name) between Python 2 and 3.

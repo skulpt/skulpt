@@ -53,6 +53,7 @@
   "dependencies": {
     "big-integer": "^1.6.43",
     "closure-compiler": "^0.2.12",
+    "esm": "^3.2.20",
     "webpack": "^4.29.6"
   }
 }
