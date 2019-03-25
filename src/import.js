@@ -226,6 +226,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         // If we're inside a package, look search using its __path__
         if (modNameSplit.length > 1) {
+            if (!topLevelModuleToReturn) {
+                return undefined;
+            }
             parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
             searchFileName = modNameSplit[modNameSplit.length-1];
             searchPath = parentModule.tp$getattr("__path__");
