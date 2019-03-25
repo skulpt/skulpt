@@ -4,8 +4,6 @@
  * below.
  */
 
- import { softspace_ } from './misceval';
-
 /**
  *
  * Set various customizable parts of Skulpt.
@@ -71,17 +69,17 @@ Sk.python3 = {
 
 Sk.configure = function (options) {
     "use strict";
-    Sk.output = options["output"] || Sk.output;
-    goog.asserts.assert(typeof Sk.output === "function");
+    output = options["output"] || output;
+    goog.asserts.assert(typeof output === "function");
 
-    Sk.debugout = options["debugout"] || Sk.debugout;
-    goog.asserts.assert(typeof Sk.debugout === "function");
+    debugout = options["debugout"] || debugout;
+    goog.asserts.assert(typeof debugout === "function");
 
-    Sk.uncaughtException = options["uncaughtException"] || Sk.uncaughtException;
-    goog.asserts.assert(typeof Sk.uncaughtException === "function");
+    uncaughtException = options["uncaughtException"] || uncaughtException;
+    goog.asserts.assert(typeof uncaughtException === "function");
 
-    Sk.read = options["read"] || Sk.read;
-    goog.asserts.assert(typeof Sk.read === "function");
+    read = options["read"] || read;
+    goog.asserts.assert(typeof read === "function");
 
     Sk.nonreadopen = options["nonreadopen"] || false;
     goog.asserts.assert(typeof Sk.nonreadopen === "boolean");
@@ -96,8 +94,8 @@ Sk.configure = function (options) {
     goog.asserts.assert(typeof Sk.timeoutMsg === "function");
     goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
-    Sk.sysargv = options["sysargv"] || Sk.sysargv;
-    goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
+    sysargv = options["sysargv"] || sysargv;
+    goog.asserts.assert(goog.isArrayLike(sysargv));
 
     Sk.__future__ = options["__future__"] || Sk.python2;
 
@@ -122,17 +120,17 @@ Sk.configure = function (options) {
     Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
     goog.asserts.assert(typeof Sk.imageProxy === "string" || typeof Sk.imageProxy === "function");
 
-    Sk.inputfun = options["inputfun"] || Sk.inputfun;
-    goog.asserts.assert(typeof Sk.inputfun === "function");
+    inputfun = options["inputfun"] || inputfun;
+    goog.asserts.assert(typeof inputfun === "function");
 
-    Sk.inputfunTakesPrompt = options["inputfunTakesPrompt"] || false;
-    goog.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
+    inputfunTakesPrompt = options["inputfunTakesPrompt"];
+    goog.asserts.assert(typeof inputfunTakesPrompt === "boolean");
 
-    Sk.retainGlobals = options["retainglobals"] || false;
-    goog.asserts.assert(typeof Sk.retainGlobals === "boolean");
+    retainGlobals = options["retainglobals"];
+    goog.asserts.assert(typeof retainGlobals === "boolean");
 
-    Sk.debugging = options["debugging"] || false;
-    goog.asserts.assert(typeof Sk.debugging === "boolean");
+    debugging = options["debugging"];
+    goog.asserts.assert(typeof debugging === "boolean");
 
     Sk.killableWhile = options["killableWhile"] || false;
     goog.asserts.assert(typeof Sk.killableWhile === "boolean");
@@ -169,11 +167,7 @@ Sk.configure = function (options) {
 
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
-        if (typeof setTimeout === "function") {
-            Sk.setTimeout = function(func, delay) { setTimeout(func, delay); };
-        } else {
-            Sk.setTimeout = function(func, delay) { func(); };
-        }
+
     }
     goog.asserts.assert(typeof Sk.setTimeout === "function");
 
@@ -186,7 +180,7 @@ Sk.configure = function (options) {
     }
 
     if (options["syspath"]) {
-        Sk.syspath = options["syspath"];
+        syspath = options["syspath"];
         goog.asserts.assert(goog.isArrayLike(Sk.syspath));
         // assume that if we're changing syspath we want to force reimports.
         // not sure how valid this is, perhaps a separate api for that.
@@ -214,18 +208,16 @@ Sk.uncaughtException = function(err) {
 /*
  * Replaceable handler for uncaught exceptions
  */
-Sk.uncaughtException = function(err) {
+export let uncaughtException = function(err) {
     throw err;
 };
-goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 
 /*
  *	Replaceable message for message timeouts
  */
-Sk.timeoutMsg = function () {
+export let timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
-goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
 /*
  *  Hard execution timeout, throws an error. Set to null to disable
@@ -240,34 +232,44 @@ Sk.yieldLimit = Number.POSITIVE_INFINITY;
 /*
  * Replacable output redirection (called from print, etc).
  */
-Sk.output = function (x) {
+export let output = function (x) {
 };
 
 /*
  * Replacable function to load modules with (called via import, etc.)
  * todo; this should be an async api
  */
-Sk.read = function (x) {
-    throw "Sk.read has not been implemented";
+export const read = function (x) {
+    throw "read has not been implemented";
 };
 
 /*
  * Setable to emulate arguments to the script. Should be array of JS strings.
  */
-Sk.sysargv = [];
+export let sysargv = [];
 
 // lame function for sys module
-Sk.getSysArgv = function () {
-    return Sk.sysargv;
+export function getSysArgv() {
+    return sysargv;
 };
-goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
-
 
 /**
  * Setable to emulate PYTHONPATH environment variable (for finding modules).
  * Should be an array of JS strings.
  */
-Sk.syspath = [];
+export let syspath = [];
+
+export let inputfunTakesPrompt = true;
+
+export let retainGlobals = false;
+
+export let debugging = false;
+
+export let breakpoints = () => true;
+
+export let setTimeout = typeof setTimeout === "function" ?
+    (func, delay) => setTimeout(func, delay) :
+    (func, delay) => func();
 
 Sk.inBrowser = goog.global["document"] !== undefined;
 
@@ -275,22 +277,22 @@ Sk.inBrowser = goog.global["document"] !== undefined;
  * Internal function used for debug output.
  * @param {...} args
  */
-Sk.debugout = function (args) {
+export let debugout = function (args) {
 };
 
 (function () {
     // set up some sane defaults based on availability
     if (goog.global["write"] !== undefined) {
-        Sk.output = goog.global["write"];
+        output = goog.global["write"];
     } else if (goog.global["console"] !== undefined && goog.global["console"]["log"] !== undefined) {
-        Sk.output = function (x) {
+        output = function (x) {
             goog.global["console"]["log"](x);
         };
     } else if (goog.global["print"] !== undefined) {
-        Sk.output = goog.global["print"];
+        output = goog.global["print"];
     }
     if (goog.global["print"] !== undefined) {
-        Sk.debugout = goog.global["print"];
+        debugout = goog.global["print"];
     }
 }());
 
@@ -302,7 +304,11 @@ if (!Sk.inBrowser) {
     };
 }
 
-Sk.inputfun = function (args) {
+export let python3 = false;
+
+export let imageProxy = '';
+
+export let inputfun = function (args) {
     return window.prompt(args);
 };
 
@@ -320,25 +326,25 @@ Sk.inputfun = function (args) {
 Sk.setup_method_mappings = function () {
     return {
         "round$": {
-            "classes": [Sk.builtin.float_,
-                        Sk.builtin.int_],
+            "classes": [float_,
+                        int_],
             2: null,
             3: "__round__"
         },
         "next$": {
-            "classes": [Sk.builtin.dict_iter_,
-                        Sk.builtin.list_iter_,
-                        Sk.builtin.set_iter_,
-                        Sk.builtin.str_iter_,
-                        Sk.builtin.tuple_iter_,
-                        Sk.builtin.generator,
-                        Sk.builtin.enumerate,
-                        Sk.builtin.iterator],
+            "classes": [dict_iter_,
+                        list_iter_,
+                        set_iter_,
+                        str_iter_,
+                        tuple_iter_,
+                        generator,
+                        enumerate,
+                        iterator],
             2: "next",
             3: "__next__"
         }
     };
-};
+}
 
 Sk.switch_version = function (method_to_map, python3) {
     var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
@@ -367,7 +373,3 @@ Sk.switch_version = function (method_to_map, python3) {
         }
     }
 };
-
-goog.exportSymbol("Sk.__future__", Sk.__future__);
-goog.exportSymbol("Sk.inputfun", Sk.inputfun);
-goog.require("goog.asserts");

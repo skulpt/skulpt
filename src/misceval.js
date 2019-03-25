@@ -12,6 +12,7 @@ import {
 } from './abstract';
 import { TypeError, ValueError, NameError } from './errors';
 import { asnum$ } from './builtin';
+import { softspace_ } from './env';
 
 /*
   Suspension object format:
@@ -654,8 +655,6 @@ export function isTrue(x) {
     }
     return true;
 };
-
-export const softspace_ = false;
 
 export function print_(x) {
     // this was function print(x)   not sure why...
