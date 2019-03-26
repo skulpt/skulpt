@@ -110,7 +110,7 @@ Sk.ffi.remapToJs = function (obj) {
         return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.lng) {
         return Sk.builtin.asnum$(obj);
-    } else if (typeof obj === "number" || typeof obj === "boolean") {
+    } else if (typeof obj === "number" || typeof obj === "boolean" || typeof obj === "string") {
         return obj;
     } else if (obj === undefined) {
         return undefined;
