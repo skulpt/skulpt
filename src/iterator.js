@@ -18,7 +18,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     }
     objit = Sk.abstr.lookupSpecial(obj, "__iter__");
     if (objit) {
-        return Sk.misceval.callsim(objit, obj);
+        return Sk.misceval.callsimArray(objit, [obj]);
     }
     this.sentinel = sentinel;
     this.flag = false;

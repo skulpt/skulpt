@@ -357,7 +357,7 @@ Sk.builtin.dict.prototype.dict_merge = function(b) {
         }
     } else {
         // generic slower way
-        var keys = Sk.misceval.callsim(b["keys"], b);
+        var keys = Sk.misceval.callsimArray(b["keys"], [b]);
         for (iter = Sk.abstr.iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
             v = b.tp$getitem(k); // get value
             if (v === undefined) {

@@ -451,7 +451,7 @@ Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
     if (has_key) {
         if (has_cmp) {
             timsort.lt = function (a, b) {
-                var res = Sk.misceval.callsim(cmp, a[0], b[0]);
+                var res = Sk.misceval.callsimArray(cmp, [a[0], b[0]]);
                 return Sk.misceval.richCompareBool(res, zero, "Lt");
             };
         } else {
@@ -461,12 +461,12 @@ Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
         }
         for (i = 0; i < timsort.listlength; i++) {
             item = timsort.list.v[i];
-            keyvalue = Sk.misceval.callsim(key, item);
+            keyvalue = Sk.misceval.callsimArray(key, [item]);
             timsort.list.v[i] = [keyvalue, item];
         }
     } else if (has_cmp) {
         timsort.lt = function (a, b) {
-            var res = Sk.misceval.callsim(cmp, a, b);
+            var res = Sk.misceval.callsimArray(cmp, [a, b]);
             return Sk.misceval.richCompareBool(res, zero, "Lt");
         };
     }

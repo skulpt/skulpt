@@ -48,9 +48,9 @@ Sk.builtin.int_ = function (x, base) {
         if (Sk.builtin.checkFloat(base)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else if (base.__index__) {
-            base = Sk.misceval.callsim(base.__index__, base);
+            base = Sk.misceval.callsimArray(base.__index__, [base]);
         } else if(base.__int__) {
-            base = Sk.misceval.callsim(base.__int__, base);
+            base = Sk.misceval.callsimArray(base.__int__, [base]);
         } else {
             throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
@@ -91,18 +91,18 @@ Sk.builtin.int_ = function (x, base) {
     if(x !== undefined && (x.tp$getattr && x.tp$getattr("__int__"))) {
         // calling a method which contains im_self and im_func
         // causes skulpt to automatically map the im_self as first argument
-        ret = Sk.misceval.callsim(x.tp$getattr("__int__"));
+        ret = Sk.misceval.callsimArray(x.tp$getattr("__int__"));
         magicName = "__int__";
     } else if(x !== undefined && x.__int__) {
         // required for internal types
         // __int__ method is on prototype
-        ret = Sk.misceval.callsim(x.__int__, x);
+        ret = Sk.misceval.callsimArray(x.__int__, [x]);
         magicName = "__int__";
     } else if(x !== undefined && (x.tp$getattr && x.tp$getattr("__trunc__"))) {
-        ret = Sk.misceval.callsim(x.tp$getattr("__trunc__"));
+        ret = Sk.misceval.callsimArray(x.tp$getattr("__trunc__"));
         magicName = "__trunc__";
     } else if(x !== undefined && x.__trunc__) {
-        ret = Sk.misceval.callsim(x.__trunc__, x);
+        ret = Sk.misceval.callsimArray(x.__trunc__, [x]);
         magicName = "__trunc__";
     }
 

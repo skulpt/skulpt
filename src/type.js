@@ -333,7 +333,7 @@ Sk.builtin.type = function (name, bases, dict) {
             if (iterf === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
             }
-            return Sk.misceval.callsim(iterf);
+            return Sk.misceval.callsimArray(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
             var self = this;

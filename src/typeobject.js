@@ -38,7 +38,7 @@ Sk.builtin.super_ = function super_ (a_type, self) {
         return new Sk.builtin.super_(a_type, self);
     }
 
-    Sk.misceval.callsim(Sk.builtin.super_.__init__, this, a_type, self);
+    Sk.misceval.callsimArray(Sk.builtin.super_.__init__, [this, a_type, self]);
 
     return this;
 };

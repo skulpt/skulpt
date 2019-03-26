@@ -1235,7 +1235,7 @@ Compiler.prototype.craise = function (s) {
             // handles: raise Error OR raise someinstance
             exc = this._gr("err", this.vexpr(s.type));
             out("if(",exc," instanceof Sk.builtin.type) {",
-                "throw Sk.misceval.callsim(", exc, ");",
+                "throw Sk.misceval.callsimArray(", exc, ");",
                 "} else if(typeof(",exc,") === 'function') {",
                 "throw ",exc,"();",
                 "} else {",
@@ -1288,7 +1288,7 @@ Compiler.prototype.ctryexcept = function (s) {
             next = (i == n - 1) ? unhandled : handlers[i + 1];
 
             // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
-            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
+            // var check = this._gr('call', "Sk.misceval.callsimArray(", isinstance, ", [$err, ", handlertype, "])");
 
             check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
             this._jumpfalse(check, next);
@@ -2027,7 +2027,7 @@ Compiler.prototype.cgenexp = function (e) {
     // but the code builder builds a wrapper that makes generators for normal
     // function generators, so we just do it outside (even just new'ing it
     // inline would be fine).
-    var gener = this._gr("gener", "Sk.misceval.callsim(", gen, ");");
+    var gener = this._gr("gener", "Sk.misceval.callsimArray(", gen, ");");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
     out(gener, ".gi$locals.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");
