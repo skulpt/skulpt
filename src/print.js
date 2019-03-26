@@ -5,7 +5,7 @@
 
 */
 var print_f = function function_print(kwa) {
-    Sk.builtin.pyCheckArgs("print", arguments, 0, Infinity, true, false);
+    Sk.builtin.pyCheckArgsLen("print", arguments.length, 0, Infinity, true, false);
     var args = Array.prototype.slice.call(arguments, 1);
     var kwargs = new Sk.builtins.dict(kwa);
     var _kwargs = Sk.ffi.remapToJs(kwargs);

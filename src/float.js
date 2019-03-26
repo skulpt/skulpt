@@ -771,7 +771,7 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
  */
 Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
-    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
@@ -806,7 +806,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
 
 Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
     var formatstr;
-    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {

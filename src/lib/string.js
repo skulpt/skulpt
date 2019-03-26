@@ -16,7 +16,7 @@ var $builtinmodule = function (name) {
     mod.uppercase = Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
     mod.letters = Sk.builtin.str(mod.lowercase.v + mod.uppercase.v);
 
-    mod.digits = Sk.builtin.str('0123456789', Sk.builtin.str);
+    mod.digits = Sk.builtin.str('0123456789');
     mod.hexdigits = Sk.builtin.str('0123456789abcdefABCDEF');
     mod.octdigits = Sk.builtin.str('01234567');
 
@@ -55,7 +55,7 @@ var $builtinmodule = function (name) {
      * Note that this replaces runs of whitespace characters by a single
      * space, and removes leading and trailing whitespace. */
     mod.capwords = new Sk.builtin.func(function (s, sep) {
-        Sk.builtin.pyCheckArgs('capwords', arguments, 1, 2);
+        Sk.builtin.pyCheckArgsLen('capwords', arguments.length, 1, 2);
         if (!Sk.builtin.checkString(s)) {
             throw new Sk.builtin.TypeError("s must be a string");
         }

@@ -5,7 +5,7 @@
  * @param {Object=} step
  */
 Sk.builtin.slice = function slice (start, stop, step) {
-    Sk.builtin.pyCheckArgs("slice", arguments, 1, 3, false, false);
+    Sk.builtin.pyCheckArgsLen("slice", arguments.length, 1, 3, false, false);
 
     if ((step !== undefined) && Sk.misceval.isIndex(step) && (Sk.misceval.asIndex(step) === 0)) {
         throw new Sk.builtin.ValueError("slice step cannot be zero");
@@ -146,7 +146,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
 };
 
 Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, length) {
-    Sk.builtin.pyCheckArgs("indices", arguments, 2, 2, false, false);
+    Sk.builtin.pyCheckArgsLen("indices", arguments.length, 2, 2, false, false);
 
     length = Sk.builtin.asnum$(length);
     var sss = self.slice_indices_(length);

@@ -8,7 +8,7 @@ var format = function (kwa) {
     var replFunc;
     var arg_dict = {};
 
-    Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
+    Sk.builtin.pyCheckArgsLen("format", arguments.length, 0, Infinity, true, true);
 
 
     args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
