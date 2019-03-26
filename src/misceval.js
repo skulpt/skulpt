@@ -823,6 +823,19 @@ Sk.misceval.callsim = function (func, args) {
 goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 
 /**
+ * @param {Object} func the thing to call
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsim without expensive call to Array.slice.
+ * Requires args to be a Javascript array.
+ */
+Sk.misceval.callsimArray = function(func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.apply(func, undefined, undefined, undefined, argarray);
+};
+goog.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
+
+/**
  * @param {?Object} suspensionHandlers any custom suspension handlers
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
@@ -843,6 +856,19 @@ Sk.misceval.callsimOrSuspend = function (func, args) {
     return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
 };
 goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+
+/**
+ * @param {Object} func the thing to call
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsimOrSuspend without expensive call to
+ * Array.slice.  Requires args to be a Javascript array.
+ */
+Sk.misceval.callsimOrSuspendArray = function (func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, argarray);
+};
+goog.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
 
 /**
  * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
