@@ -66,6 +66,10 @@ class string_format(unittest.TestCase):
         total = 22
         self.assertEqual('Correct answers: 88.64%', 'Correct answers: {:.2%}'.format(points/total))
 
+    def test_sequence(self):
+        self.assertEqual('(1, 2, 3)', '{}'.format((1, 2, 3)))
+        self.assertEqual('[1, 2, 3]', '{}'.format([1, 2, 3]))
+
     ## Datetime requires more work.
     
     # def test_datetome(self):
