@@ -273,7 +273,7 @@ var $builtinmodule = function (name) {
         if (lst.v.length < 1) {
             return Sk.builtin.none.none$;
         }
-        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsimArray(mod.MatchObject, [lst, pattern, string]);
         return mob;
     };
 
@@ -303,7 +303,7 @@ var $builtinmodule = function (name) {
         if (Sk.ffi.remapToJs(lst).length < 1) {
             return Sk.builtin.none.none$;
         }
-        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsimArray(mod.MatchObject, [lst, pattern, string]);
         return mob;
     };
 
@@ -425,7 +425,7 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        rob = Sk.misceval.callsim(mod.RegexObject, pattern, flags);
+        rob = Sk.misceval.callsimArray(mod.RegexObject, [pattern, flags]);
         return rob;
     });
 

@@ -110,7 +110,7 @@ var $builtinmodule = function (name) {
             var xmlhttp = new XMLHttpRequest();
 
             xmlhttp.addEventListener("loadend", function (e) {
-                resolve(Sk.misceval.callsim(request.Response, xmlhttp));
+                resolve(Sk.misceval.callsimArray(request.Response, [xmlhttp]));
             });
 
             if (!data) {

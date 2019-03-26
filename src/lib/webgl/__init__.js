@@ -216,7 +216,7 @@ var $builtinmodule = function(name)
       var startTime = (new Date()).getTime();
       var intervalId = setInterval(
         function() {
-          Sk.misceval.callsim(func, self, (new Date()).getTime() - startTime);
+          Sk.misceval.callsimArray(func, [self, (new Date()).getTime() - startTime]);
         }, 1000.0 / 60.0); // 60 fps
     });
 

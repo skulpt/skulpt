@@ -129,8 +129,8 @@ $builtinmodule = function (name) {
             Sk.builtin.pyCheckArgsLen("getpixels", arguments.length, 1, 1);
 
             for (i = 0; i < self.image.height * self.image.width; i++) {
-                arr[i] = Sk.misceval.callsim(self.getPixel, self,
-                    i % self.image.width, Math.floor(i / self.image.width));
+                arr[i] = Sk.misceval.callsimArray(self.getPixel, [self,
+                    i % self.image.width, Math.floor(i / self.image.width)]);
             }
             return new Sk.builtin.tuple(arr);
         };
@@ -177,7 +177,7 @@ $builtinmodule = function (name) {
             red = self.imagedata.data[index];
             green = self.imagedata.data[index + 1];
             blue = self.imagedata.data[index + 2];
-            return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
+            return Sk.misceval.callsimArray(mod.Pixel, [red, green, blue, x, y]);
         };
 
         // alias the function with pep8 compliant snake_case and legacy camelCase
@@ -230,9 +230,9 @@ $builtinmodule = function (name) {
             y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getRed, pix));
-            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
-            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pix.getRed, [pix]));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pix.getGreen, [pix]));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pix.getBlue, [pix]));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         };
@@ -253,9 +253,9 @@ $builtinmodule = function (name) {
             y = Math.floor(count / self.image.width);
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getRed, [pixel]));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getGreen, [pixel]));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getBlue, [pixel]));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         };
@@ -271,13 +271,13 @@ $builtinmodule = function (name) {
             var y;
             var index;
             Sk.builtin.pyCheckArgsLen("updatepixel", arguments.length, 2, 2);
-            x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
-            y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
+            x = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getX, [pixel]));
+            y = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getY, [pixel]));
             checkPixelRange(self, x, y);
             index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getRed, [pixel]));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getGreen, [pixel]));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsimArray(pixel.getBlue, [pixel]));
             self.imagedata.data[index + 3] = 255;
             return updateCanvasAndSuspend(self, x, y);
         };
@@ -342,7 +342,7 @@ $builtinmodule = function (name) {
                     win = Sk.builtin.asnum$(win);
                     ulx = Sk.builtin.asnum$(ulx);
                     uly = Sk.builtin.asnum$(uly);
-                    can = Sk.misceval.callsim(win.getWin, win);
+                    can = Sk.misceval.callsimArray(win.getWin, [win]);
                     ctx = can.getContext("2d");
                     if (ulx === undefined) {
                         ulx = 0;
