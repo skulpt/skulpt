@@ -32,7 +32,7 @@ class string_format(unittest.TestCase):
     def test_arg_items(self):
         coord = (3, 5)
         self.assertEqual('X: 3;  Y: 5','X: {0[0]};  Y: {0[1]}'.format(coord))
-#        self.assertEqual('My name is Fred',"My name is {0[name]}".format({'name':'Fred'}))
+        self.assertEqual('My name is Fred',"My name is {0[name]}".format({'name':'Fred'}))
 
 # TODO:  make these pass
 #    def test_width(self):
