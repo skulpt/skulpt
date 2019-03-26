@@ -96,7 +96,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         }
 
         res = Sk.misceval.tryCatch(function() {
-            return Sk.misceval.callsimOrSuspend(getf, pyName);
+            return Sk.misceval.callsimOrSuspendArray(getf, [pyName]);
         }, function(e) {
             if (e instanceof Sk.builtin.AttributeError) {
                 return undefined;

@@ -861,12 +861,12 @@ Sk.builtin.raw_input = function (prompt) {
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
         if (Sk.inputfunTakesPrompt) {
-            return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
+            return Sk.misceval.callsimOrSuspendArray(Sk.builtin.file.$readline, [sys["$d"]["stdin"], null, lprompt]);
         } else {
             return Sk.misceval.chain(undefined, function() {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(lprompt));
+                return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]);
             }, function () {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
+                return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]);
             });
         }
     });
