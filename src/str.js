@@ -7,6 +7,9 @@ Sk.builtin.interned = {};
  */
 Sk.builtin.str = function (x) {
     var ret;
+
+    Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, 1);
+
     if (x === undefined) {
         x = "";
     }
@@ -232,12 +235,12 @@ Sk.builtin.str.re_escape_ = function (s) {
 };
 
 Sk.builtin.str.prototype["lower"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("lower", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("lower", arguments.length, 1, 1);
     return new Sk.builtin.str(self.v.toLowerCase());
 });
 
 Sk.builtin.str.prototype["upper"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("upper", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("upper", arguments.length, 1, 1);
     return new Sk.builtin.str(self.v.toUpperCase());
 });
 
@@ -245,7 +248,7 @@ Sk.builtin.str.prototype["capitalize"] = new Sk.builtin.func(function (self) {
     var i;
     var cap;
     var orig;
-    Sk.builtin.pyCheckArgs("capitalize", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("capitalize", arguments.length, 1, 1);
     orig = self.v;
 
     if (orig.length === 0) {
@@ -262,7 +265,7 @@ Sk.builtin.str.prototype["capitalize"] = new Sk.builtin.func(function (self) {
 Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
     var it, i;
     var arrOfStrs;
-    Sk.builtin.pyCheckArgs("join", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("join", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("seq", "iterable", Sk.builtin.checkIterable(seq));
     arrOfStrs = [];
     for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
@@ -282,7 +285,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     var s;
     var str;
     var regex;
-    Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
+    Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
     if ((on === undefined) || (on instanceof Sk.builtin.none)) {
         on = null;
     }
@@ -336,7 +339,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
 Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
-    Sk.builtin.pyCheckArgs("strip", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("strip", arguments.length, 1, 2);
     if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("strip arg must be None or str");
     }
@@ -352,7 +355,7 @@ Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
 Sk.builtin.str.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
-    Sk.builtin.pyCheckArgs("lstrip", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("lstrip", arguments.length, 1, 2);
     if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("lstrip arg must be None or str");
     }
@@ -368,7 +371,7 @@ Sk.builtin.str.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) 
 Sk.builtin.str.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
-    Sk.builtin.pyCheckArgs("rstrip", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("rstrip", arguments.length, 1, 2);
     if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("rstrip arg must be None or str");
     }
@@ -383,7 +386,7 @@ Sk.builtin.str.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) 
 
 Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, format_spec) {
     var formatstr;
-    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
         if (Sk.__future__.exceptions) {
@@ -404,7 +407,7 @@ Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, for
 Sk.builtin.str.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
-    Sk.builtin.pyCheckArgs("partition", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("partition", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
     sepStr = new Sk.builtin.str(sep);
     pos = self.v.indexOf(sepStr.v);
@@ -421,7 +424,7 @@ Sk.builtin.str.prototype["partition"] = new Sk.builtin.func(function (self, sep)
 Sk.builtin.str.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
-    Sk.builtin.pyCheckArgs("rpartition", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("rpartition", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
     sepStr = new Sk.builtin.str(sep);
     pos = self.v.lastIndexOf(sepStr.v);
@@ -440,7 +443,7 @@ Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, sta
     var ctl;
     var slice;
     var m;
-    Sk.builtin.pyCheckArgs("count", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 4);
     if (!Sk.builtin.checkString(pat)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
@@ -479,7 +482,7 @@ Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, sta
 
 Sk.builtin.str.prototype["ljust"] = new Sk.builtin.func(function (self, len, fillchar) {
     var newstr;
-    Sk.builtin.pyCheckArgs("ljust", arguments, 2, 3);
+    Sk.builtin.pyCheckArgsLen("ljust", arguments.length, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
@@ -502,7 +505,7 @@ Sk.builtin.str.prototype["ljust"] = new Sk.builtin.func(function (self, len, fil
 
 Sk.builtin.str.prototype["rjust"] = new Sk.builtin.func(function (self, len, fillchar) {
     var newstr;
-    Sk.builtin.pyCheckArgs("rjust", arguments, 2, 3);
+    Sk.builtin.pyCheckArgsLen("rjust", arguments.length, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
@@ -527,7 +530,7 @@ Sk.builtin.str.prototype["rjust"] = new Sk.builtin.func(function (self, len, fil
 Sk.builtin.str.prototype["center"] = new Sk.builtin.func(function (self, len, fillchar) {
     var newstr;
     var newstr1;
-    Sk.builtin.pyCheckArgs("center", arguments, 2, 3);
+    Sk.builtin.pyCheckArgsLen("center", arguments.length, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
@@ -555,7 +558,7 @@ Sk.builtin.str.prototype["center"] = new Sk.builtin.func(function (self, len, fi
 
 Sk.builtin.str.prototype["find"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
-    Sk.builtin.pyCheckArgs("find", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
@@ -588,7 +591,7 @@ Sk.builtin.str.prototype["find"] = new Sk.builtin.func(function (self, tgt, star
 
 Sk.builtin.str.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
-    Sk.builtin.pyCheckArgs("index", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     idx = Sk.misceval.callsim(self["find"], self, tgt, start, end);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
@@ -598,7 +601,7 @@ Sk.builtin.str.prototype["index"] = new Sk.builtin.func(function (self, tgt, sta
 
 Sk.builtin.str.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
-    Sk.builtin.pyCheckArgs("rfind", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("rfind", arguments.length, 2, 4);
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
@@ -632,7 +635,7 @@ Sk.builtin.str.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, sta
 
 Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
-    Sk.builtin.pyCheckArgs("rindex", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("rindex", arguments.length, 2, 4);
     idx = Sk.misceval.callsim(self["rfind"], self, tgt, start, end);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
@@ -641,14 +644,14 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
 });
 
 Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgs("startswith", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
     return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
 Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgs("endswith", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
     return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
 });
@@ -656,7 +659,7 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
     var c;
     var patt;
-    Sk.builtin.pyCheckArgs("replace", arguments, 3, 4);
+    Sk.builtin.pyCheckArgsLen("replace", arguments.length, 3, 4);
     Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
     Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
     if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
@@ -690,7 +693,7 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     var offset;
     var pad = "";
 
-    Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("zfill", arguments.length, 2, 2);
     if (! Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
     }
@@ -710,12 +713,12 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
 });
 
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isdigit", arguments.length, 1, 1);
     return new Sk.builtin.bool( /^\d+$/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isspace", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isspace", arguments.length, 1, 1);
     return new Sk.builtin.bool( /^\s+$/.test(self.v));
 });
 
@@ -731,7 +734,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     var spaces;
     var expanded;
 
-    Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("expandtabs", arguments.length, 1, 2);
 
 
     if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
@@ -752,7 +755,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
 
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     var ret;
-    Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("swapcase", arguments.length, 1, 1);
 
 
     ret = self.v.replace(/[a-z]/gi, function(c) {
@@ -773,7 +776,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
     var eol;
     var sol = 0;
     var slice;
-    Sk.builtin.pyCheckArgs("splitlines", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("splitlines", arguments.length, 1, 2);
     if ((keepends !== undefined) && ! Sk.builtin.checkBool(keepends)) {
         throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
     }
@@ -819,7 +822,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
 Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
     var ret;
 
-    Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("title", arguments.length, 1, 1);
 
     ret = self.v.replace(/[a-z][a-z]*/gi, function(str) {
         return str[0].toUpperCase() + str.substr(1).toLowerCase();
@@ -829,28 +832,28 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isalpha", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isalpha", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && goog.string.isAlpha(self.v));
 });
 
 Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isalnum", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isalnum", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && goog.string.isAlphaNumeric(self.v));
 });
 
 // does not account for unicode numeric values
 Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isnumeric", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isnumeric", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && goog.string.isNumeric(self.v));
 });
 
 Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("islower", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("islower", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("isupper", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("isupper", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
 
@@ -862,7 +865,7 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
     var previous_is_cased = false;
     var pos;
     var ch;
-    Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("istitle", arguments.length, 1, 1);
     for (pos = 0; pos < input.length; pos ++) {
         ch = input.charAt(pos);
         if (! /[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
@@ -1175,7 +1178,7 @@ Sk.abstr.setUpInheritance("iterator", Sk.builtin.str_iter_, Sk.builtin.object);
 Sk.builtin.str_iter_.prototype.__class__ = Sk.builtin.str_iter_;
 
 Sk.builtin.str_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
     return self;
 });
 

@@ -5,6 +5,7 @@
 Sk.builtin.tuple = function (L) {
     var it, i;
     if (!(this instanceof Sk.builtin.tuple)) {
+        Sk.builtin.pyCheckArgsLen("tuple", arguments.length, 0, 1);
         return new Sk.builtin.tuple(L);
     }
 
@@ -120,7 +121,7 @@ Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
 Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 1, 1);
     return new Sk.builtin.tuple_iter_(self);
 });
 

@@ -1760,8 +1760,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         minargs = args ? args.args.length - defaults.length : 0;
         maxargs = vararg ? Infinity : (args ? args.args.length : 0);
         kw = kwarg ? true : false;
-        this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v +
-            "\", arguments, " + minargs + ", " + maxargs + ", " + kw +
+        this.u.varDeclsCode += "Sk.builtin.pyCheckArgsLen(\"" + coname.v +
+            "\", arguments.length, " + minargs + ", " + maxargs + ", " + kw +
             ", " + hasFree + ");";
     }
 
@@ -1888,13 +1888,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // The call to pyCheckArgs assumes they can't be true.
     {
         if (args && args.args.length > 0) {
-            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgs(\"",
-                coname.v, "\",arguments,", args.args.length - defaults.length, ",", args.args.length,
+            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
+                coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
                 ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
         }
         else {
-            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgs(\"", coname.v,
-                "\",arguments,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
+            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
+                "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
         }
     }
     else {

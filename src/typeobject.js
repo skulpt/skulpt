@@ -32,7 +32,7 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
  * Sk.builtin.super_
  */
 Sk.builtin.super_ = function super_ (a_type, self) {
-    Sk.builtin.pyCheckArgs("super", arguments, 1);
+    Sk.builtin.pyCheckArgsLen("super", arguments.length, 1);
 
     if (!(this instanceof Sk.builtin.super_)) {
         return new Sk.builtin.super_(a_type, self);

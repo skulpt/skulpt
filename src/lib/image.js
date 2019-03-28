@@ -36,7 +36,7 @@ $builtinmodule = function (name) {
 
         $loc.__init__ = new Sk.builtin.func(function (self, imageId) {
             var susp;
-            Sk.builtin.pyCheckArgs("__init__", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 2, 2);
             try {
                 self.image = document.getElementById(Sk.ffi.remapToJs(imageId));
                 initializeImage(self);
@@ -107,7 +107,7 @@ $builtinmodule = function (name) {
 
         var setdelay = function (self, delay, interval) {
             var i;
-            Sk.builtin.pyCheckArgs("setdelay", arguments, 2, 3);
+            Sk.builtin.pyCheckArgsLen("setdelay", arguments.length, 2, 3);
             self.delay = Sk.ffi.remapToJs(delay);
             i = Sk.builtin.asnum$(interval);
             if (!i) {
@@ -126,7 +126,7 @@ $builtinmodule = function (name) {
         var getpixels = function (self) {
             var arr = [];//initial array
             var i;
-            Sk.builtin.pyCheckArgs("getpixels", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getpixels", arguments.length, 1, 1);
 
             for (i = 0; i < self.image.height * self.image.width; i++) {
                 arr[i] = Sk.misceval.callsim(self.getPixel, self,
@@ -148,7 +148,7 @@ $builtinmodule = function (name) {
             var green;
             var blue;
             var index;
-            Sk.builtin.pyCheckArgs("getData", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getData", arguments.length, 1, 1);
 
             for (i = 0; i < self.image.height * self.image.width; i++) {
                 x = i % self.image.width;
@@ -169,7 +169,7 @@ $builtinmodule = function (name) {
             var blue;
             var green;
             var index;
-            Sk.builtin.pyCheckArgs("getpixel", arguments, 3, 3);
+            Sk.builtin.pyCheckArgsLen("getpixel", arguments.length, 3, 3);
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
@@ -225,7 +225,7 @@ $builtinmodule = function (name) {
 
         var setpixel = function (self, x, y, pix) {
             var index;
-            Sk.builtin.pyCheckArgs("setpixel", arguments, 4, 4);
+            Sk.builtin.pyCheckArgsLen("setpixel", arguments.length, 4, 4);
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             checkPixelRange(self, x, y);
@@ -247,7 +247,7 @@ $builtinmodule = function (name) {
             var x;
             var y;
             var index;
-            Sk.builtin.pyCheckArgs("setpixelat", arguments, 3, 3);
+            Sk.builtin.pyCheckArgsLen("setpixelat", arguments.length, 3, 3);
             count = Sk.builtin.asnum$(count);
             x = count % self.image.width;
             y = Math.floor(count / self.image.width);
@@ -270,7 +270,7 @@ $builtinmodule = function (name) {
             var x;
             var y;
             var index;
-            Sk.builtin.pyCheckArgs("updatepixel", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("updatepixel", arguments.length, 2, 2);
             x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
             y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
             checkPixelRange(self, x, y);
@@ -288,7 +288,7 @@ $builtinmodule = function (name) {
 
 
         var getheight = function (self) {
-            Sk.builtin.pyCheckArgs("getheight", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getheight", arguments.length, 1, 1);
             return new Sk.builtin.int_(self.height);
         };
 
@@ -298,7 +298,7 @@ $builtinmodule = function (name) {
 
 
         var getwidth = function (self, titlestring) {
-            Sk.builtin.pyCheckArgs("getwidth", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getwidth", arguments.length, 1, 1);
             return new Sk.builtin.int_(self.width);
         };
 
@@ -329,7 +329,7 @@ $builtinmodule = function (name) {
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
             var susp;
-            Sk.builtin.pyCheckArgs("draw", arguments, 2, 4);
+            Sk.builtin.pyCheckArgsLen("draw", arguments.length, 2, 4);
             susp = new Sk.misceval.Suspension();
             susp.resume = function () {
                 return Sk.builtin.none.none$;
@@ -373,7 +373,7 @@ $builtinmodule = function (name) {
 
     eImage = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
-            Sk.builtin.pyCheckArgs("__init__", arguments, 3, 3);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 3, 3);
             self.width = Sk.builtin.asnum$(width);
             self.height = Sk.builtin.asnum$(height);
             self.canvas = document.createElement("canvas");
@@ -392,7 +392,7 @@ $builtinmodule = function (name) {
 
     pixel = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, r, g, b, x, y) {
-            Sk.builtin.pyCheckArgs("__init__", arguments, 4, 6);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 4, 6);
             self.red = Sk.builtin.asnum$(r);
             self.green = Sk.builtin.asnum$(g);
             self.blue = Sk.builtin.asnum$(b);
@@ -401,7 +401,7 @@ $builtinmodule = function (name) {
         });
 
         var getred = function (self) {
-            Sk.builtin.pyCheckArgs("getred", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getred", arguments.length, 1, 1);
             return Sk.builtin.assk$(self.red);
         };
 
@@ -410,7 +410,7 @@ $builtinmodule = function (name) {
         $loc.getRed = new Sk.builtin.func(getred);
 
         var getgreen = function (self) {
-            Sk.builtin.pyCheckArgs("getgreen", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getgreen", arguments.length, 1, 1);
             return Sk.builtin.assk$(self.green);
         };
 
@@ -419,7 +419,7 @@ $builtinmodule = function (name) {
         $loc.getGreen = new Sk.builtin.func(getgreen);
 
         var getblue = function (self) {
-            Sk.builtin.pyCheckArgs("getblue", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getblue", arguments.length, 1, 1);
             return Sk.builtin.assk$(self.blue);
         };
 
@@ -428,7 +428,7 @@ $builtinmodule = function (name) {
         $loc.getBlue = new Sk.builtin.func(getblue);
 
         var getx = function (self) {
-            Sk.builtin.pyCheckArgs("getx", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("getx", arguments.length, 1, 1);
             return Sk.builtin.assk$(self.x);
         };
 
@@ -437,7 +437,7 @@ $builtinmodule = function (name) {
         $loc.getX = new Sk.builtin.func(getx);
 
         var gety = function (self) {
-            Sk.builtin.pyCheckArgs("gety", arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen("gety", arguments.length, 1, 1);
             return Sk.builtin.assk$(self.y);
         };
 
@@ -446,7 +446,7 @@ $builtinmodule = function (name) {
         $loc.getY = new Sk.builtin.func(gety);
 
         var setred = function (self, r) {
-            Sk.builtin.pyCheckArgs("setred", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("setred", arguments.length, 2, 2);
             self.red = Sk.builtin.asnum$(r);
         };
 
@@ -455,7 +455,7 @@ $builtinmodule = function (name) {
         $loc.setRed = new Sk.builtin.func(setred);
 
         var setgreen = function (self, g) {
-            Sk.builtin.pyCheckArgs("setgreen", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("setgreen", arguments.length, 2, 2);
             self.green = Sk.builtin.asnum$(g);
         };
 
@@ -464,7 +464,7 @@ $builtinmodule = function (name) {
         $loc.setGreen = new Sk.builtin.func(setgreen);
 
         var setblue = function (self, b) {
-            Sk.builtin.pyCheckArgs("setblue", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("setblue", arguments.length, 2, 2);
             self.blue = Sk.builtin.asnum$(b);
         };
 
@@ -495,7 +495,7 @@ $builtinmodule = function (name) {
 
 
         var setx = function (self, x) {
-            Sk.builtin.pyCheckArgs("setx", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("setx", arguments.length, 2, 2);
             self.x = Sk.builtin.asnum$(x);
         };
 
@@ -504,7 +504,7 @@ $builtinmodule = function (name) {
         $loc.setX = new Sk.builtin.func(setx);
 
         var sety = function (self, y) {
-            Sk.builtin.pyCheckArgs("sety", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("sety", arguments.length, 2, 2);
             self.y = Sk.builtin.asnum$(y);
         };
 
@@ -545,7 +545,7 @@ $builtinmodule = function (name) {
         $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
             var currentCanvas;
             var tmpCan, tmpDiv;
-            Sk.builtin.pyCheckArgs("__init__", arguments, 1, 3);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 3);
             currentCanvas = ImageMod.canvasLib[Sk.canvas];
             if (currentCanvas === undefined) {
                 tmpCan = document.createElement("canvas");

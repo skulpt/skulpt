@@ -27,7 +27,7 @@ Math.hypot = Math.hypot || function() {
  * 
  */
 Sk.builtin.complex = function (real, imag) {
-    Sk.builtin.pyCheckArgs("complex", arguments, 0, 2);
+    Sk.builtin.pyCheckArgsLen("complex", arguments.length, 0, 2);
 
     var r, i, tmp; // PyObject
     var nbr, nbi; // real, imag as numbers
@@ -962,14 +962,14 @@ Sk.builtin.complex.prototype.int$bool.co_name = new Sk.builtin.str("__bool__");
 Sk.builtin.complex.prototype.__bool__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$bool); 
 
 Sk.builtin.complex.prototype.int$truediv = function __truediv__(self, other){
-    Sk.builtin.pyCheckArgs("__truediv__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__truediv__", arguments.length, 1, 1, true);
     return self.nb$divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$truediv.co_name = new Sk.builtin.str("__truediv__");
 Sk.builtin.complex.prototype.__truediv__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$truediv); 
 
 Sk.builtin.complex.prototype.int$hash = function __hash__(self){
-    Sk.builtin.pyCheckArgs("__hash__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__hash__", arguments.length, 0, 0, true);
 
     return self.tp$hash.call(self);
 };
@@ -977,7 +977,7 @@ Sk.builtin.complex.prototype.int$hash.co_name = new Sk.builtin.str("__hash__");
 Sk.builtin.complex.prototype.__hash__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$hash); 
 
 Sk.builtin.complex.prototype.int$add = function __add__(self, other){
-    Sk.builtin.pyCheckArgs("__add__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__add__", arguments.length, 1, 1, true);
     return self.nb$add.call(self, other);
 };
 Sk.builtin.complex.prototype.int$add.co_name = new Sk.builtin.str("__add__");
@@ -985,7 +985,7 @@ Sk.builtin.complex.prototype.__add__ = new Sk.builtin.func(Sk.builtin.complex.pr
 
 
 Sk.builtin.complex.prototype.int$repr = function __repr__(self){
-    Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, true);
 
     return self["r$"].call(self);
 };
@@ -993,7 +993,7 @@ Sk.builtin.complex.prototype.int$repr.co_name = new Sk.builtin.str("__repr__");
 Sk.builtin.complex.prototype.__repr__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$repr); 
 
 Sk.builtin.complex.prototype.int$str = function __str__(self){
-    Sk.builtin.pyCheckArgs("__str__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__str__", arguments.length, 0, 0, true);
 
     return self.tp$str.call(self);
 };
@@ -1001,62 +1001,62 @@ Sk.builtin.complex.prototype.int$str.co_name = new Sk.builtin.str("__str__");
 Sk.builtin.complex.prototype.__str__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$str); 
 
 Sk.builtin.complex.prototype.int$sub = function __sub__(self, other){
-    Sk.builtin.pyCheckArgs("__sub__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__sub__", arguments.length, 1, 1, true);
     return self.nb$subtract.call(self, other);
 };
 Sk.builtin.complex.prototype.int$sub.co_name = new Sk.builtin.str("__sub__");
 Sk.builtin.complex.prototype.__sub__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$sub); 
 
 Sk.builtin.complex.prototype.int$mul = function __mul__(self, other){
-    Sk.builtin.pyCheckArgs("__mul__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__mul__", arguments.length, 1, 1, true);
     return self.nb$multiply.call(self, other);
 };
 Sk.builtin.complex.prototype.int$mul.co_name = new Sk.builtin.str("__mul__");
 Sk.builtin.complex.prototype.__mul__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$mul); 
 
 Sk.builtin.complex.prototype.int$div = function __div__(self, other){
-    Sk.builtin.pyCheckArgs("__div__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__div__", arguments.length, 1, 1, true);
     return self.nb$divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$div.co_name = new Sk.builtin.str("__div__");
 Sk.builtin.complex.prototype.__div__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$div); 
 
 Sk.builtin.complex.prototype.int$floordiv = function __floordiv__(self, other){
-    Sk.builtin.pyCheckArgs("__floordiv__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__floordiv__", arguments.length, 1, 1, true);
     return self.nb$floor_divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$floordiv.co_name = new Sk.builtin.str("__floordiv__");
 Sk.builtin.complex.prototype.__floordiv__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$floordiv); 
 
 Sk.builtin.complex.prototype.int$mod = function __mod__(self, other){
-    Sk.builtin.pyCheckArgs("__mod__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__mod__", arguments.length, 1, 1, true);
     return self.nb$remainder.call(self, other);
 };
 Sk.builtin.complex.prototype.int$mod.co_name = new Sk.builtin.str("__mod__");
 Sk.builtin.complex.prototype.__mod__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$mod); 
 
 Sk.builtin.complex.prototype.int$pow = function __pow__(self, other, z){
-    Sk.builtin.pyCheckArgs("__pow__", arguments, 1, 2, true);
+    Sk.builtin.pyCheckArgsLen("__pow__", arguments.length, 1, 2, true);
     return self.nb$power.call(self, other, z);
 };
 Sk.builtin.complex.prototype.int$pow.co_name = new Sk.builtin.str("__pow__");
 Sk.builtin.complex.prototype.__pow__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$pow); 
 
 Sk.builtin.complex.prototype.int$neg = function __neg__(self){
-    Sk.builtin.pyCheckArgs("__neg__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__neg__", arguments.length, 0, 0, true);
     return self.nb$negative.call(self);
 };
 Sk.builtin.complex.prototype.__neg__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$neg); 
 
 Sk.builtin.complex.prototype.int$pos = function __pos__(self){
-    Sk.builtin.pyCheckArgs("__pos__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__pos__", arguments.length, 0, 0, true);
     return self.nb$positive.call(self);
 };
 Sk.builtin.complex.prototype.int$pos.co_name = new Sk.builtin.str("__pos__");
 Sk.builtin.complex.prototype.__pos__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$pos); 
 
 Sk.builtin.complex.prototype.int$conjugate = function conjugate(self){
-    Sk.builtin.pyCheckArgs("conjugate", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("conjugate", arguments.length, 0, 0, true);
     var _imag = self.imag.v;
     _imag = -_imag;
 
@@ -1067,7 +1067,7 @@ Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(Sk.builtin.complex.
 
 // deprecated
 Sk.builtin.complex.prototype.int$divmod = function __divmod__(self, other){
-    Sk.builtin.pyCheckArgs("__divmod__", arguments, 1, 1, true);
+    Sk.builtin.pyCheckArgsLen("__divmod__", arguments.length, 1, 1, true);
 
     var div, mod; // Py_complex
     var d, m, z; // PyObject
@@ -1090,7 +1090,7 @@ Sk.builtin.complex.prototype.int$divmod.co_name = new Sk.builtin.str("__divmod__
 Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$divmod); 
 
 Sk.builtin.complex.prototype.int$getnewargs = function __getnewargs__(self){
-    Sk.builtin.pyCheckArgs("__getnewargs__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__getnewargs__", arguments.length, 0, 0, true);
 
     return new Sk.builtin.tuple([self.real, self.imag]);
 };
@@ -1098,7 +1098,7 @@ Sk.builtin.complex.prototype.int$getnewargs.co_name = new Sk.builtin.str("__getn
 Sk.builtin.complex.prototype.__getnewargs__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$getnewargs); 
 
 Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self){
-    Sk.builtin.pyCheckArgs("__nonzero__", arguments, 0, 0, true);
+    Sk.builtin.pyCheckArgsLen("__nonzero__", arguments.length, 0, 0, true);
 
     if(self.real.v !== 0.0 || self.imag.v !== 0.0) {
         return Sk.builtin.bool.true$;

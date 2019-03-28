@@ -222,7 +222,7 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
 };
 
 Sk.builtin.list.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
     return new Sk.builtin.list_iter_(self);
 });
 
@@ -295,7 +295,7 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
 };
 
 Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
     return new Sk.builtin.bool(self.sq$contains(item));
 });
 
@@ -509,7 +509,7 @@ Sk.builtin.list.prototype.list_reverse_ = function (self) {
     var newarr;
     var old;
     var len;
-    Sk.builtin.pyCheckArgs("reverse", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 1, 1);
 
     len = self.v.length;
     old = self.v;
@@ -524,14 +524,14 @@ Sk.builtin.list.prototype.list_reverse_ = function (self) {
 //Sk.builtin.list.prototype.__reversed__ = todo;
 
 Sk.builtin.list.prototype["append"] = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("append", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("append", arguments.length, 2, 2);
 
     self.v.push(item);
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) {
-    Sk.builtin.pyCheckArgs("insert", arguments, 3, 3);
+    Sk.builtin.pyCheckArgsLen("insert", arguments.length, 3, 3);
     if (!Sk.builtin.checkNumber(i)) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
@@ -550,14 +550,14 @@ Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) 
 });
 
 Sk.builtin.list.prototype["extend"] = new Sk.builtin.func(function (self, b) {
-    Sk.builtin.pyCheckArgs("extend", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("extend", arguments.length, 2, 2);
     self.list_extend_(b);
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
     var ret;
-    Sk.builtin.pyCheckArgs("pop", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("pop", arguments.length, 1, 2);
     if (i === undefined) {
         i = self.v.length - 1;
     }
@@ -580,7 +580,7 @@ Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
 
 Sk.builtin.list.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     var idx;
-    Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("remove", arguments.length, 2, 2);
 
     idx = Sk.builtin.list.prototype["index"].func_code(self, item);
     self.v.splice(Sk.builtin.asnum$(idx), 1);
@@ -591,7 +591,7 @@ Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, s
     var i;
     var obj;
     var len;
-    Sk.builtin.pyCheckArgs("index", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers");
     }
@@ -625,7 +625,7 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
     var count;
     var obj;
     var len;
-    Sk.builtin.pyCheckArgs("count", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
 
     len = self.v.length;
     obj = self.v;

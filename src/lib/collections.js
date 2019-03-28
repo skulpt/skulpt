@@ -40,7 +40,7 @@ var $builtinmodule = function (name) {
         };
 
         mod.defaultdict.prototype['__missing__'] = function (key) {
-            Sk.builtin.pyCheckArgs('__missing__', arguments, 0, 1);
+            Sk.builtin.pyCheckArgsLen('__missing__', arguments.length, 0, 1);
             if (key) {
                 throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
             }
@@ -114,7 +114,7 @@ var $builtinmodule = function (name) {
         };
 
         mod.Counter.prototype['elements'] = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs('elements', arguments, 1, 1);
+            Sk.builtin.pyCheckArgsLen('elements', arguments.length, 1, 1);
             var all_elements = [];
             for (var iter = self.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
@@ -145,7 +145,7 @@ var $builtinmodule = function (name) {
         });
 
         mod.Counter.prototype['most_common'] = new Sk.builtin.func(function (self, n) {
-            Sk.builtin.pyCheckArgs('most_common', arguments, 1, 2);
+            Sk.builtin.pyCheckArgsLen('most_common', arguments.length, 1, 2);
             var length = self.mp$length();
 
             if (n === undefined) {
@@ -193,7 +193,7 @@ var $builtinmodule = function (name) {
         });
 
         mod.Counter.prototype['update'] = new Sk.builtin.func(function (self, other) {
-            Sk.builtin.pyCheckArgs('update', arguments, 1, 2);
+            Sk.builtin.pyCheckArgsLen('update', arguments.length, 1, 2);
 
             if (other instanceof Sk.builtin.dict) {
                 for (var iter = other.tp$iter(), k = iter.tp$iternext();
@@ -219,7 +219,7 @@ var $builtinmodule = function (name) {
         });
 
         mod.Counter.prototype['subtract'] = new Sk.builtin.func(function (self, other) {
-            Sk.builtin.pyCheckArgs('subtract', arguments, 1, 2);
+            Sk.builtin.pyCheckArgsLen('subtract', arguments.length, 1, 2);
 
             if (other instanceof Sk.builtin.dict) {
                 for (var iter = other.tp$iter(), k = iter.tp$iternext();
@@ -309,7 +309,7 @@ var $builtinmodule = function (name) {
         }
 
         mod.OrderedDict.prototype.__iter__ = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+            Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
 
             return mod.OrderedDict.prototype.tp$iter.call(self);
         });
@@ -418,7 +418,7 @@ var $builtinmodule = function (name) {
             var s;
             var idx;
 
-            Sk.builtin.pyCheckArgs('pop', arguments, 2, 3);
+            Sk.builtin.pyCheckArgsLen('pop', arguments.length, 2, 3);
 
             idx = self.orderedkeys.indexOf(key);
             if (idx != -1)
@@ -433,7 +433,7 @@ var $builtinmodule = function (name) {
             var key, val;
             var s;
 
-            Sk.builtin.pyCheckArgs('popitem', arguments, 1, 2);
+            Sk.builtin.pyCheckArgsLen('popitem', arguments.length, 1, 2);
 
             // Empty dictionary
             if (self.orderedkeys.length == 0)

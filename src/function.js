@@ -45,6 +45,45 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
 goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
+ * Check arguments to Python functions to ensure the correct number of
+ * arguments are passed.
+ *
+ * @param {string} name the name of the function
+ * @param {number} nargs the args passed to the function
+ * @param {number} minargs the minimum number of allowable arguments
+ * @param {number=} maxargs optional maximum number of allowable
+ * arguments (default: Infinity)
+ * @param {boolean=} kwargs optional true if kwargs, false otherwise
+ * (default: false)
+ * @param {boolean=} free optional true if free vars, false otherwise
+ * (default: false)
+ */
+Sk.builtin.pyCheckArgsLen = function (name, nargs, minargs, maxargs, kwargs, free) {
+    var msg = "";
+
+    if (maxargs === undefined) {
+        maxargs = Infinity;
+    }
+    if (kwargs) {
+        nargs -= 1;
+    }
+    if (free) {
+        nargs -= 1;
+    }
+    if ((nargs < minargs) || (nargs > maxargs)) {
+        if (minargs === maxargs) {
+            msg = name + "() takes exactly " + minargs + " arguments";
+        } else if (nargs < minargs) {
+            msg = name + "() takes at least " + minargs + " arguments";
+        } else {
+            msg = name + "() takes at most " + maxargs + " arguments";
+        }
+        msg += " (" + nargs + " given)";
+        throw new Sk.builtin.TypeError(msg);
+    }
+};
+
+/**
  * Check type of argument to Python functions.
  *
  * @param {string} name the name of the argument
@@ -238,7 +277,7 @@ Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
 Sk.builtin.func.pythonFunctions = ["__get__"];
 
 Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
-    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
     if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }

@@ -56,7 +56,7 @@ Sk.builtin.dict = function dict (L) {
 
 Sk.builtin.dict.tp$call = function(args, kw) {
     var d, i;
-    Sk.builtin.pyCheckArgs("dict", args, 0, 1);
+    Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
     d = new Sk.builtin.dict(args[0]);
     if (kw) {
         for (i = 0; i < kw.length; i += 2) {
@@ -124,7 +124,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 };
 
 Sk.builtin.dict.prototype.mp$subscript = function (key) {
-    Sk.builtin.pyCheckArgs("[]", arguments, 1, 2, false, false);
+    Sk.builtin.pyCheckArgsLen("[]", arguments.length, 1, 2, false, false);
     var s;
     var res = this.mp$lookup(key);
 
@@ -171,7 +171,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
 };
 
 Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
-    Sk.builtin.pyCheckArgs("del", arguments, 1, 1, false, false);
+    Sk.builtin.pyCheckArgsLen("del", arguments.length, 1, 1, false, false);
     var k = kf(key);
     var bucket = this.buckets[k.v];
     var item;
@@ -220,7 +220,7 @@ Sk.builtin.dict.prototype.mp$length = function () {
 };
 
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
-    Sk.builtin.pyCheckArgs("get()", arguments, 1, 2, false, true);
+    Sk.builtin.pyCheckArgsLen("get()", arguments.length, 1, 2, false, true);
     var ret;
 
     if (d === undefined) {
@@ -236,7 +236,7 @@ Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
 });
 
 Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
-    Sk.builtin.pyCheckArgs("pop()", arguments, 1, 2, false, true);
+    Sk.builtin.pyCheckArgsLen("pop()", arguments.length, 1, 2, false, true);
     var k = kf(key);
     var bucket = self.buckets[k.v];
     var item;
@@ -260,12 +260,12 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
 });
 
 Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
-    Sk.builtin.pyCheckArgs("has_key()", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("has_key()", arguments.length, 1, 1, false, true);
     return new Sk.builtin.bool( self.sq$contains(k));
 });
 
 Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("items()", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("items()", arguments.length, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -284,7 +284,7 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("keys()", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("keys()", arguments.length, 0, 0, false, true);
     var iter, k;
     var ret = [];
 
@@ -297,7 +297,7 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("values()", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("values()", arguments.length, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -315,7 +315,7 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("clear()", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
     var k;
     var iter;
 
@@ -418,7 +418,7 @@ update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
 Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
     return new Sk.builtin.bool(self.sq$contains(item));
 });
 
@@ -428,38 +428,38 @@ Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, o
 });
 
 Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("__delitem__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length, 1, 1, false, true);
     return Sk.builtin.dict.prototype.mp$del_subscript.call(self, item);
 });
 
 Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("__getitem__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__getitem__", arguments.length, 1, 1, false, true);
     return Sk.builtin.dict.prototype.mp$subscript.call(self, item);
 });
 
 Sk.builtin.dict.prototype.__setitem__ = new Sk.builtin.func(function (self, item, value) {
-    Sk.builtin.pyCheckArgs("__setitem__", arguments, 2, 2, false, true);
+    Sk.builtin.pyCheckArgsLen("__setitem__", arguments.length, 2, 2, false, true);
     return Sk.builtin.dict.prototype.mp$ass_subscript.call(self, item, value);
 });
 
 Sk.builtin.dict.prototype.__hash__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__hash__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__hash__", arguments.length, 0, 0, false, true);
     return Sk.builtin.dict.prototype.tp$hash.call(self);
 });
 
 Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__len__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__len__", arguments.length, 0, 0, false, true);
     return Sk.builtin.dict.prototype.mp$length.call(self);
 });
 
 Sk.builtin.dict.prototype.__getattribute__ = new Sk.builtin.func(function (self, attr) {
-    Sk.builtin.pyCheckArgs("__getattribute__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__getattribute__", arguments.length, 1, 1, false, true);
     if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattribute__ requires a string"); }
     return Sk.builtin.dict.prototype.tp$getattr.call(self, Sk.ffi.remapToJs(attr));
 });
 
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
 
     return new Sk.builtin.dict_iter_(self);
 });
@@ -469,7 +469,7 @@ Sk.builtin.dict.prototype.tp$iter = function () {
 };
 
 Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, false, true);
     return Sk.builtin.dict.prototype["$r"].call(self);
 });
 
@@ -519,7 +519,7 @@ Sk.builtin.dict.prototype.ob$ne = function (other) {
 };
 
 Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("copy", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 0, 0, false, true);
 
     var it; // Iterator
     var k; // Key of dict item
@@ -544,14 +544,14 @@ Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
 
     if (self instanceof Sk.builtin.dict) {
         // instance call
-        Sk.builtin.pyCheckArgs("fromkeys", arguments, 1, 2, false, true);
+        Sk.builtin.pyCheckArgsLen("fromkeys", arguments.length, 1, 2, false, true);
 
         res = self;
         iterable = seq;
         val = value === undefined ? Sk.builtin.none.none$ : value;
     } else {
         // static call
-        Sk.builtin.pyCheckArgs("fromkeys", arguments, 1, 2, false, false);
+        Sk.builtin.pyCheckArgsLen("fromkeys", arguments.length, 1, 2, false, false);
 
         res = new Sk.builtin.dict([]);
         iterable = self;

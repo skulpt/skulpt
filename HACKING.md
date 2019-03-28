@@ -561,7 +561,7 @@ module:
 
     var plotk_f = function(kwa)
         {
-            Sk.builtin.pyCheckArgs("plotk", arguments, 0, Infinity, true, false)
+            Sk.builtin.pyCheckArgsLen("plotk", arguments.length, 0, Infinity, true, false)
             args = new Sk.builtins['tuple'](Array.prototype.slice.call(arguments, 1)); /*vararg*/
             kwargs = new Sk.builtins['dict'](kwa);
 

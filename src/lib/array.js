@@ -80,7 +80,7 @@ $builtinmodule = function (name) {
 
     var array = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, typecode, initialiser) {
-            Sk.builtin.pyCheckArgs("__init__", arguments, 2, 3);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 2, 3);
 
             if (typecodes.indexOf(Sk.ffi.remapToJs(typecode)) == -1) {
                 throw new Sk.builtin.ValueError("bad typecode (must be c, b, B, u, h, H, i, I, l, L, f or d)")
@@ -137,7 +137,7 @@ $builtinmodule = function (name) {
         });
 
         $loc.extend = new Sk.builtin.func(function(self, iterable) {
-            Sk.builtin.pyCheckArgs("__init__", arguments, 2, 2);
+            Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 2, 2);
 
             if (!Sk.builtin.checkIterable(iterable)) {
                 throw new Sk.builtin.TypeError("iteration over non-sequence");

@@ -11,7 +11,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     }
 
     var cons = function structseq_constructor(arg) {
-        Sk.builtin.pyCheckArgs(nm, arguments, 1, 1);
+        Sk.builtin.pyCheckArgsLen(nm, arguments.length, 1, 1);
         var o;
         var it, i, v;
         if (!(this instanceof Sk.builtin.structseq_types[nm])) {

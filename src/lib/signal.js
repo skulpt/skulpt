@@ -54,7 +54,7 @@ var $builtinmodule = function (name) {
      * @returns
      */    
     mod.pause = new Sk.builtin.func(function () {
-        Sk.builtin.pyCheckArgs("pause", arguments, 0, 0);
+        Sk.builtin.pyCheckArgsLen("pause", arguments.length, 0, 0);
         var susp = new Sk.misceval.Suspension();
         susp.resume = function () {
             return Sk.builtin.none.none$;
