@@ -106,7 +106,7 @@ $builtinmodule = function (name) {
                      item !== undefined;
                      item = iter.tp$iternext()) {
 
-                    Sk.misceval.callsim(self.internalIterable.append, self.internalIterable, item);
+                    Sk.misceval.callsimArray(self.internalIterable.append, [self.internalIterable, item]);
                 }
             }
         });
@@ -118,7 +118,7 @@ $builtinmodule = function (name) {
                 if (Sk.ffi.remapToJs(self.typecode) == "c") {
                     iterableJs = ", '" + Sk.ffi.remapToJs(self.internalIterable).join("") + "'";
                 } else {
-                    iterableJs = ", " + Sk.ffi.remapToJs(Sk.misceval.callsim(self.internalIterable.__repr__,  self.internalIterable));
+                    iterableJs = ", " + Sk.ffi.remapToJs(Sk.misceval.callsimArray(self.internalIterable.__repr__,  [self.internalIterable]));
                 }
             }
 
@@ -132,7 +132,7 @@ $builtinmodule = function (name) {
         });
 
         $loc.append = new Sk.builtin.func(function (self, item) {
-            Sk.misceval.callsim(self.internalIterable.append, self.internalIterable, item);
+            Sk.misceval.callsimArray(self.internalIterable.append, [self.internalIterable, item]);
             return Sk.builtin.none.none$;
         });
 
@@ -147,7 +147,7 @@ $builtinmodule = function (name) {
                  item !== undefined;
                  item = iter.tp$iternext()) {
 
-                Sk.misceval.callsim(self.internalIterable.append, self.internalIterable, item);
+                Sk.misceval.callsimArray(self.internalIterable.append, [self.internalIterable, item]);
             }
         });
     };

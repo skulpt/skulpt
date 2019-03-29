@@ -1113,13 +1113,13 @@ function generateTurtleModule(_target) {
         proto.$ondrag.co_varnames = ["method", "btn", "add"];
 
         proto.$getscreen = function() {
-            return Sk.misceval.callsim(_module.Screen);
+            return Sk.misceval.callsimArray(_module.Screen);
         };
         proto.$getscreen.isSk = true;
 
         proto.$clone = function() {
 
-            var newTurtleInstance = Sk.misceval.callsimOrSuspend(_module.Turtle);
+            var newTurtleInstance = Sk.misceval.callsimOrSuspendArray(_module.Turtle);
 
             // All the properties that are in getState()
             newTurtleInstance.instance._x = this._x;
@@ -1561,7 +1561,7 @@ function generateTurtleModule(_target) {
 
     function ensureAnonymous() {
         if (!_anonymousTurtle) {
-            _anonymousTurtle = Sk.misceval.callsim(_module.Turtle);
+            _anonymousTurtle = Sk.misceval.callsimArray(_module.Turtle);
         }
 
         return _anonymousTurtle.instance;

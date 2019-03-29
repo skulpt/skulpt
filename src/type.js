@@ -265,7 +265,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.tp$setattr = function(name, data, canSuspend) {
             var r, /** @type {(Object|undefined)} */ setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
             if (setf !== undefined) {
-                r = Sk.misceval.callsimOrSuspend(/** @type {Object} */ (setf), new Sk.builtin.str(name), data);
+                r = Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (setf), [new Sk.builtin.str(name), data]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
@@ -289,7 +289,7 @@ Sk.builtin.type = function (name, bases, dict) {
             // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
             // convention
             r = Sk.misceval.tryCatch(function() {
-                return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new Sk.builtin.str(name));
+                return Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (getf), [new Sk.builtin.str(name)]);
             }, function (e) {
                 if (e instanceof Sk.builtin.AttributeError) {
                     return undefined;
@@ -333,7 +333,7 @@ Sk.builtin.type = function (name, bases, dict) {
             if (iterf === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
             }
-            return Sk.misceval.callsim(iterf);
+            return Sk.misceval.callsimArray(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
             var self = this;
@@ -350,7 +350,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 }
 
                 return Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspend(iternextf);
+                    return Sk.misceval.callsimOrSuspendArray(iternextf);
                 }, function(e) {
                     if (e instanceof Sk.builtin.StopIteration) {
                         return undefined;
@@ -397,18 +397,31 @@ Sk.builtin.type = function (name, bases, dict) {
 
         var shortcutDunder = function (skulpt_name, magic_name, magic_func, canSuspendIdx) {
             klass.prototype[skulpt_name] = function () {
-                var args = Array.prototype.slice.call(arguments), canSuspend;
-                args.unshift(magic_func, this);
+                var canSuspend = false;
+                var len = arguments.length;
+                var args, i, j;
+                if ((canSuspendIdx !== null) && (canSuspendIdx <= len)) {
+                    args = new Array(len);
+                } else {
+                    args = new Array(len+1);
+                }
 
-                if (canSuspendIdx !== null) {
-                    canSuspend = args[canSuspendIdx+1];
-                    args.splice(canSuspendIdx+1, 1);
-
-                    if (canSuspend) {
-                        return Sk.misceval.callsimOrSuspend.apply(undefined, args);
+                args[0] = this;
+                j = 1;
+                for (i = 0; i < len; i++) {
+                    if (i === (canSuspendIdx-1)) {
+                        canSuspend = arguments[i];
+                    } else {
+                        args[j] = arguments[i];
+                        j += 1;
                     }
                 }
-                return Sk.misceval.callsim.apply(undefined, args);
+
+                if (canSuspend) {
+                    return Sk.misceval.callsimOrSuspendArray(magic_func, args);
+                } else {
+                    return Sk.misceval.callsimArray(magic_func, args);
+                }
             };
         };
 

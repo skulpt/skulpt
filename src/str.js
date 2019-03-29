@@ -592,7 +592,7 @@ Sk.builtin.str.prototype["find"] = new Sk.builtin.func(function (self, tgt, star
 Sk.builtin.str.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
-    idx = Sk.misceval.callsim(self["find"], self, tgt, start, end);
+    idx = Sk.misceval.callsimArray(self["find"], [self, tgt, start, end]);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     }
@@ -636,7 +636,7 @@ Sk.builtin.str.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, sta
 Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("rindex", arguments.length, 2, 4);
-    idx = Sk.misceval.callsim(self["rfind"], self, tgt, start, end);
+    idx = Sk.misceval.callsimArray(self["rfind"], [self, tgt, start, end]);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     }

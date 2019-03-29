@@ -81,7 +81,7 @@ Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(
 });
 
 Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
-    return Sk.misceval.callsim(Sk.builtin.file.prototype["close"], self);
+    return Sk.misceval.callsimArray(Sk.builtin.file.prototype["close"], [self]);
 });
 
 Sk.builtin.file.prototype.tp$iter = function () {

@@ -45,7 +45,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
             }
             else {
-                return Sk.misceval.callsim(this.default_factory);
+                return Sk.misceval.callsimArray(this.default_factory);
             }
         };
 
@@ -426,7 +426,7 @@ var $builtinmodule = function (name) {
                 self.orderedkeys.splice(idx, 1);
             }
 
-            return Sk.misceval.callsim(Sk.builtin.dict.prototype["pop"], self, key, d);
+            return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [self, key, d]);
         });
 
         mod.OrderedDict.prototype["popitem"] = new Sk.builtin.func(function (self, last) {
@@ -448,7 +448,7 @@ var $builtinmodule = function (name) {
                 key = self.orderedkeys[self.orderedkeys.length - 1];
             }
 
-            val = Sk.misceval.callsim(self["pop"], self, key);
+            val = Sk.misceval.callsimArray(self["pop"], [self, key]);
             return Sk.builtin.tuple([key, val]);
         });
 
@@ -490,7 +490,7 @@ var $builtinmodule = function (name) {
         };
 
         mod.namedtuple = new Sk.builtin.func(function (name, fields) {
-            if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],name ))) {
+            if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d['iskeyword'], [name]))) {
                 throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + name.v);
             }
             var nm = Sk.ffi.remapToJs(name);
@@ -508,7 +508,7 @@ var $builtinmodule = function (name) {
             }
             // import the keyword module here and use iskeyword
             for (i = 0; i < flds.length; i++) {
-                if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i]))) ||
+                if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d['iskeyword'], [Sk.ffi.remapToPy(flds[i])])) ||
                     startsw2.test(flds[i]) || (! alnum.test(flds[i]))
                 ) {
                     throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + flds[i]);

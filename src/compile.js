@@ -539,7 +539,11 @@ Compiler.prototype.ccall = function (e) {
             args.push("$gbl.__class__");
             args.push("self");
         }
-        out ("$ret = Sk.misceval.callsimOrSuspend(", func, args.length > 0 ? "," : "", args, ");");
+        if (args.length > 0) {
+            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ", [", args, "]);");
+        } else {
+            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ");");
+        }
     }
 
     this._checkSuspension(e);
@@ -1235,7 +1239,7 @@ Compiler.prototype.craise = function (s) {
             // handles: raise Error OR raise someinstance
             exc = this._gr("err", this.vexpr(s.type));
             out("if(",exc," instanceof Sk.builtin.type) {",
-                "throw Sk.misceval.callsim(", exc, ");",
+                "throw Sk.misceval.callsimArray(", exc, ");",
                 "} else if(typeof(",exc,") === 'function') {",
                 "throw ",exc,"();",
                 "} else {",
@@ -1288,7 +1292,7 @@ Compiler.prototype.ctryexcept = function (s) {
             next = (i == n - 1) ? unhandled : handlers[i + 1];
 
             // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
-            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
+            // var check = this._gr('call', "Sk.misceval.callsimArray(", isinstance, ", [$err, ", handlertype, "])");
 
             check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
             this._jumpfalse(check, next);
@@ -1416,7 +1420,7 @@ Compiler.prototype.cwith = function (s) {
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.gattr(",mgr,",'__enter__', true);");
     this._checkSuspension(s);
-    out("$ret = Sk.misceval.callsimOrSuspend($ret);");
+    out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
     value = this._gr("value", "$ret");
 
@@ -1451,7 +1455,7 @@ Compiler.prototype.cwith = function (s) {
     this.popFinallyBlock();
 
     //   exit(None, None, None)
-    out("$ret = Sk.misceval.callsimOrSuspend(",exit,",Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$);");
+    out("$ret = Sk.misceval.callsimOrSuspendArray(",exit,",[Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$]);");
     this._checkSuspension(s);
     // Ignore $ret.
 
@@ -1900,7 +1904,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     else {
         var res;
         if (decos.length > 0) {
-            out("$ret = Sk.misceval.callsimOrSuspend(", scopename, ".$decorators[0], new Sk.builtins['function'](", scopename, ",$gbl", frees, "));");
+            out("$ret = Sk.misceval.callsimOrSuspendArray(", scopename, ".$decorators[0], [new Sk.builtins['function'](", scopename, ",$gbl", frees, ")]);");
             this._checkSuspension();
             return this._gr("funcobj", "$ret");
         }
@@ -2027,7 +2031,7 @@ Compiler.prototype.cgenexp = function (e) {
     // but the code builder builds a wrapper that makes generators for normal
     // function generators, so we just do it outside (even just new'ing it
     // inline would be fine).
-    var gener = this._gr("gener", "Sk.misceval.callsim(", gen, ");");
+    var gener = this._gr("gener", "Sk.misceval.callsimArray(", gen, ");");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
     out(gener, ".gi$locals.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");

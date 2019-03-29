@@ -60,7 +60,7 @@ Sk.builtin.float_ = function (x) {
     var special = Sk.abstr.lookupSpecial(x, "__float__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, x);
+        return Sk.misceval.callsimArray(special, [x]);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
@@ -170,7 +170,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // call internal float method
-    fo = Sk.misceval.callsim(f, op);
+    fo = Sk.misceval.callsimArray(f, [op]);
 
     // return value of __float__ must be a python float
     if (!Sk.builtin.float_.PyFloat_Check(fo)) {

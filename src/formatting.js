@@ -45,7 +45,7 @@ var format = function (kwa) {
 
     if(kwargs.size !== 0){
 
-        var kwItems = Sk.misceval.callsim(Sk.builtin.dict.prototype["items"], kwargs);
+        var kwItems = Sk.misceval.callsimArray(Sk.builtin.dict.prototype["items"], [kwargs]);
 
         for (var n in kwItems.v){
 

@@ -218,7 +218,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
 
     if (f != null) {
         // method on builtin, provide this arg
-        res = Sk.misceval.callsim(f, op);
+        res = Sk.misceval.callsimArray(f, [op]);
 
         return res;
     }

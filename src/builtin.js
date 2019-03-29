@@ -237,9 +237,9 @@ Sk.builtin.round = function round (number, ndigits) {
     if (special != null) {
         // method on builtin, provide this arg
         if (!Sk.builtin.checkFunction(number)) {
-            return Sk.misceval.callsim(special, number, ndigits);
+            return Sk.misceval.callsimArray(special, [number, ndigits]);
         } else {
-            return Sk.misceval.callsim(special, number);
+            return Sk.misceval.callsimArray(special, [number]);
         }
     } else {
         throw new Sk.builtin.TypeError("a float is required");
@@ -276,7 +276,7 @@ Sk.builtin.len = function len (item) {
         if (Sk.builtin.checkFunction(item)) {
             special = Sk.abstr.lookupSpecial(item, "__len__");
             if (special != null) {
-                return Sk.misceval.callsim(special, item);
+                return Sk.misceval.callsimArray(special, [item]);
             } else {
                 if (Sk.__future__.exceptions) {
                     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
@@ -470,13 +470,13 @@ Sk.builtin.abs = function abs (x) {
     if (Sk.builtin.checkNumber(x)) {
         return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)));
     } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsim(x.__abs__, x);
+        return Sk.misceval.callsimArray(x.__abs__, [x]);
     }
 
     // call custom __abs__ methods
     if (x.tp$getattr) {
         var f = x.tp$getattr("__abs__");
-        return Sk.misceval.callsim(f);
+        return Sk.misceval.callsimArray(f);
     }
 
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
@@ -625,7 +625,7 @@ Sk.builtin.dir = function dir (x) {
     var special = Sk.abstr.lookupSpecial(x, "__dir__");
     if(special != null) {
         // method on builtin, provide this arg
-        _seq = Sk.misceval.callsim(special, x);
+        _seq = Sk.misceval.callsimArray(special, [x]);
 
         if (!Sk.builtin.checkSequence(_seq)) {
             throw new Sk.builtin.TypeError("__dir__ must return sequence.");
@@ -861,12 +861,12 @@ Sk.builtin.raw_input = function (prompt) {
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
         if (Sk.inputfunTakesPrompt) {
-            return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
+            return Sk.misceval.callsimOrSuspendArray(Sk.builtin.file.$readline, [sys["$d"]["stdin"], null, lprompt]);
         } else {
             return Sk.misceval.chain(undefined, function() {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(lprompt));
+                return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]);
             }, function () {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
+                return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]);
             });
         }
     });
@@ -991,7 +991,7 @@ Sk.builtin.reduce = function reduce (fun, seq, initializer) {
     for (item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
-        accum_value = Sk.misceval.callsim(fun, accum_value, item);
+        accum_value = Sk.misceval.callsimArray(fun, [accum_value, item]);
     }
 
     return accum_value;
@@ -1045,7 +1045,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
         if (fun === Sk.builtin.none.none$) {
             result = new Sk.builtin.bool( item);
         } else {
-            result = Sk.misceval.callsim(fun, item);
+            result = Sk.misceval.callsimArray(fun, [item]);
         }
 
         if (Sk.misceval.isTrue(result)) {
@@ -1248,7 +1248,7 @@ Sk.builtin.reversed = function reversed (seq) {
 
     var special = Sk.abstr.lookupSpecial(seq, "__reversed__");
     if (special != null) {
-        return Sk.misceval.callsim(special, seq);
+        return Sk.misceval.callsimArray(special, [seq]);
     } else {
         if (!Sk.builtin.checkSequence(seq)) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
@@ -1274,7 +1274,7 @@ Sk.builtin.reversed = function reversed (seq) {
                 }
 
                 try {
-                    ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+                    ret = Sk.misceval.callsimArray(this.getitem, [this.myobj, Sk.ffi.remapToPy(this.idx)]);
                 } catch (e) {
                     if (e instanceof Sk.builtin.IndexError) {
                         return undefined;

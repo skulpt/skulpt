@@ -109,7 +109,7 @@ var $builtinmodule = function(name)
 
                         uniforms = Sk.ffi.remapToJs(uniforms);
 
-                        Sk.misceval.callsim(shader.use, shader);
+                        Sk.misceval.callsimArray(shader.use, [shader]);
 
                         for (var buffer in buffers) {
                             var b = buffers[buffer];

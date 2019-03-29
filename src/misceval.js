@@ -100,7 +100,7 @@ Sk.misceval.asIndex = function (o) {
     }
     idxfn = Sk.abstr.lookupSpecial(o, "__index__");
     if (idxfn) {
-        ret = Sk.misceval.callsim(idxfn, o);
+        ret = Sk.misceval.callsimArray(idxfn, [o]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
                                            Sk.abstr.typeName(ret) + ")");
@@ -431,7 +431,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     method = Sk.abstr.lookupSpecial(v, op2method[op]);
     if (method && !v_has_shortcut) {
-        ret = Sk.misceval.callsim(method, v, w);
+        ret = Sk.misceval.callsimArray(method, [v, w]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
@@ -439,7 +439,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
-        ret = Sk.misceval.callsim(swapped_method, w, v);
+        ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
@@ -448,7 +448,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
     if (vcmp) {
         try {
-            ret = Sk.misceval.callsim(vcmp, v, w);
+            ret = Sk.misceval.callsimArray(vcmp, [v, w]);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = Sk.builtin.asnum$(ret);
                 if (op === "Eq") {
@@ -478,7 +478,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     if (wcmp) {
         // note, flipped on return value and call
         try {
-            ret = Sk.misceval.callsim(wcmp, w, v);
+            ret = Sk.misceval.callsimArray(wcmp, [w, v]);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = Sk.builtin.asnum$(ret);
                 if (op === "Eq") {
@@ -631,14 +631,14 @@ Sk.misceval.isTrue = function (x) {
         return x.v !== 0;
     }
     if (x["__nonzero__"]) {
-        ret = Sk.misceval.callsim(x["__nonzero__"], x);
+        ret = Sk.misceval.callsimArray(x["__nonzero__"], [x]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__nonzero__ should return an int");
         }
         return Sk.builtin.asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
-        ret = Sk.misceval.callsim(x["__len__"], x);
+        ret = Sk.misceval.callsimArray(x["__len__"], [x]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
@@ -814,13 +814,16 @@ goog.exportSymbol("Sk.misceval.callOrSuspend", Sk.misceval.callOrSuspend);
 
 /**
  * @param {Object} func the thing to call
- * @param {...*} args stuff to pass it
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsim without expensive call to Array.slice.
+ * Requires args to be a Javascript array.
  */
-Sk.misceval.callsim = function (func, args) {
-    args = Array.prototype.slice.call(arguments, 1);
-    return Sk.misceval.apply(func, undefined, undefined, undefined, args);
+Sk.misceval.callsimArray = function(func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.apply(func, undefined, undefined, undefined, argarray);
 };
-goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
+goog.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
 
 /**
  * @param {?Object} suspensionHandlers any custom suspension handlers
@@ -833,16 +836,18 @@ Sk.misceval.callsimAsync = function (suspensionHandlers, func, args) {
 };
 goog.exportSymbol("Sk.misceval.callsimAsync", Sk.misceval.callsimAsync);
 
-
 /**
  * @param {Object} func the thing to call
- * @param {...*} args stuff to pass it
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsimOrSuspend without expensive call to
+ * Array.slice.  Requires args to be a Javascript array.
  */
-Sk.misceval.callsimOrSuspend = function (func, args) {
-    args = Array.prototype.slice.call(arguments, 1);
-    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
+Sk.misceval.callsimOrSuspendArray = function (func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, argarray);
 };
-goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+goog.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
 
 /**
  * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
@@ -1262,7 +1267,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     }
     _locals = new Sk.builtin.dict(_locals);
 
-    klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
+    klass = Sk.misceval.callsimArray(meta, [_name, _bases, _locals]);
 
     return klass;
 };
