@@ -80,10 +80,12 @@ var tokens = {
 };
 // #--end constants--
 
-var tok_name = Object.assign({}, Object.keys(tokens).map(function(key) {
-    var value = tokens[key];
-    return { value: key};
-}));
+var tok_name = {};
+(function() {
+    for (var i in tokens) {
+        tok_name[tokens[i]] = i;
+    }
+})();
 
 __all__.concat(Object.keys(tok_name).map(function (k) { return tok_name[k]; }));
 
