@@ -86,7 +86,7 @@ var format = function (kwa) {
                 if (container instanceof Sk.builtin.dict) {
                     value = Sk.abstr.objectGetItem(container, new Sk.builtin.str(element_index), false);
                 } else {
-                    value = Sk.abstr.objectGetItem(container, new Sk.builtin.int_(new Sk.builtin.str(element_index)), false);
+                    value = Sk.abstr.objectGetItem(container, new Sk.builtin.int_(parseInt(element_index, 10)), false);
                 }
             }
             index++;
