@@ -379,24 +379,7 @@ function astForTryStmt (c, n) {
         throw new Sk.builtin.SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
     }
 
-    if (nexcept > 0) {
-        handlers = [];
-        for (i = 0; i < nexcept; ++i) {
-            handlers[i] = astForExceptClause(c, CHILD(n, 3 + i * 3), CHILD(n, 5 + i * 3));
-        }
-        exceptSt = new TryExcept(body, handlers, orelse, n.lineno, n.col_offset);
-
-        if (!finally_) {
-            return exceptSt;
-        }
-
-        /* if a 'finally' is present too, we nest the TryExcept within a
-         TryFinally to emulate try ... except ... finally */
-        body = [exceptSt];
-    }
-
-    goog.asserts.assert(finally_ !== null);
-    return new TryFinally(body, finally_, n.lineno, n.col_offset);
+    return new Try(body, handlers, orelse, finally_, n.lineno, n.col_offset);
 }
 
 function astForDottedName (c, n) {
@@ -540,7 +523,7 @@ function astForIfStmt (c, n) {
     var s;
     REQ(n, SYM.if_stmt);
     if (NCH(n) === 4) {
-        return new If_(
+        return new If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             [], n.lineno, n.col_offset);
@@ -549,7 +532,7 @@ function astForIfStmt (c, n) {
     s = CHILD(n, 4).value;
     decider = s.charAt(2); // elSe or elIf
     if (decider === "s") {
-        return new If_(
+        return new If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             astForSuite(c, CHILD(n, 6)),
@@ -571,7 +554,7 @@ function astForIfStmt (c, n) {
 
         if (hasElse) {
             orelse = [
-                new If_(
+                new If(
                     astForExpr(c, CHILD(n, NCH(n) - 6)),
                     astForSuite(c, CHILD(n, NCH(n) - 4)),
                     astForSuite(c, CHILD(n, NCH(n) - 1)),
@@ -583,14 +566,14 @@ function astForIfStmt (c, n) {
         for (i = 0; i < nElif; ++i) {
             off = 5 + (nElif - i - 1) * 4;
             orelse = [
-                new If_(
+                new If(
                     astForExpr(c, CHILD(n, off)),
                     astForSuite(c, CHILD(n, off + 2)),
                     orelse,
                     CHILD(n, off).lineno,
                     CHILD(n, off).col_offset)];
         }
-        return new If_(
+        return new If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             orelse, n.lineno, n.col_offset);
@@ -618,7 +601,7 @@ function astForExprlist (c, n, context) {
 function astForDelStmt (c, n) {
     /* del_stmt: 'del' exprlist */
     REQ(n, SYM.del_stmt);
-    return new Delete_(astForExprlist(c, CHILD(n, 1), Del), n.lineno, n.col_offset);
+    return new Delete(astForExprlist(c, CHILD(n, 1), Del), n.lineno, n.col_offset);
 }
 
 function astForGlobalStmt (c, n) {
@@ -725,7 +708,7 @@ function astForImportStmt (c, n) {
         for (i = 0; i < NCH(n); i += 2) {
             aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
         }
-        return new Import_(aliases, lineno, col_offset);
+        return new Import(aliases, lineno, col_offset);
     }
     else if (n.type === SYM.import_from) {
         mod = null;
@@ -957,7 +940,7 @@ function astForForStmt (c, n) {
         target = new Tuple(_target, Store, n.lineno, n.col_offset);
     }
 
-    return new For_(target,
+    return new For(target,
         astForTestlist(c, CHILD(n, 3)),
         astForSuite(c, CHILD(n, 5)),
         seq, n.lineno, n.col_offset);
@@ -1132,17 +1115,17 @@ function astForFlowStmt (c, n) {
     ch = CHILD(n, 0);
     switch (ch.type) {
         case SYM.break_stmt:
-            return new Break_(n.lineno, n.col_offset);
+            return new Break(n.lineno, n.col_offset);
         case SYM.continue_stmt:
-            return new Continue_(n.lineno, n.col_offset);
+            return new Continue(n.lineno, n.col_offset);
         case SYM.yield_stmt:
             return new Expr(astForExpr(c, CHILD(ch, 0)), n.lineno, n.col_offset);
         case SYM.return_stmt:
             if (NCH(ch) === 1) {
-                return new Return_(null, n.lineno, n.col_offset);
+                return new Return(null, n.lineno, n.col_offset);
             }
             else {
-                return new Return_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+                return new Return(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
             }
             break;
         case SYM.raise_stmt:
@@ -1471,10 +1454,10 @@ function astForWhileStmt (c, n) {
     /* while_stmt: 'while' test ':' suite ['else' ':' suite] */
     REQ(n, SYM.while_stmt);
     if (NCH(n) === 4) {
-        return new While_(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
+        return new While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
     }
     else if (NCH(n) === 7) {
-        return new While_(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
+        return new While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
     }
     goog.asserts.fail("wrong number of tokens for 'while' stmt");
 }

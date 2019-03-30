@@ -2156,7 +2156,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case ClassDef:
             this.cclass(s);
             break;
-        case Return_:
+        case Return:
             if (this.u.ste.blockType !== FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
@@ -2168,7 +2168,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 this._jump(this.peekFinallyBlock().blk);
             }
             break;
-        case Delete_:
+        case Delete:
             this.vseqexpr(s.targets);
             break;
         case Assign:
@@ -2180,18 +2180,18 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case AugAssign:
             return this.caugassign(s);
-        case For_:
+        case For:
             return this.cfor(s);
-        case While_:
+        case While:
             return this.cwhile(s);
-        case If_:
+        case If:
             return this.cif(s);
         case Raise:
             return this.craise(s);
         // TODO compile Try and With here
         case Assert:
             return this.cassert(s);
-        case Import_:
+        case Import:
             return this.cimport(s);
         case ImportFrom:
             return this.cfromimport(s);
@@ -2202,15 +2202,15 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case Pass:
             break;
-        case Break_:
+        case Break:
             this.cbreak(s);
             break;
-        case Continue_:
+        case Continue:
             this.ccontinue(s);
             break;
-        case Debugger_:
-            out("debugger;");
-            break;
+        // case Debugger_:
+        //     out("debugger;");
+        //     break;
         default:
             goog.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
     }

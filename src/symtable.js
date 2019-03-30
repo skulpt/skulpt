@@ -463,7 +463,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Return_:
+        case Return:
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
@@ -472,7 +472,7 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Delete_:
+        case Delete:
             this.SEQExpr(s.targets);
             break;
         case Assign:
@@ -483,7 +483,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
-        case For_:
+        case For:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
             this.SEQStmt(s.body);
@@ -491,14 +491,14 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case While_:
+        case While:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case If_:
+        case If:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
@@ -522,7 +522,7 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.visitExpr(s.msg);
             }
             break;
-        case Import_:
+        case Import:
         case ImportFrom:
             this.visitAlias(s.names, s.lineno);
             break;
@@ -547,12 +547,11 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.visitExpr(s.value);
             break;
         case Pass:
-        case Break_:
-        case Debugger_:
-        case Continue_:
+        case Break:
+        case Continue:
             // nothing
             break;
-        case With_:
+        case With:
             this.newTmpname(s.lineno);
             this.visitExpr(s.context_expr);
             if (s.optional_vars) {
