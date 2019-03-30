@@ -66,8 +66,11 @@ ELLIPSIS = 52
 OP = 53
 AWAIT = 54
 ASYNC = 55
-ERRORTOKEN = 56
-N_TOKENS = 57
+# Extras hacked in
+COMMENT = 56
+NL = 57
+ERRORTOKEN = 58
+N_TOKENS = 59
 NT_OFFSET = 256
 #--end constants--
 
