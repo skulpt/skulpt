@@ -563,6 +563,8 @@ Sk.misceval.objectRepr = function (v) {
         return new Sk.builtin.str("False");
     } else if (typeof v === "number") {
         return new Sk.builtin.str("" + v);
+    } else if (typeof v === "string") {
+        return new Sk.builtin.str(v);
     } else if (!v["$r"]) {
         if (v.tp$name) {
             return new Sk.builtin.str("<" + v.tp$name + " object>");
