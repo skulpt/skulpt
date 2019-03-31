@@ -1,6 +1,14 @@
-import { none } from './object'
-import { asnum$ } from './builtin';
+import { none } from './types/object'
 import { apply } from './misceval';
+import { bool } from './bool';
+import { dict } from './types/dict';
+import { list } from './types/list';
+import { str } from './types/str';
+import { assk$ } from './builtin';
+import { Suspension } from './misceval';
+import { func } from './function';
+import { tuple } from './types/tuple'
+import { numtype } from './types/numtype';
 
 /**
  * maps from Javascript Object/Array/string to Python dict/list/str.
@@ -22,7 +30,7 @@ export function remapToPy(obj) {
         return obj;
     }
 
-    if (obj instanceof Sk.misceval.Suspension) {
+    if (obj instanceof Suspension) {
         return obj;
     }
 
@@ -31,7 +39,7 @@ export function remapToPy(obj) {
         for (i = 0; i < obj.length; ++i) {
             arr.push(remapToPy(obj[i]));
         }
-        return new Sk.builtin.list(arr);
+        return new list(arr);
     } else if (obj === null) {
         return none.none$;
     } else if (typeof obj === "object") {
@@ -40,25 +48,25 @@ export function remapToPy(obj) {
             kvs.push(remapToPy(k));
             kvs.push(remapToPy(obj[k]));
         }
-        return new Sk.builtin.dict(kvs);
+        return new dict(kvs);
     }
 
     if (typeof obj === "string") {
-        return new Sk.builtin.str(obj);
+        return new str(obj);
     }
 
     if (typeof obj === "number") {
-        return Sk.builtin.assk$(obj);
+        return assk$(obj);
     }
 
     if (typeof obj === "boolean") {
-        return new Sk.builtin.bool(obj);
+        return new bool(obj);
     } else if (typeof obj === "undefined") {
-        return Sk.builtin.none.none$;
+        return none.none$;
     }
 
     if (typeof obj === "function") {
-        return new Sk.builtin.func(obj);
+        return new func(obj);
     }
 
     goog.asserts.fail("unhandled remap type " + typeof(obj));
@@ -78,7 +86,7 @@ export function remapToJs(obj) {
     var v;
     var iter, k;
     var ret;
-    if (obj instanceof Sk.builtin.dict) {
+    if (obj instanceof dict) {
         ret = {};
         for (iter = obj.tp$iter(), k = iter.tp$iternext();
              k !== undefined;
@@ -92,20 +100,16 @@ export function remapToJs(obj) {
             ret[kAsJs] = remapToJs(v);
         }
         return ret;
-    } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
+    } else if (obj instanceof list || obj instanceof tuple) {
         ret = [];
         for (i = 0; i < obj.v.length; ++i) {
             ret.push(remapToJs(obj.v[i]));
         }
         return ret;
-    } else if (obj instanceof Sk.builtin.bool) {
+    } else if (obj instanceof bool) {
         return obj.v ? true : false;
-    } else if (obj instanceof Sk.builtin.int_) {
-        return asnum$(obj);
-    } else if (obj instanceof Sk.builtin.float_) {
-        return asnum$(obj);
-    } else if (obj instanceof Sk.builtin.lng) {
-        return asnum$(obj);
+} else if (obj instanceof numtype) {
+        return obj.tp$toJS();
     } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
     } else if (obj === undefined) {
@@ -128,41 +132,4 @@ export function stdwrap(type, towrap) {
     var inst = new type();
     inst["v"] = towrap;
     return inst;
-};
-
-/**
- * for when the return type might be one of a variety of basic types.
- * number|string, etc.
- */
-export function basicwrap(obj) {
-    if (obj instanceof Sk.builtin.int_) {
-        return asnum$(obj);
-    }
-    if (obj instanceof Sk.builtin.float_) {
-        return asnum$(obj);
-    }
-    if (obj instanceof Sk.builtin.lng) {
-        return asnum$(obj);
-    }
-    if (typeof obj === "number" || typeof obj === "boolean") {
-        return obj;
-    }
-    if (typeof obj === "string") {
-        return new Sk.builtin.str(obj);
-    }
-    goog.asserts.fail("unexpected type for basicwrap");
-};
-
-export function unwrapo(obj) {
-    if (obj === undefined) {
-        return undefined;
-    }
-    return obj["v"];
-};
-
-export function unwrapn(obj) {
-    if (obj === null) {
-        return null;
-    }
-    return obj["v"];
 };

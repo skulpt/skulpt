@@ -24,13 +24,13 @@ import 'google-closure-library';
  * Any variables that aren't set will be left alone.
  */
 
-Sk.bool_check = function(variable, name) {
+function bool_check(variable, name) {
     if (variable === undefined || variable === null || typeof variable !== "boolean") {
         throw new Error("must specify " + name + " and it must be a boolean");
     }
-};
+}
 
-Sk.python2 = {
+export const python2 = {
     print_function: false,
     division: false,
     absolute_import: null,
@@ -50,7 +50,7 @@ Sk.python2 = {
     ceil_floor_int: false
 };
 
-Sk.python3 = {
+export const python3 = {
     print_function: true,
     division: true,
     absolute_import: null,
@@ -70,7 +70,7 @@ Sk.python3 = {
     ceil_floor_int: true
 };
 
-Sk.configure = function (options) {
+export function configure(options) {
     "use strict";
     output = options["output"] || output;
     goog.asserts.assert(typeof output === "function");
@@ -196,18 +196,9 @@ Sk.configure = function (options) {
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 };
 
-goog.exportSymbol("Sk.configure", Sk.configure);
-
 /*
 * Replaceable handler for uncaught exceptions
 */
-Sk.uncaughtException = function(err) {
-    throw err;
-};
-
-/*
- * Replaceable handler for uncaught exceptions
- */
 export let uncaughtException = function(err) {
     throw err;
 };
@@ -306,8 +297,6 @@ if (!inBrowser) {
     };
 }
 
-export let python3 = false;
-
 export let imageProxy = '';
 
 export let inputfun = function (args) {
@@ -328,7 +317,7 @@ export let onAfterImport;
 //   },
 //   ...
 
-Sk.setup_method_mappings = function () {
+function setup_method_mappings() {
     return {
         "round$": {
             "classes": [float_,
@@ -351,10 +340,10 @@ Sk.setup_method_mappings = function () {
     };
 }
 
-Sk.switch_version = function (method_to_map, python3) {
+function switch_version(method_to_map, python3) {
     var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
-    mappings = Sk.setup_method_mappings();
+    mappings = setup_method_mappings();
 
     mapping = mappings[method_to_map];
 

@@ -1,4 +1,4 @@
-import { none } from './object';
+import { none } from './types/object';
 import { TypeError, NameError, ZeroDivisionError, AttributeError, IndexError } from './errors';
 import { asnum$ } from './builtin';
 import {
@@ -10,21 +10,13 @@ import {
     retryOptionalSuspensionOrThrow,
     asIndex,
     isIndex,
-    chain
 } from './misceval';
+import { typeName } from './type';
+import { int_, float_, lng, complex, bool } from './types';
+
 
 // Number
 //
-
-export function typeName(v) {
-    var vtypename;
-    if (v.tp$name !== undefined) {
-        vtypename = v.tp$name;
-    } else {
-        vtypename = "<invalid type>";
-    }
-    return vtypename;
-}
 
 function binop_type_error(v, w, name) {
     var vtypename = typeName(v),
@@ -272,8 +264,8 @@ function numOpAndPromote(a, b, opfn) {
     if (typeof a === "number" && typeof b === "number") {
         ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
-        if ((ans > Sk.builtin.int_.threshold$ || ans < -Sk.builtin.int_.threshold$) && Math.floor(ans) === ans) {
-            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
+        if ((ans > int_.threshold$ || ans < -int_.threshold$) && Math.floor(ans) === ans) {
+            return [lng.fromInt$(a), lng.fromInt$(b)];
         } else {
             return ans;
         }
@@ -281,17 +273,17 @@ function numOpAndPromote(a, b, opfn) {
         throw new NameError("Undefined variable in expression");
     }
 
-    if (a.constructor === Sk.builtin.lng) {
+    if (a.constructor === lng) {
         return [a, b];
-    } else if ((a.constructor === Sk.builtin.int_ ||
-                a.constructor === Sk.builtin.float_) &&
-                b.constructor === Sk.builtin.complex) {
+    } else if ((a.constructor === int_ ||
+                a.constructor === float_) &&
+                b.constructor === complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
-        tmp = new Sk.builtin.complex(a);
+        tmp = new complex(a);
         return [tmp, b];
-    } else if (a.constructor === Sk.builtin.int_ ||
-               a.constructor === Sk.builtin.float_) {
+    } else if (a.constructor === int_ ||
+               a.constructor === float_) {
         return [a, b];
     } else if (typeof a === "number") {
         tmp = Sk.builtin.assk$(a);
@@ -389,11 +381,11 @@ export function numberBinOp(v, w, op) {
         tmp = numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+        } else if (tmp !== undefined && tmp.constructor === int_) {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
+        } else if (tmp !== undefined && tmp.constructor === float_) {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
+        } else if (tmp !== undefined && tmp.constructor === lng) {
             return tmp;
         } else if (tmp !== undefined) {
             v = tmp[0];
@@ -411,11 +403,11 @@ export function numberInplaceBinOp(v, w, op) {
         tmp = numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+        } else if (tmp !== undefined && tmp.constructor === int_) {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
+        } else if (tmp !== undefined && tmp.constructor === float_) {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
+        } else if (tmp !== undefined && tmp.constructor === lng) {
             return tmp;
         } else if (tmp !== undefined) {
             v = tmp[0];
@@ -429,17 +421,17 @@ export function numberInplaceBinOp(v, w, op) {
 export function numberUnaryOp(v, op) {
     var value;
     if (op === "Not") {
-        return isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    } else if (v instanceof Sk.builtin.bool) {
+        return isTrue(v) ? false$ : true$;
+    } else if (v instanceof bool) {
         value = asnum$(v);
         if (op === "USub") {
-            return new Sk.builtin.int_(-value);
+            return new int_(-value);
         }
         if (op === "UAdd") {
-            return new Sk.builtin.int_(value);
+            return new int_(value);
         }
         if (op === "Invert") {
-            return new Sk.builtin.int_(~value);
+            return new int_(~value);
         }
     } else {
         if (op === "USub" && v.nb$negative) {
@@ -529,7 +521,7 @@ export function sequenceGetIndexOf(seq, ob) {
         for (it = iter(seq), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
             if (richCompareBool(ob, i, "Eq")) {
-                return new Sk.builtin.int_(index);
+                return new int_(index);
             }
             index += 1;
         }
@@ -555,7 +547,7 @@ export function sequenceGetCountOf(seq, ob) {
                 count += 1;
             }
         }
-        return new Sk.builtin.int_(count);
+        return new int_(count);
     }
 
     seqtypename = typeName(seq);
@@ -715,7 +707,7 @@ export function objectNegative(obj) {
     var obj_asnum = asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
-        obj = new Sk.builtin.int_(obj_asnum);
+        obj = new int_(obj_asnum);
     }
 
     if (obj.nb$negative) {
@@ -732,7 +724,7 @@ export function objectPositive(obj) {
     var obj_asnum = asnum$(obj); // this will also convert bool type to int
 
     if (obj instanceof Sk.builtin.bool) {
-        obj = new Sk.builtin.int_(obj_asnum);
+        obj = new int_(obj_asnum);
     }
 
     if (obj.nb$negative) {
@@ -797,44 +789,6 @@ export function objectSetItem(o, key, v, canSuspend) {
 
     otypename = typeName(o);
     throw new TypeError("'" + otypename + "' does not support item assignment");
-}
-
-
-export function gattr(obj, nameJS, canSuspend) {
-    var ret, f;
-    var objname = typeName(obj);
-
-    if (obj === null) {
-        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    }
-
-    if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(nameJS, canSuspend);
-    }
-
-    ret = chain(ret, function(r) {
-        if (r === undefined) {
-            throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-        }
-        return r;
-    });
-
-    return canSuspend ? ret : retryOptionalSuspensionOrThrow(ret);
-}
-
-
-export function sattr(obj, nameJS, data, canSuspend) {
-    var objname = typeName(obj), r, setf;
-
-    if (obj === null) {
-        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    }
-
-    if (obj.tp$setattr !== undefined) {
-        return obj.tp$setattr(nameJS, data, canSuspend);
-    } else {
-        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    }
 }
 
 
@@ -943,46 +897,3 @@ export function markUnhashable(thisClass) {
     proto.tp$hash = none.none$;
 }
 
-/**
- * Set up inheritance between two Python classes. This allows only for single
- * inheritance -- multiple inheritance is not supported by Javascript.
- *
- * Javascript's inheritance is prototypal. This means that properties must
- * be defined on the superclass' prototype in order for subclasses to inherit
- * them.
- *
- * ```
- * Sk.superclass.myProperty                 # will NOT be inherited
- * Sk.superclass.prototype.myProperty       # will be inherited
- * ```
- *
- * In order for a class to be subclassable, it must (directly or indirectly)
- * inherit from Sk.builtin.object so that it will be properly initialized in
- * {@link Sk.doOneTimeInitialization} (in src/import.js). Further, all Python
- * builtins should inherit from Sk.builtin.object.
- *
- * @param {string} childName The Python name of the child (subclass).
- * @param {function(...[?])} child     The subclass.
- * @param {function(...[?])} parent    The superclass.
- * @return {undefined}
- */
-export function setUpInheritance(childName, child, parent) {
-    child.prototype.tp$base = parent;
-    child.prototype.tp$name = childName;
-    child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
-}
-
-/**
- * Call the super constructor of the provided class, with the object `self` as
- * the `this` value of that constructor. Any arguments passed to this function
- * after `self` will be passed as-is to the constructor.
- *
- * @param  {function(...[?])} thisClass The subclass.
- * @param  {Object} self      The instance of the subclas.
- * @param  {...?} args Arguments to pass to the constructor.
- * @return {undefined}
- */
-export function superConstructor(thisClass, self, args) {
-    var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
-    thisClass.prototype.tp$base.apply(self, argumentsForConstructor);
-}

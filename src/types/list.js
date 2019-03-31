@@ -1,14 +1,16 @@
-import { iter, typeName, setUpInheritance, markUnhashable } from './abstract';
-import { pyCheckArgs, func, checkNumber, checkIterable, checkInt } from './function';
+import { iter, markUnhashable } from '../abstract';
+import { pyCheckArgs, checkNumber, checkIterable, checkInt } from '../function/checks';
+import { func } from '../function';
 import { object, none } from './object';
 import { seqtype } from './seqtype';
 import { bool } from './bool';
-import { TypeError, IndexError, ValueError, OperationError, StopIteration } from './errors';
-import { timSort } from './timSort'
+import { TypeError, IndexError, ValueError, OperationError, StopIteration } from '../errors';
+import { timSort } from '../timSort'
 import { str } from './str';
-import { slice } from './slice';
-import { asnum$ } from './builtin';
-import { Suspension, objectRepr, opAllowsEquality, richCompareBool, isIndex, asIndex, isTrue, callsim } from './misceval';
+import { slice } from '../slice';
+import { asnum$ } from '../builtin';
+import { Suspension, objectRepr, opAllowsEquality, richCompareBool, isIndex, asIndex, isTrue, callsim } from '../misceval';
+import { typeName, setUpInheritance } from '../type';
 
 export class list extends object {
     /**

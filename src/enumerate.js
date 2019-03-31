@@ -1,8 +1,9 @@
-import { typeName, setUpInheritance } from './abstract'
-import { object } from './object';
-import { pyCheckArgs, func } from './function';
+import { typeName, setUpInheritance } from './type'
+import { object } from './types/object';
+import { func } from './function';
 import { TypeError } from './errors';
 import { isIndex, asIndex } from './misceval';
+import { pyCheckArgs } from './function/checks';
 
 export class enumerate extends object {
     /**

@@ -4,8 +4,8 @@
   Testing/debugging:
 
   ProcessingJS from Skulpt:
-  Sk.misceval.callsim(Sk.globals.processing.$d.PShapeSVG, 
-      new Sk.builtin.str("string"), 
+  Sk.misceval.callsim(Sk.globals.processing.$d.PShapeSVG,
+      new Sk.builtin.str("string"),
       new Sk.builtin.str("bot1.svg"))
 
   ProcessingJS direct:
@@ -45,65 +45,65 @@ var $builtinmodule = function (name) {
     mod.G = new Sk.builtin.int_( 4);
     mod.B = new Sk.builtin.int_( 5);
     mod.A = new Sk.builtin.int_( 6);
-    
+
     mod.U = new Sk.builtin.int_( 7);
     mod.V = new Sk.builtin.int_( 8);
-    
+
     mod.NX = new Sk.builtin.int_( 9);
     mod.NY = new Sk.builtin.int_( 10);
     mod.NZ = new Sk.builtin.int_( 11);
-    
+
     mod.EDGE = new Sk.builtin.int_( 12);
-    
+
     // Stroke
     mod.SR = new Sk.builtin.int_( 13);
     mod.SG = new Sk.builtin.int_( 14);
     mod.SB = new Sk.builtin.int_( 15);
     mod.SA = new Sk.builtin.int_( 16);
-    
+
     mod.SW = new Sk.builtin.int_( 17);
-    
+
     // Transformations (2D and 3D)
     mod.TX = new Sk.builtin.int_( 18);
     mod.TY = new Sk.builtin.int_( 19);
     mod.TZ = new Sk.builtin.int_( 20);
-    
+
     mod.VX = new Sk.builtin.int_( 21);
     mod.VY = new Sk.builtin.int_( 22);
     mod.VZ = new Sk.builtin.int_( 23);
     mod.VW = new Sk.builtin.int_( 24);
-    
+
     // Material properties
     mod.AR = new Sk.builtin.int_( 25);
     mod.AG = new Sk.builtin.int_( 26);
     mod.AB = new Sk.builtin.int_( 27);
-    
+
     mod.DR = new Sk.builtin.int_( 3);
     mod.DG = new Sk.builtin.int_( 4);
     mod.DB = new Sk.builtin.int_( 5);
     mod.DA = new Sk.builtin.int_( 6);
-    
+
     mod.SPR = new Sk.builtin.int_( 28);
     mod.SPG = new Sk.builtin.int_( 29);
     mod.SPB = new Sk.builtin.int_( 30);
-    
+
     mod.SHINE = new Sk.builtin.int_( 31);
-    
+
     mod.ER = new Sk.builtin.int_( 32);
     mod.EG = new Sk.builtin.int_( 33);
     mod.EB = new Sk.builtin.int_( 34);
-    
+
     mod.BEEN_LIT = new Sk.builtin.int_( 35);
-    
+
     mod.VERTEX_FIELD_COUNT = new Sk.builtin.int_( 36);
-    
+
     // Shape drawing modes
     mod.CENTER = new Sk.builtin.int_(3);
     mod.RADIUS = new Sk.builtin.int_(2);
     mod.CORNERS = new Sk.builtin.int_(1);
     mod.CORNER = new Sk.builtin.int_(0);
     mod.DIAMETER = new Sk.builtin.int_(3);
-    
+
     // Text vertical alignment modes
     // Default vertical alignment for text placement
     mod.BASELINE = new Sk.builtin.int_( 0);
@@ -111,16 +111,16 @@ var $builtinmodule = function (name) {
     mod.TOP = new Sk.builtin.int_(      101);
     // Align text from the bottom, using the baseline
     mod.BOTTOM = new Sk.builtin.int_(   102);
-    
+
     // UV Texture coordinate modes
     mod.NORMAL = new Sk.builtin.int_(     1);
     mod.NORMALIZED = new Sk.builtin.int_( 1);
     mod.IMAGE = new Sk.builtin.int_(      2);
-    
+
     // Text placement modes
     mod.MODEL = new Sk.builtin.int_( 4);
     mod.SHAPE = new Sk.builtin.int_( 5);
-    
+
     // Lighting modes
     mod.AMBIENT = new Sk.builtin.int_(     0);
     mod.DIRECTIONAL = new Sk.builtin.int_( 1);
@@ -133,7 +133,7 @@ var $builtinmodule = function (name) {
     mod.HSB = new Sk.builtin.int_(3);
     mod.ALPHA = new Sk.builtin.int_(4);
     mod.CMYK = new Sk.builtin.int_(5);
-    
+
     // Image file types
     mod.TIFF = new Sk.builtin.int_(0);
     mod.TARGA = new Sk.builtin.int_(1);
@@ -161,14 +161,14 @@ var $builtinmodule = function (name) {
     mod.WINDOWS = new Sk.builtin.int_( 1);
     mod.MAXOSX = new Sk.builtin.int_(  2);
     mod.LINUX = new Sk.builtin.int_(   3);
-    
+
     mod.EPSILON = new Sk.builtin.float_( 0.0001);
 
     mod.MAX_FLOAT = new Sk.builtin.float_(  3.4028235e+38);
     mod.MIN_FLOAT = new Sk.builtin.float_( -3.4028235e+38);
     mod.MAX_INT = new Sk.builtin.int_(    2147483647);
     mod.MIN_INT = new Sk.builtin.int_(   -2147483648);
-    
+
     // Constants
     mod.HALF_PI = new Sk.builtin.float_(Math.PI / 2.0);
     mod.THIRD_PI = new Sk.builtin.float_(Math.PI / 3.0);
@@ -206,14 +206,14 @@ var $builtinmodule = function (name) {
     mod.PRIMITIVE = new Sk.builtin.int_(      1);
     //PATH:         21, // shared with Shape PATH
     mod.GEOMETRY = new Sk.builtin.int_(       3);
-    
+
     // Shape Vertex
     mod.VERTEX = new Sk.builtin.int_(        0);
     mod.BEZIER_VERTEX = new Sk.builtin.int_( 1);
     mod.CURVE_VERTEX = new Sk.builtin.int_(  2);
     mod.BREAK = new Sk.builtin.int_(         3);
     mod.CLOSESHAPE = new Sk.builtin.int_(    4);
-    
+
     // Blend modes
     mod.REPLACE    = new Sk.builtin.int_(0);
     mod.BLEND      = new Sk.builtin.int_(1 << 0);
@@ -236,12 +236,12 @@ var $builtinmodule = function (name) {
     mod.RED_MASK = new Sk.builtin.int_(   0x00ff0000);
     mod.GREEN_MASK = new Sk.builtin.int_( 0x0000ff00);
     mod.BLUE_MASK = new Sk.builtin.int_(  0x000000ff);
-    
+
     // Projection matrices
     mod.CUSTOM = new Sk.builtin.int_(       0);
     mod.ORTHOGRAPHIC = new Sk.builtin.int_( 2);
     mod.PERSPECTIVE = new Sk.builtin.int_(  3);
-    
+
     // Cursors
     mod.ARROW = new Sk.builtin.str("default");
     mod.CROSS = new Sk.builtin.str("crosshair");
@@ -635,7 +635,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.curveVertex = new Sk.builtin.func(function (x, y, z) {
-	// curveVertex(x, y) 
+	// curveVertex(x, y)
 	// curveVertex(x, y, z)
         if (typeof(z) === "undefined") {
 	    mod.processing.curveVertex(x.v, y.v);
@@ -779,7 +779,7 @@ var $builtinmodule = function (name) {
     mod.loadShape = new Sk.builtin.func(function (filename) {
 	// loadShape(filename)
 	// returns shape
-	var shape = Sk.misceval.callsim(mod.PShapeSVG, 
+	var shape = Sk.misceval.callsim(mod.PShapeSVG,
 					new Sk.builtin.str("string"),
 					filename);
 	return shape;
@@ -1175,9 +1175,9 @@ var $builtinmodule = function (name) {
     });
 
     mod.vertex = new Sk.builtin.func(function (x, y, z, u, v) {
-	// vertex(x, y); 
-	// vertex(x, y, z); 
-	// vertex(x, y, u, v); 
+	// vertex(x, y);
+	// vertex(x, y, z);
+	// vertex(x, y, u, v);
 	// vertex(x, y, z, u, v);
         if (typeof(z) === "undefined") {
 	    mod.processing.vertex(x.v, y.v);
@@ -1317,7 +1317,7 @@ var $builtinmodule = function (name) {
     });
 
     // NOTE: difference with ProcessingJS
-    // frameRate is only a function, not a variable: 
+    // frameRate is only a function, not a variable:
     // use environment.frameRate for value
     mod.frameRate = new Sk.builtin.func(function (fr) {
         mod.processing.frameRate(fr.v);
@@ -1330,11 +1330,11 @@ var $builtinmodule = function (name) {
     // Use environment.keyPressed rather than keyPressed
 
     // NOTE: difference with ProcessingJS
-    // Use environment.frameCount 
+    // Use environment.frameCount
 
     // NOTE: difference with ProcessingJS
     // Use environment.frameCount
-    
+
     // NOTE: difference with ProcessingJS
     // Use environment.online
 
@@ -1487,11 +1487,11 @@ var $builtinmodule = function (name) {
 
     //  //////////////////////////////////////////////////////////////////////
     //  Run
-    // 
+    //
     //  Create the processing context and setup of calls to setup, draw etc.
     //
     //
-    //  //////////////////////////////////////////////////////////////////////    
+    //  //////////////////////////////////////////////////////////////////////
     mod.run = new Sk.builtin.func(function () {
         function sketchProc (processing) {
             mod.processing = processing;
@@ -1504,7 +1504,7 @@ var $builtinmodule = function (name) {
 
             // FIXME if no Sk.globals["draw"], then no need for this
             processing.draw = function () {
-                // if there are pending image loads then just use the natural looping calls to 
+                // if there are pending image loads then just use the natural looping calls to
                 // retry until all the images are loaded.  If noLoop was called in setup then make
                 // sure to revert to that after all the images in hand.
                 var wait = false;
@@ -1807,15 +1807,15 @@ var $builtinmodule = function (name) {
                 return Sk.builtin.assk$(self.v.z);
 	    }
 	});
-	    
+
         $loc.get = new Sk.builtin.func(function (self) {
 	    // get() Gets a copy of the vector
             var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.get();
 	    return new_vec;
 	});
-	
-	$loc.set = new Sk.builtin.func(function (self, x, y, x) {
+
+	$loc.set = new Sk.builtin.func(function (self, x, y, z) {
 	    // set() Sets the x, y, z component of the vector
 	    if (typeof(z) === "undefined") {
 		self.v.set(x.v, y.v);
@@ -1867,7 +1867,7 @@ var $builtinmodule = function (name) {
 	    // dot()	Calculates the dot product
 	    // returns float
 	    // vec.dot(x,y,z)
-	    // vec.dot(v)	    
+	    // vec.dot(v)
 	    if (typeof(v2) === 'undefined') {
 		return Sk.builtin.assk$(self.v.dot(v1.v));
 	    } else {
@@ -1898,7 +1898,7 @@ var $builtinmodule = function (name) {
 	});
 
 	$loc.array = new Sk.builtin.func(function (self) {
-	    // array()	
+	    // array()
 	    return new Sk.builtin.list(self.v.array());
 	});
     };
@@ -1942,7 +1942,7 @@ var $builtinmodule = function (name) {
 	    self.v.endDraw();
 	});
     };
-    
+
     shapeClass = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, arg1, arg2, arg3) {
 	    if (typeof(arg1) === "undefined") {

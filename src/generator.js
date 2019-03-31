@@ -1,6 +1,5 @@
 import { setUpInheritance } from "./abstract";
-import { Suspension } from './method';
-import { retryOptionalSuspensionOrThrow } from './misceval';
+import { Suspension, retryOptionalSuspensionOrThrow } from './misceval';
 
 /**
  * @constructor

@@ -1,15 +1,17 @@
-import { lookupSpecial, setUpInheritance, typeName } from './abstract';
-import { remapToJs } from './ffi';
-import { pyCheckArgs } from './function';
-import { TypeError, ZeroDivisionError, NegativePowerError, NotImplementedError } from './errors';
-import { asnum$ } from './builtin';
-import { callsim, isIndex, asIndex } from './misceval';
+import { lookupSpecial } from '../abstract';
+import { remapToJs } from '../ffi';
+import { pyCheckArgs } from '../function/checks';
+import { TypeError, ZeroDivisionError, NegativePowerError, NotImplementedError } from '../errors';
+import { asnum$ } from '../builtin';
+import { callsim, isIndex, asIndex } from '../misceval';
 import biginteger from 'big-integer';
+import { setUpInheritance, typeName } from '../type';
+import { numtype } from './numtype';
 
 /**
  * @namespace Sk.builtin
  */
-export class float_ {
+export class float_ extends numtype {
     /**
      * @constructor
      * float_
@@ -900,6 +902,13 @@ export class float_ {
         }
 
         return tmp;
+    }
+
+    /**
+     * @override
+     */
+    tp$toJS() {
+        return this.v;
     }
 }
 

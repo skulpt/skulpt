@@ -1,12 +1,14 @@
-import { setUpInheritance, markUnhashable, iter, sequenceContains, typeName } from './abstract';
-import { func, pyCheckArgs, checkIterable } from './function';
-import { TypeError, KeyError, StopIteration } from './errors';
+import { sequenceContains, markUnhashable, iter } from '../abstract';
+import { func } from '../function';
+import { pyCheckArgs, checkIterable } from '../function/checks';
+import { TypeError, KeyError, StopIteration } from '../errors';
 import { object, none } from './object';
 import { dict } from './dict';
 import { str } from './str';
 import { list } from './list';
-import { true$, false$ } from './constants';
-import { objectRepr } from './misceval';
+import { true$, false$ } from '../constants';
+import { objectRepr } from '../misceval';
+import { setUpInheritance, typeName } from '../type';
 
 export class set {
     /**

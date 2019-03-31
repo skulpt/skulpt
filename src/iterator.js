@@ -1,8 +1,9 @@
-import { lookupSpecial, setUpInheritance } from './abstract';
+import { lookupSpecial } from './abstract';
+import { setUpInheritance } from './type';
 import { remapToPy } from './ffi';
 import { StopIteration, IndexError } from './errors';
 import { callsim, tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow, richCompareBool } from './misceval';
-import { object } from './object';
+import { object } from './types/object';
 
 export class iterator extends object {
     /**

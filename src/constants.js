@@ -1,5 +1,4 @@
-import { bool } from './bool';
-import { str } from './str';
+import { bool, str } from './types';
 
 export const $emptystr = new str("");
 

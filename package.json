@@ -6,6 +6,7 @@
     "skulpt"
   ],
   "scripts": {
+    "build": "rm -rf lib/ & babel src -d lib",
     "testdebug": "python skulpt.py testdebug",
     "regengooglocs": "python skulpt.py regengooglocs",
     "regensymtabtests": "python skulpt.py regensymtabtests",
@@ -22,7 +23,6 @@
     "vfs": "python skulpt.py vfs",
     "host": "python skulpt.py host",
     "repl": "python skulpt.py repl",
-    "build": "python skulpt.py dist",
     "build-min": "python skulpt.py dist -u",
     "test": "python skulpt.py test",
     "test3": "python skulpt.py test3"
@@ -50,6 +50,7 @@
     "jscs": "~1.12",
     "jsdoc": "~3.5.5",
     "jshint": "~2.5.2",
+    "madge": "^3.4.4",
     "webpack-cli": "^3.3.0"
   },
   "dependencies": {

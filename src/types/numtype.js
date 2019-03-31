@@ -1,7 +1,8 @@
-import { setUpInheritance } from './abstract';
-import { pyCheckArgs, func } from './function';
+import { setUpInheritance } from '../abstract';
+import { pyCheckArgs } from '../function/checks';
+import { func } from '../function'
 import { object, NotImplemented } from './object';
-import { ExternalError, NotImplementedError } from './errors';
+import { ExternalError, NotImplementedError } from '../errors';
 
 export class numtype extends object {
     /**
@@ -17,6 +18,13 @@ export class numtype extends object {
      */
     constructor() {
         throw new ExternalError("Cannot instantiate abstract numtype class");
+    }
+
+    /**
+     * @abstract
+     * @returns {number|string}
+     */
+    tp$toJS() {
     }
 
     /**

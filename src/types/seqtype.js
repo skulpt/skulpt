@@ -1,10 +1,11 @@
-import { setUpInheritance, typeName } from './abstract';
-import { pyCheckArgs, func } from './function';
+import { setUpInheritance, typeName } from '../type';
+import { pyCheckArgs } from '../function/checks';
+import { func } from '../function';
 import { object } from './object';
-import { ExternalError, TypeError } from './errors';
+import { ExternalError, TypeError } from '../errors';
 import { int_ } from './int';
-import { true$, false$ } from './constants';
-import { isIndex } from './misceval';
+import { true$, false$ } from '../constants';
+import { isIndex } from '../misceval';
 
 export class seqtype extends object {
     /**

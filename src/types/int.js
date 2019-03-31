@@ -1,17 +1,19 @@
-import { typeName, setUpInheritance, numberBinOp } from './abstract';
-import { remapToJs } from './ffi';
-import { pyCheckArgs, func, checkInt, checkNumber, checkString } from './function';
-import { TypeError, AttributeError, ZeroDivisionError, NotImplementedError } from './errors';
+import { numberBinOp } from '../abstract';
+import { remapToJs } from '../ffi';
+import { pyCheckArgs, checkInt, checkNumber, checkString } from '../function/checks';
+import { func } from '../function';
+import { TypeError, AttributeError, ZeroDivisionError, NotImplementedError } from '../errors';
 import { none, NotImplemented } from './object';
-import { asnum$ } from './builtin';
-import { callsim, isIndex, asIndex } from './misceval';
+import { asnum$ } from '../builtin';
+import { callsim, isIndex, asIndex } from '../misceval';
 import { numtype } from './numtype';
 import { lng } from './long';
 import { bool } from './bool';
 import { str } from './str';
 import { float_ } from './float';
 import { tuple } from './tuple';
-import { true$, false$ } from './constants';
+import { true$, false$ } from '../constants';
+import { typeName, setUpInheritance } from '../type';
 
 export class int_ extends numtype {
     /**
@@ -1065,6 +1067,13 @@ export class int_ extends numtype {
 
         return tmp;
     };
+
+    /**
+     * @override
+     */
+    tp$toJS() {
+        return this.v;
+    }
 }
 
 setUpInheritance("int", int_, numtype);

@@ -1,16 +1,17 @@
-import { typeName, setUpInheritance } from './abstract';
-import { remapToJs } from './ffi';
-import { func, pyCheckArgs, checkString, checkNumber } from './function';
-import { TypeError, ValueError, NotImplementedError } from './errors';
+import { typeName, setUpInheritance } from '../type';
+import { remapToJs } from '../ffi';
+import { pyCheckArgs, checkString, checkNumber } from '../function/checks';
+import { func } from '../function'
+import { TypeError, ValueError, NotImplementedError } from '../errors';
 import { NotImplemented } from './object';
-import { asnum$ } from './builtin';
-import { isIndex, asIndex } from './misceval';
+import { asnum$ } from '../builtin';
+import { isIndex, asIndex } from '../misceval';
 import { numtype } from './numtype';
 import { str } from './str';
 import { int_, str2number } from './int';
 import { float_ } from './float';
 import { tuple } from './tuple';
-import { true$, false$ } from './constants';
+import { true$, false$ } from '../constants';
 import { bool } from './bool'
 
 import biginteger from 'big-integer';
@@ -824,6 +825,16 @@ export class lng extends numtype { /* long is a reserved word */
 
         //    Another base... convert...
         return work.toString(base);
+    }
+
+    /**
+     * @override
+     */
+    tp$toJS() {
+        if (this.cantBeInt()) {
+            return this.str$(10, true);
+        }
+        return this.toInt$();
     }
 }
 

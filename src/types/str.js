@@ -1,17 +1,17 @@
-import { setUpInheritance, typeName } from './abstract';
-import { remapToJs } from './ffi';
+import { setUpInheritance, typeName } from '../type';
+import { remapToJs } from '../ffi';
 import {
     pyCheckArgs,
-    func,
     checkString,
     checkInt,
     checkFloat,
     checkBool,
     pyCheckType,
     checkIterable
-} from './function';
+} from '../function/checks';
+import { func } from '../function';
 import { seqtype } from './seqtype';
-import { ValueError, IndexError, AttributeError, StopIteration, NotImplementedError } from './errors';
+import { ValueError, IndexError, AttributeError, StopIteration, NotImplementedError } from '../errors';
 import { none, object } from './object';
 import { bool } from './bool';
 import { list } from './list';
@@ -20,9 +20,9 @@ import { tuple } from './tuple';
 import { float_ } from './float';
 import { int_ } from './int';
 import { lng } from './long';
-import { $emptystr } from './constants';
-import { repr, asnum$ } from './builtin';
-import { objectRepr, isIndex, asIndex, callsim } from './misceval';
+import { $emptystr } from '../constants';
+import { repr, asnum$ } from '../builtin';
+import { objectRepr, isIndex, asIndex, callsim } from '../misceval';
 
 const mapInterned = typeof Map !== 'undefined';
 
@@ -1174,6 +1174,13 @@ export class str extends seqtype {
         }
         return new bool( cased);
     })
+
+    /**
+     * @returns {string}
+     */
+    tp$toJS() {
+        return this.v;
+    }
 }
 
 setUpInheritance("str", str, seqtype);

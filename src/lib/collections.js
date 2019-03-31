@@ -1,4 +1,4 @@
-import { superConstructor, setUpInheritance, typeName } from '../abstract';
+import { superConstructor, setUpInheritance, typeName } from '../type';
 
 var $builtinmodule = function (name) {
     return Sk.misceval.chain(Sk.importModule("keyword", false, true), function(keywds) {

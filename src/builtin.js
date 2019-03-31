@@ -1,4 +1,4 @@
-import { typeName, lookupSpecial, iter as abstractIter, numberBinOp, objectFormat } from './abstract'
+import { lookupSpecial, iter as abstractIter, numberBinOp, objectFormat } from './abstract'
 import { remapToJs, remapToPy } from './ffi';
 import {
     pyCheckArgs,
@@ -12,20 +12,13 @@ import {
     checkClass,
     checkNone,
     checkCallable
-} from './function';
-import { hashCount, idCount, none } from './object';
+} from './function/checks';
+import { hashCount, idCount, none } from './types/object';
 import { ValueError, TypeError, AttributeError, SystemExit, NotImplementedError } from './errors';
 import { $emptystr } from './constants';
-import { int_ } from './int';
-import { str } from './str';
-import { bool } from './bool';
-import { list } from './list';
-import { float_ } from './float';
-import { lng } from './long';
-import { tuple } from './tuple';
+import { int_, str, bool, list, float_, lng, tuple, dict } from './types';
 import { file } from './file';
-import { dict } from './dict';
-import { type } from './type';
+import { typeName, type } from './type';
 import { iterator } from './iterator';
 import {
     isIndex,
@@ -34,7 +27,7 @@ import {
     arrayFromArguments,
     tryCatch,
     richCompareBool,
-    apply,
+    applyOrSuspend,
     isTrue,
     callsimOrSuspend,
     objectRepr
@@ -892,14 +885,14 @@ export function setattr (obj, name, value) {
 export function raw_input(prompt) {
     var lprompt = prompt ? prompt : "";
 
-    return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
+    return chain(Sk.importModule("sys", false, true), function (sys) {
         if (Sk.inputfunTakesPrompt) {
-            return Sk.misceval.callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
+            return callsimOrSuspend(Sk.builtin.file.$readline, sys["$d"]["stdin"], null, lprompt);
         } else {
-            return Sk.misceval.chain(undefined, function() {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(lprompt));
+            return chain(undefined, function() {
+                return callsimOrSuspend(sys["$d"]["stdout"]["write"], sys["$d"]["stdout"], new Sk.builtin.str(lprompt));
             }, function () {
-                return Sk.misceval.callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
+                return callsimOrSuspend(sys["$d"]["stdin"]["readline"], sys["$d"]["stdin"]);
             });
         }
     });
@@ -984,14 +977,13 @@ export function map (fun, seq) {
 
     retval = [];
 
-    for (iter = iter(seq), item = iter.tp$iternext();
-         item !== undefined;
-         item = iter.tp$iternext()) {
-        if (fun === none.none$) {
+    return chain(iterFor(iter(seq), function (item) {
+
+        if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
                 // With None function and multiple sequences,
                 // map should return a list of tuples
-                item = new tuple(item);
+                item = new Sk.builtin.tuple(item);
             }
             retval.push(item);
         } else {
@@ -1001,7 +993,7 @@ export function map (fun, seq) {
                 item = [item];
             }
 
-            return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
+            return chain(applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
                 retval.push(result);
             });
         }

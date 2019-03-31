@@ -1,10 +1,11 @@
 import { setUpInheritance } from './abstract';
-import { pyCheckArgs, func, checkNone } from './function';
+import { pyCheckArgs, checkNone } from './function/checks';
+import { func } from './function';
 import { ValueError, TypeError } from './errors';
-import { str } from './str';
-import { object, none } from './object';
-import { tuple } from './tuple';
-import { int_ } from './int';
+import { str } from './types/str';
+import { object, none } from './types/object';
+import { tuple } from './types/tuple';
+import { int_ } from './types/int';
 import { repr, asnum$ } from './builtin';
 import { isIndex, asIndex } from './misceval';
 

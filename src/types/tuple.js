@@ -1,9 +1,11 @@
-import { iter, setUpInheritance, typeName } from './abstract';
-import { pyCheckArgs, func } from './function';
-import { TypeError, IndexError, ValueError, StopIteration } from './errors';
+import { iter } from '../abstract';
+import { func } from '../function';
+import { pyCheckArgs } from '../function/checks';
+import { TypeError, IndexError, ValueError, StopIteration } from '../errors';
 import { str } from './str';
 import { int_ } from './int';
-import { objectRepr, isIndex, asIndex, isTrue, richCompareBool } from './misceval';
+import { objectRepr, isIndex, asIndex, isTrue, richCompareBool } from '../misceval';
+import { setUpInheritance, typeName } from '../type';
 
 export class tuple {
     /**

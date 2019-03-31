@@ -1,7 +1,7 @@
-import { setUpInheritance } from './abstract';
-import { none, object } from './object';
-import { str } from './str';
-import { tuple } from './tuple';
+import { setUpInheritance } from './type';
+import { none, object } from './types/object';
+import { str } from './types/str';
+import { tuple } from './types/tuple';
 /*
  * The filename, line number, and column number of exceptions are
  * stored within the exception object.  Note that not all exceptions

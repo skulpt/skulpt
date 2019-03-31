@@ -1,10 +1,9 @@
-import { typeName, gattr, superConstructor } from './abstract'
 import { remapToJs } from './ffi';
-import { dict as dictType } from './dict';
-import { str } from './str';
-import { checkString } from './function';
-import { object, none } from './object';
-import { tuple } from './tuple';
+import { dict as dictType } from './types/dict';
+import { str } from './types/str';
+import { checkString } from './function/checks';
+import { object, none, gattr } from './types/object';
+import { tuple } from './types/tuple';
 import { TypeError, AttributeError } from './errors';
 import {
     retryOptionalSuspensionOrThrow,
@@ -708,4 +707,52 @@ function buildMRO_(klass) {
 */
 export function buildMRO(klass) {
     return new tuple(buildMRO_(klass));
+}
+
+/**
+ * Set up inheritance between two Python classes. This allows only for single
+ * inheritance -- multiple inheritance is not supported by Javascript.
+ *
+ * Javascript's inheritance is prototypal. This means that properties must
+ * be defined on the superclass' prototype in order for subclasses to inherit
+ * them.
+ *
+ * ```
+ * Sk.superclass.myProperty                 # will NOT be inherited
+ * Sk.superclass.prototype.myProperty       # will be inherited
+ * ```
+ *
+ * In order for a class to be subclassable, it must (directly or indirectly)
+ * inherit from Sk.builtin.object so that it will be properly initialized in
+ * {@link Sk.doOneTimeInitialization} (in src/import.js). Further, all Python
+ * builtins should inherit from Sk.builtin.object.
+ *
+ * @param {string} childName The Python name of the child (subclass).
+ * @param {function(...[?])} child     The subclass.
+ * @param {function(...[?])} parent    The superclass.
+ * @return {undefined}
+ */
+export function setUpInheritance(childName, child, parent) {
+    child.prototype.tp$base = parent;
+    child.prototype.tp$name = childName;
+    child.prototype.ob$type = makeIntoTypeObj(childName, child);
+}
+
+export function typeName(v) {
+    return v.tp$name ? v.tp$name : "<invalid type>";
+}
+
+/**
+ * Call the super constructor of the provided class, with the object `self` as
+ * the `this` value of that constructor. Any arguments passed to this function
+ * after `self` will be passed as-is to the constructor.
+ *
+ * @param  {function(...[?])} thisClass The subclass.
+ * @param  {Object} self      The instance of the subclas.
+ * @param  {...?} args Arguments to pass to the constructor.
+ * @return {undefined}
+ */
+export function superConstructor(thisClass, self, args) {
+    var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
+    thisClass.prototype.tp$base.apply(self, argumentsForConstructor);
 }

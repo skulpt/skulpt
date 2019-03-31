@@ -1,12 +1,9 @@
-import { typeName, setUpInheritance } from './abstract';
-import { remapToJs } from './ffi';
-import { pyCheckArgs, checkString } from './function';
-import { AttributeError, TypeError, NotImplementedError } from './errors';
-import { str } from './str';
-import { typeLookup, makeIntoTypeObj } from './type';
-import { int_ } from './int';
-import { true$, false$ } from './constants';
-import { tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow } from './misceval';
+import { pyCheckArgs, checkString } from '../function/checks';
+import { AttributeError, TypeError, NotImplementedError } from '../errors';
+import { typeLookup, makeIntoTypeObj, setUpInheritance, typeName } from '../type';
+import { tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow } from '../misceval';
+import { int_, str } from '.';
+import { true$, false$ } from '../constants';
 
 /**
  * @constructor
@@ -18,7 +15,7 @@ import { tryCatch, callsimOrSuspend, retryOptionalSuspensionOrThrow } from './mi
  *
  * @return {object} Python object
  */
-export class object {
+export class  object {
     GenericGetAttr(name, canSuspend) {
         var res;
         var f;
@@ -221,7 +218,7 @@ export class object {
                 throw new TypeError("format expects arg 2 to be string or unicode, not " + typeName(format_spec));
             }
         } else {
-            formatstr = remapToJs(format_spec);
+            formatstr = format_spec.tp$toJS();
             if (formatstr !== "") {
                 throw new NotImplementedError("format spec is not yet implemented");
             }
@@ -511,6 +508,43 @@ export class NotImplemented extends object {
      * @type {NotImplemented}
      */
     static NotImplemented$ = new NotImplemented();
+}
+
+export function gattr(obj, nameJS, canSuspend) {
+    var ret, f;
+    var objname = typeName(obj);
+
+    if (obj === null) {
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+    }
+
+    if (obj.tp$getattr !== undefined) {
+        ret = obj.tp$getattr(nameJS, canSuspend);
+    }
+
+    ret = chain(ret, function(r) {
+        if (r === undefined) {
+            throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        }
+        return r;
+    });
+
+    return canSuspend ? ret : retryOptionalSuspensionOrThrow(ret);
+}
+
+
+export function sattr(obj, nameJS, data, canSuspend) {
+    var objname = typeName(obj), r, setf;
+
+    if (obj === null) {
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+    }
+
+    if (obj.tp$setattr !== undefined) {
+        return obj.tp$setattr(nameJS, data, canSuspend);
+    } else {
+        throw new AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+    }
 }
 
 setUpInheritance("NotImplementedType", NotImplemented, object);

@@ -1,4 +1,4 @@
-import { pyCheckArgs } from './function';
+import { pyCheckArgs } from './function/checks';
 import { str } from './str';
 import { tuple } from './tuple';
 import { dict } from './dict';

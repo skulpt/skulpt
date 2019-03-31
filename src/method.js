@@ -1,33 +1,38 @@
-import { setUpInheritance } from './abstract';
-import { pyCheckArgs } from './function';
-import { object } from './object';
+import { object, none } from './types/object';
+import { pyCheckArgs } from './function/checks';
 import { TypeError } from './errors';
+import { typeName, setUpInheritance } from './type';
+import { str } from './types/str';
+import { issubclass } from './builtin';
+import { remapToJs } from './ffi';
+import { objectRepr } from './misceval';
+debugger;
 
 export class method extends object {
     /**
      * @constructor
      *
-     * @param {Sk.builtin.func|Sk.builtin.method} func
+     * @param {func|method} func
      * @param {Object} self
-     * @param {Sk.builtin.type|Sk.builtin.none} klass
+     * @param {type|none} klass
      * @param {boolean=} builtin
      *
      * co_varnames and co_name come from generated code, must access as dict.
      */
     constructor(func, self, klass) {
-        if (!(this instanceof Sk.builtin.method)) {
-            pyCheckArgs("method", arguments, 3, 3);
-            if (!Sk.builtin.checkCallable(func)) {
-                throw new TypeError("First argument must be callable");
-            }
-            if (self.ob$type === undefined) {
-                throw new TypeError("Second argument must be object of known type");
-            }
-            return new Sk.builtin.method(func, self, klass);
-        }
+        // if (!(this instanceof Sk.builtin.method)) {
+        //     pyCheckArgs("method", arguments, 3, 3);
+        //     if (!Sk.builtin.checkCallable(func)) {
+        //         throw new TypeError("First argument must be callable");
+        //     }
+        //     if (self.ob$type === undefined) {
+        //         throw new TypeError("Second argument must be object of known type");
+        //     }
+        //     return new Sk.builtin.method(func, self, klass);
+        // }
         this.im_func = func;
-        this.im_self = self || Sk.builtin.none.none$;
-        this.im_class = klass || Sk.builtin.none.none$;
+        this.im_self = self || none.none$;
+        this.im_class = klass || none.none$;
         this.im_builtin = builtin;
         this["$d"] = {
             im_func: func,
@@ -40,20 +45,20 @@ export class method extends object {
 
     tp$descr_get(obj, objtype) {
         goog.asserts.assert(obj !== undefined && objtype !== undefined);
-        return new Sk.builtin.method(this, obj, objtype, this.im_builtin);
+        return new method(this, obj, objtype, this.im_builtin);
     }
 
     static pythonFunctions = ["__get__"];
 
     __get__(self, instance, owner) {
-        Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
-        if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
-            throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+        pyCheckArgs("__get__", arguments, 1, 2, false, true);
+        if (instance === none.none$ && owner === none.none$) {
+            throw new TypeError("__get__(None, None) is invalid");
         }
 
         // if the owner is specified it needs to be a a subclass of im_self
-        if (owner && owner !== Sk.builtin.none.none$) {
-            if (Sk.builtin.issubclass(owner, self.im_class)) {
+        if (owner && owner !== none.none$) {
+            if (issubclass(owner, self.im_class)) {
                 return self.tp$descr_get(instance, owner);
             }
 
@@ -62,7 +67,7 @@ export class method extends object {
         }
 
         // use the original type to get a bound object
-        return self.tp$descr_get(instance, Sk.builtin.none.none$);
+        return self.tp$descr_get(instance, none.none$);
     }
 
     tp$call(args, kw) {
@@ -70,7 +75,7 @@ export class method extends object {
 
         // 'args' and 'kw' get mucked around with heavily in applyOrSuspend();
         // changing it here is OK.
-        if (this.im_self !== Sk.builtin.none.none$) {
+        if (this.im_self !== none.none$) {
             args.unshift(this.im_self);
         }
 
@@ -78,17 +83,17 @@ export class method extends object {
         // if the first argument is not a subclass of the class this method belongs to we throw an error
         // unless it's a builtin method, because they shouldn't have been __get__ and left in this unbound
         // state.
-        if (this.im_self === Sk.builtin.none.none$) {
+        if (this.im_self === none.none$) {
             var getMessage = (function (reason) {
-                return "unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)";
+                return "unbound method " + this.tp$name + "() must be called with " + typeName(this.im_class) + " instance as first argument (got " + reason + " instead)";
             }).bind(this);
 
             if (args.length > 0) {
-                if (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin) {
-                    throw new Sk.builtin.TypeError(getMessage(Sk.abstr.typeName(args[0].ob$type) + " instance"));
+                if (this.im_class != none.none$ && !issubclass(args[0].ob$type, this.im_class) && !this.im_builtin) {
+                    throw new TypeError(getMessage(typeName(args[0].ob$type) + " instance"));
                 }
             } else {
-                throw new Sk.builtin.TypeError(getMessage("nothing"));
+                throw new TypeError(getMessage("nothing"));
             }
         }
 
@@ -99,15 +104,15 @@ export class method extends object {
 
     $r() {
         if (this.im_builtin) {
-            return new Sk.builtin.str("<built-in method " + this.tp$name + " of type object>");
+            return new str("<built-in method " + this.tp$name + " of type object>");
         }
 
-        if (this.im_self === Sk.builtin.none.none$) {
-            return new Sk.builtin.str("<unbound method " + Sk.abstr.typeName(this.im_class) + "." + this.tp$name + ">");
+        if (this.im_self === none.none$) {
+            return new str("<unbound method " + typeName(this.im_class) + "." + this.tp$name + ">");
         }
 
-        var owner = this.im_class !== Sk.builtin.none.none$ ? Sk.abstr.typeName(this.im_class) : "?";
-        return new Sk.builtin.str("<bound method " + owner  + "." + this.tp$name + " of " + Sk.ffi.remapToJs(Sk.misceval.objectRepr(this.im_self)) + ">");
+        var owner = this.im_class !== none.none$ ? typeName(this.im_class) : "?";
+        return new str("<bound method " + owner  + "." + this.tp$name + " of " + remapToJs(objectRepr(this.im_self)) + ">");
     }
 }
 

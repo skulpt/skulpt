@@ -1,6 +1,6 @@
-import { setUpInheritance } from "./abstract";
+import { setUpInheritance } from "./type";
 import { func } from './function';
-import { object, none } from './object';
+import { object, none } from './types/object';
 import { remapToJs, remapToPy } from './ffi';
 import { ValueError, NotImplementedError } from './errors';
 import { Suspension, callsim } from './misceval';
