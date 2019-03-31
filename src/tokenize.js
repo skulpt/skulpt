@@ -74,10 +74,10 @@ var Whitespace = "[ \\f\\t]*";
 var Comment_ = "#[^\\r\\n]*";
 var Ident = "[a-zA-Z_]\\w*";
 
-var Hexnumber = '0[xX][\da-fA-F]*';
+var Hexnumber = '0[xX][\\da-fA-F]*';
 var Binnumber = '0[bB][01]*';
 var Octnumber = '0[oO][0-7]*';
-var Decnumber = '(?:0+|[1-9]\d*)';
+var Decnumber = '(?:0+|[1-9])\\d*';
 var Intnumber = group(Hexnumber, Binnumber, Octnumber, Decnumber);
 
 var Exponent = "[eE][-+]?\\d+";
