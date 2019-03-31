@@ -1059,7 +1059,7 @@ Compiler.prototype.cif = function (s) {
     var next;
     var end;
     var constant;
-    goog.asserts.assert(s instanceof If_);
+    goog.asserts.assert(s instanceof If);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
         if (s.orelse && s.orelse.length > 0) {
