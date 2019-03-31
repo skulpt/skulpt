@@ -816,6 +816,16 @@ goog.exportSymbol("Sk.misceval.callOrSuspend", Sk.misceval.callOrSuspend);
 
 /**
  * @param {Object} func the thing to call
+ * @param {...*} args stuff to pass it
+ */
+Sk.misceval.callsim = function (func, args) {
+    args = Array.prototype.slice.call(arguments, 1);
+    return Sk.misceval.apply(func, undefined, undefined, undefined, args);
+};
+goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
+
+/**
+ * @param {Object} func the thing to call
  * @param {Array=} args an array of arguments to pass to the func
  *
  * Does the same thing as callsim without expensive call to Array.slice.
@@ -837,6 +847,17 @@ Sk.misceval.callsimAsync = function (suspensionHandlers, func, args) {
     return Sk.misceval.applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
 };
 goog.exportSymbol("Sk.misceval.callsimAsync", Sk.misceval.callsimAsync);
+
+
+/**
+ * @param {Object} func the thing to call
+ * @param {...*} args stuff to pass it
+ */
+Sk.misceval.callsimOrSuspend = function (func, args) {
+    args = Array.prototype.slice.call(arguments, 1);
+    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
+};
+goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
 
 /**
  * @param {Object} func the thing to call
