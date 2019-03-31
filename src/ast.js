@@ -2155,7 +2155,9 @@ function astForExpr (c, n) {
                 }
                 break;
             case SYM.star_expr:
-                return astForStarred(c, n)
+                return astForStarred(c, n);
+            case SYM.testlist_star_expr:
+                return astForTestlist(c, n);
             /* The next fize cases all handle BinOps  The main body of code
                is the same in each case, but the switch turned inside out to
                reuse the code for each type of operator
