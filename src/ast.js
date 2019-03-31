@@ -259,16 +259,19 @@ function astForCompOp (c, n) {
 }
 
 function seqForTestlist (c, n) {
-    /* testlist: test (',' test)* [','] */
+    /* testlist: test (',' test)* [',']
+       testlist_star_expr: test|star_expr (',' test|star_expr)* [',']
+    */
     var i;
     var seq = [];
     goog.asserts.assert(n.type === SYM.testlist ||
+        n.type === SYM.testlist_star_expr ||
         n.type === SYM.listmaker ||
         n.type === SYM.testlist_comp ||
         n.type === SYM.testlist_safe ||
         n.type === SYM.testlist1, "node type must be listlike");
     for (i = 0; i < NCH(n); i += 2) {
-        goog.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test);
+        goog.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test || CHILD(n, i).type === SYM.star_expr);
         seq[i / 2] = astForExpr(c, CHILD(n, i));
     }
     return seq;
@@ -1521,7 +1524,7 @@ function astForBinop (c, n) {
     return result;
 }
 
-function astForTestlist(c, n) {
+function astForTestlist (c, n) {
     /* testlist_comp: test (',' comp_for | (',' test)* [',']) */
     /* testlist: test (',' test)* [','] */
     goog.asserts.assert(NCH(n) > 0);
@@ -1553,12 +1556,13 @@ function astForExprStmt (c, n) {
     var expr1;
     var ch;
     REQ(n, SYM.expr_stmt);
-    /* expr_stmt: testlist (augassign (yield_expr|testlist) 
-     | ('=' (yield_expr|testlist))*)
-     testlist: test (',' test)* [',']
-     augassign: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^='
-     | '<<=' | '>>=' | '**=' | '//='
-     test: ... here starts the operator precendence dance
+    /* expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
+                            ('=' (yield_expr|testlist_star_expr))*)
+       annassign: ':' test ['=' test]
+       testlist_star_expr: (test|star_expr) (',' test|star_expr)* [',']
+       augassign: '+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^='
+                | '<<=' | '>>=' | '**=' | '//='
+       test: ... here starts the operator precedence dance
      */
     if (NCH(n) === 1) {
         return new Expr(astForTestlist(c, CHILD(n, 0)), n.lineno, n.col_offset);
@@ -1566,11 +1570,8 @@ function astForExprStmt (c, n) {
     else if (CHILD(n, 1).type === SYM.augassign) {
         ch = CHILD(n, 0);
         expr1 = astForTestlist(c, ch);
+        setContext(c, expr1, Store, ch);
         switch (expr1.constructor) {
-            case GeneratorExp:
-                throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
-            case Yield:
-                throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             case Name:
                 varName = expr1.id;
                 forbiddenCheck(c, ch, varName, n.lineno);
@@ -1578,10 +1579,13 @@ function astForExprStmt (c, n) {
             case Attribute:
             case Subscript:
                 break;
+            case GeneratorExp:
+                throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
+            case Yield:
+                throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             default:
                 throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
         }
-        setContext(c, expr1, Store, ch);
 
         ch = CHILD(n, 2);
         if (ch.type === SYM.testlist) {
@@ -1592,6 +1596,10 @@ function astForExprStmt (c, n) {
         }
 
         return new AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
+    }
+    else if (CHILD(n, 1).type === SYM.annassign) {
+        // TODO translate the relevant section from ast.c
+        throw new Sk.builtin.SyntaxError("Skulpt does not yet support type assignments", c.c_filename, n.lineno);
     }
     else {
         // normal assignment
@@ -1607,7 +1615,7 @@ function astForExprStmt (c, n) {
             targets[i / 2] = e;
         }
         value = CHILD(n, NCH(n) - 1);
-        if (value.type === SYM.testlist) {
+        if (value.type === SYM.testlist_star_expr) {
             expression = astForTestlist(c, value);
         }
         else {
@@ -2156,8 +2164,6 @@ function astForExpr (c, n) {
                 break;
             case SYM.star_expr:
                 return astForStarred(c, n);
-            case SYM.testlist_star_expr:
-                return astForTestlist(c, n);
             /* The next fize cases all handle BinOps  The main body of code
                is the same in each case, but the switch turned inside out to
                reuse the code for each type of operator
@@ -2216,7 +2222,7 @@ function astForNonLocalStmt(c, n) {
     throw new Error("Not implemented");
 }
 
-function astForAsycnStmt(c, n) {
+function astForAsyncStmt(c, n) {
     throw new Error("Not implemented");
 }
 
@@ -2283,7 +2289,7 @@ function astForStmt (c, n) {
             case SYM.decorated:
                 return astForDecorated(c, ch);
             case SYM.async_stmt:
-                return astForAsycnStmt(c, ch);
+                return astForAsyncStmt(c, ch);
             default:
                 goog.asserts.assert("unhandled compound_stmt");
         }
