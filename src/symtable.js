@@ -483,6 +483,12 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
+        case Print:
+            if (s.dest) {
+                this.visitExpr(s.dest);
+            }
+            this.SEQExpr(s.values);
+            break;
         case For:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
@@ -549,6 +555,7 @@ SymbolTable.prototype.visitStmt = function (s) {
         case Pass:
         case Break:
         case Continue:
+        case Debugger:
             // nothing
             break;
         case With:

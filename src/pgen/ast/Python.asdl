@@ -53,6 +53,9 @@ module Python
           | Nonlocal(identifier* names)
           | Expr(expr value)
           | Pass | Break | Continue
+          -- Skulpt addition (/hack)
+          | Print(expr? dest, expr* values, int nl)
+          | Debugger
 
           -- XXX Jython will be different
           -- col_offset is the byte offset in the utf8 string the parser uses

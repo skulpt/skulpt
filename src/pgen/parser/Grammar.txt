@@ -37,7 +37,8 @@ vfpdef: NAME
 stmt: simple_stmt | compound_stmt
 simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
 small_stmt: (expr_stmt | del_stmt | pass_stmt | flow_stmt |
-             import_stmt | global_stmt | nonlocal_stmt | assert_stmt)
+             import_stmt | global_stmt | nonlocal_stmt | assert_stmt |
+             print_stmt | debugger_stmt)
 expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
                      ('=' (yield_expr|testlist_star_expr))*)
 annassign: ':' test ['=' test]
@@ -147,3 +148,9 @@ encoding_decl: NAME
 
 yield_expr: 'yield' [yield_arg]
 yield_arg: 'from' test | testlist
+
+# This is a hack for Python 2 compatibility
+print_stmt: 'print' ( [ test (',' test)* [','] ] |
+                      '>>' test [ (',' test)+ [','] ] )
+
+debugger_stmt: 'debugger'

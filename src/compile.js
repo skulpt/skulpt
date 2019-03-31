@@ -2180,6 +2180,9 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case AugAssign:
             return this.caugassign(s);
+        case Print:
+            this.cprint(s);
+            break;
         case For:
             return this.cfor(s);
         case While:
@@ -2208,9 +2211,9 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case Continue:
             this.ccontinue(s);
             break;
-        // case Debugger_:
-        //     out("debugger;");
-        //     break;
+        case Debugger:
+            out("debugger;");
+            break;
         default:
             goog.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
     }
@@ -2454,6 +2457,31 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
 };
 
+Compiler.prototype.cprint = function (s) {
+    var i;
+    var n;
+    var dest;
+    goog.asserts.assert(s instanceof Print);
+    dest = "null";
+    if (s.dest) {
+        dest = this.vexpr(s.dest);
+    }
+
+    n = s.values.length;
+    // todo; dest disabled
+    for (i = 0; i < n; ++i) {
+        out("$ret = Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
+        this._checkSuspension(s);
+    }
+    if (s.nl) {
+        out("$ret = Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
+        this._checkSuspension(s);
+    }
+
+};
+
+// TODO this is for Python 2 only;
+// we should gate this behind a __future__ flag
 Compiler.prototype.cprint = function (s) {
     var i;
     var n;

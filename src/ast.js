@@ -2226,6 +2226,31 @@ function astForAsyncStmt(c, n) {
     throw new Error("Not implemented");
 }
 
+// This is only used for Python 2 support.
+// TODO we should have something in c.c_flags
+// gating whether this is permissible or a SyntaxError
+function astForPrintStmt (c, n) {
+    /* print_stmt: 'print' ( [ test (',' test)* [','] ]
+     | '>>' test [ (',' test)+ [','] ] )
+     */
+    var nl;
+    var i, j;
+    var seq;
+    var start = 1;
+    var dest = null;
+    REQ(n, SYM.print_stmt);
+    if (NCH(n) >= 2 && CHILD(n, 1).type === TOK.T_RIGHTSHIFT) {
+        dest = astForExpr(c, CHILD(n, 2));
+        start = 4;
+    }
+    seq = [];
+    for (i = start, j = 0; i < NCH(n); i += 2, ++j) {
+        seq[j] = astForExpr(c, CHILD(n, i));
+    }
+    nl = (CHILD(n, NCH(n) - 1)).type === TOK.T_COMMA ? false : true;
+    return new Print(dest, seq, nl, n.lineno, n.col_offset);
+}
+
 function astForStmt (c, n) {
     var ch;
     if (n.type === SYM.stmt) {
@@ -2259,8 +2284,11 @@ function astForStmt (c, n) {
                 return astForNonLocalStmt(c, n);
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
+            // TODO this should both be gated behind a __future__ flag
+            case SYM.print_stmt:
+                return astForPrintStmt(c, n);
             case SYM.debugger_stmt:
-                return new Debugger_(n.lineno, n.col_offset);
+                return new Debugger(n.lineno, n.col_offset);
             default:
                 goog.asserts.fail("unhandled small_stmt");
         }

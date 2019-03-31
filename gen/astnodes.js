@@ -440,6 +440,26 @@ function Continue(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
+function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */ values, /* {int} */ nl,
+                    /* {int} */ lineno, /* {int} */ col_offset)
+{
+    this.dest = dest;
+    this.values = values;
+    this.nl = nl;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+function Debugger(/* {int} */ lineno, /* {int} */ col_offset)
+{
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
 function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */ values, /* {int} */
                      lineno, /* {int} */ col_offset)
 {
@@ -1059,6 +1079,15 @@ Break.prototype._fields = [
 ];
 Continue.prototype._astname = "Continue";
 Continue.prototype._fields = [
+];
+Print.prototype._astname = "Print";
+Print.prototype._fields = [
+    "dest", function(n) { return n.dest; },
+    "values", function(n) { return n.values; },
+    "nl", function(n) { return n.nl; }
+];
+Debugger.prototype._astname = "Debugger";
+Debugger.prototype._fields = [
 ];
 BoolOp.prototype._astname = "BoolOp";
 BoolOp.prototype._fields = [
