@@ -345,7 +345,7 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     var i;
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
-        if (arg.constructor === Name) {
+        if (arg.constructor === arg) {
             goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
             this.addDef(arg.id, DEF_PARAM, arg.lineno);
         }

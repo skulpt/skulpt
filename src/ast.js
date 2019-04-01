@@ -41,6 +41,10 @@ function REQ (n, type) {
     goog.asserts.assert(n.type === type, "node wasn't expected type");
 }
 
+function ast_error(c, n, msg) {
+    throw new Sk.builtin.SyntaxError(msg, c.c_filename, n.lineno);
+}
+
 function strobj (s) {
     goog.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
     return new Sk.builtin.str(s);
@@ -1158,23 +1162,109 @@ function astForFlowStmt (c, n) {
     goog.asserts.fail("unhandled flow statement");
 }
 
+function astForArg(c, n)
+{
+    var name;
+    var annotation = null;
+    var ch;
+
+    goog.asserts.assert(n.type === SYM.tfpdef || n.type === SYM.vfpdef);
+    ch = CHILD(n, 0);
+    forbiddenCheck(c, ch, ch.value, ch.lineno);
+    name = strobj(ch.value);
+
+    if (NCH(n) == 3 && CHILD(n, 1).type === TOK.T_COLON) {
+        annotation = astForExpr(c, CHILD(n, 2));
+    }
+
+    return new arg(name, annotation, n.lineno, n.col_offset);
+}
+
+/* returns -1 if failed to handle keyword only arguments
+   returns new position to keep processing if successful
+               (',' tfpdef ['=' test])*
+                     ^^^
+   start pointing here
+ */
+function handleKeywordonlyArgs(c, n, start, kwonlyargs, kwdefaults)
+{
+    var argname;
+    var ch;
+    var expression;
+    var annotation;
+    var arg;
+    var i = start;
+    var j = 0; /* index for kwdefaults and kwonlyargs */
+
+    if (!kwonlyargs) {
+        ast_error(c, CHILD(n, start), "named arguments must follow bare *");
+    }
+    goog.asserts.assert(kwdefaults);
+    while (i < NCH(n)) {
+        ch = CHILD(n, i);
+        switch (ch.type) {
+            case SYM.vfpdef:
+            case SYM.tfpdef:
+                if (i + 1 < NCH(n) && CHILD(n, i + 1).type == TOK.T_EQUAL) {
+                    kwdefaults[j] = astForExpr(c, CHILD(n, i + 2));
+                    i += 2; /* '=' and test */
+                }
+                else { /* setting NULL if no default value exists */
+                    kwdefaults[j] = null;
+                }
+                if (NCH(ch) == 3) {
+                    /* ch is NAME ':' test */
+                    annotation = astForExpr(c, CHILD(ch, 2));
+                }
+                else {
+                    annotation = null;
+                }
+                ch = CHILD(ch, 0);
+                forbiddenCheck(c, ch, ch.value, ch.lineno);
+                argname = strobj(ch.value);
+                kwonlyargs[j++] = new arg(argname, annotation, ch.lineno, ch.col_offset);
+                i += 2; /* the name and the comma */
+                break;
+            case TOK.T_DOUBLESTAR:
+                return i;
+            default:
+                ast_error(c, ch, "unexpected node");
+        }
+    }
+    return i;
+}
+
 function astForArguments (c, n) {
-    /* parameters: '(' [varargslist] ')'
-     varargslist: (fpdef ['=' test] ',')* ('*' NAME [',' '**' NAME]
-     | '**' NAME) | fpdef ['=' test] (',' fpdef ['=' test])* [',']
-     */
-    var parenthesized;
-    var id;
-    var complexArgs;
     var k;
     var j;
     var i;
     var foundDefault;
-    var defaults;
-    var args;
-    var ch;
+    var posargs = [];
+    var posdefaults = [];
+    var kwonlyargs = [];
+    var kwdefaults = [];
     var vararg = null;
     var kwarg = null;
+
+    /* This function handles both typedargslist (function definition)
+       and varargslist (lambda definition).
+
+       parameters: '(' [typedargslist] ')'
+       typedargslist: (tfpdef ['=' test] (',' tfpdef ['=' test])* [',' [
+               '*' [tfpdef] (',' tfpdef ['=' test])* [',' ['**' tfpdef [',']]]
+             | '**' tfpdef [',']]]
+         | '*' [tfpdef] (',' tfpdef ['=' test])* [',' ['**' tfpdef [',']]]
+         | '**' tfpdef [','])
+       tfpdef: NAME [':' test]
+       varargslist: (vfpdef ['=' test] (',' vfpdef ['=' test])* [',' [
+               '*' [vfpdef] (',' vfpdef ['=' test])* [',' ['**' vfpdef [',']]]
+             | '**' vfpdef [',']]]
+         | '*' [vfpdef] (',' vfpdef ['=' test])* [',' ['**' vfpdef [',']]]
+         | '**' vfpdef [',']
+       )
+       vfpdef: NAME
+
+    */
     if (n.type === SYM.parameters) {
         if (NCH(n) === 2) // () as arglist
         {
@@ -1182,82 +1272,72 @@ function astForArguments (c, n) {
         }
         n = CHILD(n, 1);
     }
-    REQ(n, SYM.varargslist);
+    goog.asserts.assert(n.type === SYM.varargslist ||
+                        n.type === SYM.typedargslist);
 
-    args = [];
-    defaults = [];
 
-    /* fpdef: NAME | '(' fplist ')'
-     fplist: fpdef (',' fpdef)* [',']
-     */
-    foundDefault = false;
+    // Skulpt note: the "counting numbers of args" section
+    // from ast.c is omitted because JS arrays autoexpand
+
+    /* tfpdef: NAME [':' test]
+       vfpdef: NAME
+    */
     i = 0;
-    j = 0; // index for defaults
-    k = 0; // index for args
+    j = 0;  /* index for defaults */
+    k = 0;  /* index for args */
     while (i < NCH(n)) {
         ch = CHILD(n, i);
         switch (ch.type) {
-            case SYM.fpdef:
-                complexArgs = 0;
-                parenthesized = 0;
-                handle_fpdef: while (true) {
-                    if (i + 1 < NCH(n) && CHILD(n, i + 1).type === TOK.T_EQUAL) {
-                        defaults[j++] = astForExpr(c, CHILD(n, i + 2));
-                        i += 2;
-                        foundDefault = true;
-                    }
-                    else if (foundDefault) {
-                        /* def f((x)=4): pass should raise an error.
-                         def f((x, (y))): pass will just incur the tuple unpacking warning. */
-                        if (parenthesized && !complexArgs) {
-                            throw new Sk.builtin.SyntaxError("parenthesized arg with default", c.c_filename, n.lineno);
-                        }
-                        throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
-                    }
-
-                    if (NCH(ch) === 3) {
-                        ch = CHILD(ch, 1);
-                        // def foo((x)): is not complex, special case.
-                        if (NCH(ch) !== 1) {
-                            throw new Sk.builtin.SyntaxError("tuple parameter unpacking has been removed", c.c_filename, n.lineno);
-                        }
-                        else {
-                            /* def foo((x)): setup for checking NAME below. */
-                            /* Loop because there can be many parens and tuple
-                             unpacking mixed in. */
-                            parenthesized = true;
-                            ch = CHILD(ch, 0);
-                            goog.asserts.assert(ch.type === SYM.fpdef);
-                            continue handle_fpdef;
-                        }
-                    }
-                    if (CHILD(ch, 0).type === TOK.T_NAME) {
-                        forbiddenCheck(c, n, CHILD(ch, 0).value, n.lineno);
-                        id = strobj(CHILD(ch, 0).value);
-                        args[k++] = new Name(id, Param, ch.lineno, ch.col_offset);
-                    }
+            case SYM.tfpdef:
+            case SYM.vfpdef:
+                /* XXX Need to worry about checking if TYPE(CHILD(n, i+1)) is
+                   anything other than EQUAL or a comma? */
+                /* XXX Should NCH(n) check be made a separate check? */
+                if (i + 1 < NCH(n) && CHILD(n, i + 1).type == TOK.T_EQUAL) {
+                    posdefaults[j++] = astForExpr(c, CHILD(n, i + 2));
                     i += 2;
-                    if (parenthesized) {
-                        throw new Sk.builtin.SyntaxError("parenthesized argument names are invalid", c.c_filename, n.lineno);
-                    }
-                    break;
+                    foundDefault = 1;
                 }
+                else if (foundDefault) {
+                    throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
+                }
+                posargs[k++] = astForArg(c, ch);
+                i += 2; /* the name and the comma */
                 break;
             case TOK.T_STAR:
-                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
-                vararg = strobj(CHILD(n, i + 1).value);
-                i += 3;
+                if (i+1 >= NCH(n) ||
+                    (i+2 == NCH(n) && CHILD(n, i+1).type == TOK.T_COMMA)) {
+                    throw new Sk.builtin.SyntaxError("named arguments must follow bare *", c.c_filename, n.lineno);
+                }
+                ch = CHILD(n, i+1);  /* tfpdef or COMMA */
+                if (ch.type == TOK.T_COMMA) {
+                    i += 2; /* now follows keyword only arguments */
+                    i = handleKeywordonlyArgs(c, n, i,
+                                                  kwonlyargs, kwdefaults);
+                }
+                else {
+                    vararg = astForArg(c, ch);
+
+                    i += 3;
+                    if (i < NCH(n) && (CHILD(n, i).type == SYM.tfpdef
+                                    || CHILD(n, i).type == SYM.vfpdef)) {
+                        i = handleKeywordonlyArgs(c, n, i,
+                                                      kwonlyargs, kwdefaults);
+                    }
+                }
                 break;
             case TOK.T_DOUBLESTAR:
-                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
-                kwarg = strobj(CHILD(n, i + 1).value);
+                ch = CHILD(n, i+1);  /* tfpdef */
+                goog.asserts.assert(ch.type == SYM.tfpdef || ch.type == SYM.vfpdef);
+                kwarg = astForArg(c, ch);
                 i += 3;
                 break;
             default:
                 goog.asserts.fail("unexpected node in varargslist");
+                return;
         }
     }
-    return new arguments_(args, vararg, kwarg, defaults);
+    return new arguments_(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
 }
 
 function astForFuncdef (c, n, decoratorSeq) {
