@@ -13,10 +13,10 @@ module Python
         -- not really an actual node but useful in Jython's typesystem.
         | Suite(stmt* body)
 
-    stmt = FunctionDef(identifier name, arguments_ args,
+    stmt = FunctionDef(identifier name, arguments args,
                        stmt* body, expr* decorator_list, expr? returns,
                        string? docstring)
-          | AsyncFunctionDef(identifier name, arguments_ args,
+          | AsyncFunctionDef(identifier name, arguments args,
                              stmt* body, expr* decorator_list, expr? returns,
                              string? docstring)
 
@@ -65,7 +65,7 @@ module Python
     expr = BoolOp(boolop op, expr* values)
          | BinOp(expr left, operator op, expr right)
          | UnaryOp(unaryop op, expr operand)
-         | Lambda(arguments_ args, expr body)
+         | Lambda(arguments args, expr body)
          | IfExp(expr test, expr body, expr orelse)
          | Dict(expr* keys, expr* values)
          | Set(expr* elts)
