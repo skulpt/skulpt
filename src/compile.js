@@ -395,6 +395,12 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
             items = [];
             for (i = 0; i < e.elts.length; ++i) {
                 item = this.vexpr(e.elts[i]);
+		
+		// The following is an ugly check to see if item was
+		// turned into a constant.  As vexpr returns a string,
+		// this requires seeing if "$const" is contained
+		// within it.  A better solution would require a
+		// change to vexpr, which would be more invasive.
                 if (allconsts && (item.indexOf('$const') == -1)) {
                     allconsts = false;
                 }
