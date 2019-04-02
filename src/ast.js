@@ -120,66 +120,66 @@ function setContext (c, e, ctx, n) {
     exprName = null;
 
     switch (e.constructor) {
-        case Attribute:
-        case Name:
+        case Sk.ast.Attribute:
+        case Sk.ast.Name:
             if (ctx === Sk.ast.Store) {
                 forbiddenCheck(c, n, e.attr, n.lineno);
             }
             e.ctx = ctx;
             break;
-        case Subscript:
+        case Sk.ast.Subscript:
             e.ctx = ctx;
             break;
-        case List:
+        case Sk.ast.List:
             e.ctx = ctx;
             s = e.elts;
             break;
-        case Tuple:
+        case Sk.ast.Tuple:
             if (e.elts.length === 0) {
                 throw new Sk.builtin.SyntaxError("can't assign to ()", c.c_filename, n.lineno);
             }
             e.ctx = ctx;
             s = e.elts;
             break;
-        case Lambda:
+        case Sk.ast.Lambda:
             exprName = "lambda";
             break;
-        case Call:
+        case Sk.ast.Call:
             exprName = "function call";
             break;
-        case BoolOp:
-        case BinOp:
-        case UnaryOp:
+        case Sk.ast.BoolOp:
+        case Sk.ast.BinOp:
+        case Sk.ast.UnaryOp:
             exprName = "operator";
             break;
-        case GeneratorExp:
+        case Sk.ast.GeneratorExp:
             exprName = "generator expression";
             break;
-        case Yield:
+        case Sk.ast.Yield:
             exprName = "yield expression";
             break;
-        case ListComp:
+        case Sk.ast.ListComp:
             exprName = "list comprehension";
             break;
-        case SetComp:
+        case Sk.ast.SetComp:
             exprName = "set comprehension";
             break;
-        case DictComp:
+        case Sk.ast.DictComp:
             exprName = "dict comprehension";
             break;
-        case Dict:
-        case Set:
-        case Num:
-        case Str:
+        case Sk.ast.Dict:
+        case Sk.ast.Set:
+        case Sk.ast.Num:
+        case Sk.ast.Str:
             exprName = "literal";
             break;
-        case Compare:
+        case Sk.ast.Compare:
             exprName = "comparison";
             break;
-        case Repr:
+        case Sk.ast.Repr:
             exprName = "repr";
             break;
-        case IfExp:
+        case Sk.ast.IfExp:
             exprName = "conditional expression";
             break;
         default:
@@ -1020,10 +1020,10 @@ function astForCall (c, n, func) {
             }
             else {
                 e = astForExpr(c, CHILD(ch, 0));
-                if (e.constructor === Lambda) {
+                if (e.constructor === Sk.ast.Lambda) {
                     throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
                 }
-                else if (e.constructor !== Name) {
+                else if (e.constructor !== Sk.ast.Name) {
                     throw new Sk.builtin.SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
                 }
                 key = e.id;
@@ -1340,17 +1340,45 @@ function astForArguments (c, n) {
     return new Sk.ast.arguments(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
 }
 
-function astForFuncdef (c, n, decoratorSeq) {
-    /* funcdef: 'def' NAME parameters ':' suite */
-    var body;
-    var args;
+function astForFuncdef(c, n0, decorator_seq, is_async)
+{
+    /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
+    var n = is_async ? CHILD(n0, 1) : n0;
     var name;
+    var args;
+    var body = [];
+    var returns = null;
+    var name_i = 1;
+
     REQ(n, SYM.funcdef);
-    name = strobj(CHILD(n, 1).value);
-    forbiddenCheck(c, CHILD(n, 1), CHILD(n, 1).value, n.lineno);
-    args = astForArguments(c, CHILD(n, 2));
-    body = astForSuite(c, CHILD(n, 4));
-    return new Sk.ast.FunctionDef(name, args, body, decoratorSeq, n.lineno, n.col_offset);
+
+    forbiddenCheck(c, CHILD(n, name_i), CHILD(n, name_i).value, n.lineno);
+    name = strobj(CHILD(n, name_i).value);
+    args = astForArguments(c, CHILD(n, name_i + 1));
+    if (CHILD(n, name_i+2).type == TOK.T_RARROW) {
+        returns = astForExpr(c, CHILD(n, name_i + 3));
+        name_i += 2;
+    }
+    body = astForSuite(c, CHILD(n, name_i + 3));
+
+    if (is_async)
+        return new Sk.ast.AsyncFunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
+                                            n0.lineno, n0.col_offset);
+    else
+        return new Sk.ast.FunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
+                                        n.lineno, n.col_offset);
+}
+
+function astForAsyncFuncdef(c, n, decorator_seq)
+{
+    /* async_funcdef: 'async' funcdef */
+    REQ(n, SYM.async_funcdef);
+    REQ(CHILD(n, 0), TOK.T_NAME);
+    goog.asserts.assert(CHILD(n, 0).value === "async");
+    REQ(CHILD(n, 1), SYM.funcdef);
+
+    return astForFuncdefImpl(c, n, decorator_seq,
+                                true /* is_async */);
 }
 
 function astForClassBases (c, n) {
@@ -1652,16 +1680,16 @@ function astForExprStmt (c, n) {
         expr1 = astForTestlist(c, ch);
         setContext(c, expr1, Sk.ast.Store, ch);
         switch (expr1.constructor) {
-            case Name:
+            case Sk.ast.Name:
                 varName = expr1.id;
                 forbiddenCheck(c, ch, varName, n.lineno);
                 break;
-            case Attribute:
-            case Subscript:
+            case Sk.ast.Attribute:
+            case Sk.ast.Subscript:
                 break;
-            case GeneratorExp:
+            case Sk.ast.GeneratorExp:
                 throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
-            case Yield:
+            case Sk.ast.Yield:
                 throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             default:
                 throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
@@ -2299,11 +2327,11 @@ function astForExpr (c, n) {
 }
 
 function astForNonLocalStmt(c, n) {
-    throw new Error("Not implemented");
+    ast_error(c, n, "Not implemented: nonlocal");
 }
 
 function astForAsyncStmt(c, n) {
-    throw new Error("Not implemented");
+    ast_error(c, n, "Not implemented: async");
 }
 
 // This is only used for Python 2 support.

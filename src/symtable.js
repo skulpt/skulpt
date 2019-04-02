@@ -346,9 +346,8 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
         if (arg.constructor === Sk.ast.arg) {
-            debugger;
-            goog.asserts.assert(arg.ctx === Sk.ast.Param || (arg.ctx === Sk.ast.Store && !toplevel));
-            this.addDef(arg.id, DEF_PARAM, arg.lineno);
+            // TODO arguments are more complicated in Python 3...
+            this.addDef(arg.arg, DEF_PARAM, arg.lineno);
         }
         else {
             // Tuple isn't supported
@@ -659,7 +658,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.visitSlice(e.slice);
             break;
         case Sk.ast.Name:
-            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL, e.lineno);
+            this.addDef(e.id, e.ctx === Sk.ast.Load ? USE : DEF_LOCAL, e.lineno);
             break;
         case Sk.ast.List:
         case Sk.ast.Tuple:

@@ -108,6 +108,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
+        goog.asserts.assert(ast.lineno !== undefined && ast.col_offset !== undefined);
         out("$currLineNo = ", lineno, ";\n$currColNo = ", col_offset, ";\n\n");
     }
 };
@@ -348,13 +349,13 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
-    if (e.ctx === Store) {
+    if (e.ctx === Sk.ast.Store) {
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
-    else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
+    else if (e.ctx === Sk.ast.Load || tuporlist === "set") { //because set's can't be assigned to.
         items = [];
         for (i = 0; i < e.elts.length; ++i) {
             items.push(this._gr("elem", this.vexpr(e.elts[i])));
@@ -600,12 +601,12 @@ Compiler.prototype.vslice = function (s, ctx, obj, dataToStore) {
 };
 
 Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
-    if (ctx === Load || ctx === AugLoad) {
+    if (ctx === Sk.ast.Load || ctx === Sk.ast.AugLoad) {
         out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
         this._checkSuspension();
         return this._gr("lsubscr", "$ret");
     }
-    else if (ctx === Store || ctx === AugStore) {
+    else if (ctx === Sk.ast.Store || ctx === Sk.ast.AugStore) {
         out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
         this._checkSuspension();
     }
@@ -728,7 +729,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.ast.Str:
             return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
         case Sk.ast.Attribute:
-            if (e.ctx !== AugLoad && e.ctx !== AugStore) {
+            if (e.ctx !== Sk.ast.AugLoad && e.ctx !== Sk.ast.AugStore) {
                 val = this.vexpr(e.value);
             }
             mangled = e.attr["$r"]().v;
@@ -834,27 +835,27 @@ Compiler.prototype.caugassign = function (s) {
     switch (e.constructor) {
         case Sk.ast.Attribute:
             to = this.vexpr(e.value);
-            auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
+            auge = new Attribute(e.value, e.attr, Sk.ast.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopattr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.ast.AugStore;
             return this.vexpr(auge, res, to);
         case Sk.ast.Subscript:
             // Only compile the subscript value once
             to = this.vexpr(e.value);
             augsub = this.vslicesub(e.slice);
-            auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
+            auge = new Subscript(e.value, augsub, Sk.ast.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to, augsub);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopsubscr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.ast.AugStore;
             return this.vexpr(auge, res, to, augsub);
         case Sk.ast.Name:
-            to = this.nameop(e.id, Load);
+            to = this.nameop(e.id, Sk.ast.Load);
             val = this.vexpr(s.value);
             res = this._gr("inplbinop", "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op.prototype._astname, "')");
-            return this.nameop(e.id, Store, res);
+            return this.nameop(e.id, Sk.ast.Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");
     }
@@ -1431,7 +1432,7 @@ Compiler.prototype.cwith = function (s) {
 
     //    VAR = value
     if (s.optional_vars) {
-        this.nameop(s.optional_vars.id, Store, value);
+        this.nameop(s.optional_vars.id, Sk.ast.Store, value);
     }
 
     //    (try body)
@@ -1502,7 +1503,7 @@ Compiler.prototype.cimportas = function (name, asname, mod) {
             src = src.substr(dotLoc + 1);
         }
     }
-    return this.nameop(asname, Store, cur);
+    return this.nameop(asname, Sk.ast.Store, cur);
 };
 
 Compiler.prototype.cimport = function (s) {
@@ -1529,7 +1530,7 @@ Compiler.prototype.cimport = function (s) {
             if (lastDot !== -1) {
                 tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
             }
-            this.nameop(tmp, Store, mod);
+            this.nameop(tmp, Sk.ast.Store, mod);
         }
     }
 };
@@ -1573,7 +1574,7 @@ Compiler.prototype.cfromimport = function (s) {
         if (alias.asname) {
             storeName = alias.asname;
         }
-        this.nameop(storeName, Store, got);
+        this.nameop(storeName, Sk.ast.Store, got);
     }
 };
 
@@ -1674,7 +1675,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.tempsToSave.push("$kwa");
         }
         for (i = 0; args && i < args.args.length; ++i) {
-            funcArgs.push(this.nameop(args.args[i].id, Param));
+            funcArgs.push(this.nameop(args.args[i].arg, Sk.ast.Param));
         }
     }
     if (hasFree) {
@@ -1741,7 +1742,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         // correlation in the ast)
         offset = args.args.length - defaults.length;
         for (i = 0; i < defaults.length; ++i) {
-            argname = this.nameop(args.args[i + offset].id, Param);
+            argname = this.nameop(args.args[i + offset].arg, Sk.ast.Param);
             this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname + "=" + scopename + ".$defaults[" + i + "];";
         }
     }
@@ -1751,7 +1752,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // they can be accessed correctly by nested scopes.
     //
     for (i = 0; args && i < args.args.length; ++i) {
-        id = args.args[i].id;
+        id = args.args[i].arg;
         if (this.isCell(id)) {
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
         }
@@ -1822,7 +1823,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.args.length > 0) {
         argnamesarr = [];
         for (i = 0; i < args.args.length; ++i) {
-            argnamesarr.push(args.args[i].id.v);
+            argnamesarr.push(args.args[i].arg.v);
         }
 
         argnames = argnamesarr.join("', '");
@@ -1920,7 +1921,7 @@ Compiler.prototype.cfunction = function (s, class_for_super) {
         this.vseqstmt(s.body);
         out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
     }, class_for_super);
-    this.nameop(s.name, Store, funcorgen);
+    this.nameop(s.name, Sk.ast.Store, funcorgen);
 };
 
 Compiler.prototype.clambda = function (e) {
@@ -2088,7 +2089,7 @@ Compiler.prototype.cclass = function (s) {
     wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
-    this.nameop(s.name, Store, wrapped);
+    this.nameop(s.name, Sk.ast.Store, wrapped);
 };
 
 Compiler.prototype.ccontinue = function (s) {
@@ -2255,10 +2256,10 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     var optype;
     var op;
     var mangled;
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__") {
+    if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "__debug__") {
         throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     }
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None") {
+    if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "None") {
         throw new Sk.builtin.SyntaxError("can not assign to None");
     }
 
