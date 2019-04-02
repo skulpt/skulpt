@@ -23,7 +23,7 @@ class FileTests(unittest.TestCase):
         self.assertRaises(ValueError, file.read)
 
     def test_iter(self):
-        F=open("file.txt")
+        F=open("test/unit/file.txt")
         header=F.readline()
         res = ""
         for line in F:
@@ -32,7 +32,7 @@ class FileTests(unittest.TestCase):
         self.assertEqual("23",res)
 
     def test_iter2(self):
-        F=open("file.txt")
+        F=open("test/unit/file.txt")
         header=F.readline()
         res = ""
         for line in F.readlines():
