@@ -121,7 +121,7 @@ String = group(StringPrefix + r"'[^\n'\\]*(?:\\.[^\n'\\]*)*'",
 Special = group(*map(re.escape, sorted(EXACT_TOKEN_TYPES, reverse=True)))
 Funny = group(r'\r?\n', Special)
 
-PlainToken = group(Number, Funny, String, Name)
+PlainToken = group(Number, Funny, String,  )
 Token = Ignore + PlainToken
 
 # First (or only) line of ' or " string.
