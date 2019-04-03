@@ -628,7 +628,7 @@ Compiler.prototype.cboolop = function (e) {
     var ifFailed;
     var jtype;
     goog.asserts.assert(e instanceof Sk.ast.BoolOp);
-    if (e.op === And) {
+    if (e.op === Sk.ast.And) {
         jtype = this._jumpfalse;
     }
     else {
