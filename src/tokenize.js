@@ -130,14 +130,14 @@ for (i in prefixes) {
 
 // A set of all of the single and triple quoted string prefixes,
 //  including the opening quotes.
-single_quoted = new Set()
-triple_quoted = new Set()
+single_quoted = []
+triple_quoted = []
 for (i in prefixes) {
     var t = prefixes[i];
-    single_quoted.add(t + '"');
-    single_quoted.add(t + "'");
-    triple_quoted.add(t + '"""');
-    triple_quoted.add(t + "'''");
+    single_quoted.push(t + '"');
+    single_quoted.push(t + "'");
+    triple_quoted.push(t + '"""');
+    triple_quoted.push(t + "'''");
 }
 
 var tabsize = 8
@@ -383,9 +383,9 @@ function _tokenize(readline, encoding, yield_) {
                 // Note that initial == token[:1].
                 // Also note that single quote checking must come after
                 //  triple quote checking (above).
-                } else if (single_quoted.has(initial) ||
-                        single_quoted.has(token.substring(0, 2)) ||
-                        single_quoted.has(token.substring(0, 3))) {
+                } else if (contains(single_quoted, initial) ||
+                           contains(single_quoted, token.substring(0, 2)) ||
+                           contains(single_quoted, token.substring(0, 3))) {
                     if (token[token.length - 1] == '\n') {                // continued string
                         strstart = [lnum, start];
                         // Again, using the first 3 chars of the
