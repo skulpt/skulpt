@@ -106,7 +106,7 @@ Files = [
         'src/iterator.js',
         'src/enumerate.js',
         'src/token.js',
-        'src/new_tokenize.js',
+        'src/tokenize.js',
         'gen/parse_tables.js',
         'src/parser.js',
         'gen/astnodes.js',
