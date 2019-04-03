@@ -348,10 +348,7 @@ var doTestParse = false
 var doTestTrans = false
 var doTestSymtab = false
 var doTestRun = true
-var testInDebugMode = false
-// TODO all our d8 scripts are going to get messed up by the fact that
-// 'arguments' is now an AST node in the global scope
-//arguments.indexOf("--debug-mode") != -1;
+var testInDebugMode = arguments.indexOf("--debug-mode") != -1;
 function testsMain()
 {
     var i, promise = Promise.resolve();

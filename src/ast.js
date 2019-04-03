@@ -41,6 +41,10 @@ function REQ (n, type) {
     goog.asserts.assert(n.type === type, "node wasn't expected type");
 }
 
+function ast_error(c, n, msg) {
+    throw new Sk.builtin.SyntaxError(msg, c.c_filename, n.lineno);
+}
+
 function strobj (s) {
     goog.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
     return new Sk.builtin.str(s);
@@ -111,78 +115,78 @@ function setContext (c, e, ctx, n) {
     var i;
     var exprName;
     var s;
-    goog.asserts.assert(ctx !== AugStore && ctx !== AugLoad, "context not AugStore or AugLoad");
+    goog.asserts.assert(ctx !== Sk.ast.AugStore && ctx !== Sk.ast.AugLoad, "context not AugStore or AugLoad");
     s = null;
     exprName = null;
 
     switch (e.constructor) {
-        case Attribute:
-        case Name:
-            if (ctx === Store) {
+        case Sk.ast.Attribute:
+        case Sk.ast.Name:
+            if (ctx === Sk.ast.Store) {
                 forbiddenCheck(c, n, e.attr, n.lineno);
             }
             e.ctx = ctx;
             break;
-        case Subscript:
+        case Sk.ast.Subscript:
             e.ctx = ctx;
             break;
-        case List:
+        case Sk.ast.List:
             e.ctx = ctx;
             s = e.elts;
             break;
-        case Tuple:
+        case Sk.ast.Tuple:
             if (e.elts.length === 0) {
                 throw new Sk.builtin.SyntaxError("can't assign to ()", c.c_filename, n.lineno);
             }
             e.ctx = ctx;
             s = e.elts;
             break;
-        case Lambda:
+        case Sk.ast.Lambda:
             exprName = "lambda";
             break;
-        case Call:
+        case Sk.ast.Call:
             exprName = "function call";
             break;
-        case BoolOp:
-        case BinOp:
-        case UnaryOp:
+        case Sk.ast.BoolOp:
+        case Sk.ast.BinOp:
+        case Sk.ast.UnaryOp:
             exprName = "operator";
             break;
-        case GeneratorExp:
+        case Sk.ast.GeneratorExp:
             exprName = "generator expression";
             break;
-        case Yield:
+        case Sk.ast.Yield:
             exprName = "yield expression";
             break;
-        case ListComp:
+        case Sk.ast.ListComp:
             exprName = "list comprehension";
             break;
-        case SetComp:
+        case Sk.ast.SetComp:
             exprName = "set comprehension";
             break;
-        case DictComp:
+        case Sk.ast.DictComp:
             exprName = "dict comprehension";
             break;
-        case Dict:
-        case Set:
-        case Num:
-        case Str:
+        case Sk.ast.Dict:
+        case Sk.ast.Set:
+        case Sk.ast.Num:
+        case Sk.ast.Str:
             exprName = "literal";
             break;
-        case Compare:
+        case Sk.ast.Compare:
             exprName = "comparison";
             break;
-        case Repr:
+        case Sk.ast.Repr:
             exprName = "repr";
             break;
-        case IfExp:
+        case Sk.ast.IfExp:
             exprName = "conditional expression";
             break;
         default:
             goog.asserts.fail("unhandled expression in assignment");
     }
     if (exprName) {
-        throw new Sk.builtin.SyntaxError("can't " + (ctx === Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
+        throw new Sk.builtin.SyntaxError("can't " + (ctx === Sk.ast.Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
     }
 
     if (s) {
@@ -194,17 +198,17 @@ function setContext (c, e, ctx, n) {
 
 var operatorMap = {};
 (function () {
-    operatorMap[TOK.T_VBAR] = BitOr;
-    operatorMap[TOK.T_CIRCUMFLEX] = BitXor;
-    operatorMap[TOK.T_AMPER] = BitAnd;
-    operatorMap[TOK.T_LEFTSHIFT] = LShift;
-    operatorMap[TOK.T_RIGHTSHIFT] = RShift;
-    operatorMap[TOK.T_PLUS] = Add;
-    operatorMap[TOK.T_MINUS] = Sub;
-    operatorMap[TOK.T_STAR] = Mult;
-    operatorMap[TOK.T_SLASH] = Div;
-    operatorMap[TOK.T_DOUBLESLASH] = FloorDiv;
-    operatorMap[TOK.T_PERCENT] = Mod;
+    operatorMap[TOK.T_VBAR] = Sk.ast.BitOr;
+    operatorMap[TOK.T_CIRCUMFLEX] = Sk.ast.BitXor;
+    operatorMap[TOK.T_AMPER] = Sk.ast.BitAnd;
+    operatorMap[TOK.T_LEFTSHIFT] = Sk.ast.LShift;
+    operatorMap[TOK.T_RIGHTSHIFT] = Sk.ast.RShift;
+    operatorMap[TOK.T_PLUS] = Sk.ast.Add;
+    operatorMap[TOK.T_MINUS] = Sk.ast.Sub;
+    operatorMap[TOK.T_STAR] = Sk.ast.Mult;
+    operatorMap[TOK.T_SLASH] = Sk.ast.Div;
+    operatorMap[TOK.T_DOUBLESLASH] = Sk.ast.FloorDiv;
+    operatorMap[TOK.T_PERCENT] = Sk.ast.Mod;
 }());
 
 function getOperator (n) {
@@ -225,33 +229,33 @@ function astForCompOp (c, n) {
         n = CHILD(n, 0);
         switch (n.type) {
             case TOK.T_LESS:
-                return Lt;
+                return Sk.ast.Lt;
             case TOK.T_GREATER:
-                return Gt;
+                return Sk.ast.Gt;
             case TOK.T_EQEQUAL:
-                return Eq;
+                return Sk.ast.Eq;
             case TOK.T_LESSEQUAL:
-                return LtE;
+                return Sk.ast.LtE;
             case TOK.T_GREATEREQUAL:
-                return GtE;
+                return Sk.ast.GtE;
             case TOK.T_NOTEQUAL:
-                return NotEq;
+                return Sk.ast.NotEq;
             case TOK.T_NAME:
                 if (n.value === "in") {
-                    return In_;
+                    return Sk.ast.In;
                 }
                 if (n.value === "is") {
-                    return Is;
+                    return Sk.ast.Is;
                 }
         }
     }
     else if (NCH(n) === 2) {
         if (CHILD(n, 0).type === TOK.T_NAME) {
             if (CHILD(n, 1).value === "in") {
-                return NotIn;
+                return Sk.ast.NotIn;
             }
             if (CHILD(n, 0).value === "is") {
-                return IsNot;
+                return Sk.ast.IsNot;
             }
         }
     }
@@ -334,15 +338,15 @@ function astForExceptClause (c, exc, body) {
     REQ(exc, SYM.except_clause);
     REQ(body, SYM.suite);
     if (NCH(exc) === 1) {
-        return new ExceptHandler(null, null, astForSuite(c, body), exc.lineno, exc.col_offset);
+        return new Sk.ast.ExceptHandler(null, null, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
     else if (NCH(exc) === 2) {
-        return new ExceptHandler(astForExpr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
+        return new Sk.ast.ExceptHandler(astForExpr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
     else if (NCH(exc) === 4) {
         e = astForExpr(c, CHILD(exc, 3));
-        setContext(c, e, Store, CHILD(exc, 3));
-        return new ExceptHandler(astForExpr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
+        setContext(c, e, Sk.ast.Store, CHILD(exc, 3));
+        return new Sk.ast.ExceptHandler(astForExpr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
     goog.asserts.fail("wrong number of children for except clause");
 }
@@ -382,7 +386,7 @@ function astForTryStmt (c, n) {
         throw new Sk.builtin.SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
     }
 
-    return new Try(body, handlers, orelse, finally_, n.lineno, n.col_offset);
+    return new Sk.ast.Try(body, handlers, orelse, finally_, n.lineno, n.col_offset);
 }
 
 function astForDottedName (c, n) {
@@ -395,10 +399,10 @@ function astForDottedName (c, n) {
     lineno = n.lineno;
     col_offset = n.col_offset;
     id = strobj(CHILD(n, 0).value);
-    e = new Name(id, Load, lineno, col_offset);
+    e = new Sk.ast.Name(id, Sk.ast.Load, lineno, col_offset);
     for (i = 2; i < NCH(n); i += 2) {
         id = strobj(CHILD(n, i).value);
-        e = new Attribute(e, id, Load, lineno, col_offset);
+        e = new Sk.ast.Attribute(e, id, Sk.ast.Load, lineno, col_offset);
     }
     return e;
 }
@@ -416,7 +420,7 @@ function astForDecorator (c, n) {
     }
     else if (NCH(n) === 5) // call with no args
     {
-        return new Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
+        return new Sk.ast.Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
     }
     else {
         return astForCall(c, CHILD(n, 3), nameExpr);
@@ -463,10 +467,10 @@ function astForWithItem (c, n, content) {
     context_expr = astForExpr(c, CHILD(n, 0));
     if (NCH(n) == 3) {
         optional_vars = astForExpr(c, CHILD(n, 2));
-        setContext(c, optional_vars, Store, n);
+        setContext(c, optional_vars, Sk.ast.Store, n);
     }
 
-    return new With_(context_expr, optional_vars, content, n.lineno, n.col_offset);
+    return new With(context_expr, optional_vars, content, n.lineno, n.col_offset);
 }
 
 function astForWithStmt (c, n) {
@@ -510,7 +514,7 @@ function astForExecStmt (c, n) {
     if (nchildren === 6) {
         locals = astForExpr(c, CHILD(n, 5));
     }
-    return new Exec(expr1, globals, locals, n.lineno, n.col_offset);
+    return new Sk.ast.Exec(expr1, globals, locals, n.lineno, n.col_offset);
 }
 
 function astForIfStmt (c, n) {
@@ -526,7 +530,7 @@ function astForIfStmt (c, n) {
     var s;
     REQ(n, SYM.if_stmt);
     if (NCH(n) === 4) {
-        return new If(
+        return new Sk.ast.If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             [], n.lineno, n.col_offset);
@@ -535,7 +539,7 @@ function astForIfStmt (c, n) {
     s = CHILD(n, 4).value;
     decider = s.charAt(2); // elSe or elIf
     if (decider === "s") {
-        return new If(
+        return new Sk.ast.If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             astForSuite(c, CHILD(n, 6)),
@@ -557,7 +561,7 @@ function astForIfStmt (c, n) {
 
         if (hasElse) {
             orelse = [
-                new If(
+                new Sk.ast.If(
                     astForExpr(c, CHILD(n, NCH(n) - 6)),
                     astForSuite(c, CHILD(n, NCH(n) - 4)),
                     astForSuite(c, CHILD(n, NCH(n) - 1)),
@@ -569,14 +573,14 @@ function astForIfStmt (c, n) {
         for (i = 0; i < nElif; ++i) {
             off = 5 + (nElif - i - 1) * 4;
             orelse = [
-                new If(
+                new Sk.ast.If(
                     astForExpr(c, CHILD(n, off)),
                     astForSuite(c, CHILD(n, off + 2)),
                     orelse,
                     CHILD(n, off).lineno,
                     CHILD(n, off).col_offset)];
         }
-        return new If(
+        return new Sk.ast.If(
             astForExpr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             orelse, n.lineno, n.col_offset);
@@ -604,7 +608,7 @@ function astForExprlist (c, n, context) {
 function astForDelStmt (c, n) {
     /* del_stmt: 'del' exprlist */
     REQ(n, SYM.del_stmt);
-    return new Delete(astForExprlist(c, CHILD(n, 1), Del), n.lineno, n.col_offset);
+    return new Sk.ast.Delete(astForExprlist(c, CHILD(n, 1), Sk.ast.Del), n.lineno, n.col_offset);
 }
 
 function astForGlobalStmt (c, n) {
@@ -615,17 +619,17 @@ function astForGlobalStmt (c, n) {
     for (i = 1; i < NCH(n); i += 2) {
         s[(i - 1) / 2] = strobj(CHILD(n, i).value);
     }
-    return new Global(s, n.lineno, n.col_offset);
+    return new Sk.ast.Global(s, n.lineno, n.col_offset);
 }
 
 function astForAssertStmt (c, n) {
     /* assert_stmt: 'assert' test [',' test] */
     REQ(n, SYM.assert_stmt);
     if (NCH(n) === 2) {
-        return new Assert(astForExpr(c, CHILD(n, 1)), null, n.lineno, n.col_offset);
+        return new Sk.ast.Assert(astForExpr(c, CHILD(n, 1)), null, n.lineno, n.col_offset);
     }
     else if (NCH(n) === 4) {
-        return new Assert(astForExpr(c, CHILD(n, 1)), astForExpr(c, CHILD(n, 3)), n.lineno, n.col_offset);
+        return new Sk.ast.Assert(astForExpr(c, CHILD(n, 1)), astForExpr(c, CHILD(n, 3)), n.lineno, n.col_offset);
     }
     goog.asserts.fail("improper number of parts to assert stmt");
 }
@@ -649,7 +653,7 @@ function aliasForImportName (c, n) {
                 if (NCH(n) === 3) {
                     str = CHILD(n, 2).value;
                 }
-                return new alias(name, str == null ? null : strobj(str));
+                return new Sk.ast.alias(name, str == null ? null : strobj(str));
             case SYM.dotted_as_name:
                 if (NCH(n) === 1) {
                     n = CHILD(n, 0);
@@ -664,7 +668,7 @@ function aliasForImportName (c, n) {
                 break;
             case SYM.dotted_name:
                 if (NCH(n) === 1) {
-                    return new alias(strobj(CHILD(n, 0).value), null);
+                    return new Sk.ast.alias(strobj(CHILD(n, 0).value), null);
                 }
                 else {
                     // create a string of the form a.b.c
@@ -672,11 +676,11 @@ function aliasForImportName (c, n) {
                     for (i = 0; i < NCH(n); i += 2) {
                         str += CHILD(n, i).value + ".";
                     }
-                    return new alias(strobj(str.substr(0, str.length - 1)), null);
+                    return new Sk.ast.alias(strobj(str.substr(0, str.length - 1)), null);
                 }
                 break;
             case TOK.T_STAR:
-                return new alias(strobj("*"), null);
+                return new Sk.ast.alias(strobj("*"), null);
             default:
                 throw new Sk.builtin.SyntaxError("unexpected import name", c.c_filename, n.lineno);
         }
@@ -711,7 +715,7 @@ function astForImportStmt (c, n) {
         for (i = 0; i < NCH(n); i += 2) {
             aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
         }
-        return new Import(aliases, lineno, col_offset);
+        return new Sk.ast.Import(aliases, lineno, col_offset);
     }
     else if (n.type === SYM.import_from) {
         mod = null;
@@ -761,7 +765,7 @@ function astForImportStmt (c, n) {
             }
         }
         modname = mod ? mod.name.v : "";
-        return new ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
+        return new Sk.ast.ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
     }
     throw new Sk.builtin.SyntaxError("unknown import statement", c.c_filename, n.lineno);
 }
@@ -855,13 +859,13 @@ function astForListcomp (c, n) {
     for (i = 0; i < nfors; ++i) {
         REQ(ch, SYM.list_for);
         forch = CHILD(ch, 1);
-        t = astForExprlist(c, forch, Store);
+        t = astForExprlist(c, forch, Sk.ast.Store);
         expression = astForTestlist(c, CHILD(ch, 3));
         if (NCH(forch) === 1) {
-            lc = new comprehension(t[0], expression, []);
+            lc = new Sk.ast.comprehension(t[0], expression, []);
         }
         else {
-            lc = new comprehension(new Tuple(t, Store, ch.lineno, ch.col_offset), expression, []);
+            lc = new Sk.ast.comprehension(new Sk.ast.Tuple(t, Sk.ast.Store, ch.lineno, ch.col_offset), expression, []);
         }
 
         if (NCH(ch) === 5) {
@@ -884,7 +888,7 @@ function astForListcomp (c, n) {
         }
         listcomps[i] = lc;
     }
-    return new ListComp(elt, listcomps, n.lineno, n.col_offset);
+    return new Sk.ast.ListComp(elt, listcomps, n.lineno, n.col_offset);
 }
 
 function astForFactor (c, n) {
@@ -914,11 +918,11 @@ function astForFactor (c, n) {
     expression = astForExpr(c, CHILD(n, 1));
     switch (CHILD(n, 0).type) {
         case TOK.T_PLUS:
-            return new UnaryOp(UAdd, expression, n.lineno, n.col_offset);
+            return new Sk.ast.UnaryOp(Sk.ast.UAdd, expression, n.lineno, n.col_offset);
         case TOK.T_MINUS:
-            return new UnaryOp(USub, expression, n.lineno, n.col_offset);
+            return new Sk.ast.UnaryOp(Sk.ast.USub, expression, n.lineno, n.col_offset);
         case TOK.T_TILDE:
-            return new UnaryOp(Invert, expression, n.lineno, n.col_offset);
+            return new Sk.ast.UnaryOp(Sk.ast.Invert, expression, n.lineno, n.col_offset);
     }
 
     goog.asserts.fail("unhandled factor");
@@ -935,15 +939,15 @@ function astForForStmt (c, n) {
         seq = astForSuite(c, CHILD(n, 8));
     }
     nodeTarget = CHILD(n, 1);
-    _target = astForExprlist(c, nodeTarget, Store);
+    _target = astForExprlist(c, nodeTarget, Sk.ast.Store);
     if (NCH(nodeTarget) === 1) {
         target = _target[0];
     }
     else {
-        target = new Tuple(_target, Store, n.lineno, n.col_offset);
+        target = new Sk.ast.Tuple(_target, Sk.ast.Store, n.lineno, n.col_offset);
     }
 
-    return new For(target,
+    return new Sk.ast.For(target,
         astForTestlist(c, CHILD(n, 3)),
         astForSuite(c, CHILD(n, 5)),
         seq, n.lineno, n.col_offset);
@@ -1016,10 +1020,10 @@ function astForCall (c, n, func) {
             }
             else {
                 e = astForExpr(c, CHILD(ch, 0));
-                if (e.constructor === Lambda) {
+                if (e.constructor === Sk.ast.Lambda) {
                     throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
                 }
-                else if (e.constructor !== Name) {
+                else if (e.constructor !== Sk.ast.Name) {
                     throw new Sk.builtin.SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
                 }
                 key = e.id;
@@ -1030,7 +1034,7 @@ function astForCall (c, n, func) {
                         throw new Sk.builtin.SyntaxError("keyword argument repeated", c.c_filename, n.lineno);
                     }
                 }
-                keywords[nkeywords++] = new keyword(key, astForExpr(c, CHILD(ch, 2)));
+                keywords[nkeywords++] = new Sk.ast.keyword(key, astForExpr(c, CHILD(ch, 2)));
             }
         }
         else if (ch.type === TOK.T_STAR) {
@@ -1040,7 +1044,7 @@ function astForCall (c, n, func) {
             kwarg = astForExpr(c, CHILD(n, ++i));
         }
     }
-    return new Call(func, args, keywords, vararg, kwarg, func.lineno, func.col_offset);
+    return new Sk.ast.Call(func, args, keywords, vararg, kwarg, func.lineno, func.col_offset);
 }
 
 function astForTrailer (c, n, leftExpr) {
@@ -1057,21 +1061,21 @@ function astForTrailer (c, n, leftExpr) {
     REQ(n, SYM.trailer);
     if (CHILD(n, 0).type === TOK.T_LPAR) {
         if (NCH(n) === 2) {
-            return new Call(leftExpr, [], [], null, null, n.lineno, n.col_offset);
+            return new Sk.ast.Call(leftExpr, [], [], null, null, n.lineno, n.col_offset);
         }
         else {
             return astForCall(c, CHILD(n, 1), leftExpr);
         }
     }
     else if (CHILD(n, 0).type === TOK.T_DOT) {
-        return new Attribute(leftExpr, strobj(CHILD(n, 1).value), Load, n.lineno, n.col_offset);
+        return new Sk.ast.Attribute(leftExpr, strobj(CHILD(n, 1).value), Sk.ast.Load, n.lineno, n.col_offset);
     }
     else {
         REQ(CHILD(n, 0), TOK.T_LSQB);
         REQ(CHILD(n, 2), TOK.T_RSQB);
         n = CHILD(n, 1);
         if (NCH(n) === 1) {
-            return new Subscript(leftExpr, astForSlice(c, CHILD(n, 0)), Load, n.lineno, n.col_offset);
+            return new Sk.ast.Subscript(leftExpr, astForSlice(c, CHILD(n, 0)), Sk.ast.Load, n.lineno, n.col_offset);
         }
         else {
             /* The grammar is ambiguous here. The ambiguity is resolved 
@@ -1082,22 +1086,22 @@ function astForTrailer (c, n, leftExpr) {
             slices = [];
             for (j = 0; j < NCH(n); j += 2) {
                 slc = astForSlice(c, CHILD(n, j));
-                if (slc.constructor !== Index) {
+                if (slc.constructor !== Sk.ast.Index) {
                     simple = false;
                 }
                 slices[j / 2] = slc;
             }
             if (!simple) {
-                return new Subscript(leftExpr, new ExtSlice(slices), Load, n.lineno, n.col_offset);
+                return new Sk.ast.Subscript(leftExpr, new Sk.ast.ExtSlice(slices), Sk.ast.Load, n.lineno, n.col_offset);
             }
             elts = [];
             for (j = 0; j < slices.length; ++j) {
                 slc = slices[j];
-                goog.asserts.assert(slc.constructor === Index && slc.value !== null && slc.value !== undefined);
+                goog.asserts.assert(slc.constructor === Sk.ast.Index && slc.value !== null && slc.value !== undefined);
                 elts[j] = slc.value;
             }
-            e = new Tuple(elts, Load, n.lineno, n.col_offset);
-            return new Subscript(leftExpr, new Index(e), Load, n.lineno, n.col_offset);
+            e = new Sk.ast.Tuple(elts, Sk.ast.Load, n.lineno, n.col_offset);
+            return new Sk.ast.Subscript(leftExpr, new Sk.ast.Index(e), Sk.ast.Load, n.lineno, n.col_offset);
         }
     }
 }
@@ -1118,34 +1122,34 @@ function astForFlowStmt (c, n) {
     ch = CHILD(n, 0);
     switch (ch.type) {
         case SYM.break_stmt:
-            return new Break(n.lineno, n.col_offset);
+            return new Sk.ast.Break(n.lineno, n.col_offset);
         case SYM.continue_stmt:
-            return new Continue(n.lineno, n.col_offset);
+            return new Sk.ast.Continue(n.lineno, n.col_offset);
         case SYM.yield_stmt:
-            return new Expr(astForExpr(c, CHILD(ch, 0)), n.lineno, n.col_offset);
+            return new Sk.ast.Expr(astForExpr(c, CHILD(ch, 0)), n.lineno, n.col_offset);
         case SYM.return_stmt:
             if (NCH(ch) === 1) {
-                return new Return(null, n.lineno, n.col_offset);
+                return new Sk.ast.Return(null, n.lineno, n.col_offset);
             }
             else {
-                return new Return(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+                return new Sk.ast.Return(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
             }
             break;
         case SYM.raise_stmt:
             if (NCH(ch) === 1) {
-                return new Raise(null, null, null, n.lineno, n.col_offset);
+                return new Sk.ast.Raise(null, null, null, n.lineno, n.col_offset);
             }
             else if (NCH(ch) === 2) {
-                return new Raise(astForExpr(c, CHILD(ch, 1)), null, null, n.lineno, n.col_offset);
+                return new Sk.ast.Raise(astForExpr(c, CHILD(ch, 1)), null, null, n.lineno, n.col_offset);
             }
             else if (NCH(ch) === 4) {
-                return new Raise(
+                return new Sk.ast.Raise(
                     astForExpr(c, CHILD(ch, 1)),
                     astForExpr(c, CHILD(ch, 3)),
                     null, n.lineno, n.col_offset);
             }
             else if (NCH(ch) === 6) {
-                return new Raise(
+                return new Sk.ast.Raise(
                     astForExpr(c, CHILD(ch, 1)),
                     astForExpr(c, CHILD(ch, 3)),
                     astForExpr(c, CHILD(ch, 5)),
@@ -1158,119 +1162,223 @@ function astForFlowStmt (c, n) {
     goog.asserts.fail("unhandled flow statement");
 }
 
+function astForArg(c, n)
+{
+    var name;
+    var annotation = null;
+    var ch;
+
+    goog.asserts.assert(n.type === SYM.tfpdef || n.type === SYM.vfpdef);
+    ch = CHILD(n, 0);
+    forbiddenCheck(c, ch, ch.value, ch.lineno);
+    name = strobj(ch.value);
+
+    if (NCH(n) == 3 && CHILD(n, 1).type === TOK.T_COLON) {
+        annotation = astForExpr(c, CHILD(n, 2));
+    }
+
+    return new Sk.ast.arg(name, annotation, n.lineno, n.col_offset);
+}
+
+/* returns -1 if failed to handle keyword only arguments
+   returns new position to keep processing if successful
+               (',' tfpdef ['=' test])*
+                     ^^^
+   start pointing here
+ */
+function handleKeywordonlyArgs(c, n, start, kwonlyargs, kwdefaults)
+{
+    var argname;
+    var ch;
+    var expression;
+    var annotation;
+    var arg;
+    var i = start;
+    var j = 0; /* index for kwdefaults and kwonlyargs */
+
+    if (!kwonlyargs) {
+        ast_error(c, CHILD(n, start), "named arguments must follow bare *");
+    }
+    goog.asserts.assert(kwdefaults);
+    while (i < NCH(n)) {
+        ch = CHILD(n, i);
+        switch (ch.type) {
+            case SYM.vfpdef:
+            case SYM.tfpdef:
+                if (i + 1 < NCH(n) && CHILD(n, i + 1).type == TOK.T_EQUAL) {
+                    kwdefaults[j] = astForExpr(c, CHILD(n, i + 2));
+                    i += 2; /* '=' and test */
+                }
+                else { /* setting NULL if no default value exists */
+                    kwdefaults[j] = null;
+                }
+                if (NCH(ch) == 3) {
+                    /* ch is NAME ':' test */
+                    annotation = astForExpr(c, CHILD(ch, 2));
+                }
+                else {
+                    annotation = null;
+                }
+                ch = CHILD(ch, 0);
+                forbiddenCheck(c, ch, ch.value, ch.lineno);
+                argname = strobj(ch.value);
+                kwonlyargs[j++] = new Sk.ast.arg(argname, annotation, ch.lineno, ch.col_offset);
+                i += 2; /* the name and the comma */
+                break;
+            case TOK.T_DOUBLESTAR:
+                return i;
+            default:
+                ast_error(c, ch, "unexpected node");
+        }
+    }
+    return i;
+}
+
 function astForArguments (c, n) {
-    /* parameters: '(' [varargslist] ')'
-     varargslist: (fpdef ['=' test] ',')* ('*' NAME [',' '**' NAME]
-     | '**' NAME) | fpdef ['=' test] (',' fpdef ['=' test])* [',']
-     */
-    var parenthesized;
-    var id;
-    var complexArgs;
     var k;
     var j;
     var i;
     var foundDefault;
-    var defaults;
-    var args;
-    var ch;
+    var posargs = [];
+    var posdefaults = [];
+    var kwonlyargs = [];
+    var kwdefaults = [];
     var vararg = null;
     var kwarg = null;
+
+    /* This function handles both typedargslist (function definition)
+       and varargslist (lambda definition).
+
+       parameters: '(' [typedargslist] ')'
+       typedargslist: (tfpdef ['=' test] (',' tfpdef ['=' test])* [',' [
+               '*' [tfpdef] (',' tfpdef ['=' test])* [',' ['**' tfpdef [',']]]
+             | '**' tfpdef [',']]]
+         | '*' [tfpdef] (',' tfpdef ['=' test])* [',' ['**' tfpdef [',']]]
+         | '**' tfpdef [','])
+       tfpdef: NAME [':' test]
+       varargslist: (vfpdef ['=' test] (',' vfpdef ['=' test])* [',' [
+               '*' [vfpdef] (',' vfpdef ['=' test])* [',' ['**' vfpdef [',']]]
+             | '**' vfpdef [',']]]
+         | '*' [vfpdef] (',' vfpdef ['=' test])* [',' ['**' vfpdef [',']]]
+         | '**' vfpdef [',']
+       )
+       vfpdef: NAME
+
+    */
     if (n.type === SYM.parameters) {
         if (NCH(n) === 2) // () as arglist
         {
-            return new arguments_([], null, null, []);
+            return new arguments([], null, null, []);
         }
         n = CHILD(n, 1);
     }
-    REQ(n, SYM.varargslist);
+    goog.asserts.assert(n.type === SYM.varargslist ||
+                        n.type === SYM.typedargslist);
 
-    args = [];
-    defaults = [];
 
-    /* fpdef: NAME | '(' fplist ')'
-     fplist: fpdef (',' fpdef)* [',']
-     */
-    foundDefault = false;
+    // Skulpt note: the "counting numbers of args" section
+    // from ast.c is omitted because JS arrays autoexpand
+
+    /* tfpdef: NAME [':' test]
+       vfpdef: NAME
+    */
     i = 0;
-    j = 0; // index for defaults
-    k = 0; // index for args
+    j = 0;  /* index for defaults */
+    k = 0;  /* index for args */
     while (i < NCH(n)) {
         ch = CHILD(n, i);
         switch (ch.type) {
-            case SYM.fpdef:
-                complexArgs = 0;
-                parenthesized = 0;
-                handle_fpdef: while (true) {
-                    if (i + 1 < NCH(n) && CHILD(n, i + 1).type === TOK.T_EQUAL) {
-                        defaults[j++] = astForExpr(c, CHILD(n, i + 2));
-                        i += 2;
-                        foundDefault = true;
-                    }
-                    else if (foundDefault) {
-                        /* def f((x)=4): pass should raise an error.
-                         def f((x, (y))): pass will just incur the tuple unpacking warning. */
-                        if (parenthesized && !complexArgs) {
-                            throw new Sk.builtin.SyntaxError("parenthesized arg with default", c.c_filename, n.lineno);
-                        }
-                        throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
-                    }
-
-                    if (NCH(ch) === 3) {
-                        ch = CHILD(ch, 1);
-                        // def foo((x)): is not complex, special case.
-                        if (NCH(ch) !== 1) {
-                            throw new Sk.builtin.SyntaxError("tuple parameter unpacking has been removed", c.c_filename, n.lineno);
-                        }
-                        else {
-                            /* def foo((x)): setup for checking NAME below. */
-                            /* Loop because there can be many parens and tuple
-                             unpacking mixed in. */
-                            parenthesized = true;
-                            ch = CHILD(ch, 0);
-                            goog.asserts.assert(ch.type === SYM.fpdef);
-                            continue handle_fpdef;
-                        }
-                    }
-                    if (CHILD(ch, 0).type === TOK.T_NAME) {
-                        forbiddenCheck(c, n, CHILD(ch, 0).value, n.lineno);
-                        id = strobj(CHILD(ch, 0).value);
-                        args[k++] = new Name(id, Param, ch.lineno, ch.col_offset);
-                    }
+            case SYM.tfpdef:
+            case SYM.vfpdef:
+                /* XXX Need to worry about checking if TYPE(CHILD(n, i+1)) is
+                   anything other than EQUAL or a comma? */
+                /* XXX Should NCH(n) check be made a separate check? */
+                if (i + 1 < NCH(n) && CHILD(n, i + 1).type == TOK.T_EQUAL) {
+                    posdefaults[j++] = astForExpr(c, CHILD(n, i + 2));
                     i += 2;
-                    if (parenthesized) {
-                        throw new Sk.builtin.SyntaxError("parenthesized argument names are invalid", c.c_filename, n.lineno);
-                    }
-                    break;
+                    foundDefault = 1;
                 }
+                else if (foundDefault) {
+                    throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
+                }
+                posargs[k++] = astForArg(c, ch);
+                i += 2; /* the name and the comma */
                 break;
             case TOK.T_STAR:
-                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
-                vararg = strobj(CHILD(n, i + 1).value);
-                i += 3;
+                if (i+1 >= NCH(n) ||
+                    (i+2 == NCH(n) && CHILD(n, i+1).type == TOK.T_COMMA)) {
+                    throw new Sk.builtin.SyntaxError("named arguments must follow bare *", c.c_filename, n.lineno);
+                }
+                ch = CHILD(n, i+1);  /* tfpdef or COMMA */
+                if (ch.type == TOK.T_COMMA) {
+                    i += 2; /* now follows keyword only arguments */
+                    i = handleKeywordonlyArgs(c, n, i,
+                                                  kwonlyargs, kwdefaults);
+                }
+                else {
+                    vararg = astForArg(c, ch);
+
+                    i += 3;
+                    if (i < NCH(n) && (CHILD(n, i).type == SYM.tfpdef
+                                    || CHILD(n, i).type == SYM.vfpdef)) {
+                        i = handleKeywordonlyArgs(c, n, i,
+                                                      kwonlyargs, kwdefaults);
+                    }
+                }
                 break;
             case TOK.T_DOUBLESTAR:
-                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
-                kwarg = strobj(CHILD(n, i + 1).value);
+                ch = CHILD(n, i+1);  /* tfpdef */
+                goog.asserts.assert(ch.type == SYM.tfpdef || ch.type == SYM.vfpdef);
+                kwarg = astForArg(c, ch);
                 i += 3;
                 break;
             default:
                 goog.asserts.fail("unexpected node in varargslist");
+                return;
         }
     }
-    return new arguments_(args, vararg, kwarg, defaults);
+    return new Sk.ast.arguments(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
 }
 
-function astForFuncdef (c, n, decoratorSeq) {
-    /* funcdef: 'def' NAME parameters ':' suite */
-    var body;
-    var args;
+function astForFuncdef(c, n0, decorator_seq, is_async)
+{
+    /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
+    var n = is_async ? CHILD(n0, 1) : n0;
     var name;
+    var args;
+    var body = [];
+    var returns = null;
+    var name_i = 1;
+
     REQ(n, SYM.funcdef);
-    name = strobj(CHILD(n, 1).value);
-    forbiddenCheck(c, CHILD(n, 1), CHILD(n, 1).value, n.lineno);
-    args = astForArguments(c, CHILD(n, 2));
-    body = astForSuite(c, CHILD(n, 4));
-    return new FunctionDef(name, args, body, decoratorSeq, n.lineno, n.col_offset);
+
+    forbiddenCheck(c, CHILD(n, name_i), CHILD(n, name_i).value, n.lineno);
+    name = strobj(CHILD(n, name_i).value);
+    args = astForArguments(c, CHILD(n, name_i + 1));
+    if (CHILD(n, name_i+2).type == TOK.T_RARROW) {
+        returns = astForExpr(c, CHILD(n, name_i + 3));
+        name_i += 2;
+    }
+    body = astForSuite(c, CHILD(n, name_i + 3));
+
+    if (is_async)
+        return new Sk.ast.AsyncFunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
+                                            n0.lineno, n0.col_offset);
+    else
+        return new Sk.ast.FunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
+                                        n.lineno, n.col_offset);
+}
+
+function astForAsyncFuncdef(c, n, decorator_seq)
+{
+    /* async_funcdef: 'async' funcdef */
+    REQ(n, SYM.async_funcdef);
+    REQ(CHILD(n, 0), TOK.T_NAME);
+    goog.asserts.assert(CHILD(n, 0).value === "async");
+    REQ(CHILD(n, 1), SYM.funcdef);
+
+    return astForFuncdefImpl(c, n, decorator_seq,
+                                true /* is_async */);
 }
 
 function astForClassBases (c, n) {
@@ -1292,15 +1400,15 @@ function astForClassdef (c, n, decoratorSeq) {
     forbiddenCheck(c, n, CHILD(n, 1).value, n.lineno);
     classname = strobj(CHILD(n, 1).value);
     if (NCH(n) === 4) {
-        return new ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
+        return new Sk.ast.ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
     }
     if (CHILD(n, 3).type === TOK.T_RPAR) {
-        return new ClassDef(classname, [], astForSuite(c, CHILD(n, 5)), decoratorSeq, n.lineno, n.col_offset);
+        return new Sk.ast.ClassDef(classname, [], astForSuite(c, CHILD(n, 5)), decoratorSeq, n.lineno, n.col_offset);
     }
 
     bases = astForClassBases(c, CHILD(n, 3));
     s = astForSuite(c, CHILD(n, 6));
-    return new ClassDef(classname, bases, s, decoratorSeq, n.lineno, n.col_offset);
+    return new Sk.ast.ClassDef(classname, bases, s, decoratorSeq, n.lineno, n.col_offset);
 }
 
 function astForLambdef (c, n) {
@@ -1308,14 +1416,14 @@ function astForLambdef (c, n) {
     var args;
     var expression;
     if (NCH(n) === 3) {
-        args = new arguments_([], null, null, []);
+        args = new Sk.ast.arguments([], null, null, []);
         expression = astForExpr(c, CHILD(n, 2));
     }
     else {
         args = astForArguments(c, CHILD(n, 1));
         expression = astForExpr(c, CHILD(n, 3));
     }
-    return new Lambda(args, expression, n.lineno, n.col_offset);
+    return new Sk.ast.Lambda(args, expression, n.lineno, n.col_offset);
 }
 
 function astForComprehension(c, n) {
@@ -1389,12 +1497,12 @@ function astForComprehension(c, n) {
     for (i = 0; i < nfors; ++i) {
         REQ(n, SYM.comp_for);
         forch = CHILD(n, 1);
-        t = astForExprlist(c, forch, Store);
+        t = astForExprlist(c, forch, Sk.ast.Store);
         expression = astForExpr(c, CHILD(n, 3));
         if (NCH(forch) === 1) {
-            comp = new comprehension(t[0], expression, []);
+            comp = new Sk.ast.comprehension(t[0], expression, []);
         } else {
-            comp = new comprehension(new Tuple(t, Store, n.lineno, n.col_offset), expression, []);
+            comp = new Sk.ast.comprehension(new Sk.ast.Tuple(t, Sk.ast.Store, n.lineno, n.col_offset), expression, []);
         }
         if (NCH(n) === 5) {
             n = CHILD(n, 4);
@@ -1426,9 +1534,9 @@ function astForIterComp(c, n, type) {
     elt = astForExpr(c, CHILD(n, 0));
     comps = astForComprehension(c, CHILD(n, 1));
     if (type === COMP_GENEXP) {
-        return new GeneratorExp(elt, comps, n.lineno, n.col_offset);
+        return new Sk.ast.GeneratorExp(elt, comps, n.lineno, n.col_offset);
     } else if (type === COMP_SETCOMP) {
-        return new SetComp(elt, comps, n.lineno, n.col_offset);
+        return new Sk.ast.SetComp(elt, comps, n.lineno, n.col_offset);
     }
 }
 
@@ -1440,7 +1548,7 @@ function astForDictComp(c, n) {
     key = astForExpr(c, CHILD(n, 0));
     value = astForExpr(c, CHILD(n, 2));
     comps = astForComprehension(c, CHILD(n, 3));
-    return new DictComp(key, value, comps, n.lineno, n.col_offset);
+    return new Sk.ast.DictComp(key, value, comps, n.lineno, n.col_offset);
 }
 
 function astForGenExpr(c, n) {
@@ -1457,10 +1565,10 @@ function astForWhileStmt (c, n) {
     /* while_stmt: 'while' test ':' suite ['else' ':' suite] */
     REQ(n, SYM.while_stmt);
     if (NCH(n) === 4) {
-        return new While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
+        return new Sk.ast.While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
     }
     else if (NCH(n) === 7) {
-        return new While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
+        return new Sk.ast.While(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
     }
     goog.asserts.fail("wrong number of tokens for 'while' stmt");
 }
@@ -1470,31 +1578,31 @@ function astForAugassign (c, n) {
     n = CHILD(n, 0);
     switch (n.value.charAt(0)) {
         case "+":
-            return Add;
+            return Sk.ast.Add;
         case "-":
-            return Sub;
+            return Sk.ast.Sub;
         case "/":
             if (n.value.charAt(1) === "/") {
-                return FloorDiv;
+                return Sk.ast.FloorDiv;
             }
-            return Div;
+            return Sk.ast.Div;
         case "%":
-            return Mod;
+            return Sk.ast.Mod;
         case "<":
-            return LShift;
+            return Sk.ast.LShift;
         case ">":
-            return RShift;
+            return Sk.ast.RShift;
         case "&":
-            return BitAnd;
+            return Sk.ast.BitAnd;
         case "^":
-            return BitXor;
+            return Sk.ast.BitXor;
         case "|":
-            return BitOr;
+            return Sk.ast.BitOr;
         case "*":
             if (n.value.charAt(1) === "*") {
-                return Pow;
+                return Sk.ast.Pow;
             }
-            return Mult;
+            return Sk.ast.Mult;
         default:
             goog.asserts.fail("invalid augassign");
     }
@@ -1509,7 +1617,7 @@ function astForBinop (c, n) {
     var newoperator;
     var nextOper;
     var i;
-    var result = new BinOp(
+    var result = new Sk.ast.BinOp(
         astForExpr(c, CHILD(n, 0)),
         getOperator(CHILD(n, 1)),
         astForExpr(c, CHILD(n, 2)),
@@ -1519,7 +1627,7 @@ function astForBinop (c, n) {
         nextOper = CHILD(n, i * 2 + 1);
         newoperator = getOperator(nextOper);
         tmp = astForExpr(c, CHILD(n, i * 2 + 2));
-        result = new BinOp(result, newoperator, tmp, nextOper.lineno, nextOper.col_offset);
+        result = new Sk.ast.BinOp(result, newoperator, tmp, nextOper.lineno, nextOper.col_offset);
     }
     return result;
 }
@@ -1541,7 +1649,7 @@ function astForTestlist (c, n) {
         return astForExpr(c, CHILD(n, 0));
     }
     else {
-        return new Tuple(seqForTestlist(c, n), Load, n.lineno, n.col_offset/*, c.c_arena */);
+        return new Sk.ast.Tuple(seqForTestlist(c, n), Sk.ast.Load, n.lineno, n.col_offset/*, c.c_arena */);
     }
 }
 
@@ -1565,23 +1673,23 @@ function astForExprStmt (c, n) {
        test: ... here starts the operator precedence dance
      */
     if (NCH(n) === 1) {
-        return new Expr(astForTestlist(c, CHILD(n, 0)), n.lineno, n.col_offset);
+        return new Sk.ast.Expr(astForTestlist(c, CHILD(n, 0)), n.lineno, n.col_offset);
     }
     else if (CHILD(n, 1).type === SYM.augassign) {
         ch = CHILD(n, 0);
         expr1 = astForTestlist(c, ch);
-        setContext(c, expr1, Store, ch);
+        setContext(c, expr1, Sk.ast.Store, ch);
         switch (expr1.constructor) {
-            case Name:
+            case Sk.ast.Name:
                 varName = expr1.id;
                 forbiddenCheck(c, ch, varName, n.lineno);
                 break;
-            case Attribute:
-            case Subscript:
+            case Sk.ast.Attribute:
+            case Sk.ast.Subscript:
                 break;
-            case GeneratorExp:
+            case Sk.ast.GeneratorExp:
                 throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
-            case Yield:
+            case Sk.ast.Yield:
                 throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             default:
                 throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
@@ -1595,7 +1703,7 @@ function astForExprStmt (c, n) {
             expr2 = astForExpr(c, ch);
         }
 
-        return new AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
+        return new Sk.ast.AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
     }
     else if (CHILD(n, 1).type === SYM.annassign) {
         // TODO translate the relevant section from ast.c
@@ -1611,7 +1719,7 @@ function astForExprStmt (c, n) {
                 throw new Sk.builtin.SyntaxError("assignment to yield expression not possible", c.c_filename, n.lineno);
             }
             e = astForTestlist(c, ch);
-            setContext(c, e, Store, CHILD(n, i));
+            setContext(c, e, Sk.ast.Store, CHILD(n, i));
             targets[i / 2] = e;
         }
         value = CHILD(n, NCH(n) - 1);
@@ -1621,14 +1729,14 @@ function astForExprStmt (c, n) {
         else {
             expression = astForExpr(c, value);
         }
-        return new Assign(targets, expression, n.lineno, n.col_offset);
+        return new Sk.ast.Assign(targets, expression, n.lineno, n.col_offset);
     }
 }
 
 function astForIfexpr (c, n) {
     /* test: or_test 'if' or_test 'else' test */
     goog.asserts.assert(NCH(n) === 5);
-    return new IfExp(
+    return new Sk.ast.IfExp(
         astForExpr(c, CHILD(n, 2)),
         astForExpr(c, CHILD(n, 0)),
         astForExpr(c, CHILD(n, 4)),
@@ -1864,10 +1972,10 @@ function astForSlice (c, n) {
     upper = null;
     step = null;
     if (ch.type === TOK.T_DOT) {
-        return new Ellipsis();
+        return new Sk.ast.Ellipsis();
     }
     if (NCH(n) === 1 && ch.type === SYM.test) {
-        return new Index(astForExpr(c, ch));
+        return new Sk.ast.Index(astForExpr(c, ch));
     }
     if (ch.type === SYM.test) {
         lower = astForExpr(c, ch);
@@ -1891,7 +1999,7 @@ function astForSlice (c, n) {
     if (ch.type === SYM.sliceop) {
         if (NCH(ch) === 1) {
             ch = CHILD(ch, 0);
-            step = new Name(strobj("None"), Load, ch.lineno, ch.col_offset);
+            step = new Sk.ast.Name(strobj("None"), Sk.ast.Load, ch.lineno, ch.col_offset);
         }
         else {
             ch = CHILD(ch, 1);
@@ -1900,7 +2008,7 @@ function astForSlice (c, n) {
             }
         }
     }
-    return new Slice(lower, upper, step);
+    return new Sk.ast.Slice(lower, upper, step);
 }
 
 function astForAtom(c, n) {
@@ -1920,30 +2028,30 @@ function astForAtom(c, n) {
             // All names start in Load context, but may be changed later
             if (s.length >= 4 && s.length <= 5) {
                 if (s === "None") {
-                    return new NameConstant(Sk.builtin.none.none$, n.lineno, n.col_offset /* c.c_arena*/);
+                    return new Sk.ast.NameConstant(Sk.builtin.none.none$, n.lineno, n.col_offset /* c.c_arena*/);
                 }
 
                 if (s === "True") {
-                    return new NameConstant(Sk.builtin.bool.true$, n.lineno, n.col_offset /* c.c_arena*/);
+                    return new Sk.ast.NameConstant(Sk.builtin.bool.true$, n.lineno, n.col_offset /* c.c_arena*/);
                 }
 
                 if (s === "False") {
-                    return new NameConstant(Sk.builtin.bool.false$, n.lineno, n.col_offset /* c.c_arena*/);
+                    return new Sk.ast.NameConstant(Sk.builtin.bool.false$, n.lineno, n.col_offset /* c.c_arena*/);
                 }
 
             }
             var name = new_identifier(s, c)
 
             /* All names start in Load context, but may later be changed. */
-            return new Name(name, Load, n.lineno, n.col_offset);
+            return new Sk.ast.Name(name, Sk.ast.Load, n.lineno, n.col_offset);
         case TOK.T_STRING:
-            return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
+            return new Sk.ast.Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
-            return new Num(parsenumber(c, ch.value, n.lineno), n.lineno, n.col_offset);
+            return new Sk.ast.Num(parsenumber(c, ch.value, n.lineno), n.lineno, n.col_offset);
         case TOK.T_LPAR: // various uses for parens
             ch = CHILD(n, 1);
             if (ch.type === TOK.T_RPAR) {
-                return new Tuple([], Load, n.lineno, n.col_offset);
+                return new Sk.ast.Tuple([], Sk.ast.Load, n.lineno, n.col_offset);
             }
             if (ch.type === SYM.yield_expr) {
                 return astForExpr(c, ch);
@@ -1955,11 +2063,11 @@ function astForAtom(c, n) {
         case TOK.T_LSQB: // list or listcomp
             ch = CHILD(n, 1);
             if (ch.type === TOK.T_RSQB) {
-                return new List([], Load, n.lineno, n.col_offset);
+                return new Sk.ast.List([], Sk.ast.Load, n.lineno, n.col_offset);
             }
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA) {
-                return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
+                return new Sk.ast.List(seqForTestlist(c, ch), Sk.ast.Load, n.lineno, n.col_offset);
             }
             return astForListcomp(c, ch);
 
@@ -1973,7 +2081,7 @@ function astForAtom(c, n) {
             ch = CHILD(n, 1);
             if (n.type === TOK.T_RBRACE) {
                 //it's an empty dict
-                return new Dict([], null, n.lineno, n.col_offset);
+                return new Sk.ast.Dict([], null, n.lineno, n.col_offset);
             }
             else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
                 //it's a simple set
@@ -1983,7 +2091,7 @@ function astForAtom(c, n) {
                     var expression = astForExpr(c, CHILD(ch, i));
                     elts[i / 2] = expression;
                 }
-                return new Set(elts, n.lineno, n.col_offset);
+                return new Sk.ast.Set(elts, n.lineno, n.col_offset);
             }
             else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
                 //it's a set comprehension
@@ -1999,11 +2107,11 @@ function astForAtom(c, n) {
                     keys[i / 4] = astForExpr(c, CHILD(ch, i));
                     values[i / 4] = astForExpr(c, CHILD(ch, i + 2));
                 }
-                return new Dict(keys, values, n.lineno, n.col_offset);
+                return new Sk.ast.Dict(keys, values, n.lineno, n.col_offset);
             }
         case TOK.T_BACKQUOTE:
             //throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
-            return new Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
+            return new Sk.ast.Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
         default:
             goog.asserts.fail("unhandled atom", ch.type);
 
@@ -2032,7 +2140,7 @@ function astForAtomExpr(c, n) {
     }
 
     if (start && nch === 2) {
-        return new Await(e, n.lineno, n.col_offset /*, c->c_arena*/);
+        return new Sk.ast.Await(e, n.lineno, n.col_offset /*, c->c_arena*/);
     }
 
     for (i = start + 1; i < nch; i++) {
@@ -2052,7 +2160,7 @@ function astForAtomExpr(c, n) {
 
     if (start) {
         /* there was an AWAIT */
-        return new Await(e, n.line, n.col_offset /*, c->c_arena*/);
+        return new Sk.ast.Await(e, n.line, n.col_offset /*, c->c_arena*/);
     }
     else {
         return e;
@@ -2074,7 +2182,7 @@ function astForPower (c, n) {
     }
     if (CHILD(n, NCH(n) - 1).type === SYM.factor) {
         f = astForExpr(c, CHILD(n, NCH(n) - 1));
-        e = new BinOp(e, Pow, f, n.lineno, n.col_offset);
+        e = new Sk.ast.BinOp(e, Sk.ast.Pow, f, n.lineno, n.col_offset);
     }
     return e;
 }
@@ -2083,7 +2191,7 @@ function astForStarred(c, n) {
     REQ(n, SYM.star_expr);
 
     /* The Load context is changed later */
-    return Starred(astForExpr(c, CHILD(n ,1)), Load, n.lineno, n.col_offset /*, c.c_arena */)
+    return Starred(astForExpr(c, CHILD(n ,1)), Sk.ast.Load, n.lineno, n.col_offset /*, c.c_arena */)
 }
 
 function astForExpr (c, n) {
@@ -2134,17 +2242,17 @@ function astForExpr (c, n) {
                     seq[i / 2] = astForExpr(c, CHILD(n, i));
                 }
                 if (CHILD(n, 1).value === "and") {
-                    return new BoolOp(And, seq, n.lineno, n.col_offset /*, c.c_arena*/);
+                    return new Sk.ast.BoolOp(Sk.ast.And, seq, n.lineno, n.col_offset /*, c.c_arena*/);
                 }
                 goog.asserts.assert(CHILD(n, 1).value === "or");
-                return new BoolOp(Or, seq, n.lineno, n.col_offset);
+                return new Sk.ast.BoolOp(Sk.ast.Or, seq, n.lineno, n.col_offset);
             case SYM.not_test:
                 if (NCH(n) === 1) {
                     n = CHILD(n, 0);
                     continue LOOP;
                 }
                 else {
-                    return new UnaryOp(Not, astForExpr(c, CHILD(n, 1)), n.lineno, n.col_offset);
+                    return new Sk.ast.UnaryOp(Sk.ast.Not, astForExpr(c, CHILD(n, 1)), n.lineno, n.col_offset);
                 }
                 break;
             case SYM.comparison:
@@ -2159,7 +2267,7 @@ function astForExpr (c, n) {
                         ops[(i - 1) / 2] = astForCompOp(c, CHILD(n, i));
                         cmps[(i - 1) / 2] = astForExpr(c, CHILD(n, i + 1));
                     }
-                    return new Compare(astForExpr(c, CHILD(n, 0)), ops, cmps, n.lineno, n.col_offset);
+                    return new Sk.ast.Compare(astForExpr(c, CHILD(n, 0)), ops, cmps, n.lineno, n.col_offset);
                 }
                 break;
             case SYM.star_expr:
@@ -2199,10 +2307,10 @@ function astForExpr (c, n) {
                 }
 
                 if (is_from) {
-                    return new YieldFrom(exp, n.lineno, n.col_offset);
+                    return new Sk.ast.YieldFrom(exp, n.lineno, n.col_offset);
                 }
 
-                return new Yield(exp, n.lineno, n.col_offset);
+                return new Sk.ast.Yield(exp, n.lineno, n.col_offset);
             case SYM.factor:
                 if (NCH(n) === 1) {
                     n = CHILD(n, 0);
@@ -2219,11 +2327,11 @@ function astForExpr (c, n) {
 }
 
 function astForNonLocalStmt(c, n) {
-    throw new Error("Not implemented");
+    ast_error(c, n, "Not implemented: nonlocal");
 }
 
 function astForAsyncStmt(c, n) {
-    throw new Error("Not implemented");
+    ast_error(c, n, "Not implemented: async");
 }
 
 // This is only used for Python 2 support.
@@ -2248,7 +2356,7 @@ function astForPrintStmt (c, n) {
         seq[j] = astForExpr(c, CHILD(n, i));
     }
     nl = (CHILD(n, NCH(n) - 1)).type === TOK.T_COMMA ? false : true;
-    return new Print(dest, seq, nl, n.lineno, n.col_offset);
+    return new Sk.ast.Print(dest, seq, nl, n.lineno, n.col_offset);
 }
 
 function astForStmt (c, n) {
@@ -2273,7 +2381,7 @@ function astForStmt (c, n) {
             case SYM.del_stmt:
                 return astForDelStmt(c, n);
             case SYM.pass_stmt:
-                return new Pass(n.lineno, n.col_offset);
+                return new Sk.ast.Pass(n.lineno, n.col_offset);
             case SYM.flow_stmt:
                 return astForFlowStmt(c, n);
             case SYM.import_stmt:
@@ -2288,7 +2396,7 @@ function astForStmt (c, n) {
             case SYM.print_stmt:
                 return astForPrintStmt(c, n);
             case SYM.debugger_stmt:
-                return new Debugger(n.lineno, n.col_offset);
+                return new Sk.ast.Debugger(n.lineno, n.col_offset);
             default:
                 goog.asserts.fail("unhandled small_stmt");
         }
@@ -2352,7 +2460,7 @@ Sk.astFromParse = function (n, filename, c_flags) {
                     }
                 }
             }
-            return new Module(stmts);
+            return new Sk.ast.Module(stmts);
         case SYM.eval_input:
             goog.asserts.fail("todo;");
         case SYM.single_input:

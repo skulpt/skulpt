@@ -108,6 +108,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
+        goog.asserts.assert(ast.lineno !== undefined && ast.col_offset !== undefined);
         out("$currLineNo = ", lineno, ";\n$currColNo = ", col_offset, ";\n\n");
     }
 };
@@ -348,13 +349,13 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
-    if (e.ctx === Store) {
+    if (e.ctx === Sk.ast.Store) {
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
-    else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
+    else if (e.ctx === Sk.ast.Load || tuporlist === "set") { //because set's can't be assigned to.
         items = [];
         for (i = 0; i < e.elts.length; ++i) {
             items.push(this._gr("elem", this.vexpr(e.elts[i])));
@@ -378,19 +379,19 @@ Compiler.prototype.cdict = function (e) {
 };
 
 Compiler.prototype.clistcomp = function(e) {
-    goog.asserts.assert(e instanceof ListComp);
+    goog.asserts.assert(e instanceof Sk.ast.ListComp);
     var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
     return this.ccompgen("list", tmp, e.generators, 0, e.elt, null, e);
 };
 
 Compiler.prototype.cdictcomp = function(e) {
-    goog.asserts.assert(e instanceof DictComp);
+    goog.asserts.assert(e instanceof Sk.ast.DictComp);
     var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
     return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key, e);
 };
 
 Compiler.prototype.csetcomp = function(e) {
-    goog.asserts.assert(e instanceof SetComp);
+    goog.asserts.assert(e instanceof Sk.ast.SetComp);
     var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
     return this.ccompgen("set", tmp, e.generators, 0, e.elt, null, e);
 };
@@ -555,7 +556,7 @@ Compiler.prototype.cslice = function (s) {
     var step;
     var high;
     var low;
-    goog.asserts.assert(s instanceof Slice);
+    goog.asserts.assert(s instanceof Sk.ast.Slice);
     low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(0)"; // todo;ideally, these numbers would be constants
     high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(2147483647)";
     step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
@@ -576,16 +577,16 @@ Compiler.prototype.eslice = function (dims) {
 Compiler.prototype.vslicesub = function (s) {
     var subs;
     switch (s.constructor) {
-        case Index:
+        case Sk.ast.Index:
             subs = this.vexpr(s.value);
             break;
-        case Slice:
+        case Sk.ast.Slice:
             subs = this.cslice(s);
             break;
-        case Ellipsis:
+        case Sk.ast.Ellipsis:
             goog.asserts.fail("todo compile.js Ellipsis;");
             break;
-        case ExtSlice:
+        case Sk.ast.ExtSlice:
             subs = this.eslice(s.dims);
             break;
         default:
@@ -600,12 +601,12 @@ Compiler.prototype.vslice = function (s, ctx, obj, dataToStore) {
 };
 
 Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
-    if (ctx === Load || ctx === AugLoad) {
+    if (ctx === Sk.ast.Load || ctx === Sk.ast.AugLoad) {
         out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
         this._checkSuspension();
         return this._gr("lsubscr", "$ret");
     }
-    else if (ctx === Store || ctx === AugStore) {
+    else if (ctx === Sk.ast.Store || ctx === Sk.ast.AugStore) {
         out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
         this._checkSuspension();
     }
@@ -626,7 +627,7 @@ Compiler.prototype.cboolop = function (e) {
     var end;
     var ifFailed;
     var jtype;
-    goog.asserts.assert(e instanceof BoolOp);
+    goog.asserts.assert(e instanceof Sk.ast.BoolOp);
     if (e.op === And) {
         jtype = this._jumpfalse;
     }
@@ -674,36 +675,36 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     }
     //this.annotateSource(e);
     switch (e.constructor) {
-        case BoolOp:
+        case Sk.ast.BoolOp:
             return this.cboolop(e);
-        case BinOp:
+        case Sk.ast.BinOp:
             return this._gr("binop", "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op.prototype._astname, "')");
-        case UnaryOp:
+        case Sk.ast.UnaryOp:
             return this._gr("unaryop", "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op.prototype._astname, "')");
-        case Lambda:
+        case Sk.ast.Lambda:
             return this.clambda(e);
-        case IfExp:
+        case Sk.ast.IfExp:
             return this.cifexp(e);
-        case Dict:
+        case Sk.ast.Dict:
             return this.cdict(e);
-        case ListComp:
+        case Sk.ast.ListComp:
             return this.clistcomp(e);
-        case DictComp:
+        case Sk.ast.DictComp:
             return this.cdictcomp(e);
-        case SetComp:
+        case Sk.ast.SetComp:
             return this.csetcomp(e);
-        case GeneratorExp:
+        case Sk.ast.GeneratorExp:
             return this.cgenexp(e);
-        case Yield:
+        case Sk.ast.Yield:
             return this.cyield(e);
-        case Compare:
+        case Sk.ast.Compare:
             return this.ccompare(e);
-        case Call:
+        case Sk.ast.Call:
             result = this.ccall(e);
             // After the function call, we've returned to this line
             this.annotateSource(e);
             return result;
-        case Num:
+        case Sk.ast.Num:
             if (typeof e.n === "number") {
                 return e.n;
             }
@@ -725,10 +726,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
             }
             goog.asserts.fail("unhandled Num type");
-        case Str:
+        case Sk.ast.Str:
             return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
-        case Attribute:
-            if (e.ctx !== AugLoad && e.ctx !== AugStore) {
+        case Sk.ast.Attribute:
+            if (e.ctx !== Sk.ast.AugLoad && e.ctx !== Sk.ast.AugStore) {
                 val = this.vexpr(e.value);
             }
             mangled = e.attr["$r"]().v;
@@ -737,15 +738,15 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = fixReservedWords(mangled);
             mangled = fixReservedNames(mangled);
             switch (e.ctx) {
-                case AugLoad:
+                case Sk.ast.AugLoad:
                     out("$ret = Sk.abstr.gattr(", augvar, ",'", mangled, "', true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
-                case Load:
+                case Sk.ast.Load:
                     out("$ret = Sk.abstr.gattr(", val, ",'", mangled, "', true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
-                case AugStore:
+                case Sk.ast.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
@@ -755,29 +756,29 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     out("}");
                     this._checkSuspension(e);
                     break;
-                case Store:
+                case Sk.ast.Store:
                     out("$ret = Sk.abstr.sattr(", val, ",'", mangled, "',", data, ", true);");
                     this._checkSuspension(e);
                     break;
-                case Del:
+                case Sk.ast.Del:
                     goog.asserts.fail("todo Del;");
                     break;
-                case Param:
+                case Sk.ast.Param:
                 default:
                     goog.asserts.fail("invalid attribute expression");
             }
             break;
-        case Subscript:
+        case Sk.ast.Subscript:
             switch (e.ctx) {
-                case AugLoad:
+                case Sk.ast.AugLoad:
                     out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
                     this._checkSuspension(e)
                     return this._gr("gitem", "$ret");
-                case Load:
-                case Store:
-                case Del:
+                case Sk.ast.Load:
+                case Sk.ast.Store:
+                case Sk.ast.Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
-                case AugStore:
+                case Sk.ast.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
@@ -788,21 +789,21 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     out("}");
                     this._checkSuspension(e);
                     break;
-                case Param:
+                case Sk.ast.Param:
                 default:
                     goog.asserts.fail("invalid subscript expression");
             }
             break;
-        case Name:
+        case Sk.ast.Name:
             return this.nameop(e.id, e.ctx, data);
-        case List:
+        case Sk.ast.List:
             return this.ctuplelistorset(e, data, 'list');
-        case Tuple:
+        case Sk.ast.Tuple:
             return this.ctuplelistorset(e, data, 'tuple');
-        case Set:
+        case Sk.ast.Set:
             return this.ctuplelistorset(e, data, 'set');
         default:
-            goog.asserts.fail("unhandled case in vexpr");
+            goog.asserts.fail("unhandled case Sk.ast.in vexpr");
     }
 };
 
@@ -829,32 +830,32 @@ Compiler.prototype.caugassign = function (s) {
     var aug;
     var auge;
     var e;
-    goog.asserts.assert(s instanceof AugAssign);
+    goog.asserts.assert(s instanceof Sk.ast.AugAssign);
     e = s.target;
     switch (e.constructor) {
-        case Attribute:
+        case Sk.ast.Attribute:
             to = this.vexpr(e.value);
-            auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
+            auge = new Attribute(e.value, e.attr, Sk.ast.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopattr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.ast.AugStore;
             return this.vexpr(auge, res, to);
-        case Subscript:
+        case Sk.ast.Subscript:
             // Only compile the subscript value once
             to = this.vexpr(e.value);
             augsub = this.vslicesub(e.slice);
-            auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
+            auge = new Subscript(e.value, augsub, Sk.ast.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to, augsub);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopsubscr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.ast.AugStore;
             return this.vexpr(auge, res, to, augsub);
-        case Name:
-            to = this.nameop(e.id, Load);
+        case Sk.ast.Name:
+            to = this.nameop(e.id, Sk.ast.Load);
             val = this.vexpr(s.value);
             res = this._gr("inplbinop", "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op.prototype._astname, "')");
-            return this.nameop(e.id, Store, res);
+            return this.nameop(e.id, Sk.ast.Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");
     }
@@ -865,11 +866,11 @@ Compiler.prototype.caugassign = function (s) {
  */
 Compiler.prototype.exprConstant = function (e) {
     switch (e.constructor) {
-        case Num:
+        case Sk.ast.Num:
             return Sk.misceval.isTrue(e.n) ? 1 : 0;
-        case Str:
+        case Sk.ast.Str:
             return Sk.misceval.isTrue(e.s) ? 1 : 0;
-        case Name:
+        case Sk.ast.Name:
         // todo; do __debug__ test here if opt
         default:
             return -1;
@@ -1059,7 +1060,7 @@ Compiler.prototype.cif = function (s) {
     var next;
     var end;
     var constant;
-    goog.asserts.assert(s instanceof If);
+    goog.asserts.assert(s instanceof Sk.ast.If);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
         if (s.orelse && s.orelse.length > 0) {
@@ -1431,7 +1432,7 @@ Compiler.prototype.cwith = function (s) {
 
     //    VAR = value
     if (s.optional_vars) {
-        this.nameop(s.optional_vars.id, Store, value);
+        this.nameop(s.optional_vars.id, Sk.ast.Store, value);
     }
 
     //    (try body)
@@ -1502,7 +1503,7 @@ Compiler.prototype.cimportas = function (name, asname, mod) {
             src = src.substr(dotLoc + 1);
         }
     }
-    return this.nameop(asname, Store, cur);
+    return this.nameop(asname, Sk.ast.Store, cur);
 };
 
 Compiler.prototype.cimport = function (s) {
@@ -1529,7 +1530,7 @@ Compiler.prototype.cimport = function (s) {
             if (lastDot !== -1) {
                 tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
             }
-            this.nameop(tmp, Store, mod);
+            this.nameop(tmp, Sk.ast.Store, mod);
         }
     }
 };
@@ -1573,7 +1574,7 @@ Compiler.prototype.cfromimport = function (s) {
         if (alias.asname) {
             storeName = alias.asname;
         }
-        this.nameop(storeName, Store, got);
+        this.nameop(storeName, Sk.ast.Store, got);
     }
 };
 
@@ -1674,7 +1675,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.tempsToSave.push("$kwa");
         }
         for (i = 0; args && i < args.args.length; ++i) {
-            funcArgs.push(this.nameop(args.args[i].id, Param));
+            funcArgs.push(this.nameop(args.args[i].arg, Sk.ast.Param));
         }
     }
     if (hasFree) {
@@ -1741,7 +1742,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         // correlation in the ast)
         offset = args.args.length - defaults.length;
         for (i = 0; i < defaults.length; ++i) {
-            argname = this.nameop(args.args[i + offset].id, Param);
+            argname = this.nameop(args.args[i + offset].arg, Sk.ast.Param);
             this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname + "=" + scopename + ".$defaults[" + i + "];";
         }
     }
@@ -1751,7 +1752,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // they can be accessed correctly by nested scopes.
     //
     for (i = 0; args && i < args.args.length; ++i) {
-        id = args.args[i].id;
+        id = args.args[i].arg;
         if (this.isCell(id)) {
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
         }
@@ -1822,7 +1823,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.args.length > 0) {
         argnamesarr = [];
         for (i = 0; i < args.args.length; ++i) {
-            argnamesarr.push(args.args[i].id.v);
+            argnamesarr.push(args.args[i].arg.v);
         }
 
         argnames = argnamesarr.join("', '");
@@ -1915,17 +1916,17 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
 Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
-    goog.asserts.assert(s instanceof FunctionDef);
+    goog.asserts.assert(s instanceof Sk.ast.FunctionDef);
     funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function (scopename) {
         this.vseqstmt(s.body);
         out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
     }, class_for_super);
-    this.nameop(s.name, Store, funcorgen);
+    this.nameop(s.name, Sk.ast.Store, funcorgen);
 };
 
 Compiler.prototype.clambda = function (e) {
     var func;
-    goog.asserts.assert(e instanceof Lambda);
+    goog.asserts.assert(e instanceof Sk.ast.Lambda);
     func = this.buildcodeobj(e, new Sk.builtin.str("<lambda>"), null, e.args, function (scopename) {
         var val = this.vexpr(e.body);
         out("return ", val, ";");
@@ -2045,7 +2046,7 @@ Compiler.prototype.cclass = function (s) {
     var scopename;
     var bases;
     var decos;
-    goog.asserts.assert(s instanceof ClassDef);
+    goog.asserts.assert(s instanceof Sk.ast.ClassDef);
     decos = s.decorator_list;
 
     // decorators and bases need to be eval'd out here
@@ -2088,7 +2089,7 @@ Compiler.prototype.cclass = function (s) {
     wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
-    this.nameop(s.name, Store, wrapped);
+    this.nameop(s.name, Sk.ast.Store, wrapped);
 };
 
 Compiler.prototype.ccontinue = function (s) {
@@ -2150,13 +2151,13 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
     this.annotateSource(s);
 
     switch (s.constructor) {
-        case FunctionDef:
+        case Sk.ast.FunctionDef:
             this.cfunction(s, class_for_super);
             break;
-        case ClassDef:
+        case Sk.ast.ClassDef:
             this.cclass(s);
             break;
-        case Return:
+        case Sk.ast.Return:
             if (this.u.ste.blockType !== FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
@@ -2168,50 +2169,50 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 this._jump(this.peekFinallyBlock().blk);
             }
             break;
-        case Delete:
+        case Sk.ast.Delete:
             this.vseqexpr(s.targets);
             break;
-        case Assign:
+        case Sk.ast.Assign:
             n = s.targets.length;
             val = this.vexpr(s.value);
             for (i = 0; i < n; ++i) {
                 this.vexpr(s.targets[i], val);
             }
             break;
-        case AugAssign:
+        case Sk.ast.AugAssign:
             return this.caugassign(s);
-        case Print:
+        case Sk.ast.Print:
             this.cprint(s);
             break;
-        case For:
+        case Sk.ast.For:
             return this.cfor(s);
-        case While:
+        case Sk.ast.While:
             return this.cwhile(s);
-        case If:
+        case Sk.ast.If:
             return this.cif(s);
-        case Raise:
+        case Sk.ast.Raise:
             return this.craise(s);
         // TODO compile Try and With here
-        case Assert:
+        case Sk.ast.Assert:
             return this.cassert(s);
-        case Import:
+        case Sk.ast.Import:
             return this.cimport(s);
-        case ImportFrom:
+        case Sk.ast.ImportFrom:
             return this.cfromimport(s);
-        case Global:
+        case Sk.ast.Global:
             break;
-        case Expr:
+        case Sk.ast.Expr:
             this.vexpr(s.value);
             break;
-        case Pass:
+        case Sk.ast.Pass:
             break;
-        case Break:
+        case Sk.ast.Break:
             this.cbreak(s);
             break;
-        case Continue:
+        case Sk.ast.Continue:
             this.ccontinue(s);
             break;
-        case Debugger:
+        case Sk.ast.Debugger:
             out("debugger;");
             break;
         default:
@@ -2255,10 +2256,10 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     var optype;
     var op;
     var mangled;
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__") {
+    if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "__debug__") {
         throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     }
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None") {
+    if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "None") {
         throw new Sk.builtin.SyntaxError("can not assign to None");
     }
 
@@ -2328,15 +2329,15 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     switch (optype) {
         case OP_FAST:
             switch (ctx) {
-                case Load:
-                case Param:
+                case Sk.ast.Load:
+                case Sk.ast.Param:
                     // Need to check that it is bound!
                     out("if (", mangled, " === undefined) { throw new Sk.builtin.UnboundLocalError('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
                     return mangled;
-                case Store:
+                case Sk.ast.Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.ast.Del:
                     out("delete ", mangled, ";");
                     break;
                 default:
@@ -2345,16 +2346,16 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_NAME:
             switch (ctx) {
-                case Load:
+                case Sk.ast.Load:
                     // can't be || for loc.x = 0 or null
                     return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
-                case Store:
+                case Sk.ast.Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.ast.Del:
                     out("delete ", mangled, ";");
                     break;
-                case Param:
+                case Sk.ast.Param:
                     return mangled;
                 default:
                     goog.asserts.fail("unhandled");
@@ -2362,12 +2363,12 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_GLOBAL:
             switch (ctx) {
-                case Load:
+                case Sk.ast.Load:
                     return this._gr("loadgbl", "Sk.misceval.loadname('", mangledNoPre, "',$gbl)");
-                case Store:
+                case Sk.ast.Store:
                     out("$gbl.", mangledNoPre, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.ast.Del:
                     out("delete $gbl.", mangledNoPre);
                     break;
                 default:
@@ -2376,12 +2377,12 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_DEREF:
             switch (ctx) {
-                case Load:
+                case Sk.ast.Load:
                     return dict + "." + mangledNoPre;
-                case Store:
+                case Sk.ast.Store:
                     out(dict, ".", mangledNoPre, "=", dataToStore, ";");
                     break;
-                case Param:
+                case Sk.ast.Param:
                     return mangledNoPre;
                 default:
                     goog.asserts.fail("unhandled case in name op_deref");
@@ -2461,7 +2462,7 @@ Compiler.prototype.cprint = function (s) {
     var i;
     var n;
     var dest;
-    goog.asserts.assert(s instanceof Print);
+    goog.asserts.assert(s instanceof Sk.ast.Print);
     dest = "null";
     if (s.dest) {
         dest = this.vexpr(s.dest);
@@ -2486,7 +2487,7 @@ Compiler.prototype.cprint = function (s) {
     var i;
     var n;
     var dest;
-    goog.asserts.assert(s instanceof Print);
+    goog.asserts.assert(s instanceof Sk.ast.Print);
     dest = "null";
     if (s.dest) {
         dest = this.vexpr(s.dest);
@@ -2562,7 +2563,7 @@ Compiler.prototype.cmod = function (mod) {
     // being revealed to the user.  drchuck - Wed Jan 23 19:20:18 EST 2013
 
     switch (mod.constructor) {
-        case Module:
+        case Sk.ast.Module:
             this.cbody(mod.body);
             out("return $loc;");
             break;

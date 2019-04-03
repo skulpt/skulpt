@@ -345,9 +345,9 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     var i;
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
-        if (arg.constructor === Name) {
-            goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
-            this.addDef(arg.id, DEF_PARAM, arg.lineno);
+        if (arg.constructor === Sk.ast.arg) {
+            // TODO arguments are more complicated in Python 3...
+            this.addDef(arg.arg, DEF_PARAM, arg.lineno);
         }
         else {
             // Tuple isn't supported
@@ -406,7 +406,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
 SymbolTable.prototype.visitSlice = function (s) {
     var i;
     switch (s.constructor) {
-        case Slice:
+        case Sk.ast.Slice:
             if (s.lower) {
                 this.visitExpr(s.lower);
             }
@@ -417,15 +417,15 @@ SymbolTable.prototype.visitSlice = function (s) {
                 this.visitExpr(s.step);
             }
             break;
-        case ExtSlice:
+        case Sk.ast.ExtSlice:
             for (i = 0; i < s.dims.length; ++i) {
                 this.visitSlice(s.dims[i]);
             }
             break;
-        case Index:
+        case Sk.ast.Index:
             this.visitExpr(s.value);
             break;
-        case Ellipsis:
+        case Sk.ast.Ellipsis:
             break;
     }
 };
@@ -438,7 +438,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var tmp;
     goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
-        case FunctionDef:
+        case Sk.ast.FunctionDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             if (s.args.defaults) {
                 this.SEQExpr(s.args.defaults);
@@ -451,7 +451,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case ClassDef:
+        case Sk.ast.ClassDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             this.SEQExpr(s.bases);
             if (s.decorator_list) {
@@ -463,7 +463,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Return:
+        case Sk.ast.Return:
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
@@ -472,24 +472,24 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Delete:
+        case Sk.ast.Delete:
             this.SEQExpr(s.targets);
             break;
-        case Assign:
+        case Sk.ast.Assign:
             this.SEQExpr(s.targets);
             this.visitExpr(s.value);
             break;
-        case AugAssign:
+        case Sk.ast.AugAssign:
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
-        case Print:
+        case Sk.ast.Print:
             if (s.dest) {
                 this.visitExpr(s.dest);
             }
             this.SEQExpr(s.values);
             break;
-        case For:
+        case Sk.ast.For:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
             this.SEQStmt(s.body);
@@ -497,21 +497,21 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case While:
+        case Sk.ast.While:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case If:
+        case Sk.ast.If:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Raise:
+        case Sk.ast.Raise:
             if (s.type) {
                 this.visitExpr(s.type);
                 if (s.inst) {
@@ -522,17 +522,17 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Assert:
+        case Sk.ast.Assert:
             this.visitExpr(s.test);
             if (s.msg) {
                 this.visitExpr(s.msg);
             }
             break;
-        case Import:
-        case ImportFrom:
+        case Sk.ast.Import:
+        case Sk.ast.ImportFrom:
             this.visitAlias(s.names, s.lineno);
             break;
-        case Global:
+        case Sk.ast.Global:
             nameslen = s.names.length;
             for (i = 0; i < nameslen; ++i) {
                 name = mangleName(this.curClass, s.names[i]).v;
@@ -549,16 +549,16 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL, s.lineno);
             }
             break;
-        case Expr:
+        case Sk.ast.Expr:
             this.visitExpr(s.value);
             break;
-        case Pass:
-        case Break:
-        case Continue:
-        case Debugger:
+        case Sk.ast.Pass:
+        case Sk.ast.Break:
+        case Sk.ast.Continue:
+        case Sk.ast.Debugger:
             // nothing
             break;
-        case With:
+        case Sk.ast.With:
             this.newTmpname(s.lineno);
             this.visitExpr(s.context_expr);
             if (s.optional_vars) {
@@ -578,17 +578,17 @@ SymbolTable.prototype.visitExpr = function (e) {
     goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
     //print("  e: ", e.constructor.name);
     switch (e.constructor) {
-        case BoolOp:
+        case Sk.ast.BoolOp:
             this.SEQExpr(e.values);
             break;
-        case BinOp:
+        case Sk.ast.BinOp:
             this.visitExpr(e.left);
             this.visitExpr(e.right);
             break;
-        case UnaryOp:
+        case Sk.ast.UnaryOp:
             this.visitExpr(e.operand);
             break;
-        case Lambda:
+        case Sk.ast.Lambda:
             this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL, e.lineno);
             if (e.args.defaults) {
                 this.SEQExpr(e.args.defaults);
@@ -598,28 +598,28 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.visitExpr(e.body);
             this.exitBlock();
             break;
-        case IfExp:
+        case Sk.ast.IfExp:
             this.visitExpr(e.test);
             this.visitExpr(e.body);
             this.visitExpr(e.orelse);
             break;
-        case Dict:
+        case Sk.ast.Dict:
             this.SEQExpr(e.keys);
             this.SEQExpr(e.values);
             break;
-        case DictComp:
-        case SetComp:    
+        case Sk.ast.DictComp:
+        case Sk.ast.SetComp:    
             this.visitComprehension(e.generators, 0);
             break;
-        case ListComp:
+        case Sk.ast.ListComp:
             this.newTmpname(e.lineno);
             this.visitExpr(e.elt);
             this.visitComprehension(e.generators, 0);
             break;
-        case GeneratorExp:
+        case Sk.ast.GeneratorExp:
             this.visitGenexp(e);
             break;
-        case Yield:
+        case Sk.ast.Yield:
             if (e.value) {
                 this.visitExpr(e.value);
             }
@@ -628,11 +628,11 @@ SymbolTable.prototype.visitExpr = function (e) {
                 throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
             }
             break;
-        case Compare:
+        case Sk.ast.Compare:
             this.visitExpr(e.left);
             this.SEQExpr(e.comparators);
             break;
-        case Call:
+        case Sk.ast.Call:
             this.visitExpr(e.func);
             this.SEQExpr(e.args);
             for (i = 0; i < e.keywords.length; ++i) {
@@ -647,22 +647,22 @@ SymbolTable.prototype.visitExpr = function (e) {
                 this.visitExpr(e.kwargs);
             }
             break;
-        case Num:
-        case Str:
+        case Sk.ast.Num:
+        case Sk.ast.Str:
             break;
-        case Attribute:
+        case Sk.ast.Attribute:
             this.visitExpr(e.value);
             break;
-        case Subscript:
+        case Sk.ast.Subscript:
             this.visitExpr(e.value);
             this.visitSlice(e.slice);
             break;
-        case Name:
-            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL, e.lineno);
+        case Sk.ast.Name:
+            this.addDef(e.id, e.ctx === Sk.ast.Load ? USE : DEF_LOCAL, e.lineno);
             break;
-        case List:
-        case Tuple:
-        case Set:
+        case Sk.ast.List:
+        case Sk.ast.Tuple:
+        case Sk.ast.Set:
             this.SEQExpr(e.elts);
             break;
         default:
