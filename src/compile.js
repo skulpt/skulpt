@@ -796,6 +796,23 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             break;
         case Sk.ast.Name:
             return this.nameop(e.id, e.ctx, data);
+        case Sk.ast.NameConstant:
+            if (e.ctx === Sk.ast.Store || e.ctx === Sk.ast.AugStore || e.ctx === Sk.ast.Del) {
+                throw new Sk.builtin.SyntaxError("can not assign to a constant name");
+            }
+
+            switch (e.value) {
+                case Sk.builtin.none.none$:
+                    return "Sk.builtin.none.none$";
+                case Sk.builtin.bool.true$:
+                    return "Sk.builtin.bool.true$";
+                case Sk.builtin.bool.false$:
+                    return "Sk.builtin.bool.false$";
+                default:
+                    goog.asserts.fail("invalid NameConstant");
+            }
+            break;
+
         case Sk.ast.List:
             return this.ctuplelistorset(e, data, 'list');
         case Sk.ast.Tuple:
@@ -2259,19 +2276,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "__debug__") {
         throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     }
-    if ((ctx === Sk.ast.Store || ctx === Sk.ast.AugStore || ctx === Sk.ast.Del) && name.v === "None") {
-        throw new Sk.builtin.SyntaxError("can not assign to None");
-    }
 
-    if (name.v === "None") {
-        return "Sk.builtin.none.none$";
-    }
-    if (name.v === "True") {
-        return "Sk.builtin.bool.true$";
-    }
-    if (name.v === "False") {
-        return "Sk.builtin.bool.false$";
-    }
     if (name.v === "NotImplemented") {
         return "Sk.builtin.NotImplemented.NotImplemented$";
     }
