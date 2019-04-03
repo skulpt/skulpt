@@ -80,7 +80,7 @@ var tokens = {
 };
 // #--end constants--
 
-const EXACT_TOKEN_TYPES = {
+var EXACT_TOKEN_TYPES = {
     '!=': tokens.NOTEQUAL,
     '%': tokens.PERCENT,
     '%=': tokens.PERCENTEQUAL,
