@@ -1268,7 +1268,7 @@ function astForArguments (c, n) {
     if (n.type === SYM.parameters) {
         if (NCH(n) === 2) // () as arglist
         {
-            return new arguments([], null, null, []);
+            return new Sk.ast.arguments([], null, [], [], null, []);
         }
         n = CHILD(n, 1);
     }
