@@ -22,6 +22,25 @@ class FileTests(unittest.TestCase):
 
         self.assertRaises(ValueError, file.read)
 
+    def test_iter(self):
+        F=open("test/unit/file.txt")
+        header=F.readline()
+        res = ""
+        for line in F:
+            res += line.strip()
+
+        self.assertEqual("23",res)
+
+    def test_iter2(self):
+        F=open("test/unit/file.txt")
+        header=F.readline()
+        res = ""
+        for line in F.readlines():
+            res += line.strip()
+
+        self.assertEqual("23",res)
+
+
 
 if __name__ == "__main__":
     unittest.main()
