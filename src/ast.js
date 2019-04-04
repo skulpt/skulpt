@@ -1563,6 +1563,40 @@ function astForIterComp(c, n, type) {
     }
 }
 
+/* Fills in the key, value pair corresponding to the dict element.  In case
+ * of an unpacking, key is NULL.  *i is advanced by the number of ast
+ * elements.  Iff successful, nonzero is returned.
+ */
+function ast_for_dictelement(c, n, i)
+{
+    var expression;
+    if (TYPE(CHILD(n, i)) == TOK.T_DOUBLESTAR) {
+        goog.asserts.assert(NCH(n) - i >= 2);
+
+        expression = ast_for_expr(c, CHILD(n, i + 1));
+
+        return { key: null, value: expression, i: i + 2 }
+    } else {
+        goog.asserts.assert(NCH(n) - i >= 3);
+
+        expression = ast_for_expr(c, CHILD(n, i));
+        if (!expression)
+            return 0;
+        var key = expression;
+
+        REQ(CHILD(n, i + 1), TOK.T_COLON);
+
+        expression = ast_for_expr(c, CHILD(n, i + 2));
+        if (!expression) {
+            return false;
+        }
+        
+        var value = expression;
+
+        return { key: key, value: value, i: i + 3 };
+    }
+}
+
 function ast_for_dictcomp(c, n) {
     var key, value;
     var comps = [];
@@ -1572,6 +1606,25 @@ function ast_for_dictcomp(c, n) {
     value = ast_for_expr(c, CHILD(n, 2));
     comps = astForComprehension(c, CHILD(n, 3));
     return new Sk.ast.DictComp(key, value, comps, n.lineno, n.col_offset);
+}
+
+function ast_for_dictdisplay(c, n)
+{
+    var i;
+    var j;
+    var keys = [], values = [];
+
+    j = 0;
+    for (i = 0; i < NCH(n); i++) {
+        var res = ast_for_dictelement(c, n, i);
+        i = res.i
+        keys[j] = res.key;
+        values[j] = res.value;
+        j++;
+    }
+
+    return new Sk.ast.Dict(keys, values, LINENO(n), n.col_offset,
+                n.end_lineno, n.end_col_offset);
 }
 
 function ast_for_gen_expr(c, n) {
@@ -2148,7 +2201,7 @@ function ast_for_atom(c, n)
                 return new Sk.ast.List(null, Sk.ast.Load, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
 
-            REQ(ch, testlist_comp);
+            REQ(ch, SYM.testlist_comp);
             if (NCH(ch) == 1 || TYPE(CHILD(ch, 1)) == TOK.T_COMMA) {
                 var elts = seq_for_testlist(c, ch);
                 if (!elts) {
