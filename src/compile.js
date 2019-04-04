@@ -59,6 +59,8 @@ function CompilerUnit () {
     this.blocks = [];
     this.curblock = 0;
 
+    this.consts = {};
+
     this.scopename = null;
 
     this.prefixCode = "";
@@ -258,6 +260,37 @@ function mangleName (priv, ident) {
 }
 
 /**
+ * @param {...*} rest
+ */
+Compiler.prototype.makeConstant = function (rest) {
+    var i;
+    var v;
+    var val = "";
+    var cval;
+
+    // Construct constant value
+    for (i = 0; i < arguments.length; ++i) {
+        val += arguments[i];
+    }
+
+    // Check if we've already defined this exact constant
+    for (var constant in this.u.consts) {
+        if (this.u.consts.hasOwnProperty(constant)) {
+            cval = this.u.consts[constant];
+            if (cval == val) {
+                // We have, just use it
+                return constant;
+            }
+        }
+    }
+
+    // We have not, build new one
+    v = this.u.scopename + "." + this.gensym("const");
+    this.u.consts[v] = val;
+    return v;
+}
+
+/**
  * @param {string} hint basename for gensym
  * @param {...*} rest
  */
@@ -347,6 +380,8 @@ Compiler.prototype._checkSuspension = function(e) {
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
+    var item;
+    var allconsts;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
@@ -355,11 +390,37 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
         }
     }
     else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
-        items = [];
-        for (i = 0; i < e.elts.length; ++i) {
-            items.push(this._gr("elem", this.vexpr(e.elts[i])));
+        if (tuporlist === "tuple") {
+            allconsts = true;
+            items = [];
+            for (i = 0; i < e.elts.length; ++i) {
+                item = this.vexpr(e.elts[i]);
+		
+		// The following is an ugly check to see if item was
+		// turned into a constant.  As vexpr returns a string,
+		// this requires seeing if "$const" is contained
+		// within it.  A better solution would require a
+		// change to vexpr, which would be more invasive.
+                if (allconsts && (item.indexOf('$const') == -1)) {
+                    allconsts = false;
+                }
+                items.push(item);
+            }
+            if (allconsts) {
+                return this.makeConstant("new Sk.builtin.tuple([" + items + "])");
+            } else {
+                for (i = 0; i < items.length; ++i) {
+                    items[i] = this._gr("elem", items[i]);
+                }
+                return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
+            }
+        } else {
+            items = [];
+            for (i = 0; i < e.elts.length; ++i) {
+                items.push(this._gr("elem", this.vexpr(e.elts[i])));
+            }
+            return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
         }
-        return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
     }
 };
 
@@ -708,25 +769,25 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.int_) {
-                return "new Sk.builtin.int_(" + e.n.v + ")";
+                return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
             } else if (e.n instanceof Sk.builtin.float_) {
                 // Preserve sign of zero for floats
                 nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
-                return "new Sk.builtin.float_(" + nStr + ")";
+                return this.makeConstant("new Sk.builtin.float_(" + nStr + ")");
             }
             else if (e.n instanceof Sk.builtin.lng) {
                 // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
-                return "Sk.longFromStr('" + e.n.tp$str().v + "')";
+                return this.makeConstant("Sk.longFromStr('" + e.n.tp$str().v + "')");
             }
             else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
                 var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
                 var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
-                return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
+                return this.makeConstant("new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))");
             }
             goog.asserts.fail("unhandled Num type");
         case Str:
-            return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
+            return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
         case Attribute:
             if (e.ctx !== AugLoad && e.ctx !== AugStore) {
                 val = this.vexpr(e.value);
@@ -2448,6 +2509,11 @@ Compiler.prototype.exitScope = function () {
         mangled = fixReservedWords(mangled);
         mangled = fixReservedNames(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+    }
+    for (var constant in prev.consts) {
+        if (prev.consts.hasOwnProperty(constant)) {
+            prev.suffixCode += constant + " = " + prev.consts[constant] + ";";
+        }
     }
 };
 
