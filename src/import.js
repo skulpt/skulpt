@@ -6,107 +6,6 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
-Sk.externalLibraryCache = {};
-
-Sk.loadExternalLibraryInternal_ = function (path, inject) {
-    var scriptElement;
-    var request, result;
-
-    if (path == null) {
-        return void(0);
-    }
-
-    if (Sk.externalLibraryCache[path]) {
-        return Sk.externalLibraryCache[path];
-    }
-
-    request = new XMLHttpRequest();
-    request.open("GET", path, false);
-    request.send();
-
-    if (request.status !== 200) {
-        return void(0);
-    }
-
-    result = request.responseText;
-
-    if (inject) {
-        scriptElement = document.createElement("script");
-        scriptElement.type = "text/javascript";
-        scriptElement.text = result;
-        document.getElementsByTagName("head")[0].appendChild(scriptElement);
-    }
-
-    return result;
-};
-
-Sk.loadExternalLibrary = function (name) {
-    var i;
-    var externalLibraryInfo, path,  module,
-        dependencies, dep, ext, extMatch, co;
-
-    // check if the library has already been loaded and cached
-    if (Sk.externalLibraryCache[name]) {
-        return Sk.externalLibraryCache[name];
-    }
-
-    externalLibraryInfo = Sk.externalLibraries && Sk.externalLibraries[name];
-
-    // if no external library info can be found, bail out
-    if (!externalLibraryInfo) {
-        return void(0);
-    }
-
-    // if the external library info is just a string, assume it is the path
-    // otherwise dig into the info to find the path
-    path = typeof externalLibraryInfo === "string" ?
-        externalLibraryInfo :
-        externalLibraryInfo.path;
-
-    if (typeof path !== "string") {
-        throw new Sk.builtin.ImportError("Invalid path specified for " + name);
-    }
-
-    // attempt to determine the type of the library (js or py)
-    // which is either specified explicitly in the library info
-    // or inferred from the file extension
-    ext = externalLibraryInfo.type;
-    if (!ext) {
-        extMatch = path.match(/\.(js|py)$/);
-        ext = extMatch && extMatch[1];
-    }
-
-    if (!ext) {
-        throw new Sk.builtin.ImportError("Invalid file extension specified for " + name);
-    }
-
-    module = Sk.loadExternalLibraryInternal_(path, false);
-
-    if (!module) {
-        throw new Sk.builtin.ImportError("Failed to load remote module '" + name + "'");
-    }
-
-    // if the library has any js dependencies, load them in now
-    dependencies = externalLibraryInfo.dependencies;
-    if (dependencies && dependencies.length) {
-        for (i = 0; i < dependencies.length; i++) {
-            dep = Sk.loadExternalLibraryInternal_(dependencies[i], true);
-            if (!dep) {
-                throw new Sk.builtin.ImportError("Failed to load dependencies required for " + name);
-            }
-        }
-    }
-
-    if (ext === "js") {
-        co = { funcname: "$builtinmodule", code: module };
-    } else {
-        co = Sk.compile(module, path, "exec", true);
-    }
-
-    Sk.externalLibraryCache[name] = co;
-
-    return co;
-};
 
 /**
  * @param {string} name to look for
@@ -160,8 +59,8 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  *
  * @return {undefined}
  */
-Sk.doOneTimeInitialization = function () {
-    var proto, name, i, j, x, func, typesWithFunctionsToWrap, builtin_type;
+Sk.doOneTimeInitialization = function (canSuspend) {
+    var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type, j;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
@@ -178,9 +77,9 @@ Sk.doOneTimeInitialization = function () {
         for (base = parent; base !== undefined; base = base.tp$base) {
             bases.push(base);
         }
-        
+
         child.tp$mro = new Sk.builtin.tuple([child]);
-        if (!child.tp$base){ 
+        if (!child.tp$base){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
@@ -211,6 +110,7 @@ Sk.doOneTimeInitialization = function () {
                 break;
             }
 
+            proto[name].co_kwargs = null;
             proto[name] = new Sk.builtin.func(proto[name]);
         }
     }
@@ -230,7 +130,7 @@ Sk.doOneTimeInitialization = function () {
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
  */
-Sk.importSetUpPath = function () {
+Sk.importSetUpPath = function (canSuspend) {
     var i;
     var paths;
     if (!Sk.realsyspath) {
@@ -244,7 +144,7 @@ Sk.importSetUpPath = function () {
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
 
-        Sk.doOneTimeInitialization();
+        Sk.doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -262,10 +162,10 @@ if (COMPILED) {
  * @param {string=} suppliedPyBody use as the body of the text for the module
  * rather than Sk.read'ing it.
  * @param {Object=} relativeToPackage perform import relative to this package
- * @param {boolean=} returnUndefinedOnNotFound return 'undefined' rather than throwing ImportError if the load failed
+ * @param {boolean=} returnUndefinedOnTopLevelNotFound return 'undefined' rather than throwing ImportError if the *first* load failed
  * @param {boolean=} canSuspend whether we may return a Suspension object
  */
-Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, relativeToPackage, returnUndefinedOnNotFound, canSuspend) {
+Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, relativeToPackage, returnUndefinedOnTopLevelNotFound, canSuspend) {
     //dumpJS = true;
     var filename;
     var prev;
@@ -278,7 +178,15 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__name__") : undefined;
     var absolutePackagePrefix = relativePackageName !== undefined ? relativePackageName.v + "." : "";
     var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__path__") : undefined;
-    Sk.importSetUpPath();
+    Sk.importSetUpPath(canSuspend);
+
+    if (relativeToPackage && !relativePackageName) {
+        if (returnUndefinedOnTopLevelNotFound) {
+            return undefined;
+        } else {
+            throw new Sk.builtin.ValueError("Attempted to import relative to invalid package (no name)");
+        }
+    }
 
     // if no module name override, supplied, use default name
     if (modname === undefined) {
@@ -306,11 +214,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         // all parent packages. so, here we're importing 'a.b', which will in
         // turn import 'a', and then return 'a' eventually.
         parentModName = modNameSplit.slice(0, modNameSplit.length - 1).join(".");
-        topLevelModuleToReturn = Sk.importModuleInternal_(parentModName, dumpJS, undefined, undefined, relativeToPackage, returnUndefinedOnNotFound, canSuspend);
+        topLevelModuleToReturn = Sk.importModuleInternal_(parentModName, dumpJS, undefined, undefined, relativeToPackage, returnUndefinedOnTopLevelNotFound, canSuspend);
     }
 
     ret = Sk.misceval.chain(topLevelModuleToReturn, function(topLevelModuleToReturn_) {
-        var codeAndPath, co, googClosure, external;
+        var codeAndPath, co, googClosure;
         var searchFileName = name;
         var result;
 
@@ -318,6 +226,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         // If we're inside a package, look search using its __path__
         if (modNameSplit.length > 1) {
+            if (!topLevelModuleToReturn) {
+                return undefined;
+            }
             parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
             searchFileName = modNameSplit[modNameSplit.length-1];
             searchPath = parentModule.tp$getattr("__path__");
@@ -334,51 +245,44 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             filename = name + ".py";
             co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
         } else {
-            // If an onBeforeImport method is supplied, call it and if
-            // the result is false or a string, prevent the import.
-            // This allows for a user to conditionally prevent the usage
-            // of certain libraries.
-            if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
-                result = Sk.onBeforeImport(name);
+            co = Sk.misceval.chain(undefined, function() {
+                // If an onBeforeImport method is supplied, call it and if
+                // the result is false or a string, prevent the import.
+                // This allows for a user to conditionally prevent the usage
+                // of certain libraries.
+                if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
+                    return Sk.onBeforeImport(name);
+                }
+
+                return;
+            }, function(result) {
                 if (result === false) {
                     throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
                 } else if (typeof result === "string") {
                     throw new Sk.builtin.ImportError(result);
                 }
-            }
 
-            // check first for an externally loaded library
-            external = Sk.loadExternalLibrary(name);
-            if (external) {
-                co = external;
-                if (Sk.externalLibraries) {
-                    filename = Sk.externalLibraries[name].path; // get path from config
-                } else {
-                    filename = "unknown";
-                }
-                // ToDo: check if this is a dotted name or import from ...
-            } else {
                 // Try loading as a builtin (i.e. already in JS) module, then try .py files
-                co = Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".js", searchPath), function(codeAndPath) {
-                    if (codeAndPath) {
-                        return {funcname: "$builtinmodule", code: codeAndPath.code,
-                                filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
-                    } else {
-                        return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
-                            codeAndPath = codeAndPath_; // We'll want it in a moment
-                            if (codeAndPath) {
-                                return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
-                            }
-                        }, function(co) {
-                            if (co) {
-                                co.packagePath = codeAndPath.packagePath;
-                                return co;
-                            }
-                        });
-                    }
-                });
+                return Sk.importSearchPathForName(searchFileName, ".js", searchPath);
+            }, function(codeAndPath) {
+                if (codeAndPath) {
+                    return {funcname: "$builtinmodule", code: codeAndPath.code,
+                            filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
+                } else {
+                    return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
+                        codeAndPath = codeAndPath_; // We'll want it in a moment
+                        if (codeAndPath) {
+                            return Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend);
+                        }
+                    }, function(co) {
+                        if (co) {
+                            co.packagePath = codeAndPath.packagePath;
+                            return co;
+                        }
+                    });
+                }
+            });
 
-            }
         }
         return co;
 
@@ -453,7 +357,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         var i;
 
         if (modlocs === undefined) {
-            if (returnUndefinedOnNotFound) {
+            if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
                 return undefined;
             } else {
                 throw new Sk.builtin.ImportError("No module named " + name);
@@ -547,9 +451,9 @@ Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
 };
 
 /**
- * Imports internal python files into the `__builin__` module. Used during startup 
- * to compile and import all *.py files from the src/ directory. 
- * 
+ * Imports internal python files into the `__builtin__` module. Used during startup
+ * to compile and import all *.py files from the src/ directory.
+ *
  * @param name {string}  File name to use for messages related to this run
  * @param dumpJS {boolean} print out the compiled javascript
  * @param body {string} Python Code
@@ -560,103 +464,108 @@ Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
     return Sk.importModuleInternal_(name, dumpJS, "__builtin__."+name, body, undefined, false, canSuspend);
 };
 
-Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
+Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
+    //print("Importing: ", JSON.stringify(name), JSON.stringify(fromlist), level);
+    //if (name == "") { debugger; }
+
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
-    // a Python language module.  for some reason, __name__ gets overwritten.
+    // a Python language module.
     var saveSk = Sk.globals;
-    var isPackageRelative = false;
 
     // This might be a relative import, so first we get hold of the module object
     // representing this module's package (so we can search its __path__).
     // module.__package__ contains its name, so we use that to look it up in sys.modules.
 
-    var currentPackage;
-    var absolutePackagePrefix = "";
+    var relativeToPackage;
+    var relativeToPackageName;
+    var relativeToPackageNames;
 
-    if (globals["__package__"] && globals["__package__"] !== Sk.builtin.none.none$) {
-        try {
-            currentPackage = Sk.sysmodules.mp$subscript(globals["__package__"].v);
-        } catch(e) {}
+    if (level === undefined) {
+        level = Sk.__future__.absolute_import ? 0 : -1;
     }
 
-    // This is a hack to emulate the actual Python behaviour. If the first name
-    // can be found relatively, we do the whole lookup relatively. If not, we fall
-    // back to global.
+    if (level !== 0 && globals["__package__"] && globals["__package__"] !== Sk.builtin.none.none$) {
+        relativeToPackageName = globals["__package__"].v;
+        if (relativeToPackageName && level > 0) {
+            // Trim <level> packages off the end
+            relativeToPackageNames = relativeToPackageName.split(".");
+            if (level-1 >= relativeToPackageNames.length) {
+                throw new Sk.builtin.ValueError("Attempted relative import beyond toplevel package");
+            }
+            relativeToPackageNames.length -= level-1;
+            relativeToPackageName = relativeToPackageNames.join(".");
+        }
+        try {
+            relativeToPackage = Sk.sysmodules.mp$subscript(relativeToPackageName);
+        } catch(e) {
+            relativeToPackageName = undefined;
+        }
+    }
+
+    if (level > 0 && relativeToPackage === undefined) {
+        throw new Sk.builtin.ValueError("Attempted relative import in non-package");
+    }
 
     var dottedName = name.split(".");
     var firstDottedName = dottedName[0];
 
     return Sk.misceval.chain(undefined, function() {
-            if (currentPackage !== undefined) {
-                isPackageRelative = true;
-                absolutePackagePrefix = globals["__package__"].v + ".";
-                return Sk.misceval.chain(
-                    Sk.importModuleInternal_(firstDottedName, undefined, absolutePackagePrefix + firstDottedName, undefined, currentPackage, true, true),
-                    function(ret) {
-                        // Did relative import of the top package succeed?
-                        if (ret === undefined) {
-                            return undefined; // No; fall back to absolute import
-                        } else if (dottedName.length == 1) {
-                            return ret; // yes, and we've already done all we need to do
-                        } else {
-                            // Yes, and now we need to do the rest of the import.
-                            // If this fails now, the whole import fails.
-                            return  Sk.importModuleInternal_(name, undefined, absolutePackagePrefix + name, undefined, currentPackage, false, true);
-                        }
-                    }
-                );
+            // Attempt local load first (and just fall through to global
+            // case if level == -1 and we fail to load the top-level package)
+            if (level !== 0 && relativeToPackage !== undefined) {
+                if (name === "") {
+                    // "from .. import ..."
+                    return relativeToPackage;
+                } else {
+                    return Sk.importModuleInternal_(name, undefined, relativeToPackageName + "." + name, undefined, relativeToPackage, level==-1, true);
+                }
             }
         }, function(ret) {
             if (ret === undefined) {
-                // If that didn't work, try an absolute import
-                isPackageRelative = false;
-                absolutePackagePrefix = "";
+                // Either it was always a global import, or it was an
+                // either-way import that just fell through.
+                relativeToPackage = undefined;
+                relativeToPackageName = undefined;
                 return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, false, true);
             } else {
                 return ret;
             }
         }, function(ret) {
-            // There is no fromlist, so we have reached the end of the lookup, return
+            // We might also have to load modules named by the fromlist.
+            // If there is no fromlist, we have reached the end of the lookup, return
             if (!fromlist || fromlist.length === 0) {
                 return ret;
             } else {
-                // try to load the module from the file system if it is not present on the module itself
+                // try to load from-names as modules from the file system
+                // if they are not present on the module itself
                 var i;
-                var fromName; // name of current module for fromlist
-                var fromImportName, fromImportModName; // dotted name
-                var lastDottedName = dottedName[dottedName.length-1];
-                
-                var found; // Contains sysmodules the "name"
-                var foundFromName; // Contains the sysmodules[name] the current item from the fromList
+                var fromName;
+                var leafModule;
                 var importChain;
+
+                leafModule = Sk.sysmodules.mp$subscript(
+                    (relativeToPackageName || "") +
+                    ((relativeToPackageName && name) ? "." : "") +
+                    name);
 
                 for (i = 0; i < fromlist.length; i++) {
                     fromName = fromlist[i];
 
-                    foundFromName = false;
-                    found = Sk.sysmodules.sq$contains(name); // Check if "name" is inside sysmodules
-                    if (found) {
-                        // Check if the current fromName is already in the "name" module
-                        foundFromName = Sk.sysmodules.mp$subscript(name)["$d"][fromName] != null;
-                    }
-
+                    // "ret" is the module we're importing from
                     // Only import from file system if we have not found the fromName in the current module
-                    if (!foundFromName && fromName != "*" && ret["$d"][fromName] == null && (ret["$d"][lastDottedName] != null || ret["$d"].__name__.v == lastDottedName)) {
-                        // add the module name to our requiredImport list
-                        fromImportName = "" + name + "." + fromName;
-                        fromImportModName = absolutePackagePrefix + fromImportName;
+                    if (fromName != "*" && leafModule.tp$getattr(fromName) === undefined) {
                         importChain = Sk.misceval.chain(importChain,
-                            Sk.importModuleInternal_.bind(null, fromImportName, undefined, fromImportModName, undefined, isPackageRelative ? currentPackage: undefined, false, true)
+                            Sk.importModuleInternal_.bind(null, fromName, undefined, undefined, undefined, leafModule, true, true)
                         );
                     }
+
                 }
 
                 return Sk.misceval.chain(importChain, function() {
-                    // if there's a fromlist we want to return the actual module, not the
-                    // toplevel namespace
-                    ret = Sk.sysmodules.mp$subscript(absolutePackagePrefix + name);
-                    goog.asserts.assert(ret);
-                    return ret;
+                    // if there's a fromlist we want to return the leaf module
+                    // (ret), not the toplevel namespace
+                    goog.asserts.assert(leafModule);
+                    return leafModule;
                 });
             }
 

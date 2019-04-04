@@ -56,7 +56,7 @@ var $builtinmodule = function (name) {
         var pat, str, captured, jsflags, regex;
         var result, match, index, splits;
 
-        Sk.builtin.pyCheckArgs("split", arguments, 2, 4);
+        Sk.builtin.pyCheckArgsLen("split", arguments.length, 2, 4);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -121,7 +121,6 @@ var $builtinmodule = function (name) {
     };
 
     _split.co_varnames = ["pattern", "string", "maxsplit", "flags"];
-    _split.co_numargs = 4;
     _split.$defaults = [ new Sk.builtin.int_(0), new Sk.builtin.int_(0) ];
 
     mod.split = new Sk.builtin.func(_split);
@@ -129,7 +128,7 @@ var $builtinmodule = function (name) {
     _findall = function (pattern, string, flags) {
         var pat, str, jsflags, regex, result, match;
 
-        Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
+        Sk.builtin.pyCheckArgsLen("findall", arguments.length, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -189,7 +188,6 @@ var $builtinmodule = function (name) {
     };
 
     _findall.co_varnames = ["pattern", "string", "flags"];
-    _findall.co_numargs = 3;
     _findall.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.findall = new Sk.builtin.func(_findall);
@@ -257,7 +255,7 @@ var $builtinmodule = function (name) {
     _search = function (pattern, string, flags) {
         var mob, res;
 
-        Sk.builtin.pyCheckArgs("search", arguments, 2, 3);
+        Sk.builtin.pyCheckArgsLen("search", arguments.length, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -275,19 +273,18 @@ var $builtinmodule = function (name) {
         if (lst.v.length < 1) {
             return Sk.builtin.none.none$;
         }
-        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsimArray(mod.MatchObject, [lst, pattern, string]);
         return mob;
     };
 
     _search.co_varnames = ["pattern", "string", "flags"];
-    _search.co_numargs = 3;
     _search.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.search = new Sk.builtin.func(_search);
 
     _match = function (pattern, string, flags) {
         var mob, res;
-        Sk.builtin.pyCheckArgs("match", arguments, 2, 3);
+        Sk.builtin.pyCheckArgsLen("match", arguments.length, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -306,12 +303,11 @@ var $builtinmodule = function (name) {
         if (Sk.ffi.remapToJs(lst).length < 1) {
             return Sk.builtin.none.none$;
         }
-        mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
+        mob = Sk.misceval.callsimArray(mod.MatchObject, [lst, pattern, string]);
         return mob;
     };
 
     _match.co_varnames = ["pattern", "string", "flags"];
-    _match.co_numargs = 3;
     _match.$defaults = [ new Sk.builtin.int_(0) ];
 
     mod.match = new Sk.builtin.func(_match);
@@ -357,7 +353,7 @@ var $builtinmodule = function (name) {
         };
 
         _re_search = function (self, string, pos, endpos) {
-            Sk.builtin.pyCheckArgs("search", arguments, 2, 4);
+            Sk.builtin.pyCheckArgsLen("search", arguments.length, 2, 4);
 
             var str = _slice(string, pos, endpos);
 
@@ -365,13 +361,12 @@ var $builtinmodule = function (name) {
         };
 
         _re_search.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_search.co_numargs = 4;
         _re_search.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.search = new Sk.builtin.func(_re_search);
 
         _re_match = function (self, string, pos, endpos) {
-            Sk.builtin.pyCheckArgs("match", arguments, 2, 4);
+            Sk.builtin.pyCheckArgsLen("match", arguments.length, 2, 4);
 
             var str = _slice(string, pos, endpos);
             // var str = string;
@@ -380,13 +375,12 @@ var $builtinmodule = function (name) {
         };
 
         _re_match.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_match.co_numargs = 4;
         _re_match.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.match = new Sk.builtin.func(_re_match);
 
         _re_split = function (self, string, maxsplit) {
-            Sk.builtin.pyCheckArgs("split", arguments, 2, 3);
+            Sk.builtin.pyCheckArgsLen("split", arguments.length, 2, 3);
 
             if (maxsplit === undefined) {
                 maxsplit = 0;
@@ -399,13 +393,12 @@ var $builtinmodule = function (name) {
         };
 
         _re_split.co_varnames = ["self", "string", "maxsplit"];
-        _re_split.co_numargs = 3;
         _re_split.$defaults = [ new Sk.builtin.int_(0) ];
 
         $loc.split = new Sk.builtin.func(_re_split);
 
         _re_findall = function (self, string, pos, endpos) {
-            Sk.builtin.pyCheckArgs("findall", arguments, 2, 4);
+            Sk.builtin.pyCheckArgsLen("findall", arguments.length, 2, 4);
 
             var str = _slice(string, pos, endpos);
 
@@ -413,7 +406,6 @@ var $builtinmodule = function (name) {
         };
 
         _re_findall.co_varnames = ["self", "string", "pos", "endpos"];
-        _re_findall.co_numargs = 4;
         _re_findall.$defaults = [ new Sk.builtin.int_(0), Sk.builtin.none.none$ ];
 
         $loc.findall = new Sk.builtin.func(_re_findall);
@@ -423,7 +415,7 @@ var $builtinmodule = function (name) {
     mod.RegexObject = Sk.misceval.buildClass(mod, regexobj, "RegexObject", []);
     mod.compile = new Sk.builtin.func(function (pattern, flags) {
         var rob;
-        Sk.builtin.pyCheckArgs("compile", arguments, 1, 2);
+        Sk.builtin.pyCheckArgsLen("compile", arguments.length, 1, 2);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         }
@@ -433,7 +425,7 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        rob = Sk.misceval.callsim(mod.RegexObject, pattern, flags);
+        rob = Sk.misceval.callsimArray(mod.RegexObject, [pattern, flags]);
         return rob;
     });
 

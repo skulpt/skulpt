@@ -132,7 +132,6 @@ Sk.builtin.type = function (name, bases, dict) {
             this["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), this["$d"]);
         };
 
-
         var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
 
         var inheritsBuiltin = false;
@@ -178,8 +177,9 @@ Sk.builtin.type = function (name, bases, dict) {
             });
         };
 
-        if (bases.v.length === 0 && Sk.python3) {
+        if (bases.v.length === 0 && Sk.__future__.inherit_from_object) {
             // new style class, inherits from object by default
+            bases.v.push(Sk.builtin.object);
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
         }
 
@@ -265,7 +265,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.tp$setattr = function(name, data, canSuspend) {
             var r, /** @type {(Object|undefined)} */ setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
             if (setf !== undefined) {
-                r = Sk.misceval.callsimOrSuspend(/** @type {Object} */ (setf), new Sk.builtin.str(name), data);
+                r = Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (setf), [new Sk.builtin.str(name), data]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
@@ -289,7 +289,7 @@ Sk.builtin.type = function (name, bases, dict) {
             // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
             // convention
             r = Sk.misceval.tryCatch(function() {
-                return Sk.misceval.callsimOrSuspend(/** @type {Object} */ (getf), new Sk.builtin.str(name));
+                return Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (getf), [new Sk.builtin.str(name)]);
             }, function (e) {
                 if (e instanceof Sk.builtin.AttributeError) {
                     return undefined;
@@ -333,13 +333,13 @@ Sk.builtin.type = function (name, bases, dict) {
             if (iterf === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
             }
-            return Sk.misceval.callsim(iterf);
+            return Sk.misceval.callsimArray(iterf);
         };
         klass.prototype.tp$iternext = function (canSuspend) {
             var self = this;
             var next;
 
-            if (Sk.python3) {
+            if (Sk.__future__.dunder_next) {
                 next = "__next__";
             } else {
                 next = "next";
@@ -350,7 +350,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 }
 
                 return Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspend(iternextf);
+                    return Sk.misceval.callsimOrSuspendArray(iternextf);
                 }, function(e) {
                     if (e instanceof Sk.builtin.StopIteration) {
                         return undefined;
@@ -397,18 +397,31 @@ Sk.builtin.type = function (name, bases, dict) {
 
         var shortcutDunder = function (skulpt_name, magic_name, magic_func, canSuspendIdx) {
             klass.prototype[skulpt_name] = function () {
-                var args = Array.prototype.slice.call(arguments), canSuspend;
-                args.unshift(magic_func, this);
+                var canSuspend = false;
+                var len = arguments.length;
+                var args, i, j;
+                if ((canSuspendIdx !== null) && (canSuspendIdx <= len)) {
+                    args = new Array(len);
+                } else {
+                    args = new Array(len+1);
+                }
 
-                if (canSuspendIdx !== null) {
-                    canSuspend = args[canSuspendIdx+1];
-                    args.splice(canSuspendIdx+1, 1);
-
-                    if (canSuspend) {
-                        return Sk.misceval.callsimOrSuspend.apply(undefined, args);
+                args[0] = this;
+                j = 1;
+                for (i = 0; i < len; i++) {
+                    if (i === (canSuspendIdx-1)) {
+                        canSuspend = arguments[i];
+                    } else {
+                        args[j] = arguments[i];
+                        j += 1;
                     }
                 }
-                return Sk.misceval.callsim.apply(undefined, args);
+
+                if (canSuspend) {
+                    return Sk.misceval.callsimOrSuspendArray(magic_func, args);
+                } else {
+                    return Sk.misceval.callsimArray(magic_func, args);
+                }
             };
         };
 
@@ -459,7 +472,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
             cname = mod.v + ".";
         }
         ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.python3) {
+        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
             ctype = "type";
         }
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
@@ -477,7 +490,7 @@ Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
 Sk.builtin.type.sk$type = true;
 Sk.builtin.type["$r"] = function () {
-    if(Sk.python3) {
+    if(Sk.__future__.class_repr) {
         return new Sk.builtin.str("<class 'type'>");
     } else {
         return new Sk.builtin.str("<type 'type'>");
@@ -682,17 +695,15 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     if (!this["$r"] || !other["$r"]) {
         return undefined;
     }
-    r1 = new Sk.builtin.str(this["$r"]().v.slice(1,6));
-    r2 = new Sk.builtin.str(other["$r"]().v.slice(1,6));
-    if (this["$r"]().v.slice(1,6) !== "class") {
-        r1 = this["$r"]();
-        r2 = other["$r"]();
-    }
+
+    r1 = this["$r"]();
+    r2 = other["$r"]();
+
     return r1.tp$richcompare(r2, op);
 };
 
 Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
-    Sk.builtin.pyCheckArgs("__format__", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
     return new Sk.builtin.str(self);
 };
 

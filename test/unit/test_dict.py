@@ -182,6 +182,11 @@ class DictTest(unittest.TestCase):
         d = {1: BadRepr()}
         #self.assertRaises(Exc, repr, d)
         '''
+    def test_copy(self):
+        d = {1:1, 2:2, 3:3}
+        self.assertEqual(d.copy(), {1:1, 2:2, 3:3})
+        self.assertEqual({}.copy(), {})
+        self.assertRaises(TypeError, d.copy, None)
 
     def test_get(self):
         d = {}

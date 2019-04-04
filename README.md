@@ -39,7 +39,7 @@ already there for this purpose.  Another positive step in this direction would b
 part of the standard library.
 
 
-1. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
+1. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.
 
 2.  Implement the hooks for a debugger. This may be a half step towards
 1 or may be in a completely different direction, but allowing students

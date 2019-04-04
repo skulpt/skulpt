@@ -10,7 +10,7 @@
  */
 Sk.builtin.method = function (func, self, klass, builtin) {
     if (!(this instanceof Sk.builtin.method)) {
-        Sk.builtin.pyCheckArgs("method", arguments, 3, 3);
+        Sk.builtin.pyCheckArgsLen("method", arguments.length, 3, 3);
         if (!Sk.builtin.checkCallable(func)) {
             throw new Sk.builtin.TypeError("First argument must be callable");
         }
@@ -76,7 +76,7 @@ Sk.builtin.method.prototype.tp$descr_get = function (obj, objtype) {
 Sk.builtin.method.pythonFunctions = ["__get__"];
 
 Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
-    Sk.builtin.pyCheckArgs("__get__", arguments, 1, 2, false, true);
+    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
     if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }

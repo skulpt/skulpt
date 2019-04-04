@@ -60,7 +60,7 @@ Sk.builtin.float_ = function (x) {
     var special = Sk.abstr.lookupSpecial(x, "__float__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, x);
+        return Sk.misceval.callsimArray(special, [x]);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
@@ -170,7 +170,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // call internal float method
-    fo = Sk.misceval.callsim(f, op);
+    fo = Sk.misceval.callsimArray(f, [op]);
 
     // return value of __float__ must be a python float
     if (!Sk.builtin.float_.PyFloat_Check(fo)) {
@@ -771,7 +771,7 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
  */
 Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
-    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
@@ -786,7 +786,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
         ndigs = Sk.misceval.asIndex(ndigits);
     }
 
-    if (Sk.python3) {
+    if (Sk.__future__.bankers_rounding) {
         num10 = number * Math.pow(10, ndigs);
         rounded = Math.round(num10);
         bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
@@ -806,10 +806,10 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
 
 Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
     var formatstr;
-    Sk.builtin.pyCheckArgs("__format__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
 
     if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.python3) {
+        if (Sk.__future__.exceptions) {
             throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
         } else {
             throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));

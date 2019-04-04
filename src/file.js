@@ -24,8 +24,26 @@ Sk.builtin.file = function (name, mode, buffering) {
     } else if (this.name === "/dev/stderr") {
         this.fileno = 2;
     } else {
-        this.fileno = 11;
-        this.data$ = Sk.read(name.v);
+        if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
+            this.fileno = 10;
+            elem = document.getElementById(name.v);
+            if (elem == null) {
+                if (mode.v == "w" || mode.v == "a") {
+                    this.data$ = "";
+                } else {
+                    throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                }
+            } else {
+                if (elem.nodeName.toLowerCase() == "textarea") {
+                    this.data$ = elem.value;
+                } else {
+                    this.data$ = elem.textContent;
+                }
+            }
+        } else {
+            this.fileno = 11;
+            this.data$ = Sk.read(name.v);
+        }
 
         this.lineList = this.data$.split("\n");
         this.lineList = this.lineList.slice(0, -1);
@@ -38,6 +56,10 @@ Sk.builtin.file = function (name, mode, buffering) {
     this.pos$ = 0;
 
     this.__class__ = Sk.builtin.file;
+
+    if (Sk.fileopen && this.fileno >= 10) {
+        Sk.fileopen(this);
+    }
 
     return this;
 };
@@ -59,11 +81,12 @@ Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(
 });
 
 Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
-    return Sk.misceval.callsim(Sk.builtin.file.prototype["close"], self);
+    return Sk.misceval.callsimArray(Sk.builtin.file.prototype["close"], [self]);
 });
 
 Sk.builtin.file.prototype.tp$iter = function () {
     var allLines = this.lineList;
+    var currentLine = this.currentLine;
 
     var ret =
     {
@@ -71,7 +94,7 @@ Sk.builtin.file.prototype.tp$iter = function () {
             return ret;
         },
         $obj       : this,
-        $index     : 0,
+        $index     : currentLine,
         $lines     : allLines,
         tp$iternext: function () {
             if (ret.$index >= ret.$lines.length) {
@@ -207,13 +230,25 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(se
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, str) {
     var mode = Sk.ffi.remapToJs(self.mode);
     if (mode === "w" || mode === "wb" || mode === "a" || mode === "ab") {
-        if (self.fileno === 1) {
-            Sk.output(Sk.ffi.remapToJs(str));
+        if (Sk.filewrite) {
+            if (self.closed) {
+                throw new Sk.builtin.ValueError("I/O operation on closed file");
+            }
+
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                Sk.filewrite(self, str);
+            }
         } else {
-            goog.asserts.fail();
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                goog.asserts.fail();
+            }
         }
     } else {
-        goog.asserts.fail();
+        throw new Sk.builtin.IOError("File not open for writing");
     }
 });
 
