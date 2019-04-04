@@ -804,19 +804,17 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
 
             // @meredydd plz fix :P 
             // compiler.c does ADDOP_LOAD_CONST(e->v.Constant.value)
-            return e.value.v;
 
-            // switch (e.value) {
-            //     case Sk.builtin.none.none$:
-            //         return "Sk.builtin.none.none$";
-            //     case Sk.builtin.bool.true$:
-            //         return "Sk.builtin.bool.true$";
-            //     case Sk.builtin.bool.false$:
-            //         return "Sk.builtin.bool.false$";
-            //     default:
-            //         goog.asserts.fail("invalid NameConstant");
-            // }
-            break;
+            switch (e.value) {
+                case Sk.builtin.none.none$:
+                    return "Sk.builtin.none.none$";
+                case Sk.builtin.bool.true$:
+                    return "Sk.builtin.bool.true$";
+                case Sk.builtin.bool.false$:
+                    return "Sk.builtin.bool.false$";
+                default:
+                    return e.value.v;
+            }
 
         case Sk.ast.List:
             return this.ctuplelistorset(e, data, 'list');
