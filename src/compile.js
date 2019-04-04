@@ -367,13 +367,14 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
 Compiler.prototype.cdict = function (e) {
     var v;
     var i;
-    var items;
-    goog.asserts.assert(e.values.length === e.keys.length);
-    items = [];
-    for (i = 0; i < e.values.length; ++i) {
-        v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
-        items.push(this.vexpr(e.keys[i]));
-        items.push(v);
+    var items = [];
+    if (e.values) {
+        goog.asserts.assert(e.values.length === e.keys.length);
+        for (i = 0; i < e.values.length; ++i) {
+            v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
+            items.push(this.vexpr(e.keys[i]));
+            items.push(v);
+        }
     }
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };

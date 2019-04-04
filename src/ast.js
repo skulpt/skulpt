@@ -1067,7 +1067,7 @@ function astForCall (c, n, func) {
             kwarg = ast_for_expr(c, CHILD(n, ++i));
         }
     }
-    return new Sk.ast.Call(func, args, keywords, vararg, kwarg, func.lineno, func.col_offset);
+    return new Sk.ast.Call(func, args, keywords, func.lineno, func.col_offset);
 }
 
 function astForTrailer (c, n, leftExpr) {
@@ -2044,9 +2044,8 @@ function ast_for_atom(c, n)
 
     switch (TYPE(ch)) {
         case TOK.T_NAME: {
-            PyObject *name;
+            var name;
             var s = STR(ch);
-            var len = s.length;
             if (s.length >= 4 && s.length <= 5) {
                 if (s === "None") {
                     return new Sk.ast.Constant(Sk.builtin.none.none$, n.lineno, n.col_offset);
@@ -2065,7 +2064,7 @@ function ast_for_atom(c, n)
                 return null;
             }
             /* All names start in Load context, but may later be changed. */
-            return new Sk.ast.Name(name, Sk.ast.Load, LINENO(n), n.n_col_offset,
+            return new Sk.ast.Name(name, Sk.ast.Load, LINENO(n), n.col_offset,
                         n.end_lineno, n.end_col_offset);
         }
         case TOK.T_STRING: {
@@ -2100,7 +2099,7 @@ function ast_for_atom(c, n)
             var pynum;
             /* Underscores in numeric literals are only allowed in Python 3.6 or greater */
             /* Check for underscores here rather than in parse_number so we can report a line number on error */
-            if (c.c_feature_version < 6 && strchr(STR(ch), '_') != NULL) {
+            if (c.c_feature_version < 6 && STR(ch).indexOf('_') != -1) {
                 ast_error(c, ch,
                         "Underscores in numeric literals are only supported in Python 3.6 and greater");
                 return null;
@@ -2118,12 +2117,12 @@ function ast_for_atom(c, n)
         }
         case TOK.T_ELLIPSIS: /* Ellipsis */
             goog.assert.fail('pls. make a constant for elipsis like None');
-            return new Sk.ast.Constant('Py_Ellipsis', NULL, LINENO(n), n.col_offset,
+            return new Sk.ast.Constant('Py_Ellipsis', null, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
         case TOK.T_LPAR: /* some parenthesized expressions */
             ch = CHILD(n, 1);
 
-            if (TYPE(ch) == RPAR)
+            if (TYPE(ch) == TOK.T_RPAR)
                 return new Sk.ast.Tuple(null, Load, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
 
@@ -2150,7 +2149,7 @@ function ast_for_atom(c, n)
                             n.end_lineno, n.end_col_offset);
 
             REQ(ch, testlist_comp);
-            if (NCH(ch) == 1 || TYPE(CHILD(ch, 1)) == COMMA) {
+            if (NCH(ch) == 1 || TYPE(CHILD(ch, 1)) == TOK.T_COMMA) {
                 var elts = seq_for_testlist(c, ch);
                 if (!elts) {
                     return null;
@@ -2168,7 +2167,7 @@ function ast_for_atom(c, n)
             *                    (comp_for | (',' (test | '*' test))* [','])) ) */
             var res;
             ch = CHILD(n, 1);
-            if (TYPE(ch) == RBRACE) {
+            if (TYPE(ch) == TOK.T_RBRACE) {
                 /* It's an empty dict. */
                 return new Sk.ast.Dict(null, null, LINENO(n), n.col_offset, 
                     n.end_lineno, n.end_col_offset);
