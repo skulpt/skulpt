@@ -796,21 +796,25 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             break;
         case Sk.ast.Name:
             return this.nameop(e.id, e.ctx, data);
-        case Sk.ast.NameConstant:
+        case Sk.ast.Constant:
             if (e.ctx === Sk.ast.Store || e.ctx === Sk.ast.AugStore || e.ctx === Sk.ast.Del) {
                 throw new Sk.builtin.SyntaxError("can not assign to a constant name");
             }
 
-            switch (e.value) {
-                case Sk.builtin.none.none$:
-                    return "Sk.builtin.none.none$";
-                case Sk.builtin.bool.true$:
-                    return "Sk.builtin.bool.true$";
-                case Sk.builtin.bool.false$:
-                    return "Sk.builtin.bool.false$";
-                default:
-                    goog.asserts.fail("invalid NameConstant");
-            }
+            // @meredydd plz fix :P 
+            // compiler.c does ADDOP_LOAD_CONST(e->v.Constant.value)
+            return e.value.v;
+
+            // switch (e.value) {
+            //     case Sk.builtin.none.none$:
+            //         return "Sk.builtin.none.none$";
+            //     case Sk.builtin.bool.true$:
+            //         return "Sk.builtin.bool.true$";
+            //     case Sk.builtin.bool.false$:
+            //         return "Sk.builtin.bool.false$";
+            //     default:
+            //         goog.asserts.fail("invalid NameConstant");
+            // }
             break;
 
         case Sk.ast.List:
@@ -820,7 +824,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.ast.Set:
             return this.ctuplelistorset(e, data, 'set');
         default:
-            goog.asserts.fail("unhandled case Sk.ast.in vexpr");
+            goog.asserts.fail("unhandled case " + e.constructor + " vexpr");
     }
 };
 
