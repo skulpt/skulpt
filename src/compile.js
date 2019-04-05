@@ -2014,7 +2014,7 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     target = this.vexpr(ge.target, nexti);
 
-    n = ge.ifs.length;
+    n = ge.ifs ? ge.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         this.annotateSource(ge.ifs[i]);
 

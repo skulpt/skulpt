@@ -804,6 +804,11 @@ function ast_for_testlistComp(c, n) {
     }
     return ast_for_testlist(c, n);
 }
+function ast_for_genexp(c, n)
+{
+    goog.asserts.assert(TYPE(n) == SYM.testlist_comp || TYPE(n) == SYM.argument);
+    return ast_for_itercomp(c, n, COMP_GENEXP);
+}
 
 function  ast_for_listcomp(c, n) {
     goog.asserts.assert(TYPE(n) == (SYM.testlist_comp));
@@ -2297,8 +2302,12 @@ function ast_for_atom(c, n)
             //     Py_DECREF(pynum);
             //     return NULL;
             // }
-            return new Sk.ast.Constant(pynum, null, LINENO(n), n.col_offset,
-                            n.end_lineno, n.end_col_offset);
+            
+            // @meredydd somehow we're missing an argument in the Constant
+            // return new Sk.ast.Constant(pynum, null, LINENO(n), n.col_offset,
+            //                 n.end_lineno, n.end_col_offset);
+            return new Sk.ast.Constant(pynum, LINENO(n), n.col_offset,
+                             n.end_lineno, n.end_col_offset);
         }
         case TOK.T_ELLIPSIS: /* Ellipsis */
             goog.assert.fail('pls. make a constant for elipsis like None');
