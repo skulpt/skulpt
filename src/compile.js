@@ -425,7 +425,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     target = this.vexpr(l.target, nexti);
 
-    n = l.ifs.length;
+    n = l.ifs ? l.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         ifres = this.vexpr(l.ifs[i]);
         this._jumpfalse(ifres, start);

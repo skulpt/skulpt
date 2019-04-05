@@ -11,7 +11,9 @@
 var SYM = Sk.ParseTables.sym;
 var TOK = Sk.token.tokens;
 var COMP_GENEXP = 0;
-var COMP_SETCOMP = 1;
+var COMP_LISTCOMP = 1;
+var COMP_SETCOMP = 2;
+
 
 /** @constructor */
 function Compiling (encoding, filename, c_flags) {
@@ -803,115 +805,9 @@ function ast_for_testlistComp(c, n) {
     return ast_for_testlist(c, n);
 }
 
-function ast_for_listcomp (c, n) {
-    /* listmaker: test ( list_for | (',' test)* [','] )
-     list_for: 'for' exprlist 'in' testlist_safe [list_iter]
-     list_iter: list_for | list_if
-     list_if: 'if' test [list_iter]
-     testlist_safe: test [(',' test)+ [',']]
-     */
-
-    function countListFors (c, n) {
-        var nfors = 0;
-        var ch = CHILD(n, 1);
-        count_list_for: while (true) {
-            nfors++;
-            REQ(ch, SYM.list_for);
-            if (NCH(ch) === 5) {
-                ch = CHILD(ch, 4);
-            }
-            else {
-                return nfors;
-            }
-            count_list_iter: while (true) {
-                REQ(ch, SYM.list_iter);
-                ch = CHILD(ch, 0);
-                if (ch.type === SYM.list_for) {
-                    continue count_list_for;
-                }
-                else if (ch.type === SYM.list_if) {
-                    if (NCH(ch) === 3) {
-                        ch = CHILD(ch, 2);
-                        continue count_list_iter;
-                    }
-                    else {
-                        return nfors;
-                    }
-                }
-                break;
-            }
-            break;
-        }
-    }
-
-    function countListIfs (c, n) {
-        var nifs = 0;
-        while (true) {
-            REQ(n, SYM.list_iter);
-            if (CHILD(n, 0).type === SYM.list_for) {
-                return nifs;
-            }
-            n = CHILD(n, 0);
-            REQ(n, SYM.list_if);
-            nifs++;
-            if (NCH(n) === 2) {
-                return nifs;
-            }
-            n = CHILD(n, 2);
-        }
-    }
-
-    var j;
-    var ifs;
-    var nifs;
-    var lc;
-    var expression;
-    var t;
-    var forch;
-    var i;
-    var ch;
-    var listcomps;
-    var nfors;
-    var elt;
-    REQ(n, SYM.listmaker);
-    goog.asserts.assert(NCH(n) > 1);
-    elt = ast_for_expr(c, CHILD(n, 0));
-    nfors = countListFors(c, n);
-    listcomps = [];
-    ch = CHILD(n, 1);
-    for (i = 0; i < nfors; ++i) {
-        REQ(ch, SYM.list_for);
-        forch = CHILD(ch, 1);
-        t = ast_for_exprlist(c, forch, Sk.ast.Store);
-        expression = ast_for_testlist(c, CHILD(ch, 3));
-        if (NCH(forch) === 1) {
-            lc = new Sk.ast.comprehension(t[0], expression, []);
-        }
-        else {
-            lc = new Sk.ast.comprehension(new Sk.ast.Tuple(t, Sk.ast.Store, ch.lineno, ch.col_offset), expression, []);
-        }
-
-        if (NCH(ch) === 5) {
-            ch = CHILD(ch, 4);
-            nifs = countListIfs(c, ch);
-            ifs = [];
-            for (j = 0; j < nifs; ++j) {
-                REQ(ch, SYM.list_iter);
-                ch = CHILD(ch, 0);
-                REQ(ch, SYM.list_if);
-                ifs[j] = ast_for_expr(c, CHILD(ch, 1));
-                if (NCH(ch) === 3) {
-                    ch = CHILD(ch, 2);
-                }
-            }
-            if (ch.type === SYM.list_iter) {
-                ch = CHILD(ch, 0);
-            }
-            lc.ifs = ifs;
-        }
-        listcomps[i] = lc;
-    }
-    return new Sk.ast.ListComp(elt, listcomps, n.lineno, n.col_offset);
+function  ast_for_listcomp(c, n) {
+    goog.asserts.assert(TYPE(n) == (SYM.testlist_comp));
+    return ast_for_itercomp(c, n, COMP_LISTCOMP);
 }
 
 function astForFactor (c, n) {
@@ -1560,6 +1456,242 @@ function astForIterComp(c, n, type) {
         return new Sk.ast.GeneratorExp(elt, comps, n.lineno, n.col_offset);
     } else if (type === COMP_SETCOMP) {
         return new Sk.ast.SetComp(elt, comps, n.lineno, n.col_offset);
+    }
+}
+
+/*
+   Count the number of 'for' loops in a comprehension.
+   Helper for ast_for_comprehension().
+*/
+function count_comp_fors(c, n) {
+    var n_fors = 0;
+    var is_async;
+    count_comp_for: while (true) {
+        // @meredydd needs new grammar
+        // REQ(n, SYM.comp_for);
+        // if (NCH(n) === 2) {
+        //     REQ(CHILD(n, 0), TOK.T_ASYNC);
+        //     n = CHILD(n, 1);
+        // } else if (NCH(n) === 1) {
+        //     n = CHILD(n, 0);
+        // } else {
+        //     goog.asserts.fail("logic error in count_comp_fors");
+        // }
+        // if (NCH(n) == (5)) {
+        //     n = CHILD(n, 4);
+        // } else {
+        //     return n_fors;
+        // }
+        is_async = 0;
+        n_fors++;
+        REQ(n, SYM.comp_for);
+        if (TYPE(CHILD(n, 0)) == TOK.T_ASYNC) {
+            is_async = 1;
+        }
+        if (NCH(n) == (5 + is_async)) {
+            n = CHILD(n, 4 + is_async);
+        }
+        else {
+            return n_fors;
+        }
+        count_comp_iter: while (true) {
+            REQ(n, SYM.comp_iter);
+            n = CHILD(n, 0);
+            if (TYPE(n) === SYM.comp_for) {
+                continue count_comp_for;
+            } else if (TYPE(n) === SYM.comp_if) {
+                if (NCH(n) === 3) {
+                    n = CHILD(n, 2);
+                    continue count_comp_iter;
+                } else {
+                    return n_fors;
+                }
+            }
+            break;
+        }
+        break;
+    }
+}
+
+function count_comp_ifs(c, n)
+{
+    var n_ifs = 0;
+
+    while (true) {
+        REQ(n, SYMcomp_iter);
+        if (TYPE(CHILD(n, 0)) == SYM.comp_for)
+            return n_ifs;
+        n = CHILD(n, 0);
+        REQ(n, SYM.comp_if);
+        n_ifs++;
+        if (NCH(n) == 2) {
+            return n_ifs;
+        }
+        n = CHILD(n, 2);
+    }
+}
+
+function ast_for_comprehension(c, n) {
+    var i, n_fors;
+    var comps = [];
+    n_fors = count_comp_fors(c, n);
+
+    for (i = 0; i < n_fors; i++) {
+        var comp;
+        var t;
+        var expression, first;
+        var for_ch;
+        var is_async = 0;
+
+        if (TYPE(CHILD(n, 0)) == TOK.T_ASYNC) {
+            is_async = 1;
+        }
+
+        for_ch = CHILD(n, 1 + is_async);
+        t = ast_for_exprlist(c, for_ch, Sk.ast. Store);
+        if (!t) {
+            return null;
+        }
+
+        expression = ast_for_expr(c, CHILD(n, 3 + is_async));
+        
+        if (!expression) {
+            return null;
+        }
+        
+        // again new grammar needed 
+        // REQ(n, SYM.comp_for);
+
+        // if (NCH(n) == 2) {
+        //     is_async = 1;
+        //     REQ(CHILD(n, 0), TOK.T_ASYNC);
+        //     sync_n = CHILD(n, 1);
+        // }
+        // else {
+        //     sync_n = CHILD(n, 0);
+        // }
+        // REQ(sync_n, SYM.sync_comp_for);
+
+        // /* Async comprehensions only allowed in Python 3.6 and greater */
+        // /* @meredydd see below for the joys of the future! */
+        // if (is_async && c.c_feature_version < 6) {
+        //     ast_error(c, n,
+        //               "Async comprehensions are only supported in Python 3.6 and greater");
+        //     return null;
+        // }
+
+        // for_ch = CHILD(sync_n, 1);
+        // t = ast_for_exprlist(c, for_ch, Sk.ast.Store);
+
+        // expression = ast_for_expr(c, CHILD(sync_n, 3));
+
+        /* Check the # of children rather than the length of t, since
+           (x for x, in ...) has 1 element in t, but still requires a Tuple. */
+        first = t[0];
+        if (NCH(for_ch) == 1)
+            comp = new Sk.ast.comprehension(first, expression, null, is_async);
+        else
+            comp = new Sk.ast.comprehension(new Sk.ast.Tuple(t, Sk.ast.Store, first.lineno, first.col_offset,
+                                       for_ch.end_lineno, for_ch.end_col_offset),
+                                 expression, null, is_async);
+
+        if (NCH(n) == (5 + is_async)) {
+            var j, n_ifs;
+            var ifs = [];
+
+            n = CHILD(n, 4 + is_async);
+            n_ifs = count_comp_ifs(c, n);
+            if (n_ifs == -1) {
+                return null;
+            }
+
+            for (j = 0; j < n_ifs; j++) {
+                REQ(n, SYM.comp_iter);
+                n = CHILD(n, 0);
+                REQ(n, SYM.comp_if);
+
+                expression = ast_for_expr(c, CHILD(n, 1));
+                if (!expression) {
+                    return null;
+                }
+                
+                ifs[j] = expression;
+                if (NCH(n) == 3) {
+                    n = CHILD(n, 2);
+                }
+            }
+            /* on exit, must guarantee that n is a comp_for */
+            if (TYPE(n) == SYM.comp_iter) {
+                n = CHILD(n, 0);
+            }
+            comp.ifs = ifs;
+        }
+        // if (NCH(sync_n) == 5) {
+        //     var j, n_ifs;
+        //     var ifs = [];
+
+        //     n = CHILD(sync_n, 4);
+        //     n_ifs = count_comp_ifs(c, n);
+
+        //     for (j = 0; j < n_ifs; j++) {
+        //         REQ(n, comp_iter);
+        //         n = CHILD(n, 0);
+        //         REQ(n, comp_if);
+
+        //         expression = ast_for_expr(c, CHILD(n, 1));
+        //         if (!expression) {
+        //             return null;
+        //         }
+
+        //         ifs[j] = expression;
+        //         if (NCH(n) == 3) {
+        //             n = CHILD(n, 2);
+        //         }
+        //     }
+        //     /* on exit, must guarantee that n is a comp_for */
+        //     if (TYPE(n) == SYM.comp_iter) {
+        //         n = CHILD(n, 0);
+        //     }
+        //     comp.ifs = ifs;
+        // }
+        comps[i] = comp;
+    }
+    return comps;
+}
+
+function ast_for_itercomp(c, n, type) {
+    /* testlist_comp: (test|star_expr)
+     *                ( comp_for | (',' (test|star_expr))* [','] ) */
+    var elt;
+    var comps;
+    var ch;
+
+    goog.asserts.assert(NCH(n) > 1);
+
+    ch = CHILD(n, 0);
+    elt = ast_for_expr(c, ch);
+
+    // @meredydd Don't know what Starred_kind is
+    // I think it should be in our SYM tble
+    // if (elt->kind == Starred_kind) {
+    //     ast_error(c, ch, "iterable unpacking cannot be used in comprehension");
+    //     return NULL;
+    // }
+
+    comps = ast_for_comprehension(c, CHILD(n, 1));
+
+    if (type == COMP_GENEXP) {
+        return new Sk.ast.GeneratorExp(elt, comps, LINENO(n), n.col_offset,
+                            n.end_lineno, n.end_col_offset);
+    } else if (type == COMP_LISTCOMP) {
+        return new Sk.ast.ListComp(elt, comps, LINENO(n), n.col_offset,
+                        n.end_lineno, n.end_col_offset);
+    } else if (type == COMP_SETCOMP) {
+        return new Sk.ast.SetComp(elt, comps, LINENO(n), n.col_offset,
+                       n.end_lineno, n.end_col_offset);
+    } else {
+        /* Should never happen */
+        return null;
     }
 }
 
