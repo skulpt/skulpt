@@ -662,7 +662,7 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.ast.Name:
             this.addDef(e.id, e.ctx === Sk.ast.Load ? USE : DEF_LOCAL, e.lineno);
             break;
-        case Sk.ast.Constant:
+        case Sk.ast.NameConstant:
             break;
         case Sk.ast.List:
         case Sk.ast.Tuple:

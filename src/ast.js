@@ -985,7 +985,7 @@ function astForTrailer (c, n, leftExpr) {
     REQ(n, SYM.trailer);
     if (CHILD(n, 0).type === TOK.T_LPAR) {
         if (NCH(n) === 2) {
-            return new Sk.ast.Call(leftExpr, [], [], null, null, n.lineno, n.col_offset);
+            return new Sk.ast.Call(leftExpr, [], [], n.lineno, n.col_offset);
         }
         else {
             return astForCall(c, CHILD(n, 1), leftExpr);
@@ -2238,21 +2238,18 @@ function ast_for_atom(c, n)
             var s = STR(ch);
             if (s.length >= 4 && s.length <= 5) {
                 if (s === "None") {
-                    return new Sk.ast.Constant(Sk.builtin.none.none$, n.lineno, n.col_offset);
+                    return new Sk.ast.NameConstant(Sk.builtin.none.none$, n.lineno, n.col_offset);
                 }
 
                 if (s === "True") {
-                    return new Sk.ast.Constant(Sk.builtin.bool.true$, n.lineno, n.col_offset);
+                    return new Sk.ast.NameConstant(Sk.builtin.bool.true$, n.lineno, n.col_offset);
                 }
 
                 if (s === "False") {
-                    return new Sk.ast.Constant(Sk.builtin.bool.false$, n.lineno, n.col_offset);
+                    return new Sk.ast.NameConstant(Sk.builtin.bool.false$, n.lineno, n.col_offset);
                 }
             }
             name = new_identifier(s, c);
-            if (!name) {
-                return null;
-            }
             /* All names start in Load context, but may later be changed. */
             return new Sk.ast.Name(name, Sk.ast.Load, LINENO(n), n.col_offset,
                         n.end_lineno, n.end_col_offset);
@@ -2283,41 +2280,18 @@ function ast_for_atom(c, n)
             //     }
             //     return NULL;
             // }
-            return new Sk.ast.Str(str, null, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset);
+            return new Sk.ast.Str(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset);
         }
-        case TOK.T_NUMBER: {
-            var pynum;
-            /* Underscores in numeric literals are only allowed in Python 3.6 or greater */
-            /* Check for underscores here rather than in parse_number so we can report a line number on error */
-            if (c.c_feature_version < 6 && STR(ch).indexOf('_') != -1) {
-                ast_error(c, ch,
-                        "Underscores in numeric literals are only supported in Python 3.6 and greater");
-                return null;
-            }
-            pynum = parsenumber(c, STR(ch));
-            if (!pynum)
-                return null;
-
-            // if (PyArena_AddPyObject(c->c_arena, pynum) < 0) {
-            //     Py_DECREF(pynum);
-            //     return NULL;
-            // }
-            
-            // @meredydd somehow we're missing an argument in the Constant
-            // return new Sk.ast.Constant(pynum, null, LINENO(n), n.col_offset,
-            //                 n.end_lineno, n.end_col_offset);
-            return new Sk.ast.Constant(pynum, LINENO(n), n.col_offset,
-                             n.end_lineno, n.end_col_offset);
-        }
+        case TOK.T_NUMBER:
+            return new Sk.ast.Num(parsenumber(c, ch.value, n.lineno), n.lineno, n.col_offset);
         case TOK.T_ELLIPSIS: /* Ellipsis */
-            goog.assert.fail('pls. make a constant for elipsis like None');
-            return new Sk.ast.Constant('Py_Ellipsis', null, LINENO(n), n.col_offset,
+            return new Sk.ast.Ellipsis(LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
         case TOK.T_LPAR: /* some parenthesized expressions */
             ch = CHILD(n, 1);
 
             if (TYPE(ch) == TOK.T_RPAR)
-                return new Sk.ast.Tuple(null, Load, LINENO(n), n.col_offset,
+                return new Sk.ast.Tuple([], Load, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
 
             if (TYPE(ch) == SYM.yield_expr) {
@@ -2339,7 +2313,7 @@ function ast_for_atom(c, n)
             ch = CHILD(n, 1);
 
             if (TYPE(ch) == TOK.T_RSQB)
-                return new Sk.ast.List(null, Sk.ast.Load, LINENO(n), n.col_offset,
+                return new Sk.ast.List([], Sk.ast.Load, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
 
             REQ(ch, SYM.testlist_comp);

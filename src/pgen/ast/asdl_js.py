@@ -240,6 +240,10 @@ class FunctionVisitor(PrototypeVisitor):
             if not opt and not (argtype == "bool" or argtype == "int"):
                 emit("goog.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
 
+        for argtype, argname, opt in attrs:
+            if not opt:
+                emit("goog.asserts.assert(%s !== null && %s !== undefined)" % (argname, argname), 1)
+
         if union:
             self.emit_body_union(name, args, attrs)
         else:

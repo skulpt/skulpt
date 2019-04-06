@@ -611,7 +611,7 @@ Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
         out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
         this._checkSuspension();
     }
-    else if (ctx === Del) {
+    else if (ctx === Sk.ast.Del) {
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
     }
     else {
@@ -797,13 +797,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             break;
         case Sk.ast.Name:
             return this.nameop(e.id, e.ctx, data);
-        case Sk.ast.Constant:
+        case Sk.ast.NameConstant:
             if (e.ctx === Sk.ast.Store || e.ctx === Sk.ast.AugStore || e.ctx === Sk.ast.Del) {
                 throw new Sk.builtin.SyntaxError("can not assign to a constant name");
             }
-
-            // @meredydd plz fix :P 
-            // compiler.c does ADDOP_LOAD_CONST(e->v.Constant.value)
 
             switch (e.value) {
                 case Sk.builtin.none.none$:
@@ -813,8 +810,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 case Sk.builtin.bool.false$:
                     return "Sk.builtin.bool.false$";
                 default:
-                    return e.value.v;
+                    goog.asserts.fail("invalid named constant")
             }
+            break;
 
         case Sk.ast.List:
             return this.ctuplelistorset(e, data, 'list');
@@ -2464,29 +2462,6 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     for (i = 0; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
-};
-
-Compiler.prototype.cprint = function (s) {
-    var i;
-    var n;
-    var dest;
-    goog.asserts.assert(s instanceof Sk.ast.Print);
-    dest = "null";
-    if (s.dest) {
-        dest = this.vexpr(s.dest);
-    }
-
-    n = s.values.length;
-    // todo; dest disabled
-    for (i = 0; i < n; ++i) {
-        out("$ret = Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
-        this._checkSuspension(s);
-    }
-    if (s.nl) {
-        out("$ret = Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
-        this._checkSuspension(s);
-    }
-
 };
 
 // TODO this is for Python 2 only;
