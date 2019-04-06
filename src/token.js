@@ -80,6 +80,56 @@ var tokens = {
 };
 // #--end constants--
 
+var EXACT_TOKEN_TYPES = {
+    '!=': tokens.NOTEQUAL,
+    '%': tokens.PERCENT,
+    '%=': tokens.PERCENTEQUAL,
+    '&': tokens.AMPER,
+    '&=': tokens.AMPEREQUAL,
+    '(': tokens.LPAR,
+    ')': tokens.RPAR,
+    '*': tokens.STAR,
+    '**': tokens.DOUBLESTAR,
+    '**=': tokens.DOUBLESTAREQUAL,
+    '*=': tokens.STAREQUAL,
+    '+': tokens.PLUS,
+    '+=': tokens.PLUSEQUAL,
+    ',': tokens.COMMA,
+    '-': tokens.MINUS,
+    '-=': tokens.MINEQUAL,
+    '->': tokens.RARROW,
+    '.': tokens.DOT,
+    '...': tokens.ELLIPSIS,
+    '/': tokens.SLASH,
+    '//': tokens.DOUBLESLASH,
+    '//=': tokens.DOUBLESLASHEQUAL,
+    '/=': tokens.SLASHEQUAL,
+    ':': tokens.COLON,
+    ':=': tokens.COLONEQUAL,
+    ';': tokens.SEMI,
+    '<': tokens.LESS,
+    '<<': tokens.LEFTSHIFT,
+    '<<=': tokens.LEFTSHIFTEQUAL,
+    '<=': tokens.LESSEQUAL,
+    '=': tokens.EQUAL,
+    '==': tokens.EQEQUAL,
+    '>': tokens.GREATER,
+    '>=': tokens.GREATEREQUAL,
+    '>>': tokens.RIGHTSHIFT,
+    '>>=': tokens.RIGHTSHIFTEQUAL,
+    '@': tokens.AT,
+    '@=': tokens.ATEQUAL,
+    '[': tokens.LSQB,
+    ']': tokens.RSQB,
+    '^': tokens.CIRCUMFLEX,
+    '^=': tokens.CIRCUMFLEXEQUAL,
+    '{': tokens.LBRACE,
+    '|': tokens.VBAR,
+    '|=': tokens.VBAREQUAL,
+    '}': tokens.RBRACE,
+    '~': tokens.TILDE,
+}
+
 var tok_name = {};
 (function() {
     for (var i in tokens) {
@@ -104,6 +154,7 @@ function ISEOF(x) {
 Sk.token = {};
 Sk.token.tokens = tokens;
 Sk.token.tok_name = tok_name;
+Sk.token.EXACT_TOKEN_TYPES = EXACT_TOKEN_TYPES;
 Sk.token.ISTERMINAL = ISTERMINAL;
 Sk.token.ISNONTERMINAL = ISNONTERMINAL;
 Sk.token.ISEOF = ISEOF;
@@ -111,6 +162,7 @@ Sk.token.ISEOF = ISEOF;
 goog.exportSymbol("Sk.token", Sk.token);
 goog.exportSymbol("Sk.token.tokens", Sk.token.tokens);
 goog.exportSymbol("Sk.token.tok_name", Sk.token.tok_name);
+goog.exportSymbol("Sk.token.EXACT_TOKEN_TYPES");
 goog.exportSymbol("Sk.token.ISTERMINAL", Sk.token.ISTERMINAL);
 goog.exportSymbol("Sk.token.ISNONTERMINAL", Sk.token.ISNONTERMINAL);
 goog.exportSymbol("Sk.token.ISEOF", Sk.token.ISEOF);
