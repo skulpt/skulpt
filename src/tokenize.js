@@ -191,7 +191,16 @@ function isidentifier(str) {
     var Other_ID_Continue = '[\\u00B7\\u0387\\u1369-\\u1371\\u19DA]';
     var id_start = group(Lu, Ll,Lt, Lm, Lo, Nl, the_underscore, Other_ID_Start);
     var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
-    var r = new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
+    var r;
+    // Fall back if we don't support unicode
+    // @albertjan is this even slightly acceptable?
+    try {
+        r = new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
+    } catch(e) {
+        id_start = group(Lu, Ll, the_underscore);
+        id_continue = group(id_start, '[0-9]');
+        r = new RegExp('^' + id_start + '+' + id_continue + '*$');
+    }
     return r.test(normalized);
 }
 
@@ -324,7 +333,7 @@ function _tokenize(readline, encoding, yield_) {
         }
 
         while (pos < max) {
-            console.log("pos:"+pos+":"+max);
+            //console.log("pos:"+pos+":"+max);
             // js regexes don't return any info about matches, other than the
             // content. we'd like to put a \w+ before pseudomatch, but then we
             // can't get any data
@@ -347,7 +356,7 @@ function _tokenize(readline, encoding, yield_) {
 
                 var token = line.substring(start, end);
                 var initial = line[start];
-                console.log("token:",token, "initial:",initial, start, end);
+                //console.log("token:",token, "initial:",initial, start, end);
                 if (contains(numchars, initial) ||                 // ordinary number
                     (initial == '.' && token != '.' && token != '...')) {
                     yield_(new TokenInfo(tokens.T_NUMBER, token, spos, epos, line));
