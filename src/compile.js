@@ -367,13 +367,14 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
 Compiler.prototype.cdict = function (e) {
     var v;
     var i;
-    var items;
-    goog.asserts.assert(e.values.length === e.keys.length);
-    items = [];
-    for (i = 0; i < e.values.length; ++i) {
-        v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
-        items.push(this.vexpr(e.keys[i]));
-        items.push(v);
+    var items = [];
+    if (e.values) {
+        goog.asserts.assert(e.values.length === e.keys.length);
+        for (i = 0; i < e.values.length; ++i) {
+            v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
+            items.push(this.vexpr(e.keys[i]));
+            items.push(v);
+        }
     }
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };
@@ -424,7 +425,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     target = this.vexpr(l.target, nexti);
 
-    n = l.ifs.length;
+    n = l.ifs ? l.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         ifres = this.vexpr(l.ifs[i]);
         this._jumpfalse(ifres, start);
@@ -796,10 +797,13 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             break;
         case Sk.ast.Name:
             return this.nameop(e.id, e.ctx, data);
-        case Sk.ast.NameConstant:
+        case Sk.ast.Constant:
             if (e.ctx === Sk.ast.Store || e.ctx === Sk.ast.AugStore || e.ctx === Sk.ast.Del) {
                 throw new Sk.builtin.SyntaxError("can not assign to a constant name");
             }
+
+            // @meredydd plz fix :P 
+            // compiler.c does ADDOP_LOAD_CONST(e->v.Constant.value)
 
             switch (e.value) {
                 case Sk.builtin.none.none$:
@@ -809,9 +813,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 case Sk.builtin.bool.false$:
                     return "Sk.builtin.bool.false$";
                 default:
-                    goog.asserts.fail("invalid NameConstant");
+                    return e.value.v;
             }
-            break;
 
         case Sk.ast.List:
             return this.ctuplelistorset(e, data, 'list');
@@ -820,7 +823,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.ast.Set:
             return this.ctuplelistorset(e, data, 'set');
         default:
-            goog.asserts.fail("unhandled case Sk.ast.in vexpr");
+            goog.asserts.fail("unhandled case " + e.constructor + " vexpr");
     }
 };
 
@@ -2011,7 +2014,7 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     target = this.vexpr(ge.target, nexti);
 
-    n = ge.ifs.length;
+    n = ge.ifs ? ge.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         this.annotateSource(ge.ifs[i]);
 

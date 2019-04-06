@@ -303,12 +303,14 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
     var len;
-    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
-    len = nodes.length;
-    for (i = 0; i < len; ++i) {
-        val = nodes[i];
-        if (val) {
-            this.visitExpr(val);
+    // goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
+    if (nodes) {
+        len = nodes.length;
+        for (i = 0; i < len; ++i) {
+            val = nodes[i];
+            if (val) {
+                this.visitExpr(val);
+            }
         }
     }
 };
@@ -660,7 +662,7 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.ast.Name:
             this.addDef(e.id, e.ctx === Sk.ast.Load ? USE : DEF_LOCAL, e.lineno);
             break;
-        case Sk.ast.NameConstant:
+        case Sk.ast.Constant:
             break;
         case Sk.ast.List:
         case Sk.ast.Tuple:
