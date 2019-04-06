@@ -111,6 +111,9 @@ function numStmts (n) {
 }
 
 function forbiddenCheck (c, n, x, lineno) {
+    if (x instanceof Sk.builtin.str) {
+        x = x.v;
+    }
     if (x === "None") {
         throw new Sk.builtin.SyntaxError("assignment to None", c.c_filename, lineno);
     }
@@ -1316,23 +1319,45 @@ function astForClassBases (c, n) {
 }
 
 function astForClassdef (c, n, decoratorSeq) {
-    /* classdef: 'class' NAME ['(' testlist ')'] ':' suite */
-    var s;
-    var bases;
+    /* classdef: 'class' NAME ['(' arglist ')'] ':' suite */
     var classname;
+    var call;
+    var s;
+
     REQ(n, SYM.classdef);
-    forbiddenCheck(c, n, CHILD(n, 1).value, n.lineno);
-    classname = strobj(CHILD(n, 1).value);
-    if (NCH(n) === 4) {
-        return new Sk.ast.ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
-    }
-    if (CHILD(n, 3).type === TOK.T_RPAR) {
-        return new Sk.ast.ClassDef(classname, [], astForSuite(c, CHILD(n, 5)), decoratorSeq, n.lineno, n.col_offset);
+
+    if (NCH(n) == 4) { /* class NAME ':' suite */
+        s = astForSuite(c, CHILD(n, 3));
+        classname = new_identifier(CHILD(n, 1).value);
+        forbiddenCheck(c, CHILD(n,3), classname, n.lineno);
+
+        return new Sk.ast.ClassDef(classname, [], [], s, decoratorSeq,
+                                    /*TODO docstring*/null, LINENO(n), n.col_offset);
     }
 
-    bases = astForClassBases(c, CHILD(n, 3));
+    if (TYPE(CHILD(n, 3)) === TOK.T_RPAR) { /* class NAME '(' ')' ':' suite */
+        s = astForSuite(c, CHILD(n, 5));
+        classname = new_identifier(CHILD(n, 1).value);
+        forbiddenCheck(c, CHILD(n, 3), classname, CHILD(n,e).lineno);
+        return new Sk.ast.ClassDef(classname, [], [], s, decoratorSeq,
+                                    /*TODO docstring*/null, LINENO(n), n.col_offset);
+    }
+
+    /* class NAME '(' arglist ')' ':' suite */
+    /* build up a fake Call node so we can extract its pieces */
+    {
+        var dummy_name;
+        var dummy;
+        dummy_name = new_identifier(CHILD(n, 1));
+        dummy = new Sk.ast.Name(dummy_name, Sk.ast.Load, LINENO(n), n.col_offset);
+        call = astForCall(c, CHILD(n, 3), dummy, false);
+    }
     s = astForSuite(c, CHILD(n, 6));
-    return new Sk.ast.ClassDef(classname, bases, s, decoratorSeq, n.lineno, n.col_offset);
+    classname = new_identifier(CHILD(n, 1).value);
+    forbiddenCheck(c, CHILD(n,1), classname, CHILD(n,1).lineno);
+
+    return new Sk.ast.ClassDef(classname, call.args, call.keywords, s,
+                               decoratorSeq, /*TODO docstring*/null, LINENO(n), n.col_offset);
 }
 
 function astForLambdef (c, n) {
@@ -1523,7 +1548,7 @@ function count_comp_ifs(c, n)
     var n_ifs = 0;
 
     while (true) {
-        REQ(n, SYMcomp_iter);
+        REQ(n, SYM.comp_iter);
         if (TYPE(CHILD(n, 0)) == SYM.comp_for)
             return n_ifs;
         n = CHILD(n, 0);
@@ -2291,7 +2316,7 @@ function ast_for_atom(c, n)
             ch = CHILD(n, 1);
 
             if (TYPE(ch) == TOK.T_RPAR)
-                return new Sk.ast.Tuple([], Load, LINENO(n), n.col_offset,
+                return new Sk.ast.Tuple([], Sk.ast.Load, LINENO(n), n.col_offset,
                             n.end_lineno, n.end_col_offset);
 
             if (TYPE(ch) == SYM.yield_expr) {
