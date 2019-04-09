@@ -2683,7 +2683,7 @@ function ast_for_expr (c, n) {
                 var is_from = false;
                 exp = null;
                 if (NCH(n) > 1) {
-                    an = CHILD(m, 1); /* yield_arg */
+                    an = CHILD(n, 1); /* yield_arg */
                 }
 
                 if (an) {
