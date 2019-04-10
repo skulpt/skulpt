@@ -13,7 +13,22 @@ var TOK = Sk.token.tokens;
 var COMP_GENEXP = 0;
 var COMP_LISTCOMP = 1;
 var COMP_SETCOMP = 2;
+var NULL = null;
+var _slice_kind = { 
+    Slice_kind: 1,
+    ExtSlice_kind: 2, 
+    Index_kind: 3
+};
 
+var _expr_kind = {
+    BoolOp_kind: 1, NamedExpr_kind: 2, BinOp_kind: 3, UnaryOp_kind: 4,
+    Lambda_kind: 5, IfExp_kind: 6, Dict_kind: 7, Set_kind: 8,
+    ListComp_kind: 9, SetComp_kind: 10, DictComp_kind: 11,
+    GeneratorExp_kind: 12, Await_kind: 13, Yield_kind: 14,
+    YieldFrom_kind: 15, Compare_kind: 16, Call_kind: 17,
+    FormattedValue_kind: 18, JoinedStr_kind: 19, Constant_kind: 20,
+    Attribute_kind: 21, Subscript_kind: 22, Starred_kind: 23,
+    Name_kind: 24, List_kind: 25, Tuple_kind: 26 };
 
 /** @constructor */
 function Compiling (encoding, filename, c_flags) {
@@ -451,7 +466,7 @@ function astForDecorator (c, n) {
         return new Sk.astnodes.Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
     }
     else {
-        return astForCall(c, CHILD(n, 3), nameExpr);
+        return ast_for_call(c, CHILD(n, 3), nameExpr);
     }
 }
 
@@ -880,155 +895,227 @@ function astForForStmt (c, n) {
         seq, n.lineno, n.col_offset);
 }
 
-function astForCall (c, n, func) {
+function ast_for_call(c, n, func, allowgen)
+{
     /*
-      arglist: (argument ',')* (argument [',']| '*' test [',' '**' test]
-               | '**' test)
-      argument: test [comp_for] | test '=' test       # Really [keyword '='] test
+      arglist: argument (',' argument)*  [',']
+      argument: ( test [comp_for] | '*' test | test '=' test | '**' test )
     */
-    var tmp;
-    var k;
-    var key;
-    var e;
-    var kwarg;
-    var vararg;
-    var keywords;
+
+    var i, nargs, nkeywords;
+    var ndoublestars;
     var args;
-    var ch;
-    var i;
-    var ngens;
-    var nkeywords;
-    var nargs;
+    var keywords;
 
     REQ(n, SYM.arglist);
+
     nargs = 0;
     nkeywords = 0;
-    ngens = 0;
     for (i = 0; i < NCH(n); i++) {
-        ch = CHILD(n, i);
-        if (ch.type === SYM.argument) {
-            if (NCH(ch) === 1) {
+        var ch = CHILD(n, i);
+        if (TYPE(ch) == SYM.argument) {
+            if (NCH(ch) == 1) {
                 nargs++;
-            }
-            else if (CHILD(ch, 1).type === SYM.comp_for) {
-                ngens++;
-            }
-            else {
+            } else if (TYPE(CHILD(ch, 1)) == SYM.comp_for) {
+                nargs++;
+                if (!allowgen) {
+                    ast_error(c, ch, "invalid syntax");
+                    return NULL;
+                }
+                if (NCH(n) > 1) {
+                    ast_error(c, ch, "Generator expression must be parenthesized");
+                    return NULL;
+                }
+            } else if (TYPE(CHILD(ch, 0)) == TOK.T_STAR) {
+                nargs++;
+            } else {
+                /* TYPE(CHILD(ch, 0)) == DOUBLESTAR or keyword argument */
                 nkeywords++;
             }
         }
     }
-    if (ngens > 1 || (ngens && (nargs || nkeywords))) {
-        throw new Sk.builtin.SyntaxError("Generator expression must be parenthesized if not sole argument", c.c_filename, n.lineno);
-    }
-    if (nargs + nkeywords + ngens > 255) {
-        throw new Sk.builtin.SyntaxError("more than 255 arguments", c.c_filename, n.lineno);
-    }
-    args = [];
-    keywords = [];
-    nargs = 0;
-    nkeywords = 0;
-    vararg = null;
-    kwarg = null;
+
+    args = []
+    keywords = []
+
+    nargs = 0;  /* positional arguments + iterable argument unpackings */
+    nkeywords = 0;  /* keyword arguments + keyword argument unpackings */
+    ndoublestars = 0;  /* just keyword argument unpackings */
     for (i = 0; i < NCH(n); i++) {
         ch = CHILD(n, i);
-        if (ch.type === SYM.argument) {
-            if (NCH(ch) === 1) {
+        if (TYPE(ch) == SYM.argument) {
+            var e;
+            var chch = CHILD(ch, 0);
+            if (NCH(ch) == 1) {
+                /* a positional argument */
                 if (nkeywords) {
-                    throw new Sk.builtin.SyntaxError("non-keyword arg after keyword arg", c.c_filename, n.lineno);
+                    if (ndoublestars) {
+                        ast_error(c, chch,
+                                "positional argument follows " +
+                                "keyword argument unpacking");
+                    } else {
+                        ast_error(c, chch,
+                                "positional argument follows " +
+                                "keyword argument");
+                    }
+                    return NULL;
                 }
-                if (vararg) {
-                    throw new Sk.builtin.SyntaxError("only named arguments may follow *expression", c.c_filename, n.lineno);
+                e = ast_for_expr(c, chch);
+                if (!e) {
+                    return NULL;
                 }
-                args[nargs++] = ast_for_expr(c, CHILD(ch, 0));
-            }
-            else if (CHILD(ch, 1).type === SYM.comp_for) {
-                args[nargs++] = ast_for_gen_expr(c, ch);
-            }
-            else {
-                e = ast_for_expr(c, CHILD(ch, 0));
-                if (e.constructor === Sk.astnodes.Lambda) {
-                    throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
+                args[nargs++] = e;
+            } else if (TYPE(chch) == TOK.T_STAR) {
+                /* an iterable argument unpacking */
+                var starred;
+                if (ndoublestars) {
+                    ast_error(c, chch,
+                            "iterable argument unpacking follows " +
+                            "keyword argument unpacking");
+                    return NULL;
                 }
-                else if (e.constructor !== Sk.astnodes.Name) {
-                    throw new Sk.builtin.SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
+                e = ast_for_expr(c, CHILD(ch, 1));
+                if (!e) {
+                    return NULL;
                 }
-                key = e.id;
-                forbiddenCheck(c, CHILD(ch, 0), key, n.lineno);
-                for (k = 0; k < nkeywords; ++k) {
+                starred = new Sk.astnodes.Starred(e, Sk.astnodes.Load, LINENO(chch),
+                        chch.col_offset);
+                args[nargs++] = starred;
+            } else if (TYPE(chch) == TOK.T_DOUBLESTAR) {
+                /* a keyword argument unpacking */
+                var kw;
+                i++;
+                e = ast_for_expr(c, CHILD(ch, 1));
+                if (!e) {
+                    return NULL;
+                }
+                kw = new Sk.astnodes.keyword(NULL, e);
+                keywords[nkeywords++] = kw;
+                ndoublestars++;
+            } else if (TYPE(CHILD(ch, 1)) == SYM.comp_for) {
+                /* the lone generator expression */
+                e = ast_for_genexp(c, ch);
+                if (!e) {
+                    return NULL;
+                }
+                args[nargs++] = e;
+            } else {
+                /* a keyword argument */
+                var kw;
+                var key, tmp;
+                var k;
+
+                /* chch is test, but must be an identifier? */
+                e = ast_for_expr(c, chch);
+                if (!e) {
+                    return NULL;
+                }
+                /* f(lambda x: x[0] = 3) ends up getting parsed with
+                 * LHS test = lambda x: x[0], and RHS test = 3.
+                 * SF bug 132313 points out that complaining about a keyword
+                 * then is very confusing.
+                 */
+                if (e.kind == _expr_kind._Lambda_kind) {
+                    ast_error(c, chch,
+                            "lambda cannot contain assignment");
+                    return NULL;
+                }
+                else if (e.kind != _expr_kind.Name_kind) {
+                    ast_error(c, chch,
+                            "keyword can't be an expression");
+                    return NULL;
+                }
+                else if (forbiddenCheck(c, e.v.Name.id, ch, 1)) {
+                    return NULL;
+                }
+                key = e.v.Name.id;
+                for (k = 0; k < nkeywords; k++) {
                     tmp = keywords[k].arg;
-                    if (tmp === key) {
-                        throw new Sk.builtin.SyntaxError("keyword argument repeated", c.c_filename, n.lineno);
+                    if (tmp && tmp === key) {
+                        ast_error(c, chch,
+                                "keyword argument repeated");
+                        return NULL;
                     }
                 }
-                keywords[nkeywords++] = new Sk.astnodes.keyword(key, ast_for_expr(c, CHILD(ch, 2)));
+                e = ast_for_expr(c, CHILD(ch, 2));
+                if (!e)
+                    return NULL;
+                kw = new Sk.astnodes.keyword(key, e);
+                keywords[nkeywords++] = kw;
             }
         }
-        else if (ch.type === TOK.T_STAR) {
-            vararg = ast_for_expr(c, CHILD(n, ++i));
-        }
-        else if (ch.type === TOK.T_DOUBLESTAR) {
-            kwarg = ast_for_expr(c, CHILD(n, ++i));
-        }
     }
+
     return new Sk.astnodes.Call(func, args, keywords, func.lineno, func.col_offset);
 }
 
-function astForTrailer (c, n, leftExpr) {
-    /* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME 
-     subscriptlist: subscript (',' subscript)* [',']
-     subscript: '.' '.' '.' | test | [test] ':' [test] [sliceop]
+function ast_for_trailer(c, n, left_expr) {
+    /* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
+       subscriptlist: subscript (',' subscript)* [',']
+       subscript: '.' '.' '.' | test | [test] ':' [test] [sliceop]
      */
-    var e;
-    var elts;
-    var slc;
-    var j;
-    var slices;
-    var simple;
     REQ(n, SYM.trailer);
-    if (CHILD(n, 0).type === TOK.T_LPAR) {
-        if (NCH(n) === 2) {
-            return new Sk.astnodes.Call(leftExpr, [], [], n.lineno, n.col_offset);
-        }
-        else {
-            return astForCall(c, CHILD(n, 1), leftExpr);
-        }
+    if (TYPE(CHILD(n, 0)) == TOK.T_LPAR) {
+        if (NCH(n) == 2)
+            return Call(left_expr, NULL, NULL, LINENO(n),
+                        n.col_offset);
+        else
+            return ast_for_call(c, CHILD(n, 1), left_expr, true);
     }
-    else if (CHILD(n, 0).type === TOK.T_DOT) {
-        return new Sk.astnodes.Attribute(leftExpr, strobj(CHILD(n, 1).value), Sk.astnodes.Load, n.lineno, n.col_offset);
+    else if (TYPE(CHILD(n, 0)) == TOK.T_DOT) {
+        var attr_id = new_identifier(CHILD(n, 1));
+        if (!attr_id)
+            return NULL;
+        return new Sk.astnodes.Attribute(left_expr, attr_id, Sk.astnodes.Load,
+                         LINENO(n), n.col_offset);
     }
     else {
         REQ(CHILD(n, 0), TOK.T_LSQB);
         REQ(CHILD(n, 2), TOK.T_RSQB);
         n = CHILD(n, 1);
-        if (NCH(n) === 1) {
-            return new Sk.astnodes.Subscript(leftExpr, astForSlice(c, CHILD(n, 0)), Sk.astnodes.Load, n.lineno, n.col_offset);
+        if (NCH(n) == 1) {
+            var slc = ast_for_slice(c, CHILD(n, 0));
+            if (!slc) {
+                return NULL;
+            }
+            return new Sk.astnodes.Subscript(left_expr, slc, Sk.astnodes.Load, LINENO(n), n.col_offset);
         }
         else {
-            /* The grammar is ambiguous here. The ambiguity is resolved 
-             by treating the sequence as a tuple literal if there are
-             no slice features.
-             */
-            simple = true;
-            slices = [];
+            /* The grammar is ambiguous here. The ambiguity is resolved
+               by treating the sequence as a tuple literal if there are
+               no slice features.
+            */
+            var j;
+            var slc;
+            var e;
+            var simple = 1;
+            var slices = [], elts;
+
             for (j = 0; j < NCH(n); j += 2) {
-                slc = astForSlice(c, CHILD(n, j));
-                if (slc.constructor !== Sk.astnodes.Index) {
-                    simple = false;
+                slc = ast_for_slice(c, CHILD(n, j));
+                if (!slc) {
+                    return NULL;
+                }
+                if (slc.kind != _slice_kind.Index_kind) {
+                    simple = 0;
                 }
                 slices[j / 2] = slc;
             }
             if (!simple) {
-                return new Sk.astnodes.Subscript(leftExpr, new Sk.astnodes.ExtSlice(slices), Sk.astnodes.Load, n.lineno, n.col_offset);
+                return new Sk.astnodes.Subscript(left_expr, new Sk.astnodes.ExtSlice(slices),
+                                Sk.astnodes.Load, LINENO(n), n.col_offset);
             }
+            /* extract Index values and put them in a Tuple */
             elts = [];
             for (j = 0; j < slices.length; ++j) {
                 slc = slices[j];
-                Sk.asserts.assert(slc.constructor === Sk.astnodes.Index && slc.value !== null && slc.value !== undefined);
-                elts[j] = slc.value;
+                assert(slc.kind == _slice_kind.Index_kind  && slc.v.Index.value);
+                elts[j] = slc.v.Index.value;
             }
-            e = new Sk.astnodes.Tuple(elts, Sk.astnodes.Load, n.lineno, n.col_offset);
-            return new Sk.astnodes.Subscript(leftExpr, new Sk.astnodes.Index(e), Sk.astnodes.Load, n.lineno, n.col_offset);
+            e = new Sk.astnodes.Tuple(elts, Load, LINENO(n), n.col_offset);
+
+            return new Sk.astnodes.Subscript(left_expr, new Sk.astnodes.Index(e),
+                             Sk.astnodes.Load, LINENO(n), n.col_offset);
         }
     }
 }
@@ -1280,6 +1367,83 @@ function astForArguments (c, n) {
     return new Sk.astnodes.arguments(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
 }
 
+function ast_for_funcdef(c, n, decorator_seq) {
+    /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
+    return ast_for_funcdef_impl(c, n, decorator_seq,
+        false /* is_async */);
+}
+
+function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
+    /* funcdef: 'def' NAME parameters ['->' test] ':' [TYPE_COMMENT] suite */
+    var n = is_async ? CHILD(n0, 1) : n0;
+    var name;
+    var args;
+    var body;
+    var returns = NULL;
+    var name_i = 1;
+    var end_lineno, end_col_offset;
+    var tc;
+    var type_comment = NULL;
+
+    if (is_async && c.c_feature_version < 5) {
+        ast_error(c, n,
+                  "Async functions are only supported in Python 3.5 and greater");
+        return NULL;
+    }
+
+    REQ(n, SYM.funcdef);
+
+    name = new_identifier(CHILD(n, name_i));
+
+    if (forbiddenCheck(c, name, CHILD(n, name_i), 0)) {
+        return NULL;
+    }
+    args = ast_for_arguments(c, CHILD(n, name_i + 1));
+    if (!args) {
+        return NULL;
+    }
+    if (TYPE(CHILD(n, name_i+2)) == TOK.T_RARROW) {
+        returns = ast_for_expr(c, CHILD(n, name_i + 3));
+        if (!returns) {
+            return NULL
+        }
+        name_i += 2;
+    }
+    // if (TYPE(CHILD(n, name_i + 3)) == TOK.T_TYPE_COMMENT) {
+    //     type_comment = NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
+    //     if (!type_comment) 
+    //         return NULL;
+    //     name_i += 1;
+    // }
+    body = ast_for_suite(c, CHILD(n, name_i + 3));
+    if (!body) {
+        return NULL;
+    }
+    // get_last_end_pos(body, &end_lineno, &end_col_offset);
+
+    if (NCH(CHILD(n, name_i + 3)) > 1) {
+        /* Check if the suite has a type comment in it. */
+        tc = CHILD(CHILD(n, name_i + 3), 1);
+
+        if (TYPE(tc) == TYPE_COMMENT) {
+            if (type_comment != NULL) {
+                ast_error(c, n, "Cannot have two type comments on def");
+                return NULL;
+            }
+            type_comment = NEW_TYPE_COMMENT(tc);
+            if (!type_comment)
+                return NULL;
+        }
+    }
+
+    if (is_async)
+        return new Sk.astnodes.AsyncFunctionDef(name, args, body, decorator_seq, returns, type_comment,
+                                LINENO(n0), n0.col_offset, end_lineno, end_col_offset);
+    else
+        return new Sk.astnodes.FunctionDef(name, args, body, decorator_seq, returns, type_comment,
+                           LINENO(n), n.col_offset, end_lineno, end_col_offset);
+}
+
 function astForFuncdef(c, n0, decorator_seq, is_async)
 {
     /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
@@ -1363,7 +1527,7 @@ function astForClassdef (c, n, decoratorSeq) {
         var dummy;
         dummy_name = new_identifier(CHILD(n, 1));
         dummy = new Sk.astnodes.Name(dummy_name, Sk.astnodes.Load, LINENO(n), n.col_offset);
-        call = astForCall(c, CHILD(n, 3), dummy, false);
+        call = ast_for_call(c, CHILD(n, 3), dummy, false);
     }
     s = astForSuite(c, CHILD(n, 6));
     classname = new_identifier(CHILD(n, 1).value);
@@ -1714,12 +1878,10 @@ function ast_for_itercomp(c, n, type) {
     ch = CHILD(n, 0);
     elt = ast_for_expr(c, ch);
 
-    // @meredydd Don't know what Starred_kind is
-    // I think it should be in our SYM tble
-    // if (elt->kind == Starred_kind) {
-    //     ast_error(c, ch, "iterable unpacking cannot be used in comprehension");
-    //     return NULL;
-    // }
+    if (elt.constructor === Sk.astnodes.Starred) {
+        ast_error(c, ch, "iterable unpacking cannot be used in comprehension");
+        return NULL;
+    }
 
     comps = ast_for_comprehension(c, CHILD(n, 1));
 
@@ -2551,7 +2713,7 @@ function astForAtomExpr(c, n) {
         if (ch.type !== SYM.trailer) {
             break;
         }
-        tmp = astForTrailer(c, ch, e);
+        tmp = ast_for_trailer(c, ch, e);
         if (!tmp) {
             return null;
         }
@@ -2594,7 +2756,7 @@ function astForStarred(c, n) {
     REQ(n, SYM.star_expr);
 
     /* The Load context is changed later */
-    return Starred(ast_for_expr(c, CHILD(n ,1)), Sk.astnodes.Load, n.lineno, n.col_offset /*, c.c_arena */)
+    return new Sk.astnodes.Starred(ast_for_expr(c, CHILD(n ,1)), Sk.astnodes.Load, n.lineno, n.col_offset /*, c.c_arena */)
 }
 
 function ast_for_expr (c, n) {

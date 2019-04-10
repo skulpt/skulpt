@@ -700,6 +700,9 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Set:
             this.SEQExpr(e.elts);
             break;
+        case Sk.ast.Starred:
+            this.visitExpr(e.value);
+            break;
         default:
             Sk.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
     }
