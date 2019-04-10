@@ -266,9 +266,9 @@ function _tokenize(readline, encoding, yield_) {
                 throw new TokenError("EOF in multi-line string", strstart);
             }
             endprog.lastIndex = 0;
-            var endmatch = endprog.match(line);
+            var endmatch = endprog.exec(line);
             if (endmatch) {
-                pos = end = this.endprog.lastIndex;
+                pos = end = endmatch[0].length;
                 yield_(new TokenInfo(tokens.T_STRING, contstr + line.substring(0, end),
                        strstart, [lnum, end], contline + line));
                 contstr = '';
@@ -380,7 +380,7 @@ function _tokenize(readline, encoding, yield_) {
                     yield_(new TokenInfo(tokens.T_COMMENT, token, spos, epos, line));
                 } else if (contains(triple_quoted, token)) {
                     endprog = RegExp(endpats[token]);
-                    endmatch = endprog.exec(line, pos);
+                    endmatch = endprog.exec(line.substring(pos));
                     if (endmatch) {                       // all on one line
                         pos = endprog.lastIndex + pos;
                         token = line.substring(start, pos);
