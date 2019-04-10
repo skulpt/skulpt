@@ -1033,60 +1033,73 @@ function astForTrailer (c, n, leftExpr) {
     }
 }
 
-function astForFlowStmt (c, n) {
+function ast_for_flow_stmt(c, n)
+{
     /*
-     flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt
-     | yield_stmt
-     break_stmt: 'break'
-     continue_stmt: 'continue'
-     return_stmt: 'return' [testlist]
-     yield_stmt: yield_expr
-     yield_expr: 'yield' testlist
-     raise_stmt: 'raise' [test [',' test [',' test]]]
-     */
+      flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt
+                 | yield_stmt
+      break_stmt: 'break'
+      continue_stmt: 'continue'
+      return_stmt: 'return' [testlist]
+      yield_stmt: yield_expr
+      yield_expr: 'yield' testlist | 'yield' 'from' test
+      raise_stmt: 'raise' [test [',' test [',' test]]]
+    */
     var ch;
+
     REQ(n, SYM.flow_stmt);
     ch = CHILD(n, 0);
-    switch (ch.type) {
+    switch (TYPE(ch)) {
         case SYM.break_stmt:
-            return new Sk.astnodes.Break(n.lineno, n.col_offset);
+            return new Sk.astnodes.Break(LINENO(n), n.col_offset,
+                         n.end_lineno, n.end_col_offset);
         case SYM.continue_stmt:
-            return new Sk.astnodes.Continue(n.lineno, n.col_offset);
-        case SYM.yield_stmt:
-            return new Sk.astnodes.Expr(ast_for_expr(c, CHILD(ch, 0)), n.lineno, n.col_offset);
+            return new Sk.astnodes.Continue(LINENO(n), n.col_offset,
+                            n.end_lineno, n.end_col_offset);
+        case SYM.yield_stmt: { /* will reduce to yield_expr */
+            var exp = ast_for_expr(c, CHILD(ch, 0));
+            if (!exp) {
+                return null;
+            }
+            return new Sk.astnodes.Expr(exp, LINENO(n), n.col_offset,
+                        n.end_lineno, n.end_col_offset);
+        }
         case SYM.return_stmt:
-            if (NCH(ch) === 1) {
-                return new Sk.astnodes.Return(null, n.lineno, n.col_offset);
-            }
+            if (NCH(ch) == 1)
+                return new Sk.astnodes.Return(null, LINENO(n), n.col_offset,
+                              n.end_lineno, n.end_col_offset);
             else {
-                return new Sk.astnodes.Return(ast_for_testlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+                var expression = ast_for_testlist(c, CHILD(ch, 1));
+                if (!expression) {
+                    return null;
+                }
+                return new Sk.astnodes.Return(expression, LINENO(n), n.col_offset,
+                              n.end_lineno, n.end_col_offset);
             }
-            break;
         case SYM.raise_stmt:
-            if (NCH(ch) === 1) {
-                return new Sk.astnodes.Raise(null, null, null, n.lineno, n.col_offset);
+            if (NCH(ch) == 1)
+                return new Sk.astnodes.Raise(null, null, LINENO(n), n.col_offset,
+                             n.end_lineno, n.end_col_offset);
+            else if (NCH(ch) >= 2) {
+                var cause = null;
+                var expression = ast_for_expr(c, CHILD(ch, 1));
+                if (!expression) {
+                    return null;
+                }
+                if (NCH(ch) == 4) {
+                    cause = ast_for_expr(c, CHILD(ch, 3));
+                    if (!cause) {
+                        return null;
+                    }
+                }
+                return new Sk.astnodes.Raise(expression, cause, LINENO(n), n.col_offset,
+                             n.end_lineno, n.end_col_offset);
             }
-            else if (NCH(ch) === 2) {
-                return new Sk.astnodes.Raise(ast_for_expr(c, CHILD(ch, 1)), null, null, n.lineno, n.col_offset);
-            }
-            else if (NCH(ch) === 4) {
-                return new Sk.astnodes.Raise(
-                    ast_for_expr(c, CHILD(ch, 1)),
-                    ast_for_expr(c, CHILD(ch, 3)),
-                    null, n.lineno, n.col_offset);
-            }
-            else if (NCH(ch) === 6) {
-                return new Sk.astnodes.Raise(
-                    ast_for_expr(c, CHILD(ch, 1)),
-                    ast_for_expr(c, CHILD(ch, 3)),
-                    ast_for_expr(c, CHILD(ch, 5)),
-                    n.lineno, n.col_offset);
-            }
-            break;
+            /* fall through */
         default:
-            Sk.asserts.fail("unexpected flow_stmt");
+            Sk.asserts.fail("unexpected flow_stmt: ", TYPE(ch));
+            return null;
     }
-    Sk.asserts.fail("unhandled flow statement");
 }
 
 function astForArg(c, n)
@@ -2773,7 +2786,7 @@ function astForStmt (c, n) {
             case SYM.pass_stmt:
                 return new Sk.astnodes.Pass(n.lineno, n.col_offset);
             case SYM.flow_stmt:
-                return astForFlowStmt(c, n);
+                return ast_for_flow_stmt(c, n);
             case SYM.import_stmt:
                 return astForImportStmt(c, n);
             case SYM.global_stmt:

@@ -379,8 +379,8 @@ function _tokenize(readline, encoding, yield_) {
                     //assert not token.endswith("\n")
                     yield_(new TokenInfo(tokens.T_COMMENT, token, spos, epos, line));
                 } else if (contains(triple_quoted, token)) {
-                    endprog = Regex(endpats[token]);
-                    endmatch = endprog.match(line, pos);
+                    endprog = RegExp(endpats[token]);
+                    endmatch = endprog.exec(line, pos);
                     if (endmatch) {                       // all on one line
                         pos = endprog.lastIndex + pos;
                         token = line.substring(start, pos);
@@ -412,7 +412,7 @@ function _tokenize(readline, encoding, yield_) {
                         //  character. So it's really looking for
                         //  endpats["'"] or endpats['"'], by trying to
                         //  skip string prefix characters, if any.
-                        endprog = Regex(endpats[initial] ||
+                        endprog = RegExp(endpats[initial] ||
                                            endpats[token[1]] ||
                                            endpats[token[2]]);
                         contstr = line.substring(start);

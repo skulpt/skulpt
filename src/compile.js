@@ -1304,6 +1304,9 @@ Compiler.prototype.cfor = function (s) {
 };
 
 Compiler.prototype.craise = function (s) {
+    // @meredydd compile.c doesn't have this function anymore. raise doesn't have a type anymore
+    // on the ast node.
+    // I don't know what to do. :D 
     var inst = "", exc;
     if (s.inst) {
         // handles: raise Error, arguments
