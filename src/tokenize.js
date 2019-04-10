@@ -142,14 +142,19 @@ function _all_string_prefixes() {
 //  StringPrefix can be the empty string (making it optional).
 var StringPrefix = group.apply(null, _all_string_prefixes())
 
+// these regexes differ from python because .exec doesn't do the
+// same thing as .match in python. It's more like .search. 
+// .match matches from the start of the string.
+// to get the same behaviour we can add a ^ to the start of the 
+// regex
 // Tail end of ' string.
-var Single = "[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
+var Single = "^[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
 // Tail end of " string.
-var Double = '[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
+var Double = '^[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
 // Tail end of ''' string.
-var Single3 = "[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
+var Single3 = "^[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
 // Tail end of """ string.
-var Double3 = '[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
+var Double3 = '^[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
 var Triple = group(StringPrefix + "'''", StringPrefix + '"""');
 // Single-line ' or " string.
 var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
