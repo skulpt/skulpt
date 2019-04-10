@@ -1351,7 +1351,7 @@ function astForClassdef (c, n, decoratorSeq) {
     if (TYPE(CHILD(n, 3)) === TOK.T_RPAR) { /* class NAME '(' ')' ':' suite */
         s = astForSuite(c, CHILD(n, 5));
         classname = new_identifier(CHILD(n, 1).value);
-        forbiddenCheck(c, CHILD(n, 3), classname, CHILD(n,e).lineno);
+        forbiddenCheck(c, CHILD(n, 3), classname, CHILD(n, 3).lineno);
         return new Sk.astnodes.ClassDef(classname, [], [], s, decoratorSeq,
                                     /*TODO docstring*/null, LINENO(n), n.col_offset);
     }
