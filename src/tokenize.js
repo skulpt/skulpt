@@ -382,7 +382,7 @@ function _tokenize(readline, encoding, yield_) {
                     endprog = RegExp(endpats[token]);
                     endmatch = endprog.exec(line.substring(pos));
                     if (endmatch) {                       // all on one line
-                        pos = endprog.lastIndex + pos;
+                        pos = endmatch[0].length + pos;
                         token = line.substring(start, pos);
                         yield_(new TokenInfo(tokens.T_STRING, token, spos, (lnum, pos), line));
                     } else {
