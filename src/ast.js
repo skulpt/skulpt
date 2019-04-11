@@ -1074,7 +1074,7 @@ function ast_for_trailer(c, n, left_expr) {
         REQ(CHILD(n, 2), TOK.T_RSQB);
         n = CHILD(n, 1);
         if (NCH(n) == 1) {
-            var slc = ast_for_slice(c, CHILD(n, 0));
+            var slc = astForSlice(c, CHILD(n, 0));
             if (!slc) {
                 return NULL;
             }
@@ -1092,7 +1092,7 @@ function ast_for_trailer(c, n, left_expr) {
             var slices = [], elts;
 
             for (j = 0; j < NCH(n); j += 2) {
-                slc = ast_for_slice(c, CHILD(n, j));
+                slc = astForSlice(c, CHILD(n, j));
                 if (!slc) {
                     return NULL;
                 }
