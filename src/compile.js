@@ -570,10 +570,11 @@ Compiler.prototype.ccall = function (e) {
     var i;
     var kwarray;
     var func = this.vexpr(e.func);
-    var args = this.vseqexpr(e.args);
+    var args = this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.ast.Starred}));
 
     //print(JSON.stringify(e, null, 2));
-    if (e.keywords.length > 0 || e.args[0].constructor === Sk.ast.Starred || e.kwargs) {
+    var hasStarArgs = e.args.some(function(a) { return a.constructor === Sk.ast.Starred});
+    if (e.keywords.length > 0 || hasStarArgs || e.kwargs) {
         kwarray = [];
         for (i = 0; i < e.keywords.length; ++i) {
             kwarray.push("'" + e.keywords[i].arg.v + "'");
@@ -582,9 +583,13 @@ Compiler.prototype.ccall = function (e) {
         keywords = "[" + kwarray.join(",") + "]";
         starargs = "undefined";
         kwargs = "undefined";
-        if (e.args[0].constructor === Sk.ast.Starred) {
-            starargs = this.vexpr(e.args[0].value);
-        }
+
+        var _this = this;
+
+        var starargs = e.args
+            .filter(function(a) { return a.constructor === Sk.ast.Starred})
+            .map(function(a) { return _this.vexpr(a.value) });
+
         if (e.kwargs) {
             kwargs = this.vexpr(e.kwargs);
         }
