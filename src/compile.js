@@ -570,11 +570,11 @@ Compiler.prototype.ccall = function (e) {
     var i;
     var kwarray;
     var func = this.vexpr(e.func);
-    var args = this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.ast.Starred}));
+    var args = e.args ? this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.ast.Starred})) : [];
 
     //print(JSON.stringify(e, null, 2));
-    var hasStarArgs = e.args.some(function(a) { return a.constructor === Sk.ast.Starred});
-    if (e.keywords.length > 0 || hasStarArgs || e.kwargs) {
+    var hasStarArgs = e.args ? e.args.some(function(a) { return a.constructor === Sk.ast.Starred}) : false;
+    if ((e.keywords && e.keywords.length > 0) || hasStarArgs || e.kwargs) {
         kwarray = [];
         for (i = 0; i < e.keywords.length; ++i) {
             kwarray.push("'" + e.keywords[i].arg.v + "'");

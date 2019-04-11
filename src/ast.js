@@ -1057,7 +1057,7 @@ function ast_for_trailer(c, n, left_expr) {
     REQ(n, SYM.trailer);
     if (TYPE(CHILD(n, 0)) == TOK.T_LPAR) {
         if (NCH(n) == 2)
-            return Call(left_expr, NULL, NULL, LINENO(n),
+            return new Sk.ast.Call(left_expr, NULL, NULL, LINENO(n),
                         n.col_offset);
         else
             return ast_for_call(c, CHILD(n, 1), left_expr, true);
