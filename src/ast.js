@@ -252,7 +252,7 @@ function new_identifier(n, c) {
     if (n.value) {
         return Sk.builtin.str(n.value);
     }
-    
+
     return Sk.builtin.str(n);
 }
 
@@ -1019,20 +1019,20 @@ function ast_for_call(c, n, func, allowgen)
                  * SF bug 132313 points out that complaining about a keyword
                  * then is very confusing.
                  */
-                if (e.kind == _expr_kind._Lambda_kind) {
+                if (e.constructor === Sk.ast.Lambda) {
                     ast_error(c, chch,
                             "lambda cannot contain assignment");
                     return NULL;
                 }
-                else if (e.kind != _expr_kind.Name_kind) {
+                else if (e.constructor !== Sk.ast.Name) {
                     ast_error(c, chch,
                             "keyword can't be an expression");
                     return NULL;
                 }
-                else if (forbiddenCheck(c, e.v.Name.id, ch, 1)) {
+                else if (forbiddenCheck(c, e.id, ch, 1)) {
                     return NULL;
                 }
-                key = e.v.Name.id;
+                key = e.id;
                 for (k = 0; k < nkeywords; k++) {
                     tmp = keywords[k].arg;
                     if (tmp && tmp === key) {

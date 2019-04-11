@@ -586,9 +586,11 @@ Compiler.prototype.ccall = function (e) {
 
         var _this = this;
 
-        var starargs = e.args
-            .filter(function(a) { return a.constructor === Sk.ast.Starred})
-            .map(function(a) { return _this.vexpr(a.value) });
+        if (hasStarArgs) {
+            starargs = e.args
+                .filter(function(a) { return a.constructor === Sk.ast.Starred})
+                .map(function(a) { return _this.vexpr(a.value) });
+        }
 
         if (e.kwargs) {
             kwargs = this.vexpr(e.kwargs);
