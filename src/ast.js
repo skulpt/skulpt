@@ -249,6 +249,10 @@ function getOperator (n) {
 }
 
 function new_identifier(n, c) {
+    if (n.value) {
+        return Sk.builtin.str(n.value);
+    }
+    
     return Sk.builtin.str(n);
 }
 
