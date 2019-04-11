@@ -1866,7 +1866,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         start = funcArgs.length;
 
         this.u.localnames.push(vararg.arg.v);
-        this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
+        this.u.varDeclsCode += "$gbl['" + vararg.arg.v + "']=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
     }
 
     //
