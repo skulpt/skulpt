@@ -394,11 +394,11 @@ SymbolTable.prototype.visitArguments = function (a, lineno) {
         this.visitParams(a.args, true);
     }
     if (a.vararg) {
-        this.addDef(a.vararg, DEF_PARAM, lineno);
+        this.addDef(a.vararg.arg, DEF_PARAM, lineno);
         this.cur.varargs = true;
     }
     if (a.kwarg) {
-        this.addDef(a.kwarg, DEF_PARAM, lineno);
+        this.addDef(a.kwarg.arg, DEF_PARAM, lineno);
         this.cur.varkeywords = true;
     }
 };
