@@ -1330,23 +1330,28 @@ Compiler.prototype.craise = function (s) {
     //     out("throw ", this.vexpr(s.type), "(", inst, ");");
     // }
     if (s.exc) {
-        var name = this.nameop(s.exc.id, s.exc.ctx)
+        if (s.exc.constructor === Sk.ast.Name) {
+            var name = this.nameop(s.exc.id, s.exc.ctx)
+            out("if(",name," instanceof Sk.builtin.type) {",
+                "throw Sk.misceval.callsimArray(", name, ");",
+                "} else if(typeof(",name,") === 'function') {",
+                "throw ",name,"();",
+                "} else {",
+                "throw ", name, ";",
+                "}");
+        } else if (s.exc.constructor === Sk.ast.Call) {
+            out("throw ", this.vexpr(s.exc), ";");
+        }
         // out('throw ', name, ';');
         // if (s.type.func) {
         //     // handles: raise Error(arguments)
-        //     out("throw ", name, ";");
+        //    
         // }
         // else {
         //     // handles: raise Error OR raise someinstance
         //     exc = this._gr("err", this.vexpr(s.type));
-        out("if(",name," instanceof Sk.builtin.type) {",
-            "throw Sk.misceval.callsimArray(", name, ");",
-            "} else if(typeof(",name,") === 'function') {",
-            "throw ",name,"();",
-            "} else {",
-            "throw ", name, ";",
-            "}");
-        // }
+        
+            // }
     }
     else {
         // re-raise
