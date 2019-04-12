@@ -1318,9 +1318,6 @@ Compiler.prototype.cfor = function (s) {
 };
 
 Compiler.prototype.craise = function (s) {
-    // @meredydd compile.c doesn't have this function anymore. raise doesn't have a type anymore
-    // on the ast node.
-    // I don't know what to do. :D 
     var inst = "", exc;
     // I don't think this still exists in py3
     // And I'm unsure we'll want to add it back in
@@ -1330,28 +1327,19 @@ Compiler.prototype.craise = function (s) {
     //     out("throw ", this.vexpr(s.type), "(", inst, ");");
     // }
     if (s.exc) {
+        var exc = this.vexpr(s.exc);
         if (s.exc.constructor === Sk.ast.Name) {
-            var name = this.nameop(s.exc.id, s.exc.ctx)
-            out("if(",name," instanceof Sk.builtin.type) {",
-                "throw Sk.misceval.callsimArray(", name, ");",
-                "} else if(typeof(",name,") === 'function') {",
-                "throw ",name,"();",
+            // var name = this.nameop(s.exc.id, s.exc.ctx)
+            out("if(",exc," instanceof Sk.builtin.type) {",
+                "throw Sk.misceval.callsimArray(", exc, ");",
+                "} else if(typeof(",exc,") === 'function') {",
+                "throw ",exc,"();",
                 "} else {",
-                "throw ", name, ";",
+                "throw ", exc, ";",
                 "}");
         } else if (s.exc.constructor === Sk.ast.Call) {
-            out("throw ", this.vexpr(s.exc), ";");
+            out("throw ", exc, ";");
         }
-        // out('throw ', name, ';');
-        // if (s.type.func) {
-        //     // handles: raise Error(arguments)
-        //    
-        // }
-        // else {
-        //     // handles: raise Error OR raise someinstance
-        //     exc = this._gr("err", this.vexpr(s.type));
-        
-            // }
     }
     else {
         // re-raise
