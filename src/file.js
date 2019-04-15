@@ -137,7 +137,6 @@ Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function read(self, size
     }
 
     ret = new Sk.builtin.str(self.data$.substr(self.pos$, l_size));
-    //self.pos$ += size;
     if(size === undefined){
         self.pos$ = len;
     }else{
