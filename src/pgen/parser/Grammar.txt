@@ -81,7 +81,7 @@ try_stmt: ('try' ':' suite
 with_stmt: 'with' with_item (',' with_item)*  ':' suite
 with_item: test ['as' expr]
 # NB compile.c makes sure that the default except clause is last
-except_clause: 'except' [test ['as' NAME]]
+except_clause: 'except' [test [('as'|',') test]]
 suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
 
 test: or_test ['if' or_test 'else' test] | lambdef
