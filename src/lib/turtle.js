@@ -849,7 +849,7 @@ function generateTurtleModule(_target) {
         };
 
         proto.$speed = function(speed) {
-            if (arguments.length) {
+            if (speed !== undefined) {
                 this._speed          = Math.max(0, Math.min(1000, speed));
                 this._computed_speed = Math.max(0, speed * 2 - 1);
                 return this.addUpdate(undefined, false, {speed:this._computed_speed});
@@ -861,7 +861,7 @@ function generateTurtleModule(_target) {
         proto.$speed.co_varnames = ["speed"];
 
         proto.$pencolor = function(r,g,b,a) {
-            if (arguments.length) {
+            if (r !== undefined) {
                 this._color = createColor(r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {color : this._color});
             }
@@ -873,7 +873,7 @@ function generateTurtleModule(_target) {
         proto.$pencolor.returnType = Types.COLOR;
 
         proto.$fillcolor = function(r,g,b,a) {
-            if (arguments.length) {
+            if (r !== undefined) {
                 this._fill = createColor(r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {fill : this._fill});
             }
@@ -885,7 +885,7 @@ function generateTurtleModule(_target) {
         proto.$fillcolor.returnType = Types.COLOR;
 
         proto.$color = function(color, fill, b, a) {
-            if (arguments.length) {
+            if (color !== undefined) {
                 if (arguments.length === 1 || arguments.length >= 3) {
                     this._color = createColor(color, fill, b, a);
                     this._fill  = this._color;
@@ -1019,7 +1019,7 @@ function generateTurtleModule(_target) {
         proto.$write.minArgs     = 1;
 
         proto.$pensize = proto.$width = function(size) {
-            if (arguments.length) {
+            if (size !== undefined) {
                 this._size = size;
                 return this.addUpdate(undefined, this._shown, {size : size});
             }
@@ -1396,7 +1396,7 @@ function generateTurtleModule(_target) {
         proto.$bgpic.co_varnames = ["name"];
 
         proto.$bgcolor = function(color, g, b, a) {
-            if (arguments.length) {
+            if (color !== undefined) {
                 this._bgcolor = createColor(color, g, b, a);
                 clearLayer(this.bgLayer(), this._bgcolor);
                 return;
