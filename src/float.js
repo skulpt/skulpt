@@ -57,7 +57,7 @@ Sk.builtin.float_ = function (x) {
     }
 
     // try calling __float__
-    var special = Sk.abstr.lookupSpecial(x, "__float__");
+    var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$float_);
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsimArray(special, [x]);
@@ -164,7 +164,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // check if special method exists (nb_float is not implemented in skulpt, hence we use __float__)
-    f = Sk.builtin.type.typeLookup(op.ob$type, "__float__");
+    f = Sk.builtin.type.typeLookup(op.ob$type, Sk.builtin.str.$float_);
     if (f == null) {
         throw new Sk.builtin.TypeError("a float is required");
     }
