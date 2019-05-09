@@ -216,9 +216,16 @@ Sk.builtin.int_.prototype.clone = function () {
 /** @override */
 Sk.builtin.int_.prototype.nb$add = function (other) {
     var thisAsLong, thisAsFloat;
+    var result;
 
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(this.v + other.v);
+        result = this.v + other.v;
+        if (result > Sk.builtin.int_.threshold$ ||
+            result < -Sk.builtin.int_.threshold$) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            return thisAsLong.nb$add(other);
+        }
+        return new Sk.builtin.int_(result);
     }
 
     if (other instanceof Sk.builtin.lng) {
@@ -244,9 +251,16 @@ Sk.builtin.int_.prototype.nb$reflected_add = function (other) {
 /** @override */
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
     var thisAsLong, thisAsFloat;
+    var result;
 
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(this.v - other.v);
+        result = this.v - other.v;
+        if (result > Sk.builtin.int_.threshold$ ||
+            result < -Sk.builtin.int_.threshold$) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            return thisAsLong.nb$subtract(other);
+        }
+        return new Sk.builtin.int_(result);
     }
 
     if (other instanceof Sk.builtin.lng) {
