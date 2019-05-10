@@ -220,7 +220,7 @@ Sk.uncaughtException = function(err) {
 goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 
 /*
- *	Replaceable message for message timeouts
+ *      Replaceable message for message timeouts
  */
 Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
@@ -289,18 +289,14 @@ Sk.debugout = function (args) {
     } else if (goog.global["print"] !== undefined) {
         Sk.output = goog.global["print"];
     }
-    if (goog.global["print"] !== undefined) {
+    if (goog.global["console"] !== undefined && goog.global["console"]["log"] !== undefined) {
+        Sk.debugout = function (x) {
+            goog.global["console"]["log"](x);
+        };
+    } else if (goog.global["print"] !== undefined) {
         Sk.debugout = goog.global["print"];
     }
 }());
-
-// override for closure to load stuff from the command line.
-if (!Sk.inBrowser) {
-    goog.global.CLOSURE_IMPORT_SCRIPT = function (src) {
-        goog.global["eval"](goog.global["read"]("support/closure-library/closure/goog/" + src));
-        return true;
-    };
-}
 
 Sk.inputfun = function (args) {
     return window.prompt(args);

@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 if (Sk.inBrowser)
 {
     goog.require('goog.dom');
@@ -7,6 +9,9 @@ if (Sk.inBrowser)
 var tokenizefail = 0;
 var tokenizepass = 0;
 
+// d8 => node
+var print = console.log;
+var read = (fname) => { return fs.readFileSync(fname, 'utf8'); };
 
 function dump_tokens(fn, input)
 {
@@ -348,7 +353,7 @@ var doTestParse = false
 var doTestTrans = false
 var doTestSymtab = false
 var doTestRun = true
-var testInDebugMode = arguments.indexOf("--debug-mode") != -1;
+var testInDebugMode = process.argv.indexOf("--debug-mode") != -1;
 function testsMain()
 {
     var i, promise = Promise.resolve();
@@ -453,7 +458,7 @@ function testsMain()
 
             var exitCode = tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail;
             if (exitCode > 0) {
-                quit(exitCode);
+                process.exit(exitCode);
             }
 
             // Do not quit if success; may prevent other scripts from running after this one

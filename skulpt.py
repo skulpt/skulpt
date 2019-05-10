@@ -64,8 +64,8 @@ FILE_TYPE_TEST = 'test'
 
 # Order is important!
 Files = [
-        'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/deps.js',
+        ('support/closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
+        ('support/closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
@@ -128,12 +128,6 @@ ExtLibs = [
 ]
 
 TestFiles = [
-        'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/deps.js',
-        'support/closure-library/closure/goog/math/math.js',
-        'support/closure-library/closure/goog/math/coordinate.js',
-        'support/closure-library/closure/goog/math/vec2.js',
-        'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
         "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
@@ -177,41 +171,23 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    winbase = ".\\support\\d8\\x32"
-    if not os.path.exists(winbase + "\\d8.exe"):
-        winbase = ".\\support\\d8"
-    os.environ["D8_PATH"] = winbase
-    jsengine = winbase + "\\d8.exe --debugger --harmony"
-
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    os.environ["D8_PATH"] = "./support/d8/mac"
-    jsengine = "./support/d8/mac/d8 --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
-    if is64bit():
-        os.environ["D8_PATH"] = "support/d8/x64"
-        jsengine = "support/d8/x64/d8 --debugger --harmony_promises"
-    else:
-        os.environ["D8_PATH"] = "support/d8/x32"
-        jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    os.environ["D8_PATH"] = "support/d8/x32"
-    jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    os.environ["D8_PATH"] = "support/d8/x64"
-    jsengine = "support/d8/x64/d8 --harmony_promises"
     nul = "/dev/null"
 
-#jsengine = "rhino"
+jsengine = "node"
 
 def test(debug_mode=False, p3=False):
     """runs the unit tests."""
@@ -225,7 +201,28 @@ def test(debug_mode=False, p3=False):
     ret4 = 0
     if not p3:
         buildNamedTestsFile()
-        ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+
+        # Initial "requires"
+        f = open("support/tmp/require.js", "w")
+        f.write("""
+var fs = require('fs');
+
+require('google-closure-library');
+goog.require('goog.string');
+goog.require('goog.debug.Error');
+goog.require('goog.asserts');
+
+strftime = require('strftime');
+
+// d8 -> node
+print = console.log;
+read = (fname) => { return fs.readFileSync(fname, 'utf8'); };
+""")
+        f.close()
+
+        files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + TestFiles
+        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+        ret1 = os.system("{0} support/tmp/all.js {1}".format(jsengine, debugon))
 
     if ret1 == 0:
         print "Running jshint"
@@ -800,7 +797,9 @@ def dist(options):
         if options.verbose:
             print ". Running tests on compressed..."
         buildNamedTestsFile()
-        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+        files = [compfn] + TestFiles
+        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+        ret = os.system("{0} support/tmp/all.js".format(jsengine))
         if ret != 0:
             print "Tests failed on compressed version."
             sys.exit(1)
@@ -1044,6 +1043,19 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
         raise SystemExit()
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
+
+    # Initial "requires"
+    f = open("support/tmp/require.js", "w")
+    f.write("""
+require('google-closure-library');
+goog.require('goog.string');
+goog.require('goog.debug.Error');
+goog.require('goog.asserts');
+
+strftime = require('strftime');
+""")
+    f.close()
+
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
@@ -1055,25 +1067,29 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     else:
         debugon = 'false'
     f.write("""
-var input = read('%s');
-print("-----");
-print(input);
-print("-----");
-Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging:%s});
+var fs = require('fs');
+var input = fs.readFileSync("%s", "utf8");
+console.log("-----");
+console.log(input);
+console.log("-----");
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", %s, true);
 }).then(function () {
-    print("-----");
+    console.log("-----");
 }, function(e) {
-    print("UNCAUGHT EXCEPTION: " + e);
-    print(e.stack);
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
 });
     """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
+
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
     else:
-        os.system("{0} {1} {2} support/tmp/run.js".format(jsengine, shell, ' '.join(getFileList(FILE_TYPE_TEST))))
+        files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
+        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+        os.system("{0} {1} support/tmp/all.js".format(jsengine, shell))
 
 def runopt(fn):
     run(fn, "", True)
@@ -1099,31 +1115,48 @@ def rununits(opt=False, p3=False, debug_mode=False):
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
+    # Initial "requires"
+    f = open("support/tmp/require.js", "w")
+    f.write("""
+require('google-closure-library');
+goog.require('goog.string');
+goog.require('goog.debug.Error');
+goog.require('goog.asserts');
+
+strftime = require('strftime');
+""")
+    f.close()
+
     for fn in testFiles:
         if not os.path.exists("support/tmp"):
             os.mkdir("support/tmp")
+
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
         f.write("""
-var input = read('%s');
-print('%s');
-Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging: %s});
+var fs = require('fs');
+var input = fs.readFileSync('%s', 'utf8');
+console.log('%s');
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
-    print("UNCAUGHT EXCEPTION: " + e);
-    print(e.stack);
-    quit(1);
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+    process.exit(1);
 });
         """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
         if opt:
-            p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
-                                                           OUTFILE_MIN),shell=True,
+            files = ["{0}/{1}".format(DIST_DIR, OUTFILE_MIN), "support/tmp/run.js"] 
+            os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+            p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
                       stdout=PIPE, stderr=PIPE)
         else:
-            p = Popen("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
-                getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+            files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
+            os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+            p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
+                      stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
@@ -1151,7 +1184,22 @@ Sk.misceval.asyncToPromise(function() {
 
 
 def repl():
-    os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
+    # Initial "requires"
+    f = open("support/tmp/require.js", "w")
+    f.write("""
+var fs = require('fs');
+
+require('google-closure-library');
+goog.require('goog.string');
+goog.require('goog.debug.Error');
+goog.require('goog.asserts');
+
+strftime = require('strftime');
+""")
+    f.close()
+    files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["repl/repl.js"]
+    os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
+    os.system("{0} support/tmp/all.js".format(jsengine))
 
 def nrt(newTest):
     """open a new run test"""

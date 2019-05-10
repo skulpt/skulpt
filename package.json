@@ -41,8 +41,12 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "jshint": "~2.5.2",
+    "fs": "0.0.1-security",
+    "google-closure-library": "^20190415.0.0",
     "jscs": "~1.12",
-    "jsdoc": "~3.5.5"
+    "jsdoc": "~3.5.5",
+    "jshint": "~2.5.2",
+    "readline-sync": "^1.4.9",
+    "strftime": "^0.10.0"
   }
 }
