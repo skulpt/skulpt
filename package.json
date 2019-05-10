@@ -41,7 +41,6 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "fs": "0.0.1-security",
     "google-closure-library": "^20190415.0.0",
     "jscs": "~1.12",
     "jsdoc": "~3.5.5",
