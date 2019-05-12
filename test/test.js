@@ -1,5 +1,3 @@
-var fs = require('fs');
-
 if (Sk.inBrowser)
 {
     goog.require('goog.dom');

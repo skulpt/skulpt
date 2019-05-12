@@ -64,6 +64,7 @@ FILE_TYPE_TEST = 'test'
 
 # Order is important!
 Files = [
+        ('support/node/node-requires.js', FILE_TYPE_TEST),
         ('support/closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
@@ -199,28 +200,32 @@ def test(debug_mode=False, p3=False):
     ret2 = 0
     ret3 = 0
     ret4 = 0
+
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+
     if not p3:
         buildNamedTestsFile()
 
         # Initial "requires"
-        f = open("support/tmp/require.js", "w")
-        f.write("""
-var fs = require('fs');
+#         f = open("support/tmp/require.js", "w")
+#         f.write("""
+# var fs = require('fs');
 
-require('google-closure-library');
-goog.require('goog.string');
-goog.require('goog.debug.Error');
-goog.require('goog.asserts');
+# require('google-closure-library');
+# goog.require('goog.string');
+# goog.require('goog.debug.Error');
+# goog.require('goog.asserts');
 
-strftime = require('strftime');
+# strftime = require('strftime');
 
-// d8 -> node
-print = console.log;
-read = (fname) => { return fs.readFileSync(fname, 'utf8'); };
-""")
-        f.close()
+# // d8 -> node
+# print = console.log;
+# read = (fname) => { return fs.readFileSync(fname, 'utf8'); };
+# """)
+#         f.close()
 
-        files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + TestFiles
+        files = getFileList(FILE_TYPE_TEST) + TestFiles
         os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
         ret1 = os.system("{0} support/tmp/all.js {1}".format(jsengine, debugon))
 
@@ -794,6 +799,8 @@ def dist(options):
 
     # Run tests on compressed.
     if options.disabletests == False:
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
         if options.verbose:
             print ". Running tests on compressed..."
         buildNamedTestsFile()
@@ -1044,18 +1051,6 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
 
-    # Initial "requires"
-    f = open("support/tmp/require.js", "w")
-    f.write("""
-require('google-closure-library');
-goog.require('goog.string');
-goog.require('goog.debug.Error');
-goog.require('goog.asserts');
-
-strftime = require('strftime');
-""")
-    f.close()
-
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
@@ -1067,7 +1062,6 @@ strftime = require('strftime');
     else:
         debugon = 'false'
     f.write("""
-var fs = require('fs');
 var input = fs.readFileSync("%s", "utf8");
 console.log("-----");
 console.log(input);
@@ -1087,7 +1081,7 @@ Sk.misceval.asyncToPromise(function() {
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
     else:
-        files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
+        files = getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
         os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
         os.system("{0} {1} support/tmp/all.js".format(jsengine, shell))
 
@@ -1115,17 +1109,6 @@ def rununits(opt=False, p3=False, debug_mode=False):
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
-    # Initial "requires"
-    f = open("support/tmp/require.js", "w")
-    f.write("""
-require('google-closure-library');
-goog.require('goog.string');
-goog.require('goog.debug.Error');
-goog.require('goog.asserts');
-
-strftime = require('strftime');
-""")
-    f.close()
 
     for fn in testFiles:
         if not os.path.exists("support/tmp"):
@@ -1134,7 +1117,6 @@ strftime = require('strftime');
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
         f.write("""
-var fs = require('fs');
 var input = fs.readFileSync('%s', 'utf8');
 console.log('%s');
 Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
@@ -1153,7 +1135,7 @@ Sk.misceval.asyncToPromise(function() {
             p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
                       stdout=PIPE, stderr=PIPE)
         else:
-            files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
+            files = getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
             os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
             p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
                       stdout=PIPE, stderr=PIPE)
@@ -1184,20 +1166,10 @@ Sk.misceval.asyncToPromise(function() {
 
 
 def repl():
-    # Initial "requires"
-    f = open("support/tmp/require.js", "w")
-    f.write("""
-var fs = require('fs');
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
 
-require('google-closure-library');
-goog.require('goog.string');
-goog.require('goog.debug.Error');
-goog.require('goog.asserts');
-
-strftime = require('strftime');
-""")
-    f.close()
-    files = ["support/tmp/require.js"] + getFileList(FILE_TYPE_TEST) + ["repl/repl.js"]
+    files = getFileList(FILE_TYPE_TEST) + ["repl/repl.js"]
     os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
     os.system("{0} support/tmp/all.js".format(jsengine))
 
