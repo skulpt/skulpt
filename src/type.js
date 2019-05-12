@@ -207,7 +207,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // Javascript does not support multiple inheritance, so only the first
         // base (if any) will directly inherit in Javascript
         if (firstAncestor !== undefined) {
-            goog.inherits(klass, firstAncestor);
+            Sk.abstr.inherits(klass, firstAncestor);
 
             if (firstAncestor.prototype instanceof Sk.builtin.object || firstAncestor === Sk.builtin.object) {
                 klass.prototype.tp$base = firstAncestor;

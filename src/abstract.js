@@ -945,6 +945,23 @@ Sk.abstr.markUnhashable = function (thisClass) {
 };
 
 /**
+ * Code taken from goog.inherits
+ *
+ * Newer versions of the closure library add a "base"attribute,
+ * which we don't want/need.  So, this code is the remainder of
+ * the goog.inherits function.
+ */
+Sk.abstr.inherits = function (childCtor, parentCtor) {
+    /** @constructor */
+    function tempCtor() {}
+    tempCtor.prototype = parentCtor.prototype;
+    childCtor.superClass_ = parentCtor.prototype;
+    childCtor.prototype = new tempCtor();
+    /** @override */
+    childCtor.prototype.constructor = childCtor;
+};
+
+/**
  * Set up inheritance between two Python classes. This allows only for single
  * inheritance -- multiple inheritance is not supported by Javascript.
  *
@@ -968,7 +985,7 @@ Sk.abstr.markUnhashable = function (thisClass) {
  * @return {undefined}
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent) {
-    goog.inherits(child, parent);
+    Sk.abstr.inherits(child, parent);
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
