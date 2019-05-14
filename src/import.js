@@ -148,12 +148,6 @@ Sk.importSetUpPath = function (canSuspend) {
     }
 };
 
-if (COMPILED) {
-    var js_beautify = function (x) {
-        return x;
-    };
-}
-
 /**
  * @param {string} name name of module to import
  * @param {boolean=} dumpJS whether to output the generated js code
@@ -319,7 +313,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 var pad;
                 var width;
                 var i;
-                var beaut = js_beautify(code);
+                var beaut = Sk.js_beautify(code);
                 var lines = beaut.split("\n");
                 for (i = 1; i <= lines.length; ++i) {
                     width = ("" + i).length;

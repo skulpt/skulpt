@@ -8,10 +8,10 @@ goog.require("goog.asserts");
 
 // Global support functions
 strftime = require("strftime");
-js_beautify = require("js-beautify").js;
 
 // Global Sk Object
 Sk = {};
+Sk.js_beautify = require("js-beautify").js;
 
 // Skulpt
 require("./env.js");
