@@ -368,7 +368,7 @@ def main(asdlfile, outputfile):
     f.write(auto_gen_msg)
 
     f.write("/* Object that holds all nodes */\n");
-    f.write("const astnodes = {};\n\n");
+    f.write("var astnodes = {};\n\n");
     
     c = ChainOfVisitors(TypeDefVisitor(f),
                         )

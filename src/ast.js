@@ -1,4 +1,4 @@
-const astnodes = require('../gen/astnodes.js');
+var astnodes = require('../gen/astnodes.js');
 
 //
 // This is pretty much a straight port of ast.c from CPython 2.6.5.

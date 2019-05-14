@@ -1,4 +1,4 @@
-const astnodes = require('../gen/astnodes.js');
+var astnodes = require('../gen/astnodes.js');
 
 /** @param {...*} x */
 var out;

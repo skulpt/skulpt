@@ -1,4 +1,4 @@
-const astnodes = require('../gen/astnodes.js');
+var astnodes = require('../gen/astnodes.js');
 
 /* Flags for def-use information */
 
@@ -54,14 +54,14 @@ var ModuleBlock = "module";
 var FunctionBlock = "function";
 var ClassBlock = "class";
 
-const SYMTAB_CONSTS = {
+var SYMTAB_CONSTS = {
     DEF_GLOBAL: DEF_GLOBAL,
     DEF_LOCAL: DEF_LOCAL,
     DEF_PARAM: DEF_PARAM,
     USE: USE,
     DEF_STAR: DEF_STAR,
     DEF_DOUBLESTAR: DEF_DOUBLESTAR,
-    DEF_INTUPLE, DEF_INTUPLE,
+    DEF_INTUPLE: DEF_INTUPLE,
     DEF_FREE: DEF_FREE,
     DEF_FREE_GLOBAL: DEF_FREE_GLOBAL,
     DEF_FREE_CLASS: DEF_FREE_CLASS,
