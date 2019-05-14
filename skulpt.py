@@ -1091,14 +1091,22 @@ def rununits(opt=False, p3=False, debug_mode=False):
         if opt:
             dname = DIST_DIR
             fname = OUTFILE_MIN
+
+            # Hack to get extra libraries into global namespace for node
+            extras = ""
+            for lib in ExtLibs:
+                extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
         else:
             dname = "src"
             fname = "main.js"
-        
+            extras = ""
+
         f = open("support/tmp/rununits.js", "w")
         f.write("""
 const fs = require('fs');
 require('../../%s/%s');
+
+%s
 
 var input = fs.readFileSync('%s', 'utf8');
 console.log('%s');
@@ -1110,7 +1118,7 @@ Sk.misceval.asyncToPromise(function() {
     console.log(e.stack);
     process.exit(1);
 });
-        """ % (dname, fname, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
+        """ % (dname, fname, extras, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
 
         p = Popen("{0} support/tmp/rununits.js".format(jstestengine), shell=True,
