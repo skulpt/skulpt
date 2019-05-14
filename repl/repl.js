@@ -1,3 +1,4 @@
+require('../src/main.js');
 var readlineSync = require('readline-sync');
 
 var readline = function () {

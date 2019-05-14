@@ -1150,12 +1150,7 @@ Sk.misceval.asyncToPromise(function() {
 
 
 def repl():
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-
-    files = getFileList(FILE_TYPE_TEST) + ["repl/repl.js"]
-    os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-    os.system("{0} support/tmp/all.js".format(jsengine))
+    os.system("{0} repl/repl.js".format(jsengine))
 
 def nrt(newTest):
     """open a new run test"""
