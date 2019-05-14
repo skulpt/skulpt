@@ -8,6 +8,7 @@ goog.require("goog.asserts");
 
 // Support
 strftime = require("strftime");
+js_beautify = require("js-beautify").js;
 
 // Global Sk Object
 Sk = {};
@@ -50,6 +51,7 @@ require("./enumerate.js");
 require("./tokenize.js");
 require("../gen/parse_tables.js");
 require("./parser.js");
+require("../gen/astnodes.js");
 require("./ast.js");
 require("./symtable.js");
 require("./compile.js");

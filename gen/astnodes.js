@@ -1188,4 +1188,5 @@ astnodes.alias.prototype._fields = [
     "asname", function(n) { return n.asname; }
 ];
 
-module.exports = astnodes;
+Sk.astnodes = astnodes;
+goog.exportSymbol("Sk.astnodes", Sk.astnodes);

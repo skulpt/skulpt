@@ -64,7 +64,6 @@ FILE_TYPE_TEST = 'test'
 
 # Order is important!
 Files = [
-        ('support/node/node-requires.js', FILE_TYPE_TEST),
         ('support/closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
@@ -72,6 +71,7 @@ Files = [
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'support/setImmediate/setImmediate.js',
+        ('src/sk.js', FILE_TYPE_DIST),
         'src/env.js',
         'src/type.js',
         'src/abstract.js',
