@@ -1653,7 +1653,7 @@ Compiler.prototype.cfromimport = function (s) {
  * @param {Object} n ast node to build for
  * @param {Sk.builtin.str} coname name of code object to build
  * @param {Array} decorator_list ast of decorators if any
- * @param {arguments_} args arguments to function, if any
+ * @param {Sk.astnodes.arguments_} args arguments to function, if any
  * @param {Function} callback called after setup to do actual work of function
  * @param {Sk.builtin.str=} class_for_super
  *

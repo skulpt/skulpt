@@ -1,10 +1,7 @@
-if (typeof Sk !== 'undefined') {
-    if (Sk.inBrowser) {
-	goog.require('goog.dom');
-	goog.require('goog.ui.ComboBox');
-    }
+if ((typeof Sk !== 'undefined') && (Sk.inBrowser)) {
+    goog.require('goog.dom');
+    goog.require('goog.ui.ComboBox');
 } else {
-    require('../src/main.js');
     var fs = require('fs');
     var sprintf = require('./sprintf.js');
 }

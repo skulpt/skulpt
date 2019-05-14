@@ -119,8 +119,7 @@ Files = [
         'src/typeobject.js',
         'src/builtindict.js',
         'src/constants.js',
-        'src/internalpython.js',
-        ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
+        'src/internalpython.js'
         ]
 
 ExtLibs = [
@@ -130,9 +129,7 @@ ExtLibs = [
 
 TestFiles = [
         'support/jsbeautify/beautify.js',
-        "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
-        "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]
 
@@ -195,8 +192,15 @@ def test(debug_mode=False, p3=False):
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
 
+    f = open("support/tmp/test.js", "w");
+    f.write("""
+require('../../src/main.js');
+require('../../test/test.js');
+""");
+    f.close();
+        
     if not p3:
-        ret1 = os.system("{0} test/test.js {1}".format(jsengine, debugon))
+        ret1 = os.system("{0} support/tmp/test.js {1}".format(jsengine, debugon))
 
     if ret1 == 0:
         print "Running jshint"
@@ -764,11 +768,18 @@ def dist(options):
     if options.disabletests == False:
         if not os.path.exists("support/tmp"):
             os.mkdir("support/tmp")
+
+        f = open("support/tmp/dist.js", "w")
+        f.write("""
+require("../../%s");
+require("../../test/test.js");
+""" % (compfn));
+        f.close()
+        
         if options.verbose:
             print ". Running tests on compressed..."
-        files = [compfn] + TestFiles
-        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-        ret = os.system("{0} support/tmp/all.js".format(jsengine))
+
+        ret = os.system("{0} support/tmp/dist.js".format(jsengine))
         if ret != 0:
             print "Tests failed on compressed version."
             sys.exit(1)
@@ -1077,11 +1088,18 @@ def rununits(opt=False, p3=False, debug_mode=False):
         if not os.path.exists("support/tmp"):
             os.mkdir("support/tmp")
 
-        f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
+        if opt:
+            dname = DIST_DIR
+            fname = OUTFILE_MIN
+        else:
+            dname = "src"
+            fname = "main.js"
+        
+        f = open("support/tmp/rununits.js", "w")
         f.write("""
 const fs = require('fs');
-require('../../src/main.js');
+require('../../%s/%s');
 
 var input = fs.readFileSync('%s', 'utf8');
 console.log('%s');
@@ -1093,16 +1111,11 @@ Sk.misceval.asyncToPromise(function() {
     console.log(e.stack);
     process.exit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
+        """ % (dname, fname, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
-        if opt:
-            files = ["{0}/{1}".format(DIST_DIR, OUTFILE_MIN), "support/tmp/run.js"] 
-            os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-            p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
-                      stdout=PIPE, stderr=PIPE)
-        else:
-            p = Popen("{0} support/tmp/run.js".format(jstestengine), shell=True,
-                      stdout=PIPE, stderr=PIPE)
+
+        p = Popen("{0} support/tmp/rununits.js".format(jstestengine), shell=True,
+                  stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
