@@ -4,8 +4,6 @@
  * below.
  */
 
-var Sk = Sk || {}; //jshint ignore:line
-
 /**
  *
  * Set various customizable parts of Skulpt.

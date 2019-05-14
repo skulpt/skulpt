@@ -1,7 +1,12 @@
-if (Sk.inBrowser)
-{
-    goog.require('goog.dom');
-    goog.require('goog.ui.ComboBox');
+if (typeof Sk !== 'undefined') {
+    if (Sk.inBrowser) {
+	goog.require('goog.dom');
+	goog.require('goog.ui.ComboBox');
+    }
+} else {
+    require('../src/main.js');
+    var fs = require('fs');
+    var sprintf = require('./sprintf.js');
 }
 
 var tokenizefail = 0;
@@ -195,7 +200,7 @@ var runfail = 0;
 var rundisabled = 0;
 function testRun(name, nocatch, debugMode)
 {
-    try { var input = fs.readFileSync(name + ".py", "utf8"); }
+    try { var input = fs.readFileSync(process.cwd() + '/' + name + ".py", "utf8"); }
     catch (e) {
         try { fs.readFileSync(name + ".py.disabled", "utf8"); rundisabled += 1;}
         catch (e) {}
@@ -386,13 +391,6 @@ function testsMain()
             (function(i) {
                 promise = promise.then(function(p) {
                     return testRun(sprintf("test/run/t%02d", i), undefined, testInDebugMode);
-                });
-            })(i);
-        }
-        for (i = 0; i < namedtfiles.length; i++ ) {
-            (function(i) {
-                promise = promise.then(function(p) {
-                    return testRun(namedtfiles[i],undefined,testInDebugMode);
                 });
             })(i);
         }

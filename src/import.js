@@ -148,10 +148,13 @@ Sk.importSetUpPath = function (canSuspend) {
     }
 };
 
+var js_beautify;
 if (COMPILED) {
-    var js_beautify = function (x) {
+    js_beautify = function (x) {
         return x;
     };
+} else {
+    var js_beautify = require("js-beautify").js;
 }
 
 /**

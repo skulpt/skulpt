@@ -149,3 +149,7 @@ function sprintf ( ) {
 
     return format.replace(regex, doFormat);
 }
+
+if (module) {
+    module.exports = sprintf;
+}

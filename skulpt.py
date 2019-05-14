@@ -136,15 +136,6 @@ TestFiles = [
         "{0}/test.js".format(TEST_DIR)
         ]
 
-def buildNamedTestsFile():
-    testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
-    nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
-    nt.write("namedtfiles = [")
-    for f in testFiles:
-        nt.write("'%s',\n" % f)
-    nt.write("];")
-    nt.close()
-
 def isClean():
     repo = Repo(".")
     return not repo.is_dirty()
@@ -205,29 +196,7 @@ def test(debug_mode=False, p3=False):
         os.mkdir("support/tmp")
 
     if not p3:
-        buildNamedTestsFile()
-
-        # Initial "requires"
-#         f = open("support/tmp/require.js", "w")
-#         f.write("""
-# var fs = require('fs');
-
-# require('google-closure-library');
-# goog.require('goog.string');
-# goog.require('goog.debug.Error');
-# goog.require('goog.asserts');
-
-# strftime = require('strftime');
-
-# // d8 -> node
-# print = console.log;
-# read = (fname) => { return fs.readFileSync(fname, 'utf8'); };
-# """)
-#         f.close()
-
-        files = getFileList(FILE_TYPE_TEST) + TestFiles
-        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-        ret1 = os.system("{0} support/tmp/all.js {1}".format(jsengine, debugon))
+        ret1 = os.system("{0} test/test.js {1}".format(jsengine, debugon))
 
     if ret1 == 0:
         print "Running jshint"
@@ -322,9 +291,6 @@ def time_suite(iter=1, fn=""):
 
     # Profile test suite
     else:
-        # Prepare named tests
-        buildNamedTestsFile()
-
         # Prepare unit tests
         testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
         if not os.path.exists("support/tmp"):
@@ -447,9 +413,6 @@ def profile(fn="", process=True, output=""):
 
     # Profile test suite
     else:
-        # Prepare named tests
-        buildNamedTestsFile()
-
         # Prepare unit tests
         testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
         if not os.path.exists("support/tmp"):
@@ -803,7 +766,6 @@ def dist(options):
             os.mkdir("support/tmp")
         if options.verbose:
             print ". Running tests on compressed..."
-        buildNamedTestsFile()
         files = [compfn] + TestFiles
         os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
         ret = os.system("{0} support/tmp/all.js".format(jsengine))
@@ -1062,6 +1024,9 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     else:
         debugon = 'false'
     f.write("""
+const fs = require('fs');
+require("../../src/main.js");
+
 var input = fs.readFileSync("%s", "utf8");
 console.log("-----");
 console.log(input);
@@ -1081,9 +1046,7 @@ Sk.misceval.asyncToPromise(function() {
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
     else:
-        files = getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
-        os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-        os.system("{0} {1} support/tmp/all.js".format(jsengine, shell))
+        os.system("{0} {1} support/tmp/run.js".format(jsengine, shell))
 
 def runopt(fn):
     run(fn, "", True)
@@ -1117,6 +1080,9 @@ def rununits(opt=False, p3=False, debug_mode=False):
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
         f.write("""
+const fs = require('fs');
+require('../../src/main.js');
+
 var input = fs.readFileSync('%s', 'utf8');
 console.log('%s');
 Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
@@ -1135,9 +1101,7 @@ Sk.misceval.asyncToPromise(function() {
             p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
                       stdout=PIPE, stderr=PIPE)
         else:
-            files = getFileList(FILE_TYPE_TEST) + ["support/tmp/run.js"]
-            os.system("cat {0} > {1}".format(' '.join(files), "support/tmp/all.js"))
-            p = Popen("{0} support/tmp/all.js".format(jstestengine), shell=True,
+            p = Popen("{0} support/tmp/run.js".format(jstestengine), shell=True,
                       stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
