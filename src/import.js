@@ -154,7 +154,7 @@ if (COMPILED) {
         return x;
     };
 } else {
-    var js_beautify = require("js-beautify").js;
+    var js_beautify = require("js-beautify").js; // jshint ignore:line
 }
 
 /**

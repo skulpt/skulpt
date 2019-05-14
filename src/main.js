@@ -1,3 +1,5 @@
+/* jshint ignore:start */
+
 // Closure
 require("google-closure-library");
 goog.require("goog.string");
@@ -59,3 +61,4 @@ require("./builtindict.js");
 require("./constants.js");
 require("./internalpython.js");
 
+/* jshint ignore:end */
