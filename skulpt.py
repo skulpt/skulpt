@@ -128,7 +128,6 @@ ExtLibs = [
 ]
 
 TestFiles = [
-        'support/jsbeautify/beautify.js',
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]

@@ -6,7 +6,7 @@ goog.require("goog.string");
 goog.require("goog.debug.Error");
 goog.require("goog.asserts");
 
-// Support
+// Global support functions
 strftime = require("strftime");
 js_beautify = require("js-beautify").js;
 
