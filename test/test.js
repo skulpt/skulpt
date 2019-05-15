@@ -273,7 +273,7 @@ function testRun(name, nocatch, debugMode)
                     if (module && module.$js)
                     {
                         console.log("-----\nJS:\n-----");
-                        var beaut = js_beautify(module.$js);
+                        var beaut = Sk.js_beautify(module.$js);
                         console.log(beaut);
                     }
                     runfail += 1;
