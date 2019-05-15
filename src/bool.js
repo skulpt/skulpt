@@ -14,7 +14,7 @@
  * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
  */
 Sk.builtin.bool = function (x) {
-    Sk.builtin.pyCheckArgs("bool", arguments, 1);
+    Sk.builtin.pyCheckArgsLen("bool", arguments.length, 1);
     if (Sk.misceval.isTrue(x)) {
         return Sk.builtin.bool.true$;
     } else {

@@ -452,5 +452,24 @@ class IntTestCases(unittest.TestCase):
         # check('123\ud800')
         # check('123\ud800', 10)
 
+    def test_skulpt_overflow(self):
+        x = 8000000000000000
+        y = 2821521012635269
+
+        # Addition
+        z = x + y
+        self.assertEqual(z, 10821521012635269)
+
+        # Subtraction
+        y = -y
+        z = x - y
+        self.assertEqual(z, 10821521012635269)
+
+        # Multiplication
+        x = 8000000000000123
+        y = 2821521012635269
+        z = x * y
+        self.assertEqual(z, 22572168101082499047084554138087)
+
 if __name__ == "__main__":
     unittest.main()

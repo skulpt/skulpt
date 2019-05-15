@@ -227,7 +227,7 @@ var $builtinmodule = function (name) {
     var nextNormalSample = undefined;
 
     mod.seed = new Sk.builtin.func(function (x) {
-        Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
+        Sk.builtin.pyCheckArgsLen("seed", arguments.length, 0, 1);
         x = Sk.builtin.asnum$(x);
 
         if (arguments.length > 0) {
@@ -241,7 +241,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.random = new Sk.builtin.func(function () {
-        Sk.builtin.pyCheckArgs("random", arguments, 0, 0);
+        Sk.builtin.pyCheckArgsLen("random", arguments.length, 0, 0);
 
         return new Sk.builtin.float_(myGenerator.genrand_res53());
     });
@@ -315,7 +315,7 @@ var $builtinmodule = function (name) {
     };
 
     mod.randint = new Sk.builtin.func(function (a, b) {
-        Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
+        Sk.builtin.pyCheckArgsLen("randint", arguments.length, 2, 2);
 
         a = Sk.builtin.asnum$(a);
         b = Sk.builtin.asnum$(b);
@@ -323,7 +323,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.randrange = new Sk.builtin.func(function (start, stop, step) {
-        Sk.builtin.pyCheckArgs("randrange", arguments, 1, 3);
+        Sk.builtin.pyCheckArgsLen("randrange", arguments.length, 1, 3);
 
         start = Sk.builtin.asnum$(start);
         stop = Sk.builtin.asnum$(stop);
@@ -332,7 +332,7 @@ var $builtinmodule = function (name) {
     });
   
     mod.uniform = new Sk.builtin.func(function (a, b) {
-        Sk.builtin.pyCheckArgs("uniform", arguments, 2, 2);
+        Sk.builtin.pyCheckArgsLen("uniform", arguments.length, 2, 2);
 
         a = Sk.builtin.asnum$(a);
         b = Sk.builtin.asnum$(b);
@@ -342,7 +342,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.triangular = new Sk.builtin.func(function (low, high, mode) {
-        Sk.builtin.pyCheckArgs("triangular", arguments, 2, 3);
+        Sk.builtin.pyCheckArgsLen("triangular", arguments.length, 2, 3);
         Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
         Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
 
@@ -398,7 +398,7 @@ var $builtinmodule = function (name) {
     };
     
     mod.gauss = new Sk.builtin.func(function (mu, sigma) {
-        Sk.builtin.pyCheckArgs("gauss", arguments, 2, 2);
+        Sk.builtin.pyCheckArgsLen("gauss", arguments.length, 2, 2);
         Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
         Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
@@ -414,7 +414,7 @@ var $builtinmodule = function (name) {
     mod.normalvariate = mod.gauss;
 
     mod.lognormvariate = new Sk.builtin.func(function (mu, sigma) {
-        Sk.builtin.pyCheckArgs("lognormvariate", arguments, 2, 2);
+        Sk.builtin.pyCheckArgsLen("lognormvariate", arguments.length, 2, 2);
         Sk.builtin.pyCheckType("mu", "number", Sk.builtin.checkNumber(mu));
         Sk.builtin.pyCheckType("sigma", "number", Sk.builtin.checkNumber(sigma));
 
@@ -425,7 +425,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.expovariate = new Sk.builtin.func(function (lambd) {
-        Sk.builtin.pyCheckArgs("expovariate", arguments, 1, 1);
+        Sk.builtin.pyCheckArgsLen("expovariate", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("lambd", "number", Sk.builtin.checkNumber(lambd));
 
         lambd = Sk.builtin.asnum$(lambd);
@@ -435,7 +435,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.choice = new Sk.builtin.func(function (seq) {
-        Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
+        Sk.builtin.pyCheckArgsLen("choice", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
 
         if (seq.sq$length !== undefined) {
@@ -447,7 +447,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.shuffle = new Sk.builtin.func(function (x) {
-        Sk.builtin.pyCheckArgs("shuffle", arguments, 1, 1);
+        Sk.builtin.pyCheckArgsLen("shuffle", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "sequence", Sk.builtin.checkSequence(x));
 
         if (x.sq$length !== undefined) {
@@ -474,7 +474,7 @@ var $builtinmodule = function (name) {
     mod.sample = new Sk.builtin.func(function (population, k) {
         var i, j, iter, elem, reservoir;
 
-        Sk.builtin.pyCheckArgs("sample", arguments, 2, 2);
+        Sk.builtin.pyCheckArgsLen("sample", arguments.length, 2, 2);
         Sk.builtin.pyCheckType("population", "iterable", Sk.builtin.checkIterable(population));
         Sk.builtin.pyCheckType("k", "integer", Sk.builtin.checkInt(k));
         k = Sk.builtin.asnum$(k);

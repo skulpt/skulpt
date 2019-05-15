@@ -46,7 +46,7 @@ var $builtinmodule = function (name) {
     }
 
     mod.time = new Sk.builtin.func(function () {
-        Sk.builtin.pyCheckArgs("time", arguments, 0, 0);
+        Sk.builtin.pyCheckArgsLen("time", arguments.length, 0, 0);
         var res = Date.now();
         if (this.performance && this.performance.now)
         {
@@ -57,7 +57,7 @@ var $builtinmodule = function (name) {
 
     // This is an experimental implementation of time.sleep(), using suspensions
     mod.sleep = new Sk.builtin.func(function(delay) {
-        Sk.builtin.pyCheckArgs("sleep", arguments, 1, 1);
+        Sk.builtin.pyCheckArgsLen("sleep", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("delay", "float", Sk.builtin.checkNumber(delay));
 
         return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
@@ -103,9 +103,37 @@ var $builtinmodule = function (name) {
         return date.getTimezoneOffset() < stdTimezoneOffset();
     }
 
+    /**
+     * ToDo: This is broken since FireFox Version 47 on Windows 10,
+     *       FIXED it by checking the result of the exec
+     *
+     * @param {any} date
+     * @returns
+     */
     function timeZoneName(date) {
-        var i = /\((.*)\)/.exec(date.toString());
-        return i ? i[1] : "UTC";
+        var result = /\((.*)\)/.exec(date.toString());
+        var language;
+
+        if (this.navigator != null) {
+            language = this.navigator.userLanguage || this.navigator.language;
+        }
+
+        if (result && result.length > 1) {
+            return result[1];
+        } else {
+            if (language === undefined) {
+                return null;
+            }
+
+            // Try 2nd way, using the locale string, this does not work in Safari (26.07.2016)
+            try {
+                var localeString = date.toLocaleString(language, { timeZoneName: "short" });
+                result = localeString.split(" ");
+                return result[result.length - 1];
+            } catch (e) {
+                return null;
+            }
+        }
     }
 
     function timeZoneNames() {
@@ -137,7 +165,7 @@ var $builtinmodule = function (name) {
     }
 
     function localtime_f(secs) {
-        Sk.builtin.pyCheckArgs("localtime", arguments, 0, 1);
+        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
         var d = new Date();
         if (secs) {
             Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
@@ -150,7 +178,7 @@ var $builtinmodule = function (name) {
     mod.localtime = new Sk.builtin.func(localtime_f);
 
     mod.gmtime = new Sk.builtin.func(function(secs) {
-        Sk.builtin.pyCheckArgs("localtime", arguments, 0, 1);
+        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
         var d = new Date();
         if (secs) {
             Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
@@ -250,7 +278,7 @@ var $builtinmodule = function (name) {
     function strftime_f(format, t) {
         var jsFormat;
 
-        Sk.builtin.pyCheckArgs("strftime", arguments, 1, 2);
+        Sk.builtin.pyCheckArgsLen("strftime", arguments.length, 1, 2);
         if (!Sk.builtin.checkString(format)) {
             throw new Sk.builtin.TypeError("format must be a string");
         }
@@ -273,14 +301,14 @@ var $builtinmodule = function (name) {
     function tzset_f()
     {
         throw new Sk.builtin.NotImplementedError("time.tzset() is not yet implemented");
-        Sk.builtin.pyCheckArgs("tzset", arguments, 0, 0);
+        Sk.builtin.pyCheckArgsLen("tzset", arguments.length, 0, 0);
     }
 
     mod.tzset = new Sk.builtin.func(tzset_f);
 
     function strptime_f(s, format)
     {
-        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);
+        Sk.builtin.pyCheckArgsLen("strptime", arguments.length, 1, 2);
         Sk.builtin.pyCheckType("string", "string", Sk.builtin.checkString(s));
         if (format !== undefined) {
             Sk.builtin.pyCheckType("format", "string", Sk.builtin.checkString(format));

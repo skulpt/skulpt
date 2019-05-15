@@ -59,6 +59,8 @@ function CompilerUnit () {
     this.blocks = [];
     this.curblock = 0;
 
+    this.consts = {};
+
     this.scopename = null;
 
     this.prefixCode = "";
@@ -189,7 +191,12 @@ var reservedWords_ = {
     "with": true
 };
 
-function fixReservedWords (name) {
+/**
+ * Fix reserved words
+ *
+ * @param {string} name
+ */
+function fixReservedWords(name) {
     if (reservedWords_[name] !== true) {
         return name;
     }
@@ -250,6 +257,37 @@ function mangleName (priv, ident) {
     strpriv.replace(/^_*/, "");
     strpriv = new Sk.builtin.str("_" + strpriv + name);
     return strpriv;
+}
+
+/**
+ * @param {...*} rest
+ */
+Compiler.prototype.makeConstant = function (rest) {
+    var i;
+    var v;
+    var val = "";
+    var cval;
+
+    // Construct constant value
+    for (i = 0; i < arguments.length; ++i) {
+        val += arguments[i];
+    }
+
+    // Check if we've already defined this exact constant
+    for (var constant in this.u.consts) {
+        if (this.u.consts.hasOwnProperty(constant)) {
+            cval = this.u.consts[constant];
+            if (cval == val) {
+                // We have, just use it
+                return constant;
+            }
+        }
+    }
+
+    // We have not, build new one
+    v = this.u.scopename + "." + this.gensym("const");
+    this.u.consts[v] = val;
+    return v;
 }
 
 /**
@@ -342,6 +380,8 @@ Compiler.prototype._checkSuspension = function(e) {
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
+    var item;
+    var allconsts;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
@@ -350,11 +390,37 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
         }
     }
     else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
-        items = [];
-        for (i = 0; i < e.elts.length; ++i) {
-            items.push(this._gr("elem", this.vexpr(e.elts[i])));
+        if (tuporlist === "tuple") {
+            allconsts = true;
+            items = [];
+            for (i = 0; i < e.elts.length; ++i) {
+                item = this.vexpr(e.elts[i]);
+		
+		// The following is an ugly check to see if item was
+		// turned into a constant.  As vexpr returns a string,
+		// this requires seeing if "$const" is contained
+		// within it.  A better solution would require a
+		// change to vexpr, which would be more invasive.
+                if (allconsts && (item.indexOf('$const') == -1)) {
+                    allconsts = false;
+                }
+                items.push(item);
+            }
+            if (allconsts) {
+                return this.makeConstant("new Sk.builtin.tuple([" + items + "])");
+            } else {
+                for (i = 0; i < items.length; ++i) {
+                    items[i] = this._gr("elem", items[i]);
+                }
+                return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
+            }
+        } else {
+            items = [];
+            for (i = 0; i < e.elts.length; ++i) {
+                items.push(this._gr("elem", this.vexpr(e.elts[i])));
+            }
+            return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
         }
-        return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
     }
 };
 
@@ -525,7 +591,7 @@ Compiler.prototype.ccall = function (e) {
     }
     else {
         out ("$ret;"); // This forces a failure if $ret isn't defined
-        if (Sk.python3 && e.func.id && e.func.id.v === "super" && args.length == 0) {
+        if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super" && args.length == 0) {
             // make sure there is a self variable
             // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
             // so we should probably add self to the mangling
@@ -534,7 +600,11 @@ Compiler.prototype.ccall = function (e) {
             args.push("$gbl.__class__");
             args.push("self");
         }
-        out ("$ret = Sk.misceval.callsimOrSuspend(", func, args.length > 0 ? "," : "", args, ");");
+        if (args.length > 0) {
+            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ", [", args, "]);");
+        } else {
+            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ");");
+        }
     }
 
     this._checkSuspension(e);
@@ -699,25 +769,25 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.int_) {
-                return "new Sk.builtin.int_(" + e.n.v + ")";
+                return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
             } else if (e.n instanceof Sk.builtin.float_) {
                 // Preserve sign of zero for floats
                 nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
-                return "new Sk.builtin.float_(" + nStr + ")";
+                return this.makeConstant("new Sk.builtin.float_(" + nStr + ")");
             }
             else if (e.n instanceof Sk.builtin.lng) {
                 // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
-                return "Sk.longFromStr('" + e.n.tp$str().v + "')";
+                return this.makeConstant("Sk.longFromStr('" + e.n.tp$str().v + "')");
             }
             else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
                 var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
                 var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
-                return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
+                return this.makeConstant("new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))");
             }
             goog.asserts.fail("unhandled Num type");
         case Str:
-            return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
+            return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
         case Attribute:
             if (e.ctx !== AugLoad && e.ctx !== AugStore) {
                 val = this.vexpr(e.value);
@@ -1114,7 +1184,23 @@ Compiler.prototype.cwhile = function (s) {
         this.pushContinueBlock(top);
 
         this.setBlock(body);
+
+        if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
+            var suspType = 'Sk.delay';
+            var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
+            out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
+                "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+                "$susp.$blk = "+debugBlock+";",
+                "$susp.optional = true;",
+                "return $susp;",
+                "}");
+            this._jump(debugBlock);
+            this.setBlock(debugBlock);
+            this.u.doesSuspend = true;
+        }
+
         this.vseqstmt(s.body);
+
         this._jump(top);
 
         this.popContinueBlock();
@@ -1168,6 +1254,20 @@ Compiler.prototype.cfor = function (s) {
     this._jumpundef(nexti, cleanup); // todo; this should be handled by StopIteration
     target = this.vexpr(s.target, nexti);
 
+    if ((Sk.debugging || Sk.killableFor) && this.u.canSuspend) {
+        var suspType = 'Sk.delay';
+        var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
+        out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
+            "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+            "$susp.$blk = "+debugBlock+";",
+            "$susp.optional = true;",
+            "return $susp;",
+            "}");
+        this._jump(debugBlock);
+        this.setBlock(debugBlock);
+        this.u.doesSuspend = true;
+    }
+
     // execute body
     this.vseqstmt(s.body);
 
@@ -1200,7 +1300,7 @@ Compiler.prototype.craise = function (s) {
             // handles: raise Error OR raise someinstance
             exc = this._gr("err", this.vexpr(s.type));
             out("if(",exc," instanceof Sk.builtin.type) {",
-                "throw Sk.misceval.callsim(", exc, ");",
+                "throw Sk.misceval.callsimArray(", exc, ");",
                 "} else if(typeof(",exc,") === 'function') {",
                 "throw ",exc,"();",
                 "} else {",
@@ -1253,7 +1353,7 @@ Compiler.prototype.ctryexcept = function (s) {
             next = (i == n - 1) ? unhandled : handlers[i + 1];
 
             // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
-            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
+            // var check = this._gr('call', "Sk.misceval.callsimArray(", isinstance, ", [$err, ", handlertype, "])");
 
             check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
             this._jumpfalse(check, next);
@@ -1381,7 +1481,7 @@ Compiler.prototype.cwith = function (s) {
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.gattr(",mgr,",'__enter__', true);");
     this._checkSuspension(s);
-    out("$ret = Sk.misceval.callsimOrSuspend($ret);");
+    out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
     value = this._gr("value", "$ret");
 
@@ -1416,7 +1516,7 @@ Compiler.prototype.cwith = function (s) {
     this.popFinallyBlock();
 
     //   exit(None, None, None)
-    out("$ret = Sk.misceval.callsimOrSuspend(",exit,",Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$);");
+    out("$ret = Sk.misceval.callsimOrSuspendArray(",exit,",[Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$]);");
     this._checkSuspension(s);
     // Ignore $ret.
 
@@ -1475,7 +1575,7 @@ Compiler.prototype.cimport = function (s) {
     var n = s.names.length;
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        out("$ret = Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[]);");
+        out("$ret = Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[],",(Sk.__future__.absolute_import?0:-1),");");
 
         this._checkSuspension(s);
 
@@ -1499,14 +1599,19 @@ Compiler.prototype.cfromimport = function (s) {
     var storeName;
     var got;
     var alias;
+    var aliasOut;
     var mod;
     var i;
     var n = s.names.length;
     var names = [];
-    for (i = 0; i < n; ++i) {
-        names[i] = s.names[i].name["$r"]().v;
+    var level = s.level;
+    if (level == 0 && !Sk.__future__.absolute_import) {
+        level = -1;
     }
-    out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
+    for (i = 0; i < n; ++i) {
+        names[i] = "'" + fixReservedWords(s.names[i].name.v) + "'";
+    }
+    out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "],",level,");");
 
     this._checkSuspension(s);
 
@@ -1515,6 +1620,7 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
+        aliasOut = "'" + fixReservedWords(alias.name.v) + "'";
         if (i === 0 && alias.name.v === "*") {
             goog.asserts.assert(n === 1);
             out("Sk.importStar(", mod, ",$loc, $gbl);");
@@ -1522,7 +1628,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", aliasOut, ")");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
@@ -1686,7 +1792,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
 
-    //
+    // this could potentially get removed if generators would learn to deal with args, kw, kwargs, varargs
     // initialize default arguments. we store the values of the defaults to
     // this code object as .$defaults just below after we exit this scope.
     //
@@ -1719,8 +1825,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         minargs = args ? args.args.length - defaults.length : 0;
         maxargs = vararg ? Infinity : (args ? args.args.length : 0);
         kw = kwarg ? true : false;
-        this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v +
-            "\", arguments, " + minargs + ", " + maxargs + ", " + kw +
+        this.u.varDeclsCode += "Sk.builtin.pyCheckArgsLen(\"" + coname.v +
+            "\", arguments.length, " + minargs + ", " + maxargs + ", " + kw +
             ", " + hasFree + ");";
     }
 
@@ -1847,19 +1953,19 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // The call to pyCheckArgs assumes they can't be true.
     {
         if (args && args.args.length > 0) {
-            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgs(\"",
-                coname.v, "\",arguments,", args.args.length - defaults.length, ",", args.args.length,
+            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
+                coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
                 ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
         }
         else {
-            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgs(\"", coname.v,
-                "\",arguments,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
+            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
+                "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
         }
     }
     else {
         var res;
         if (decos.length > 0) {
-            out("$ret = Sk.misceval.callsimOrSuspend(", scopename, ".$decorators[0], new Sk.builtins['function'](", scopename, ",$gbl", frees, "));");
+            out("$ret = Sk.misceval.callsimOrSuspendArray(", scopename, ".$decorators[0], [new Sk.builtins['function'](", scopename, ",$gbl", frees, ")]);");
             this._checkSuspension();
             return this._gr("funcobj", "$ret");
         }
@@ -1986,7 +2092,7 @@ Compiler.prototype.cgenexp = function (e) {
     // but the code builder builds a wrapper that makes generators for normal
     // function generators, so we just do it outside (even just new'ing it
     // inline would be fine).
-    var gener = this._gr("gener", "Sk.misceval.callsim(", gen, ");");
+    var gener = this._gr("gener", "Sk.misceval.callsimArray(", gen, ");");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
     out(gener, ".gi$locals.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");
@@ -2011,8 +2117,8 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "(function $" + s.name.v + "$_closure(){";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;$free=$globals;";
+    this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;"
 
     if (Sk.execLimit !== null) {
@@ -2404,6 +2510,11 @@ Compiler.prototype.exitScope = function () {
         mangled = fixReservedNames(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
+    for (var constant in prev.consts) {
+        if (prev.consts.hasOwnProperty(constant)) {
+            prev.suffixCode += constant + " = " + prev.consts[constant] + ";";
+        }
+    }
 };
 
 /**
@@ -2430,11 +2541,14 @@ Compiler.prototype.cprint = function (s) {
     n = s.values.length;
     // todo; dest disabled
     for (i = 0; i < n; ++i) {
-        out("Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
+        out("$ret = Sk.misceval.print_(", /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ").v);");
+        this._checkSuspension(s);
     }
     if (s.nl) {
-        out("Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
+        out("$ret = Sk.misceval.print_(", /*dest, ',*/ "\"\\n\");");
+        this._checkSuspension(s);
     }
+
 };
 
 Compiler.prototype.cmod = function (mod) {
@@ -2461,6 +2575,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.varDeclsCode += "if ("+modf+".$wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
+        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; $loc.__file__=new Sk.builtins.str('" + this.filename + "');}" +
         "    else { Sk.globals = $gbl; }" +
         "} else { Sk.globals = $gbl; }";
 

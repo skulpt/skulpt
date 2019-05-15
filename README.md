@@ -36,7 +36,6 @@ We are coordinating sprints on some of the ideas below, builtins, stdlib, third 
 
 8. Implement the hooks for a debugger. This may be a half step towards 1 or may be in a completely different direction, but allowing students to debug line by line a program they have written would have some real benefit.
 
-
 ### Building Skulpt
 
 Building Skulpt is straightforward:

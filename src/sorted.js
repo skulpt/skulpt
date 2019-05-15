@@ -23,14 +23,14 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             };
         } else {
             compare_func = function (a, b) {
-                return Sk.misceval.callsim(cmp, a[0], b[0]);
+                return Sk.misceval.callsimArray(cmp, [a[0], b[0]]);
             };
         }
         iter = iterable.tp$iter();
         next = iter.tp$iternext();
         arr = [];
         while (next !== undefined) {
-            arr.push([Sk.misceval.callsim(key, next), next]);
+            arr.push([Sk.misceval.callsimArray(key, [next]), next]);
             next = iter.tp$iternext();
         }
         list = new Sk.builtin.list(arr);

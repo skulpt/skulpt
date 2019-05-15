@@ -18,7 +18,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     }
     objit = Sk.abstr.lookupSpecial(obj, "__iter__");
     if (objit) {
-        return Sk.misceval.callsim(objit, obj);
+        return Sk.misceval.callsimArray(objit, [obj]);
     }
     this.sentinel = sentinel;
     this.flag = false;
@@ -61,7 +61,7 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
 
     if (this.getitem) {
         r = Sk.misceval.tryCatch(function() {
-            return Sk.misceval.callsimOrSuspend(self.getitem, self.obj, Sk.ffi.remapToPy(self.idx++));
+            return Sk.misceval.callsimOrSuspendArray(self.getitem, [self.obj, Sk.ffi.remapToPy(self.idx++)]);
         }, function(e) {
             if (e instanceof Sk.builtin.StopIteration || e instanceof Sk.builtin.IndexError) {
                 return undefined;
@@ -82,10 +82,10 @@ Sk.builtin.iterator.prototype.tp$iternext = function (canSuspend) {
     };
 
     if (this.call) {
-        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspend(this.call, this.obj), checkSentinel);
+        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(this.call, [this.obj]), checkSentinel);
     } else {
         var obj = /** @type {Object} */ (this.obj);
-        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspend(obj), checkSentinel);
+        r = Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(obj), checkSentinel);
     }
 
     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);

@@ -11,7 +11,7 @@ Sk.builtin.enumerate = function (iterable, start) {
     }
 
 
-    Sk.builtin.pyCheckArgs("enumerate", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("enumerate", arguments.length, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }

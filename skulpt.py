@@ -70,6 +70,7 @@ Files = [
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
+        'support/setImmediate/setImmediate.js',
         'src/env.js',
         'src/type.js',
         'src/abstract.js',
@@ -736,23 +737,28 @@ def dist(options):
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
     debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
 
-    # Run tests on uncompressed.
-    if options.verbose:
-        print ". Running tests on uncompressed..."
+    if options.disabletests == False:
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Running tests on uncompressed..."
 
-    ret = test()
+        ret = test()
 
-    # turn the tests in debug mode off because they take too long
-    # # Run tests on uncompressed.
-    # if options.verbose:
-    #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
-    #
-    #
-    # ret = test(debug_mode=True)
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
 
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        sys.exit(1);
+        # turn the tests in debug mode off because they take too long
+        # # Run tests on uncompressed.
+        # if options.verbose:
+        #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+        #
+        #
+        # ret = test(debug_mode=True)
+
+        if ret != 0:
+            print "Tests failed on uncompressed version."
+            sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST, include_ext_libs=False)])
@@ -775,7 +781,6 @@ def dist(options):
 
     # Copy the debugger file to the output dir
 
-
     if options.verbose:
         print ". Bundling external libraries..."
 
@@ -791,17 +796,19 @@ def dist(options):
 
 
     # Run tests on compressed.
-    if options.verbose:
-        print ". Running tests on compressed..."
-    buildNamedTestsFile()
-    ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on compressed version."
-        sys.exit(1)
-    ret = rununits(opt=True)
-    if ret != 0:
-        print "Tests failed on compressed unit tests"
-        sys.exit(1)
+    if options.disabletests == False:
+        if options.verbose:
+            print ". Running tests on compressed..."
+        buildNamedTestsFile()
+        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+        if ret != 0:
+            print "Tests failed on compressed version."
+            sys.exit(1)
+        ret = rununits(opt=True)
+        if ret != 0:
+            print "Tests failed on compressed unit tests"
+            sys.exit(1)
+
 
     doc()
 
@@ -878,6 +885,10 @@ def make_skulpt_js(options,dest):
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
 def run_in_browser(fn, options, debug_mode=False, p3=False):
+    if p3:
+        p3_str = "Sk.python3"
+    else:
+        p3_str = "Sk.python2"
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -892,7 +903,7 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=str(p3).lower(),root="")
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=p3_str,root="")
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1036,9 +1047,9 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
-        p3on = 'true'
+        p3on = 'Sk.python3'
     else:
-        p3on = 'false'
+        p3on = 'Sk.python2'
     if debug_mode:
         debugon = 'true'
     else:
@@ -1048,7 +1059,7 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", %s, true);
 }).then(function () {
@@ -1080,10 +1091,10 @@ def shell(fn):
 def rununits(opt=False, p3=False, debug_mode=False):
     if p3:
         unit_dir = 'test/unit3'
-        p3on = 'true'
+        p3on = 'Sk.python3'
     else:
         unit_dir = 'test/unit'
-        p3on = 'false'
+        p3on = 'Sk.python2'
     testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -1096,7 +1107,7 @@ def rununits(opt=False, p3=False, debug_mode=False):
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugging: %s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1297,6 +1308,7 @@ def main():
     parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
     parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
     parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
+    parser.add_option("-d", "--disabletests", action="store_true", dest="disabletests", default=False)
     parser.add_option("-v", "--verbose",
         action="store_true",
         dest="verbose",

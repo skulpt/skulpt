@@ -222,7 +222,7 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
 };
 
 Sk.builtin.list.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, true, false);
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
     return new Sk.builtin.list_iter_(self);
 });
 
@@ -295,7 +295,7 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
 };
 
 Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    Sk.builtin.pyCheckArgs("__contains__", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
     return new Sk.builtin.bool(self.sq$contains(item));
 });
 
@@ -423,7 +423,7 @@ Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, inde
  * @param {?=} key optional
  * @param {?=} reverse optional
  */
-Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
+Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
     var mucked;
     var j;
     var keyvalue;
@@ -431,8 +431,8 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var i;
     var zero;
     var timsort;
-    var has_key = key !== undefined && key !== null;
-    var has_cmp = cmp !== undefined && cmp !== null;
+    var has_key = key !== undefined && key !== null && key !== Sk.builtin.none.none$;
+    var has_cmp = cmp !== undefined && cmp !== null && cmp !== Sk.builtin.none.none$;
     var rev;
 
     if (reverse === undefined) {
@@ -451,7 +451,7 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     if (has_key) {
         if (has_cmp) {
             timsort.lt = function (a, b) {
-                var res = Sk.misceval.callsim(cmp, a[0], b[0]);
+                var res = Sk.misceval.callsimArray(cmp, [a[0], b[0]]);
                 return Sk.misceval.richCompareBool(res, zero, "Lt");
             };
         } else {
@@ -461,12 +461,12 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
         }
         for (i = 0; i < timsort.listlength; i++) {
             item = timsort.list.v[i];
-            keyvalue = Sk.misceval.callsim(key, item);
+            keyvalue = Sk.misceval.callsimArray(key, [item]);
             timsort.list.v[i] = [keyvalue, item];
         }
     } else if (has_cmp) {
         timsort.lt = function (a, b) {
-            var res = Sk.misceval.callsim(cmp, a, b);
+            var res = Sk.misceval.callsimArray(cmp, [a, b]);
             return Sk.misceval.richCompareBool(res, zero, "Lt");
         };
     }
@@ -498,6 +498,8 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
 
     return Sk.builtin.none.none$;
 };
+Sk.builtin.list.prototype.list_sort_.co_varnames = ["__self__", "cmp", "key", "reverse"];
+Sk.builtin.list.prototype.list_sort_.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
 
 /**
  * @param {Sk.builtin.list=} self optional
@@ -507,7 +509,7 @@ Sk.builtin.list.prototype.list_reverse_ = function (self) {
     var newarr;
     var old;
     var len;
-    Sk.builtin.pyCheckArgs("reverse", arguments, 1, 1);
+    Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 1, 1);
 
     len = self.v.length;
     old = self.v;
@@ -522,14 +524,14 @@ Sk.builtin.list.prototype.list_reverse_ = function (self) {
 //Sk.builtin.list.prototype.__reversed__ = todo;
 
 Sk.builtin.list.prototype["append"] = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgs("append", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("append", arguments.length, 2, 2);
 
     self.v.push(item);
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) {
-    Sk.builtin.pyCheckArgs("insert", arguments, 3, 3);
+    Sk.builtin.pyCheckArgsLen("insert", arguments.length, 3, 3);
     if (!Sk.builtin.checkNumber(i)) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
@@ -548,14 +550,14 @@ Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) 
 });
 
 Sk.builtin.list.prototype["extend"] = new Sk.builtin.func(function (self, b) {
-    Sk.builtin.pyCheckArgs("extend", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("extend", arguments.length, 2, 2);
     self.list_extend_(b);
     return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
     var ret;
-    Sk.builtin.pyCheckArgs("pop", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("pop", arguments.length, 1, 2);
     if (i === undefined) {
         i = self.v.length - 1;
     }
@@ -578,7 +580,7 @@ Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
 
 Sk.builtin.list.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     var idx;
-    Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("remove", arguments.length, 2, 2);
 
     idx = Sk.builtin.list.prototype["index"].func_code(self, item);
     self.v.splice(Sk.builtin.asnum$(idx), 1);
@@ -589,7 +591,7 @@ Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, s
     var i;
     var obj;
     var len;
-    Sk.builtin.pyCheckArgs("index", arguments, 2, 4);
+    Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers");
     }
@@ -623,7 +625,7 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
     var count;
     var obj;
     var len;
-    Sk.builtin.pyCheckArgs("count", arguments, 2, 2);
+    Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
 
     len = self.v.length;
     obj = self.v;
@@ -637,13 +639,8 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
 });
 
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
-
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 
-// Make sure that key/value variations of lst.sort() work
-// See issue 45 on github as to possible alternate approaches to this and
-// why this was chosen - csev
-Sk.builtin.list.prototype["sort"].func_code["co_varnames"] = ["__self__", "cmp", "key", "reverse"];
 goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
 
 /**
