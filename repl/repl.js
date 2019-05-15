@@ -68,7 +68,7 @@ while (true) {
     //Read
     var l = readline();
     if (l === undefined) {
-        quit();
+        process.exit();
     }
     lines.push(l);
 
@@ -102,7 +102,7 @@ while (true) {
         }
     } catch (err) {
         if (err instanceof Sk.builtin.SystemExit) {
-            quit();
+            process.exit();
         }
 
         console.log(err);
