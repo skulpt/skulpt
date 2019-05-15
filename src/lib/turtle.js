@@ -864,7 +864,7 @@ function generateTurtleModule(_target) {
 
         proto.$pencolor = function(r,g,b,a) {
             if (r !== undefined) {
-                this._color = createColor(this,r,g,b,a);
+                this._color = createColor(this._colorMode,r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {color : this._color});
             }
 
@@ -876,7 +876,7 @@ function generateTurtleModule(_target) {
 
         proto.$fillcolor = function(r,g,b,a) {
             if (r !== undefined) {
-                this._fill = createColor(this,r,g,b,a);
+                this._fill = createColor(this._colorMode,r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {fill : this._fill});
             }
 
@@ -889,12 +889,12 @@ function generateTurtleModule(_target) {
         proto.$color = function(color, fill, b, a) {
             if (color !== undefined) {
                 if (arguments.length === 1 || arguments.length >= 3) {
-                    this._color = createColor(this,color, fill, b, a);
+                    this._color = createColor(this._colorMode, color, fill, b, a);
                     this._fill  = this._color;
                 }
                 else {
-                    this._color = createColor(this,color);
-                    this._fill  = createColor(this,fill);
+                    this._color = createColor(this._colorMode, color);
+                    this._fill  = createColor(this._colorMode, fill);
                 }
                 return this.addUpdate(undefined, this._shown, {
                     color : this._color,
@@ -970,7 +970,7 @@ function generateTurtleModule(_target) {
                 Math.max(this._size + 4, this._size * 2);
 
             color = (color !== undefined) ?
-                createColor(this,color, g, b, a) :
+                createColor(this._colorMode, color, g, b, a) :
                 this._color;
 
             return this.addUpdate(drawDot, true, undefined, size, color);
@@ -1066,10 +1066,13 @@ function generateTurtleModule(_target) {
                 return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});         
             }
 
-            return this._colorMode===255?Sk.builtin.int_(255):Sk.builtin.float_(1.0);
+            return this._colorMode;
         }
         proto.$colormode.minArgs     = 0;
         proto.$colormode.co_varnames = ["mode"];
+        proto.$colormode.returnType = function(value) {
+            return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
+        };
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1415,7 +1418,7 @@ function generateTurtleModule(_target) {
 
         proto.$bgcolor = function(color, g, b, a) {
             if (color !== undefined) {
-                this._bgcolor = createColor(this,color, g, b, a);
+                this._bgcolor = createColor(this._colorMode, color, g, b, a);
                 clearLayer(this.bgLayer(), this._bgcolor);
                 return;
             }
@@ -2046,7 +2049,7 @@ function generateTurtleModule(_target) {
         return result;
     }
 
-    function createColor(turtle,color, g, b, a) {
+    function createColor(turtleColorMode,color, g, b, a) {
         var i;
 
         if (g !== undefined) {
@@ -2054,7 +2057,7 @@ function generateTurtleModule(_target) {
         }
 
         if (color.constructor === Array && color.length) {
-            if(turtle._colorMode === 255){//mode is 255
+            if(turtleColorMode === 255){//mode is 255
                 for(i = 0; i < 3; i++) {
                     if(typeof color[i] === "number") {
                         color[i] = Math.max(0, Math.min(255, parseInt(color[i])));
