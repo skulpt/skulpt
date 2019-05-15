@@ -2036,10 +2036,18 @@ function generateTurtleModule(_target) {
         }
 
         if (color.constructor === Array && color.length) {
+            // Check float number
+            var float_reg = /^\d+(\.\d+)?$/;
             for(i = 0; i < 3; i++) {
-                color[i] = (typeof color[i] === "number") ?
-                    Math.max(0, Math.min(255, parseInt(color[i]))) :
-                    0;
+                if(typeof color[i] === "number") {
+                    if(color[i] <= 1 && float_reg.test(color[i])){// If 0.00-1.00
+                        color[i] = Math.max(0, Math.min(255, parseInt(255 * color[i])));
+                    }else{
+                        color[i] = Math.max(0, Math.min(255, parseInt(color[i])));
+                    }
+                }else {
+                    color[i] = 0;
+                }
             }
             if (typeof color[i] === "number") {
                 color[3] = Math.max(0, Math.min(1, color[i]));
