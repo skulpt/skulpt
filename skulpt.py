@@ -380,19 +380,23 @@ def parse_profile_args(argv):
 
     profile(fn=fn, output=out)
 
-def profile(fn="", process=True, output=""):
+def profile(fn="", process=True, output="", p3=False):
     """
     Runs v8 profiler, which outputs tick information to v8.log Use
     https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
     to analyze log.
     """
-    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+    jsprofengine = jsengine + ' --prof --no-logfile-per-isolate --log-internal-timer-events'
+    print jsprofengine
 
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
 
-    additional_files = ""
+    if p3:
+        p3on = 'Sk.python3'
+    else:
+        p3on = 'Sk.python2'
 
     # Profile single file
     if fn:
@@ -401,52 +405,51 @@ def profile(fn="", process=True, output=""):
             raise SystemExit()
 
         modname = os.path.splitext(os.path.basename(fn))[0]
+        
         f.write("""
-    var input = read('%s');
-    print("-----");
-    print(input);
-    print("-----");
-    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
-    Sk.misceval.asyncToPromise(function() {
-        return Sk.importMain("%s", true, true);
-    }).then(function () {
-        print("-----");
-    }, function(e) {
-        print("UNCAUGHT EXCEPTION: " + e);
-        print(e.stack);
-    });
-        """ % (fn, os.path.split(fn)[0], modname))
+const fs = require('fs');
+require("../../src/main.js");
+
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", false, true);
+}).then(function () {
+    console.log("-----");
+}, function(e) {
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+});
+    """ % (os.path.split(fn)[0], p3on, modname))
 
     # Profile test suite
     else:
         # Prepare unit tests
-        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
+        if p3:
+            testDir = 'test/unit3'
+        else:
+            testDir = 'test/unit'
+        testFiles = [testDir + '/' + fn for fn in os.listdir(testDir) if '.py' in fn]
 
-        f.write("var input;\n")
+        f.write("""
+const fs = require('fs');
+require("../../src/main.js");
+Sk.configure({syspath:["test/unit/"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+""" % p3on)
 
         for fn in testFiles:
             modname = os.path.splitext(os.path.basename(fn))[0]
-            p3on = 'false'
             f.write("""
-    input = read('%s');
-    print('%s');
-    Sk.configure({syspath:["%s"], read:read, python3:%s});
-    Sk.importMain("%s", false);
-            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+Sk.importMain("%s", false);
+            """ % (modname))
 
             fn = "test suite"
-            additional_files = ' '.join(TestFiles)
 
     f.close()
 
     # Run profile
     print("Running profile on %s..." % fn)
     startTime = time.time()
-    p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
-              ' '.join(getFileList(FILE_TYPE_TEST)),
-              additional_files),
+    p = Popen("{0} support/tmp/run.js".format(jsprofengine),
               shell=True, stdout=PIPE, stderr=PIPE)
 
     outs, errs = p.communicate()
@@ -463,22 +466,15 @@ def profile(fn="", process=True, output=""):
 
     # Process and display results
     if process:
+        # Currently does not actually save to output file
         if output:
             out_msg = " and saving in %s" % output
             output = " > " + output
         else:
             out_msg = ""
 
-        print "Processing profile using d8 processor%s..." % out_msg
-        if sys.platform == "win32":
-            os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
-        elif sys.platform == "darwin":
-            os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
-        elif sys.platform == "linux2":
-            os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
-        else:
-            print """d8 processor is unsupported on this platform.
-    Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
+        print "Processing profile using node%s..." % out_msg
+        os.system("{0} --prof-process v8.log".format(jsengine))
 
 def debugbrowser():
     tmpl = """
