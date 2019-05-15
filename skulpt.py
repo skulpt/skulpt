@@ -260,14 +260,17 @@ def parse_time_args(argv):
     iter = iter if iter else 1
     time_suite(iter=iter, fn=fn)
 
-def time_suite(iter=1, fn=""):
+def time_suite(iter=1, fn="", p3=False):
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
 
-    additional_files = ""
+    if p3:
+        p3on = 'Sk.python3'
+    else:
+        p3on = 'Sk.python2'
 
     # Profile single file
     if fn:
@@ -276,43 +279,44 @@ def time_suite(iter=1, fn=""):
             raise SystemExit()
 
         modname = os.path.splitext(os.path.basename(fn))[0]
+
         f.write("""
-    var input = read('%s');
-    print("-----");
-    print(input);
-    print("-----");
-    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
-    Sk.misceval.asyncToPromise(function() {
-        return Sk.importMain("%s", true, true);
-    }).then(function () {
-        print("-----");
-    }, function(e) {
-        print("UNCAUGHT EXCEPTION: " + e);
-        print(e.stack);
-    });
-        """ % (fn, os.path.split(fn)[0], modname))
+const fs = require('fs');
+require("../../src/main.js");
+
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", false, true);
+}).then(function () {
+    console.log("-----");
+}, function(e) {
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+});
+    """ % (os.path.split(fn)[0], p3on, modname))
 
     # Profile test suite
     else:
         # Prepare unit tests
-        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
+        if p3:
+            testDir = 'test/unit3'
+        else:
+            testDir = 'test/unit'
+        testFiles = [testDir + '/' + fn for fn in os.listdir(testDir) if '.py' in fn]
 
-        f.write("var input;\n")
+        f.write("""
+const fs = require('fs');
+require("../../src/main.js");
+Sk.configure({syspath:["test/unit/"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+""" % p3on)
 
         for fn in testFiles:
             modname = os.path.splitext(os.path.basename(fn))[0]
-            p3on = 'false'
             f.write("""
-    input = read('%s');
-    print('%s');
-    Sk.configure({syspath:["%s"], read:read, python3:%s});
-    Sk.importMain("%s", false);
-            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+Sk.importMain("%s", false);
+            """ % modname)
 
         fn = "test suite"
-        additional_files = ' '.join(TestFiles)
 
     f.close()
 
@@ -325,15 +329,14 @@ def time_suite(iter=1, fn=""):
         if iter > 1:
             print "Iteration %d of %d..." % (i + 1, iter)
         startTime = time.time()
-        p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
-                  ' '.join(getFileList(FILE_TYPE_TEST)),
-                  additional_files),
+        p = Popen("{0} support/tmp/run.js".format(jsprofengine),
                   shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
         if p.returncode != 0:
             print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
+            print errs
 
         endTime = time.time()
         times.append(endTime - startTime)
