@@ -508,6 +508,7 @@ function generateTurtleModule(_target) {
                     speed   : this._computed_speed,
                     down    : this._down,
                     shown   : this._shown,
+                    colorMode : this._colorMode,
                     context : function() {
                         return self.getPaper();
                     }
@@ -575,6 +576,7 @@ function generateTurtleModule(_target) {
             this._undoBuffer = [];
             this._speed      = 3;
             this._computed_speed = 5;
+            this._colorMode  = 1.0;
             this._state      = undefined;
 
             for(var key in this._managers) {
@@ -862,7 +864,7 @@ function generateTurtleModule(_target) {
 
         proto.$pencolor = function(r,g,b,a) {
             if (r !== undefined) {
-                this._color = createColor(r,g,b,a);
+                this._color = createColor(this,r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {color : this._color});
             }
 
@@ -874,7 +876,7 @@ function generateTurtleModule(_target) {
 
         proto.$fillcolor = function(r,g,b,a) {
             if (r !== undefined) {
-                this._fill = createColor(r,g,b,a);
+                this._fill = createColor(this,r,g,b,a);
                 return this.addUpdate(undefined, this._shown, {fill : this._fill});
             }
 
@@ -887,12 +889,12 @@ function generateTurtleModule(_target) {
         proto.$color = function(color, fill, b, a) {
             if (color !== undefined) {
                 if (arguments.length === 1 || arguments.length >= 3) {
-                    this._color = createColor(color, fill, b, a);
+                    this._color = createColor(this,color, fill, b, a);
                     this._fill  = this._color;
                 }
                 else {
-                    this._color = createColor(color);
-                    this._fill  = createColor(fill);
+                    this._color = createColor(this,color);
+                    this._fill  = createColor(this,fill);
                 }
                 return this.addUpdate(undefined, this._shown, {
                     color : this._color,
@@ -968,7 +970,7 @@ function generateTurtleModule(_target) {
                 Math.max(this._size + 4, this._size * 2);
 
             color = (color !== undefined) ?
-                createColor(color, g, b, a) :
+                createColor(this,color, g, b, a) :
                 this._color;
 
             return this.addUpdate(drawDot, true, undefined, size, color);
@@ -1053,6 +1055,21 @@ function generateTurtleModule(_target) {
         };
         proto.$shape.minArgs     = 0;
         proto.$shape.co_varnames = ["name"];
+        //colormode supported
+        proto.$colormode = function(cmode){
+            if(cmode !== undefined){
+                if(cmode === 255) {
+                    this._colorMode = 255;
+                } else {
+                    this._colorMode = 1.0;
+                }   
+                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});         
+            }
+
+            return this._colorMode===255?Sk.builtin.int_(255):Sk.builtin.float_(1.0);
+        }
+        proto.$colormode.minArgs     = 0;
+        proto.$colormode.co_varnames = ["mode"];
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1134,6 +1151,7 @@ function generateTurtleModule(_target) {
             newTurtleInstance.instance._computed_speed = this._computed_speed;
             newTurtleInstance.instance._down = this._down;
             newTurtleInstance.instance._shown = this._shown;
+            newTurtleInstance.instance._colorMode = this._colorMode;
 
             // Other properties to copy
             newTurtleInstance.instance._isRadians = this._isRadians;
@@ -1397,7 +1415,7 @@ function generateTurtleModule(_target) {
 
         proto.$bgcolor = function(color, g, b, a) {
             if (color !== undefined) {
-                this._bgcolor = createColor(color, g, b, a);
+                this._bgcolor = createColor(this,color, g, b, a);
                 clearLayer(this.bgLayer(), this._bgcolor);
                 return;
             }
@@ -2028,7 +2046,7 @@ function generateTurtleModule(_target) {
         return result;
     }
 
-    function createColor(color, g, b, a) {
+    function createColor(turtle,color, g, b, a) {
         var i;
 
         if (g !== undefined) {
@@ -2036,17 +2054,26 @@ function generateTurtleModule(_target) {
         }
 
         if (color.constructor === Array && color.length) {
-            // Check float number
-            var float_reg = /^\d+(\.\d+)?$/;
-            for(i = 0; i < 3; i++) {
-                if(typeof color[i] === "number") {
-                    if(color[i] <= 1 && float_reg.test(color[i])){// If 0.00-1.00
-                        color[i] = Math.max(0, Math.min(255, parseInt(255 * color[i])));
-                    }else{
+            if(turtle._colorMode === 255){//mode is 255
+                for(i = 0; i < 3; i++) {
+                    if(typeof color[i] === "number") {
                         color[i] = Math.max(0, Math.min(255, parseInt(color[i])));
+                    } else { 
+                        throw new Sk.builtin.ValueError("bad color sequence");
                     }
-                }else {
-                    color[i] = 0;
+                }
+            } else {//In python,if the colormode not equals 255,it should be 1.0
+                for(i = 0; i < 3; i++) {
+                    if(typeof color[i] === "number") {
+                        if(color[i] <= 1){
+                            color[i] = Math.max(0, Math.min(255, parseInt(255 * color[i])));
+                        } else {
+                            //Raise TurtleGraphicsError,Here use ValueError instead
+                            throw new Sk.builtin.ValueError("bad color sequence");
+                        }
+                    } else {
+                        throw new Sk.builtin.ValueError("bad color sequence");
+                    }
                 }
             }
             if (typeof color[i] === "number") {
