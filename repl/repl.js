@@ -1,5 +1,7 @@
 require('../src/main.js');
+
 var readlineSync = require('readline-sync');
+var fs = require('fs');
 
 var readline = function () {
     return readlineSync.question("");
