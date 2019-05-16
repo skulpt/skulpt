@@ -116,8 +116,7 @@ $font-family-sans-serif: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-s
 // $black       : #000000;
 
 // We use these as default colors throughout
-$primary-color: #8bad93;
-// $secondary-color: #e7e7e7;
+$primary-color: #003366;
 // $alert-color: #f04124;
 // $success-color: #43AC6A;
 // $warning-color: #f08a24;
@@ -971,7 +970,8 @@ $header-font-family: "Raleway", "Helvetica Neue", Helvetica, Roboto, Arial, sans
 // $panel-font-color-alt: $white;
 
 // $panel-header-adjust: true;
-// $callout-panel-link-color: $primary-color;
+$callout-panel-link-color: $primary-color;
+$callout-panel-bg: scale-color($primary-color, $lightness: 96%) !default;
 
 // 22. Pricing Tables
 // - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1206,7 +1206,7 @@ $header-font-family: "Raleway", "Helvetica Neue", Helvetica, Roboto, Arial, sans
 
 // We use this to control the definition
 // $sub-nav-font-family: $body-font-family;
-// $sub-nav-font-size: rem-calc(14);
+$sub-nav-font-size: rem-calc(20);
 // $sub-nav-font-color: $aluminum;
 // $sub-nav-font-weight: $font-weight-normal;
 // $sub-nav-text-decoration: none;
