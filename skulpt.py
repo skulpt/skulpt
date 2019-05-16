@@ -201,7 +201,7 @@ require('../../test/test.js');
     f.close();
         
     if not p3:
-        ret1 = os.system("{0} support/tmp/test.js {1}".format(jsengine, debugon))
+        ret1 = os.system("{0} {1} {2}".format(jsengine, os.path.join("support", "tmp", "test.js"), debugon))
 
     if ret1 == 0:
         print "Running jshint"
@@ -331,7 +331,7 @@ Sk.importMain("%s", false);
         if iter > 1:
             print "Iteration %d of %d..." % (i + 1, iter)
         startTime = time.time()
-        p = Popen("{0} support/tmp/run.js".format(jsprofengine),
+        p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
                   shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
@@ -427,22 +427,22 @@ Sk.misceval.asyncToPromise(function() {
     else:
         # Prepare unit tests
         if p3:
-            testDir = 'test/unit3'
+            testDir = "test/unit3"
         else:
-            testDir = 'test/unit'
-        testFiles = [testDir + '/' + fn for fn in os.listdir(testDir) if '.py' in fn]
+            testDir = "test/unit"
+        testFiles = [testDir + "/" + fn for fn in os.listdir(testDir) if '.py' in fn]
 
         f.write("""
 const fs = require('fs');
 require("../../src/main.js");
-Sk.configure({syspath:["test/unit/"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
-""" % p3on)
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+""" % (testDir + '/', p3on))
 
         for fn in testFiles:
             modname = os.path.splitext(os.path.basename(fn))[0]
             f.write("""
 Sk.importMain("%s", false);
-            """ % (modname))
+""" % (modname))
 
             fn = "test suite"
 
@@ -451,7 +451,7 @@ Sk.importMain("%s", false);
     # Run profile
     print("Running profile on %s..." % fn)
     startTime = time.time()
-    p = Popen("{0} support/tmp/run.js".format(jsprofengine),
+    p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
               shell=True, stdout=PIPE, stderr=PIPE)
 
     outs, errs = p.communicate()
@@ -771,15 +771,15 @@ def dist(options):
 
         f = open("support/tmp/dist.js", "w")
         f.write("""
-require("../../%s");
+require("../../%s/%s");
 require("../../test/test.js");
-""" % (compfn));
+""" % (DIST_DIR, OUTFILE_MIN));
         f.close()
         
         if options.verbose:
             print ". Running tests on compressed..."
 
-        ret = os.system("{0} support/tmp/dist.js".format(jsengine))
+        ret = os.system("{0} {1}".format(jsengine, os.path.join("support", "tmp", "dist.js")))
         if ret != 0:
             print "Tests failed on compressed version."
             sys.exit(1)
@@ -793,7 +793,7 @@ require("../../test/test.js");
 
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
-        shutil.copy("debugger/debugger.js", DIST_DIR)
+        shutil.copy(os.path.join("debugger", "debugger.js"), DIST_DIR)
     except Exception as e:
         print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
@@ -1034,9 +1034,25 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
         debugon = 'true'
     else:
         debugon = 'false'
+
+    if opt:
+        dname = DIST_DIR
+        fname = OUTFILE_MIN
+        
+        # Hack to get extra libraries into global namespace for node
+        extras = ""
+        for lib in ExtLibs:
+            extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
+    else:
+        dname = "src"
+        fname = "main.js"
+        extras = ""
+
     f.write("""
 const fs = require('fs');
-require("../../src/main.js");
+require("../../%s/%s");
+
+%s
 
 var input = fs.readFileSync("%s", "utf8");
 console.log("-----");
@@ -1051,13 +1067,10 @@ Sk.misceval.asyncToPromise(function() {
     console.log("UNCAUGHT EXCEPTION: " + e);
     console.log(e.stack);
 });
-    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
+""" % (dname, fname, extras, fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
 
-    if opt:
-        os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
-    else:
-        os.system("{0} {1} support/tmp/run.js".format(jsengine, shell))
+    os.system("{0} {1} {2}".format(jsengine, shell, os.path.join("support", "tmp", "run.js")))
 
 def runopt(fn):
     run(fn, "", True)
@@ -1122,8 +1135,8 @@ Sk.misceval.asyncToPromise(function() {
         """ % (dname, fname, extras, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
 
-        p = Popen("{0} support/tmp/rununits.js".format(jstestengine), shell=True,
-                  stdout=PIPE, stderr=PIPE)
+        p = Popen("{0} {1}".format(jstestengine, os.path.join("support", "tmp", "rununits.js")),
+                  shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
@@ -1151,7 +1164,7 @@ Sk.misceval.asyncToPromise(function() {
 
 
 def repl():
-    os.system("{0} repl/repl.js".format(jsengine))
+    os.system("{0} {1}".format(jsengine, os.path.join("repl", "repl.js")))
 
 def nrt(newTest):
     """open a new run test"""
