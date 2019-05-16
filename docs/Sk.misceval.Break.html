@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Namespace: ffi</title>
+    <title>JSDoc: Class: Break</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Namespace: ffi</h1>
+    <h1 class="page-title">Class: Break</h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2>
-            <span class="ancestors"><a href="Sk.html">Sk</a>.</span>ffi</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="Sk.html">Sk</a><a href="Sk.misceval.html">.misceval</a>.</span>Break<span class="signature">(brValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -39,78 +39,10 @@
     
         
 
-        
-
-
-<dl class="details">
-
     
 
     
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ffi.js.html">ffi.js</a>, <a href="ffi.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".basicwrap"><span class="type-signature">(static) </span>basicwrap<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Break"><span class="type-signature"></span>new Break<span class="signature">(brValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -118,95 +50,9 @@
 
 
 <div class="description">
-    <p>for when the return type might be one of a variety of basic types.
-number|string, etc.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ffi.js.html">ffi.js</a>, <a href="ffi.js.html#line144">line 144</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".remapToJs"><span class="type-signature">(static) </span>remapToJs<span class="signature">(obj)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Maps from Python dict/list/str/number to Javascript Object/Array/string/number.</p>
-<p>If obj is a</p>
+    <p>A special value to return from an iterFor() function,
+to abort the iteration. Optionally supply a value for iterFor() to return
+(defaults to 'undefined')</p>
 </div>
 
 
@@ -230,6 +76,8 @@ number|string, etc.</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -242,23 +90,33 @@ number|string, etc.</p>
 
         <tr>
             
-                <td class="name"><code>obj</code></td>
+                <td class="name"><code>brValue</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">*</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Any Python object (except a function)</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -299,7 +157,7 @@ number|string, etc.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ffi.js.html">ffi.js</a>, <a href="ffi.js.html#line79">line 79</a>
+        <a href="misceval.js.html">misceval.js</a>, <a href="misceval.js.html#line1164">line 1164</a>
     </li></ul></dd>
     
 
@@ -327,38 +185,8 @@ number|string, etc.</p>
 
 
 
-        
-            
-
     
-
-    
-    <h4 class="name" id=".remapToPy"><span class="type-signature">(static) </span>remapToPy<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>maps from Javascript Object/Array/string to Python dict/list/str.</p>
-<p>only works on basic objects that are being used as storage, doesn't handle
-functions, etc.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
+    </div>
 
     
 
@@ -374,48 +202,6 @@ functions, etc.</p>
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ffi.js.html">ffi.js</a>, <a href="ffi.js.html#line14">line 14</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
     
 
     

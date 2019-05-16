@@ -28,9 +28,7 @@
 
 <header>
     
-        <h2>
-        Sk
-        </h2>
+        <h2>Sk</h2>
         
     
 </header>
@@ -94,13 +92,21 @@
 
     
 
-     
+    
+
+    
 
     
         <h3 class="subsection-title">Namespaces</h3>
 
         <dl>
             <dt><a href="Sk.abstr.html">abstr</a></dt>
+            <dd></dd>
+        
+            <dt><a href="Sk.builtin.html">builtin</a></dt>
+            <dd></dd>
+        
+            <dt><a href="Sk.builtin.html">builtin</a></dt>
             <dd></dd>
         
             <dt><a href="Sk.builtin.html">builtin</a></dt>
@@ -124,7 +130,321 @@
 
     
 
+    
+    <h4 class="name" id=".doOneTimeInitialization"><span class="type-signature">(static) </span>doOneTimeInitialization<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Complete any initialization of Python classes which relies on internal
+dependencies.</p>
+<p>This includes making Python classes subclassable and ensuring that the
+<a href="Sk.builtin.object.html">Sk.builtin.object</a> magic methods are wrapped inside Python functions.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line62">line 62</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".importBuiltinWithBody"><span class="type-signature">(static) </span>importBuiltinWithBody<span class="signature">(name, dumpJS, body, canSuspend)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Imports internal python files into the <code>__builtin__</code> module. Used during startup
+to compile and import all *.py files from the src/ directory.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>File name to use for messages related to this run</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dumpJS</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>print out the compiled javascript</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Python Code</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>canSuspend</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Use Suspensions for async execution</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line463">line 463</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id=".importMainWithBody"><span class="type-signature">(static) </span>importMainWithBody<span class="signature">(name, dumpJS, body, canSuspend)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -294,7 +614,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="import.js.html">import.js</a>, <a href="import.js.html#line464">line 464</a>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line441">line 441</a>
     </li></ul></dd>
     
 
@@ -320,12 +640,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".importModule"><span class="type-signature">(static) </span>importModule<span class="signature">(name, dumpJS<span class="signature-attributes">opt</span>, canSuspend<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -497,7 +821,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="import.js.html">import.js</a>, <a href="import.js.html#line437">line 437</a>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line414">line 414</a>
     </li></ul></dd>
     
 
@@ -523,12 +847,16 @@
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id=".importModuleInternal_"><span class="type-signature">(static) </span>importModuleInternal_<span class="signature">(name, dumpJS<span class="signature-attributes">opt</span>, modname<span class="signature-attributes">opt</span>, suppliedPyBody<span class="signature-attributes">opt</span>, canSuspend<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+    <h4 class="name" id=".importModuleInternal_"><span class="type-signature">(static) </span>importModuleInternal_<span class="signature">(name, dumpJS<span class="signature-attributes">opt</span>, modname<span class="signature-attributes">opt</span>, suppliedPyBody<span class="signature-attributes">opt</span>, relativeToPackage<span class="signature-attributes">opt</span>, returnUndefinedOnTopLevelNotFound<span class="signature-attributes">opt</span>, canSuspend<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -701,6 +1029,72 @@ rather than Sk.read'ing it.</p></td>
 
         <tr>
             
+                <td class="name"><code>relativeToPackage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>perform import relative to this package</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>returnUndefinedOnTopLevelNotFound</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>return 'undefined' rather than throwing ImportError if the <em>first</em> load failed</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>canSuspend</code></td>
             
 
@@ -768,7 +1162,7 @@ rather than Sk.read'ing it.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="import.js.html">import.js</a>, <a href="import.js.html#line226">line 226</a>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line168">line 168</a>
     </li></ul></dd>
     
 
@@ -794,12 +1188,16 @@ rather than Sk.read'ing it.</p></td>
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id=".importSearchPathForName"><span class="type-signature">(static) </span>importSearchPathForName<span class="signature">(name, ext, failok<span class="signature-attributes">opt</span>, canSuspend<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+    <h4 class="name" id=".importSearchPathForName"><span class="type-signature">(static) </span>importSearchPathForName<span class="signature">(name, ext, searchPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -902,13 +1300,13 @@ rather than Sk.read'ing it.</p></td>
 
         <tr>
             
-                <td class="name"><code>failok</code></td>
+                <td class="name"><code>searchPath</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">Object</span>
 
 
             
@@ -928,40 +1326,7 @@ rather than Sk.read'ing it.</p></td>
 
             
 
-            <td class="description last"><p>will throw if not true</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>canSuspend</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>can we suspend?</p></td>
+            <td class="description last"><p>an iterable set of path strings</p></td>
         </tr>
 
     
@@ -1002,7 +1367,7 @@ rather than Sk.read'ing it.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="import.js.html">import.js</a>, <a href="import.js.html#line117">line 117</a>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line15">line 15</a>
     </li></ul></dd>
     
 
@@ -1028,12 +1393,16 @@ rather than Sk.read'ing it.</p></td>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id=".importSetUpPath"><span class="type-signature">(static) </span>importSetUpPath<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -1085,7 +1454,7 @@ from js or from py.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="import.js.html">import.js</a>, <a href="import.js.html#line192">line 192</a>
+        <a href="import.js.html">import.js</a>, <a href="import.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -1111,6 +1480,261 @@ from js or from py.</p>
 
 
 
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".str2number"><span class="type-signature">(static) </span>str2number<span class="signature">(s, base, parser, negater, fname)</span><span class="type-signature"> &rarr; {number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Takes a JavaScript string and returns a number using the parser and negater
+ functions (for int/long right now)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>s</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Javascript string to convert to a number.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>base</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The base of the number.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>parser</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Function which should take
+ a string that is a postive number which only contains characters that are
+ valid in the given base and a base and return a number.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>negater</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Function which should take a
+ number and return its negation</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fname</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the calling function, to be used in error messages</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="int.js.html">int.js</a>, <a href="int.js.html#line1097">line 1097</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The number equivalent of the string in the given base</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
         
     
 
@@ -1127,13 +1751,13 @@ from js or from py.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Break.html">Break</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Tue Jun 09 2015 14:57:35 GMT+0000 (UTC)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 16 2019 09:23:21 GMT-0500 (CDT)
 </footer>
 
 <script> prettyPrint(); </script>
