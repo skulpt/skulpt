@@ -91,43 +91,43 @@ goog.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
  * @param {number} flags
  * @param {Array.<SymbolTableScope>} namespaces
  */
-function Symbol (name, flags, namespaces) {
+function Symbol_ (name, flags, namespaces) {
     this.__name = name;
     this.__flags = flags;
     this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
     this.__namespaces = namespaces || [];
 }
-Symbol.prototype.get_name = function () {
+Symbol_.prototype.get_name = function () {
     return this.__name;
 };
-Symbol.prototype.is_referenced = function () {
+Symbol_.prototype.is_referenced = function () {
     return !!(this.__flags & USE);
 };
-Symbol.prototype.is_parameter = function () {
+Symbol_.prototype.is_parameter = function () {
     return !!(this.__flags & DEF_PARAM);
 };
-Symbol.prototype.is_global = function () {
+Symbol_.prototype.is_global = function () {
     return this.__scope === GLOBAL_IMPLICIT || this.__scope == GLOBAL_EXPLICIT;
 };
-Symbol.prototype.is_declared_global = function () {
+Symbol_.prototype.is_declared_global = function () {
     return this.__scope == GLOBAL_EXPLICIT;
 };
-Symbol.prototype.is_local = function () {
+Symbol_.prototype.is_local = function () {
     return !!(this.__flags & DEF_BOUND);
 };
-Symbol.prototype.is_free = function () {
+Symbol_.prototype.is_free = function () {
     return this.__scope == FREE;
 };
-Symbol.prototype.is_imported = function () {
+Symbol_.prototype.is_imported = function () {
     return !!(this.__flags & DEF_IMPORT);
 };
-Symbol.prototype.is_assigned = function () {
+Symbol_.prototype.is_assigned = function () {
     return !!(this.__flags & DEF_LOCAL);
 };
-Symbol.prototype.is_namespace = function () {
+Symbol_.prototype.is_namespace = function () {
     return this.__namespaces && this.__namespaces.length > 0;
 };
-Symbol.prototype.get_namespaces = function () {
+Symbol_.prototype.get_namespaces = function () {
     return this.__namespaces;
 };
 
@@ -659,7 +659,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.SEQExpr(e.values);
             break;
         case Sk.astnodes.DictComp:
-        case Sk.astnodes.SetComp:    
+        case Sk.astnodes.SetComp:
             this.visitComprehension(e.generators, 0);
             break;
         case Sk.astnodes.ListComp:

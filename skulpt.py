@@ -66,12 +66,13 @@ FILE_TYPE_TEST = 'test'
 # It should be kept in sync with src/main.js.
 # Order is important!
 Files = [
-        ('support/closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
-        ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/string/internal.js', FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/dom/nodetype.js',    FILE_TYPE_DIST),
+        ('node_modules/google-closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         'support/setImmediate/setImmediate.js',
         ('src/sk.js', FILE_TYPE_DIST),
         'src/env.js',
@@ -199,7 +200,7 @@ require('../../src/main.js');
 require('../../test/test.js');
 """);
     f.close();
-        
+
     if not p3:
         ret1 = os.system("{0} support/tmp/test.js {1}".format(jsengine, debugon))
 
@@ -407,7 +408,7 @@ def profile(fn="", process=True, output="", p3=False):
             raise SystemExit()
 
         modname = os.path.splitext(os.path.basename(fn))[0]
-        
+
         f.write("""
 const fs = require('fs');
 require("../../src/main.js");
@@ -735,7 +736,24 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file tmp.js" % (uncompfiles))
+    ret = os.system("npx google-closure-compiler --define goog.DEBUG=false "
+                    "--output_wrapper \"(function(){%%output%%}());\" "
+                    "--compilation_level SIMPLE_OPTIMIZATIONS "
+                    "--jscomp_error accessControls "
+                    "--jscomp_error checkRegExp "
+                    "--jscomp_error checkTypes "
+                    "--jscomp_error checkVars "
+                    "--jscomp_error deprecated "
+                    "--jscomp_off fileoverviewTags "
+                    "--jscomp_error invalidCasts "
+                    "--jscomp_error missingProperties "
+                    "--jscomp_error nonStandardJsDocs "
+                    "--jscomp_error strictModuleDepCheck "
+                    "--jscomp_error undefinedVars "
+                    "--jscomp_error unknownDefines "
+                    "--jscomp_error visibility %s "
+                    "--externs support/externs/node-process.js "
+                    "--js_output_file tmp.js" % (uncompfiles))
     # to disable asserts
     # --define goog.DEBUG=false
     #
@@ -775,7 +793,7 @@ require("../../%s");
 require("../../test/test.js");
 """ % (compfn));
         f.close()
-        
+
         if options.verbose:
             print ". Running tests on compressed..."
 
