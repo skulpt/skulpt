@@ -1,5 +1,9 @@
 /* jshint ignore:start */
 
+// This file list is only used for testing.
+// It should be kept in sync with ../skulpt.py.
+// Order is important!
+
 // Closure
 require("google-closure-library");
 goog.require("goog.string");

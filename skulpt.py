@@ -62,6 +62,8 @@ OUTFILE_DEBUGGER = "debugger.js"
 FILE_TYPE_DIST = 'dist'
 FILE_TYPE_TEST = 'test'
 
+# This file list is only used to build the final distribution file.
+# It should be kept in sync with src/main.js.
 # Order is important!
 Files = [
         ('support/closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
