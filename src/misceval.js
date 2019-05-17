@@ -1026,9 +1026,9 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  *    return value, and then we will return f(<resumed-value).
  * This can be expanded to an arbitrary number of functions
  * (eg Sk.misceval.chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
- *
- * @param {*}              initialValue
- * @param {...function(*)} chainedFns
+ * @template T
+ * @param {T}              initialValue
+ * @param {...function(T)} chainedFns
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
@@ -1181,7 +1181,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
-    
+
     if (typeof func === "function" && func.tp$call === undefined) {
         func = new Sk.builtin.func(func);
     }

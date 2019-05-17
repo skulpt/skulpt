@@ -912,7 +912,7 @@ Sk.builtin.map = function map (fun, seq) {
 
         combined = [];
         iterables = Array.prototype.slice.apply(arguments).slice(1);
-        for (i in iterables) {
+        for (i = 0; i < iterables.length; i++) {
             if (!Sk.builtin.checkIterable(iterables[i])) {
                 argnum = parseInt(i, 10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
@@ -923,7 +923,7 @@ Sk.builtin.map = function map (fun, seq) {
         while (true) {
             args = [];
             nones = 0;
-            for (i in iterables) {
+            for (i = 0; i < iterables.length; i++) {
                 next = iterables[i].tp$iternext();
                 if (next === undefined) {
                     args.push(Sk.builtin.none.none$);
@@ -1411,7 +1411,7 @@ Sk.builtin.xrange = Sk.builtin.range;
 Sk.builtin.apply_ = function apply_ () {
     throw new Sk.builtin.NotImplementedError("apply is not yet implemented");
 };
-Sk.builtin.buffer = function buffer () {
+Sk.builtin.buffer = function buffer_ () {
     throw new Sk.builtin.NotImplementedError("buffer is not yet implemented");
 };
 Sk.builtin.coerce = function coerce () {

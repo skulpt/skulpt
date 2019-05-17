@@ -935,7 +935,7 @@ goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
 /**
  * Mark a class as unhashable and prevent its `__hash__` function from being called.
- * @param  {function(...[?])} thisClass The class to mark as unhashable.
+ * @param  {*} thisClass The class to mark as unhashable.
  * @return {undefined}
  */
 Sk.abstr.markUnhashable = function (thisClass) {
@@ -980,8 +980,8 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
  * builtins should inherit from Sk.builtin.object.
  *
  * @param {string} childName The Python name of the child (subclass).
- * @param {function(...[?])} child     The subclass.
- * @param {function(...[?])} parent    The superclass.
+ * @param {*} child     The subclass.
+ * @param {*} parent    The superclass.
  * @return {undefined}
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent) {
@@ -996,7 +996,7 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
  * the `this` value of that constructor. Any arguments passed to this function
  * after `self` will be passed as-is to the constructor.
  *
- * @param  {function(...[?])} thisClass The subclass.
+ * @param  {*} thisClass The subclass.
  * @param  {Object} self      The instance of the subclas.
  * @param  {...?} args Arguments to pass to the constructor.
  * @return {undefined}
