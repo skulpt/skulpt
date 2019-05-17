@@ -6,7 +6,6 @@
 
 // Closure
 require("google-closure-library");
-goog.require("goog.string");
 goog.require("goog.debug.Error");
 goog.require("goog.asserts");
 

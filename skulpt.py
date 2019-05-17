@@ -68,8 +68,6 @@ FILE_TYPE_TEST = 'test'
 Files = [
         ('node_modules/google-closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
         ('node_modules/google-closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/string/internal.js', FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
         ('node_modules/google-closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('node_modules/google-closure-library/closure/goog/dom/nodetype.js',    FILE_TYPE_DIST),
         ('node_modules/google-closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
