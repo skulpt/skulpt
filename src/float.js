@@ -26,24 +26,16 @@ Sk.builtin.float_ = function (x) {
 
 
     if (x instanceof Sk.builtin.str) {
-
-        if (x.v.match(/^-inf$/i)) {
-            tmp = -Infinity;
-        } else if (x.v.match(/^[+]?inf$/i)) {
-            tmp = Infinity;
-        } else if (x.v.match(/^[-+]?nan$/i)) {
-            tmp = NaN;
-        } else if (!isNaN(x.v)) {
-            tmp = parseFloat(x.v);
-        } else {
-            throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
-        }
-        return new Sk.builtin.float_(tmp);
+        return Sk.builtin._str_to_float(x.v);
     }
 
     // Floats are just numbers
     if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
-        this.v = Sk.builtin.asnum$(x);
+        tmp = Sk.builtin.asnum$(x);
+        if (typeof tmp === "string") {
+            return Sk.builtin._str_to_float(tmp);
+        }
+        this.v = tmp;
         return this;
     }
 
@@ -68,13 +60,30 @@ Sk.builtin.float_ = function (x) {
     var special = Sk.abstr.lookupSpecial(x, "__float__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, x);
+        return Sk.misceval.callsimArray(special, [x]);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
+
+Sk.builtin._str_to_float = function (str) {
+    var tmp;
+
+    if (str.match(/^-inf$/i)) {
+        tmp = -Infinity;
+    } else if (str.match(/^[+]?inf$/i)) {
+        tmp = Infinity;
+    } else if (str.match(/^[-+]?nan$/i)) {
+        tmp = NaN;
+    } else if (!isNaN(str)) {
+        tmp = parseFloat(str);
+    } else {
+        throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
+    }
+    return new Sk.builtin.float_(tmp);
+};
 
 Sk.builtin.float_.prototype.nb$int_ = function () {
     var v = this.v;
@@ -161,7 +170,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // call internal float method
-    fo = Sk.misceval.callsim(f, op);
+    fo = Sk.misceval.callsimArray(f, [op]);
 
     // return value of __float__ must be a python float
     if (!Sk.builtin.float_.PyFloat_Check(fo)) {
@@ -759,29 +768,62 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
  *
  * @param  {Sk.builtin.int_} self This instance.
  * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
- * @return {Sk.builtin.float_} The rounded float.
+ * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
  */
-Sk.builtin.float_.prototype.__round__ = function (self, ndigits) {
-    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
+    Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
 
-    var result, multiplier, number;
+    var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
+    number = Sk.builtin.asnum$(self);
     if (ndigits === undefined) {
-        ndigits = 0;
+        ndigs = 0;
+    } else {
+        ndigs = Sk.misceval.asIndex(ndigits);
     }
 
-    number = Sk.builtin.asnum$(self);
-    ndigits = Sk.misceval.asIndex(ndigits);
+    if (Sk.__future__.bankers_rounding) {
+        num10 = number * Math.pow(10, ndigs);
+        rounded = Math.round(num10);
+        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        result = bankRound / Math.pow(10, ndigs);
+        if (ndigits === undefined) {
+            return new Sk.builtin.int_(result);
+        } else {
+            return new Sk.builtin.float_(result);
+        }
+    } else {
+        multiplier = Math.pow(10, ndigs);
+        result = Math.round(number * multiplier) / multiplier;
 
-    multiplier = Math.pow(10, ndigits);
-    result = Math.round(number * multiplier) / multiplier;
-
-    return new Sk.builtin.float_(result);
+        return new Sk.builtin.float_(result);
+    }
 };
+
+Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.__future__.exceptions) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(obj);
+};
+
 
 Sk.builtin.float_.prototype.conjugate = new Sk.builtin.func(function (self) {
     return new Sk.builtin.float_(self.v);

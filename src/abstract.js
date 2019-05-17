@@ -180,7 +180,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             if (wop.call) {
                 ret = wop.call(w, v);
             } else {
-                ret = Sk.misceval.callsim(wop, w, v);
+                ret = Sk.misceval.callsimArray(wop, [w, v]);
             }
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -193,7 +193,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {
-            ret = Sk.misceval.callsim(vop, v, w);
+            ret = Sk.misceval.callsimArray(vop, [v, w]);
         }
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
@@ -206,7 +206,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             if (wop.call) {
                 ret = wop.call(w, v);
             } else {
-                ret = Sk.misceval.callsim(wop, w, v);
+                ret = Sk.misceval.callsimArray(wop, [w, v]);
             }
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -224,24 +224,14 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsim(vop, v, w); //  added to be like not-in-place... is this okay?
+            ret = Sk.misceval.callsimArray(vop, [v, w]);
         }
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
-    wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
-    if (wop !== undefined) {
-        if (wop.call) {
-            ret = wop.call(w, v);
-        } else { // assume that wop is an __xxx__ type method
-            ret = Sk.misceval.callsim(wop, w, v); //  added to be like not-in-place... is this okay?
-        }
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return ret;
-        }
-    }
-    Sk.abstr.binop_type_error(v, w, opname);
+    // If there wasn't an in-place operation, fall back to the binop
+    return Sk.abstr.binary_op_(v, w, opname);
 };
 Sk.abstr.unary_op_ = function (v, opname) {
     var ret;
@@ -250,7 +240,7 @@ Sk.abstr.unary_op_ = function (v, opname) {
         if (vop.call) {
             ret = vop.call(v);
         } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsim(vop, v); //  added to be like not-in-place... is this okay?
+            ret = Sk.misceval.callsimArray(vop, [v]); //  added to be like not-in-place... is this okay?
         }
         if (ret !== undefined) {
             return ret;
@@ -492,7 +482,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     special = Sk.abstr.lookupSpecial(seq, "__contains__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.isTrue(Sk.misceval.callsim(special, seq, ob));
+        return Sk.misceval.isTrue(Sk.misceval.callsimArray(special, [seq, ob]));
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
@@ -525,7 +515,7 @@ Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
     var i, it;
     var index;
     if (seq.index) {
-        return Sk.misceval.callsim(seq.index, seq, ob);
+        return Sk.misceval.callsimArray(seq.index, [seq, ob]);
     }
     if (Sk.builtin.checkIterable(seq)) {
         index = 0;
@@ -548,7 +538,7 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
     var i, it;
     var count;
     if (seq.count) {
-        return Sk.misceval.callsim(seq.count, seq, ob);
+        return Sk.misceval.callsimArray(seq.count, [seq, ob]);
     }
     if (Sk.builtin.checkIterable(seq)) {
         count = 0;
@@ -685,19 +675,14 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     var meth; // PyObject
     var result; // PyObject
 
-    // If no format_spec is provided, use an empty string
-    if(format_spec == null) {
-        format_spec = "";
-    }
-
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = Sk.abstr.lookupSpecial(obj, "__format__");
     if (meth == null) {
-        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
+        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + " doesn't define __format__");
     }
 
     // And call it
-    result = Sk.misceval.callsim(meth, obj, format_spec);
+    result = Sk.misceval.callsimArray(meth, [obj, format_spec]);
     if (!Sk.builtin.checkString(result)) {
         throw new Sk.builtin.TypeError("__format__ must return a str, not " + Sk.abstr.typeName(result));
     }
@@ -819,31 +804,11 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-
     if (obj.tp$getattr !== undefined) {
-        f = obj.tp$getattr("__getattribute__");
+        ret = obj.tp$getattr(nameJS, canSuspend);
     }
 
-    if (f !== undefined) {
-        ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
-    }
-
-    ret = Sk.misceval.chain(ret, function(ret) {
-        var f;
-
-        if (ret === undefined && obj.tp$getattr !== undefined) {
-            ret = obj.tp$getattr(nameJS);
-
-            if (ret === undefined) {
-                f = obj.tp$getattr("__getattr__");
-
-                if (f !== undefined) {
-                    ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
-                }
-            }
-        }
-        return ret;
-    }, function(r) {
+    ret = Sk.misceval.chain(ret, function(r) {
         if (r === undefined) {
             throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
         }
@@ -854,6 +819,7 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
+
 Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
 
@@ -861,16 +827,8 @@ Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-    if (obj.tp$getattr !== undefined) {
-        setf = obj.tp$getattr("__setattr__");
-        if (setf !== undefined) {
-            r = Sk.misceval.callsimOrSuspend(setf, new Sk.builtin.str(nameJS), data);
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-        }
-    }
-
     if (obj.tp$setattr !== undefined) {
-        obj.tp$setattr(nameJS, data);
+        return obj.tp$setattr(nameJS, data, canSuspend);
     } else {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
@@ -916,7 +874,7 @@ Sk.abstr.iter = function(obj) {
         this.tp$iternext = function () {
             var ret;
             try {
-                ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+                ret = Sk.misceval.callsimArray(this.getitem, [this.myobj, Sk.ffi.remapToPy(this.idx)]);
             } catch (e) {
                 if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
                     return undefined;
@@ -932,7 +890,7 @@ Sk.abstr.iter = function(obj) {
     if (obj.tp$getattr) {
         iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
         if (iter) {
-            ret = Sk.misceval.callsim(iter, obj);
+            ret = Sk.misceval.callsimArray(iter, [obj]);
             if (ret.tp$iternext) {
                 return ret;
             }

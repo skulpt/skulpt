@@ -13,22 +13,37 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-
     return this;
 };
 
+Sk.builtin.object.prototype.__init__ = function __init__() {
+    return Sk.builtin.none.none$;
+};
+Sk.builtin.object.prototype.__init__.co_kwargs = 1;
 
+Sk.builtin._tryGetSubscript = function(dict, pyName) {
+    try {
+        return dict.mp$subscript(pyName);
+    } catch (x) {
+        return undefined;
+    }
+};
+goog.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 
 /**
+ * Get an attribute
+ * @param {string} name JS name of the attribute
+ * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericGetAttr = function (name) {
+Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     var res;
     var f;
     var descr;
     var tp;
     var dict;
+    var getf;
     var pyName = new Sk.builtin.str(name);
     goog.asserts.assert(typeof name === "string");
 
@@ -36,19 +51,15 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+    //print("getattr", tp.tp$name, name);
 
     // todo; assert? force?
     if (dict) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            try {
-                res = dict.mp$subscript(pyName);
-            } catch (x) {
-                res = undefined;
-            }
+            res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[name];
         }
         if (res !== undefined) {
@@ -59,39 +70,97 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.ob$type.tp$descr_get;
-        // todo;
-        //if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        //return f.call(descr, this, this.ob$type);
-    }
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_get;
+        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
 
-    if (f) {
-        // non-data descriptor
-        return f.call(descr, this, this.ob$type);
+        if (f) {
+            // non-data descriptor
+            return f.call(descr, this, this.ob$type, canSuspend);
+        }
     }
 
     if (descr !== undefined) {
         return descr;
     }
 
+    // OK, try __getattr__
+
+    descr = Sk.builtin.type.typeLookup(tp, "__getattr__");
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_get;
+        if (f) {
+            getf = f.call(descr, this, this.ob$type);
+        } else {
+            getf = descr;
+        }
+
+        res = Sk.misceval.tryCatch(function() {
+            return Sk.misceval.callsimOrSuspendArray(getf, [pyName]);
+        }, function(e) {
+            if (e instanceof Sk.builtin.AttributeError) {
+                return undefined;
+            } else {
+                throw e;
+            }
+        });
+        return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+    }
+
+
     return undefined;
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
 Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
-    return Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v);
+    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v, true);
+    if (r === undefined) {
+        throw new Sk.builtin.AttributeError(name);
+    }
+    return r;
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
-Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
+/**
+ * @param {string} name
+ * @param {Object} value
+ * @param {boolean=} canSuspend
+ * @return {undefined}
+ */
+Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
     var pyname;
     var dict;
+    var tp = this.ob$type;
+    var descr;
+    var f;
+
     goog.asserts.assert(typeof name === "string");
-    // todo; lots o' stuff
+    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+
+    if (name == "__class__") {
+        if (value.tp$mro === undefined || value.tp$name === undefined ||
+            value.tp$name === undefined) {
+            throw new Sk.builtin.TypeError(
+                      "attempted to assign non-class to __class__");
+        }
+        this.ob$type = value;
+        this.tp$name = value.tp$name;
+        return;
+    }
+
+    descr = Sk.builtin.type.typeLookup(tp, name);
+
+    // otherwise, look in the type for a descr
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_set;
+        // todo; is this the right lookup priority for data descriptors?
+        if (f) {
+            return f.call(descr, this, value, canSuspend);
+        }
+    }
 
     if (dict.mp$ass_subscript) {
         pyname = new Sk.builtin.str(name);
@@ -99,7 +168,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
         if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
             dict.mp$lookup(pyname) === undefined) {
             // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
         }
         dict.mp$ass_subscript(new Sk.builtin.str(name), value);
     } else if (typeof dict === "object") {
@@ -109,7 +178,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
 goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
 Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
-    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value);
+    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value, true);
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 
@@ -121,8 +190,8 @@ Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetA
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
-// overriding __getattr__ etc need to be able to call object.__getattr__ etc from Python
-Sk.builtin.object.prototype["__getattr__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
+// overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
+Sk.builtin.object.prototype["__getattribute__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
 Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
 
 /**
@@ -133,12 +202,24 @@ Sk.builtin.object.prototype.tp$name = "object";
 
 /**
  * The type object of this class.
- * @type {Sk.builtin.type}
+ * @type {Sk.builtin.type|Object}
  */
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
+Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 
 /** Default implementations of dunder methods found in all Python objects */
+/**
+ * Default implementation of __new__ just calls the class constructor
+ * @name  __new__
+ * @memberOf Sk.builtin.object.prototype
+ * @instance
+ */
+Sk.builtin.object.prototype["__new__"] = function (cls) {
+    Sk.builtin.pyCheckArgsLen("__new__", arguments.length, 1, 1, false, false);
+
+    return new cls([], []);
+};
 
 /**
  * Python wrapper for `__repr__` method.
@@ -147,10 +228,32 @@ Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for clos
  * @instance
  */
 Sk.builtin.object.prototype["__repr__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, false, true);
 
     return self["$r"]();
 };
+
+
+Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
+    var formatstr;
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        if (Sk.__future__.exceptions) {
+            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+        } else {
+            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+        }
+    } else {
+        formatstr = Sk.ffi.remapToJs(format_spec);
+        if (formatstr !== "") {
+            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+        }
+    }
+
+    return new Sk.builtin.str(self);
+};
+
 
 /**
  * Python wrapper for `__str__` method.
@@ -159,7 +262,7 @@ Sk.builtin.object.prototype["__repr__"] = function (self) {
  * @instance
  */
 Sk.builtin.object.prototype["__str__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__str__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__str__", arguments.length, 0, 0, false, true);
 
     return self["$r"]();
 };
@@ -171,7 +274,7 @@ Sk.builtin.object.prototype["__str__"] = function (self) {
  * @instance
  */
 Sk.builtin.object.prototype["__hash__"] = function (self) {
-    Sk.builtin.pyCheckArgs("__hash__", arguments, 0, 0, false, true);
+    Sk.builtin.pyCheckArgsLen("__hash__", arguments.length, 0, 0, false, true);
 
     return self.tp$hash();
 };
@@ -183,7 +286,7 @@ Sk.builtin.object.prototype["__hash__"] = function (self) {
  * @instance
  */
 Sk.builtin.object.prototype["__eq__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__eq__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__eq__", arguments.length, 1, 1, false, true);
 
     return self.ob$eq(other);
 };
@@ -195,7 +298,7 @@ Sk.builtin.object.prototype["__eq__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__ne__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__ne__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__ne__", arguments.length, 1, 1, false, true);
 
     return self.ob$ne(other);
 };
@@ -207,7 +310,7 @@ Sk.builtin.object.prototype["__ne__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__lt__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__lt__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__lt__", arguments.length, 1, 1, false, true);
 
     return self.ob$lt(other);
 };
@@ -219,7 +322,7 @@ Sk.builtin.object.prototype["__lt__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__le__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__le__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__le__", arguments.length, 1, 1, false, true);
 
     return self.ob$le(other);
 };
@@ -231,7 +334,7 @@ Sk.builtin.object.prototype["__le__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__gt__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__gt__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__gt__", arguments.length, 1, 1, false, true);
 
     return self.ob$gt(other);
 };
@@ -243,7 +346,7 @@ Sk.builtin.object.prototype["__gt__"] = function (self, other) {
  * @instance
  */
 Sk.builtin.object.prototype["__ge__"] = function (self, other) {
-    Sk.builtin.pyCheckArgs("__ge__", arguments, 1, 1, false, true);
+    Sk.builtin.pyCheckArgsLen("__ge__", arguments.length, 1, 1, false, true);
 
     return self.ob$ge(other);
 };
@@ -264,6 +367,7 @@ Sk.builtin.object.prototype["$r"] = function () {
 };
 
 Sk.builtin.hashCount = 1;
+Sk.builtin.idCount = 1;
 
 /**
  * Return the hash value of this instance.
@@ -378,7 +482,9 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * @type {Array}
  */
 Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
+                                     "__eq__", "__ne__", "__lt__", "__le__",
+                                     "__gt__", "__ge__", "__getattribute__",
+                                     "__setattr__", "__format__"];
 
 /**
  * @constructor

@@ -11,7 +11,7 @@ Sk.builtin.enumerate = function (iterable, start) {
     }
 
 
-    Sk.builtin.pyCheckArgs("enumerate", arguments, 1, 2);
+    Sk.builtin.pyCheckArgsLen("enumerate", arguments.length, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
@@ -53,9 +53,9 @@ Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self)
     return self.tp$iter();
 });
 
-Sk.builtin.enumerate.prototype["next"] = new Sk.builtin.func(function (self) {
+Sk.builtin.enumerate.prototype.next$ = function (self) {
     return self.tp$iternext();
-});
+};
 
 Sk.builtin.enumerate.prototype["$r"] = function () {
     return new Sk.builtin.str("<enumerate object>");

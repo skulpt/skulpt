@@ -45,6 +45,45 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
 goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
+ * Check arguments to Python functions to ensure the correct number of
+ * arguments are passed.
+ *
+ * @param {string} name the name of the function
+ * @param {number} nargs the args passed to the function
+ * @param {number} minargs the minimum number of allowable arguments
+ * @param {number=} maxargs optional maximum number of allowable
+ * arguments (default: Infinity)
+ * @param {boolean=} kwargs optional true if kwargs, false otherwise
+ * (default: false)
+ * @param {boolean=} free optional true if free vars, false otherwise
+ * (default: false)
+ */
+Sk.builtin.pyCheckArgsLen = function (name, nargs, minargs, maxargs, kwargs, free) {
+    var msg = "";
+
+    if (maxargs === undefined) {
+        maxargs = Infinity;
+    }
+    if (kwargs) {
+        nargs -= 1;
+    }
+    if (free) {
+        nargs -= 1;
+    }
+    if ((nargs < minargs) || (nargs > maxargs)) {
+        if (minargs === maxargs) {
+            msg = name + "() takes exactly " + minargs + " arguments";
+        } else if (nargs < minargs) {
+            msg = name + "() takes at least " + minargs + " arguments";
+        } else {
+            msg = name + "() takes at most " + maxargs + " arguments";
+        }
+        msg += " (" + nargs + " given)";
+        throw new Sk.builtin.TypeError(msg);
+    }
+};
+
+/**
  * Check type of argument to Python functions.
  *
  * @param {string} name the name of the argument
@@ -109,7 +148,7 @@ Sk.builtin.checkCallable = function (obj) {
     // go up the prototype chain to see if the class has a __call__ method
     if (Sk.abstr.lookupSpecial(obj, "__call__") !== undefined) {
         return true;
-    } 
+    }
     return false;
 };
 
@@ -195,6 +234,12 @@ goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
  *
  */
 Sk.builtin.func = function (code, globals, closure, closure2) {
+    if (!(this instanceof Sk.builtin.func)) {
+        // otherwise it assigned .func_code and .func_globals somewhere and in certain
+        // situations that will cause a lot of strange errors.
+        throw new Error("builtin func should be called as a class with `new`");
+    }
+
     var k;
     this.func_code = code;
     this.func_globals = globals || null;
@@ -204,103 +249,139 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
             closure[k] = closure2[k];
         }
     }
+
+    this["$d"] = {
+        "__name__": code["co_name"],
+        "__class__": Sk.builtin.func
+    };
     this.func_closure = closure;
+    this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
     return this;
 };
+
+Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
+
 goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
-
 Sk.builtin.func.prototype.tp$name = "function";
+
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(obj !== undefined && objtype !== undefined);
-    if (obj == null) {
-        return this;
+    goog.asserts.assert(!(obj === undefined && objtype === undefined));
+    if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
+        // it's a builtin
+        return new Sk.builtin.method(this, obj, objtype, true);
     }
-    return new Sk.builtin.method(this, obj);
+    return new Sk.builtin.method(this, obj, objtype);
 };
-Sk.builtin.func.prototype.tp$call = function (args, kw) {
-    var j;
-    var i;
-    var numvarnames;
-    var varnames;
-    var kwlen;
-    var kwargsarr;
-    var expectskw;
-    var name;
-    var numargs;
 
-    // note: functions expect 'this' to be globals to avoid having to
-    // slice/unshift onto the main args
-    if (this.func_closure) {
-        // todo; OK to modify?
-        if (this.func_code["$defaults"] && this.func_code["co_varnames"]) {
-            // Make sure all default arguments are in args before adding closure
-            numargs = args.length;
-            numvarnames = this.func_code["co_varnames"].length;
-            for (i = numargs; i < numvarnames; i++) {
-                args.push(undefined);
-            }
-        }
-        args.push(this.func_closure);
+Sk.builtin.func.pythonFunctions = ["__get__"];
+
+Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
+    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
     }
 
-    expectskw = this.func_code["co_kwargs"];
-    kwargsarr = [];
+    return self.tp$descr_get(instance, owner);
+};
+
+Sk.builtin.func.prototype.tp$getname = function () {
+    return (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
+};
+
+Sk.builtin.func.prototype.tp$call = function (args, kw) {
+    var i;
+    var kwix;
+    var varnames = this.func_code.co_varnames || [];
+    var defaults = this.func_code.$defaults || [];
+    var kwargsarr = [];
+    var expectskw = this.func_code["co_kwargs"];
+    var name;
+    var nargs = args.length;
+    var varargs = [];
+    var defaultsNeeded = varnames.length - nargs > defaults.length ? defaults.length : varnames.length - nargs;
+    var offset = varnames.length - defaults.length;
 
     if (this.func_code["no_kw"] && kw) {
-        name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
+        throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
     }
 
     if (kw) {
-        // bind the kw args
-        kwlen = kw.length;
-        varnames = this.func_code["co_varnames"];
-        numvarnames = varnames && varnames.length;
-        for (i = 0; i < kwlen; i += 2) {
-            // todo; make this a dict mapping name to offset
-            for (j = 0; j < numvarnames; ++j) {
-                if (kw[i] === varnames[j]) {
-                    break;
-                }
-            }
-            if (varnames && j !== numvarnames) {
-                if (j in args) {
-                    name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
+        for (i = 0; i < kw.length; i += 2) {
+            if (varnames && ((kwix = varnames.indexOf(kw[i])) !== -1)) {
+                if (kwix < nargs) {
+                    name = this.tp$getname();
+                    if (name in Sk.builtins && this === Sk.builtins[name]) {
+                        throw new Sk.builtin.TypeError("Argument given by name ('" + kw[i] + "') and position (" + (kwix + 1) + ")");
+                    }
                     throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
                 }
-                args[j] = kw[i + 1];
+                varargs[kwix] = kw[i + 1];
             } else if (expectskw) {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
             } else {
-                name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
+                name = this.tp$getname();
+                if (name in Sk.builtins && this === Sk.builtins[name]) {
+                    throw new Sk.builtin.TypeError("'" + kw[i] + "' is an invalid keyword argument for this function");
+                }
                 throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }
         }
     }
+
+    // add defaults if there are enough because if we add them and leave a hole in the args array, pycheckargs doesn't work correctly
+    // maybe we should fix pycheckargs too though.
+    if (defaultsNeeded <= defaults.length) {
+        for (i = defaults.length - defaultsNeeded; i < defaults.length; i++) {
+            if (!varargs[offset + i]) {
+                varargs[offset + i] = defaults[i];
+            }
+        }
+    }
+
+    // add arguments found in varargs
+    for (i = 0; i < varargs.length; i++) {
+        if (varargs[i]) {
+            args[i] = varargs[i];
+        }
+    }
+
+    if (kw && nargs < varnames.length - defaults.length) {
+        for (i = nargs; i < varnames.length - defaults.length; i++) {
+            if (kw.indexOf(varnames[i]) === -1) {
+                throw new Sk.builtin.TypeError(this.tp$getname() + "() takes atleast " + (varnames.length - defaults.length) + " arguments (" + (nargs + varargs.filter(function(x) { return x; }).length) +  " given)");
+            }
+        }
+    }
+
+    if (this.func_closure) {
+        // todo; OK to modify?
+        if (varnames) {
+            // Make sure all default arguments are in args before adding closure
+            for (i = args.length; i < varnames.length; i++) {
+                args.push(undefined);
+            }
+        }
+
+        args.push(this.func_closure);
+    }
+
     if (expectskw) {
         args.unshift(kwargsarr);
     }
 
-    //print(JSON.stringify(args, null, 2));
-
+    // note: functions expect 'this' to be globals to avoid having to
+    // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
 };
 
-Sk.builtin.func.prototype.tp$getattr = function (key) {
-    return this[key];
-};
-Sk.builtin.func.prototype.tp$setattr = function (key, value) {
-    this[key] = value;
-};
-
-//todo; investigate why the other doesn't work
-//Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
-Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj("function", new Sk.builtin.func(null, null));
-
 Sk.builtin.func.prototype["$r"] = function () {
-    var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
-    return new Sk.builtin.str("<function " + name + ">");
+    var name = this.tp$getname();
+    if (name in Sk.builtins && this === Sk.builtins[name]) {
+        return new Sk.builtin.str("<built-in function " + name + ">");
+    } else {
+        return new Sk.builtin.str("<function " + name + ">");
+    }
 };

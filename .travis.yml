@@ -1,20 +1,17 @@
 language: python
 sudo: false
 python:
-- '2.6'
+- '2.7'
 install:
+- nvm install 'lts/*'
+- nvm use 'lts/*'
 - npm install npm@latest -g
-- npm install jscs -g
-- npm install jshint -g
 - npm install
-- jscs -V
-- jshint -v
-- pip install "GitPython>=0.2.0-beta1" --use-mirrors
+- pip install "GitPython>=0.2.0-beta1"
 - mkdir -p vendors
 script:
-- ./skulpt.py dist
-- jshint src/*.js
-- jscs src/*.js
+- npm run build-min
+- npm test
 after_script:
 - ./dist-update.sh
 env:

@@ -21,6 +21,7 @@ import pprint
 import json
 import shutil
 import time
+from itertools import chain
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -69,6 +70,7 @@ Files = [
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
+        'support/setImmediate/setImmediate.js',
         'src/env.js',
         'src/type.js',
         'src/abstract.js',
@@ -77,7 +79,6 @@ Files = [
         'src/builtin.js',
         'src/fromcodepoint.js',   # should become unnecessary, eventually
         'src/errors.js',
-        'src/native.js',
         'src/method.js',
         'src/misceval.js',
         'src/seqtype.js',
@@ -114,8 +115,10 @@ Files = [
         'src/import.js',
         'src/timsort.js',
         'src/sorted.js',
+        'src/typeobject.js',
         'src/builtindict.js',
         'src/constants.js',
+        'src/internalpython.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
@@ -175,7 +178,7 @@ def is64bit():
 
 if sys.platform == "win32":
     winbase = ".\\support\\d8\\x32"
-    if not os.path.exists(winbase):
+    if not os.path.exists(winbase + "\\d8.exe"):
         winbase = ".\\support\\d8"
     os.environ["D8_PATH"] = winbase
     jsengine = winbase + "\\d8.exe --debugger --harmony"
@@ -210,33 +213,39 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test(debug_mode=False):
+def test(debug_mode=False, p3=False):
     """runs the unit tests."""
     if debug_mode:
         debugon = "--debug-mode"
     else:
         debugon = ""
-    buildNamedTestsFile()
-    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+    ret1 = 0
     ret2 = 0
     ret3 = 0
     ret4 = 0
+    if not p3:
+        buildNamedTestsFile()
+        ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+
     if ret1 == 0:
         print "Running jshint"
         base_dirs = ["src", "debugger"]
-        for base_dir in base_dirs:
-            if sys.platform == "win32":
-                jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-                jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob(base_dir + "/*.js")))
-            else:
-                jshintcmd = "jshint " + base_dir + "/*.js"
-                jscscmd = "jscs " + base_dir + "/*.js --reporter=inline"
+
+        if sys.platform == "win32":
+            files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
+            jshintcmd = "jshint {0}".format(' '.join(files))
+            jscscmd = "jscs {0} --reporter=inline".format(' '.join(files))
+        else:
+            folders = ' '.join([ d + "/*.js" for d in base_dirs ])
+            jshintcmd = "jshint " + folders
+            jscscmd = "jscs " + folders + " --reporter=inline"
+
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
-        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret4 = rununits()
+        ret4 = rununits(p3=p3, debug_mode=debug_mode)
+
     return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
@@ -672,6 +681,15 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
+def getInternalCodeAsJson():
+    ret = {}
+    ret['files'] = {}
+    for f in ["src/" + x for x in os.listdir("src") if os.path.splitext(x)[1] == ".py" if os.path.isfile("src/" + x)]:
+        ext = os.path.splitext(f)[1]
+        if ext == ".py":
+            f = f.replace("\\", "/")
+            ret['files'][f] = open(f).read()
+    return "Sk.internalPy=" + json.dumps(ret)
 
 def getBuiltinsAsJson(options=None, compile=False, dirs=["src/builtin", "src/lib"], prefix=None, additional=False):
     def replace_prefix(pfx, s):
@@ -771,7 +789,7 @@ def dist(options):
         print "+----------------------------------------------------------------------------+"
         print "GitPython is not installed for Python 2.6"
         print "The 'dist' command will not work without it.  Get it using pip or easy_install"
-        print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
+        print "or see:  https://gitpython.readthedocs.io/en/stable/intro.html"
         print "+----------------------------------------------------------------------------+"
 
     if options.verbose:
@@ -788,15 +806,28 @@ def dist(options):
     builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
     debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
 
-    # Run tests on uncompressed.
-    if options.verbose:
-        print ". Running tests on uncompressed..."
+    if options.disabletests == False:
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Running tests on uncompressed..."
 
-    ret = test()
+        ret = test()
 
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        sys.exit(1);
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+
+        # turn the tests in debug mode off because they take too long
+        # # Run tests on uncompressed.
+        # if options.verbose:
+        #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
+        #
+        #
+        # ret = test(debug_mode=True)
+
+        if ret != 0:
+            print "Tests failed on uncompressed version."
+            sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST, include_ext_libs=False)])
@@ -819,7 +850,6 @@ def dist(options):
 
     # Copy the debugger file to the output dir
 
-
     if options.verbose:
         print ". Bundling external libraries..."
 
@@ -835,17 +865,19 @@ def dist(options):
 
 
     # Run tests on compressed.
-    if options.verbose:
-        print ". Running tests on compressed..."
-    buildNamedTestsFile()
-    ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on compressed version."
-        sys.exit(1)
-    ret = rununits(opt=True)
-    if ret != 0:
-        print "Tests failed on compressed unit tests"
-        sys.exit(1)
+    if options.disabletests == False:
+        if options.verbose:
+            print ". Running tests on compressed..."
+        buildNamedTestsFile()
+        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+        if ret != 0:
+            print "Tests failed on compressed version."
+            sys.exit(1)
+        ret = rununits(opt=True)
+        if ret != 0:
+            print "Tests failed on compressed unit tests"
+            sys.exit(1)
+
 
     doc()
 
@@ -856,10 +888,14 @@ def dist(options):
         print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
 
-    path_list = os.environ.get('PATH','').split(':')
+    path_list = os.environ.get('PATH','').split(os.pathsep)
+    if sys.platform == "win32":
+        gzip_filename = "gzip.exe"
+    else:
+        gzip_filename = "gzip"
     has_gzip = False
     for p in path_list:
-        has_gzip = os.access(os.path.join(p,"gzip"), os.X_OK)
+        has_gzip = os.access(os.path.join(p,gzip_filename), os.X_OK)
         if has_gzip:
             break
 
@@ -917,7 +953,11 @@ def make_skulpt_js(options,dest):
     if sys.platform != "win32":
         os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
 
-def run_in_browser(fn, options):
+def run_in_browser(fn, options, debug_mode=False, p3=False):
+    if p3:
+        p3_str = "Sk.python3"
+    else:
+        p3_str = "Sk.python2"
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
@@ -932,7 +972,7 @@ def run_in_browser(fn, options):
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts)
+        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=p3_str,root="")
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -1097,9 +1137,9 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
-        p3on = 'true'
+        p3on = 'Sk.python3'
     else:
-        p3on = 'false'
+        p3on = 'Sk.python2'
     if debug_mode:
         debugon = 'true'
     else:
@@ -1109,7 +1149,7 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", %s, true);
 }).then(function () {
@@ -1129,17 +1169,23 @@ def runopt(fn):
     run(fn, "", True)
 
 def run3(fn):
-    run(fn,p3=True)
+    run(fn, p3=True)
 
 def rundebug(fn):
-    run(fn,debug_mode=True)
+    run(fn, debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
-    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+def rununits(opt=False, p3=False, debug_mode=False):
+    if p3:
+        unit_dir = 'test/unit3'
+        p3on = 'Sk.python3'
+    else:
+        unit_dir = 'test/unit'
+        p3on = 'Sk.python2'
+    testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
@@ -1148,14 +1194,10 @@ def rununits(opt=False, p3=False):
             os.mkdir("support/tmp")
         f = open("support/tmp/run.js", "w")
         modname = os.path.splitext(os.path.basename(fn))[0]
-        if p3:
-            p3on = 'true'
-        else:
-            p3on = 'false'
         f.write("""
 var input = read('%s');
 print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging: %s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
@@ -1163,7 +1205,7 @@ Sk.misceval.asyncToPromise(function() {
     print(e.stack);
     quit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
         if opt:
             p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
@@ -1365,6 +1407,7 @@ def main():
     parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
     parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
     parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
+    parser.add_option("-d", "--disabletests", action="store_true", dest="disabletests", default=False)
     parser.add_option("-v", "--verbose",
         action="store_true",
         dest="verbose",
@@ -1386,10 +1429,17 @@ def main():
     else:
         cmd = sys.argv[1]
 
+    with open("src/internalpython.js", "w") as f:
+        f.write(getInternalCodeAsJson() + ";")
+
     if cmd == "test":
-        test()
+        exit(bool(test()))
+    elif cmd == "test3":
+        exit(bool(test(p3=True)))
     elif cmd == "testdebug":
-        test(True)
+        exit(bool(test(debug_mode=True)))
+    elif cmd == "test3debug":
+        exit(bool(test(debug_mode=True, p3=True)))
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
@@ -1414,7 +1464,11 @@ def main():
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "brun":
-        run_in_browser(sys.argv[2],options)
+        run_in_browser(sys.argv[2], options)
+    elif cmd == "brundebug":
+        run_in_browser(sys.argv[2], options, debug_mode=True)
+    elif cmd == "brun3":
+        run_in_browser(sys.argv[2], options, p3=True)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":

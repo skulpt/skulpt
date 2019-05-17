@@ -16,7 +16,7 @@ var $builtinmodule = function (name) {
     mod.uppercase = Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
     mod.letters = Sk.builtin.str(mod.lowercase.v + mod.uppercase.v);
 
-    mod.digits = Sk.builtin.str('0123456789', Sk.builtin.str);
+    mod.digits = Sk.builtin.str('0123456789');
     mod.hexdigits = Sk.builtin.str('0123456789abcdefABCDEF');
     mod.octdigits = Sk.builtin.str('01234567');
 
@@ -32,12 +32,12 @@ var $builtinmodule = function (name) {
 
 
     mod.split = new Sk.builtin.func(function (s, sep, maxsplit) {
-        return Sk.misceval.callsim(Sk.builtin.str.prototype['split'], s, sep, maxsplit);
+        return Sk.misceval.callsimArray(Sk.builtin.str.prototype['split'], [s, sep, maxsplit]);
     });
 
     /* Return a copy of word with only its first character capitalized. */
     mod.capitalize = new Sk.builtin.func(function (word) {
-        return Sk.misceval.callsim(Sk.builtin.str.prototype['capitalize'], word);
+        return Sk.misceval.callsimArray(Sk.builtin.str.prototype['capitalize'], [word]);
     });
 
     /* Concatenate a list or tuple of words with intervening occurrences
@@ -46,7 +46,7 @@ var $builtinmodule = function (name) {
         if (sep === undefined) {
             sep = Sk.builtin.str(' ');
         }
-        return Sk.misceval.callsim(Sk.builtin.str.prototype['join'], sep, words);
+        return Sk.misceval.callsimArray(Sk.builtin.str.prototype['join'], [sep, words]);
     });
 
 
@@ -55,7 +55,7 @@ var $builtinmodule = function (name) {
      * Note that this replaces runs of whitespace characters by a single
      * space, and removes leading and trailing whitespace. */
     mod.capwords = new Sk.builtin.func(function (s, sep) {
-        Sk.builtin.pyCheckArgs('capwords', arguments, 1, 2);
+        Sk.builtin.pyCheckArgsLen('capwords', arguments.length, 1, 2);
         if (!Sk.builtin.checkString(s)) {
             throw new Sk.builtin.TypeError("s must be a string");
         }
@@ -66,15 +66,15 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("sep must be a string");
         }
 
-        var words = Sk.misceval.callsim(mod.split, s, sep);
+        var words = Sk.misceval.callsimArray(mod.split, [s, sep]);
         var capWords = [];
         for (var i = 0; i < words.v.length; i++) {
             var word = Sk.builtin.list.prototype['list_subscript_'].call(words, i);
-            var cap = Sk.misceval.callsim(mod.capitalize, word);
+            var cap = Sk.misceval.callsimArray(mod.capitalize, [word]);
             capWords.push(cap);
         }
 
-        return Sk.misceval.callsim(mod.join, new Sk.builtin.list(capWords), sep);
+        return Sk.misceval.callsimArray(mod.join, [new Sk.builtin.list(capWords), sep]);
     });
 
 

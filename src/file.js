@@ -28,7 +28,11 @@ Sk.builtin.file = function (name, mode, buffering) {
             this.fileno = 10;
             elem = document.getElementById(name.v);
             if (elem == null) {
-                throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                if (mode.v == "w" || mode.v == "a") {
+                    this.data$ = "";
+                } else {
+                    throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+                }
             } else {
                 if (elem.nodeName.toLowerCase() == "textarea") {
                     this.data$ = elem.value;
@@ -53,6 +57,10 @@ Sk.builtin.file = function (name, mode, buffering) {
 
     this.__class__ = Sk.builtin.file;
 
+    if (Sk.fileopen && this.fileno >= 10) {
+        Sk.fileopen(this);
+    }
+
     return this;
 };
 
@@ -64,12 +72,21 @@ Sk.builtin.file.prototype["$r"] = function () {
         "file '" +
         this.name +
         "', mode '" +
-        this.mode +
+        Sk.ffi.remapToJs(this.mode) +
         "'>");
 };
 
+Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(self) {
+    return self;
+});
+
+Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
+    return Sk.misceval.callsimArray(Sk.builtin.file.prototype["close"], [self]);
+});
+
 Sk.builtin.file.prototype.tp$iter = function () {
     var allLines = this.lineList;
+    var currentLine = this.currentLine;
 
     var ret =
     {
@@ -77,7 +94,7 @@ Sk.builtin.file.prototype.tp$iter = function () {
             return ret;
         },
         $obj       : this,
-        $index     : 0,
+        $index     : currentLine,
         $lines     : allLines,
         tp$iternext: function () {
             if (ret.$index >= ret.$lines.length) {
@@ -89,62 +106,73 @@ Sk.builtin.file.prototype.tp$iter = function () {
     return ret;
 };
 
-Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function close(self) {
     self.closed = true;
+    return Sk.builtin.none.none$;
 });
 
-Sk.builtin.file.prototype["flush"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["flush"] = new Sk.builtin.func(function flush(self) {
 });
 
-Sk.builtin.file.prototype["fileno"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["fileno"] = new Sk.builtin.func(function fileno(self) {
     return this.fileno;
 }); // > 0, not 1/2/3
 
-Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function isatty(self) {
     return false;
 });
 
-Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function read(self, size) {
     var ret;
-    var len;
+    var len = self.data$.length;
+    var l_size;
     if (self.closed) {
         throw new Sk.builtin.ValueError("I/O operation on closed file");
     }
-    len = self.data$.length;
+
     if (size === undefined) {
-        size = len;
+        l_size = len;
+    } else {
+        l_size = Sk.ffi.remapToJs(size);
     }
-    ret = new Sk.builtin.str(self.data$.substr(self.pos$, size));
-    self.pos$ += size;
+
+    ret = new Sk.builtin.str(self.data$.substr(self.pos$, l_size));
+    if(size === undefined){
+        self.pos$ = len;
+    }else{
+        self.pos$ += Sk.ffi.remapToJs(size);
+    }
     if (self.pos$ >= len) {
         self.pos$ = len;
     }
+
     return ret;
 });
 
-Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.$readline = function (self, size, prompt) {
     if (self.fileno === 0) {
-        var x, resolution, susp;
+        var x, susp;
 
-        var prompt = prompt ? prompt.v : "";
-        x = Sk.inputfun(prompt);
+        var lprompt = Sk.ffi.remapToJs(prompt);
+
+        lprompt = lprompt ? lprompt : "";
+
+        x = Sk.inputfun(lprompt);
 
         if (x instanceof Promise) {
             susp = new Sk.misceval.Suspension();
 
             susp.resume = function() {
-                return new Sk.builtin.str(resolution);
+                if (susp.data.error) {
+                    throw susp.data.error;
+                }
+
+                return new Sk.builtin.str(susp.data.result);
             };
 
             susp.data = {
                 type: "Sk.promise",
-                promise: x.then(function(value) {
-                    resolution = value;
-                    return value;
-                }, function(err) {
-                    resolution = "";
-                    return err;
-                })
+                promise: x
             };
 
             return susp;
@@ -159,9 +187,13 @@ Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size
         }
         return new Sk.builtin.str(line);
     }
+};
+
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function readline(self, size) {
+    return Sk.builtin.file.$readline(self, size, undefined);
 });
 
-Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, sizehint) {
+Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function readlines(self, sizehint) {
     if (self.fileno === 0) {
         return new Sk.builtin.NotImplementedError("readlines ins't implemented because the web doesn't support Ctrl+D");
     }
@@ -174,31 +206,53 @@ Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, siz
     return new Sk.builtin.list(arr);
 });
 
-Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function (self, offset, whence) {
+Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function seek(self, offset, whence) {
+    var l_offset =  Sk.ffi.remapToJs(offset);
+
     if (whence === undefined) {
-        whence = 1;
+        whence = 0;
     }
-    if (whence == 1) {
-        self.pos$ = offset;
-    } else {
-        self.pos$ = self.data$ + offset;
+    if (whence === 0) {
+        self.pos$ = l_offset;
+    } else if (whence == 1) {
+        self.pos$ = self.data$.length + l_offset;
+    } else if (whence == 2) {
+        self.pos$ = self.data$.length + l_offset;
     }
+
+    return Sk.builtin.none.none$;
 });
 
-Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function (self) {
-    return self.pos$;
+Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function tell(self) {
+    return Sk.ffi.remapToPy(self.pos$);
 });
 
-
-Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(self, size) {
     goog.asserts.fail();
 });
 
-Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
-    if (self.fileno === 1) {
-        Sk.output(Sk.ffi.remapToJs(str));
+Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, str) {
+    var mode = Sk.ffi.remapToJs(self.mode);
+    if (mode === "w" || mode === "wb" || mode === "a" || mode === "ab") {
+        if (Sk.filewrite) {
+            if (self.closed) {
+                throw new Sk.builtin.ValueError("I/O operation on closed file");
+            }
+
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                Sk.filewrite(self, str);
+            }
+        } else {
+            if (self.fileno === 1) {
+                Sk.output(Sk.ffi.remapToJs(str));
+            } else {
+                goog.asserts.fail();
+            }
+        }
     } else {
-        goog.asserts.fail();
+        throw new Sk.builtin.IOError("File not open for writing");
     }
 });
 

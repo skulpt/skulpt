@@ -80,6 +80,15 @@ Sk.builtin.BaseException.prototype.toString = function () {
     return this.tp$str().v;
 };
 
+// Create a descriptor to return the 'args' of an exception.
+// This is a hack to get around a weird mismatch between builtin
+// objects and proper types
+Sk.builtin.BaseException.prototype.args = {
+    "tp$descr_get": function(self, clstype) {
+        return self.args;
+    }
+};
+
 goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
 /**
@@ -267,16 +276,16 @@ Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.ParseError = function (args) {
+Sk.builtin.SyntaxError = function (args) {
     var o;
-    if (!(this instanceof Sk.builtin.ParseError)) {
-        o = Object.create(Sk.builtin.ParseError.prototype);
+    if (!(this instanceof Sk.builtin.SyntaxError)) {
+        o = Object.create(Sk.builtin.SyntaxError.prototype);
         o.constructor.apply(o, arguments);
         return o;
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ParseError", Sk.builtin.ParseError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -331,38 +340,6 @@ Sk.builtin.SystemExit = function (args) {
 Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
 goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.SyntaxError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SyntaxError)) {
-        o = Object.create(Sk.builtin.SyntaxError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.TokenError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TokenError)) {
-        o = Object.create(Sk.builtin.TokenError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("TokenError", Sk.builtin.TokenError, Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -558,5 +535,16 @@ Sk.builtin.StopIteration = function (args) {
 Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
 goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
+
+// TODO: Extract into sys.exc_info(). Work out how the heck
+// to find out what exceptions are being processed by parent stack frames...
+Sk.builtin.getExcInfo = function(e) {
+    var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
+
+    // TODO create a Traceback object for the third tuple element
+
+    return new Sk.builtin.tuple(v);
+};
+// NOT exported
 
 goog.exportSymbol("Sk", Sk);

@@ -7,7 +7,7 @@ var $builtinmodule = function(name)
             {
                 $loc.__init__ = new Sk.builtin.func(function(self)
                     {
-                        Sk.misceval.callsim($loc.loadIdentity, self);
+                        Sk.misceval.callsimArray($loc.loadIdentity, [self]);
                         self.stack = [];
                     });
 
@@ -32,10 +32,10 @@ var $builtinmodule = function(name)
                 $loc.transform3 = new Sk.builtin.func(function(self, v)
                     {
                         var e = self.elements;
-                        return Sk.misceval.callsim(mod.Vec3,
+                        return Sk.misceval.callsimArray(mod.Vec3, [
                             e[0] * v.x + e[4] * v.y + e[8] * v.z,
                             e[1] * v.x + e[5] * v.y + e[9] * v.z,
-                            e[2] * v.x + e[6] * v.y + e[10] * v.z);
+                            e[2] * v.x + e[6] * v.y + e[10] * v.z]);
                     });
 
                 $loc.scale = new Sk.builtin.func(function(self, sx, sy, sz)
@@ -94,7 +94,7 @@ var $builtinmodule = function(name)
                                 zs = z * sinAngle;
                                 oneMinusCos = 1.0 - cosAngle;
 
-                                rotMat = Sk.misceval.callsim(mod.Mat44);
+                                rotMat = Sk.misceval.callsimArray(mod.Mat44);
 
                                 rotMat.elements[0*4+0] = (oneMinusCos * xx) + cosAngle;
                                 rotMat.elements[0*4+1] = (oneMinusCos * xy) - zs;
@@ -124,7 +124,7 @@ var $builtinmodule = function(name)
 
                 $loc.multiply = new Sk.builtin.func(function(self, right)
                         {
-                            var tmp = Sk.misceval.callsim(mod.Mat44);
+                            var tmp = Sk.misceval.callsimArray(mod.Mat44);
 
                             for (var i = 0; i < 4; i++)
                             {
@@ -212,7 +212,7 @@ var $builtinmodule = function(name)
                                 y[2] /= mag;
                             }
 
-                            var lookAt = Sk.misceval.callsim(mod.Mat44);
+                            var lookAt = Sk.misceval.callsimArray(mod.Mat44);
                             lookAt.elements[0 * 4 + 0] = x[0];
                             lookAt.elements[1 * 4 + 0] = x[1];
                             lookAt.elements[2 * 4 + 0] = x[2];
@@ -248,7 +248,7 @@ var $builtinmodule = function(name)
             {
                 $loc.__init__ = new Sk.builtin.func(function(self)
                     {
-                        Sk.misceval.callsim($loc.loadIdentity, self);
+                        Sk.misceval.callsimArray($loc.loadIdentity, [self]);
                     });
 
                 $loc.loadIdentity = new Sk.builtin.func(function(self)
@@ -270,7 +270,7 @@ var $builtinmodule = function(name)
                     });
                 $loc.__sub__ = new Sk.builtin.func(function(self, other)
                     {
-                        return Sk.misceval.callsim(mod.Vec3, self.x - other.x, self.y - other.y, self.z - other.z);
+                        return Sk.misceval.callsimArray(mod.Vec3, [self.x - other.x, self.y - other.y, self.z - other.z]);
                     });
             },
             'Vec3', []);
@@ -278,10 +278,10 @@ var $builtinmodule = function(name)
     mod.cross = new Sk.builtin.func(function(v1, v2)
             {
                 goog.asserts.assert(v1 instanceof mod.Vec3 && v2 instanceof mod.Vec3);
-                return Sk.misceval.callsim(mod.Vec3,
+                return Sk.misceval.callsimArray(mod.Vec3, [
                     v1.y * v2.z - v1.z * v2.y,
                     v1.z * v2.x - v1.x * v2.z,
-                    v1.x * v2.y - v1.y * v2.x);
+                    v1.x * v2.y - v1.y * v2.x]);
             });
 
     return mod;

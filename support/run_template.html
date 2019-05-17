@@ -4,7 +4,6 @@
     <title></title>
     %(scripts)s
     <script src="skulpt-stdlib.js" type="text/javascript"></script>
-
 </head>
 <body>
 <h1>In Browser Testing Page</h1>
@@ -12,36 +11,41 @@
 <p>Remember that you can add a debugger statement to your Python below or in the Skulpt Javascript.</p>
 
 <script type="text/javascript">
+
 function outf(text) {
    var mypre = document.getElementById(Sk.pre);
-   mypre.innerHTML = mypre.innerHTML + text;
+   mypre.appendChild(document.createTextNode(text));
+   console.log(text);
 }
 
 function showjs(text) {
    var mypre = document.getElementById("runbrowser_jsout");
-   mypre.innerHTML = mypre.innerHTML + text;
+   mypre.innerHTML = '';
+   mypre.appendChild(document.createTextNode(text));
 }
 
 
-function builtinRead(x)
-{
-    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+function builtinRead(x) {
+    console.log(x);
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
         throw "File not found: '" + x + "'";
-    return Sk.builtinFiles["files"][x];
+    }
+
+    var file = Sk.builtinFiles["files"][x];
+
+    return file;
 }
 
 function runit(myDiv) {
-   var prog = document.getElementById(myDiv+"_code").value;
-   var mypre = document.getElementById(myDiv+"_pre");
+    var prog = document.getElementById(myDiv+"_code").value;
+    var mypre = document.getElementById(myDiv+"_pre");
 
-   Sk.inputfun = function() {
-       return new Promise(function (resolve) { resolve(window.prompt()); });
-   };
-   //Sk.outputfun = alert;
+    Sk.inputfun = function(prompt) {
+        return new Promise(function (resolve) { resolve(window.prompt(prompt)); });
+    };
 
-   mypre.innerHTML = '';
-   Sk.canvas = myDiv+"_canvas";
-    var can = document.getElementById(Sk.canvas);
+    mypre.innerHTML = '';
+    var can = document.getElementById("turtle");
     can.style.display = 'block';
     if (can) {
         can.width = can.width;
@@ -51,30 +55,55 @@ function runit(myDiv) {
         }
     }
 
-   Sk.pre = myDiv+"_pre";
-   Sk.configure({output:outf,
-  	        read: builtinRead,
-            debugout: showjs,
-              });
-       var myPromise = Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody("<stdin>",true,prog,true);
-       });
-       myPromise.then(function(mod) {}, function(err) {
-           console.log(err.toString());
-            });
+    Sk.canvas = "turtle";
+
+    Sk.pre = myDiv+"_pre";
+
+    Sk.configure({
+        output:outf,
+        read: builtinRead,
+        inputfunTakesPrompt: true,
+        debugout: showjs,
+        debugging: %(debug_mode)s,
+        __future__: %(p3)s
+    });
+
+    Sk.onBeforeImport = function() {
+        return Sk.misceval.promiseToSuspension(new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                resolve();
+            }, 10);
+        }));
+    };
+
+    var myPromise = Sk.misceval.asyncToPromise(function() {
+        return Sk.importMainWithBody("<stdin>", true, prog, true);
+    });
+
+    myPromise.then(function(mod) {}, function(err) {
+        if (err.message) {
+            outf(err.message + "\n");
+            outf(err.stack);
+        } else if (err.nativeError) {
+            outf(err.nativeError.message + "\n");
+            outf(err.nativeError.stack);
+        } else {
+            outf(err.toString());
+        }
+    });
 }
 </script>
 <h3>Test Code</h3>
 <div id="runbrowser">
 <form>
-<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="15">
+<textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="20" style="font-family: 'Lucida Console', Monaco, monospace;">
 %(code)s
 </textarea>
 <button onclick="runit('runbrowser')" type="button">Run</button>
 </form>
 
 <h3>Canvas</h3>
-<div id="runbrowser_canvas" height="500" width="800"
+<div id="turtle" height="500" width="800"
 	style="border-style: solid; display: none"></div>
 
 <h3>Output</h3>

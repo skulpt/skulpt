@@ -5,7 +5,7 @@ var $builtinmodule = function (name) {
     mod.getElementById = new Sk.builtin.func(function (id) {
         var result = document.getElementById(id.v);
         if (result) {
-            return Sk.misceval.callsim(mod.Element, result);
+            return Sk.misceval.callsimArray(mod.Element, [result]);
         }
         return Sk.builtin.none.none$;
     });
@@ -13,7 +13,7 @@ var $builtinmodule = function (name) {
     mod.createElement = new Sk.builtin.func(function (eName) {
         var r = document.createElement(eName.v);
         if (r) {
-            return Sk.misceval.callsim(mod.Element, r);
+            return Sk.misceval.callsimArray(mod.Element, [r]);
         }
     });
 
@@ -22,7 +22,7 @@ var $builtinmodule = function (name) {
         var r = document.getElementsByTagName(tag.v)
         var reslist = [];
         for (var i = r.length - 1; i >= 0; i--) {
-            reslist.push(Sk.misceval.callsim(mod.Element, r[i]))
+            reslist.push(Sk.misceval.callsimArray(mod.Element, [r[i]]))
         }
         return new Sk.builtin.list(reslist)
     });
@@ -31,7 +31,7 @@ var $builtinmodule = function (name) {
         var r = document.getElementsByClassName(cname.v);
         var reslist = [];
         for (var i = 0; i < r.length; i++) {
-            reslist.push(Sk.misceval.callsim(mod.Element, r[i]));
+            reslist.push(Sk.misceval.callsimArray(mod.Element, [r[i]]));
         }
         ;
         return new Sk.builtin.list(reslist);
@@ -41,7 +41,7 @@ var $builtinmodule = function (name) {
         var r = document.getElementsByName(cname.v);
         var reslist = [];
         for (var i = 0; i < r.length; i++) {
-            reslist.push(Sk.misceval.callsim(mod.Element, r[i]));
+            reslist.push(Sk.misceval.callsimArray(mod.Element, [r[i]]));
         }
         ;
         return new Sk.builtin.list(reslist);

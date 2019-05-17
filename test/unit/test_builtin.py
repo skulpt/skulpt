@@ -38,12 +38,83 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, hasattr, sys, 1)
         self.assertRaises(TypeError, hasattr)
 
+        class A:
+            def __init__(self):
+                self.undef_self = None
+
+            def undefxz(self):
+                return None
+
+            def __getattr__(self, name):
+                if name == 'undef':
+                    return None
+                if name == 'one':
+                    return 1
+                raise AttributeError
+
+        class NoGAtt:
+            def __init__(self):
+                self.undef_self = None
+
+            def undefxz(self):
+                return None
+        a = A()
+        b = NoGAtt()
+        self.assertTrue(hasattr(a, 'undefxz'))
+        self.assertTrue(hasattr(a, 'undef_self'))
+        self.assertTrue(hasattr(a, 'one'))
+        self.assertTrue(hasattr(a, 'undef'))
+        self.assertFalse(hasattr(a, "Robyn"))
+        self.assertTrue(hasattr(b, 'undefxz'))
+        self.assertTrue(hasattr(b, 'undef_self'))
+        self.assertFalse(hasattr(b, 'one'))
+        self.assertFalse(hasattr(b, 'undef'))
+        self.assertFalse(hasattr(a, "Robyn"))
+
     def test_setattr(self):
         setattr(sys, 'spam', 1)
         self.assertEqual(sys.spam, 1)
         self.assertRaises(TypeError, setattr, sys, 1, 'spam')
         self.assertRaises(AttributeError, setattr, 1, 'spam', 9)
         self.assertRaises(TypeError, setattr)
+
+    def test_delattr(self):
+        class NoName:
+            def color(self):
+                return "green"
+        x = NoName()
+        y = NoName
+        setattr(NoName, "shape", "square")
+        self.assertEqual(getattr(NoName, "shape"), "square")
+        self.assertTrue(hasattr(NoName, "shape"))
+        self.assertEqual(getattr(NoName(), "shape"), "square")
+        self.assertTrue(hasattr(NoName(), "shape"))
+        self.assertRaises(AttributeError, delattr, NoName(), "shape")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertEqual(getattr(y, "shape"), "square")
+        setattr(y, "shape", "circle")
+        setattr(x, "shape", "square")
+        self.assertEqual(getattr(NoName, "shape"), "circle")
+        self.assertEqual(getattr(NoName(), "shape"), "circle")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertEqual(getattr(y, "shape"), "circle")
+        delattr(NoName, "shape")
+        self.assertEqual(getattr(x, "shape"), "square")
+        self.assertRaises(AttributeError, delattr, y, "shape")
+        self.assertRaises(AttributeError, delattr, NoName(), "shape")
+        self.assertRaises(AttributeError, delattr, NoName, "shape")
+        self.assertEqual(getattr(x, "color")(), "green")
+        self.assertEqual(getattr(NoName(), "color")(), "green")
+        self.assertEqual(getattr(x, "color")(), "green")
+        setattr(x, "color", "red")
+        self.assertEqual(x.color, "red")
+        delattr(NoName, "color")
+        self.assertEqual(x.color, "red")
+        self.assertRaises(AttributeError, delattr, NoName, "color")
+        self.assertEqual(x.color, "red")
+        self.assertRaises(AttributeError, delattr, NoName, "color")
+        self.assertRaises(TypeError, delattr, list, "append")
+        self.assertRaises(TypeError, setattr, dict, "k", "v")
 
     def test_dir_subclasses(self):
         class Base:

@@ -2,9 +2,30 @@
   "name": "skulpt",
   "version": "1.0.0",
   "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
-  "keywords": ["skulpt"],
+  "keywords": [
+    "skulpt"
+  ],
   "scripts": {
-    "lint": "jshint ."
+    "testdebug": "python skulpt.py testdebug",
+    "regengooglocs": "python skulpt.py regengooglocs",
+    "regensymtabtests": "python skulpt.py regensymtabtests",
+    "rununits": "python skulpt.py rununits",
+    "vmwareregr": "python skulpt.py vmwareregr",
+    "regenparser": "python skulpt.py regenparser",
+    "regenasttests": "python skulpt.py regenasttests",
+    "regenruntests": "python skulpt.py regenruntests",
+    "upload": "python skulpt.py upload",
+    "doctest": "python skulpt.py doctest",
+    "doc": "python skulpt.py doc",
+    "browser": "python skulpt.py browser",
+    "debugbrowser": "python skulpt.py debugbrowser",
+    "vfs": "python skulpt.py vfs",
+    "host": "python skulpt.py host",
+    "repl": "python skulpt.py repl",
+    "build": "python skulpt.py dist",
+    "build-min": "python skulpt.py dist -u",
+    "test": "python skulpt.py test",
+    "test3": "python skulpt.py test3"
   },
   "repository": {
     "type": "git",
@@ -19,9 +40,9 @@
   },
   "license": "MIT",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "jshint": "~2.5.2",
     "jscs": "~1.12",
-    "jsdoc": "~3.3.2"
+    "jsdoc": "~3.5.5"
   }
 }

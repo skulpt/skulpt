@@ -100,7 +100,7 @@ Sk.misceval.asIndex = function (o) {
     }
     idxfn = Sk.abstr.lookupSpecial(o, "__index__");
     if (idxfn) {
-        ret = Sk.misceval.callsim(idxfn, o);
+        ret = Sk.misceval.callsimArray(idxfn, [o]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
                                            Sk.abstr.typeName(ret) + ")");
@@ -431,7 +431,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     method = Sk.abstr.lookupSpecial(v, op2method[op]);
     if (method && !v_has_shortcut) {
-        ret = Sk.misceval.callsim(method, v, w);
+        ret = Sk.misceval.callsimArray(method, [v, w]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
@@ -439,7 +439,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
-        ret = Sk.misceval.callsim(swapped_method, w, v);
+        ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
@@ -448,7 +448,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
     if (vcmp) {
         try {
-            ret = Sk.misceval.callsim(vcmp, v, w);
+            ret = Sk.misceval.callsimArray(vcmp, [v, w]);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = Sk.builtin.asnum$(ret);
                 if (op === "Eq") {
@@ -478,7 +478,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     if (wcmp) {
         // note, flipped on return value and call
         try {
-            ret = Sk.misceval.callsim(wcmp, w, v);
+            ret = Sk.misceval.callsimArray(wcmp, [w, v]);
             if (Sk.builtin.checkNumber(ret)) {
                 ret = Sk.builtin.asnum$(ret);
                 if (op === "Eq") {
@@ -563,6 +563,8 @@ Sk.misceval.objectRepr = function (v) {
         return new Sk.builtin.str("False");
     } else if (typeof v === "number") {
         return new Sk.builtin.str("" + v);
+    } else if (typeof v === "string") {
+        return new Sk.builtin.str(v);
     } else if (!v["$r"]) {
         if (v.tp$name) {
             return new Sk.builtin.str("<" + v.tp$name + " object>");
@@ -631,14 +633,14 @@ Sk.misceval.isTrue = function (x) {
         return x.v !== 0;
     }
     if (x["__nonzero__"]) {
-        ret = Sk.misceval.callsim(x["__nonzero__"], x);
+        ret = Sk.misceval.callsimArray(x["__nonzero__"], [x]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__nonzero__ should return an int");
         }
         return Sk.builtin.asnum$(ret) !== 0;
     }
     if (x["__len__"]) {
-        ret = Sk.misceval.callsim(x["__len__"], x);
+        ret = Sk.misceval.callsimArray(x["__len__"], [x]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
@@ -656,24 +658,28 @@ goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
 Sk.misceval.print_ = function (x) {
-    // this was function print(x)   not sure why...
-    var isspace;
     var s;
+
+    function isspace(c) {
+        return c === "\n" || c === "\t" || c === "\r";
+    }
+
     if (Sk.misceval.softspace_) {
         if (x !== "\n") {
             Sk.output(" ");
         }
         Sk.misceval.softspace_ = false;
     }
+
     s = new Sk.builtin.str(x);
-    var sys = Sk.importModule("sys");
-    Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
-    isspace = function (c) {
-        return c === "\n" || c === "\t" || c === "\r";
-    };
-    if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
-        Sk.misceval.softspace_ = true;
-    }
+
+    return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
+        return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
+    }, function () {
+        if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
+            Sk.misceval.softspace_ = true;
+        }
+    });
 };
 goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 
@@ -685,6 +691,9 @@ Sk.misceval.loadname = function (name, other) {
     var bi;
     var v = other[name];
     if (v !== undefined) {
+        if (typeof v === "function" && v["$d"] === undefined && v["tp$name"] === undefined) {
+            return v();
+        }
         return v;
     }
 
@@ -693,9 +702,7 @@ Sk.misceval.loadname = function (name, other) {
         return bi;
     }
 
-    name = name.replace("_$rw$", "");
-    name = name.replace("_$rn$", "");
-    throw new Sk.builtin.NameError("name '" + name + "' is not defined");
+    throw new Sk.builtin.NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 
@@ -818,6 +825,19 @@ Sk.misceval.callsim = function (func, args) {
 goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 
 /**
+ * @param {Object} func the thing to call
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsim without expensive call to Array.slice.
+ * Requires args to be a Javascript array.
+ */
+Sk.misceval.callsimArray = function(func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.apply(func, undefined, undefined, undefined, argarray);
+};
+goog.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
+
+/**
  * @param {?Object} suspensionHandlers any custom suspension handlers
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
@@ -838,6 +858,19 @@ Sk.misceval.callsimOrSuspend = function (func, args) {
     return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
 };
 goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+
+/**
+ * @param {Object} func the thing to call
+ * @param {Array=} args an array of arguments to pass to the func
+ *
+ * Does the same thing as callsimOrSuspend without expensive call to
+ * Array.slice.  Requires args to be a Javascript array.
+ */
+Sk.misceval.callsimOrSuspendArray = function (func, args) {
+    var argarray = args ? args : [];
+    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, argarray);
+};
+goog.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
 
 /**
  * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
@@ -894,7 +927,11 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                 try {
                     // jsh*nt insists these be defined outside the loop
                     var resume = function() {
-                        handleResponse(r.resume());
+                        try {
+                            handleResponse(r.resume());
+                        } catch (e) {
+                            reject(e);
+                        }
                     };
                     var resumeWithData = function resolved(x) {
                         try {
@@ -933,7 +970,13 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                         } else if (r.data["type"] == "Sk.yield") {
                             // Assumes all yields are optional, as Sk.setTimeout might
                             // not be able to yield.
-                            Sk.setTimeout(resume, 0);
+                            //Sk.setTimeout(resume, 0);
+                            setImmediate(resume);
+                            return;
+
+                        } else if (r.data["type"] == "Sk.delay") {
+                            //Sk.setTimeout(resume, 1);
+                            setImmediate(resume);
                             return;
 
                         } else if (r.optional) {
@@ -1133,30 +1176,18 @@ goog.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
  */
 Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
-    var kwix;
-    var numPosParams;
-    var numNonOptParams;
     var it, i;
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    } else if (typeof func === "function") {
-        // todo; i believe the only time this happens is the wrapper
-        // function around generators (that creates the iterator).
-        // should just make that a real function object and get rid
-        // of this case.
-        // alternatively, put it to more use, and perhaps use
-        // descriptors to create builtin.func's in other places.
+    }
+    
+    if (typeof func === "function" && func.tp$call === undefined) {
+        func = new Sk.builtin.func(func);
+    }
 
-        // This actually happens for all builtin functions (in
-        // builtin.js, for example) as they are javascript functions,
-        // not Sk.builtin.func objects.
-
-        if (func.sk$klass) {
-            // klass wrapper around __init__ requires special handling
-            return func.apply(null, [kwdict, varargseq, kws, args, true]);
-        }
-
+    fcall = func.tp$call;
+    if (fcall !== undefined) {
         if (varargseq) {
             for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 args.push(i);
@@ -1172,71 +1203,45 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
                 kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
             }
         }
-
-        //goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
-        //print('kw args location: '+ kws + ' args ' + args.length)
-        if (kws !== undefined && kws.length > 0) {
-            if (!func.co_varnames) {
-                throw new Sk.builtin.ValueError("Keyword arguments are not supported by this function");
-            }
-
-            //number of positionally placed optional parameters
-            numNonOptParams = func.co_numargs - func.co_varnames.length;
-            numPosParams = args.length - numNonOptParams;
-
-            //add defaults
-            args = args.concat(func.$defaults.slice(numPosParams));
-
-            for (i = 0; i < kws.length; i = i + 2) {
-                kwix = func.co_varnames.indexOf(kws[i]);
-
-                if (kwix === -1) {
-                    throw new Sk.builtin.TypeError("'" + kws[i] + "' is an invalid keyword argument for this function");
-                }
-
-                if (kwix < numPosParams) {
-                    throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + numNonOptParams + 1) + ")");
-                }
-
-                args[kwix + numNonOptParams] = kws[i + 1];
-            }
-        }
-        //append kw args to args, filling in the default value where none is provided.
-        return func.apply(null, args);
-    } else {
-        fcall = func.tp$call;
-        if (fcall !== undefined) {
-            if (varargseq) {
-                for (it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                    args.push(i);
-                }
-            }
-
-            if (kwdict) {
-                for (it = Sk.abstr.iter(kwdict), i = it.tp$iternext(); i!== undefined; i = it.tp$iternext()) {
-                    if (!Sk.builtin.checkString(i)) {
-                        throw new Sk.builtin.TypeError("Function keywords must be strings");
-                    }
-                    kws.push(i.v);
-                    kws.push(Sk.abstr.objectGetItem(kwdict, i, false));
-                }
-            }
-            return fcall.call(func, args, kws, kwdict);
-        }
-
-        // todo; can we push this into a tp$call somewhere so there's
-        // not redundant checks everywhere for all of these __x__ ones?
-        fcall = func.__call__;
-        if (fcall !== undefined) {
-            // func is actually the object here because we got __call__
-            // from it. todo; should probably use descr_get here
-            args.unshift(func);
-            return Sk.misceval.apply(fcall, kwdict, varargseq, kws, args);
-        }
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
+        return fcall.call(func, args, kws, kwdict);
     }
+
+    // todo; can we push this into a tp$call somewhere so there's
+    // not redundant checks everywhere for all of these __x__ ones?
+    fcall = func.__call__;
+    if (fcall !== undefined) {
+        // func is actually the object here because we got __call__
+        // from it. todo; should probably use descr_get here
+        args.unshift(func);
+        return Sk.misceval.apply(fcall, kwdict, varargseq, kws, args);
+    }
+
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
 };
 goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
+
+/**
+ * Do the boilerplate suspension stuff.
+ */
+Sk.misceval.promiseToSuspension = function(promise) {
+    var suspension = new Sk.misceval.Suspension();
+
+    suspension.resume = function() {
+        if (suspension.data["error"]) {
+            throw suspension.data["error"];
+        }
+
+        return suspension.data["result"];
+    };
+
+    suspension.data = {
+        type: "Sk.promise",
+        promise: promise
+    };
+
+    return suspension;
+};
+goog.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
 
 /**
  * Constructs a class object given a code object representing the body
@@ -1253,15 +1258,16 @@ goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases) {
+Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     // todo; metaclass
     var klass;
     var meta = Sk.builtin.type;
 
+    var l_cell = cell === undefined ? {} : cell;
     var locals = {};
 
     // init the dict for the class
-    func(globals, locals, []);
+    func(globals, locals, l_cell);
     // ToDo: check if func contains the __meta__ attribute
     // or if the bases contain __meta__
     // new Syntax would be different
@@ -1284,7 +1290,8 @@ Sk.misceval.buildClass = function (globals, func, name, bases) {
     }
     _locals = new Sk.builtin.dict(_locals);
 
-    klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
+    klass = Sk.misceval.callsimArray(meta, [_name, _bases, _locals]);
+
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
