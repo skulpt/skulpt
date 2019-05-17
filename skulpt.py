@@ -752,6 +752,9 @@ def dist(options):
                     "--jscomp_error undefinedVars "
                     "--jscomp_error unknownDefines "
                     "--jscomp_error visibility %s "
+                    "--externs support/externs/node-buffers.js "
+                    "--externs support/externs/node-events.js "
+                    "--externs support/externs/node-streams.js "
                     "--externs support/externs/node-process.js "
                     "--js_output_file tmp.js" % (uncompfiles))
     # to disable asserts

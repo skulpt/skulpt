@@ -326,7 +326,7 @@ function makeParser (filename, style) {
             return p.rootnode;
         }
         return false;
-    };
+    }.bind(this);
 
     // set flags, and return
     parseFunc.p_flags = p.p_flags;

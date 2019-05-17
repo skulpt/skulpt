@@ -263,9 +263,10 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$setattr = function(name, data, canSuspend) {
-            var r, /** @type {(Object|undefined)} */ setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
+            var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, "__setattr__");
             if (setf !== undefined) {
-                r = Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (setf), [new Sk.builtin.str(name), data]);
+                var f = /** @type {?} */ (setf);
+                r = Sk.misceval.callsimOrSuspendArray(f, [new Sk.builtin.str(name), data]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
@@ -344,7 +345,7 @@ Sk.builtin.type = function (name, bases, dict) {
             } else {
                 next = "next";
             }
-            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
+            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(iternextf) {
                 if (iternextf === undefined) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
                 }

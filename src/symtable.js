@@ -196,7 +196,7 @@ SymbolTableScope.prototype.lookup = function (name) {
     if (!this.symbols.hasOwnProperty(name)) {
         flags = this.symFlags[name];
         namespaces = this.__check_children(name);
-        sym = this.symbols[name] = new Symbol(name, flags, namespaces);
+        sym = this.symbols[name] = new Symbol_(name, flags, namespaces);
     }
     else {
         sym = this.symbols[name];
