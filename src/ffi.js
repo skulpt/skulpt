@@ -64,7 +64,7 @@ Sk.ffi.remapToPy = function (obj) {
         return new Sk.builtin.func(obj);
     }
 
-    goog.asserts.fail("unhandled remap type " + typeof(obj));
+    Sk.asserts.fail("unhandled remap type " + typeof(obj));
 };
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 
@@ -157,7 +157,7 @@ Sk.ffi.basicwrap = function (obj) {
     if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
     }
-    goog.asserts.fail("unexpected type for basicwrap");
+    Sk.asserts.fail("unexpected type for basicwrap");
 };
 goog.exportSymbol("Sk.ffi.basicwrap", Sk.ffi.basicwrap);
 

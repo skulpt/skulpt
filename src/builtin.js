@@ -882,7 +882,7 @@ Sk.builtin.jseval = function jseval (evalcode) {
     try {
         return Sk.ffi.remapToPy(result);
     } catch (err) {
-        if (err.constructor === goog.asserts.AssertionError) {
+        if (err.constructor === Sk.asserts.AssertionError) {
             return Sk.builtin.none.none$;
         }
 

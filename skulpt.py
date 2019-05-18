@@ -67,12 +67,10 @@ FILE_TYPE_TEST = 'test'
 # Order is important!
 Files = [
         ('node_modules/google-closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/deps.js',            FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('node_modules/google-closure-library/closure/goog/dom/nodetype.js',    FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         'support/setImmediate/setImmediate.js',
         ('src/sk.js', FILE_TYPE_DIST),
+        'src/assert.js',
         'src/env.js',
         'src/type.js',
         'src/abstract.js',

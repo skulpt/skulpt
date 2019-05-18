@@ -498,7 +498,7 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
         // divide tops and bottom by b.imag
         ratio = breal / bimag;
         denom = breal * ratio + bimag;
-        goog.asserts.assert(bimag !== 0.0);
+        Sk.asserts.assert(bimag !== 0.0);
         real = (areal * ratio + aimag) / denom;
         imag = (aimag * ratio - areal) / denom;
     } else {

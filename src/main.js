@@ -6,8 +6,6 @@
 
 // Closure
 require("google-closure-library");
-goog.require("goog.debug.Error");
-goog.require("goog.asserts");
 
 // Global support functions
 strftime = require("strftime");
@@ -17,6 +15,7 @@ Sk = {};
 Sk.js_beautify = require("js-beautify").js;
 
 // Skulpt
+require("./assert.js");
 require("./env.js");
 require("./type.js");
 require("./abstract.js");

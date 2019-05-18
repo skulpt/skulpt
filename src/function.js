@@ -266,7 +266,7 @@ goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(!(obj === undefined && objtype === undefined));
+    Sk.asserts.assert(!(obj === undefined && objtype === undefined));
     if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);

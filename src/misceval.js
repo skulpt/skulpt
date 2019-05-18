@@ -107,7 +107,7 @@ Sk.misceval.asIndex = function (o) {
         }
         return Sk.builtin.asnum$(ret);
     }
-    goog.asserts.fail("todo asIndex;");
+    Sk.asserts.fail("todo asIndex;");
 };
 
 /**
@@ -241,8 +241,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         w_type,
         v_type;
 
-    goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
-    goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
     v_type = new Sk.builtin.type(v);
     w_type = new Sk.builtin.type(w);
@@ -543,7 +543,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
-    goog.asserts.assert(v !== undefined, "trying to repr undefined");
+    Sk.asserts.assert(v !== undefined, "trying to repr undefined");
     if ((v === null) || (v instanceof Sk.builtin.none)) {
         return new Sk.builtin.str("None");
     } else if (v === true) {

@@ -228,7 +228,7 @@ Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function tell(self) {
 });
 
 Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function truncate(self, size) {
-    goog.asserts.fail();
+    Sk.asserts.fail();
 });
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, str) {
@@ -248,7 +248,7 @@ Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, st
             if (self.fileno === 1) {
                 Sk.output(Sk.ffi.remapToJs(str));
             } else {
-                goog.asserts.fail();
+                Sk.asserts.fail();
             }
         }
     } else {

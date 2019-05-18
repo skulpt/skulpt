@@ -180,7 +180,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
             case "GtE":
                 return vl >= wl;
             default:
-                goog.asserts.fail();
+                Sk.asserts.fail();
         }
     }
 
