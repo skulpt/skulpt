@@ -554,15 +554,16 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.str(nm + "(" + ret + ")");
             };
 
-            cons.prototype.tp$getattr = function (name) {
-                var i = flds.indexOf(name);
+            cons.prototype.tp$getattr = function (pyName) {
+                var jsName = pyName.$jsstr();
+                var i = flds.indexOf(jsName);
                 if (i >= 0) {
                     return this.v[i];
                 }
                 return undefined;
             };
 
-            cons.prototype.tp$setattr = function (name, value) {
+            cons.prototype.tp$setattr = function (pyName, value) {
                 throw new Sk.builtin.AttributeError("can't set attribute");
             };
 

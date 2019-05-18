@@ -73,16 +73,17 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         }
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
-    cons.prototype.tp$setattr = function (name, value) {
+    cons.prototype.tp$setattr = function (pyName, value) {
         throw new Sk.builtin.AttributeError("readonly property");
     };
 
-    cons.prototype.tp$getattr = function (name) {
-        var i = flds.indexOf(name);
+    cons.prototype.tp$getattr = function (pyName) {
+        var jsName = pyName.$jsstr();
+        var i = flds.indexOf(jsName);
         if (i >= 0) {
             return this.v[i];
         } else {
-            return  Sk.builtin.object.prototype.GenericGetAttr(name);
+            return  Sk.builtin.object.prototype.GenericGetAttr(pyName);
         }
     };
 

@@ -395,12 +395,12 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
             items = [];
             for (i = 0; i < e.elts.length; ++i) {
                 item = this.vexpr(e.elts[i]);
-		
-		// The following is an ugly check to see if item was
-		// turned into a constant.  As vexpr returns a string,
-		// this requires seeing if "$const" is contained
-		// within it.  A better solution would require a
-		// change to vexpr, which would be more invasive.
+
+                // The following is an ugly check to see if item was
+                // turned into a constant.  As vexpr returns a string,
+                // this requires seeing if "$const" is contained
+                // within it.  A better solution would require a
+                // change to vexpr, which would be more invasive.
                 if (allconsts && (item.indexOf('$const') == -1)) {
                     allconsts = false;
                 }
@@ -725,7 +725,7 @@ Compiler.prototype.cboolop = function (e) {
  *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
  */
 Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
-    var mangled;
+    var mangled, mname;
     var val;
     var result;
     var nStr; // used for preserving signs for floats (zeros)
@@ -797,13 +797,14 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
             mangled = fixReservedWords(mangled);
             mangled = fixReservedNames(mangled);
+            mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case AugLoad:
-                    out("$ret = Sk.abstr.gattr(", augvar, ",'", mangled, "', true);");
+                    out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Load:
-                    out("$ret = Sk.abstr.gattr(", val, ",'", mangled, "', true);");
+                out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case AugStore:
@@ -812,12 +813,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
                     out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("$ret = Sk.abstr.sattr(", augvar, ",'", mangled, "',", data, ", true);");
+                    out("$ret = Sk.abstr.sattr(", augvar, ",", mname, ",", data, ", true);");
                     out("}");
                     this._checkSuspension(e);
                     break;
                 case Store:
-                    out("$ret = Sk.abstr.sattr(", val, ",'", mangled, "',", data, ", true);");
+                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true);");
                     this._checkSuspension(e);
                     break;
                 case Del:
@@ -1473,13 +1474,13 @@ Compiler.prototype.cwith = function (s) {
     mgr = this._gr("mgr", this.vexpr(s.context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.gattr(",mgr,",'__exit__', true);");
+    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$exit, true);");
     this._checkSuspension(s);
     exit = this._gr("exit", "$ret");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
-    out("$ret = Sk.abstr.gattr(",mgr,",'__enter__', true);");
+    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$enter, true);");
     this._checkSuspension(s);
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
@@ -1559,7 +1560,7 @@ Compiler.prototype.cimportas = function (name, asname, mod) {
         while (dotLoc !== -1) {
             dotLoc = src.indexOf(".");
             attr = dotLoc !== -1 ? src.substr(0, dotLoc) : src;
-            cur = this._gr("lattr", "Sk.abstr.gattr(", cur, ",'", attr, "')");
+            cur = this._gr("lattr", "Sk.abstr.gattr(", cur, ", new Sk.builtin.str('", attr, "'))");
             src = src.substr(dotLoc + 1);
         }
     }
@@ -1628,7 +1629,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ",", aliasOut, ")");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "))");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {

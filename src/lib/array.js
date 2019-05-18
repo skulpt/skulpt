@@ -128,7 +128,7 @@ $builtinmodule = function (name) {
         $loc.__str__ = $loc.__repr__;
 
         $loc.__getattribute__ = new Sk.builtin.func(function (self, attr) {
-            return self.tp$getattr(Sk.ffi.remapToJs(attr));
+            return self.tp$getattr(attr);
         });
 
         $loc.append = new Sk.builtin.func(function (self, item) {

@@ -33,19 +33,18 @@ goog.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 /**
  * Get an attribute
- * @param {string} name JS name of the attribute
+ * @param {Object} pyName Python string name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
+Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     var res;
     var f;
     var descr;
     var tp;
     var dict;
     var getf;
-    var pyName = new Sk.builtin.str(name);
-    goog.asserts.assert(typeof name === "string");
+    var jsName = pyName.$jsstr();
 
     tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
@@ -60,14 +59,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         } else if (dict.mp$subscript) {
             res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            res = dict[name];
+            res = dict[jsName];
         }
         if (res !== undefined) {
             return res;
         }
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
+    descr = Sk.builtin.type.typeLookup(tp, pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
@@ -86,7 +85,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
 
     // OK, try __getattr__
 
-    descr = Sk.builtin.type.typeLookup(tp, "__getattr__");
+    descr = Sk.builtin.type.typeLookup(tp, Sk.builtin.str.$getattr);
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
         if (f) {
@@ -112,35 +111,34 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
-Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
-    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v, true);
+Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, pyName) {
+    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, pyName, true);
     if (r === undefined) {
-        throw new Sk.builtin.AttributeError(name);
+        throw new Sk.builtin.AttributeError(pyName);
     }
     return r;
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 /**
- * @param {string} name
+ * @param {Object} pyName
  * @param {Object} value
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
+Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
-    var pyname;
+    var jsName = pyName.$jsstr();
     var dict;
     var tp = this.ob$type;
     var descr;
     var f;
 
-    goog.asserts.assert(typeof name === "string");
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
 
-    if (name == "__class__") {
+    if (jsName == "__class__") {
         if (value.tp$mro === undefined || value.tp$name === undefined ||
             value.tp$name === undefined) {
             throw new Sk.builtin.TypeError(
@@ -151,7 +149,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
         return;
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
+    descr = Sk.builtin.type.typeLookup(tp, pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
@@ -163,22 +161,20 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
     }
 
     if (dict.mp$ass_subscript) {
-        pyname = new Sk.builtin.str(name);
-
         if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
-            dict.mp$lookup(pyname) === undefined) {
+            dict.mp$lookup(pyName) === undefined) {
             // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
         }
-        dict.mp$ass_subscript(new Sk.builtin.str(name), value);
+        dict.mp$ass_subscript(pyName, value);
     } else if (typeof dict === "object") {
-        dict[name] = value;
+        dict[jsName] = value;
     }
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
-Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
-    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value, true);
+Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, pyName, value) {
+    return Sk.builtin.object.prototype.GenericSetAttr.call(self, pyName, value, true);
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 

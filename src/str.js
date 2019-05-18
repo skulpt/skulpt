@@ -69,6 +69,10 @@ goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
+Sk.builtin.str.prototype.$jsstr = function () {
+    return this.v;
+};
+
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
     if (Sk.misceval.isIndex(index)) {
@@ -993,7 +997,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 neg = n.nb$isnegative();
             } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
-                neg = n.nb$isnegative();	//	neg = n.size$ < 0;	RNL long.js change
+                neg = n.nb$isnegative();
             }
 
             goog.asserts.assert(r !== undefined, "unhandled number format");
