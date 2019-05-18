@@ -332,7 +332,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         finalcode += "\n" + co.funcname + ";";
 
-        modscope = goog.global["eval"](finalcode);
+        modscope = Sk.global["eval"](finalcode);
 
         module["$d"] = {
             "__name__": new Sk.builtin.str(modname),
@@ -582,8 +582,8 @@ Sk.importStar = function (module, loc, global) {
     }
 };
 
-goog.exportSymbol("Sk.importMain", Sk.importMain);
-goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
-goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
-goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
-goog.exportSymbol("Sk.importStar", Sk.importStar);
+Sk.exportSymbol("Sk.importMain", Sk.importMain);
+Sk.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
+Sk.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
+Sk.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
+Sk.exportSymbol("Sk.importStar", Sk.importStar);

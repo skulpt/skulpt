@@ -83,7 +83,7 @@ var SYMTAB_CONSTS = {
     ClassBlock: ClassBlock
 };
 
-goog.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
+Sk.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
 
 /**
  * @constructor
@@ -323,7 +323,7 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
     len = nodes.length;
     for (i = 0; i < len; ++i) {
         val = nodes[i];
@@ -336,7 +336,7 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
     len = nodes.length;
     for (i = 0; i < len; ++i) {
         val = nodes[i];
@@ -1056,5 +1056,5 @@ Sk.dumpSymtab = function (st) {
     return getIdents(st.top, "");
 };
 
-goog.exportSymbol("Sk.symboltable", Sk.symboltable);
-goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
+Sk.exportSymbol("Sk.symboltable", Sk.symboltable);
+Sk.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);

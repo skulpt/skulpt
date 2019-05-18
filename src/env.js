@@ -92,10 +92,10 @@ Sk.configure = function (options) {
 
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
     Sk.asserts.assert(typeof Sk.timeoutMsg === "function");
-    goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+    Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
-    Sk.asserts.assert(goog.isArrayLike(Sk.sysargv));
+    Sk.asserts.assert(Sk.isArrayLike(Sk.sysargv));
 
     Sk.__future__ = options["__future__"] || Sk.python2;
 
@@ -185,7 +185,7 @@ Sk.configure = function (options) {
 
     if (options["syspath"]) {
         Sk.syspath = options["syspath"];
-        Sk.asserts.assert(goog.isArrayLike(Sk.syspath));
+        Sk.asserts.assert(Sk.isArrayLike(Sk.syspath));
         // assume that if we're changing syspath we want to force reimports.
         // not sure how valid this is, perhaps a separate api for that.
         Sk.realsyspath = undefined;
@@ -200,7 +200,7 @@ Sk.configure = function (options) {
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 };
 
-goog.exportSymbol("Sk.configure", Sk.configure);
+Sk.exportSymbol("Sk.configure", Sk.configure);
 
 /*
 * Replaceable handler for uncaught exceptions
@@ -215,7 +215,7 @@ Sk.uncaughtException = function(err) {
 Sk.uncaughtException = function(err) {
     throw err;
 };
-goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
+Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 
 /*
  *      Replaceable message for message timeouts
@@ -223,7 +223,7 @@ goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
-goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
 /*
  *  Hard execution timeout, throws an error. Set to null to disable
@@ -258,7 +258,7 @@ Sk.sysargv = [];
 Sk.getSysArgv = function () {
     return Sk.sysargv;
 };
-goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
+Sk.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
 
 
 /**
@@ -267,7 +267,7 @@ goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
  */
 Sk.syspath = [];
 
-Sk.inBrowser = goog.global["document"] !== undefined;
+Sk.inBrowser = Sk.global["document"] !== undefined;
 
 /**
  * Internal function used for debug output.
@@ -278,21 +278,21 @@ Sk.debugout = function (args) {
 
 (function () {
     // set up some sane defaults based on availability
-    if (goog.global["write"] !== undefined) {
-        Sk.output = goog.global["write"];
-    } else if (goog.global["console"] !== undefined && goog.global["console"]["log"] !== undefined) {
+    if (Sk.global["write"] !== undefined) {
+        Sk.output = Sk.global["write"];
+    } else if (Sk.global["console"] !== undefined && Sk.global["console"]["log"] !== undefined) {
         Sk.output = function (x) {
-            goog.global["console"]["log"](x);
+            Sk.global["console"]["log"](x);
         };
-    } else if (goog.global["print"] !== undefined) {
-        Sk.output = goog.global["print"];
+    } else if (Sk.global["print"] !== undefined) {
+        Sk.output = Sk.global["print"];
     }
-    if (goog.global["console"] !== undefined && goog.global["console"]["log"] !== undefined) {
+    if (Sk.global["console"] !== undefined && Sk.global["console"]["log"] !== undefined) {
         Sk.debugout = function (x) {
-            goog.global["console"]["log"](x);
+            Sk.global["console"]["log"](x);
         };
-    } else if (goog.global["print"] !== undefined) {
-        Sk.debugout = goog.global["print"];
+    } else if (Sk.global["print"] !== undefined) {
+        Sk.debugout = Sk.global["print"];
     }
 }());
 
@@ -363,5 +363,5 @@ Sk.switch_version = function (method_to_map, python3) {
     }
 };
 
-goog.exportSymbol("Sk.__future__", Sk.__future__);
-goog.exportSymbol("Sk.inputfun", Sk.inputfun);
+Sk.exportSymbol("Sk.__future__", Sk.__future__);
+Sk.exportSymbol("Sk.inputfun", Sk.inputfun);

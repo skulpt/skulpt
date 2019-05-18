@@ -2329,7 +2329,7 @@ Sk.astDump = function (node) {
             fieldstr = attrs.join(",\n" + indent + namelen);
             return indent + node._astname + "(" + fieldstr + ")";
         }
-        else if (goog.isArrayLike(node)) {
+        else if (Sk.isArrayLike(node)) {
             //Sk.debugout("arr", node.length);
             elems = [];
             for (i = 0; i < node.length; ++i) {
@@ -2362,5 +2362,5 @@ Sk.astDump = function (node) {
     return _format(node, "");
 };
 
-goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);
-goog.exportSymbol("Sk.astDump", Sk.astDump);
+Sk.exportSymbol("Sk.astFromParse", Sk.astFromParse);
+Sk.exportSymbol("Sk.astDump", Sk.astDump);

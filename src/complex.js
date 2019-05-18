@@ -1110,7 +1110,7 @@ Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(Sk.builtin.comple
 
 
 // ToDo: think about inplace methods too
-goog.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
+Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
 
 /**

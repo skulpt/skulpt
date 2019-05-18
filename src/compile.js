@@ -2648,22 +2648,22 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     };
 };
 
-goog.exportSymbol("Sk.compile", Sk.compile);
+Sk.exportSymbol("Sk.compile", Sk.compile);
 
 Sk.resetCompiler = function () {
     Sk.gensymcount = 0;
 };
 
-goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
+Sk.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
 
 Sk.fixReservedWords = fixReservedWords;
-goog.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
+Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
 Sk.fixReservedNames = fixReservedNames;
-goog.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
 
 Sk.unfixReserved = unfixReserved;
-goog.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
+Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
 
 Sk.mangleName = mangleName;
-goog.exportSymbol("Sk.mangleName", Sk.mangleName);
+Sk.exportSymbol("Sk.mangleName", Sk.mangleName);

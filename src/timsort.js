@@ -731,5 +731,5 @@ Sk.builtin.listSlice.prototype.reverse = function () {
     }
 };
 
-goog.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
-goog.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);
+Sk.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
+Sk.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);

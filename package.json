@@ -42,7 +42,6 @@
   "private": true,
   "devDependencies": {
     "google-closure-compiler": "^20190415.0.0",
-    "google-closure-library": "^20190415.0.0",
     "js-beautify": "^1.10.0",
     "jscs": "~1.12",
     "jsdoc": "~3.5.5",

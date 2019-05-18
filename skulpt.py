@@ -66,10 +66,9 @@ FILE_TYPE_TEST = 'test'
 # It should be kept in sync with src/main.js.
 # Order is important!
 Files = [
-        ('node_modules/google-closure-library/closure/goog/base.js',            FILE_TYPE_DIST),
-        ('node_modules/google-closure-library/closure/goog/dom/nodetype.js',    FILE_TYPE_DIST),
         'support/setImmediate/setImmediate.js',
         ('src/sk.js', FILE_TYPE_DIST),
+        'src/util.js',
         'src/assert.js',
         'src/env.js',
         'src/type.js',

@@ -171,7 +171,7 @@ Sk.longFromStr = function (s, base) {
 
     return new Sk.builtin.lng(biginteger);
 };
-goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
+Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
     return this.biginteger.intValue();

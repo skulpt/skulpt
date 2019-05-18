@@ -1,7 +1,7 @@
 Sk.asserts = {};
 
 Sk.asserts.ENABLE_ASSERTS = true;
-goog.exportSymbol("Sk.asserts.ENABLE_ASSERTS", Sk.asserts.ENABLE_ASSERTS);
+Sk.exportSymbol("Sk.asserts.ENABLE_ASSERTS", Sk.asserts.ENABLE_ASSERTS);
 
 /**
  * Cause assertion failure when condition is false.
@@ -19,7 +19,7 @@ Sk.asserts.assert = function (condition, message) {
     }
     return condition;
 };
-goog.exportSymbol("Sk.asserts.assert", Sk.asserts.assert);
+Sk.exportSymbol("Sk.asserts.assert", Sk.asserts.assert);
 
 /**
  * Cause assertion failure.
@@ -35,4 +35,4 @@ Sk.asserts.fail = function (message) {
         throw new Error(msg);
     }
 };
-goog.exportSymbol("Sk.asserts.fail", Sk.asserts.fail);
+Sk.exportSymbol("Sk.asserts.fail", Sk.asserts.fail);

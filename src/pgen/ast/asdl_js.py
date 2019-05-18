@@ -385,7 +385,7 @@ def main(asdlfile, outputfile):
         )
     v.visit(mod)
 
-    f.write('goog.exportSymbol("Sk.astnodes", Sk.astnodes);\n');
+    f.write('Sk.exportSymbol("Sk.astnodes", Sk.astnodes);\n');
     
     f.close()
 
