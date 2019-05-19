@@ -64,7 +64,7 @@ Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (Sk.abstr.lookupSpecial(o, "__index__")) {
+    if (Sk.abstr.lookupSpecial(o, Sk.builtin.str.$index)) {
         return true;
     }
     return false;
@@ -98,7 +98,7 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    idxfn = Sk.abstr.lookupSpecial(o, "__index__");
+    idxfn = Sk.abstr.lookupSpecial(o, Sk.builtin.str.$index);
     if (idxfn) {
         ret = Sk.misceval.callsimArray(idxfn, [o]);
         if (!Sk.builtin.checkInt(ret)) {
@@ -229,7 +229,6 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         shortcut,
         v_has_shortcut,
         w_has_shortcut,
-        op2method,
         op2shortcut,
         vcmp,
         wcmp,
@@ -420,16 +419,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // depending on the op, try left:op:right, and if not, then
     // right:reversed-top:left
 
-    op2method = {
-        "Eq"   : "__eq__",
-        "NotEq": "__ne__",
-        "Gt"   : "__gt__",
-        "GtE"  : "__ge__",
-        "Lt"   : "__lt__",
-        "LtE"  : "__le__"
-    };
-
-    method = Sk.abstr.lookupSpecial(v, op2method[op]);
+    method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
     if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsimArray(method, [v, w]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -437,7 +427,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
         ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -445,7 +435,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
+    vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
     if (vcmp) {
         try {
             ret = Sk.misceval.callsimArray(vcmp, [v, w]);
@@ -474,7 +464,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
+    wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
     if (wcmp) {
         // note, flipped on return value and call
         try {

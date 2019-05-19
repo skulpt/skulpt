@@ -16,7 +16,7 @@ Sk.builtin.iterator = function (obj, sentinel) {
     if (obj instanceof Sk.builtin.generator) {
         return obj;
     }
-    objit = Sk.abstr.lookupSpecial(obj, "__iter__");
+    objit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
     if (objit) {
         return Sk.misceval.callsimArray(objit, [obj]);
     }
@@ -25,12 +25,12 @@ Sk.builtin.iterator = function (obj, sentinel) {
     this.idx = 0;
     this.obj = obj;
     if (sentinel === undefined) {
-        this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+        this.getitem = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
         this.$r = function () {
             return new Sk.builtin.str("<iterator object>");
         };
     } else {
-        this.call = Sk.abstr.lookupSpecial(obj, "__call__");
+        this.call = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call);
         this.$r = function () {
             return new Sk.builtin.str("<callable-iterator object>");
         };

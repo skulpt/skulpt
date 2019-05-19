@@ -233,7 +233,7 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     // try calling internal magic method
-    special = Sk.abstr.lookupSpecial(number, "__round__");
+    special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
     if (special != null) {
         // method on builtin, provide this arg
         if (!Sk.builtin.checkFunction(number)) {
@@ -274,7 +274,7 @@ Sk.builtin.len = function len (item) {
 
     if (item.tp$length) {
         if (Sk.builtin.checkFunction(item)) {
-            special = Sk.abstr.lookupSpecial(item, "__len__");
+            special = Sk.abstr.lookupSpecial(item, Sk.builtin.str.$len);
             if (special != null) {
                 return Sk.misceval.callsimArray(special, [item]);
             } else {
@@ -475,7 +475,7 @@ Sk.builtin.abs = function abs (x) {
 
     // call custom __abs__ methods
     if (x.tp$getattr) {
-        var f = x.tp$getattr("__abs__");
+        var f = x.tp$getattr(Sk.builtin.str.$abs);
         return Sk.misceval.callsimArray(f);
     }
 
@@ -622,7 +622,7 @@ Sk.builtin.dir = function dir (x) {
     var _seq;
 
     // try calling magic method
-    var special = Sk.abstr.lookupSpecial(x, "__dir__");
+    var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$dir);
     if(special != null) {
         // method on builtin, provide this arg
         _seq = Sk.misceval.callsimArray(special, [x]);
@@ -819,36 +819,39 @@ Sk.builtin.hash = function hash (value) {
     // todo; throw properly for unhashable types
 };
 
-Sk.builtin.getattr = function getattr (obj, name, default_) {
-    var ret, mangledName;
+Sk.builtin.getattr = function getattr (obj, pyName, default_) {
+    var ret, mangledName, jsName;
     Sk.builtin.pyCheckArgsLen("getattr", arguments.length, 2, 3);
-    if (!Sk.builtin.checkString(name)) {
+    if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
 
-    mangledName = Sk.fixReservedWords(Sk.ffi.remapToJs(name));
+    jsName = pyName.$jsstr();
+    mangledName = new Sk.builtin.str(Sk.fixReservedWords(jsName));
     ret = obj.tp$getattr(mangledName);
     if (ret === undefined) {
         if (default_ !== undefined) {
             return default_;
         } else {
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + name.v + "'");
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
         }
     }
     return ret;
 };
 
-Sk.builtin.setattr = function setattr (obj, name, value) {
+Sk.builtin.setattr = function setattr (obj, pyName, value) {
+    var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
     if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
-        if (!Sk.builtin.checkString(name)) {
+        if (!Sk.builtin.checkString(pyName)) {
             throw new Sk.builtin.TypeError("attribute name must be string");
         }
+        jsName = pyName.$jsstr();
         if (obj.tp$setattr) {
-            obj.tp$setattr(Sk.fixReservedWords(Sk.ffi.remapToJs(name)), value);
+            obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
         } else {
-            throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+            throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
         }
         return Sk.builtin.none.none$;
     }
@@ -1064,7 +1067,7 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
     }
 
     if (obj.tp$getattr) {
-        if (obj.tp$getattr(attr.v)) {
+        if (obj.tp$getattr(attr)) {
             return Sk.builtin.bool.true$;
         } else {
             return Sk.builtin.bool.false$;
@@ -1246,7 +1249,7 @@ Sk.builtin.format = function format (value, format_spec) {
 Sk.builtin.reversed = function reversed (seq) {
     Sk.builtin.pyCheckArgsLen("reversed", arguments.length, 1, 1);
 
-    var special = Sk.abstr.lookupSpecial(seq, "__reversed__");
+    var special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
     if (special != null) {
         return Sk.misceval.callsimArray(special, [seq]);
     } else {
@@ -1262,7 +1265,7 @@ Sk.builtin.reversed = function reversed (seq) {
         var reverseIter = function (obj) {
             this.idx = obj.sq$length() - 1;
             this.myobj = obj;
-            this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+            this.getitem = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
             this.tp$iter = function() {
                 return this;
             },
