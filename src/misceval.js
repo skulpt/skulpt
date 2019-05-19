@@ -229,7 +229,6 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         shortcut,
         v_has_shortcut,
         w_has_shortcut,
-        op2method,
         op2shortcut,
         vcmp,
         wcmp,
@@ -420,7 +419,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // depending on the op, try left:op:right, and if not, then
     // right:reversed-top:left
 
-    method = Sk.abstr.lookupSpecial(v, this.op2method_[op]);
+    method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
     if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsimArray(method, [v, w]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -428,7 +427,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    swapped_method = Sk.abstr.lookupSpecial(w, this.op2method_[Sk.misceval.swappedOp_[op]]);
+    swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
         ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -1017,9 +1016,9 @@ goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  *    return value, and then we will return f(<resumed-value).
  * This can be expanded to an arbitrary number of functions
  * (eg Sk.misceval.chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
- *
- * @param {*}              initialValue
- * @param {...function(*)} chainedFns
+ * @template T
+ * @param {T}              initialValue
+ * @param {...function(T)} chainedFns
  */
 
 Sk.misceval.chain = function (initialValue, chainedFns) {

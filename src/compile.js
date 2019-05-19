@@ -383,13 +383,13 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var item;
     var allconsts;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
-    if (e.ctx === Store) {
+    if (e.ctx === Sk.astnodes.Store) {
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
-    else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.
+    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to.
         if (tuporlist === "tuple") {
             allconsts = true;
             items = [];
@@ -439,19 +439,19 @@ Compiler.prototype.cdict = function (e) {
 };
 
 Compiler.prototype.clistcomp = function(e) {
-    goog.asserts.assert(e instanceof ListComp);
+    goog.asserts.assert(e instanceof Sk.astnodes.ListComp);
     var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
     return this.ccompgen("list", tmp, e.generators, 0, e.elt, null, e);
 };
 
 Compiler.prototype.cdictcomp = function(e) {
-    goog.asserts.assert(e instanceof DictComp);
+    goog.asserts.assert(e instanceof Sk.astnodes.DictComp);
     var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
     return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key, e);
 };
 
 Compiler.prototype.csetcomp = function(e) {
-    goog.asserts.assert(e instanceof SetComp);
+    goog.asserts.assert(e instanceof Sk.astnodes.SetComp);
     var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
     return this.ccompgen("set", tmp, e.generators, 0, e.elt, null, e);
 };
@@ -519,7 +519,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
 
 Compiler.prototype.cyield = function(e)
 {
-    if (this.u.ste.blockType !== FunctionBlock) {
+    if (this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
         throw new SyntaxError("'yield' outside function");
     }
     var val = "null",
@@ -616,7 +616,7 @@ Compiler.prototype.cslice = function (s) {
     var step;
     var high;
     var low;
-    goog.asserts.assert(s instanceof Slice);
+    goog.asserts.assert(s instanceof Sk.astnodes.Slice);
     low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(0)"; // todo;ideally, these numbers would be constants
     high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(2147483647)";
     step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
@@ -637,16 +637,16 @@ Compiler.prototype.eslice = function (dims) {
 Compiler.prototype.vslicesub = function (s) {
     var subs;
     switch (s.constructor) {
-        case Index:
+        case Sk.astnodes.Index:
             subs = this.vexpr(s.value);
             break;
-        case Slice:
+        case Sk.astnodes.Slice:
             subs = this.cslice(s);
             break;
-        case Ellipsis:
+        case Sk.astnodes.Ellipsis:
             goog.asserts.fail("todo compile.js Ellipsis;");
             break;
-        case ExtSlice:
+        case Sk.astnodes.ExtSlice:
             subs = this.eslice(s.dims);
             break;
         default:
@@ -661,16 +661,16 @@ Compiler.prototype.vslice = function (s, ctx, obj, dataToStore) {
 };
 
 Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
-    if (ctx === Load || ctx === AugLoad) {
+    if (ctx === Sk.astnodes.Load || ctx === Sk.astnodes.AugLoad) {
         out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
         this._checkSuspension();
         return this._gr("lsubscr", "$ret");
     }
-    else if (ctx === Store || ctx === AugStore) {
+    else if (ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore) {
         out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
         this._checkSuspension();
     }
-    else if (ctx === Del) {
+    else if (ctx === Sk.astnodes.Del) {
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
     }
     else {
@@ -687,8 +687,8 @@ Compiler.prototype.cboolop = function (e) {
     var end;
     var ifFailed;
     var jtype;
-    goog.asserts.assert(e instanceof BoolOp);
-    if (e.op === And) {
+    goog.asserts.assert(e instanceof Sk.astnodes.BoolOp);
+    if (e.op === Sk.astnodes.And) {
         jtype = this._jumpfalse;
     }
     else {
@@ -735,36 +735,36 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     }
     //this.annotateSource(e);
     switch (e.constructor) {
-        case BoolOp:
+        case Sk.astnodes.BoolOp:
             return this.cboolop(e);
-        case BinOp:
+        case Sk.astnodes.BinOp:
             return this._gr("binop", "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op.prototype._astname, "')");
-        case UnaryOp:
+        case Sk.astnodes.UnaryOp:
             return this._gr("unaryop", "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op.prototype._astname, "')");
-        case Lambda:
+        case Sk.astnodes.Lambda:
             return this.clambda(e);
-        case IfExp:
+        case Sk.astnodes.IfExp:
             return this.cifexp(e);
-        case Dict:
+        case Sk.astnodes.Dict:
             return this.cdict(e);
-        case ListComp:
+        case Sk.astnodes.ListComp:
             return this.clistcomp(e);
-        case DictComp:
+        case Sk.astnodes.DictComp:
             return this.cdictcomp(e);
-        case SetComp:
+        case Sk.astnodes.SetComp:
             return this.csetcomp(e);
-        case GeneratorExp:
+        case Sk.astnodes.GeneratorExp:
             return this.cgenexp(e);
-        case Yield:
+        case Sk.astnodes.Yield:
             return this.cyield(e);
-        case Compare:
+        case Sk.astnodes.Compare:
             return this.ccompare(e);
-        case Call:
+        case Sk.astnodes.Call:
             result = this.ccall(e);
             // After the function call, we've returned to this line
             this.annotateSource(e);
             return result;
-        case Num:
+        case Sk.astnodes.Num:
             if (typeof e.n === "number") {
                 return e.n;
             }
@@ -786,10 +786,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return this.makeConstant("new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))");
             }
             goog.asserts.fail("unhandled Num type");
-        case Str:
+        case Sk.astnodes.Str:
             return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
-        case Attribute:
-            if (e.ctx !== AugLoad && e.ctx !== AugStore) {
+        case Sk.astnodes.Attribute:
+            if (e.ctx !== Sk.astnodes.AugLoad && e.ctx !== Sk.astnodes.AugStore) {
                 val = this.vexpr(e.value);
             }
             mangled = e.attr["$r"]().v;
@@ -799,15 +799,15 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = fixReservedNames(mangled);
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
-                case AugLoad:
+                case Sk.astnodes.AugLoad:
                     out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
-                case Load:
-                out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
+                case Sk.astnodes.Load:
+                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
-                case AugStore:
+                case Sk.astnodes.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
@@ -817,29 +817,29 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     out("}");
                     this._checkSuspension(e);
                     break;
-                case Store:
+                case Sk.astnodes.Store:
                     out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true);");
                     this._checkSuspension(e);
                     break;
-                case Del:
+                case Sk.astnodes.Del:
                     goog.asserts.fail("todo Del;");
                     break;
-                case Param:
+                case Sk.astnodes.Param:
                 default:
                     goog.asserts.fail("invalid attribute expression");
             }
             break;
-        case Subscript:
+        case Sk.astnodes.Subscript:
             switch (e.ctx) {
-                case AugLoad:
+                case Sk.astnodes.AugLoad:
                     out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
                     this._checkSuspension(e)
                     return this._gr("gitem", "$ret");
-                case Load:
-                case Store:
-                case Del:
+                case Sk.astnodes.Load:
+                case Sk.astnodes.Store:
+                case Sk.astnodes.Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
-                case AugStore:
+                case Sk.astnodes.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
@@ -850,18 +850,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     out("}");
                     this._checkSuspension(e);
                     break;
-                case Param:
+                case Sk.astnodes.Param:
                 default:
                     goog.asserts.fail("invalid subscript expression");
             }
             break;
-        case Name:
+        case Sk.astnodes.Name:
             return this.nameop(e.id, e.ctx, data);
-        case List:
+        case Sk.astnodes.List:
             return this.ctuplelistorset(e, data, 'list');
-        case Tuple:
+        case Sk.astnodes.Tuple:
             return this.ctuplelistorset(e, data, 'tuple');
-        case Set:
+        case Sk.astnodes.Set:
             return this.ctuplelistorset(e, data, 'set');
         default:
             goog.asserts.fail("unhandled case in vexpr");
@@ -891,32 +891,32 @@ Compiler.prototype.caugassign = function (s) {
     var aug;
     var auge;
     var e;
-    goog.asserts.assert(s instanceof AugAssign);
+    goog.asserts.assert(s instanceof Sk.astnodes.AugAssign);
     e = s.target;
     switch (e.constructor) {
-        case Attribute:
+        case Sk.astnodes.Attribute:
             to = this.vexpr(e.value);
-            auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
+            auge = new Sk.astnodes.Attribute(e.value, e.attr, Sk.astnodes.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopattr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.astnodes.AugStore;
             return this.vexpr(auge, res, to);
-        case Subscript:
+        case Sk.astnodes.Subscript:
             // Only compile the subscript value once
             to = this.vexpr(e.value);
             augsub = this.vslicesub(e.slice);
-            auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
+            auge = new Sk.astnodes.Subscript(e.value, augsub, Sk.astnodes.AugLoad, e.lineno, e.col_offset);
             aug = this.vexpr(auge, undefined, to, augsub);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopsubscr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
-            auge.ctx = AugStore;
+            auge.ctx = Sk.astnodes.AugStore;
             return this.vexpr(auge, res, to, augsub);
-        case Name:
-            to = this.nameop(e.id, Load);
+        case Sk.astnodes.Name:
+            to = this.nameop(e.id, Sk.astnodes.Load);
             val = this.vexpr(s.value);
             res = this._gr("inplbinop", "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op.prototype._astname, "')");
-            return this.nameop(e.id, Store, res);
+            return this.nameop(e.id, Sk.astnodes.Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");
     }
@@ -927,11 +927,11 @@ Compiler.prototype.caugassign = function (s) {
  */
 Compiler.prototype.exprConstant = function (e) {
     switch (e.constructor) {
-        case Num:
+        case Sk.astnodes.Num:
             return Sk.misceval.isTrue(e.n) ? 1 : 0;
-        case Str:
+        case Sk.astnodes.Str:
             return Sk.misceval.isTrue(e.s) ? 1 : 0;
-        case Name:
+        case Sk.astnodes.Name:
         // todo; do __debug__ test here if opt
         default:
             return -1;
@@ -1024,7 +1024,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var localSaveCode = [];
     var localsToSave = unit.localnames.concat(unit.tempsToSave);
     var seenTemps = {};
-    var hasCell = unit.ste.blockType === FunctionBlock && unit.ste.childHasFree;
+    var hasCell = unit.ste.blockType === SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; delete "+unit.scopename+".$wakingSuspension;" +
@@ -1121,7 +1121,7 @@ Compiler.prototype.cif = function (s) {
     var next;
     var end;
     var constant;
-    goog.asserts.assert(s instanceof If_);
+    goog.asserts.assert(s instanceof Sk.astnodes.If_);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
         if (s.orelse && s.orelse.length > 0) {
@@ -1493,7 +1493,7 @@ Compiler.prototype.cwith = function (s) {
 
     //    VAR = value
     if (s.optional_vars) {
-        this.nameop(s.optional_vars.id, Store, value);
+        this.nameop(s.optional_vars.id, Sk.astnodes.Store, value);
     }
 
     //    (try body)
@@ -1564,7 +1564,7 @@ Compiler.prototype.cimportas = function (name, asname, mod) {
             src = src.substr(dotLoc + 1);
         }
     }
-    return this.nameop(asname, Store, cur);
+    return this.nameop(asname, Sk.astnodes.Store, cur);
 };
 
 Compiler.prototype.cimport = function (s) {
@@ -1591,7 +1591,7 @@ Compiler.prototype.cimport = function (s) {
             if (lastDot !== -1) {
                 tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
             }
-            this.nameop(tmp, Store, mod);
+            this.nameop(tmp, Sk.astnodes.Store, mod);
         }
     }
 };
@@ -1635,7 +1635,7 @@ Compiler.prototype.cfromimport = function (s) {
         if (alias.asname) {
             storeName = alias.asname;
         }
-        this.nameop(storeName, Store, got);
+        this.nameop(storeName, Sk.astnodes.Store, got);
     }
 };
 
@@ -1654,7 +1654,7 @@ Compiler.prototype.cfromimport = function (s) {
  * @param {Object} n ast node to build for
  * @param {Sk.builtin.str} coname name of code object to build
  * @param {Array} decorator_list ast of decorators if any
- * @param {arguments_} args arguments to function, if any
+ * @param {Sk.astnodes.arguments_} args arguments to function, if any
  * @param {Function} callback called after setup to do actual work of function
  * @param {Sk.builtin.str=} class_for_super
  *
@@ -1736,7 +1736,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.tempsToSave.push("$kwa");
         }
         for (i = 0; args && i < args.args.length; ++i) {
-            funcArgs.push(this.nameop(args.args[i].id, Param));
+            funcArgs.push(this.nameop(args.args[i].id, Sk.astnodes.Param));
         }
     }
     if (hasFree) {
@@ -1803,7 +1803,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         // correlation in the ast)
         offset = args.args.length - defaults.length;
         for (i = 0; i < defaults.length; ++i) {
-            argname = this.nameop(args.args[i + offset].id, Param);
+            argname = this.nameop(args.args[i + offset].id, Sk.astnodes.Param);
             this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname + "=" + scopename + ".$defaults[" + i + "];";
         }
     }
@@ -1977,17 +1977,17 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
 Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
-    goog.asserts.assert(s instanceof FunctionDef);
+    goog.asserts.assert(s instanceof Sk.astnodes.FunctionDef);
     funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function (scopename) {
         this.vseqstmt(s.body);
         out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
     }, class_for_super);
-    this.nameop(s.name, Store, funcorgen);
+    this.nameop(s.name, Sk.astnodes.Store, funcorgen);
 };
 
 Compiler.prototype.clambda = function (e) {
     var func;
-    goog.asserts.assert(e instanceof Lambda);
+    goog.asserts.assert(e instanceof Sk.astnodes.Lambda);
     func = this.buildcodeobj(e, new Sk.builtin.str("<lambda>"), null, e.args, function (scopename) {
         var val = this.vexpr(e.body);
         out("return ", val, ";");
@@ -2107,7 +2107,7 @@ Compiler.prototype.cclass = function (s) {
     var scopename;
     var bases;
     var decos;
-    goog.asserts.assert(s instanceof ClassDef);
+    goog.asserts.assert(s instanceof Sk.astnodes.ClassDef);
     decos = s.decorator_list;
 
     // decorators and bases need to be eval'd out here
@@ -2150,7 +2150,7 @@ Compiler.prototype.cclass = function (s) {
     wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
 
     // store our new class under the right name
-    this.nameop(s.name, Store, wrapped);
+    this.nameop(s.name, Sk.astnodes.Store, wrapped);
 };
 
 Compiler.prototype.ccontinue = function (s) {
@@ -2212,14 +2212,14 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
     this.annotateSource(s);
 
     switch (s.constructor) {
-        case FunctionDef:
+        case Sk.astnodes.FunctionDef:
             this.cfunction(s, class_for_super);
             break;
-        case ClassDef:
+        case Sk.astnodes.ClassDef:
             this.cclass(s);
             break;
-        case Return_:
-            if (this.u.ste.blockType !== FunctionBlock) {
+        case Sk.astnodes.Return_:
+            if (this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
             val = s.value ? this.vexpr(s.value) : "Sk.builtin.none.none$";
@@ -2230,55 +2230,55 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 this._jump(this.peekFinallyBlock().blk);
             }
             break;
-        case Delete_:
+        case Sk.astnodes.Delete_:
             this.vseqexpr(s.targets);
             break;
-        case Assign:
+        case Sk.astnodes.Assign:
             n = s.targets.length;
             val = this.vexpr(s.value);
             for (i = 0; i < n; ++i) {
                 this.vexpr(s.targets[i], val);
             }
             break;
-        case AugAssign:
+        case Sk.astnodes.AugAssign:
             return this.caugassign(s);
-        case Print:
+        case Sk.astnodes.Print:
             this.cprint(s);
             break;
-        case For_:
+        case Sk.astnodes.For_:
             return this.cfor(s);
-        case While_:
+        case Sk.astnodes.While_:
             return this.cwhile(s);
-        case If_:
+        case Sk.astnodes.If_:
             return this.cif(s);
-        case Raise:
+        case Sk.astnodes.Raise:
             return this.craise(s);
-        case TryExcept:
+        case Sk.astnodes.TryExcept:
             return this.ctryexcept(s);
-        case TryFinally:
+        case Sk.astnodes.TryFinally:
             return this.ctryfinally(s);
-        case With_:
+        case Sk.astnodes.With_:
             return this.cwith(s);
-        case Assert:
+        case Sk.astnodes.Assert:
             return this.cassert(s);
-        case Import_:
+        case Sk.astnodes.Import_:
             return this.cimport(s);
-        case ImportFrom:
+        case Sk.astnodes.ImportFrom:
             return this.cfromimport(s);
-        case Global:
+        case Sk.astnodes.Global:
             break;
-        case Expr:
+        case Sk.astnodes.Expr:
             this.vexpr(s.value);
             break;
-        case Pass:
+        case Sk.astnodes.Pass:
             break;
-        case Break_:
+        case Sk.astnodes.Break_:
             this.cbreak(s);
             break;
-        case Continue_:
+        case Sk.astnodes.Continue_:
             this.ccontinue(s);
             break;
-        case Debugger_:
+        case Sk.astnodes.Debugger_:
             out("debugger;");
             break;
         default:
@@ -2305,7 +2305,7 @@ Compiler.prototype.isCell = function (name) {
     var mangled = mangleName(this.u.private_, name).v;
     var scope = this.u.ste.getScope(mangled);
     var dict = null;
-    return scope === CELL;
+    return scope === SYMTAB_CONSTS.CELL;
 
 };
 
@@ -2322,10 +2322,10 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     var optype;
     var op;
     var mangled;
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__") {
+    if ((ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore || ctx === Sk.astnodes.Del) && name.v === "__debug__") {
         throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     }
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None") {
+    if ((ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore || ctx === Sk.astnodes.Del) && name.v === "None") {
         throw new Sk.builtin.SyntaxError("can not assign to None");
     }
 
@@ -2350,26 +2350,26 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     scope = this.u.ste.getScope(mangled);
     dict = null;
     switch (scope) {
-        case FREE:
+        case SYMTAB_CONSTS.FREE:
             dict = "$free";
             optype = OP_DEREF;
             break;
-        case CELL:
+        case SYMTAB_CONSTS.CELL:
             dict = "$cell";
             optype = OP_DEREF;
             break;
-        case LOCAL:
+        case SYMTAB_CONSTS.LOCAL:
             // can't do FAST in generators or at module/class scope
-            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator) {
+            if (this.u.ste.blockType === SYMTAB_CONSTS.FunctionBlock && !this.u.ste.generator) {
                 optype = OP_FAST;
             }
             break;
-        case GLOBAL_IMPLICIT:
-            if (this.u.ste.blockType === FunctionBlock) {
+        case SYMTAB_CONSTS.GLOBAL_IMPLICIT:
+            if (this.u.ste.blockType === SYMTAB_CONSTS.FunctionBlock) {
                 optype = OP_GLOBAL;
             }
             break;
-        case GLOBAL_EXPLICIT:
+        case SYMTAB_CONSTS.GLOBAL_EXPLICIT:
             optype = OP_GLOBAL;
         default:
             break;
@@ -2385,7 +2385,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     // in generator or at module scope, we need to store to $loc, rather that
     // to actual JS stack variables.
     mangledNoPre = mangled;
-    if (this.u.ste.generator || this.u.ste.blockType !== FunctionBlock) {
+    if (this.u.ste.generator || this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
         mangled = "$loc." + mangled;
     }
     else if (optype === OP_FAST || optype === OP_NAME) {
@@ -2395,15 +2395,15 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     switch (optype) {
         case OP_FAST:
             switch (ctx) {
-                case Load:
-                case Param:
+                case Sk.astnodes.Load:
+                case Sk.astnodes.Param:
                     // Need to check that it is bound!
                     out("if (", mangled, " === undefined) { throw new Sk.builtin.UnboundLocalError('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
                     return mangled;
-                case Store:
+                case Sk.astnodes.Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.astnodes.Del:
                     out("delete ", mangled, ";");
                     break;
                 default:
@@ -2412,16 +2412,16 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_NAME:
             switch (ctx) {
-                case Load:
+                case Sk.astnodes.Load:
                     // can't be || for loc.x = 0 or null
                     return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
-                case Store:
+                case Sk.astnodes.Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.astnodes.Del:
                     out("delete ", mangled, ";");
                     break;
-                case Param:
+                case Sk.astnodes.Param:
                     return mangled;
                 default:
                     goog.asserts.fail("unhandled");
@@ -2429,12 +2429,12 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_GLOBAL:
             switch (ctx) {
-                case Load:
+                case Sk.astnodes.Load:
                     return this._gr("loadgbl", "Sk.misceval.loadname('", mangledNoPre, "',$gbl)");
-                case Store:
+                case Sk.astnodes.Store:
                     out("$gbl.", mangledNoPre, "=", dataToStore, ";");
                     break;
-                case Del:
+                case Sk.astnodes.Del:
                     out("delete $gbl.", mangledNoPre);
                     break;
                 default:
@@ -2443,12 +2443,12 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case OP_DEREF:
             switch (ctx) {
-                case Load:
+                case Sk.astnodes.Load:
                     return dict + "." + mangledNoPre;
-                case Store:
+                case Sk.astnodes.Store:
                     out(dict, ".", mangledNoPre, "=", dataToStore, ";");
                     break;
-                case Param:
+                case Sk.astnodes.Param:
                     return mangledNoPre;
                 default:
                     goog.asserts.fail("unhandled case in name op_deref");
@@ -2533,7 +2533,7 @@ Compiler.prototype.cprint = function (s) {
     var i;
     var n;
     var dest;
-    goog.asserts.assert(s instanceof Print);
+    goog.asserts.assert(s instanceof Sk.astnodes.Print);
     dest = "null";
     if (s.dest) {
         dest = this.vexpr(s.dest);
@@ -2609,7 +2609,7 @@ Compiler.prototype.cmod = function (mod) {
     // being revealed to the user.  drchuck - Wed Jan 23 19:20:18 EST 2013
 
     switch (mod.constructor) {
-        case Module:
+        case Sk.astnodes.Module:
             this.cbody(mod.body);
             out("return $loc;");
             break;
@@ -2664,3 +2664,6 @@ goog.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
 
 Sk.unfixReserved = unfixReserved;
 goog.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
+
+Sk.mangleName = mangleName;
+goog.exportSymbol("Sk.mangleName", Sk.mangleName);

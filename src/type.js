@@ -207,7 +207,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // Javascript does not support multiple inheritance, so only the first
         // base (if any) will directly inherit in Javascript
         if (firstAncestor !== undefined) {
-            goog.inherits(klass, firstAncestor);
+            Sk.abstr.inherits(klass, firstAncestor);
 
             if (firstAncestor.prototype instanceof Sk.builtin.object || firstAncestor === Sk.builtin.object) {
                 klass.prototype.tp$base = firstAncestor;
@@ -263,9 +263,10 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$setattr = function(pyName, data, canSuspend) {
-            var r, /** @type {(Object|undefined)} */ setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$setattr);
+            var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$setattr);
             if (setf !== undefined) {
-                r = Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (setf), [pyName, data]);
+                var f = /** @type {?} */ (setf);
+                r = Sk.misceval.callsimOrSuspendArray(f, [pyName, data]);
                 return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
 
@@ -343,7 +344,7 @@ Sk.builtin.type = function (name, bases, dict) {
             } else {
                 next = Sk.builtin.str.$next2;
             }
-            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(/** {Object} */ iternextf) {
+            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(iternextf) {
                 if (iternextf === undefined) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
                 }

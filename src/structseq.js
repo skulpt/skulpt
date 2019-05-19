@@ -10,17 +10,22 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         docs.push(fields[key]);
     }
 
+    /**
+     * @constructor
+     * @extends Sk.builtin.tuple
+     * @param {!Array<Object>|Object} arg
+     */
     var cons = function structseq_constructor(arg) {
         Sk.builtin.pyCheckArgsLen(nm, arguments.length, 1, 1);
         var o;
-        var it, i, v;
+        var it, i, /** @type {!Array<Object>} */v;
         if (!(this instanceof Sk.builtin.structseq_types[nm])) {
             o = Object.create(Sk.builtin.structseq_types[nm].prototype);
             o.constructor.apply(o, arguments);
             return o;
         }
 
-        if (Object.prototype.toString.apply(arg) === "[object Array]") {
+        if (Array.isArray(arg)) {
             v = arg;
         } else {
             v = [];
@@ -36,6 +41,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
         this.__class__ = Sk.builtin.structseq_types[nm];
     };
+
     Sk.builtin.structseq_types[nm] = cons;
 
     goog.inherits(cons, Sk.builtin.tuple);

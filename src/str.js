@@ -304,10 +304,11 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     }
 
     howmany = Sk.builtin.asnum$(howmany);
-    regex = /[\s]+/g;
+    regex = /[\s\xa0]+/g;
     str = self.v;
     if (on === null) {
-        str = goog.string.trimLeft(str);
+        // Remove leading whitespace
+        str = str.replace(/^[\s\xa0]+/, "");
     } else {
         // Escape special characters in "on" so we can use a regexp
         s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
@@ -837,18 +838,18 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalpha", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isAlpha(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalnum", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isAlphaNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z0-9]/.test(self.v));
 });
 
 // does not account for unicode numeric values
 Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isnumeric", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^0-9]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {

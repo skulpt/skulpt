@@ -52,49 +52,82 @@ var ModuleBlock = "module";
 var FunctionBlock = "function";
 var ClassBlock = "class";
 
+var SYMTAB_CONSTS = {
+    DEF_GLOBAL: DEF_GLOBAL,
+    DEF_LOCAL: DEF_LOCAL,
+    DEF_PARAM: DEF_PARAM,
+    USE: USE,
+    DEF_STAR: DEF_STAR,
+    DEF_DOUBLESTAR: DEF_DOUBLESTAR,
+    DEF_INTUPLE: DEF_INTUPLE,
+    DEF_FREE: DEF_FREE,
+    DEF_FREE_GLOBAL: DEF_FREE_GLOBAL,
+    DEF_FREE_CLASS: DEF_FREE_CLASS,
+    DEF_IMPORT: DEF_IMPORT,
+    DEF_BOUND: DEF_BOUND,
+    SCOPE_OFF: SCOPE_OFF,
+    SCOPE_MASK: SCOPE_MASK,
+    LOCAL: LOCAL,
+    GLOBAL_EXPLICIT: GLOBAL_EXPLICIT,
+    GLOBAL_IMPLICIT: GLOBAL_IMPLICIT,
+    FREE: FREE,
+    CELL: CELL,
+    OPT_IMPORT_STAR: OPT_IMPORT_STAR,
+    OPT_EXEC: OPT_EXEC,
+    OPT_BARE_EXEC: OPT_BARE_EXEC,
+    OPT_TOPLEVEL: OPT_TOPLEVEL,
+    GENERATOR: GENERATOR,
+    GENERATOR_EXPRESSION: GENERATOR_EXPRESSION,
+    ModuleBlock: ModuleBlock,
+    FunctionBlock: FunctionBlock,
+    ClassBlock: ClassBlock
+};
+
+goog.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
+
 /**
  * @constructor
  * @param {string} name
  * @param {number} flags
  * @param {Array.<SymbolTableScope>} namespaces
  */
-function Symbol (name, flags, namespaces) {
+function Symbol_ (name, flags, namespaces) {
     this.__name = name;
     this.__flags = flags;
     this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
     this.__namespaces = namespaces || [];
 }
-Symbol.prototype.get_name = function () {
+Symbol_.prototype.get_name = function () {
     return this.__name;
 };
-Symbol.prototype.is_referenced = function () {
+Symbol_.prototype.is_referenced = function () {
     return !!(this.__flags & USE);
 };
-Symbol.prototype.is_parameter = function () {
+Symbol_.prototype.is_parameter = function () {
     return !!(this.__flags & DEF_PARAM);
 };
-Symbol.prototype.is_global = function () {
+Symbol_.prototype.is_global = function () {
     return this.__scope === GLOBAL_IMPLICIT || this.__scope == GLOBAL_EXPLICIT;
 };
-Symbol.prototype.is_declared_global = function () {
+Symbol_.prototype.is_declared_global = function () {
     return this.__scope == GLOBAL_EXPLICIT;
 };
-Symbol.prototype.is_local = function () {
+Symbol_.prototype.is_local = function () {
     return !!(this.__flags & DEF_BOUND);
 };
-Symbol.prototype.is_free = function () {
+Symbol_.prototype.is_free = function () {
     return this.__scope == FREE;
 };
-Symbol.prototype.is_imported = function () {
+Symbol_.prototype.is_imported = function () {
     return !!(this.__flags & DEF_IMPORT);
 };
-Symbol.prototype.is_assigned = function () {
+Symbol_.prototype.is_assigned = function () {
     return !!(this.__flags & DEF_LOCAL);
 };
-Symbol.prototype.is_namespace = function () {
+Symbol_.prototype.is_namespace = function () {
     return this.__namespaces && this.__namespaces.length > 0;
 };
-Symbol.prototype.get_namespaces = function () {
+Symbol_.prototype.get_namespaces = function () {
     return this.__namespaces;
 };
 
@@ -163,7 +196,7 @@ SymbolTableScope.prototype.lookup = function (name) {
     if (!this.symbols.hasOwnProperty(name)) {
         flags = this.symFlags[name];
         namespaces = this.__check_children(name);
-        sym = this.symbols[name] = new Symbol(name, flags, namespaces);
+        sym = this.symbols[name] = new Symbol_(name, flags, namespaces);
     }
     else {
         sym = this.symbols[name];
@@ -315,7 +348,7 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
 
 SymbolTable.prototype.enterBlock = function (name, blockType, ast, lineno) {
     var prev;
-    name = fixReservedNames(name);
+    name = Sk.fixReservedNames(name);
     //print("enterBlock:", name);
     prev = null;
     if (this.cur) {
@@ -345,8 +378,8 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     var i;
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
-        if (arg.constructor === Name) {
-            goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
+        if (arg.constructor === Sk.astnodes.Name) {
+            goog.asserts.assert(arg.ctx === Sk.astnodes.Param || (arg.ctx === Sk.astnodes.Store && !toplevel));
             this.addDef(arg.id, DEF_PARAM, arg.lineno);
         }
         else {
@@ -377,8 +410,8 @@ SymbolTable.prototype.newTmpname = function (lineno) {
 SymbolTable.prototype.addDef = function (name, flag, lineno) {
     var fromGlobal;
     var val;
-    var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
-    mangled = fixReservedNames(mangled);
+    var mangled = Sk.mangleName(this.curClass, new Sk.builtin.str(name)).v;
+    mangled = Sk.fixReservedNames(mangled);
     val = this.cur.symFlags[mangled];
     if (val !== undefined) {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM)) {
@@ -406,7 +439,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
 SymbolTable.prototype.visitSlice = function (s) {
     var i;
     switch (s.constructor) {
-        case Slice:
+        case Sk.astnodes.Slice:
             if (s.lower) {
                 this.visitExpr(s.lower);
             }
@@ -417,15 +450,15 @@ SymbolTable.prototype.visitSlice = function (s) {
                 this.visitExpr(s.step);
             }
             break;
-        case ExtSlice:
+        case Sk.astnodes.ExtSlice:
             for (i = 0; i < s.dims.length; ++i) {
                 this.visitSlice(s.dims[i]);
             }
             break;
-        case Index:
+        case Sk.astnodes.Index:
             this.visitExpr(s.value);
             break;
-        case Ellipsis:
+        case Sk.astnodes.Ellipsis:
             break;
     }
 };
@@ -438,7 +471,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var tmp;
     goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
-        case FunctionDef:
+        case Sk.astnodes.FunctionDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             if (s.args.defaults) {
                 this.SEQExpr(s.args.defaults);
@@ -451,7 +484,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case ClassDef:
+        case Sk.astnodes.ClassDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             this.SEQExpr(s.bases);
             if (s.decorator_list) {
@@ -463,7 +496,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Return_:
+        case Sk.astnodes.Return_:
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
@@ -472,24 +505,24 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Delete_:
+        case Sk.astnodes.Delete_:
             this.SEQExpr(s.targets);
             break;
-        case Assign:
+        case Sk.astnodes.Assign:
             this.SEQExpr(s.targets);
             this.visitExpr(s.value);
             break;
-        case AugAssign:
+        case Sk.astnodes.AugAssign:
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
-        case Print:
+        case Sk.astnodes.Print:
             if (s.dest) {
                 this.visitExpr(s.dest);
             }
             this.SEQExpr(s.values);
             break;
-        case For_:
+        case Sk.astnodes.For_:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
             this.SEQStmt(s.body);
@@ -497,21 +530,21 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case While_:
+        case Sk.astnodes.While_:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case If_:
+        case Sk.astnodes.If_:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Raise:
+        case Sk.astnodes.Raise:
             if (s.type) {
                 this.visitExpr(s.type);
                 if (s.inst) {
@@ -522,26 +555,26 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case TryExcept:
+        case Sk.astnodes.TryExcept:
             this.SEQStmt(s.body);
             this.SEQStmt(s.orelse);
             this.visitExcepthandlers(s.handlers);
             break;
-        case TryFinally:
+        case Sk.astnodes.TryFinally:
             this.SEQStmt(s.body);
             this.SEQStmt(s.finalbody);
             break;
-        case Assert:
+        case Sk.astnodes.Assert:
             this.visitExpr(s.test);
             if (s.msg) {
                 this.visitExpr(s.msg);
             }
             break;
-        case Import_:
-        case ImportFrom:
+        case Sk.astnodes.Import_:
+        case Sk.astnodes.ImportFrom:
             this.visitAlias(s.names, s.lineno);
             break;
-        case Exec:
+        case Sk.astnodes.Exec:
             this.visitExpr(s.body);
             if (s.globals) {
                 this.visitExpr(s.globals);
@@ -550,11 +583,11 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Global:
+        case Sk.astnodes.Global:
             nameslen = s.names.length;
             for (i = 0; i < nameslen; ++i) {
-                name = mangleName(this.curClass, s.names[i]).v;
-                name = fixReservedNames(name);
+                name = Sk.mangleName(this.curClass, s.names[i]).v;
+                name = Sk.fixReservedNames(name);
                 cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE)) {
                     if (cur & DEF_LOCAL) {
@@ -567,16 +600,16 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL, s.lineno);
             }
             break;
-        case Expr:
+        case Sk.astnodes.Expr:
             this.visitExpr(s.value);
             break;
-        case Pass:
-        case Break_:
-        case Debugger_:
-        case Continue_:
+        case Sk.astnodes.Pass:
+        case Sk.astnodes.Break_:
+        case Sk.astnodes.Debugger_:
+        case Sk.astnodes.Continue_:
             // nothing
             break;
-        case With_:
+        case Sk.astnodes.With_:
             this.newTmpname(s.lineno);
             this.visitExpr(s.context_expr);
             if (s.optional_vars) {
@@ -596,17 +629,17 @@ SymbolTable.prototype.visitExpr = function (e) {
     goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
     //print("  e: ", e.constructor.name);
     switch (e.constructor) {
-        case BoolOp:
+        case Sk.astnodes.BoolOp:
             this.SEQExpr(e.values);
             break;
-        case BinOp:
+        case Sk.astnodes.BinOp:
             this.visitExpr(e.left);
             this.visitExpr(e.right);
             break;
-        case UnaryOp:
+        case Sk.astnodes.UnaryOp:
             this.visitExpr(e.operand);
             break;
-        case Lambda:
+        case Sk.astnodes.Lambda:
             this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL, e.lineno);
             if (e.args.defaults) {
                 this.SEQExpr(e.args.defaults);
@@ -616,28 +649,28 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.visitExpr(e.body);
             this.exitBlock();
             break;
-        case IfExp:
+        case Sk.astnodes.IfExp:
             this.visitExpr(e.test);
             this.visitExpr(e.body);
             this.visitExpr(e.orelse);
             break;
-        case Dict:
+        case Sk.astnodes.Dict:
             this.SEQExpr(e.keys);
             this.SEQExpr(e.values);
             break;
-        case DictComp:
-        case SetComp:    
+        case Sk.astnodes.DictComp:
+        case Sk.astnodes.SetComp:
             this.visitComprehension(e.generators, 0);
             break;
-        case ListComp:
+        case Sk.astnodes.ListComp:
             this.newTmpname(e.lineno);
             this.visitExpr(e.elt);
             this.visitComprehension(e.generators, 0);
             break;
-        case GeneratorExp:
+        case Sk.astnodes.GeneratorExp:
             this.visitGenexp(e);
             break;
-        case Yield:
+        case Sk.astnodes.Yield:
             if (e.value) {
                 this.visitExpr(e.value);
             }
@@ -646,11 +679,11 @@ SymbolTable.prototype.visitExpr = function (e) {
                 throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
             }
             break;
-        case Compare:
+        case Sk.astnodes.Compare:
             this.visitExpr(e.left);
             this.SEQExpr(e.comparators);
             break;
-        case Call:
+        case Sk.astnodes.Call:
             this.visitExpr(e.func);
             this.SEQExpr(e.args);
             for (i = 0; i < e.keywords.length; ++i) {
@@ -665,22 +698,22 @@ SymbolTable.prototype.visitExpr = function (e) {
                 this.visitExpr(e.kwargs);
             }
             break;
-        case Num:
-        case Str:
+        case Sk.astnodes.Num:
+        case Sk.astnodes.Str:
             break;
-        case Attribute:
+        case Sk.astnodes.Attribute:
             this.visitExpr(e.value);
             break;
-        case Subscript:
+        case Sk.astnodes.Subscript:
             this.visitExpr(e.value);
             this.visitSlice(e.slice);
             break;
-        case Name:
-            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL, e.lineno);
+        case Sk.astnodes.Name:
+            this.addDef(e.id, e.ctx === Sk.astnodes.Load ? USE : DEF_LOCAL, e.lineno);
             break;
-        case List:
-        case Tuple:
-        case Set:
+        case Sk.astnodes.List:
+        case Sk.astnodes.Tuple:
+        case Sk.astnodes.Set:
             this.SEQExpr(e.elts);
             break;
         default:

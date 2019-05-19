@@ -326,7 +326,7 @@ function makeParser (filename, style) {
             return p.rootnode;
         }
         return false;
-    };
+    }.bind(this);
 
     // set flags, and return
     parseFunc.p_flags = p.p_flags;
@@ -372,5 +372,6 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
 };
 
 
+goog.exportSymbol("Parser", Parser);
 goog.exportSymbol("Sk.parse", Sk.parse);
 goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
