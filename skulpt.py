@@ -731,7 +731,7 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("npx google-closure-compiler --define goog.DEBUG=false "
+    ret = os.system("npx google-closure-compiler --define Sk.asserts.ENABLE_ASSERTS=false "
                     "--output_wrapper \"(function(){%%output%%}());\" "
                     "--compilation_level SIMPLE_OPTIMIZATIONS "
                     "--jscomp_error accessControls "
@@ -753,7 +753,7 @@ def dist(options):
                     "--externs support/externs/node-process.js "
                     "--js_output_file tmp.js" % (uncompfiles))
     # to disable asserts
-    # --define goog.DEBUG=false
+    # --define Sk.asserts.ENABLE_ASSERTS=false
     #
     # to make a file that for ff plugin, not sure of format
     # --create_source_map <distribution-dir>/srcmap.txt
@@ -1233,33 +1233,6 @@ def vmwareregr(names):
             #"chromed-ubu": ubu,
             ]
 
-def regengooglocs():
-    """scans the closure library and builds an import-everything file to be
-    used during dev. """
-
-    # from calcdeps.py
-    prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
-
-    # walk whole tree, find all the 'provide's in a file, and note the location
-    root = "support/closure-library/closure"
-    modToFile = {}
-    for dirpath, dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            f = os.path.join(dirpath, filename)
-            if ".svn" in f: continue
-            if os.path.splitext(f)[1] == ".js":
-                contents = open(f).read()
-                for prov in prov_regex.findall(contents):
-                    modToFile[prov] = f.lstrip(root)
-
-    with open("gen/debug_import_all_closure.js", "w") as glf:
-        keys = modToFile.keys()
-        keys.sort()
-        for m in keys:
-            if "demos." in m: continue
-            if not m.startswith("goog."): continue
-            print >>glf, "goog.require('%s');" % m
-
 import SimpleHTTPServer
 import urlparse
 class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -1370,8 +1343,6 @@ def main():
         exit(bool(test(debug_mode=True, p3=True)))
     elif cmd == "dist":
         dist(options)
-    elif cmd == "regengooglocs":
-        regengooglocs()
     elif cmd == "regentests":
         if len(sys.argv) > 2:
             togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]
