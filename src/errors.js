@@ -547,4 +547,3 @@ Sk.builtin.getExcInfo = function(e) {
 };
 // NOT exported
 
-Sk.exportSymbol("Sk", Sk);

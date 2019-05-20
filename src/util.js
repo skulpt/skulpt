@@ -43,6 +43,7 @@ Sk.isArrayLike = function (object) {
     return false;
 };
 
+Sk.exportSymbol("Sk", Sk);
 Sk.exportSymbol("Sk.global", Sk.global);
 Sk.exportSymbol("Sk.exportSymbol", Sk.exportSymbol);
 Sk.exportSymbol("Sk.isArrayLike", Sk.isArrayLike);
