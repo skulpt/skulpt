@@ -1,6 +1,5 @@
 Sk.asserts = {};
 
-/** @define {boolean} */
 Sk.asserts.ENABLE_ASSERTS = true;
 
 Sk.exportSymbol("Sk.asserts.ENABLE_ASSERTS", Sk.asserts.ENABLE_ASSERTS);

@@ -1,3 +1,5 @@
+var Sk = Sk || {}; // jshint ignore:line
+
 /**
  * Global object no matter where we're running
  */
@@ -43,7 +45,12 @@ Sk.isArrayLike = function (object) {
     return false;
 };
 
+Sk.js_beautify = function (x) {
+    return x;
+};
+
 Sk.exportSymbol("Sk", Sk);
 Sk.exportSymbol("Sk.global", Sk.global);
 Sk.exportSymbol("Sk.exportSymbol", Sk.exportSymbol);
 Sk.exportSymbol("Sk.isArrayLike", Sk.isArrayLike);
+Sk.exportSymbol("Sk.js_beautify", Sk.js_beautify);

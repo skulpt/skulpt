@@ -4,15 +4,14 @@
 // It should be kept in sync with ../skulpt.py.
 // Order is important!
 
-// Global support functions
-strftime = require("strftime");
+require("./util.js");
 
-// Global Sk Object
-Sk = {};
-Sk.js_beautify = require("js-beautify").js;
+// Global support functions
+Sk.global["strftime"] = require("strftime");
+Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
+require("setimmediate");
 
 // Skulpt
-require("./util.js");
 require("./assert.js");
 require("./env.js");
 require("./type.js");

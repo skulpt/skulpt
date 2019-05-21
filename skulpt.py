@@ -62,69 +62,6 @@ OUTFILE_DEBUGGER = "debugger.js"
 FILE_TYPE_DIST = 'dist'
 FILE_TYPE_TEST = 'test'
 
-# This file list is only used to build the final distribution file.
-# It should be kept in sync with src/main.js.
-# Order is important!
-Files = [
-        'support/setImmediate/setImmediate.js',
-        ('src/sk.js', FILE_TYPE_DIST),
-        'src/util.js',
-        'src/assert.js',
-        'src/env.js',
-        'src/type.js',
-        'src/abstract.js',
-        'src/object.js',
-        'src/function.js',
-        'src/builtin.js',
-        'src/fromcodepoint.js',   # should become unnecessary, eventually
-        'src/errors.js',
-        'src/method.js',
-        'src/misceval.js',
-        'src/seqtype.js',
-        'src/list.js',
-        'src/str.js',
-        'src/formatting.js',
-        'src/tuple.js',
-        'src/dict.js',
-        'src/numtype.js',
-        'src/biginteger.js',
-        'src/int.js',
-        'src/bool.js',
-        'src/float.js',
-        'src/number.js',
-        'src/long.js',
-        'src/complex.js',
-        'src/slice.js',
-        'src/set.js',
-        'src/print.js',
-        'src/module.js',
-        'src/structseq.js',
-        'src/generator.js',
-        'src/file.js',
-        'src/ffi.js',
-        'src/iterator.js',
-        'src/enumerate.js',
-        'src/tokenize.js',
-        'gen/parse_tables.js',
-        'src/parser.js',
-        'gen/astnodes.js',
-        'src/ast.js',
-        'src/symtable.js',
-        'src/compile.js',
-        'src/import.js',
-        'src/timsort.js',
-        'src/sorted.js',
-        'src/typeobject.js',
-        'src/builtindict.js',
-        'src/constants.js',
-        'src/internalpython.js'
-        ]
-
-ExtLibs = [
-        'support/time-helpers/strftime-min.js',
-        'support/time-helpers/strptime.min.js'
-]
-
 TestFiles = [
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
@@ -137,21 +74,6 @@ def isClean():
 def getTip():
     repo = Repo(".")
     return repo.head.commit.hexsha
-
-
-def getFileList(type, include_ext_libs=True):
-    ret = list(ExtLibs) if include_ext_libs else []
-    for f in Files:
-        if isinstance(f, tuple):
-            if f[1] == type:
-                ret.append(f[0])
-        else:
-            if "*" in f:
-                for g in glob.glob(f):
-                    ret.append(f)
-            else:
-                ret.append(f)
-    return ret
 
 def is64bit():
     return sys.maxsize > 2**32
@@ -516,9 +438,9 @@ def debugbrowser():
         os.mkdir("support/tmp")
     buildVFS()
     scripts = []
-    for f in getFileList(FILE_TYPE_TEST) + ["{0}/browser-stubs.js".format(TEST_DIR), "support/tmp/vfs.js" ] + TestFiles:
-        scripts.append('<script type="text/javascript" src="%s"></script>' %
-                os.path.join('../..', f))
+    # for f in getFileList(FILE_TYPE_TEST) + ["{0}/browser-stubs.js".format(TEST_DIR), "support/tmp/vfs.js" ] + TestFiles:
+    #     scripts.append('<script type="text/javascript" src="%s"></script>' %
+    #             os.path.join('../..', f))
 
     with open("support/tmp/test.html", "w") as f:
         print >>f, tmpl % '\n'.join(scripts)
@@ -637,8 +559,8 @@ function quit(rc)
 }
 """ % getTip()
 
-    for f in ["{0}/browser-detect.js".format(TEST_DIR)] + getFileList(FILE_TYPE_TEST) + TestFiles:
-        print >>out, open(f).read()
+    # for f in ["{0}/browser-detect.js".format(TEST_DIR)] + getFileList(FILE_TYPE_TEST) + TestFiles:
+    #     print >>out, open(f).read()
 
     print >>out, """
 });
@@ -694,8 +616,8 @@ def dist(options):
     shutil.rmtree(DIST_DIR, ignore_errors=True)
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
-    if options.uncompressed:
-        make_skulpt_js(options,DIST_DIR)
+    # if options.uncompressed:
+    #     make_skulpt_js(options,DIST_DIR)
 
     # Make the compressed distribution.
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
@@ -725,33 +647,32 @@ def dist(options):
             print "Tests failed on uncompressed version."
             sys.exit(1);
 
-    # compress
-    uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST, include_ext_libs=False)])
-
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("npx google-closure-compiler --define Sk.asserts.ENABLE_ASSERTS=false "
-                    "--output_wrapper \"(function(){%%output%%}());\" "
-                    "--compilation_level SIMPLE_OPTIMIZATIONS "
-                    "--jscomp_error accessControls "
-                    "--jscomp_error checkRegExp "
-                    "--jscomp_error checkTypes "
-                    "--jscomp_error checkVars "
-                    "--jscomp_error deprecated "
-                    "--jscomp_off fileoverviewTags "
-                    "--jscomp_error invalidCasts "
-                    "--jscomp_error missingProperties "
-                    "--jscomp_error nonStandardJsDocs "
-                    "--jscomp_error strictModuleDepCheck "
-                    "--jscomp_error undefinedVars "
-                    "--jscomp_error unknownDefines "
-                    "--jscomp_error visibility %s "
-                    "--externs support/externs/node-buffers.js "
-                    "--externs support/externs/node-events.js "
-                    "--externs support/externs/node-streams.js "
-                    "--externs support/externs/node-process.js "
-                    "--js_output_file tmp.js" % (uncompfiles))
+    ret = os.system("npm run build")
+        
+    # ret = os.system("npx google-closure-compiler " #--define Sk.asserts.ENABLE_ASSERTS=false "
+    #                 "--output_wrapper \"(function(){%%output%%}());\" "
+    #                 "--compilation_level SIMPLE_OPTIMIZATIONS "
+    #                 "--jscomp_error accessControls "
+    #                 "--jscomp_error checkRegExp "
+    #                 "--jscomp_error checkTypes "
+    #                 "--jscomp_error checkVars "
+    #                 "--jscomp_error deprecated "
+    #                 "--jscomp_off fileoverviewTags "
+    #                 "--jscomp_error invalidCasts "
+    #                 "--jscomp_error missingProperties "
+    #                 "--jscomp_error nonStandardJsDocs "
+    #                 "--jscomp_error strictModuleDepCheck "
+    #                 "--jscomp_error undefinedVars "
+    #                 "--jscomp_error unknownDefines "
+    #                 "--jscomp_error visibility %s "
+    #                 "--externs support/externs/node-buffers.js "
+    #                 "--externs support/externs/node-events.js "
+    #                 "--externs support/externs/node-streams.js "
+    #                 "--externs support/externs/node-process.js "
+    #                 "--js_output_file tmp.js" % (uncompfiles))
     # to disable asserts
     # --define Sk.asserts.ENABLE_ASSERTS=false
     #
@@ -765,17 +686,6 @@ def dist(options):
         sys.exit(1)
 
     # Copy the debugger file to the output dir
-
-    if options.verbose:
-        print ". Bundling external libraries..."
-
-    bundle = ""
-    for fn in ExtLibs + ["tmp.js"]:
-        with open(fn, "r") as f:
-            bundle += f.read()
-
-    with open(compfn, "w") as f:
-        f.write(bundle)
 
     print ". Wrote bundled file"
 
@@ -861,24 +771,6 @@ require("../../test/test.js");
             print ". gzip of compressed: %d bytes" % size
 
 
-def make_skulpt_js(options,dest):
-    if options.verbose:
-        print ". Writing combined version..."
-    combined = ''
-    linemap = open(os.path.join(dest, OUTFILE_MAP), "w")
-    curline = 1
-    for file in getFileList(FILE_TYPE_DIST):
-        curfiledata = open(file).read()
-        combined += curfiledata
-        print >> linemap, "%d:%s" % (curline, file)
-        curline += len(curfiledata.split("\n")) - 1
-    linemap.close()
-    uncompfn = os.path.join(dest, OUTFILE_REG)
-    open(uncompfn, "w").write(combined)
-    # Prevent accidental editing of the uncompressed distribution file.
-    if sys.platform != "win32":
-        os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
-
 def run_in_browser(fn, options, debug_mode=False, p3=False):
     if p3:
         p3_str = "Sk.python3"
@@ -888,10 +780,10 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
     scripts = []
-    for f in getFileList(FILE_TYPE_DIST):
-        scripts.append('<script type="text/javascript" src="%s"></script>' %
-                os.path.join('../..', f))
-    scripts = "\n".join(scripts)
+    # for f in getFileList(FILE_TYPE_DIST):
+    #     scripts.append('<script type="text/javascript" src="%s"></script>' %
+    #             os.path.join('../..', f))
+    # scripts = "\n".join(scripts)
 
     with open (fn,'r') as runfile:
         prog = runfile.read()
@@ -1054,15 +946,11 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     if opt:
         dname = DIST_DIR
         fname = OUTFILE_MIN
-        
-        # Hack to get extra libraries into global namespace for node
         extras = ""
-        for lib in ExtLibs:
-            extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
     else:
         dname = "src"
         fname = "main.js"
-        extras = ""
+        extras = "Sk.js_beautify = require('js-beautify').js"
 
     f.write("""
 const fs = require('fs');
@@ -1121,15 +1009,11 @@ def rununits(opt=False, p3=False, debug_mode=False):
         if opt:
             dname = DIST_DIR
             fname = OUTFILE_MIN
-
-            # Hack to get extra libraries into global namespace for node
             extras = ""
-            for lib in ExtLibs:
-                extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
         else:
             dname = "src"
             fname = "main.js"
-            extras = ""
+            extras = "Sk.js_beautify = require('js-beautify').js"
 
         f = open("support/tmp/rununits.js", "w")
         f.write("""

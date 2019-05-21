@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "no-mixed-spaces-and-tabs": 2,
+    "indent": [
+      2,
+      4,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "curly": [
+      2,
+      "all"
+    ],
+    "semi": [
+      2,
+      "always"
+    ],
+    "brace-style": [
+      2,
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "quotes": [
+      2,
+      "double",
+      {
+        "avoidEscape": true
+      }
+    ]
+  }
+}
