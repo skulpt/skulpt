@@ -12,7 +12,7 @@ Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
 require("setimmediate");
 
 // Skulpt
-require("./assert.js");
+require("assert");
 require("./env.js");
 require("./type.js");
 require("./abstract.js");

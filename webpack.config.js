@@ -9,7 +9,8 @@ module.exports = (env, argv) => {
 	minimize: false
     };
     var outfile = 'skulpt.js';
-
+    var assertfile = './assert-dev.js';
+    
     if (argv.mode === 'production') {
 	opt = {
 	    noEmitOnErrors: true,
@@ -19,6 +20,7 @@ module.exports = (env, argv) => {
 	    ]
 	};
 	outfile = 'skulpt.min.js';
+	assertfile = './assert-prod.js';
     }
 
     var config = {
@@ -32,6 +34,11 @@ module.exports = (env, argv) => {
 	    new CleanWebpackPlugin()
 	],
 	optimization: opt,
+	resolve: {
+	    alias: {
+		'assert': assertfile
+	    }
+	},
 	module: {
 	    rules: [
 		{
