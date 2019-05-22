@@ -1,4 +1,5 @@
-var Sk = Sk || {}; // jshint ignore:line
+// Global Sk object
+var Sk = {}; // jshint ignore:line
 
 /**
  * Global object no matter where we're running
