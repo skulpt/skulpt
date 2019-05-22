@@ -1726,7 +1726,7 @@ function parsestr (c, s) {
                 ret += c;
             }
         }
-        return ret;
+        return decodeUtf8(ret);
     };
 
     // console.log("parsestr", s);
