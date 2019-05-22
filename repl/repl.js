@@ -4,7 +4,7 @@ var readlineSync = require('readline-sync');
 var fs = require('fs');
 
 var readline = function () {
-    return readlineSync.question("");
+    return readlineSync.question("", { keepWhitespace: true });
 };
 
 Sk.configure({
@@ -105,7 +105,7 @@ while (true) {
             process.exit();
         }
 
-        console.log(err);
+        console.log(err.toString());
 
         var index = -1;
         //find the line number
