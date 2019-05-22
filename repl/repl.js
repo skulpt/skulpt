@@ -1,4 +1,4 @@
-require('../src/main.js');
+require('../' + process.argv[2]);
 
 var readlineSync = require('readline-sync');
 var fs = require('fs');

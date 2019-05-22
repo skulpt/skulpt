@@ -21,7 +21,7 @@
     "debugbrowser": "python skulpt.py debugbrowser",
     "vfs": "python skulpt.py vfs",
     "host": "python skulpt.py host",
-    "repl": "python skulpt.py repl",
+    "repl": "npm run devbuild && node repl/repl.js dist/skulpt.js",
     "prebuild": "node support/build/wrapmodules.js internal",
     "build": "webpack --mode production",
     "postbuild": "node support/build/wrapmodules.js builtin",
