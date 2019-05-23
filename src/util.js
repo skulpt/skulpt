@@ -1,6 +1,11 @@
 // Global Sk object
 var Sk = {}; // jshint ignore:line
 
+Sk.build = {
+    githash: GITHASH,
+    date: BUILDDATE
+};
+
 /**
  * Global object no matter where we're running
  */
@@ -50,6 +55,7 @@ Sk.js_beautify = function (x) {
 
 Sk.exportSymbol("Sk", Sk);
 Sk.exportSymbol("Sk.global", Sk.global);
+Sk.exportSymbol("Sk.build", Sk.build);
 Sk.exportSymbol("Sk.exportSymbol", Sk.exportSymbol);
 Sk.exportSymbol("Sk.isArrayLike", Sk.isArrayLike);
 Sk.exportSymbol("Sk.js_beautify", Sk.js_beautify);
