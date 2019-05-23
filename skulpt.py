@@ -891,7 +891,7 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
     scripts = []
-    for f in getFileList(FILE_TYPE_TEST):
+    for f in getFileList(FILE_TYPE_DIST):
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
     scripts = "\n".join(scripts)
