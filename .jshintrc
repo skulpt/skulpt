@@ -6,7 +6,11 @@
   "predef": [
     "Sk",
     "Promise",
-    "setImmediate"
+    "setImmediate",
+    "GITVERSION",
+    "GITHASH",
+    "GITBRANCH",
+    "BUILDDATE"
   ],
 
   /*** Enforcing options ***/

@@ -1,11 +1,23 @@
 const path = require('path');
 const webpack = require('webpack');
+const shell = require('shelljs');
 const ClosureWebpackPlugin = require('closure-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const git = new GitRevisionPlugin({branch: true});
 
 const styleexcludes = /(node_modules)|(support)|(gen)|(tokenize.js)|(symtable.js)|(compile.js)|(ast.js)|(internalpython.js)/;
+
+if (!shell.which('git')) {
+    console.log("WARNING: Cannot find git!  Unsure if working directory is clean.");
+}
+
+var output = shell.exec('git diff-index --quiet HEAD');
+if (output.code !== 0) {
+    console.log("WARNING: Working directory is not clean.");
+} else {
+    console.log("Working directory is clean.");
+}
 
 module.exports = (env, argv) => {
     var opt = {
