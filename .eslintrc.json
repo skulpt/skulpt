@@ -1,34 +1,18 @@
 {
-  "rules": {
-    "no-mixed-spaces-and-tabs": 2,
-    "indent": [
-      2,
-      4,
-      {
-        "SwitchCase": 1
-      }
-    ],
-    "curly": [
-      2,
-      "all"
-    ],
-    "semi": [
-      2,
-      "always"
-    ],
-    "brace-style": [
-      2,
-      "1tbs",
-      {
-        "allowSingleLine": true
-      }
-    ],
-    "quotes": [
-      2,
-      "double",
-      {
-        "avoidEscape": true
-      }
-    ]
-  }
+    "env": {
+	"browser": true
+    },
+    "rules": {
+	"no-mixed-spaces-and-tabs": "error",
+	"indent": ["error", 4, {
+	    "SwitchCase": 1,
+	    "ArrayExpression": "first",
+	    "CallExpression": {"arguments": "first"},
+	    "flatTernaryExpressions": true
+	}],
+	"curly": ["error", "all"],
+	"semi": ["error", "always"],
+	"brace-style": ["error", "1tbs", {"allowSingleLine": true}],
+	"quotes": ["error", "double", {"avoidEscape": true}]
+    }
 }

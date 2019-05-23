@@ -523,8 +523,7 @@ Sk.builtin.unichr = function unichr (x) {
 
     try {
         return new Sk.builtin.str(String.fromCodePoint(x));
-    }
-    catch (err) {
+    } catch (err) {
         if (err instanceof RangeError) {
             throw new Sk.builtin.ValueError(err.message);
         }
@@ -992,8 +991,8 @@ Sk.builtin.reduce = function reduce (fun, seq, initializer) {
     }
     accum_value = initializer;
     for (item = iter.tp$iternext();
-         item !== undefined;
-         item = iter.tp$iternext()) {
+        item !== undefined;
+        item = iter.tp$iternext()) {
         accum_value = Sk.misceval.callsimArray(fun, [accum_value, item]);
     }
 
@@ -1043,8 +1042,8 @@ Sk.builtin.filter = function filter (fun, iterable) {
     retval = ctor();
 
     for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
-         item !== undefined;
-         item = iter.tp$iternext()) {
+        item !== undefined;
+        item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
             result = new Sk.builtin.bool( item);
         } else {

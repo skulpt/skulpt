@@ -4,13 +4,11 @@ var Sk = {}; // jshint ignore:line
 /**
  * Global object no matter where we're running
  */
-Sk.global = typeof global !== "undefined" ?
-            global : // jshint ignore:line
-            typeof self !== "undefined" ?
-              self : // jshint ignore:line
-              typeof window !== "undefined" ?
-              window : // jshint ignore:line
-              {};
+Sk.global =
+    typeof global !== "undefined" ? global : // jshint ignore:line
+    typeof self !== "undefined" ? self : // jshint ignore:line
+    typeof window !== "undefined" ? window : // jshint ignore:line
+    {};
 
 /**
  * Export "object" to global namespace as "name".

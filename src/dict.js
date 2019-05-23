@@ -26,8 +26,8 @@ Sk.builtin.dict = function dict (L) {
     } else if (L instanceof Sk.builtin.dict) {
         // Handle calls of type "dict(mapping)" from Python code
         for (it = Sk.abstr.iter(L), k = it.tp$iternext();
-             k !== undefined;
-             k = it.tp$iternext()) {
+            k !== undefined;
+            k = it.tp$iternext()) {
             v = L.mp$subscript(k);
             if (v === undefined) {
                 //print(k, "had undefined v");
@@ -196,8 +196,8 @@ Sk.builtin.dict.prototype["$r"] = function () {
     var iter, k;
     var ret = [];
     for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
         if (v === undefined) {
             //print(k, "had undefined v");
@@ -271,8 +271,8 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
     var ret = [];
 
     for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             //print(k, "had undefined v");
@@ -289,8 +289,8 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
     var ret = [];
 
     for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         ret.push(k);
     }
     return new Sk.builtin.list(ret);
@@ -303,8 +303,8 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     var ret = [];
 
     for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             v = null;
@@ -320,8 +320,8 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     var iter;
 
     for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         self.mp$del_subscript(k);
     }
 });
@@ -329,8 +329,7 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
 Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, key, default_) {
     try {
         return self.mp$subscript(key);
-    }
-    catch (e) {
+    } catch (e) {
         if (default_ === undefined) {
             default_ = Sk.builtin.none.none$;
         }
@@ -491,8 +490,8 @@ Sk.builtin.dict.prototype.ob$eq = function (other) {
     }
 
     for (iter = this.tp$iter(), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
         otherv = other.mp$subscript(k);
 
@@ -527,8 +526,8 @@ Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     var newCopy = new Sk.builtin.dict([]);
 
     for (it = Sk.abstr.iter(self), k = it.tp$iternext();
-            k !== undefined;
-            k = it.tp$iternext()) {
+        k !== undefined;
+        k = it.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             v = null;
@@ -563,8 +562,8 @@ Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
     }
 
     for (iter = Sk.abstr.iter(iterable), k = iter.tp$iternext();
-            k !== undefined;
-            k = iter.tp$iternext()) {
+        k !== undefined;
+        k = iter.tp$iternext()) {
         res.mp$ass_subscript(k, val);
     }
 

@@ -38,8 +38,10 @@ Sk.builtin.BaseException = function (args) {
 
         // if !this.args[1].v, this is an error, and the exception that causes it
         // probably needs to be fixed, but we mark as "<unknown>" for now
-        this.traceback.push({lineno: this.args.v[2],
-                             filename: this.args.v[1].v || "<unknown>"});
+        this.traceback.push({
+            lineno: this.args.v[2],
+            filename: this.args.v[1].v || "<unknown>"
+        });
     }
 };
 Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);

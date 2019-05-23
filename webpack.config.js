@@ -59,13 +59,13 @@ module.exports = (env, argv) => {
                             }
                         }
                     ]
+                },
+                {
+                     test: /\.js$/,
+                     enforce: 'pre',
+                     exclude: styleexcludes,
+                     loader: 'eslint-loader'
                 }
-                // {
-                //      test: /\.js$/,
-                //      enforce: 'pre',
-                //      exclude: styleexcludes,
-                //      loader: 'eslint-loader'
-                // }
             ]
         }
     };

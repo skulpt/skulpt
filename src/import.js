@@ -260,8 +260,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 return Sk.importSearchPathForName(searchFileName, ".js", searchPath);
             }, function(codeAndPath) {
                 if (codeAndPath) {
-                    return {funcname: "$builtinmodule", code: codeAndPath.code,
-                            filename: codeAndPath.filename, packagePath: codeAndPath.packagePath};
+                    return {
+                        funcname: "$builtinmodule", code: codeAndPath.code,
+                        filename: codeAndPath.filename, packagePath: codeAndPath.packagePath
+                    };
                 } else {
                     return Sk.misceval.chain(Sk.importSearchPathForName(searchFileName, ".py", searchPath), function(codeAndPath_) {
                         codeAndPath = codeAndPath_; // We'll want it in a moment
@@ -338,8 +340,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             "__name__": new Sk.builtin.str(modname),
             "__doc__": Sk.builtin.none.none$,
             "__package__": co.packagePath ? new Sk.builtin.str(modname) :
-                                parentModName ? new Sk.builtin.str(absolutePackagePrefix + parentModName) :
-                                relativePackageName ? relativePackageName : Sk.builtin.none.none$
+            parentModName ? new Sk.builtin.str(absolutePackagePrefix + parentModName) :
+            relativePackageName ? relativePackageName : Sk.builtin.none.none$
         };
         if (co.packagePath) {
             module["$d"]["__path__"] = new Sk.builtin.tuple([new Sk.builtin.str(co.packagePath)]);
@@ -504,72 +506,71 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     var firstDottedName = dottedName[0];
 
     return Sk.misceval.chain(undefined, function() {
-            // Attempt local load first (and just fall through to global
-            // case if level == -1 and we fail to load the top-level package)
-            if (level !== 0 && relativeToPackage !== undefined) {
-                if (name === "") {
-                    // "from .. import ..."
-                    return relativeToPackage;
-                } else {
-                    return Sk.importModuleInternal_(name, undefined, relativeToPackageName + "." + name, undefined, relativeToPackage, level==-1, true);
-                }
-            }
-        }, function(ret) {
-            if (ret === undefined) {
-                // Either it was always a global import, or it was an
-                // either-way import that just fell through.
-                relativeToPackage = undefined;
-                relativeToPackageName = undefined;
-                return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, false, true);
+        // Attempt local load first (and just fall through to global
+        // case if level == -1 and we fail to load the top-level package)
+        if (level !== 0 && relativeToPackage !== undefined) {
+            if (name === "") {
+                // "from .. import ..."
+                return relativeToPackage;
             } else {
-                return ret;
+                return Sk.importModuleInternal_(name, undefined, relativeToPackageName + "." + name, undefined, relativeToPackage, level==-1, true);
             }
-        }, function(ret) {
-            // We might also have to load modules named by the fromlist.
-            // If there is no fromlist, we have reached the end of the lookup, return
-            if (!fromlist || fromlist.length === 0) {
-                return ret;
-            } else {
-                // try to load from-names as modules from the file system
-                // if they are not present on the module itself
-                var i;
-                var fromName;
-                var leafModule;
-                var importChain;
+        }
+    }, function(ret) {
+        if (ret === undefined) {
+            // Either it was always a global import, or it was an
+            // either-way import that just fell through.
+            relativeToPackage = undefined;
+            relativeToPackageName = undefined;
+            return Sk.importModuleInternal_(name, undefined, undefined, undefined, undefined, false, true);
+        } else {
+            return ret;
+        }
+    }, function(ret) {
+        // We might also have to load modules named by the fromlist.
+        // If there is no fromlist, we have reached the end of the lookup, return
+        if (!fromlist || fromlist.length === 0) {
+            return ret;
+        } else {
+            // try to load from-names as modules from the file system
+            // if they are not present on the module itself
+            var i;
+            var fromName;
+            var leafModule;
+            var importChain;
 
-                leafModule = Sk.sysmodules.mp$subscript(
-                    (relativeToPackageName || "") +
+            leafModule = Sk.sysmodules.mp$subscript(
+                (relativeToPackageName || "") +
                     ((relativeToPackageName && name) ? "." : "") +
                     name);
 
-                for (i = 0; i < fromlist.length; i++) {
-                    fromName = fromlist[i];
+            for (i = 0; i < fromlist.length; i++) {
+                fromName = fromlist[i];
 
-                    // "ret" is the module we're importing from
-                    // Only import from file system if we have not found the fromName in the current module
-                    if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
-                        importChain = Sk.misceval.chain(importChain,
-                            Sk.importModuleInternal_.bind(null, fromName, undefined, undefined, undefined, leafModule, true, true)
-                        );
-                    }
-
+                // "ret" is the module we're importing from
+                // Only import from file system if we have not found the fromName in the current module
+                if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
+                    importChain = Sk.misceval.chain(importChain,
+                                                    Sk.importModuleInternal_.bind(null, fromName, undefined, undefined, undefined, leafModule, true, true)
+                    );
                 }
 
-                return Sk.misceval.chain(importChain, function() {
-                    // if there's a fromlist we want to return the leaf module
-                    // (ret), not the toplevel namespace
-                    Sk.asserts.assert(leafModule);
-                    return leafModule;
-                });
             }
 
-        }, function(ret) {
-            if (saveSk !== Sk.globals) {
-                Sk.globals = saveSk;
-            }
-            return ret;
+            return Sk.misceval.chain(importChain, function() {
+                // if there's a fromlist we want to return the leaf module
+                // (ret), not the toplevel namespace
+                Sk.asserts.assert(leafModule);
+                return leafModule;
+            });
         }
-    );
+
+    }, function(ret) {
+        if (saveSk !== Sk.globals) {
+            Sk.globals = saveSk;
+        }
+        return ret;
+    });
 };
 
 Sk.importStar = function (module, loc, global) {

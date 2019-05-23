@@ -610,6 +610,8 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
             if (seq.length !== 0) {
                 cand = seq[0];
                 //print("CAND", Sk.builtin.repr(cand).v);
+
+                /* eslint-disable */
                 OUTER:
                     for (j = 0; j < seqs.length; ++j) {
                         sseq = seqs[j];
@@ -619,6 +621,7 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
                             }
                         }
                     }
+                /* eslint-enable */
 
                 // cand is not in any sequences' tail -> constraint-free
                 if (j === seqs.length) {
