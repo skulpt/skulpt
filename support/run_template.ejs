@@ -2,7 +2,7 @@
 <html>
 <head>
     <title></title>
-    %(scripts)s
+    <script src="skulpt.js" type="text/javascript"></script>
     <script src="skulpt-stdlib.js" type="text/javascript"></script>
 </head>
 <body>
@@ -64,8 +64,8 @@ function runit(myDiv) {
         read: builtinRead,
         inputfunTakesPrompt: true,
         debugout: showjs,
-        debugging: %(debug_mode)s,
-        __future__: %(p3)s
+        debugging: <%= debug_mode %>,
+        __future__: <%= p3 %>
     });
 
     Sk.onBeforeImport = function() {
@@ -97,7 +97,7 @@ function runit(myDiv) {
 <div id="runbrowser">
 <form>
 <textarea edit_id="eta_5" id="runbrowser_code" cols="72" rows="20" style="font-family: 'Lucida Console', Monaco, monospace;">
-%(code)s
+<%= code %>
 </textarea>
 <button onclick="runit('runbrowser')" type="button">Run</button>
 </form>

@@ -489,41 +489,6 @@ function quit(rc)
     print ". Built %s" % outfn
 
 
-def run_in_browser(fn, options, debug_mode=False, p3=False):
-    if p3:
-        p3_str = "Sk.python3"
-    else:
-        p3_str = "Sk.python2"
-    shutil.rmtree(RUN_DIR, ignore_errors=True)
-    if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
-    docbi(options,RUN_DIR)
-    scripts = []
-    # for f in getFileList(FILE_TYPE_DIST):
-    #     scripts.append('<script type="text/javascript" src="%s"></script>' %
-    #             os.path.join('../..', f))
-    # scripts = "\n".join(scripts)
-
-    with open (fn,'r') as runfile:
-        prog = runfile.read()
-
-    with open('support/run_template.html') as tpfile:
-        page = tpfile.read()
-        page = page % dict(code=prog,scripts=scripts,debug_mode=str(debug_mode).lower(),p3=p3_str,root="")
-
-    with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
-        htmlfile.write(page)
-
-    if sys.platform == "darwin":
-        os.system("open {0}/run.html".format(RUN_DIR))
-    elif sys.platform == "linux2":
-        os.system("xdg-open {0}/run.html".format(RUN_DIR))
-    elif sys.platform == "win32":
-        os.system("start {0}/run.html".format(RUN_DIR))
-    else:
-        print("open or refresh {0}/run.html in your browser to test/debug".format(RUN_DIR))
-
-
-        
 def regenparser():
     """regenerate the parser/ast source code"""
     if not os.path.exists("gen"): os.mkdir("gen")
@@ -631,13 +596,6 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def docbi(options,dest="doc/static"):
-    builtinfn = "{0}/{1}".format(dest,OUTFILE_LIB)
-    with open(builtinfn, "w") as f:
-        f.write(getBuiltinsAsJson(options))
-        if options.verbose:
-            print ". Wrote {fileName}".format(fileName=builtinfn)
-
 def nrt(newTest):
     """open a new run test"""
     fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
@@ -726,7 +684,6 @@ def usageString(program):
 Commands:
 
     brun             Run a Python file using Skulpt but in your browser
-    docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
     time [iter]      Average runtime of the test suite over [iter] iterations.
 
@@ -794,12 +751,6 @@ def main():
         regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
-    elif cmd == "brun":
-        run_in_browser(sys.argv[2], options)
-    elif cmd == "brundebug":
-        run_in_browser(sys.argv[2], options, debug_mode=True)
-    elif cmd == "brun3":
-        run_in_browser(sys.argv[2], options, p3=True)
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":
@@ -812,8 +763,6 @@ def main():
         upload()
     elif cmd == "doctest":
         doctest()
-    elif cmd == "docbi":
-        docbi(options)
     elif cmd == "nrt":
         print "Warning: nrt is deprectated."
         print "It is preferred that you enhance one of the unit tests in test/unit"
