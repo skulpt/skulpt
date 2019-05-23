@@ -10,6 +10,7 @@ module.exports = (env, argv) => {
     };
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
+    var mod = {};
 
     if (argv.mode === 'production') {
         opt = {
@@ -27,25 +28,7 @@ module.exports = (env, argv) => {
         };
         outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
-    }
-
-    var config = {
-        entry: './src/main.js',
-        output: {
-            path: path.resolve(__dirname, 'dist'),
-            filename: outfile
-        },
-        devtool: 'source-map',
-        plugins: [
-            new CleanWebpackPlugin()
-        ],
-        optimization: opt,
-        resolve: {
-            alias: {
-                'assert': assertfile
-            }
-        },
-        module: {
+	mod = {
             rules: [
                 {
                     test: /\.js$/,
@@ -67,7 +50,26 @@ module.exports = (env, argv) => {
                      loader: 'eslint-loader'
                 }
             ]
-        }
+        };
+    }
+
+    var config = {
+        entry: './src/main.js',
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: outfile
+        },
+        devtool: 'source-map',
+        plugins: [
+            new CleanWebpackPlugin()
+        ],
+        optimization: opt,
+        resolve: {
+            alias: {
+                'assert': assertfile
+            }
+        },
+        module: mod
     };
 
     return config;
