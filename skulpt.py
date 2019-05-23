@@ -23,13 +23,6 @@ import shutil
 import time
 from itertools import chain
 
-# Assume that the GitPython module is available until proven otherwise.
-GIT_MODULE_AVAILABLE = True
-try:
-    from git import *
-except:
-    GIT_MODULE_AVAILABLE = False
-
 def bowerFileName():
     file = open(".bowerrc")
     data = json.load(file)
@@ -67,80 +60,7 @@ TestFiles = [
         "{0}/test.js".format(TEST_DIR)
         ]
 
-def isClean():
-    repo = Repo(".")
-    return not repo.is_dirty()
 
-def getTip():
-    repo = Repo(".")
-    return repo.head.commit.hexsha
-
-def is64bit():
-    return sys.maxsize > 2**32
-
-if sys.platform == "win32":
-    nul = "nul"
-    crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
-elif sys.platform == "darwin":
-    nul = "/dev/null"
-    crlfprog = None
-elif sys.platform == "linux2":
-    nul = "/dev/null"
-    crlfprog = None
-else:
-    # You're on your own...
-    nul = "/dev/null"
-    crlfprog = None
-
-if os.environ.get("CI",False):
-    nul = "/dev/null"
-
-jsengine = "node"
-
-def test(debug_mode=False, p3=False):
-    """runs the unit tests."""
-    if debug_mode:
-        debugon = "--debug-mode"
-    else:
-        debugon = ""
-    ret1 = 0
-    ret2 = 0
-    ret3 = 0
-    ret4 = 0
-
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-
-    f = open("support/tmp/test.js", "w");
-    f.write("""
-require('../../src/main.js');
-require('../../test/test.js');
-""");
-    f.close();
-
-    if not p3:
-        ret1 = os.system("{0} {1} {2}".format(jsengine, os.path.join("support", "tmp", "test.js"), debugon))
-
-    if ret1 == 0:
-        print "Running jshint"
-        base_dirs = ["src", "debugger"]
-
-        if sys.platform == "win32":
-            files = list(chain.from_iterable([ glob.glob(d + "/*.js") for d in base_dirs ]))
-            jshintcmd = "jshint {0}".format(' '.join(files))
-            jscscmd = "jscs {0} --reporter=inline".format(' '.join(files))
-        else:
-            folders = ' '.join([ d + "/*.js" for d in base_dirs ])
-            jshintcmd = "jshint " + folders
-            jscscmd = "jscs " + folders + " --reporter=inline"
-
-        ret2 = os.system(jshintcmd)
-        print "Running JSCS"
-        ret3 = os.system(jscscmd)
-        print "Now running new unit tests"
-        ret4 = rununits(p3=p3, debug_mode=debug_mode)
-
-    return ret1 | ret2 | ret3 | ret4
 
 def parse_time_args(argv):
     usageString = """
@@ -568,208 +488,6 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
-def getInternalCodeAsJson():
-    ret = {}
-    ret['files'] = {}
-    for f in ["src/" + x for x in os.listdir("src") if os.path.splitext(x)[1] == ".py" if os.path.isfile("src/" + x)]:
-        ext = os.path.splitext(f)[1]
-        if ext == ".py":
-            f = f.replace("\\", "/")
-            ret['files'][f] = open(f).read()
-    return "Sk.internalPy=" + json.dumps(ret)
-
-def getBuiltinsAsJson(options):
-    ret = {}
-    ret['files'] = {}
-    for root in ["src/builtin", "src/lib"]:
-        for dirpath, dirnames, filenames in os.walk(root):
-            for filename in filenames:
-                f = os.path.join(dirpath, filename)
-                ext = os.path.splitext(f)[1]
-                if ext == ".py" or ext == ".js":
-                    if options.verbose:
-                        print "reading", f
-                    f = f.replace("\\", "/")
-                    ret['files'][f] = open(f).read()
-    return "Sk.builtinFiles=" + json.dumps(ret)
-
-def dist(options):
-    """builds a 'shippable' version of Skulpt.
-
-    this is all combined into one file, tests run, jslint'd, compressed.
-    """
-    if GIT_MODULE_AVAILABLE:
-        if not isClean():
-            print "WARNING: working directory not clean (according to 'git status')"
-        else:
-            print "Working directory is clean (according to 'git status')"
-    else:
-        print "+----------------------------------------------------------------------------+"
-        print "GitPython is not installed for Python 2.6"
-        print "The 'dist' command will not work without it.  Get it using pip or easy_install"
-        print "or see:  https://gitpython.readthedocs.io/en/stable/intro.html"
-        print "+----------------------------------------------------------------------------+"
-
-    if options.verbose:
-        print ". Removing distribution directory, '{0}/'.".format(DIST_DIR)
-
-    shutil.rmtree(DIST_DIR, ignore_errors=True)
-    if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
-
-    # if options.uncompressed:
-    #     make_skulpt_js(options,DIST_DIR)
-
-    # Make the compressed distribution.
-    compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
-    builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
-    debuggerfn = os.path.join(DIST_DIR, OUTFILE_DEBUGGER)
-
-    if options.disabletests == False:
-        # Run tests on uncompressed.
-        if options.verbose:
-            print ". Running tests on uncompressed..."
-
-        ret = test()
-
-        # Run tests on uncompressed.
-        if options.verbose:
-            print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
-
-        # turn the tests in debug mode off because they take too long
-        # # Run tests on uncompressed.
-        # if options.verbose:
-        #     print ". Re-Running tests on uncompressed... with debug mode on to find suspension errors."
-        #
-        #
-        # ret = test(debug_mode=True)
-
-        if ret != 0:
-            print "Tests failed on uncompressed version."
-            sys.exit(1);
-
-    if options.verbose:
-        print ". Compressing..."
-
-    ret = os.system("npm run build")
-        
-    # ret = os.system("npx google-closure-compiler " #--define Sk.asserts.ENABLE_ASSERTS=false "
-    #                 "--output_wrapper \"(function(){%%output%%}());\" "
-    #                 "--compilation_level SIMPLE_OPTIMIZATIONS "
-    #                 "--jscomp_error accessControls "
-    #                 "--jscomp_error checkRegExp "
-    #                 "--jscomp_error checkTypes "
-    #                 "--jscomp_error checkVars "
-    #                 "--jscomp_error deprecated "
-    #                 "--jscomp_off fileoverviewTags "
-    #                 "--jscomp_error invalidCasts "
-    #                 "--jscomp_error missingProperties "
-    #                 "--jscomp_error nonStandardJsDocs "
-    #                 "--jscomp_error strictModuleDepCheck "
-    #                 "--jscomp_error undefinedVars "
-    #                 "--jscomp_error unknownDefines "
-    #                 "--jscomp_error visibility %s "
-    #                 "--externs support/externs/node-buffers.js "
-    #                 "--externs support/externs/node-events.js "
-    #                 "--externs support/externs/node-streams.js "
-    #                 "--externs support/externs/node-process.js "
-    #                 "--js_output_file tmp.js" % (uncompfiles))
-    # to disable asserts
-    # --define Sk.asserts.ENABLE_ASSERTS=false
-    #
-    # to make a file that for ff plugin, not sure of format
-    # --create_source_map <distribution-dir>/srcmap.txt
-    #
-    # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
-    #
-    if ret != 0:
-        print "closure-compiler failed."
-        sys.exit(1)
-
-    # Copy the debugger file to the output dir
-
-    print ". Wrote bundled file"
-
-
-    # Run tests on compressed.
-    if options.disabletests == False:
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
-
-        f = open("support/tmp/dist.js", "w")
-        f.write("""
-require("../../%s/%s");
-require("../../test/test.js");
-""" % (DIST_DIR, OUTFILE_MIN));
-        f.close()
-
-        if options.verbose:
-            print ". Running tests on compressed..."
-
-        ret = os.system("{0} {1}".format(jsengine, os.path.join("support", "tmp", "dist.js")))
-        if ret != 0:
-            print "Tests failed on compressed version."
-            sys.exit(1)
-        ret = rununits(opt=True)
-        if ret != 0:
-            print "Tests failed on compressed unit tests"
-            sys.exit(1)
-
-
-    doc()
-
-    try:
-        shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
-        shutil.copy(os.path.join("debugger", "debugger.js"), DIST_DIR)
-    except Exception as e:
-        print "Couldn't copy debugger to output folder: %s" % e.message
-        sys.exit(1)
-
-    path_list = os.environ.get('PATH','').split(os.pathsep)
-    if sys.platform == "win32":
-        gzip_filename = "gzip.exe"
-    else:
-        gzip_filename = "gzip"
-    has_gzip = False
-    for p in path_list:
-        has_gzip = os.access(os.path.join(p,gzip_filename), os.X_OK)
-        if has_gzip:
-            break
-
-    if has_gzip:
-        ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
-        if ret != 0:
-            print "Couldn't gzip to get final size."
-            has_gzip = False
-            os.unlink("{0}/tmp.js".format(DIST_DIR))
-
-        size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
-        os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
-    else:
-        os.unlink("{0}/tmp.js".format(DIST_DIR))
-        print "No gzip executable, can't get final size"
-
-    with open(builtinfn, "w") as f:
-        f.write(getBuiltinsAsJson(options))
-        if options.verbose:
-            print ". Wrote {0}".format(builtinfn)
-
-    # Update documentation folder copies of the distribution.
-    try:
-        shutil.copy(compfn,    os.path.join("doc", "static", OUTFILE_MIN))
-        shutil.copy(builtinfn, os.path.join("doc", "static", OUTFILE_LIB))
-        shutil.copy(debuggerfn, os.path.join("doc", "static", "debugger", OUTFILE_DEBUGGER))
-    except:
-        print "Couldn't copy to docs dir."
-        sys.exit(1)
-    if options.verbose:
-        print ". Updated doc dir"
-
-    # All good!
-    if options.verbose:
-        print ". Wrote {0}.".format(compfn)
-        if has_gzip:
-            print ". gzip of compressed: %d bytes" % size
-
 
 def run_in_browser(fn, options, debug_mode=False, p3=False):
     if p3:
@@ -804,6 +522,8 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
     else:
         print("open or refresh {0}/run.html in your browser to test/debug".format(RUN_DIR))
 
+
+        
 def regenparser():
     """regenerate the parser/ast source code"""
     if not os.path.exists("gen"): os.mkdir("gen")
@@ -844,13 +564,6 @@ def regenruntests(togen="{0}/run/*.py".format(TEST_DIR)):
             shutil.copy(forcename, "%s.real" % f)
         if crlfprog:
             os.system("python %s %s.real" % (crlfprog, f))
-
-def doc():
-    print "Building Documentation in docs/ProgMan"
-    ret = os.system("jsdoc -c jsdoc.json HACKING.md")
-    if ret != 0:
-        print "Build of docs failed.  Is jsdoc installed?"
-
 
 def symtabdump(fn):
     if not os.path.exists(fn):
@@ -924,147 +637,6 @@ def docbi(options,dest="doc/static"):
         f.write(getBuiltinsAsJson(options))
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
-
-def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
-    if not os.path.exists(fn):
-        print "%s doesn't exist" % fn
-        raise SystemExit()
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-
-    f = open("support/tmp/run.js", "w")
-    modname = os.path.splitext(os.path.basename(fn))[0]
-    if p3:
-        p3on = 'Sk.python3'
-    else:
-        p3on = 'Sk.python2'
-    if debug_mode:
-        debugon = 'true'
-    else:
-        debugon = 'false'
-
-    if opt:
-        dname = DIST_DIR
-        fname = OUTFILE_MIN
-        extras = ""
-    else:
-        dname = "src"
-        fname = "main.js"
-        extras = "Sk.js_beautify = require('js-beautify').js"
-
-    f.write("""
-const fs = require('fs');
-require("../../%s/%s");
-
-%s
-
-var input = fs.readFileSync("%s", "utf8");
-console.log("-----");
-console.log(input);
-console.log("-----");
-Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
-Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", %s, true);
-}).then(function () {
-    console.log("-----");
-}, function(e) {
-    console.log("UNCAUGHT EXCEPTION: " + e);
-    console.log(e.stack);
-});
-""" % (dname, fname, extras, fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
-    f.close()
-
-    os.system("{0} {1} {2}".format(jsengine, shell, os.path.join("support", "tmp", "run.js")))
-
-def runopt(fn):
-    run(fn, "", True)
-
-def run3(fn):
-    run(fn, p3=True)
-
-def rundebug(fn):
-    run(fn, debug_mode=True)
-
-def shell(fn):
-    run(fn, "--shell")
-
-
-def rununits(opt=False, p3=False, debug_mode=False):
-    if p3:
-        unit_dir = 'test/unit3'
-        p3on = 'Sk.python3'
-    else:
-        unit_dir = 'test/unit'
-        p3on = 'Sk.python2'
-    testFiles = [unit_dir + '/' + f for f in os.listdir(unit_dir) if '.py' in f]
-    jstestengine = jsengine.replace('--debugger', '')
-    passTot = 0
-    failTot = 0
-
-    for fn in testFiles:
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
-
-        modname = os.path.splitext(os.path.basename(fn))[0]
-        if opt:
-            dname = DIST_DIR
-            fname = OUTFILE_MIN
-            extras = ""
-        else:
-            dname = "src"
-            fname = "main.js"
-            extras = "Sk.js_beautify = require('js-beautify').js"
-
-        f = open("support/tmp/rununits.js", "w")
-        f.write("""
-const fs = require('fs');
-require('../../%s/%s');
-
-%s
-
-var input = fs.readFileSync('%s', 'utf8');
-console.log('%s');
-Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
-Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", false, true);
-}).then(function () {}, function(e) {
-    console.log("UNCAUGHT EXCEPTION: " + e);
-    console.log(e.stack);
-    process.exit(1);
-});
-        """ % (dname, fname, extras, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
-        f.close()
-
-        p = Popen("{0} {1}".format(jstestengine, os.path.join("support", "tmp", "rununits.js")),
-                  shell=True, stdout=PIPE, stderr=PIPE)
-
-        outs, errs = p.communicate()
-
-        if p.returncode != 0:
-            failTot += 1
-            print "{} exited with error code {}".format(fn,p.returncode)
-
-        print outs
-        if errs:
-            print errs
-        outlines = outs.split('\n')
-        for ol in outlines:
-            g = re.match(r'Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)',ol)
-            if g:
-                passTot += int(g.group(1))
-                failTot += int(g.group(2))
-
-    print "Summary"
-    print "Passed: %5d Failed %5d" % (passTot, failTot)
-
-    if failTot != 0:
-        return -1
-    else:
-        return 0
-
-
-def repl():
-    os.system("{0} {1}".format(jsengine, os.path.join("repl", "repl.js")))
 
 def nrt(newTest):
     """open a new run test"""
@@ -1153,11 +725,7 @@ def usageString(program):
 
 Commands:
 
-    run              Run a Python file using Skulpt
     brun             Run a Python file using Skulpt but in your browser
-    test             Run all test cases
-    rununits         Run only the new-style unit tests
-    dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
     time [iter]      Average runtime of the test suite over [iter] iterations.
@@ -1173,9 +741,7 @@ Commands:
     upload           Run appcfg.py to upload doc to live GAE site
     doctest          Run the GAE development server for doc testing
     nrt              Generate a file for a new test case
-    runopt           Run a Python file optimized
     browser          Run all tests in the browser
-    shell            Run a Python program but keep a shell open (like python -i)
     vfs              Build a virtual file system to support Skulpt read tests
 
     debugbrowser     Debug in the browser -- open your javascript console
@@ -1217,17 +783,7 @@ def main():
     with open("src/internalpython.js", "w") as f:
         f.write(getInternalCodeAsJson() + ";")
 
-    if cmd == "test":
-        exit(bool(test()))
-    elif cmd == "test3":
-        exit(bool(test(p3=True)))
-    elif cmd == "testdebug":
-        exit(bool(test(debug_mode=True)))
-    elif cmd == "test3debug":
-        exit(bool(test(debug_mode=True, p3=True)))
-    elif cmd == "dist":
-        dist(options)
-    elif cmd == "regentests":
+    if cmd == "regentests":
         if len(sys.argv) > 2:
             togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]
         else:
@@ -1238,22 +794,12 @@ def main():
         regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
-    elif cmd == "run":
-        run(sys.argv[2])
     elif cmd == "brun":
         run_in_browser(sys.argv[2], options)
     elif cmd == "brundebug":
         run_in_browser(sys.argv[2], options, debug_mode=True)
     elif cmd == "brun3":
         run_in_browser(sys.argv[2], options, p3=True)
-    elif cmd == 'rununits':
-        rununits()
-    elif cmd == "runopt":
-        runopt(sys.argv[2])
-    elif cmd == "run3":
-        run3(sys.argv[2])
-    elif cmd == "rundebug":
-        rundebug(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":
@@ -1268,8 +814,6 @@ def main():
         doctest()
     elif cmd == "docbi":
         docbi(options)
-    elif cmd == "doc":
-        doc()
     elif cmd == "nrt":
         print "Warning: nrt is deprectated."
         print "It is preferred that you enhance one of the unit tests in test/unit"
@@ -1294,10 +838,6 @@ def main():
             except ValueError:
                 print "Port must be an integer"
                 sys.exit(2)
-    elif cmd == "shell":
-        shell(sys.argv[2]);
-    elif cmd == "repl":
-        repl()
     elif cmd == "profile":
         parse_profile_args(sys.argv)
     elif cmd == "time":

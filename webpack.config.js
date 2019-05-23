@@ -1,20 +1,24 @@
 const path = require('path');
 const webpack = require('webpack');
 const shell = require('shelljs');
+const chalk = require('chalk');
+
 const ClosureWebpackPlugin = require('closure-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
+
 const git = new GitRevisionPlugin({branch: true});
 
 const styleexcludes = /(node_modules)|(support)|(gen)|(tokenize.js)|(symtable.js)|(compile.js)|(ast.js)|(internalpython.js)/;
 
 if (!shell.which('git')) {
-    console.log("WARNING: Cannot find git!  Unsure if working directory is clean.");
+    console.log(chalk.red("WARNING: Cannot find git!  Unsure if working directory is clean."));
 }
 
 var output = shell.exec('git diff-index --quiet HEAD');
 if (output.code !== 0) {
-    console.log("WARNING: Working directory is not clean.");
+    console.log(chalk.red("WARNING: Working directory is not clean."));
 } else {
     console.log("Working directory is clean.");
 }
@@ -77,6 +81,9 @@ module.exports = (env, argv) => {
         devtool: 'source-map',
         plugins: [
             new CleanWebpackPlugin(),
+	    new CopyWebpackPlugin([
+		{ from: 'debugger/debugger.js', to: 'debugger.js' }
+	    ]),
             new webpack.DefinePlugin({
                 GITVERSION: JSON.stringify(git.version()),
                 GITHASH: JSON.stringify(git.commithash()),
