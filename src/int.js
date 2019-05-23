@@ -1193,4 +1193,4 @@ Sk.str2number = function (s, base, parser, negater, fname) {
     return val;
 };
 
-goog.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
+Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);

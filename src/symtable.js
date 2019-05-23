@@ -83,7 +83,7 @@ var SYMTAB_CONSTS = {
     ClassBlock: ClassBlock
 };
 
-goog.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
+Sk.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
 
 /**
  * @constructor
@@ -231,7 +231,7 @@ SymbolTableScope.prototype._identsMatching = function (f) {
     return ret;
 };
 SymbolTableScope.prototype.get_parameters = function () {
-    goog.asserts.assert(this.get_type() == "function", "get_parameters only valid for function scopes");
+    Sk.asserts.assert(this.get_type() == "function", "get_parameters only valid for function scopes");
     if (!this._funcParams) {
         this._funcParams = this._identsMatching(function (x) {
             return x & DEF_PARAM;
@@ -240,7 +240,7 @@ SymbolTableScope.prototype.get_parameters = function () {
     return this._funcParams;
 };
 SymbolTableScope.prototype.get_locals = function () {
-    goog.asserts.assert(this.get_type() == "function", "get_locals only valid for function scopes");
+    Sk.asserts.assert(this.get_type() == "function", "get_locals only valid for function scopes");
     if (!this._funcLocals) {
         this._funcLocals = this._identsMatching(function (x) {
             return x & DEF_BOUND;
@@ -249,7 +249,7 @@ SymbolTableScope.prototype.get_locals = function () {
     return this._funcLocals;
 };
 SymbolTableScope.prototype.get_globals = function () {
-    goog.asserts.assert(this.get_type() == "function", "get_globals only valid for function scopes");
+    Sk.asserts.assert(this.get_type() == "function", "get_globals only valid for function scopes");
     if (!this._funcGlobals) {
         this._funcGlobals = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -259,7 +259,7 @@ SymbolTableScope.prototype.get_globals = function () {
     return this._funcGlobals;
 };
 SymbolTableScope.prototype.get_frees = function () {
-    goog.asserts.assert(this.get_type() == "function", "get_frees only valid for function scopes");
+    Sk.asserts.assert(this.get_type() == "function", "get_frees only valid for function scopes");
     if (!this._funcFrees) {
         this._funcFrees = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -271,7 +271,7 @@ SymbolTableScope.prototype.get_frees = function () {
 SymbolTableScope.prototype.get_methods = function () {
     var i;
     var all;
-    goog.asserts.assert(this.get_type() == "class", "get_methods only valid for class scopes");
+    Sk.asserts.assert(this.get_type() == "class", "get_methods only valid for class scopes");
     if (!this._classMethods) {
         // todo; uniq?
         all = [];
@@ -313,9 +313,9 @@ function SymbolTable (filename) {
 }
 SymbolTable.prototype.getStsForAst = function (ast) {
     var v;
-    goog.asserts.assert(ast.scopeId !== undefined, "ast wasn't added to st?");
+    Sk.asserts.assert(ast.scopeId !== undefined, "ast wasn't added to st?");
     v = this.stss[ast.scopeId];
-    goog.asserts.assert(v !== undefined, "unknown sym tab entry");
+    Sk.asserts.assert(v !== undefined, "unknown sym tab entry");
     return v;
 };
 
@@ -323,7 +323,7 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
     var val;
     var i;
     var len;
-    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
+    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
     len = nodes.length;
     for (i = 0; i < len; ++i) {
         val = nodes[i];
@@ -336,7 +336,7 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
     var len;
-    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
+    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
     len = nodes.length;
     for (i = 0; i < len; ++i) {
         val = nodes[i];
@@ -379,7 +379,7 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
         if (arg.constructor === Sk.astnodes.Name) {
-            goog.asserts.assert(arg.ctx === Sk.astnodes.Param || (arg.ctx === Sk.astnodes.Store && !toplevel));
+            Sk.asserts.assert(arg.ctx === Sk.astnodes.Param || (arg.ctx === Sk.astnodes.Store && !toplevel));
             this.addDef(arg.id, DEF_PARAM, arg.lineno);
         }
         else {
@@ -469,7 +469,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var i;
     var nameslen;
     var tmp;
-    goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
+    Sk.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
         case Sk.astnodes.FunctionDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
@@ -620,13 +620,13 @@ SymbolTable.prototype.visitStmt = function (s) {
             break;
 
         default:
-            goog.asserts.fail("Unhandled type " + s.constructor.name + " in visitStmt");
+            Sk.asserts.fail("Unhandled type " + s.constructor.name + " in visitStmt");
     }
 };
 
 SymbolTable.prototype.visitExpr = function (e) {
     var i;
-    goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
+    Sk.asserts.assert(e !== undefined, "visitExpr called with undefined");
     //print("  e: ", e.constructor.name);
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:
@@ -717,7 +717,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.SEQExpr(e.elts);
             break;
         default:
-            goog.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
+            Sk.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
     }
 };
 
@@ -1056,5 +1056,5 @@ Sk.dumpSymtab = function (st) {
     return getIdents(st.top, "");
 };
 
-goog.exportSymbol("Sk.symboltable", Sk.symboltable);
-goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
+Sk.exportSymbol("Sk.symboltable", Sk.symboltable);
+Sk.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);

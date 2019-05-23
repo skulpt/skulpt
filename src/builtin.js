@@ -92,7 +92,7 @@ Sk.builtin.asnum$ = function (a) {
     return a;
 };
 
-goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
+Sk.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
 
 /**
  * Return a Python number (either float or int) from a Javascript number.
@@ -109,7 +109,7 @@ Sk.builtin.assk$ = function (a) {
         return new Sk.builtin.float_(a);
     }
 };
-goog.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
+Sk.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
 
 Sk.builtin.asnum$nofloat = function (a) {
     var decimal;
@@ -208,7 +208,7 @@ Sk.builtin.asnum$nofloat = function (a) {
 
     return mantissa;
 };
-goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
+Sk.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round (number, ndigits) {
     var special;
@@ -878,11 +878,11 @@ Sk.builtin.raw_input = function (prompt) {
 Sk.builtin.input = Sk.builtin.raw_input;
 
 Sk.builtin.jseval = function jseval (evalcode) {
-    var result = goog.global["eval"](Sk.ffi.remapToJs(evalcode));
+    var result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
     try {
         return Sk.ffi.remapToPy(result);
     } catch (err) {
-        if (err.constructor === goog.asserts.AssertionError) {
+        if (err.constructor === Sk.asserts.AssertionError) {
             return Sk.builtin.none.none$;
         }
 

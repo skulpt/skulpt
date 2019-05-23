@@ -157,7 +157,7 @@ Sk.builtin.lng.fromInt$ = function (ival) {
 // 0x, 0o, 0b, etc.
 Sk.longFromStr = function (s, base) {
     // l/L are valid digits with base >= 22
-    // goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
+    // Sk.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
 
     var parser = function (s, base) {
             if (base === 10) {
@@ -171,7 +171,7 @@ Sk.longFromStr = function (s, base) {
 
     return new Sk.builtin.lng(biginteger);
 };
-goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
+Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
     return this.biginteger.intValue();

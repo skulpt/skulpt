@@ -42,7 +42,7 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
         throw new Sk.builtin.TypeError(msg);
     }
 };
-goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
+Sk.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
  * Check arguments to Python functions to ensure the correct number of
@@ -95,12 +95,12 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
         throw new Sk.builtin.TypeError(name + " must be a " + exptype);
     }
 };
-goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
+Sk.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
     return (arg !== null && arg.mp$subscript !== undefined);
 };
-goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
+Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
 /**
  * Use this to test whether or not a Python object is iterable.  You should **not** rely
@@ -130,7 +130,7 @@ Sk.builtin.checkIterable = function (arg) {
     }
     return ret;
 };
-goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
+Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (obj) {
     // takes care of builtin functions and methods, builtins
@@ -158,7 +158,7 @@ Sk.builtin.checkNumber = function (arg) {
         arg instanceof Sk.builtin.float_ ||
         arg instanceof Sk.builtin.lng));
 };
-goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
+Sk.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
 /**
  * Checks for complex type, delegates to internal method
@@ -167,44 +167,44 @@ goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 Sk.builtin.checkComplex = function (arg) {
     return Sk.builtin.complex._complex_check(arg);
 };
-goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
+Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.lng);
 };
-goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
+Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
     return (arg !== null) && (arg instanceof Sk.builtin.float_);
 };
-goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
+Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
     return (arg !== null && arg.__class__ == Sk.builtin.str);
 };
-goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
+Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkClass = function (arg) {
     return (arg !== null && arg.sk$type);
 };
-goog.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
+Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
 Sk.builtin.checkBool = function (arg) {
     return (arg instanceof Sk.builtin.bool);
 };
-goog.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
+Sk.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
 Sk.builtin.checkNone = function (arg) {
     return (arg instanceof Sk.builtin.none);
 };
-goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
+Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null && arg.tp$call !== undefined);
 };
-goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
+Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 /**
  * @constructor
@@ -261,12 +261,12 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
 
 Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
 
-goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
+Sk.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
 Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(!(obj === undefined && objtype === undefined));
+    Sk.asserts.assert(!(obj === undefined && objtype === undefined));
     if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);

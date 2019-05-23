@@ -307,4 +307,4 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     throw deprecatedError;
 };
 
-goog.exportSymbol("Sk.builtin.nmber", Sk.builtin.nmber);
+Sk.exportSymbol("Sk.builtin.nmber", Sk.builtin.nmber);

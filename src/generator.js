@@ -47,7 +47,7 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
     this.func_closure = closure;
     return this;
 };
-goog.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
+Sk.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
 Sk.abstr.setUpInheritance("generator", Sk.builtin.generator, Sk.builtin.object);
 
@@ -83,7 +83,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
         }
         //print("ret", JSON.stringify(ret));
         self["gi$running"] = false;
-        goog.asserts.assert(ret !== undefined);
+        Sk.asserts.assert(ret !== undefined);
         if (ret !== Sk.builtin.none.none$) {
             // returns a pair: resume target and yielded value
             self["gi$resumeat"] = ret[0];
@@ -127,4 +127,4 @@ Sk.builtin.makeGenerator = function (next, data) {
 
     return gen;
 };
-goog.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
+Sk.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);

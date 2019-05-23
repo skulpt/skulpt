@@ -460,8 +460,8 @@ Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
 };
 
 Sk.builtin.type.makeIntoTypeObj = function (name, t) {
-    goog.asserts.assert(name !== undefined);
-    goog.asserts.assert(t !== undefined);
+    Sk.asserts.assert(name !== undefined);
+    Sk.asserts.assert(t !== undefined);
     t.ob$type = Sk.builtin.type;
     t.tp$name = name;
     t["$r"] = function () {

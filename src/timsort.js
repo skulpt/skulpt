@@ -60,7 +60,7 @@ Sk.builtin.timSort.prototype.binary_sort = function (a, sorted) {
                 l = p + 1;
             }
         }
-        goog.asserts.assert(l === r);
+        Sk.asserts.assert(l === r);
         // The invariants still hold, so pivot >= all in [base, l) and
         // pivot < all in [l, start), so pivot belongs at l.  Note
         // that if there are elements equal to pivot, l points to the
@@ -162,12 +162,12 @@ Sk.builtin.timSort.prototype.sort = function () {
         this.pending.push(cr.run);
         this.merge_collapse();
     }
-    goog.asserts.assert(remaining.base == this.listlength);
+    Sk.asserts.assert(remaining.base == this.listlength);
 
     this.merge_force_collapse();
-    goog.asserts.assert(this.pending.length == 1);
-    goog.asserts.assert(this.pending[0].base === 0);
-    goog.asserts.assert(this.pending[0].len == this.listlength);
+    Sk.asserts.assert(this.pending.length == 1);
+    Sk.asserts.assert(this.pending[0].base === 0);
+    Sk.asserts.assert(this.pending[0].len == this.listlength);
 };
 
 /*
@@ -198,7 +198,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
     var hintminofs;
     var hintminlastofs;
     var m;
-    goog.asserts.assert(0 <= hint && hint < a.len);
+    Sk.asserts.assert(0 <= hint && hint < a.len);
     self = this;
     if (rightmost) {
         lower = function (a, b) {
@@ -262,7 +262,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
         lastofs = hintminofs;
         ofs = hintminlastofs;
     }
-    goog.asserts.assert(-1 <= lastofs < ofs <= a.len);
+    Sk.asserts.assert(-1 <= lastofs < ofs <= a.len);
 
     // Now a[lastofs] < key <= a[ofs], so key belongs somewhere to the
     // right of lastofs but no farther right than ofs.  Do a binary
@@ -277,7 +277,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
             ofs = m;         // key <= a[m]
         }
     }
-    goog.asserts.assert(lastofs == ofs);         // so a[ofs-1] < key <= a[ofs]
+    Sk.asserts.assert(lastofs == ofs);         // so a[ofs-1] < key <= a[ofs]
     return ofs;
 };
 
@@ -311,7 +311,7 @@ Sk.builtin.timSort.prototype.merge_lo = function (a, b) {
     var dest;
     var acount, bcount;
     var p;
-    goog.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
+    Sk.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
     min_gallop = this.min_gallop;
     dest = a.base;
     a = a.copyitems();
@@ -422,7 +422,7 @@ Sk.builtin.timSort.prototype.merge_lo = function (a, b) {
     finally {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
-        goog.asserts.assert(a.len >= 0 && b.len >= 0);
+        Sk.asserts.assert(a.len >= 0 && b.len >= 0);
         for (p = b.base; p < b.base + b.len; p++) {
             this.setitem(dest, b.getitem(p));
             dest++;
@@ -440,7 +440,7 @@ Sk.builtin.timSort.prototype.merge_hi = function (a, b) {
     var acount, bcount, nexta, nextb;
     var k;
     var p;
-    goog.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
+    Sk.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
     min_gallop = this.min_gallop;
     dest = b.base + b.len;
     b = b.copyitems();
@@ -555,7 +555,7 @@ Sk.builtin.timSort.prototype.merge_hi = function (a, b) {
     finally {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
-        goog.asserts.assert(a.len >= 0 && b.len >= 0);
+        Sk.asserts.assert(a.len >= 0 && b.len >= 0);
         for (p = a.base + a.len - 1; p > a.base - 1; p--) {
             dest--;
             this.setitem(dest, a.getitem(p));
@@ -579,8 +579,8 @@ Sk.builtin.timSort.prototype.merge_at = function (i) {
 
     a = this.pending[i];
     b = this.pending[i + 1];
-    goog.asserts.assert(a.len > 0 && b.len > 0);
-    goog.asserts.assert(a.base + a.len == b.base);
+    Sk.asserts.assert(a.len > 0 && b.len > 0);
+    Sk.asserts.assert(a.base + a.len == b.base);
 
     // Record the length of the combined runs and remove the run b
     this.pending[i] = new Sk.builtin.listSlice(this.list, a.base, a.len + b.len);
@@ -684,14 +684,14 @@ Sk.builtin.listSlice.prototype.copyitems = function () {
     //Make a copy of the slice of the original list
     var start = this.base;
     var stop = this.base + this.len;
-    goog.asserts.assert(0 <= start <= stop);
+    Sk.asserts.assert(0 <= start <= stop);
     return new Sk.builtin.listSlice(new Sk.builtin.list(this.list.v.slice(start, stop)), 0, this.len);
 };
 
 Sk.builtin.listSlice.prototype.advance = function (n) {
     this.base += n;
     this.len -= n;
-    goog.asserts.assert(this.base <= this.list.sq$length());
+    Sk.asserts.assert(this.base <= this.list.sq$length());
 };
 
 Sk.builtin.listSlice.prototype.getitem = function (item) {
@@ -731,5 +731,5 @@ Sk.builtin.listSlice.prototype.reverse = function () {
     }
 };
 
-goog.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
-goog.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);
+Sk.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
+Sk.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);

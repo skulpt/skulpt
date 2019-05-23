@@ -600,7 +600,7 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
 });
 
-goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
+Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /**
  * @constructor

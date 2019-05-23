@@ -65,7 +65,7 @@ Sk.builtin.str = function (x) {
     return this;
 
 };
-goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
+Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
@@ -128,7 +128,7 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
 Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.sq$item = function () {
-    goog.asserts.fail();
+    Sk.asserts.fail();
 };
 Sk.builtin.str.prototype.sq$slice = function (i1, i2) {
     i1 = Sk.builtin.asnum$(i1);
@@ -173,7 +173,7 @@ Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
         case "GtE":
             return this.v >= other.v;
         default:
-            goog.asserts.fail();
+            Sk.asserts.fail();
     }
 };
 
@@ -1001,7 +1001,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 neg = n.nb$isnegative();
             }
 
-            goog.asserts.assert(r !== undefined, "unhandled number format");
+            Sk.asserts.assert(r !== undefined, "unhandled number format");
 
             precZeroPadded = false;
 
