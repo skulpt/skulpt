@@ -238,7 +238,7 @@ class FunctionVisitor(PrototypeVisitor):
         for argtype, argname, opt in args:
             # XXX hack alert: false is allowed for a bool
             if not opt and not (argtype == "bool" or argtype == "int"):
-                emit("goog.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
+                emit("Sk.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
 
         if union:
             self.emit_body_union(name, args, attrs)
@@ -385,7 +385,7 @@ def main(asdlfile, outputfile):
         )
     v.visit(mod)
 
-    f.write('goog.exportSymbol("Sk.astnodes", Sk.astnodes);\n');
+    f.write('Sk.exportSymbol("Sk.astnodes", Sk.astnodes);\n');
     
     f.close()
 

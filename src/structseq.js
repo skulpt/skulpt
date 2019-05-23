@@ -44,7 +44,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
     Sk.builtin.structseq_types[nm] = cons;
 
-    goog.inherits(cons, Sk.builtin.tuple);
+    Sk.abstr.inherits(cons, Sk.builtin.tuple);
     if (doc) {
         cons.prototype.__doc__ = doc;
     }
@@ -95,4 +95,4 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
     return cons;
 };
-goog.exportSymbol("Sk.builtin.make_structseq", Sk.builtin.make_structseq);
+Sk.exportSymbol("Sk.builtin.make_structseq", Sk.builtin.make_structseq);

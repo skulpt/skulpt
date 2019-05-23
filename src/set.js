@@ -404,7 +404,7 @@ Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     return Sk.builtin.none.none$;
 });
 
-goog.exportSymbol("Sk.builtin.set", Sk.builtin.set);
+Sk.exportSymbol("Sk.builtin.set", Sk.builtin.set);
 
 /**
  * @constructor

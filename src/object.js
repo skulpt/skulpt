@@ -28,7 +28,7 @@ Sk.builtin._tryGetSubscript = function(dict, pyName) {
         return undefined;
     }
 };
-goog.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
+Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 
 /**
@@ -47,7 +47,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     var jsName = pyName.$jsstr();
 
     tp = this.ob$type;
-    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
     //print("getattr", tp.tp$name, name);
@@ -109,7 +109,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
 
     return undefined;
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
 Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, pyName) {
     var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, pyName, true);
@@ -118,7 +118,7 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, pyName) {
     }
     return r;
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 /**
  * @param {Object} pyName
@@ -134,7 +134,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
     var descr;
     var f;
 
-    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
 
@@ -171,12 +171,12 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         dict[jsName] = value;
     }
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
 Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, pyName, value) {
     return Sk.builtin.object.prototype.GenericSetAttr.call(self, pyName, value, true);
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 
 Sk.builtin.object.prototype.HashNotImplemented = function () {
     throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
@@ -525,5 +525,5 @@ Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.
  */
 Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
 
-goog.exportSymbol("Sk.builtin.none", Sk.builtin.none);
-goog.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
+Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
+Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);

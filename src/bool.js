@@ -45,4 +45,4 @@ Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
-goog.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
+Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);

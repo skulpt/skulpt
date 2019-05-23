@@ -112,7 +112,7 @@ Sk.astnodes.Interactive = function Interactive(/* {asdl_seq *} */ body)
 /** @constructor */
 Sk.astnodes.Expression = function Expression(/* {expr_ty} */ body)
 {
-    goog.asserts.assert(body !== null && body !== undefined);
+    Sk.asserts.assert(body !== null && body !== undefined);
     this.body = body;
     return this;
 }
@@ -133,8 +133,8 @@ Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
                                                     lineno, /* {int} */
                                                     col_offset)
 {
-    goog.asserts.assert(name !== null && name !== undefined);
-    goog.asserts.assert(args !== null && args !== undefined);
+    Sk.asserts.assert(name !== null && name !== undefined);
+    Sk.asserts.assert(args !== null && args !== undefined);
     this.name = name;
     this.args = args;
     this.body = body;
@@ -151,7 +151,7 @@ Sk.astnodes.ClassDef = function ClassDef(/* {identifier} */ name, /* {asdl_seq
                                               decorator_list, /* {int} */
                                               lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(name !== null && name !== undefined);
+    Sk.asserts.assert(name !== null && name !== undefined);
     this.name = name;
     this.bases = bases;
     this.body = body;
@@ -186,7 +186,7 @@ Sk.astnodes.Assign = function Assign(/* {asdl_seq *} */ targets, /* {expr_ty}
                                           */ value, /* {int} */ lineno, /*
                                           {int} */ col_offset)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.targets = targets;
     this.value = value;
     this.lineno = lineno;
@@ -200,9 +200,9 @@ Sk.astnodes.AugAssign = function AugAssign(/* {expr_ty} */ target, /*
                                                 {expr_ty} */ value, /* {int} */
                                                 lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(target !== null && target !== undefined);
-    goog.asserts.assert(op !== null && op !== undefined);
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(target !== null && target !== undefined);
+    Sk.asserts.assert(op !== null && op !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.target = target;
     this.op = op;
     this.value = value;
@@ -230,8 +230,8 @@ Sk.astnodes.For_ = function For_(/* {expr_ty} */ target, /* {expr_ty} */ iter,
                                       */ orelse, /* {int} */ lineno, /* {int}
                                       */ col_offset)
 {
-    goog.asserts.assert(target !== null && target !== undefined);
-    goog.asserts.assert(iter !== null && iter !== undefined);
+    Sk.asserts.assert(target !== null && target !== undefined);
+    Sk.asserts.assert(iter !== null && iter !== undefined);
     this.target = target;
     this.iter = iter;
     this.body = body;
@@ -247,7 +247,7 @@ Sk.astnodes.While_ = function While_(/* {expr_ty} */ test, /* {asdl_seq *} */
                                           {int} */ lineno, /* {int} */
                                           col_offset)
 {
-    goog.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(test !== null && test !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -261,7 +261,7 @@ Sk.astnodes.If_ = function If_(/* {expr_ty} */ test, /* {asdl_seq *} */ body,
                                     /* {asdl_seq *} */ orelse, /* {int} */
                                     lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(test !== null && test !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -276,7 +276,7 @@ Sk.astnodes.With_ = function With_(/* {expr_ty} */ context_expr, /* {expr_ty}
                                         body, /* {int} */ lineno, /* {int} */
                                         col_offset)
 {
-    goog.asserts.assert(context_expr !== null && context_expr !== undefined);
+    Sk.asserts.assert(context_expr !== null && context_expr !== undefined);
     this.context_expr = context_expr;
     this.optional_vars = optional_vars;
     this.body = body;
@@ -331,7 +331,7 @@ Sk.astnodes.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg,
                                           /* {int} */ lineno, /* {int} */
                                           col_offset)
 {
-    goog.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(test !== null && test !== undefined);
     this.test = test;
     this.msg = msg;
     this.lineno = lineno;
@@ -356,7 +356,7 @@ Sk.astnodes.ImportFrom = function ImportFrom(/* {identifier} */ module, /*
                                                   lineno, /* {int} */
                                                   col_offset)
 {
-    goog.asserts.assert(module !== null && module !== undefined);
+    Sk.asserts.assert(module !== null && module !== undefined);
     this.module = module;
     this.names = names;
     this.level = level;
@@ -370,7 +370,7 @@ Sk.astnodes.Exec = function Exec(/* {expr_ty} */ body, /* {expr_ty} */ globals,
                                       /* {expr_ty} */ locals, /* {int} */
                                       lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(body !== null && body !== undefined);
+    Sk.asserts.assert(body !== null && body !== undefined);
     this.body = body;
     this.globals = globals;
     this.locals = locals;
@@ -393,7 +393,7 @@ Sk.astnodes.Global = function Global(/* {asdl_seq *} */ names, /* {int} */
 Sk.astnodes.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                       {int} */ col_offset)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -439,7 +439,7 @@ Sk.astnodes.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
                                           values, /* {int} */ lineno, /* {int}
                                           */ col_offset)
 {
-    goog.asserts.assert(op !== null && op !== undefined);
+    Sk.asserts.assert(op !== null && op !== undefined);
     this.op = op;
     this.values = values;
     this.lineno = lineno;
@@ -452,9 +452,9 @@ Sk.astnodes.BinOp = function BinOp(/* {expr_ty} */ left, /* {operator_ty} */
                                         op, /* {expr_ty} */ right, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(left !== null && left !== undefined);
-    goog.asserts.assert(op !== null && op !== undefined);
-    goog.asserts.assert(right !== null && right !== undefined);
+    Sk.asserts.assert(left !== null && left !== undefined);
+    Sk.asserts.assert(op !== null && op !== undefined);
+    Sk.asserts.assert(right !== null && right !== undefined);
     this.left = left;
     this.op = op;
     this.right = right;
@@ -468,8 +468,8 @@ Sk.astnodes.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
                                             operand, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    goog.asserts.assert(op !== null && op !== undefined);
-    goog.asserts.assert(operand !== null && operand !== undefined);
+    Sk.asserts.assert(op !== null && op !== undefined);
+    Sk.asserts.assert(operand !== null && operand !== undefined);
     this.op = op;
     this.operand = operand;
     this.lineno = lineno;
@@ -482,8 +482,8 @@ Sk.astnodes.Lambda = function Lambda(/* {arguments__ty} */ args, /* {expr_ty}
                                           */ body, /* {int} */ lineno, /* {int}
                                           */ col_offset)
 {
-    goog.asserts.assert(args !== null && args !== undefined);
-    goog.asserts.assert(body !== null && body !== undefined);
+    Sk.asserts.assert(args !== null && args !== undefined);
+    Sk.asserts.assert(body !== null && body !== undefined);
     this.args = args;
     this.body = body;
     this.lineno = lineno;
@@ -496,9 +496,9 @@ Sk.astnodes.IfExp = function IfExp(/* {expr_ty} */ test, /* {expr_ty} */ body,
                                         /* {expr_ty} */ orelse, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(test !== null && test !== undefined);
-    goog.asserts.assert(body !== null && body !== undefined);
-    goog.asserts.assert(orelse !== null && orelse !== undefined);
+    Sk.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(body !== null && body !== undefined);
+    Sk.asserts.assert(orelse !== null && orelse !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -534,7 +534,7 @@ Sk.astnodes.ListComp = function ListComp(/* {expr_ty} */ elt, /* {asdl_seq *}
                                               */ generators, /* {int} */
                                               lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(elt !== null && elt !== undefined);
     this.elt = elt;
     this.generators = generators;
     this.lineno = lineno;
@@ -547,7 +547,7 @@ Sk.astnodes.SetComp = function SetComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
                                             generators, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    goog.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(elt !== null && elt !== undefined);
     this.elt = elt;
     this.generators = generators;
     this.lineno = lineno;
@@ -561,8 +561,8 @@ Sk.astnodes.DictComp = function DictComp(/* {expr_ty} */ key, /* {expr_ty} */
                                               generators, /* {int} */ lineno,
                                               /* {int} */ col_offset)
 {
-    goog.asserts.assert(key !== null && key !== undefined);
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(key !== null && key !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.key = key;
     this.value = value;
     this.generators = generators;
@@ -578,7 +578,7 @@ Sk.astnodes.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /*
                                                       lineno, /* {int} */
                                                       col_offset)
 {
-    goog.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(elt !== null && elt !== undefined);
     this.elt = elt;
     this.generators = generators;
     this.lineno = lineno;
@@ -602,7 +602,7 @@ Sk.astnodes.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq
                                             comparators, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    goog.asserts.assert(left !== null && left !== undefined);
+    Sk.asserts.assert(left !== null && left !== undefined);
     this.left = left;
     this.ops = ops;
     this.comparators = comparators;
@@ -617,7 +617,7 @@ Sk.astnodes.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args,
                                       */ starargs, /* {expr_ty} */ kwargs, /*
                                       {int} */ lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(func !== null && func !== undefined);
+    Sk.asserts.assert(func !== null && func !== undefined);
     this.func = func;
     this.args = args;
     this.keywords = keywords;
@@ -632,7 +632,7 @@ Sk.astnodes.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args,
 Sk.astnodes.Repr = function Repr(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                       {int} */ col_offset)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -643,7 +643,7 @@ Sk.astnodes.Repr = function Repr(/* {expr_ty} */ value, /* {int} */ lineno, /*
 Sk.astnodes.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int}
                                     */ col_offset)
 {
-    goog.asserts.assert(n !== null && n !== undefined);
+    Sk.asserts.assert(n !== null && n !== undefined);
     this.n = n;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -654,7 +654,7 @@ Sk.astnodes.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int}
 Sk.astnodes.Str = function Str(/* {string} */ s, /* {int} */ lineno, /* {int}
                                     */ col_offset)
 {
-    goog.asserts.assert(s !== null && s !== undefined);
+    Sk.asserts.assert(s !== null && s !== undefined);
     this.s = s;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -668,9 +668,9 @@ Sk.astnodes.Attribute = function Attribute(/* {expr_ty} */ value, /*
                                                 {int} */ lineno, /* {int} */
                                                 col_offset)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
-    goog.asserts.assert(attr !== null && attr !== undefined);
-    goog.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(attr !== null && attr !== undefined);
+    Sk.asserts.assert(ctx !== null && ctx !== undefined);
     this.value = value;
     this.attr = attr;
     this.ctx = ctx;
@@ -685,9 +685,9 @@ Sk.astnodes.Subscript = function Subscript(/* {expr_ty} */ value, /* {slice_ty}
                                                 */ ctx, /* {int} */ lineno, /*
                                                 {int} */ col_offset)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
-    goog.asserts.assert(slice !== null && slice !== undefined);
-    goog.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(slice !== null && slice !== undefined);
+    Sk.asserts.assert(ctx !== null && ctx !== undefined);
     this.value = value;
     this.slice = slice;
     this.ctx = ctx;
@@ -701,8 +701,8 @@ Sk.astnodes.Name = function Name(/* {identifier} */ id, /* {expr_context_ty} */
                                       ctx, /* {int} */ lineno, /* {int} */
                                       col_offset)
 {
-    goog.asserts.assert(id !== null && id !== undefined);
-    goog.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(id !== null && id !== undefined);
+    Sk.asserts.assert(ctx !== null && ctx !== undefined);
     this.id = id;
     this.ctx = ctx;
     this.lineno = lineno;
@@ -715,7 +715,7 @@ Sk.astnodes.List = function List(/* {asdl_seq *} */ elts, /* {expr_context_ty}
                                       */ ctx, /* {int} */ lineno, /* {int} */
                                       col_offset)
 {
-    goog.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(ctx !== null && ctx !== undefined);
     this.elts = elts;
     this.ctx = ctx;
     this.lineno = lineno;
@@ -728,7 +728,7 @@ Sk.astnodes.Tuple = function Tuple(/* {asdl_seq *} */ elts, /*
                                         {expr_context_ty} */ ctx, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    goog.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(ctx !== null && ctx !== undefined);
     this.elts = elts;
     this.ctx = ctx;
     this.lineno = lineno;
@@ -762,7 +762,7 @@ Sk.astnodes.ExtSlice = function ExtSlice(/* {asdl_seq *} */ dims)
 /** @constructor */
 Sk.astnodes.Index = function Index(/* {expr_ty} */ value)
 {
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.value = value;
     return this;
 }
@@ -772,8 +772,8 @@ Sk.astnodes.comprehension = function comprehension(/* {expr_ty} */ target, /*
                                                         {expr_ty} */ iter, /*
                                                         {asdl_seq *} */ ifs)
 {
-    goog.asserts.assert(target !== null && target !== undefined);
-    goog.asserts.assert(iter !== null && iter !== undefined);
+    Sk.asserts.assert(target !== null && target !== undefined);
+    Sk.asserts.assert(iter !== null && iter !== undefined);
     this.target = target;
     this.iter = iter;
     this.ifs = ifs;
@@ -812,8 +812,8 @@ Sk.astnodes.arguments_ = function arguments_(/* {asdl_seq *} */ args, /*
 Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */
                                             value)
 {
-    goog.asserts.assert(arg !== null && arg !== undefined);
-    goog.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(arg !== null && arg !== undefined);
+    Sk.asserts.assert(value !== null && value !== undefined);
     this.arg = arg;
     this.value = value;
     return this;
@@ -823,7 +823,7 @@ Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */
 Sk.astnodes.alias = function alias(/* {identifier} */ name, /* {identifier} */
                                         asname)
 {
-    goog.asserts.assert(name !== null && name !== undefined);
+    Sk.asserts.assert(name !== null && name !== undefined);
     this.name = name;
     this.asname = asname;
     return this;
@@ -1197,4 +1197,4 @@ Sk.astnodes.alias.prototype._fields = [
     "asname", function(n) { return n.asname; }
 ];
 
-goog.exportSymbol("Sk.astnodes", Sk.astnodes);
+Sk.exportSymbol("Sk.astnodes", Sk.astnodes);

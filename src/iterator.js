@@ -99,4 +99,4 @@ Sk.builtin.iterator.prototype.next$ = function (self) {
     return ret;
 };
 
-goog.exportSymbol("Sk.builtin.iterator", Sk.builtin.iterator);
+Sk.exportSymbol("Sk.builtin.iterator", Sk.builtin.iterator);

@@ -498,7 +498,7 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
         // divide tops and bottom by b.imag
         ratio = breal / bimag;
         denom = breal * ratio + bimag;
-        goog.asserts.assert(bimag !== 0.0);
+        Sk.asserts.assert(bimag !== 0.0);
         real = (areal * ratio + aimag) / denom;
         imag = (aimag * ratio - areal) / denom;
     } else {
@@ -1110,7 +1110,7 @@ Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(Sk.builtin.comple
 
 
 // ToDo: think about inplace methods too
-goog.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
+Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
 
 /**

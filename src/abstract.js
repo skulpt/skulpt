@@ -393,7 +393,7 @@ Sk.abstr.numberBinOp = function (v, w, op) {
 
     return Sk.abstr.binary_op_(v, w, op);
 };
-goog.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
+Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     var tmp;
@@ -416,7 +416,7 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
 
     return Sk.abstr.binary_iop_(v, w, op);
 };
-goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
+Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
@@ -447,7 +447,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
 
     return Sk.abstr.unary_op_(v, op);
 };
-goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
+Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
 //
 // Sequence
@@ -759,7 +759,7 @@ Sk.abstr.objectDelItem = function (o, key) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
 };
-goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
+Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
@@ -776,7 +776,7 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
 };
-goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
+Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
@@ -793,7 +793,7 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
-goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
+Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
@@ -818,7 +818,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
 
     return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
-goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
+Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
@@ -835,13 +835,13 @@ Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 };
-goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
+Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
 
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
-goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 
 
 /**
@@ -913,7 +913,7 @@ Sk.abstr.iter = function(obj) {
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
-goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
+Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 /**
  * Special method look up. First try getting the method via
@@ -933,7 +933,7 @@ Sk.abstr.lookupSpecial = function(op, pyName) {
 
     return Sk.builtin.type.typeLookup(obtp, pyName);
 };
-goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
+Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
 /**
  * Mark a class as unhashable and prevent its `__hash__` function from being called.

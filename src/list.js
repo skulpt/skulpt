@@ -203,7 +203,7 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
             case "GtE":
                 return vl >= wl;
             default:
-                goog.asserts.fail();
+                Sk.asserts.fail();
         }
     }
 
@@ -641,7 +641,7 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 
-goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
+Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);
 
 /**
  * @constructor
