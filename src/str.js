@@ -1138,13 +1138,14 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             return r.v;
         } else if (conversionType === "s") {
             r = new Sk.builtin.str(value);
+            r = r.$jsstr();
             if (precision) {
-                return r.v.substr(0, precision);
+                return r.substr(0, precision);
             }
             if(fieldWidth) {
-                r.v = handleWidth([" ", r.v]);
+                r = handleWidth([" ", r]);
             }
-            return r.v;
+            return r;
         } else if (conversionType === "%") {
             return "%";
         }
