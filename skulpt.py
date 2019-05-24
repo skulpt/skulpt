@@ -312,16 +312,6 @@ def regensymtabtests(togen="{0}/run/*.py".format(TEST_DIR)):
         f.write(symtabdump(fn))
         f.close()
 
-def upload():
-    """uploads doc to GAE (stub app for static hosting, mostly)"""
-    ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/appcfg.py update doc")
-    if ret != 0:
-        print "Couldn't upload."
-        raise SystemExit()
-
-def doctest():
-    ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
-
 def vmwareregr(names):
     """todo; not working yet.
 
@@ -397,8 +387,6 @@ Commands:
 
     help             Display help information about Skulpt
     host [PORT]      Start a simple HTTP server for testing. Default port: 20710
-    upload           Run appcfg.py to upload doc to live GAE site
-    doctest          Run the GAE development server for doc testing
     browser          Run all tests in the browser
     vfs              Build a virtual file system to support Skulpt read tests
 
@@ -457,10 +445,6 @@ def main():
         regenasttests()
     elif cmd == "regenruntests":
         regenruntests()
-    elif cmd == "upload":
-        upload()
-    elif cmd == "doctest":
-        doctest()
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":
