@@ -188,133 +188,6 @@ Sk.importMain("%s", false);
     else:
         print "%s seconds" % avg
 
-def parse_profile_args(argv):
-    usageString = """
-
-{program} profile [filename.py] [output]
-    Runs profile on Python file (or test suite, if none specified)
-    and outputs processed results to output file (or stdout if none specified)
-    """.format(program=argv[0])
-
-    fn = ""
-    out = ""
-    numArgs = len(sys.argv)
-
-    if len(sys.argv) > 4:
-        print usageString
-        sys.exit(2)
-
-    for arg in argv[2:]:
-        if ".py" in arg:
-            if fn:
-                print usageString
-                sys.exit(2)
-            else:
-                fn = arg
-        else:
-            if out:
-                print usageString
-                sys.exit(2)
-            else:
-                out = arg
-
-    profile(fn=fn, output=out)
-
-def profile(fn="", process=True, output="", p3=False):
-    """
-    Runs v8 profiler, which outputs tick information to v8.log Use
-    https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
-    to analyze log.
-    """
-    jsprofengine = jsengine + ' --prof --no-logfile-per-isolate --log-internal-timer-events'
-    print jsprofengine
-
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-    f = open("support/tmp/run.js", "w")
-
-    if p3:
-        p3on = 'Sk.python3'
-    else:
-        p3on = 'Sk.python2'
-
-    # Profile single file
-    if fn:
-        if not os.path.exists(fn):
-            print "%s doesn't exist" % fn
-            raise SystemExit()
-
-        modname = os.path.splitext(os.path.basename(fn))[0]
-
-        f.write("""
-const fs = require('fs');
-require("../../src/main.js");
-
-Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
-Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", false, true);
-}).then(function () {
-    console.log("-----");
-}, function(e) {
-    console.log("UNCAUGHT EXCEPTION: " + e);
-    console.log(e.stack);
-});
-    """ % (os.path.split(fn)[0], p3on, modname))
-
-    # Profile test suite
-    else:
-        # Prepare unit tests
-        if p3:
-            testDir = "test/unit3"
-        else:
-            testDir = "test/unit"
-        testFiles = [testDir + "/" + fn for fn in os.listdir(testDir) if '.py' in fn]
-
-        f.write("""
-const fs = require('fs');
-require("../../src/main.js");
-Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
-""" % (testDir + '/', p3on))
-
-        for fn in testFiles:
-            modname = os.path.splitext(os.path.basename(fn))[0]
-            f.write("""
-Sk.importMain("%s", false);
-""" % (modname))
-
-            fn = "test suite"
-
-    f.close()
-
-    # Run profile
-    print("Running profile on %s..." % fn)
-    startTime = time.time()
-    p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
-              shell=True, stdout=PIPE, stderr=PIPE)
-
-    outs, errs = p.communicate()
-
-    if p.returncode != 0:
-        print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
-
-    endTime = time.time()
-
-    if errs:
-        print errs
-
-    print "\n\nRunning time: ", (endTime - startTime), " seconds\n\n"
-
-    # Process and display results
-    if process:
-        # Currently does not actually save to output file
-        if output:
-            out_msg = " and saving in %s" % output
-            output = " > " + output
-        else:
-            out_msg = ""
-
-        print "Processing profile using node%s..." % out_msg
-        os.system("{0} --prof-process v8.log".format(jsengine))
 
 def debugbrowser():
     tmpl = """
@@ -596,25 +469,6 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def nrt(newTest):
-    """open a new run test"""
-    fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
-    disfn = fn + ".disabled"
-    if not os.path.exists(fn) and not os.path.exists(disfn):
-        if 'EDITOR' in os.environ:
-            editor = os.environ['EDITOR']
-        else:
-            editor = 'vim'
-        os.system(editor + ' ' + fn)
-        if os.path.exists(fn):
-            print "Generating tests for %s" % fn
-            regensymtabtests(fn)
-            regenasttests(fn)
-            regenruntests(fn)
-        else:
-            print "Test test_%s.py already exists." % newTest
-            print "run ./m regentests test_%s.py" % newTest
-
 def vmwareregr(names):
     """todo; not working yet.
 
@@ -683,8 +537,6 @@ def usageString(program):
 
 Commands:
 
-    brun             Run a Python file using Skulpt but in your browser
-    profile [fn] [out] Profile Skulpt using d8 and show processed results
     time [iter]      Average runtime of the test suite over [iter] iterations.
 
     regenparser      Regenerate parser tests
@@ -763,15 +615,6 @@ def main():
         upload()
     elif cmd == "doctest":
         doctest()
-    elif cmd == "nrt":
-        print "Warning: nrt is deprectated."
-        print "It is preferred that you enhance one of the unit tests in test/unit"
-        print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
-        if len(sys.argv) < 3:
-            print "Need a name for the new test"
-            print usageString(os.path.basename(sys.argv[0]))
-            sys.exit(2)
-        nrt(sys.argv[2])
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":
@@ -787,8 +630,6 @@ def main():
             except ValueError:
                 print "Port must be an integer"
                 sys.exit(2)
-    elif cmd == "profile":
-        parse_profile_args(sys.argv)
     elif cmd == "time":
         parse_time_args(sys.argv)
     else:
