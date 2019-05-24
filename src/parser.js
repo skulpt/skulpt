@@ -102,7 +102,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             v = this.grammar.labels[i][1];
             if (ilabel === i) {
                 // look it up in the list of labels
-                goog.asserts.assert(t < 256);
+                Sk.asserts.assert(t < 256);
                 // shift a token; we're done with it
                 this.shift(type, value, newstate, context);
                 // pop while we are in an accept-only state
@@ -279,7 +279,7 @@ function makeParser (filename, style) {
     if (style === "file_input") {
         p.setup(Sk.ParseTables.sym.file_input);
     } else {
-        goog.asserts.fail("todo;");
+        Sk.asserts.fail("todo;");
     }
     lineno = 1;
     column = 0;
@@ -326,7 +326,7 @@ function makeParser (filename, style) {
             return p.rootnode;
         }
         return false;
-    };
+    }.bind(this);
 
     // set flags, and return
     parseFunc.p_flags = p.p_flags;
@@ -372,5 +372,6 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
 };
 
 
-goog.exportSymbol("Sk.parse", Sk.parse);
-goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
+Sk.exportSymbol("Parser", Parser);
+Sk.exportSymbol("Sk.parse", Sk.parse);
+Sk.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);

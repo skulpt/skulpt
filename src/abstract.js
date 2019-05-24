@@ -393,7 +393,7 @@ Sk.abstr.numberBinOp = function (v, w, op) {
 
     return Sk.abstr.binary_op_(v, w, op);
 };
-goog.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
+Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     var tmp;
@@ -416,7 +416,7 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
 
     return Sk.abstr.binary_iop_(v, w, op);
 };
-goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
+Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
@@ -447,7 +447,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
 
     return Sk.abstr.unary_op_(v, op);
 };
-goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
+Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
 //
 // Sequence
@@ -479,7 +479,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
      *  Look for special method and call it, we have to distinguish between built-ins and
      *  python objects
      */
-    special = Sk.abstr.lookupSpecial(seq, "__contains__");
+    special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$contains);
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.isTrue(Sk.misceval.callsimArray(special, [seq, ob]));
@@ -676,7 +676,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     var result; // PyObject
 
     // Find the (unbound!) __format__ method (a borrowed reference)
-    meth = Sk.abstr.lookupSpecial(obj, "__format__");
+    meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format);
     if (meth == null) {
         throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + " doesn't define __format__");
     }
@@ -759,7 +759,7 @@ Sk.abstr.objectDelItem = function (o, key) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
 };
-goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
+Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
@@ -776,7 +776,7 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
 };
-goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
+Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
@@ -793,53 +793,55 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
-goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
+Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
-Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
+Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     var ret, f;
     var objname = Sk.abstr.typeName(obj);
+    var jsName = pyName.$jsstr();
 
     if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(nameJS, canSuspend);
+        ret = obj.tp$getattr(pyName, canSuspend);
     }
 
     ret = Sk.misceval.chain(ret, function(r) {
         if (r === undefined) {
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
         }
         return r;
     });
 
     return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
-goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
+Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 
-Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
+Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
+    var jsName = pyName.$jsstr();
 
     if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
-        return obj.tp$setattr(nameJS, data, canSuspend);
+        return obj.tp$setattr(pyName, data, canSuspend);
     } else {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 };
-goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
+Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
 
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
-goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 
 
 /**
@@ -870,7 +872,7 @@ Sk.abstr.iter = function(obj) {
     var seqIter = function (obj) {
         this.idx = 0;
         this.myobj = obj;
-        this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+        this.getitem = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
         this.tp$iternext = function () {
             var ret;
             try {
@@ -888,7 +890,7 @@ Sk.abstr.iter = function(obj) {
     };
 
     if (obj.tp$getattr) {
-        iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
+        iter =  Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
         if (iter) {
             ret = Sk.misceval.callsimArray(iter, [obj]);
             if (ret.tp$iternext) {
@@ -904,14 +906,14 @@ Sk.abstr.iter = function(obj) {
             }
         } catch (e) { }
     }
-    getit = Sk.abstr.lookupSpecial(obj, "__getitem__");
+    getit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
     if (getit) {
         // create internal iterobject if __getitem__
         return new seqIter(obj);
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
-goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
+Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 /**
  * Special method look up. First try getting the method via
@@ -920,7 +922,7 @@ goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  *
  * @returns {null|Object} Return null if not found or the function
  */
-Sk.abstr.lookupSpecial = function(op, str) {
+Sk.abstr.lookupSpecial = function(op, pyName) {
     var res;
     var obtp;
     if (op.ob$type) {
@@ -929,19 +931,36 @@ Sk.abstr.lookupSpecial = function(op, str) {
         return null;
     }
 
-    return Sk.builtin.type.typeLookup(obtp, str);
+    return Sk.builtin.type.typeLookup(obtp, pyName);
 };
-goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
+Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
 /**
  * Mark a class as unhashable and prevent its `__hash__` function from being called.
- * @param  {function(...[?])} thisClass The class to mark as unhashable.
+ * @param  {*} thisClass The class to mark as unhashable.
  * @return {undefined}
  */
 Sk.abstr.markUnhashable = function (thisClass) {
     var proto = thisClass.prototype;
     proto.__hash__ = Sk.builtin.none.none$;
     proto.tp$hash = Sk.builtin.none.none$;
+};
+
+/**
+ * Code taken from goog.inherits
+ *
+ * Newer versions of the closure library add a "base"attribute,
+ * which we don't want/need.  So, this code is the remainder of
+ * the goog.inherits function.
+ */
+Sk.abstr.inherits = function (childCtor, parentCtor) {
+    /** @constructor */
+    function tempCtor() {}
+    tempCtor.prototype = parentCtor.prototype;
+    childCtor.superClass_ = parentCtor.prototype;
+    childCtor.prototype = new tempCtor();
+    /** @override */
+    childCtor.prototype.constructor = childCtor;
 };
 
 /**
@@ -963,12 +982,12 @@ Sk.abstr.markUnhashable = function (thisClass) {
  * builtins should inherit from Sk.builtin.object.
  *
  * @param {string} childName The Python name of the child (subclass).
- * @param {function(...[?])} child     The subclass.
- * @param {function(...[?])} parent    The superclass.
+ * @param {*} child     The subclass.
+ * @param {*} parent    The superclass.
  * @return {undefined}
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent) {
-    goog.inherits(child, parent);
+    Sk.abstr.inherits(child, parent);
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
@@ -979,7 +998,7 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
  * the `this` value of that constructor. Any arguments passed to this function
  * after `self` will be passed as-is to the constructor.
  *
- * @param  {function(...[?])} thisClass The subclass.
+ * @param  {*} thisClass The subclass.
  * @param  {Object} self      The instance of the subclas.
  * @param  {...?} args Arguments to pass to the constructor.
  * @return {undefined}

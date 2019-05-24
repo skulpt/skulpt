@@ -455,7 +455,7 @@ Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
 Sk.builtin.dict.prototype.__getattribute__ = new Sk.builtin.func(function (self, attr) {
     Sk.builtin.pyCheckArgsLen("__getattribute__", arguments.length, 1, 1, false, true);
     if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattribute__ requires a string"); }
-    return Sk.builtin.dict.prototype.tp$getattr.call(self, Sk.ffi.remapToJs(attr));
+    return Sk.builtin.dict.prototype.tp$getattr.call(self, attr);
 });
 
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
@@ -600,7 +600,7 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
 });
 
-goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
+Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /**
  * @constructor

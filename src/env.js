@@ -4,8 +4,6 @@
  * below.
  */
 
-var Sk = Sk || {}; //jshint ignore:line
-
 /**
  *
  * Set various customizable parts of Skulpt.
@@ -72,32 +70,32 @@ Sk.python3 = {
 Sk.configure = function (options) {
     "use strict";
     Sk.output = options["output"] || Sk.output;
-    goog.asserts.assert(typeof Sk.output === "function");
+    Sk.asserts.assert(typeof Sk.output === "function");
 
     Sk.debugout = options["debugout"] || Sk.debugout;
-    goog.asserts.assert(typeof Sk.debugout === "function");
+    Sk.asserts.assert(typeof Sk.debugout === "function");
 
     Sk.uncaughtException = options["uncaughtException"] || Sk.uncaughtException;
-    goog.asserts.assert(typeof Sk.uncaughtException === "function");
+    Sk.asserts.assert(typeof Sk.uncaughtException === "function");
 
     Sk.read = options["read"] || Sk.read;
-    goog.asserts.assert(typeof Sk.read === "function");
+    Sk.asserts.assert(typeof Sk.read === "function");
 
     Sk.nonreadopen = options["nonreadopen"] || false;
-    goog.asserts.assert(typeof Sk.nonreadopen === "boolean");
+    Sk.asserts.assert(typeof Sk.nonreadopen === "boolean");
 
     Sk.fileopen = options["fileopen"] || undefined;
-    goog.asserts.assert(typeof Sk.fileopen === "function" || typeof Sk.fileopen === "undefined");
+    Sk.asserts.assert(typeof Sk.fileopen === "function" || typeof Sk.fileopen === "undefined");
 
     Sk.filewrite = options["filewrite"] || undefined;
-    goog.asserts.assert(typeof Sk.filewrite === "function" || typeof Sk.filewrite === "undefined");
+    Sk.asserts.assert(typeof Sk.filewrite === "function" || typeof Sk.filewrite === "undefined");
 
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
-    goog.asserts.assert(typeof Sk.timeoutMsg === "function");
-    goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+    Sk.asserts.assert(typeof Sk.timeoutMsg === "function");
+    Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
-    goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
+    Sk.asserts.assert(Sk.isArrayLike(Sk.sysargv));
 
     Sk.__future__ = options["__future__"] || Sk.python2;
 
@@ -120,25 +118,25 @@ Sk.configure = function (options) {
     // in __future__ add checks for absolute_import
 
     Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
-    goog.asserts.assert(typeof Sk.imageProxy === "string" || typeof Sk.imageProxy === "function");
+    Sk.asserts.assert(typeof Sk.imageProxy === "string" || typeof Sk.imageProxy === "function");
 
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
-    goog.asserts.assert(typeof Sk.inputfun === "function");
+    Sk.asserts.assert(typeof Sk.inputfun === "function");
 
     Sk.inputfunTakesPrompt = options["inputfunTakesPrompt"] || false;
-    goog.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
+    Sk.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
 
     Sk.retainGlobals = options["retainglobals"] || false;
-    goog.asserts.assert(typeof Sk.retainGlobals === "boolean");
+    Sk.asserts.assert(typeof Sk.retainGlobals === "boolean");
 
     Sk.debugging = options["debugging"] || false;
-    goog.asserts.assert(typeof Sk.debugging === "boolean");
+    Sk.asserts.assert(typeof Sk.debugging === "boolean");
 
     Sk.killableWhile = options["killableWhile"] || false;
-    goog.asserts.assert(typeof Sk.killableWhile === "boolean");
+    Sk.asserts.assert(typeof Sk.killableWhile === "boolean");
 
     Sk.killableFor = options["killableFor"] || false;
-    goog.asserts.assert(typeof Sk.killableFor === "boolean");
+    Sk.asserts.assert(typeof Sk.killableFor === "boolean");
 
     Sk.signals = typeof options["signals"] !== undefined ? options["signals"] : null;
     if (Sk.signals === true) {
@@ -162,10 +160,10 @@ Sk.configure = function (options) {
     } else {
         Sk.signals = null;
     }
-    goog.asserts.assert(typeof Sk.signals === "object");
+    Sk.asserts.assert(typeof Sk.signals === "object");
 
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
-    goog.asserts.assert(typeof Sk.breakpoints === "function");
+    Sk.asserts.assert(typeof Sk.breakpoints === "function");
 
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
@@ -175,7 +173,7 @@ Sk.configure = function (options) {
             Sk.setTimeout = function(func, delay) { func(); };
         }
     }
-    goog.asserts.assert(typeof Sk.setTimeout === "function");
+    Sk.asserts.assert(typeof Sk.setTimeout === "function");
 
     if ("execLimit" in options) {
         Sk.execLimit = options["execLimit"];
@@ -187,7 +185,7 @@ Sk.configure = function (options) {
 
     if (options["syspath"]) {
         Sk.syspath = options["syspath"];
-        goog.asserts.assert(goog.isArrayLike(Sk.syspath));
+        Sk.asserts.assert(Sk.isArrayLike(Sk.syspath));
         // assume that if we're changing syspath we want to force reimports.
         // not sure how valid this is, perhaps a separate api for that.
         Sk.realsyspath = undefined;
@@ -202,7 +200,7 @@ Sk.configure = function (options) {
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 };
 
-goog.exportSymbol("Sk.configure", Sk.configure);
+Sk.exportSymbol("Sk.configure", Sk.configure);
 
 /*
 * Replaceable handler for uncaught exceptions
@@ -217,15 +215,15 @@ Sk.uncaughtException = function(err) {
 Sk.uncaughtException = function(err) {
     throw err;
 };
-goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
+Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 
 /*
- *	Replaceable message for message timeouts
+ *      Replaceable message for message timeouts
  */
 Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
-goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
 /*
  *  Hard execution timeout, throws an error. Set to null to disable
@@ -260,7 +258,7 @@ Sk.sysargv = [];
 Sk.getSysArgv = function () {
     return Sk.sysargv;
 };
-goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
+Sk.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
 
 
 /**
@@ -269,7 +267,7 @@ goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
  */
 Sk.syspath = [];
 
-Sk.inBrowser = goog.global["document"] !== undefined;
+Sk.inBrowser = Sk.global["document"] !== undefined;
 
 /**
  * Internal function used for debug output.
@@ -280,27 +278,23 @@ Sk.debugout = function (args) {
 
 (function () {
     // set up some sane defaults based on availability
-    if (goog.global["write"] !== undefined) {
-        Sk.output = goog.global["write"];
-    } else if (goog.global["console"] !== undefined && goog.global["console"]["log"] !== undefined) {
+    if (Sk.global["write"] !== undefined) {
+        Sk.output = Sk.global["write"];
+    } else if (Sk.global["console"] !== undefined && Sk.global["console"]["log"] !== undefined) {
         Sk.output = function (x) {
-            goog.global["console"]["log"](x);
+            Sk.global["console"]["log"](x);
         };
-    } else if (goog.global["print"] !== undefined) {
-        Sk.output = goog.global["print"];
+    } else if (Sk.global["print"] !== undefined) {
+        Sk.output = Sk.global["print"];
     }
-    if (goog.global["print"] !== undefined) {
-        Sk.debugout = goog.global["print"];
+    if (Sk.global["console"] !== undefined && Sk.global["console"]["log"] !== undefined) {
+        Sk.debugout = function (x) {
+            Sk.global["console"]["log"](x);
+        };
+    } else if (Sk.global["print"] !== undefined) {
+        Sk.debugout = Sk.global["print"];
     }
 }());
-
-// override for closure to load stuff from the command line.
-if (!Sk.inBrowser) {
-    goog.global.CLOSURE_IMPORT_SCRIPT = function (src) {
-        goog.global["eval"](goog.global["read"]("support/closure-library/closure/goog/" + src));
-        return true;
-    };
-}
 
 Sk.inputfun = function (args) {
     return window.prompt(args);
@@ -369,6 +363,5 @@ Sk.switch_version = function (method_to_map, python3) {
     }
 };
 
-goog.exportSymbol("Sk.__future__", Sk.__future__);
-goog.exportSymbol("Sk.inputfun", Sk.inputfun);
-goog.require("goog.asserts");
+Sk.exportSymbol("Sk.__future__", Sk.__future__);
+Sk.exportSymbol("Sk.inputfun", Sk.inputfun);

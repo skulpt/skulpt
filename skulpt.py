@@ -62,15 +62,14 @@ OUTFILE_DEBUGGER = "debugger.js"
 FILE_TYPE_DIST = 'dist'
 FILE_TYPE_TEST = 'test'
 
+# This file list is only used to build the final distribution file.
+# It should be kept in sync with src/main.js.
 # Order is important!
 Files = [
-        'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/deps.js',
-        ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
-        ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
-        ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'support/setImmediate/setImmediate.js',
+        ('src/sk.js', FILE_TYPE_DIST),
+        'src/util.js',
+        'src/assert.js',
         'src/env.js',
         'src/type.js',
         'src/abstract.js',
@@ -118,8 +117,7 @@ Files = [
         'src/typeobject.js',
         'src/builtindict.js',
         'src/constants.js',
-        'src/internalpython.js',
-        ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
+        'src/internalpython.js'
         ]
 
 ExtLibs = [
@@ -128,27 +126,9 @@ ExtLibs = [
 ]
 
 TestFiles = [
-        'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/deps.js',
-        'support/closure-library/closure/goog/math/math.js',
-        'support/closure-library/closure/goog/math/coordinate.js',
-        'support/closure-library/closure/goog/math/vec2.js',
-        'support/closure-library/closure/goog/json/json.js',
-        'support/jsbeautify/beautify.js',
-        "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
-        "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]
-
-def buildNamedTestsFile():
-    testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
-    nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
-    nt.write("namedtfiles = [")
-    for f in testFiles:
-        nt.write("'%s',\n" % f)
-    nt.write("];")
-    nt.close()
 
 def isClean():
     repo = Repo(".")
@@ -177,41 +157,23 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    winbase = ".\\support\\d8\\x32"
-    if not os.path.exists(winbase + "\\d8.exe"):
-        winbase = ".\\support\\d8"
-    os.environ["D8_PATH"] = winbase
-    jsengine = winbase + "\\d8.exe --debugger --harmony"
-
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    os.environ["D8_PATH"] = "./support/d8/mac"
-    jsengine = "./support/d8/mac/d8 --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
-    if is64bit():
-        os.environ["D8_PATH"] = "support/d8/x64"
-        jsengine = "support/d8/x64/d8 --debugger --harmony_promises"
-    else:
-        os.environ["D8_PATH"] = "support/d8/x32"
-        jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    os.environ["D8_PATH"] = "support/d8/x32"
-    jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    os.environ["D8_PATH"] = "support/d8/x64"
-    jsengine = "support/d8/x64/d8 --harmony_promises"
     nul = "/dev/null"
 
-#jsengine = "rhino"
+jsengine = "node"
 
 def test(debug_mode=False, p3=False):
     """runs the unit tests."""
@@ -223,9 +185,19 @@ def test(debug_mode=False, p3=False):
     ret2 = 0
     ret3 = 0
     ret4 = 0
+
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+
+    f = open("support/tmp/test.js", "w");
+    f.write("""
+require('../../src/main.js');
+require('../../test/test.js');
+""");
+    f.close();
+
     if not p3:
-        buildNamedTestsFile()
-        ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+        ret1 = os.system("{0} {1} {2}".format(jsengine, os.path.join("support", "tmp", "test.js"), debugon))
 
     if ret1 == 0:
         print "Running jshint"
@@ -286,14 +258,17 @@ def parse_time_args(argv):
     iter = iter if iter else 1
     time_suite(iter=iter, fn=fn)
 
-def time_suite(iter=1, fn=""):
+def time_suite(iter=1, fn="", p3=False):
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
 
-    additional_files = ""
+    if p3:
+        p3on = 'Sk.python3'
+    else:
+        p3on = 'Sk.python2'
 
     # Profile single file
     if fn:
@@ -302,46 +277,44 @@ def time_suite(iter=1, fn=""):
             raise SystemExit()
 
         modname = os.path.splitext(os.path.basename(fn))[0]
+
         f.write("""
-    var input = read('%s');
-    print("-----");
-    print(input);
-    print("-----");
-    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
-    Sk.misceval.asyncToPromise(function() {
-        return Sk.importMain("%s", true, true);
-    }).then(function () {
-        print("-----");
-    }, function(e) {
-        print("UNCAUGHT EXCEPTION: " + e);
-        print(e.stack);
-    });
-        """ % (fn, os.path.split(fn)[0], modname))
+const fs = require('fs');
+require("../../src/main.js");
+
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", false, true);
+}).then(function () {
+    console.log("-----");
+}, function(e) {
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+});
+    """ % (os.path.split(fn)[0], p3on, modname))
 
     # Profile test suite
     else:
-        # Prepare named tests
-        buildNamedTestsFile()
-
         # Prepare unit tests
-        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
+        if p3:
+            testDir = 'test/unit3'
+        else:
+            testDir = 'test/unit'
+        testFiles = [testDir + '/' + fn for fn in os.listdir(testDir) if '.py' in fn]
 
-        f.write("var input;\n")
+        f.write("""
+const fs = require('fs');
+require("../../src/main.js");
+Sk.configure({syspath:["test/unit/"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+""" % p3on)
 
         for fn in testFiles:
             modname = os.path.splitext(os.path.basename(fn))[0]
-            p3on = 'false'
             f.write("""
-    input = read('%s');
-    print('%s');
-    Sk.configure({syspath:["%s"], read:read, python3:%s});
-    Sk.importMain("%s", false);
-            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+Sk.importMain("%s", false);
+            """ % modname)
 
         fn = "test suite"
-        additional_files = ' '.join(TestFiles)
 
     f.close()
 
@@ -354,15 +327,14 @@ def time_suite(iter=1, fn=""):
         if iter > 1:
             print "Iteration %d of %d..." % (i + 1, iter)
         startTime = time.time()
-        p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
-                  ' '.join(getFileList(FILE_TYPE_TEST)),
-                  additional_files),
+        p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
                   shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
         if p.returncode != 0:
             print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
+            print errs
 
         endTime = time.time()
         times.append(endTime - startTime)
@@ -406,19 +378,23 @@ def parse_profile_args(argv):
 
     profile(fn=fn, output=out)
 
-def profile(fn="", process=True, output=""):
+def profile(fn="", process=True, output="", p3=False):
     """
     Runs v8 profiler, which outputs tick information to v8.log Use
     https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
     to analyze log.
     """
-    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+    jsprofengine = jsengine + ' --prof --no-logfile-per-isolate --log-internal-timer-events'
+    print jsprofengine
 
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
 
-    additional_files = ""
+    if p3:
+        p3on = 'Sk.python3'
+    else:
+        p3on = 'Sk.python2'
 
     # Profile single file
     if fn:
@@ -427,55 +403,51 @@ def profile(fn="", process=True, output=""):
             raise SystemExit()
 
         modname = os.path.splitext(os.path.basename(fn))[0]
+
         f.write("""
-    var input = read('%s');
-    print("-----");
-    print(input);
-    print("-----");
-    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
-    Sk.misceval.asyncToPromise(function() {
-        return Sk.importMain("%s", true, true);
-    }).then(function () {
-        print("-----");
-    }, function(e) {
-        print("UNCAUGHT EXCEPTION: " + e);
-        print(e.stack);
-    });
-        """ % (fn, os.path.split(fn)[0], modname))
+const fs = require('fs');
+require("../../src/main.js");
+
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", false, true);
+}).then(function () {
+    console.log("-----");
+}, function(e) {
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+});
+    """ % (os.path.split(fn)[0], p3on, modname))
 
     # Profile test suite
     else:
-        # Prepare named tests
-        buildNamedTestsFile()
-
         # Prepare unit tests
-        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
-        if not os.path.exists("support/tmp"):
-            os.mkdir("support/tmp")
+        if p3:
+            testDir = "test/unit3"
+        else:
+            testDir = "test/unit"
+        testFiles = [testDir + "/" + fn for fn in os.listdir(testDir) if '.py' in fn]
 
-        f.write("var input;\n")
+        f.write("""
+const fs = require('fs');
+require("../../src/main.js");
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
+""" % (testDir + '/', p3on))
 
         for fn in testFiles:
             modname = os.path.splitext(os.path.basename(fn))[0]
-            p3on = 'false'
             f.write("""
-    input = read('%s');
-    print('%s');
-    Sk.configure({syspath:["%s"], read:read, python3:%s});
-    Sk.importMain("%s", false);
-            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+Sk.importMain("%s", false);
+""" % (modname))
 
             fn = "test suite"
-            additional_files = ' '.join(TestFiles)
 
     f.close()
 
     # Run profile
     print("Running profile on %s..." % fn)
     startTime = time.time()
-    p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
-              ' '.join(getFileList(FILE_TYPE_TEST)),
-              additional_files),
+    p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
               shell=True, stdout=PIPE, stderr=PIPE)
 
     outs, errs = p.communicate()
@@ -492,22 +464,15 @@ def profile(fn="", process=True, output=""):
 
     # Process and display results
     if process:
+        # Currently does not actually save to output file
         if output:
             out_msg = " and saving in %s" % output
             output = " > " + output
         else:
             out_msg = ""
 
-        print "Processing profile using d8 processor%s..." % out_msg
-        if sys.platform == "win32":
-            os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
-        elif sys.platform == "darwin":
-            os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
-        elif sys.platform == "linux2":
-            os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
-        else:
-            print """d8 processor is unsupported on this platform.
-    Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
+        print "Processing profile using node%s..." % out_msg
+        os.system("{0} --prof-process v8.log".format(jsengine))
 
 def debugbrowser():
     tmpl = """
@@ -766,9 +731,29 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file tmp.js" % (uncompfiles))
+    ret = os.system("npx google-closure-compiler --define Sk.asserts.ENABLE_ASSERTS=false "
+                    "--output_wrapper \"(function(){%%output%%}());\" "
+                    "--compilation_level SIMPLE_OPTIMIZATIONS "
+                    "--jscomp_error accessControls "
+                    "--jscomp_error checkRegExp "
+                    "--jscomp_error checkTypes "
+                    "--jscomp_error checkVars "
+                    "--jscomp_error deprecated "
+                    "--jscomp_off fileoverviewTags "
+                    "--jscomp_error invalidCasts "
+                    "--jscomp_error missingProperties "
+                    "--jscomp_error nonStandardJsDocs "
+                    "--jscomp_error strictModuleDepCheck "
+                    "--jscomp_error undefinedVars "
+                    "--jscomp_error unknownDefines "
+                    "--jscomp_error visibility %s "
+                    "--externs support/externs/node-buffers.js "
+                    "--externs support/externs/node-events.js "
+                    "--externs support/externs/node-streams.js "
+                    "--externs support/externs/node-process.js "
+                    "--js_output_file tmp.js" % (uncompfiles))
     # to disable asserts
-    # --define goog.DEBUG=false
+    # --define Sk.asserts.ENABLE_ASSERTS=false
     #
     # to make a file that for ff plugin, not sure of format
     # --create_source_map <distribution-dir>/srcmap.txt
@@ -797,10 +782,20 @@ def dist(options):
 
     # Run tests on compressed.
     if options.disabletests == False:
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
+        f = open("support/tmp/dist.js", "w")
+        f.write("""
+require("../../%s/%s");
+require("../../test/test.js");
+""" % (DIST_DIR, OUTFILE_MIN));
+        f.close()
+
         if options.verbose:
             print ". Running tests on compressed..."
-        buildNamedTestsFile()
-        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+
+        ret = os.system("{0} {1}".format(jsengine, os.path.join("support", "tmp", "dist.js")))
         if ret != 0:
             print "Tests failed on compressed version."
             sys.exit(1)
@@ -814,7 +809,7 @@ def dist(options):
 
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
-        shutil.copy("debugger/debugger.js", DIST_DIR)
+        shutil.copy(os.path.join("debugger", "debugger.js"), DIST_DIR)
     except Exception as e:
         print "Couldn't copy debugger to output folder: %s" % e.message
         sys.exit(1)
@@ -893,7 +888,7 @@ def run_in_browser(fn, options, debug_mode=False, p3=False):
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
     docbi(options,RUN_DIR)
     scripts = []
-    for f in getFileList(FILE_TYPE_TEST):
+    for f in getFileList(FILE_TYPE_DIST):
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
     scripts = "\n".join(scripts)
@@ -1044,6 +1039,7 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
         raise SystemExit()
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
+
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     if p3:
@@ -1054,26 +1050,43 @@ def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
         debugon = 'true'
     else:
         debugon = 'false'
+
+    if opt:
+        dname = DIST_DIR
+        fname = OUTFILE_MIN
+        
+        # Hack to get extra libraries into global namespace for node
+        extras = ""
+        for lib in ExtLibs:
+            extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
+    else:
+        dname = "src"
+        fname = "main.js"
+        extras = ""
+
     f.write("""
-var input = read('%s');
-print("-----");
-print(input);
-print("-----");
-Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging:%s});
+const fs = require('fs');
+require("../../%s/%s");
+
+%s
+
+var input = fs.readFileSync("%s", "utf8");
+console.log("-----");
+console.log(input);
+console.log("-----");
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", %s, true);
 }).then(function () {
-    print("-----");
+    console.log("-----");
 }, function(e) {
-    print("UNCAUGHT EXCEPTION: " + e);
-    print(e.stack);
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
 });
-    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
+""" % (dname, fname, extras, fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
-    if opt:
-        os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
-    else:
-        os.system("{0} {1} {2} support/tmp/run.js".format(jsengine, shell, ' '.join(getFileList(FILE_TYPE_TEST))))
+
+    os.system("{0} {1} {2}".format(jsengine, shell, os.path.join("support", "tmp", "run.js")))
 
 def runopt(fn):
     run(fn, "", True)
@@ -1099,31 +1112,47 @@ def rununits(opt=False, p3=False, debug_mode=False):
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
     failTot = 0
+
     for fn in testFiles:
         if not os.path.exists("support/tmp"):
             os.mkdir("support/tmp")
-        f = open("support/tmp/run.js", "w")
+
         modname = os.path.splitext(os.path.basename(fn))[0]
+        if opt:
+            dname = DIST_DIR
+            fname = OUTFILE_MIN
+
+            # Hack to get extra libraries into global namespace for node
+            extras = ""
+            for lib in ExtLibs:
+                extras += "(1, eval)(fs.readFileSync('%s', 'utf8'));\n" % lib
+        else:
+            dname = "src"
+            fname = "main.js"
+            extras = ""
+
+        f = open("support/tmp/rununits.js", "w")
         f.write("""
-var input = read('%s');
-print('%s');
-Sk.configure({syspath:["%s"], read:read, __future__:%s, debugging: %s});
+const fs = require('fs');
+require('../../%s/%s');
+
+%s
+
+var input = fs.readFileSync('%s', 'utf8');
+console.log('%s');
+Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", false, true);
 }).then(function () {}, function(e) {
-    print("UNCAUGHT EXCEPTION: " + e);
-    print(e.stack);
-    quit(1);
+    console.log("UNCAUGHT EXCEPTION: " + e);
+    console.log(e.stack);
+    process.exit(1);
 });
-        """ % (fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
+        """ % (dname, fname, extras, fn, fn, os.path.split(fn)[0], p3on, str(debug_mode).lower(), modname))
         f.close()
-        if opt:
-            p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
-                                                           OUTFILE_MIN),shell=True,
-                      stdout=PIPE, stderr=PIPE)
-        else:
-            p = Popen("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
-                getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+
+        p = Popen("{0} {1}".format(jstestengine, os.path.join("support", "tmp", "rununits.js")),
+                  shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
 
@@ -1151,7 +1180,7 @@ Sk.misceval.asyncToPromise(function() {
 
 
 def repl():
-    os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
+    os.system("{0} {1}".format(jsengine, os.path.join("repl", "repl.js")))
 
 def nrt(newTest):
     """open a new run test"""
@@ -1203,33 +1232,6 @@ def vmwareregr(names):
             #"ff3-ubu": ubu,
             #"chromed-ubu": ubu,
             ]
-
-def regengooglocs():
-    """scans the closure library and builds an import-everything file to be
-    used during dev. """
-
-    # from calcdeps.py
-    prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
-
-    # walk whole tree, find all the 'provide's in a file, and note the location
-    root = "support/closure-library/closure"
-    modToFile = {}
-    for dirpath, dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            f = os.path.join(dirpath, filename)
-            if ".svn" in f: continue
-            if os.path.splitext(f)[1] == ".js":
-                contents = open(f).read()
-                for prov in prov_regex.findall(contents):
-                    modToFile[prov] = f.lstrip(root)
-
-    with open("gen/debug_import_all_closure.js", "w") as glf:
-        keys = modToFile.keys()
-        keys.sort()
-        for m in keys:
-            if "demos." in m: continue
-            if not m.startswith("goog."): continue
-            print >>glf, "goog.require('%s');" % m
 
 import SimpleHTTPServer
 import urlparse
@@ -1341,8 +1343,6 @@ def main():
         exit(bool(test(debug_mode=True, p3=True)))
     elif cmd == "dist":
         dist(options)
-    elif cmd == "regengooglocs":
-        regengooglocs()
     elif cmd == "regentests":
         if len(sys.argv) > 2:
             togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]

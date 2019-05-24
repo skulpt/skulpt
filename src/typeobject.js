@@ -14,7 +14,7 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
     if (mro) {
         /* Deal with multiple inheritance without recursion
            by walking the MRO tuple */
-        goog.asserts.assert(mro instanceof Sk.builtin.tuple);
+        Sk.asserts.assert(mro instanceof Sk.builtin.tuple);
         for (var i = 0; i < mro.v.length; i++) {
             if (mro.v[i] == b) {
                 return true;
@@ -70,21 +70,20 @@ Sk.abstr.setUpInheritance("super", Sk.builtin.super_, Sk.builtin.object);
 
 /**
  * Get an attribute
- * @param {string} name JS name of the attribute
+ * @param {Object} pyName Python name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.super_.prototype.tp$getattr = function (name, canSuspend) {
+Sk.builtin.super_.prototype.tp$getattr = function (pyName, canSuspend) {
     var res;
     var f;
     var descr;
     var tp;
     var dict;
-    var pyName = new Sk.builtin.str(name);
-    goog.asserts.assert(typeof name === "string");
+    var jsName = pyName.$jsstr();
 
     tp = this.obj_type;
-    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this.obj["$d"] || this.obj.constructor["$d"];
 
@@ -96,14 +95,14 @@ Sk.builtin.super_.prototype.tp$getattr = function (name, canSuspend) {
             res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
-            res = dict[name];
+            res = dict[jsName];
         }
         if (res !== undefined) {
             return res;
         }
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
+    descr = Sk.builtin.type.typeLookup(tp, pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {

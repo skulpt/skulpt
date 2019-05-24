@@ -65,9 +65,13 @@ Sk.builtin.str = function (x) {
     return this;
 
 };
-goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
+Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
+
+Sk.builtin.str.prototype.$jsstr = function () {
+    return this.v;
+};
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
@@ -124,7 +128,7 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
 Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.sq$item = function () {
-    goog.asserts.fail();
+    Sk.asserts.fail();
 };
 Sk.builtin.str.prototype.sq$slice = function (i1, i2) {
     i1 = Sk.builtin.asnum$(i1);
@@ -169,7 +173,7 @@ Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
         case "GtE":
             return this.v >= other.v;
         default:
-            goog.asserts.fail();
+            Sk.asserts.fail();
     }
 };
 
@@ -300,10 +304,11 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     }
 
     howmany = Sk.builtin.asnum$(howmany);
-    regex = /[\s]+/g;
+    regex = /[\s\xa0]+/g;
     str = self.v;
     if (on === null) {
-        str = goog.string.trimLeft(str);
+        // Remove leading whitespace
+        str = str.replace(/^[\s\xa0]+/, "");
     } else {
         // Escape special characters in "on" so we can use a regexp
         s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
@@ -833,18 +838,18 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalpha", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isAlpha(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalnum", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isAlphaNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z0-9]/.test(self.v));
 });
 
 // does not account for unicode numeric values
 Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isnumeric", arguments.length, 1, 1);
-    return new Sk.builtin.bool( self.v.length && goog.string.isNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[^0-9]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {
@@ -993,10 +998,10 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 neg = n.nb$isnegative();
             } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
-                neg = n.nb$isnegative();	//	neg = n.size$ < 0;	RNL long.js change
+                neg = n.nb$isnegative();
             }
 
-            goog.asserts.assert(r !== undefined, "unhandled number format");
+            Sk.asserts.assert(r !== undefined, "unhandled number format");
 
             precZeroPadded = false;
 
@@ -1133,13 +1138,14 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             return r.v;
         } else if (conversionType === "s") {
             r = new Sk.builtin.str(value);
+            r = r.$jsstr();
             if (precision) {
-                return r.v.substr(0, precision);
+                return r.substr(0, precision);
             }
             if(fieldWidth) {
-                r.v = handleWidth([" ", r.v]);
+                r = handleWidth([" ", r]);
             }
-            return r.v;
+            return r;
         } else if (conversionType === "%") {
             return "%";
         }

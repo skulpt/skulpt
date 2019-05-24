@@ -180,7 +180,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
             case "GtE":
                 return vl >= wl;
             default:
-                goog.asserts.fail();
+                Sk.asserts.fail();
         }
     }
 
@@ -255,7 +255,7 @@ Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) 
     return  new Sk.builtin.int_(count);
 });
 
-goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
+Sk.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
 
 /**
  * @constructor

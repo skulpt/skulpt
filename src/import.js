@@ -121,7 +121,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
         var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
         mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-        goog.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
     }
 };
@@ -148,12 +148,6 @@ Sk.importSetUpPath = function (canSuspend) {
     }
 };
 
-if (COMPILED) {
-    var js_beautify = function (x) {
-        return x;
-    };
-}
-
 /**
  * @param {string} name name of module to import
  * @param {boolean=} dumpJS whether to output the generated js code
@@ -175,9 +169,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
     var ret;
     var module;
     var topLevelModuleToReturn = null;
-    var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__name__") : undefined;
+    var relativePackageName = relativeToPackage !== undefined ? relativeToPackage.tp$getattr(Sk.builtin.str.$name) : undefined;
     var absolutePackagePrefix = relativePackageName !== undefined ? relativePackageName.v + "." : "";
-    var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr("__path__") : undefined;
+    var searchPath = relativeToPackage !== undefined ? relativeToPackage.tp$getattr(Sk.builtin.str.$path) : undefined;
     Sk.importSetUpPath(canSuspend);
 
     if (relativeToPackage && !relativePackageName) {
@@ -231,7 +225,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             }
             parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
             searchFileName = modNameSplit[modNameSplit.length-1];
-            searchPath = parentModule.tp$getattr("__path__");
+            searchPath = parentModule.tp$getattr(Sk.builtin.str.$path);
         }
 
         // otherwise:
@@ -319,7 +313,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 var pad;
                 var width;
                 var i;
-                var beaut = js_beautify(code);
+                var beaut = Sk.js_beautify(code);
                 var lines = beaut.split("\n");
                 for (i = 1; i <= lines.length; ++i) {
                     width = ("" + i).length;
@@ -338,7 +332,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         finalcode += "\n" + co.funcname + ";";
 
-        modscope = goog.global["eval"](finalcode);
+        modscope = Sk.global["eval"](finalcode);
 
         module["$d"] = {
             "__name__": new Sk.builtin.str(modname),
@@ -389,13 +383,13 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         if (topLevelModuleToReturn) {
             // if we were a dotted name, then we want to return the top-most
             // package. we store ourselves into our parent as an attribute
-            parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
+            parentModule.tp$setattr(new Sk.builtin.str(modNameSplit[modNameSplit.length - 1]), module);
             //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
             return topLevelModuleToReturn;
         }
 
         if (relativeToPackage) {
-            relativeToPackage.tp$setattr(name, module);
+            relativeToPackage.tp$setattr(new Sk.builtin.str(name), module);
         }
 
         //print("name", name, "modname", modname, "returning leaf");
@@ -418,7 +412,7 @@ Sk.importModule = function (name, dumpJS, canSuspend) {
 Sk.importMain = function (name, dumpJS, canSuspend) {
     Sk.dateSet = false;
     Sk.filesLoaded = false;
-    //	Added to reset imports
+    // Added to reset imports
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
 
@@ -441,7 +435,7 @@ Sk.importMain = function (name, dumpJS, canSuspend) {
 Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     Sk.dateSet = false;
     Sk.filesLoaded = false;
-    //	Added to reset imports
+    // Added to reset imports
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
 
@@ -553,7 +547,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
 
                     // "ret" is the module we're importing from
                     // Only import from file system if we have not found the fromName in the current module
-                    if (fromName != "*" && leafModule.tp$getattr(fromName) === undefined) {
+                    if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
                         importChain = Sk.misceval.chain(importChain,
                             Sk.importModuleInternal_.bind(null, fromName, undefined, undefined, undefined, leafModule, true, true)
                         );
@@ -564,7 +558,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
                 return Sk.misceval.chain(importChain, function() {
                     // if there's a fromlist we want to return the leaf module
                     // (ret), not the toplevel namespace
-                    goog.asserts.assert(leafModule);
+                    Sk.asserts.assert(leafModule);
                     return leafModule;
                 });
             }
@@ -588,8 +582,8 @@ Sk.importStar = function (module, loc, global) {
     }
 };
 
-goog.exportSymbol("Sk.importMain", Sk.importMain);
-goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
-goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
-goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
-goog.exportSymbol("Sk.importStar", Sk.importStar);
+Sk.exportSymbol("Sk.importMain", Sk.importMain);
+Sk.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
+Sk.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
+Sk.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
+Sk.exportSymbol("Sk.importStar", Sk.importStar);

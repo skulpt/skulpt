@@ -89,7 +89,7 @@ Sk.builtin.BaseException.prototype.args = {
     }
 };
 
-goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
+Sk.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
 /**
  * @constructor
@@ -106,7 +106,7 @@ Sk.builtin.Exception = function (args) {
     Sk.builtin.BaseException.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
-goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
 
 /**
  * @constructor
@@ -123,7 +123,7 @@ Sk.builtin.StandardError = function (args) {
     Sk.builtin.Exception.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
-goog.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
+Sk.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
 
 /**
  * @constructor
@@ -140,7 +140,7 @@ Sk.builtin.AssertionError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
+Sk.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
 
 /**
  * @constructor
@@ -302,7 +302,7 @@ Sk.builtin.RuntimeError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
+Sk.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
 
 
 /**
@@ -320,7 +320,7 @@ Sk.builtin.SuspensionError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
+Sk.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
 
 
 /**
@@ -338,7 +338,7 @@ Sk.builtin.SystemExit = function (args) {
     Sk.builtin.BaseException.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
-goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
+Sk.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
 
 /**
@@ -356,7 +356,7 @@ Sk.builtin.TypeError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
+Sk.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
 /**
  * @constructor
  * @extends Sk.builtin.StandardError
@@ -372,7 +372,7 @@ Sk.builtin.ValueError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
+Sk.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
 
 /**
  * @constructor
@@ -405,7 +405,7 @@ Sk.builtin.TimeLimitError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
+Sk.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
 
 /**
  * @constructor
@@ -422,7 +422,7 @@ Sk.builtin.IOError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
+Sk.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
 
 
 /**
@@ -440,7 +440,7 @@ Sk.builtin.NotImplementedError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
+Sk.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
 
 /**
  * @constructor
@@ -457,7 +457,7 @@ Sk.builtin.NegativePowerError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
+Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
 
 /**
  * @constructor
@@ -482,7 +482,7 @@ Sk.builtin.ExternalError = function (nativeError, args) {
     Sk.builtin.StandardError.apply(this, args);
 };
 Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
+Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
 
 /**
  * @constructor
@@ -499,7 +499,7 @@ Sk.builtin.OperationError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
+Sk.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
 
 /**
  * @constructor
@@ -516,7 +516,7 @@ Sk.builtin.SystemError = function (args) {
     Sk.builtin.StandardError.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
-goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
+Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
  * @constructor
@@ -533,7 +533,7 @@ Sk.builtin.StopIteration = function (args) {
     Sk.builtin.Exception.apply(this, arguments);
 };
 Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
-goog.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
+Sk.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
 
 // TODO: Extract into sys.exc_info(). Work out how the heck
@@ -547,4 +547,3 @@ Sk.builtin.getExcInfo = function(e) {
 };
 // NOT exported
 
-goog.exportSymbol("Sk", Sk);
