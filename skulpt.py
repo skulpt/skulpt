@@ -196,16 +196,13 @@ def debugbrowser():
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <title>Skulpt test</title>
-        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css">
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css">
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css">
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css">
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css">
         <style>
             .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
         </style>
-
-%s
+        <script src="../../dist/skulpt.js" type="text/javascript"></script>
+        <script src="../../dist/skulpt-stdlib.js" type="text/javascript"></script>
+        <script src="vfs.js" type="text/javascript"></script>
+        <script src="../../test/test.js" type="text/javascript"></script>
     </head>
 
     <body onload="testsMain()">
@@ -230,20 +227,16 @@ def debugbrowser():
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
     buildVFS()
-    scripts = []
-    # for f in getFileList(FILE_TYPE_TEST) + ["{0}/browser-stubs.js".format(TEST_DIR), "support/tmp/vfs.js" ] + TestFiles:
-    #     scripts.append('<script type="text/javascript" src="%s"></script>' %
-    #             os.path.join('../..', f))
 
     with open("support/tmp/test.html", "w") as f:
-        print >>f, tmpl % '\n'.join(scripts)
+        print >>f, tmpl
 
     if sys.platform == "win32":
         os.system("start support/tmp/test.html")
     elif sys.platform == "darwin":
         os.system("open support/tmp/test.html")
     else:
-        os.system("gnome-open support/tmp/test.html")
+        os.system("xdg-open support/tmp/test.html")
 
 def buildVFS():
     """ build a silly virtual file system to support 'read'"""
@@ -361,17 +354,6 @@ function quit(rc)
     out.close()
     print ". Built %s" % outfn
 
-
-def regenparser():
-    """regenerate the parser/ast source code"""
-    if not os.path.exists("gen"): os.mkdir("gen")
-    os.chdir("src/pgen/parser")
-    os.system("python main.py ../../../gen/parse_tables.js")
-    os.chdir("../ast")
-    os.system("python asdl_js.py Python.asdl ../../../gen/astnodes.js")
-    os.chdir("../../..")
-    # sanity check that they at least parse
-    #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
 def regenasttests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the ast test files by running our helper script via real python"""
@@ -539,7 +521,6 @@ Commands:
 
     time [iter]      Average runtime of the test suite over [iter] iterations.
 
-    regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
     regenruntests    Regenerate runtime unit tests
     regensymtabtests Regenerate symbol table tests
@@ -589,9 +570,8 @@ def main():
     else:
         cmd = sys.argv[1]
 
-    with open("src/internalpython.js", "w") as f:
-        f.write(getInternalCodeAsJson() + ";")
-
+    print "cmd:", cmd
+        
     if cmd == "regentests":
         if len(sys.argv) > 2:
             togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]
@@ -605,8 +585,6 @@ def main():
         regensymtabtests()
     elif cmd == "vmwareregr":
         vmwareregr()
-    elif cmd == "regenparser":
-        regenparser()
     elif cmd == "regenasttests":
         regenasttests()
     elif cmd == "regenruntests":
