@@ -60,6 +60,23 @@ TestFiles = [
         "{0}/test.js".format(TEST_DIR)
         ]
 
+if sys.platform == "win32":
+    nul = "nul"
+    crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
+elif sys.platform == "darwin":
+    nul = "/dev/null"
+    crlfprog = None
+elif sys.platform == "linux2":
+    nul = "/dev/null"
+    crlfprog = None
+else:
+    # You're on your own...
+    nul = "/dev/null"
+    crlfprog = None
+
+if os.environ.get("CI",False):
+    nul = "/dev/null"
+
 def debugbrowser():
     tmpl = """
 <!DOCTYPE HTML>
@@ -426,8 +443,6 @@ def main():
     else:
         cmd = sys.argv[1]
 
-    print "cmd:", cmd
-        
     if cmd == "regentests":
         if len(sys.argv) > 2:
             togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]
