@@ -1,27 +1,12 @@
 #!/usr/bin/env python2.7
 
-#
-#   Note:  python2.6 is specified because that is what the skulpt parser
-#          used as a reference.  This is only important when you are doing
-#          things like regenerating tests and/or regenerating symtabs
-#          If you do not have python 2.6 and you ARE NOT creating new tests
-#          then all should be well for you to use 2.7 or whatever you have around
-
 from optparse import OptionParser
-from subprocess import Popen, PIPE
-import subprocess
 import os
 import sys
 import glob
-import py_compile
 import symtable
 import shutil
-import re
-import pprint
 import json
-import shutil
-import time
-from itertools import chain
 
 def bowerFileName():
     file = open(".bowerrc")
@@ -38,9 +23,7 @@ def bowerProperty(name):
     return value
 
 # Symbolic constants for the project structure.
-DIST_DIR        = 'dist'
 TEST_DIR        = 'test'
-RUN_DIR         = 'support/tmp'
 
 # Symbolic constants for the naming of distribution files.
 STANDARD_NAMING = True
@@ -52,7 +35,6 @@ OUTFILE_MAP     = "{0}-linemap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else
 OUTFILE_DEBUGGER = "debugger.js"
 
 # Symbolic constants for file types.
-FILE_TYPE_DIST = 'dist'
 FILE_TYPE_TEST = 'test'
 
 TestFiles = [
@@ -413,7 +395,6 @@ Options:
 
     -q, --quiet        Only output important information
     -s, --silent       Do not output anything, besides errors
-    -u, --uncompressed Makes uncompressed core distribution file for debugging
     -v, --verbose      Make output more verbose [default]
     --version          Returns the version string in Bower configuration file.
 '''.format(program=program)
@@ -422,7 +403,6 @@ def main():
     parser = OptionParser(usageString("%prog"), version="%prog {0}".format(bowerProperty("version")))
     parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
     parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
-    parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
     parser.add_option("-d", "--disabletests", action="store_true", dest="disabletests", default=False)
     parser.add_option("-v", "--verbose",
         action="store_true",
