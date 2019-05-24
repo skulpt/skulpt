@@ -11,7 +11,7 @@ function run (python3, opt, filename) {
     require('../dist/' + skulptname);
     Sk.js_beautify = require('js-beautify').js;
 
-    var pyver;
+    var pyver, starttime, endtime, elapsed;
     var input = fs.readFileSync(filename, "utf8");
 
     if (python3) {
@@ -32,9 +32,13 @@ function run (python3, opt, filename) {
     });
 
     Sk.misceval.asyncToPromise(function() {
+	starttime = Date.now();
 	return Sk.importMain(path.basename(filename, ".py"), true, true);
     }).then(function () {
+	endtime = Date.now();
 	console.log("-----");
+	elapsed = (endtime - starttime) / 1000;
+	console.log("Run time: " + elapsed.toString() + "s");
     }, function(e) {
 	console.log("UNCAUGHT EXCEPTION: " + e);
 	console.log(e.stack);

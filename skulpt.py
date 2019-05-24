@@ -60,135 +60,6 @@ TestFiles = [
         "{0}/test.js".format(TEST_DIR)
         ]
 
-
-
-def parse_time_args(argv):
-    usageString = """
-
-{program} time [filename.py] [iter=1]
-    Computes the average runtime of a Python file (or test suite, if none specified)
-    over iter number of trials.
-    """.format(program=argv[0])
-
-    fn = ""
-    iter = 0
-
-    if len(sys.argv) > 4:
-        print usageString
-        sys.exit(2)
-
-    for arg in argv[2:]:
-        if arg.isdigit():
-            if iter:
-                print usageString
-                sys.exit(2)
-            else:
-                iter = int(arg)
-                if iter <= 0:
-                    print "Number of trials must be 1 or greater."
-                    sys.exit(2)
-        elif ".py" in arg:
-            if fn:
-                print usageString
-                sys.exit(2)
-            else:
-                fn = arg
-        else:
-            print usageString
-            sys.exit(2)
-
-    iter = iter if iter else 1
-    time_suite(iter=iter, fn=fn)
-
-def time_suite(iter=1, fn="", p3=False):
-    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
-
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-    f = open("support/tmp/run.js", "w")
-
-    if p3:
-        p3on = 'Sk.python3'
-    else:
-        p3on = 'Sk.python2'
-
-    # Profile single file
-    if fn:
-        if not os.path.exists(fn):
-            print "%s doesn't exist" % fn
-            raise SystemExit()
-
-        modname = os.path.splitext(os.path.basename(fn))[0]
-
-        f.write("""
-const fs = require('fs');
-require("../../src/main.js");
-
-Sk.configure({syspath:["%s"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
-Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", false, true);
-}).then(function () {
-    console.log("-----");
-}, function(e) {
-    console.log("UNCAUGHT EXCEPTION: " + e);
-    console.log(e.stack);
-});
-    """ % (os.path.split(fn)[0], p3on, modname))
-
-    # Profile test suite
-    else:
-        # Prepare unit tests
-        if p3:
-            testDir = 'test/unit3'
-        else:
-            testDir = 'test/unit'
-        testFiles = [testDir + '/' + fn for fn in os.listdir(testDir) if '.py' in fn]
-
-        f.write("""
-const fs = require('fs');
-require("../../src/main.js");
-Sk.configure({syspath:["test/unit/"], read:(fname)=>{return fs.readFileSync(fname, "utf8");}, output:(args)=>{process.stdout.write(args);}, __future__:%s, debugging:false});
-""" % p3on)
-
-        for fn in testFiles:
-            modname = os.path.splitext(os.path.basename(fn))[0]
-            f.write("""
-Sk.importMain("%s", false);
-            """ % modname)
-
-        fn = "test suite"
-
-    f.close()
-
-    print "Timing %s...\n" % fn
-
-    times = []
-
-    # Run profile
-    for i in range(iter):
-        if iter > 1:
-            print "Iteration %d of %d..." % (i + 1, iter)
-        startTime = time.time()
-        p = Popen("{0} {1}".format(jsprofengine, os.path.join("support", "tmp", "run.js")),
-                  shell=True, stdout=PIPE, stderr=PIPE)
-
-        outs, errs = p.communicate()
-
-        if p.returncode != 0:
-            print "\n\nWARNING: Scripts returned with error code. Timing data may be inaccurate.\n\n"
-            print errs
-
-        endTime = time.time()
-        times.append(endTime - startTime)
-
-    avg = sum(times) / len(times)
-
-    if iter > 1:
-        print "\nAverage time over %s iterations: %s seconds" % (iter, avg)
-    else:
-        print "%s seconds" % avg
-
-
 def debugbrowser():
     tmpl = """
 <!DOCTYPE HTML>
@@ -519,8 +390,6 @@ def usageString(program):
 
 Commands:
 
-    time [iter]      Average runtime of the test suite over [iter] iterations.
-
     regenasttests    Regen abstract symbol table tests
     regenruntests    Regenerate runtime unit tests
     regensymtabtests Regenerate symbol table tests
@@ -530,7 +399,6 @@ Commands:
     host [PORT]      Start a simple HTTP server for testing. Default port: 20710
     upload           Run appcfg.py to upload doc to live GAE site
     doctest          Run the GAE development server for doc testing
-    nrt              Generate a file for a new test case
     browser          Run all tests in the browser
     vfs              Build a virtual file system to support Skulpt read tests
 
@@ -608,8 +476,6 @@ def main():
             except ValueError:
                 print "Port must be an integer"
                 sys.exit(2)
-    elif cmd == "time":
-        parse_time_args(sys.argv)
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)

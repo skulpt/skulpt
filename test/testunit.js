@@ -3,6 +3,8 @@ const path = require('path');
 const program = require('commander');
 
 function test (python3, opt) {
+    var startime, endtime, elapsed;
+    
     // Import Skulpt
     var skulptname = 'skulpt.js';
     if (opt) {
@@ -38,6 +40,7 @@ function test (python3, opt) {
 
     // Test each existing unit test file
     var files = fs.readdirSync(dir);
+    starttime = Date.now();
     files.forEach((file) => {
 	let fullname = dir + "/" + file;
 	let stat = fs.statSync(fullname);
@@ -67,8 +70,11 @@ function test (python3, opt) {
 	}
     });
 
+    endtime = Date.now();
     console.log("Summary");
     console.log("Passed: " + passTot + " Failed: " + failTot);
+    elapsed = (endtime - starttime) / 1000;
+    console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
 }
 
 program
