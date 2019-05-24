@@ -7,6 +7,7 @@ const ClosureWebpackPlugin = require('closure-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
+const CompressionWebpackPlugin = require('compression-webpack-plugin');
 
 const git = new GitRevisionPlugin({branch: true});
 
@@ -41,13 +42,13 @@ module.exports = (env, argv) => {
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['fileoverviewTags', 'deprecated'],
-		    externs: 'support/externs/sk.js'
+                    externs: 'support/externs/sk.js'
                 })
             ]
         };
         outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
-	mod = {
+        mod = {
             rules: [
                 {
                     test: /\.js$/,
@@ -81,14 +82,18 @@ module.exports = (env, argv) => {
         devtool: 'source-map',
         plugins: [
             new CleanWebpackPlugin(),
-	    new CopyWebpackPlugin([
-		{ from: 'debugger/debugger.js', to: 'debugger.js' }
-	    ]),
+            new CopyWebpackPlugin([
+                { from: 'debugger/debugger.js', to: 'debugger.js' }
+            ]),
             new webpack.DefinePlugin({
                 GITVERSION: JSON.stringify(git.version()),
                 GITHASH: JSON.stringify(git.commithash()),
                 GITBRANCH: JSON.stringify(git.branch()),
                 BUILDDATE: JSON.stringify(new Date())
+            }),
+            new CompressionWebpackPlugin({
+                include: /^skulpt\.min\.js$/,
+                algorithm: 'gzip'
             })
         ],
         optimization: opt,
