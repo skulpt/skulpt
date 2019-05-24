@@ -1,36 +1,55 @@
 const fs = require('fs');
 const path = require('path');
+const program = require('commander');
 
-// Import Skulpt
-require('../dist/' + process.argv[2]);
-Sk.js_beautify = require('js-beautify').js;
+function run (python3, opt, filename) {
+    // Import Skulpt
+    var skulptname = 'skulpt.js';
+    if (opt) {
+	skulptname = 'skulpt.min.js';
+    }
+    require('../dist/' + skulptname);
+    Sk.js_beautify = require('js-beautify').js;
 
-var pyver;
-var filename = process.argv[4];
-var input = fs.readFileSync(filename, "utf8");
+    var pyver;
+    var input = fs.readFileSync(filename, "utf8");
 
-if (process.argv[3] == "python2") {
-    pyver = Sk.python2;
-} else {
-    pyver = Sk.python3;
+    if (python3) {
+	pyver = Sk.python3;
+    } else {
+	pyver = Sk.python2;
+    }
+
+    console.log("-----");
+    console.log(input);
+    console.log("-----");
+
+    Sk.configure({
+	syspath: [path.dirname(filename)],
+	read: (fname) => { return fs.readFileSync(fname, "utf8"); },
+	output: (args) => { process.stdout.write(args); },
+	__future__: pyver
+    });
+
+    Sk.misceval.asyncToPromise(function() {
+	return Sk.importMain(path.basename(filename, ".py"), true, true);
+    }).then(function () {
+	console.log("-----");
+    }, function(e) {
+	console.log("UNCAUGHT EXCEPTION: " + e);
+	console.log(e.stack);
+    });
 }
 
-console.log("-----");
-console.log(input);
-console.log("-----");
+program
+    .option('--python3', 'Python 3')
+    .option('-o, --opt', 'use optimized skulpt')
+    .option('-p, --program <file>', 'file to run')
+    .parse(process.argv);
 
-Sk.configure({
-    syspath: [path.dirname(filename)],
-    read: (fname) => { return fs.readFileSync(fname, "utf8"); },
-    output: (args) => { process.stdout.write(args); },
-    __future__: pyver
-});
+if (!program.program) {
+    console.log("error: option `-p, --program <file>' must specify a program to run");
+    process.exit();
+}
 
-Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain(path.basename(filename, ".py"), true, true);
-}).then(function () {
-    console.log("-----");
-}, function(e) {
-    console.log("UNCAUGHT EXCEPTION: " + e);
-    console.log(e.stack);
-});
+run(program.python3, program.opt, program.program);

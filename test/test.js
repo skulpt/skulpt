@@ -432,7 +432,7 @@ function testsMain()
     }
     else
     {
-        console.log("closure: skipped");
+        console.log("closure library: skipped");
     }
     //return;
     //    for (i = 0; i <= 100; ++i)
