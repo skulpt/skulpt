@@ -508,7 +508,10 @@ function generateTurtleModule(_target) {
                     speed   : this._computed_speed,
                     down    : this._down,
                     shown   : this._shown,
-                    colorMode : this._colorMode,
+                    colorMode : this._colorMode,                    
+                    resizeMode : this._resizeMode,
+                    stretchWidth : this._stretchWidth,
+                    stretchLength : this._stretchLength,
                     context : function() {
                         return self.getPaper();
                     }
@@ -576,7 +579,10 @@ function generateTurtleModule(_target) {
             this._undoBuffer = [];
             this._speed      = 3;
             this._computed_speed = 5;
-            this._colorMode  = 1.0;
+            this._colorMode  = 1.0;            
+            this._stretchWidth = 1.0;
+            this._stretchLength = 1.0;
+            this._resizeMode = "noresize";
             this._state      = undefined;
 
             for(var key in this._managers) {
@@ -1073,7 +1079,67 @@ function generateTurtleModule(_target) {
         proto.$colormode.returnType = function(value) {
             return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
         };
-
+    
+        var __rmodes__ = ["user","noresize","auto"];
+        //resizemode,should be user/noresize/auto
+        proto.$resizemode = function(rmode){
+            if(rmode !== undefined){
+                if(__rmodes__.indexOf(rmode) > -1) {
+                    this._resizeMode = rmode;
+                } else {
+                    this._resizeMode = "noresize";
+                }   
+                return this.addUpdate(undefined, this._shown, {resizeMode : this._resizeMode});         
+            }
+            return this._resizeMode;
+        }
+        proto.$resizemode.minArgs     = 0;
+        proto.$resizemode.co_varnames = ["rmode"];
+        proto.$resizemode.returnType  = function(value) {
+            return Sk.builtin.str(value);
+        };
+        // shapesize(stretch_wid=None, stretch_len=None, outline=None)
+        // turtlesize
+        proto.$shapesize = proto.$turtlesize = function(stretch_wid,stretch_len,outline){
+            if(stretch_wid !== undefined){
+                if (typeof stretch_wid === "number"){
+                    this._stretchWidth = stretch_wid;
+                } else {
+                    throw new Sk.builtin.ValueError("bad value");
+                } 
+            } 
+            if(stretch_len !== undefined){
+                if (typeof stretch_len === "number"){
+                    this._stretchLength = stretch_len;
+                } else {
+                    throw new Sk.builtin.ValueError("bad value");
+                } 
+            }
+            if(outline !== undefined){
+                if (typeof outline === "number"){
+                    this._outline = outline;
+                } else {
+                    throw new Sk.builtin.ValueError("bad value");
+                } 
+            }
+            if(stretch_wid !== undefined 
+                || stretch_len != undefined 
+                || outline !== undefined){//If one of the vars is not undefined
+                this._resizeMode = "user";//When user change shapesize,the resize mode will be "user".
+                return this.addUpdate(undefined, this._shown, 
+                    {resizeMode : this._resizeMode, 
+                        stretchWidth : this._stretchWidth,
+                        stretchLength : this._stretchLength,
+                        outline : this._outline}); 
+            }
+            return [this._stretchWidth,this._stretchLength,this._outline];
+        }
+        proto.$shapesize.minArgs = proto.$turtlesize.minArgs    = 0;
+        proto.$shapesize.co_varnames = proto.$turtlesize.co_varnames = ["stretch_wid","stretch_len","outline"];
+        proto.$shapesize.returnType = proto.$turtlesize.returnType = function(value) {
+            return Sk.builtin.tuple(value);
+        };
+        
         proto.$window_width = function() {
             return this._screen.$window_width();
         };
@@ -1155,6 +1221,9 @@ function generateTurtleModule(_target) {
             newTurtleInstance.instance._down = this._down;
             newTurtleInstance.instance._shown = this._shown;
             newTurtleInstance.instance._colorMode = this._colorMode;
+            newTurtleInstance.instance._resizeMode = this._resizeMode;
+            newTurtleInstance.instance._stretchWidth = this._stretchWidth;
+            newTurtleInstance.instance._stretchLength = this._stretchLength;
 
             // Other properties to copy
             newTurtleInstance.instance._isRadians = this._isRadians;
@@ -1801,9 +1870,20 @@ function generateTurtleModule(_target) {
             context.drawImage(shape, 0, 0, iw, ih, -iw/2, -ih/2, iw, ih);
         }
         else {
+            shape = stretchShape(shape,state.stretchWidth,state.stretchLength);
             context.rotate(bearing);
             context.beginPath();
-            context.lineWidth   = 1;
+            
+            if(state.resizeMode === "auto"){
+                context.lineWidth = state.size;
+            }
+            else if(state.resizeMode === "noresize"){
+                context.lineWidth = 1;
+            }
+            else if(state.resizeMode === "user"){
+                context.lineWidth   = state.outline;
+            }
+            
             context.strokeStyle = state.color;
             context.fillStyle   = state.fill;
             context.moveTo(shape[0][0], shape[0][1]);
@@ -1817,7 +1897,12 @@ function generateTurtleModule(_target) {
 
         context.restore();
     }
-
+    // calculate the stretch shape array data
+    function stretchShape(shapeArray,stretchWidth,stretchLength){
+        return shapeArray.map( function( row ) {
+            return [row[0] * stretchWidth,row[1] * stretchLength];
+        });
+    }
     function drawDot(size, color) {
         var context = this.context(),
             screen  = getScreen(),
