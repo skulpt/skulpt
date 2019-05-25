@@ -512,6 +512,7 @@ function generateTurtleModule(_target) {
                     resizeMode : this._resizeMode,
                     stretchWidth : this._stretchWidth,
                     stretchLength : this._stretchLength,
+                    outline : this._outline,
                     context : function() {
                         return self.getPaper();
                     }
@@ -583,6 +584,7 @@ function generateTurtleModule(_target) {
             this._stretchWidth = 1.0;
             this._stretchLength = 1.0;
             this._resizeMode = "noresize";
+            this._outline = 1.0;
             this._state      = undefined;
 
             for(var key in this._managers) {
@@ -1224,6 +1226,7 @@ function generateTurtleModule(_target) {
             newTurtleInstance.instance._resizeMode = this._resizeMode;
             newTurtleInstance.instance._stretchWidth = this._stretchWidth;
             newTurtleInstance.instance._stretchLength = this._stretchLength;
+            newTurtleInstance.instance._outline = this._outline;
 
             // Other properties to copy
             newTurtleInstance.instance._isRadians = this._isRadians;
