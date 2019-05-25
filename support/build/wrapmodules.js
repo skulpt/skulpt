@@ -35,7 +35,11 @@ function buildJsonFile(name, dirs, recursive, exts, outfile) {
 }
 
 if (process.argv.includes("internal")) {
-    buildJsonFile("internalPy", ["src"], false, [".py"], "src/internalpython.js")
+    buildJsonFile("internalPy", ["src"], false, [".py"], "src/internalpython.js");
 } else if (process.argv.includes("builtin")) {
-    buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], true, [".js", ".py"], "dist/skulpt-stdlib.js")
+    buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], true, [".js", ".py"], "dist/skulpt-stdlib.js");
+} else if (process.argv.includes("unit2")) {
+    buildJsonFile("unit2", ["test/unit"], false, [".py"], "support/tmp/unit2.js");
+} else if (process.argv.includes("unit3")) {
+    buildJsonFile("unit3", ["test/unit3"], false, [".py"], "support/tmp/unit3.js");
 }

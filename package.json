@@ -11,6 +11,8 @@
     "brun": "node support/brun.js -p",
     "prebrun3": "npm run devbuild",
     "brun3": "node support/brun.js --python3 -p",
+    "prebtest": "npm run devbuild && node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
+    "btest": "node support/btest.js",
     "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
     "dist": "npm run build && npm run testopt && npm run test3opt && npm run doc && node support/build/copy2docs.js",
     "repl": "npm run devbuild && node repl/repl.js dist/skulpt.js",
