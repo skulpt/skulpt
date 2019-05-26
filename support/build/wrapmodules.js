@@ -39,7 +39,7 @@ if (process.argv.includes("internal")) {
 } else if (process.argv.includes("builtin")) {
     buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], true, [".js", ".py"], "dist/skulpt-stdlib.js");
 } else if (process.argv.includes("unit2")) {
-    buildJsonFile("unit2", ["test/unit"], false, [".py"], "support/tmp/unit2.js");
+    buildJsonFile("unit2", ["test/unit"], true, [".py"], "support/tmp/unit2.js");
 } else if (process.argv.includes("unit3")) {
     buildJsonFile("unit3", ["test/unit3"], false, [".py"], "support/tmp/unit3.js");
 }

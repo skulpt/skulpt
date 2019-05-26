@@ -7,8 +7,16 @@ function rununits(myDiv, pyver) {
 
     mypre.innerHTML = '';
 
-    var dir = (pyver == "python2") ? "test/unit" : "test/unit3";
-    var units = (pyver == "python2") ? Sk.unit2 : Sk.unit3;
+    var dir, units, testfiles;
+    if (pyver == "python2") {
+	dir = "test/unit";
+	units = Sk.unit2;
+	testfiles = Sk.unit2files;
+    } else if (pyver == "python3") {
+	dir = "test/unit3";
+	units = Sk.unit3;
+	testfiles = Sk.unit3files;
+    }
 
     function outf (text) {
         mypre.appendChild(document.createTextNode(text));
@@ -39,15 +47,15 @@ function rununits(myDiv, pyver) {
         __future__: pyver == "python2" ? Sk.python2 : Sk.python3
     });
 
+    var idx, test, lastslash, module;
     var modules = [];
 
-    for (var test in units["files"]) {
-        if (units["files"].hasOwnProperty(test)) {
-            var lastslash = test.lastIndexOf('/');
-            var module = test.substring(lastslash + 1, test.length - 3);
+    for (idx = 0; idx < testfiles.length; idx++) {
+	test = testfiles[idx];
+        lastslash = test.lastIndexOf('/');
+        module = test.substring(lastslash + 1, test.length - 3);
 
-            modules.push([test, module]);
-        }
+        modules.push([test, module]);
     }
 
     function runtest (tests, passed, failed) {

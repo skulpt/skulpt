@@ -3,6 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const open = require('open');
 
+const filelist = [
+    "src/lib/StringIO.py",
+    "test/unit/file.txt",
+    "skulpt.py"
+];
+
+
 function getFileNames (dir) {
     var filelist = [];
     var files = fs.readdirSync(dir);
@@ -12,27 +19,15 @@ function getFileNames (dir) {
 	let stat = fs.statSync(fullname);
 
 	if (stat.isFile() && (path.extname(file) == "\.py")) {
-	    filelist.push(fullname);
+	    filelist.push(dir + '/' + file);
 	}
     });
 
     return filelist;
 }
 
-function getFiles (names) {
-    var files = {};
-    var contents;
-    
-    names.forEach((name) => {
-	contents = fs.readFileSync(name, "utf8");
-	files[path.basename(name, ".py")] = contents;
-    });
-
-    return files;
-}
-
 function btest () {
-    var dir2, dir3, unit2, unit3, unit2files, unit3files;
+    var unit2, unit3;
     
     var app = express();
 
@@ -40,14 +35,16 @@ function btest () {
     app.set('view engine', 'ejs');
 
     // Test file names
-    dir2 = path.resolve('test', 'unit');
-    unit2 = getFileNames(dir2);
-    dir3 = path.resolve('test', 'unit3');
-    unit3 = getFileNames(dir3);
-
-    // Test files
-    unit2files = getFiles(unit2);
-    unit3files = getFiles(unit3);
+    unit2 = getFileNames('test/unit');
+    unit3 = getFileNames('test/unit3');
+    
+    // Data files
+    filecontents = "";
+    filelist.forEach(function (file) {
+	filecontents += '<textarea id="' + file + '" style="display:none;">\n';
+	filecontents += fs.readFileSync(file, 'utf8');
+	filecontents += '</textarea>\n';
+    });
     
     // Skulpt
     app.use(express.static(path.resolve('dist')));
@@ -57,6 +54,9 @@ function btest () {
     // index page 
     app.get('/', function (req, res) {
 	res.render(path.resolve('support', 'test_template'), {
+	    test2: JSON.stringify(unit2),
+	    test3: JSON.stringify(unit3),
+	    files: filecontents,
 	    debug_mode: "false"
 	});
     });
