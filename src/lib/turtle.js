@@ -1103,6 +1103,9 @@ function generateTurtleModule(_target) {
         // shapesize(stretch_wid=None, stretch_len=None, outline=None)
         // turtlesize
         proto.$shapesize = proto.$turtlesize = function(stretch_wid,stretch_len,outline){
+            if(stretch_wid === 0 || stretch_len === 0){
+                throw new Sk.builtin.ValueError("bad value : 0");
+            }
             if(stretch_wid !== undefined){
                 if (typeof stretch_wid === "number"){
                     this._stretchWidth = stretch_wid;
