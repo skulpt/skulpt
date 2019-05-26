@@ -1082,11 +1082,11 @@ function generateTurtleModule(_target) {
             return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
         };
     
-        var __rmodes__ = ["user","noresize","auto"];
+        var RMODES = ["user","noresize","auto"];
         //resizemode,should be user/noresize/auto
         proto.$resizemode = function(rmode){
             if(rmode !== undefined){
-                if(__rmodes__.indexOf(rmode) > -1) {
+                if(RMODES.indexOf(rmode) > -1) {
                     this._resizeMode = rmode;
                 } else {
                     this._resizeMode = "noresize";
