@@ -59,172 +59,6 @@ else:
 if os.environ.get("CI",False):
     nul = "/dev/null"
 
-def debugbrowser():
-    tmpl = """
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" >
-        <title>Skulpt test</title>
-        <style>
-            .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
-        </style>
-        <script src="../../dist/skulpt.js" type="text/javascript"></script>
-        <script src="../../dist/skulpt-stdlib.js" type="text/javascript"></script>
-        <script src="vfs.js" type="text/javascript"></script>
-        <script src="../../test/test.js" type="text/javascript"></script>
-    </head>
-
-    <body onload="testsMain()">
-        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas>
-        <table>
-        <tr>
-            <td>
-                <div id="one-test" class="use-arrow"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-            <pre id="output"></pre>
-            </td>
-            <td>
-            <span id="canv"></span>
-            </td>
-        </tr>
-    </body>
-</html>
-"""
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
-    buildVFS()
-
-    with open("support/tmp/test.html", "w") as f:
-        print >>f, tmpl
-
-    if sys.platform == "win32":
-        os.system("start support/tmp/test.html")
-    elif sys.platform == "darwin":
-        os.system("open support/tmp/test.html")
-    else:
-        os.system("xdg-open support/tmp/test.html")
-
-def buildVFS():
-    """ build a silly virtual file system to support 'read'"""
-    print ". Slurping test data"
-    with open("support/tmp/vfs.js", "w") as out:
-        print >>out, "VFSData = {"
-        all = []
-        for root in (TEST_DIR, "src/builtin", "src/lib"):
-            for dirpath, dirnames, filenames in os.walk(root):
-                for filename in filenames:
-                    f = os.path.join(dirpath, filename)
-                    if ".svn" in f: continue
-                    if ".swp" in f: continue
-                    if ".pyc" in f: continue
-                    data = open(f, "rb").read()
-                    data = data.replace("\r\n", "\n")
-                    all.append("'%s': '%s'" % (f.replace("\\", "/"), data.encode("hex")))
-        print >>out, ",\n".join(all)
-        print >>out, "};"
-        print >>out, """
-
-function readFromVFS(fn)
-{
-    var hexToStr = function(str)
-    {
-        var ret = "";
-        for (var i = 0; i < str.length; i += 2)
-            ret += unescape("%" + str.substr(i, 2));
-        return ret;
-    }
-    if (VFSData[fn] === undefined) throw "file not found: " + fn;
-    return hexToStr(VFSData[fn]);
-}
-"""
-
-def buildBrowserTests():
-    """combine all the tests data into something we can run from a browser
-    page (so that it can be tested in the various crappy engines)
-
-    we want to use the same code that the command line version of the tests
-    uses so we stub the d8 functions to push to the browser."""
-
-    outfn = "doc/static/browser-test.js"
-    out = open(outfn, "w")
-
-    print >>out, """
-window.addevent('onload', function(){
-"""
-
-    # stub the d8 functions we use
-    print >>out, """
-function read(fn)
-{
-    var hexToStr = function(str)
-    {
-        var ret = "";
-        for (var i = 0; i < str.length; i += 2)
-            ret += unescape("%%" + str.substr(i, 2));
-        return ret;
-    }
-    if (VFSData[fn] === undefined) throw "file not found: " + fn;
-    return hexToStr(VFSData[fn]);
-}
-var SkulptTestRunOutput = '';
-function print()
-{
-    var out = document.getElementById("output");
-    for (var i = 0; i < arguments.length; ++i)
-    {
-        out.innerHTML += arguments[i];
-        SkulptTestRunOutput += arguments[i];
-        out.innerHTML += " ";
-        SkulptTestRunOutput += " ";
-    }
-    out.innerHTML += "<br/>"
-    SkulptTestRunOutput += "\\n";
-}
-
-function quit(rc)
-{
-    var out = document.getElementById("output");
-    if (rc === 0)
-    {
-        out.innerHTML += "<font color='green'>OK</font>";
-    }
-    else
-    {
-        out.innerHTML += "<font color='red'>FAILED</font>";
-    }
-    out.innerHTML += "<br/>Saving results...";
-    var sendData = JSON.encode({
-        browsername: BrowserDetect.browser,
-        browserversion: BrowserDetect.version,
-        browseros: BrowserDetect.OS,
-        version: '%s',
-        rc: rc,
-        results: SkulptTestRunOutput
-    });
-    var results = new Request.JSON({
-        url: '/testresults',
-        method: 'post',
-        onSuccess: function() { out.innerHTML += "<br/>Results saved."; },
-        onFailure: function() { out.innerHTML += "<br/>Couldn't save results."; }
-    });
-    results.send(sendData);
-}
-""" % getTip()
-
-    # for f in ["{0}/browser-detect.js".format(TEST_DIR)] + getFileList(FILE_TYPE_TEST) + TestFiles:
-    #     print >>out, open(f).read()
-
-    print >>out, """
-});
-"""
-    out.close()
-    print ". Built %s" % outfn
-
-
 def regenasttests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the ast test files by running our helper script via real python"""
     for f in glob.glob(togen):
@@ -235,7 +69,6 @@ def regenasttests(togen="{0}/run/*.py".format(TEST_DIR)):
             shutil.copy(forcename, transname)
         if crlfprog:
             os.system("python {0} {1}".format(crlfprog, transname))
-
 
 def regenruntests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the test data by running the tests on real python"""
@@ -343,35 +176,6 @@ def vmwareregr(names):
             #"chromed-ubu": ubu,
             ]
 
-import SimpleHTTPServer
-import urlparse
-class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    """allow grabbing any file for testing, and support /import
-    which grabs all builtin and lib modules in a json request.
-
-    see notes on import for why we can't just grab one at a time.
-
-    on real hosting, we'll just prebuild/gzip the stdlib into somewhere on
-    upload. this is more convenient during dev on localhost though.
-
-    """
-    def do_GET(self):
-        prefix = "/import"
-        if self.path == prefix:
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(getBuiltinsAsJson(None))
-        else:
-            SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
-
-def host(PORT = 20710):
-    """simple http host from root of dir for testing"""
-    import SocketServer
-    httpd = SocketServer.TCPServer(("", PORT), HttpHandler)
-    print "serving at port", PORT
-    httpd.serve_forever()
-
 def usageString(program):
     return '''
 
@@ -385,11 +189,6 @@ Commands:
     regentests       Regenerate all of the above
 
     help             Display help information about Skulpt
-    host [PORT]      Start a simple HTTP server for testing. Default port: 20710
-    browser          Run all tests in the browser
-    vfs              Build a virtual file system to support Skulpt read tests
-
-    debugbrowser     Debug in the browser -- open your javascript console
 
 Options:
 
@@ -440,21 +239,6 @@ def main():
         regenasttests()
     elif cmd == "regenruntests":
         regenruntests()
-    elif cmd == "browser":
-        buildBrowserTests()
-    elif cmd == "debugbrowser":
-        debugbrowser()
-    elif cmd == "vfs":
-        buildVFS()
-    elif cmd == "host":
-        if len(sys.argv) < 3:
-            host()
-        else:
-            try:
-                host(int(sys.argv[2]))
-            except ValueError:
-                print "Port must be an integer"
-                sys.exit(2)
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)
