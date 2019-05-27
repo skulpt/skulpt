@@ -25,23 +25,6 @@ def bowerProperty(name):
 # Symbolic constants for the project structure.
 TEST_DIR        = 'test'
 
-# Symbolic constants for the naming of distribution files.
-STANDARD_NAMING = True
-PRODUCT_NAME    = bowerProperty("name")
-OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-uncomp.js"
-OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
-OUTFILE_LIB     = "{0}-stdlib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
-OUTFILE_MAP     = "{0}-linemap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
-OUTFILE_DEBUGGER = "debugger.js"
-
-# Symbolic constants for file types.
-FILE_TYPE_TEST = 'test'
-
-TestFiles = [
-        "{0}/sprintf.js".format(TEST_DIR),
-        "{0}/test.js".format(TEST_DIR)
-        ]
-
 if sys.platform == "win32":
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
