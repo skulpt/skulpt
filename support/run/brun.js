@@ -63,18 +63,27 @@ function brun (test, python3, debug, fname) {
 
 	// support files
 	app.get('/test/unit2.js', function (req, res) {
-	    var contents = fs.readFileSync(path.resolve('support', 'tmp', 'unit2.js'), 'utf8');
-	    res.send(contents);
+	    res.sendFile(path.resolve('support', 'tmp', 'unit2.js'), {}, function (err) {
+		if (err) {
+		    res.sendStatus(404);
+		}
+	    });
 	});
 	
 	app.get('/test/unit3.js', function (req, res) {
-	    var contents = fs.readFileSync(path.resolve('support', 'tmp', 'unit3.js'), 'utf8');
-	    res.send(contents);
+	    res.sendFile(path.resolve('support', 'tmp', 'unit3.js'), {}, function (err) {
+		if (err) {
+		    res.sendStatus(404);
+		}
+	    });
 	});
 	
 	app.get('/test/runner.js', function (req, res) {
-	    var contents = fs.readFileSync(path.resolve('support', 'run', 'btestrunner.js'), 'utf8');
-	    res.send(contents);
+	    res.sendFile(path.resolve('support', 'run', 'btestrunner.js'), {}, function (err) {
+		if (err) {
+		    res.sendStatus(404);
+		}
+	    });
 	});	
     } else {
 	// Test file
