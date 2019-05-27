@@ -17,8 +17,9 @@ function getFileNames (dir) {
     files.forEach((file) => {
 	let fullname = path.resolve(dir, file);
 	let stat = fs.statSync(fullname);
+	let basename = path.basename(file, ".py");
 
-	if (stat.isFile() && (path.extname(file) == "\.py")) {
+	if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
 	    filelist.push(dir + '/' + file);
 	}
     });

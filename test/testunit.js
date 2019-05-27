@@ -44,14 +44,15 @@ function test (python3, opt) {
     files.forEach((file) => {
 	let fullname = dir + "/" + file;
 	let stat = fs.statSync(fullname);
+	let basename = path.basename(file, ".py");
 
-	if (stat.isFile() && (path.extname(file) == "\.py")) {
+	if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
 	    buf = "";
 	    console.log(fullname);
 
 	    // Run Skulpt
 	    Sk.misceval.asyncToPromise(function() {
-		return Sk.importMain(path.basename(file, ".py"), false, true);
+		return Sk.importMain(basename, false, true);
 	    }).then(function () {}, function(e) {
 		failTot += 1;
 		console.log("UNCAUGHT EXCEPTION: " + e);
