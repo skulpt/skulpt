@@ -4,51 +4,114 @@ const fs = require('fs');
 const open = require('open');
 const program = require('commander');
 
-function brun (python3, debug, fname) {
+const datafilelist = [
+    "src/lib/StringIO.py",
+    "test/unit/file.txt",
+    "skulpt.py"
+];
+
+function getFileNames (dir) {
+    var filelist = [];
+    var files = fs.readdirSync(dir);
+
+    files.forEach((file) => {
+	let fullname = path.resolve(dir, file);
+	let stat = fs.statSync(fullname);
+
+	if (stat.isFile() && (path.extname(file) == "\.py")) {
+	    filelist.push(dir + '/' + file);
+	}
+    });
+
+    return filelist;
+}
+
+function brun (test, python3, debug, fname) {
     var app = express();
 
     // set the view engine to ejs
     app.set('view engine', 'ejs');
-
-    // Python version
-    var pyver;
-    if (python3) {
-	pyver = "Sk.python3";
-    } else {
-	pyver = "Sk.python2";
-    }
-
-    // Load the program to run
-    var prog = fs.readFileSync(fname, 'utf8');
 
     // Skulpt
     app.use(express.static(path.resolve('dist')));
 
     // use res.render to load up an ejs view file
 
-    // index page 
-    app.get('/', function (req, res) {
-	res.render(path.resolve('support', 'run', 'run_template'), {
-	    code: prog,
-	    debug_mode: debug ? "true" : "false",
-	    p3: pyver
+    if (test) {
+	// Test file names
+	var unit2 = getFileNames('test/unit');
+	var unit3 = getFileNames('test/unit3');
+	
+	// Data files
+	var filecontents = "";
+	datafilelist.forEach(function (file) {
+	    filecontents += '<textarea id="' + file + '" style="display:none;">\n';
+	    filecontents += fs.readFileSync(file, 'utf8');
+	    filecontents += '</textarea>\n';
 	});
-    });
 
+	// index page
+	app.get('/', function (req, res) {
+	    res.render(path.resolve('support', 'run', 'test_template'), {
+		test2: JSON.stringify(unit2),
+		test3: JSON.stringify(unit3),
+		files: filecontents,
+		debug_mode: "false"
+	    });
+	});
+
+	// support files
+	app.get('/test/unit2.js', function (req, res) {
+	    var contents = fs.readFileSync(path.resolve('support', 'tmp', 'unit2.js'), 'utf8');
+	    res.send(contents);
+	});
+	
+	app.get('/test/unit3.js', function (req, res) {
+	    var contents = fs.readFileSync(path.resolve('support', 'tmp', 'unit3.js'), 'utf8');
+	    res.send(contents);
+	});
+	
+	app.get('/test/runner.js', function (req, res) {
+	    var contents = fs.readFileSync(path.resolve('support', 'run', 'btestrunner.js'), 'utf8');
+	    res.send(contents);
+	});	
+    } else {
+	// Test file
+	var prog = fs.readFileSync(fname, 'utf8');
+
+	// Python version
+	var pyver;
+	if (python3) {
+	    pyver = "Sk.python3";
+	} else {
+	pyver = "Sk.python2";
+	}
+
+	// index page
+	app.get('/', function (req, res) {
+	    res.render(path.resolve('support', 'run', 'run_template'), {
+		code: prog,
+		debug_mode: debug ? "true" : "false",
+		p3: pyver
+	    });
+	});
+    }
+    
     app.listen(8080);
     console.log("Navigate to localhost:8080 if it doesn't open automatically.");
     open('http://localhost:8080');
 };
 
 program
+    .option('-t, --test', 'Run test suites')
     .option('--python3', 'Python 3')
     .option('-d, --debug', 'Debug')
     .option('-p, --program <file>', 'file to run')
     .parse(process.argv);
 
-if (!program.program) {
+if (!program.test && !program.program) {
     console.log("error: option `-p, --program <file>' must specify a program to run");
     process.exit();
 }
 
-brun(program.python3, program.debug, program.program);
+brun(program.test, program.python3, program.debug, program.program);
