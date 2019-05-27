@@ -50,7 +50,7 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 * add unit-test
 * commit: `git commit -m 'failing test'` (you can do this more often)
 * write code
-* test: `npm test` and `npm run build`
+* test: `npm run devbuild`, `npm test`, `npm run test3`, and `npm run dist`
 * commit: `git commit -m 'implement fix'` (you can do this more often)
 * push: `git push -u origin feature_branch_name`
 * pull-request: (on github)

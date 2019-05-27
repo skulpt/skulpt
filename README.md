@@ -41,9 +41,9 @@ We are coordinating sprints on some of the ideas below, builtins, stdlib, third 
 Building Skulpt is straightforward:
 
 1. Clone the repository from GitHub, ideally using your own fork if you're planning on making any contributions
-2. Install node.js, Java, and Python 2 (required to run the build scripts)
+2. Install node.js
 3. Install the required dependencies using `npm install`
-4. Navigate to the repository and run `npm run build`
+4. Navigate to the repository and run `npm run dist`
 5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist`folder
 
 
