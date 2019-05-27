@@ -4,11 +4,11 @@ const program = require('commander');
 
 function test (python3, opt) {
     var startime, endtime, elapsed;
-    
+
     // Import Skulpt
     var skulptname = 'skulpt.js';
     if (opt) {
-	skulptname = 'skulpt.min.js';
+        skulptname = 'skulpt.min.js';
     }
     require('../dist/' + skulptname);
     Sk.js_beautify = require('js-beautify').js;
@@ -17,65 +17,81 @@ function test (python3, opt) {
     var dir, pyver;
 
     if (python3) {
-	dir = "test/unit3";
-	pyver = Sk.python3;
+        dir = "test/unit3";
+        pyver = Sk.python3;
     } else {
-	dir = "test/unit";
-	pyver = Sk.python2;
+        dir = "test/unit";
+        pyver = Sk.python2;
     }
 
-    var passTot = 0;
-    var failTot = 0;
-    var buf, found;
-
-    var regexp = /.*Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)/g;
+    const regexp = /.*Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)/g;
 
     // Configure Skulpt to run unit tests
     Sk.configure({
-	syspath: [dir],
-	read: (fname) => { return fs.readFileSync(fname, "utf8"); },
-	output: (args) => { buf += args; },
-	__future__: pyver
+        syspath: [dir],
+        read: (fname) => { return fs.readFileSync(fname, "utf8"); },
+        output: (args) => { Sk.buf += args; },
+        __future__: pyver
     });
 
     // Test each existing unit test file
     var files = fs.readdirSync(dir);
+    var modules = [];
+
+    for (var idx = 0; idx < files.length; idx++) {
+        let file = dir + '/' + files[idx];
+        let stat = fs.statSync(file);
+        let basename = path.basename(file, ".py");
+
+        if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
+            modules.push([file, basename]);
+        }
+    }
+
     starttime = Date.now();
-    files.forEach((file) => {
-	let fullname = dir + "/" + file;
-	let stat = fs.statSync(fullname);
-	let basename = path.basename(file, ".py");
 
-	if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
-	    buf = "";
-	    console.log(fullname);
+    function runtest (tests, passed, failed) {
+        if (tests.length == 0) {
+	    endtime = Date.now();
+	    elapsed = (endtime - starttime) / 1000;
+            console.log("Summary");
+            console.log("Passed: " + passed + " Failed: " + failed);
+	    console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
+            return;
+        }
 
-	    // Run Skulpt
-	    Sk.misceval.asyncToPromise(function() {
-		return Sk.importMain(basename, false, true);
-	    }).then(function () {}, function(e) {
-		failTot += 1;
-		console.log("UNCAUGHT EXCEPTION: " + e);
-		console.log(e.stack);
-		process.exit(1);
-	    });
+        var test = tests.shift();
 
-	    // Print results
-	    console.log(buf);
+        // Clear output buffer
+        Sk.buf = "";
 
-	    // Update results
-	    while ((found = regexp.exec(buf)) !== null) {
-		passTot += parseInt(found[1]);
-		failTot += parseInt(found[2]);
-	    }
-	}
-    });
+        // Print test name
+        console.log(test[0] + "\n");
 
-    endtime = Date.now();
-    console.log("Summary");
-    console.log("Passed: " + passTot + " Failed: " + failTot);
-    elapsed = (endtime - starttime) / 1000;
-    console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
+        // Run test
+        Sk.misceval.asyncToPromise(function() {
+            return Sk.importMain(test[1], false, true);
+        }).then(function () {
+            var found;
+
+            // Print results
+            console.log(Sk.buf);
+
+            // Update results
+            while ((found = regexp.exec(Sk.buf)) !== null) {
+                passed += parseInt(found[1]);
+                failed += parseInt(found[2]);
+            }
+        }).catch(function (err) {
+            failed += 1;
+            console.log("UNCAUGHT EXCEPTION: " + err);
+            console.log(err.stack);
+        }).then(function () {
+            runtest(tests, passed, failed)
+        });
+    }
+
+    runtest(modules, 0, 0);
 }
 
 program
