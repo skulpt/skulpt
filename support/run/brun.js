@@ -28,7 +28,7 @@ function brun (python3, debug, fname) {
 
     // index page 
     app.get('/', function (req, res) {
-	res.render(path.resolve('support', 'run_template'), {
+	res.render(path.resolve('support', 'run', 'run_template'), {
 	    code: prog,
 	    debug_mode: debug ? "true" : "false",
 	    p3: pyver

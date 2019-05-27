@@ -53,7 +53,7 @@ function btest () {
 
     // index page 
     app.get('/', function (req, res) {
-	res.render(path.resolve('support', 'test_template'), {
+	res.render(path.resolve('support', 'run', 'test_template'), {
 	    test2: JSON.stringify(unit2),
 	    test3: JSON.stringify(unit3),
 	    files: filecontents,
@@ -72,7 +72,7 @@ function btest () {
     });
     
     app.get('/test/runner.js', function (req, res) {
-	var contents = fs.readFileSync(path.resolve('support', 'btestrunner.js'), 'utf8');
+	var contents = fs.readFileSync(path.resolve('support', 'run', 'btestrunner.js'), 'utf8');
 	res.send(contents);
     });
     
