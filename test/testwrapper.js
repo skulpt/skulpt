@@ -1,16 +1,10 @@
-const program = require('commander');
-
-program
-    .option('-o, --opt', 'use optimized skulpt')
-    .parse(process.argv);
+const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
 // Import Skulpt
-var skulptname = 'skulpt.js';
-if (program.opt) {
-    skulptname = 'skulpt.min.js';
+var skulpt = reqskulpt(false);
+if (skulpt === null) {
+    process.exit(1);
 }
-require('../dist/' + skulptname);
 
 // Run tests
 require('./test.js');
-

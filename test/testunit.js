@@ -1,16 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
+const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
 function test (python3, opt) {
     var startime, endtime, elapsed;
 
     // Import Skulpt
-    var skulptname = 'skulpt.js';
-    if (opt) {
-        skulptname = 'skulpt.min.js';
+    var skulpt = reqskulpt(false);
+    if (skulpt === null) {
+	process.exit(1);
     }
-    require('../dist/' + skulptname);
+    
     Sk.js_beautify = require('js-beautify').js;
 
     // Setup for appropriate Python version

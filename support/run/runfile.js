@@ -1,14 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
+const reqskulpt = require('./require-skulpt').requireSkulpt;
 
 function run (python3, opt, filename) {
     // Import Skulpt
-    var skulptname = 'skulpt.js';
-    if (opt) {
-	skulptname = 'skulpt.min.js';
+    var skulpt = reqskulpt(opt);
+    if (skulpt === null) {
+	process.exit(1);
     }
-    require('../dist/' + skulptname);
+
     Sk.js_beautify = require('js-beautify').js;
 
     var pyver, starttime, endtime, elapsed;
