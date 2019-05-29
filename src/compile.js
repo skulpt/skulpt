@@ -1027,7 +1027,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var hasCell = unit.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
-                    "var susp = "+unit.scopename+".$wakingSuspension; delete "+unit.scopename+".$wakingSuspension;" +
+                    "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
