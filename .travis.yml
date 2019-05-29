@@ -9,8 +9,7 @@ install:
 - npm install
 - mkdir -p vendors
 script:
-- npm run build
-- npm test
+- npm run dist
 after_script:
 - ./dist-update.sh
 env:
