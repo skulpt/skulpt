@@ -9,9 +9,9 @@ function test (python3, opt) {
     // Import Skulpt
     var skulpt = reqskulpt(false);
     if (skulpt === null) {
-	process.exit(1);
+        process.exit(1);
     }
-    
+
     Sk.js_beautify = require('js-beautify').js;
 
     // Setup for appropriate Python version
@@ -53,11 +53,14 @@ function test (python3, opt) {
 
     function runtest (tests, passed, failed) {
         if (tests.length == 0) {
-	    endtime = Date.now();
-	    elapsed = (endtime - starttime) / 1000;
+            endtime = Date.now();
+            elapsed = (endtime - starttime) / 1000;
             console.log("Summary");
             console.log("Passed: " + passed + " Failed: " + failed);
-	    console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
+            console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
+            if (failed > 0) {
+                process.exit(1);
+            }
             return;
         }
 

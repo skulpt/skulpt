@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
+const chalk = require('chalk');
 const reqskulpt = require('./require-skulpt').requireSkulpt;
 
 function run (python3, opt, filename) {
@@ -47,14 +48,22 @@ function run (python3, opt, filename) {
 }
 
 program
-    .option('--python3', 'Python 3')
     .option('-o, --opt', 'use optimized skulpt')
-    .option('-p, --program <file>', 'file to run')
     .parse(process.argv);
 
-if (!program.program) {
-    console.log("error: option `-p, --program <file>' must specify a program to run");
-    process.exit();
+if (program.args.length != 2) {
+    console.log(chalk.red("error: must specify python version (py2/py3) and python program to run"));
+    process.exit(1);
 }
 
-run(program.python3, program.opt, program.program);
+var py3;
+if (program.args[0] == "py2") {
+    py3 = false;
+} else if (program.args[0] == "py3") {
+    py3 = true;
+} else {
+    console.log(chalk.red("error: must specify python version ('py2' or 'py3'), not '" + program.args[0] + "'"));
+    process.exit(1);
+}
+
+run(py3, program.opt, program.args[1]);

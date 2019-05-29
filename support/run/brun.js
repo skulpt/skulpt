@@ -27,7 +27,7 @@ function getFileNames (dir) {
     return filelist;
 }
 
-function brun (test, python3, debug, fname) {
+function brun (test, fname) {
     var app = express();
 
     // set the view engine to ejs
@@ -56,8 +56,7 @@ function brun (test, python3, debug, fname) {
 	    res.render(path.resolve('support', 'run', 'test_template'), {
 		test2: JSON.stringify(unit2),
 		test3: JSON.stringify(unit3),
-		files: filecontents,
-		debug_mode: "false"
+		files: filecontents
 	    });
 	});
 
@@ -89,20 +88,10 @@ function brun (test, python3, debug, fname) {
 	// Test file
 	var prog = fs.readFileSync(fname, 'utf8');
 
-	// Python version
-	var pyver;
-	if (python3) {
-	    pyver = "Sk.python3";
-	} else {
-	pyver = "Sk.python2";
-	}
-
 	// index page
 	app.get('/', function (req, res) {
 	    res.render(path.resolve('support', 'run', 'run_template'), {
-		code: prog,
-		debug_mode: debug ? "true" : "false",
-		p3: pyver
+		code: prog
 	    });
 	});
     }
@@ -114,8 +103,6 @@ function brun (test, python3, debug, fname) {
 
 program
     .option('-t, --test', 'Run test suites')
-    .option('--python3', 'Python 3')
-    .option('-d, --debug', 'Debug')
     .option('-p, --program <file>', 'file to run')
     .parse(process.argv);
 
@@ -124,4 +111,4 @@ if (!program.test && !program.program) {
     process.exit();
 }
 
-brun(program.test, program.python3, program.debug, program.program);
+brun(program.test, program.program);
