@@ -6,6 +6,7 @@
     "skulpt"
   ],
   "scripts": {
+    "help": "node support/build/help.js",
     "regenparser": "node support/build/regenparser.js",
     "prebrun": "npm run devbuild",
     "brun": "node support/run/brun.js -p",
