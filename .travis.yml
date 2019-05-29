@@ -1,7 +1,7 @@
-language: python
+language: node_js
 sudo: false
-python:
-- '2.7'
+node_js:
+- '10'
 install:
 - nvm install 'lts/*'
 - nvm use 'lts/*'
