@@ -221,7 +221,8 @@ var reservedNames_ = {
     "unwatch": true,
     "valueOf": true,
     "watch": true,
-    "length": true
+    "length": true,
+    "name": true,
 };
 
 function fixReservedNames (name) {
