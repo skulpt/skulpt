@@ -888,7 +888,7 @@ function generateTurtleModule(_target) {
 
         proto.$color = function(color, fill, b, a) {
             if (color !== undefined) {
-                if (arguments.length === 1 || arguments.length >= 3) {
+                if (fill === undefined || b !== undefined) {
                     this._color = createColor(this._colorMode, color, fill, b, a);
                     this._fill  = this._color;
                 }
