@@ -39,6 +39,21 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.str("defaultdict(" + def_str + ", " + dict_str + ")");
         };
 
+        mod.defaultdict.prototype['__copy__'] = function (self) {
+            var v;
+            var iter, k;
+            var ret = [];
+
+            for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext()) {
+                v = self.mp$subscript(k);
+                ret.push(k);
+                ret.push(v);
+            }
+            return new mod.defaultdict(self['$d']['default_factory'], ret);
+        };
+
         mod.defaultdict.prototype['__missing__'] = function (key) {
             Sk.builtin.pyCheckArgsLen('__missing__', arguments.length, 0, 1);
             if (key) {
