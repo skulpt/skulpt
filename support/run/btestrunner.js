@@ -82,6 +82,12 @@ function rununits(myDiv, pyver) {
             // Print results
             outf(Sk.buf);
 
+            // Check for internal errors
+            if (Sk.buf.indexOf("Uncaught Error in") != -1) {
+                outf("Internal uncaught errors, failed: 1\n\n");
+                failed += 1;
+            }
+
             // Update results
             while ((found = regexp.exec(Sk.buf)) !== null) {
                 passed += parseInt(found[1]);
