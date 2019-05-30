@@ -267,6 +267,9 @@ Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     Sk.asserts.assert(!(obj === undefined && objtype === undefined));
+    if (obj === Sk.builtin.none.none$) {
+        return this;
+    }
     if (objtype && objtype.tp$name in Sk.builtin && Sk.builtin[objtype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);
