@@ -31,7 +31,7 @@ Ideally it would choose one each time the page loads but I haven't dug into that
                 and Data Structures using Python</a></li>
             <li><a href="http://www.pythonlearn.com/">PythonLearn</a></li>
             <li><a href="https://online.dr-chuck.com/">Dr. Chuck Online</a></li>
-            <li><a href="http://www.codeskulptor.org">CodeSkulptor</a></li>
+            <li><a href="https://py3.codeskulptor.org">CodeSkulptor</a></li>
             <li><a href="https://trinket.io/">trinket</a></li>
             <li><a href="https://shrew.app">Code Shrew</a></li>
         </ul>
@@ -41,7 +41,7 @@ Ideally it would choose one each time the page loads but I haven't dug into that
     <h2>Skulpt on <a href="http://www.coursera.org">Coursera</a></h2>
     <p>
         <ul>
-            <li><a href="https://www.coursera.org/course/interactivepython">An Introduction to Interactive Programming in Python</a></li>
+            <li><a href="https://www.coursera.org/learn/interactive-python-1">An Introduction to Interactive Programming in Python</a></li>
             <li><a href="https://www.coursera.org/course/pythonlearn">Programming for Everybody</a></li>
         </ul>
     </p>
