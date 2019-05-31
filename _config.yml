@@ -11,7 +11,7 @@ year : 2015
 markdown : kramdown
 kramdown:
   input: GFM
-highlighter: pygments
+highlighter: rogue
 
 repository: skulpt/skulpt
 
