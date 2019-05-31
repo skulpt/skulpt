@@ -888,7 +888,7 @@ function generateTurtleModule(_target) {
 
         proto.$color = function(color, fill, b, a) {
             if (color !== undefined) {
-                if (arguments.length === 1 || arguments.length >= 3) {
+                if (fill === undefined || b !== undefined) {
                     this._color = createColor(this._colorMode, color, fill, b, a);
                     this._fill  = this._color;
                 }
@@ -1069,7 +1069,7 @@ function generateTurtleModule(_target) {
             return this._colorMode;
         }
         proto.$colormode.minArgs     = 0;
-        proto.$colormode.co_varnames = ["mode"];
+        proto.$colormode.co_varnames = ["cmode"];
         proto.$colormode.returnType = function(value) {
             return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
         };
