@@ -96,10 +96,13 @@ class TestDefaultDict(unittest.TestCase):
     #     self.assertEqual(e['a'], 42)
 
     def test_shallow_copy(self):
-        d1 = defaultdict(foobar, {1: 1})
+        d1 = defaultdict(foobar, {1: 1, 2:[2]})
         d2 = copy.copy(d1)
+        d1[2][0] = 3
         self.assertEqual(d2.default_factory, foobar)
         self.assertEqual(d2, d1)
+        d2[1] = 2
+        self.assertNotEqual(d2,d1)
         d1.default_factory = list
         d2 = copy.copy(d1)
         self.assertEqual(d2.default_factory, list)
