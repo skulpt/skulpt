@@ -502,6 +502,6 @@ class ClassTests(unittest.TestCase):
         self.assertNotEqual(c.f, a1.f)
         self.assertNotEqual(hash(c.f), hash(a1.f))
         self.assertNotEqual(hash(c), hash(a1))
-    
+
 if __name__ == '__main__':
     unittest.main()
