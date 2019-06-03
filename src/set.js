@@ -44,7 +44,11 @@ Sk.builtin.set.prototype["$r"] = function () {
     }
 
     if(Sk.__future__.set_repr) {
-        return new Sk.builtin.str("{" + ret.join(", ") + "}");
+        if (ret.length === 0) {
+            return new Sk.builtin.str("set()");
+        } else {
+            return new Sk.builtin.str("{" + ret.join(", ") + "}");
+        }
     } else {
         return new Sk.builtin.str("set([" + ret.join(", ") + "])");
     }
