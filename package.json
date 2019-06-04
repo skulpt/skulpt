@@ -62,6 +62,7 @@
     "setimmediate": "^1.0.5",
     "shelljs": "^0.8.3",
     "strftime": "^0.10.0",
+    "uglify-js": "^3.6.0",
     "webpack": "^4.32.0",
     "webpack-cli": "^3.3.2",
     "webpack-jshint-loader": "^0.9.1"
