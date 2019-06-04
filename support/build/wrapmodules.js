@@ -2,6 +2,24 @@ const fs = require('fs');
 const path = require('path');
 const uglifyjs = require('uglify-js');
 
+/**
+ * If this optional file exists in the top level directory, it will be
+ * used to exclude libraries from the standard library file.
+ *
+ * It should consist of a JSON array of filenames and/or directory
+ * names (relative to the top level directory).
+ *
+ * Example:
+ * [
+ *   "src/lib/webgl",
+ *   "src/lib/sqlite3",
+ *   "src/lib/__phello__.foo.py"
+ * ]
+ *
+ * This can be used to reduce the standard library file size by
+ * excluding libraries that are not relevant to a particular
+ * distribution.
+ */
 const excludeFileName = "libexcludes.json";
 
 function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
