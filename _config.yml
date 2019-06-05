@@ -11,6 +11,19 @@ year : 2015
 markdown : kramdown
 kramdown:
   input: GFM
-highlighter: pygments
+highlighter: rogue
 
 repository: skulpt/skulpt
+
+gems:
+  - jekyll-coffeescript
+  - jekyll-gist
+  - jekyll-mentions
+  - jekyll-paginate
+  - jekyll-redirect-from
+whitelist:
+  - jekyll-coffeescript
+  - jekyll-gist
+  - jekyll-mentions
+  - jekyll-paginate
+  - jekyll-redirect-from
