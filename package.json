@@ -41,6 +41,7 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "babel-minify": "^0.5.0",
     "chalk": "^2.4.2",
     "clean-webpack-plugin": "^2.0.2",
     "closure-webpack-plugin": "^2.0.1",
@@ -62,7 +63,6 @@
     "setimmediate": "^1.0.5",
     "shelljs": "^0.8.3",
     "strftime": "^0.10.0",
-    "uglify-js": "^3.6.0",
     "webpack": "^4.32.0",
     "webpack-cli": "^3.3.2",
     "webpack-jshint-loader": "^0.9.1"

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const uglifyjs = require('uglify-js');
+const minify = require('babel-minify');
 
 /**
  * If this optional file exists in the top level directory, it will be
@@ -39,10 +39,7 @@ function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
                     if (exts.includes(ext)) {
                         let contents = fs.readFileSync(fullname, 'utf8');
                         if (minifyjs && (ext == ".js")) {
-                            let result = uglifyjs.minify(contents);
-                            if (result.error) {
-                                throw new Error("Error minimizing " + fullname + " (uglify js error code: " + result.error + ")");
-                            }
+                            let result = minify(contents);
                             contents = result.code;
                         }
                         ret.files[fullname] = contents;
