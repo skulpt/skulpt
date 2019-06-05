@@ -40,7 +40,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
     git checkout tags/$TAG
     echo -n "running npm install"
     npm install
-    npm run build-min
+    npm run build
     #create zip and tarbals
     cd dist
     tar -czf skulpt-latest.tar.gz *.js
@@ -73,7 +73,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
   cd skulpt
   git reset HEAD --hard
   npm install
-  npm run build-min
+  npm run build
   cd dist
   cp *.js ../../dist/
 

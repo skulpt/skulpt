@@ -139,10 +139,9 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
     dict = this["$d"] || this.constructor["$d"];
 
     if (jsName == "__class__") {
-        if (value.tp$mro === undefined || value.tp$name === undefined ||
-            value.tp$name === undefined) {
+        if (value.tp$mro === undefined || value.tp$name === undefined) {
             throw new Sk.builtin.TypeError(
-                      "attempted to assign non-class to __class__");
+                "attempted to assign non-class to __class__");
         }
         this.ob$type = value;
         this.tp$name = value.tp$name;
@@ -477,10 +476,12 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * Array of all the Python functions which are methods of this class.
  * @type {Array}
  */
-Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-                                     "__eq__", "__ne__", "__lt__", "__le__",
-                                     "__gt__", "__ge__", "__getattribute__",
-                                     "__setattr__", "__format__"];
+Sk.builtin.object.pythonFunctions = [
+    "__repr__", "__str__", "__hash__",
+    "__eq__", "__ne__", "__lt__", "__le__",
+    "__gt__", "__ge__", "__getattribute__",
+    "__setattr__", "__format__"
+];
 
 /**
  * @constructor

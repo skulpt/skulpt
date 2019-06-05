@@ -33,8 +33,8 @@ Sk.builtin.slice = function slice (start, stop, step) {
     this.__class__ = Sk.builtin.slice;
 
     this["$d"] = new Sk.builtin.dict([Sk.builtin.slice$start, this.start,
-        Sk.builtin.slice$stop, this.stop,
-        Sk.builtin.slice$step, this.step]);
+                                      Sk.builtin.slice$stop, this.stop,
+                                      Sk.builtin.slice$step, this.step]);
 
     return this;
 };
@@ -151,9 +151,11 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     length = Sk.builtin.asnum$(length);
     var sss = self.slice_indices_(length);
 
-    return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), 
-                                 new Sk.builtin.int_(sss[1]), 
-                                 new Sk.builtin.int_(sss[2])]);
+    return new Sk.builtin.tuple([
+        new Sk.builtin.int_(sss[0]), 
+        new Sk.builtin.int_(sss[1]), 
+        new Sk.builtin.int_(sss[2])
+    ]);
 });
 
 Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {

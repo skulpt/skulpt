@@ -44,7 +44,11 @@ Sk.builtin.set.prototype["$r"] = function () {
     }
 
     if(Sk.__future__.set_repr) {
-        return new Sk.builtin.str("{" + ret.join(", ") + "}");
+        if (ret.length === 0) {
+            return new Sk.builtin.str("set()");
+        } else {
+            return new Sk.builtin.str("{" + ret.join(", ") + "}");
+        }
     } else {
         return new Sk.builtin.str("set([" + ret.join(", ") + "])");
     }
@@ -304,8 +308,8 @@ Sk.builtin.set.prototype["update"] = new Sk.builtin.func(function (self, other) 
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
         }
         for (it = Sk.abstr.iter(arg), item = it.tp$iternext();
-             item !== undefined;
-             item = it.tp$iternext()) {
+            item !== undefined;
+            item = it.tp$iternext()) {
             Sk.builtin.set.prototype["add"].func_code(self, item);
         }
     }
@@ -378,7 +382,7 @@ Sk.builtin.set.prototype["discard"] = new Sk.builtin.func(function (self, item) 
     Sk.builtin.pyCheckArgsLen("discard", arguments.length, 2, 2);
 
     Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
-        Sk.builtin.none.none$);
+                                               Sk.builtin.none.none$);
     return Sk.builtin.none.none$;
 });
 

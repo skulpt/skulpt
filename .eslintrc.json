@@ -1,0 +1,18 @@
+{
+    "env": {
+	"browser": true
+    },
+    "rules": {
+	"no-mixed-spaces-and-tabs": "error",
+	"indent": ["error", 4, {
+	    "SwitchCase": 1,
+	    "ArrayExpression": "first",
+	    "CallExpression": {"arguments": "first"},
+	    "flatTernaryExpressions": true
+	}],
+	"curly": ["error", "all"],
+	"semi": ["error", "always"],
+	"brace-style": ["error", "1tbs", {"allowSingleLine": true}],
+	"quotes": ["error", "double", {"avoidEscape": true}]
+    }
+}

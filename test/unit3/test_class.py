@@ -436,24 +436,72 @@ class ClassTests(unittest.TestCase):
                 return self.x
         class B(A):
             pass
-
+        class C:
+            def f(self):
+                pass
         a1 = A(1)
         a2 = A(2)
-        # self.assertEqual(a1.f, a1.f)
+        c = C()
+        #compare instances of class A
+        self.assertEqual(a1.f, a1.f)
+        self.assertEqual(hash(a1.f), hash(a1.f))
         self.assertNotEqual(a1.f, a2.f)
         self.assertNotEqual(a1.f, a1.g)
-        # self.assertEqual(a1.f, A(1).f)
-        # self.assertEqual(hash(a1.f), hash(a1.f))
-        # self.assertEqual(hash(a1.f), hash(A(1).f))
-
+        self.assertEqual(a1.f, A(1).f)
+        self.assertEqual(hash(a1.f), hash(A(1).f))
+        #compare classes that inherit from each other
         self.assertNotEqual(A.f, a1.f)
+        self.assertNotEqual(hash(A.f), hash(a1.f))
         self.assertNotEqual(A.f, A.g)
         self.assertEqual(B.f, A.f)
         self.assertEqual(hash(B.f), hash(A.f))
-
-        # the following triggers a SystemError in 2.4
+        self.assertEqual(A.f, A.f)
+        self.assertEqual(hash(A.f), hash(A.f))
+        #compare different classes
+        self.assertNotEqual(C.f, A.f)
+        self.assertNotEqual(hash(C.f),hash(A.f))
+        self.assertNotEqual(c.f, a1.f)
+        self.assertNotEqual(hash(c.f), hash(a1.f))
+        #the following triggers a SystemError in 2.4
         a = A(hash(A.f)^(-1))
         hash(a.f)
+        # Test class without __eq__ and __hash__ methods
+        class A:
+            def __init__(self, x):
+                self.x = x
+            def f(self):
+                pass
+            def g(self):
+                pass
+        class B(A):
+            pass
+        class C():
+            def f(self):
+                pass
+        a1 = A(1)
+        a2 = A(2)
+        c = C()
+        #compare instances of class A
+        self.assertEqual(a1.f, a1.f)
+        self.assertEqual(hash(a1.f), hash(a1.f))
+        self.assertNotEqual(a1.f, a2.f)
+        self.assertNotEqual(a1.f, a1.g)
+        self.assertNotEqual(a1.f, A(1).f)
+        self.assertNotEqual(hash(a1.f), hash(A(1).f))
+        #compare classes that inherit from each other
+        self.assertNotEqual(A.f, a1.f)
+        self.assertNotEqual(hash(A.f), hash(a1.f))
+        self.assertNotEqual(A.f, A.g)
+        self.assertEqual(B.f, A.f)
+        self.assertEqual(hash(B.f), hash(A.f))
+        self.assertEqual(A.f, A.f)
+        self.assertEqual(hash(A.f), hash(A.f))
+        #compare different classes
+        self.assertNotEqual(C.f, A.f)
+        self.assertNotEqual(hash(C.f),hash(A.f))
+        self.assertNotEqual(c.f, a1.f)
+        self.assertNotEqual(hash(c.f), hash(a1.f))
+        self.assertNotEqual(hash(c), hash(a1))
 
 if __name__ == '__main__':
     unittest.main()

@@ -56,8 +56,7 @@ var format = function (kwa) {
         }
     }
 
-    replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, fill_char, fill_align, sign, zero_pad, sign_aware, fieldWidth, comma, precision, conversionType,
-                            offset, str_whole){
+    replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, fill_char, fill_align, sign, zero_pad, sign_aware, fieldWidth, comma, precision, conversionType, offset, str_whole) {
         var return_str;
         var formatNumber;
         var formatFormat;

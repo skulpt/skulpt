@@ -85,8 +85,8 @@ Sk.ffi.remapToJs = function (obj) {
     if (obj instanceof Sk.builtin.dict) {
         ret = {};
         for (iter = obj.tp$iter(), k = iter.tp$iternext();
-             k !== undefined;
-             k = iter.tp$iternext()) {
+            k !== undefined;
+            k = iter.tp$iternext()) {
             v = obj.mp$subscript(k);
             if (v === undefined) {
                 v = null;

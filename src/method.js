@@ -36,6 +36,34 @@ Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object
 
 Sk.builtin.method.prototype.tp$name = "method";
 
+Sk.builtin.method.prototype.ob$eq = function (other) {
+    if (((this.im_self == Sk.builtin.none.none$) && (other.im_self != Sk.builtin.none.none$)) ||  ((other.im_self == Sk.builtin.none.none$) && (this.im_self != Sk.builtin.none.none$))) {
+        return false;
+    }
+    try {
+        return Sk.misceval.richCompareBool(this.im_self, other.im_self, "Eq", false) && (this.im_func == other.im_func);
+    } catch (x) {
+        return false;
+    }
+};
+
+Sk.builtin.method.prototype.ob$ne = function (other) {
+    return !(this.ob$eq(other));
+};
+
+Sk.builtin.method.prototype.tp$hash = function () {
+    var selfhash, funchash;
+
+    if (this.im_self == Sk.builtin.none.none$) {
+        selfhash = 0;
+    } else {
+        selfhash = Sk.builtin.asnum$(Sk.builtin.hash(this.im_self));
+    }
+    funchash = Sk.builtin.asnum$(Sk.builtin.hash(this.im_func));
+
+    return new Sk.builtin.int_(selfhash + funchash);
+};
+
 Sk.builtin.method.prototype.tp$call = function (args, kw) {
     // Sk.asserts.assert(this.im_func instanceof Sk.builtin.func);
 

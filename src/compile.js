@@ -221,7 +221,8 @@ var reservedNames_ = {
     "unwatch": true,
     "valueOf": true,
     "watch": true,
-    "length": true
+    "length": true,
+    "name": true,
 };
 
 function fixReservedNames (name) {
@@ -519,7 +520,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
 
 Compiler.prototype.cyield = function(e)
 {
-    if (this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
+    if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         throw new SyntaxError("'yield' outside function");
     }
     var val = "null",
@@ -1024,7 +1025,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var localSaveCode = [];
     var localsToSave = unit.localnames.concat(unit.tempsToSave);
     var seenTemps = {};
-    var hasCell = unit.ste.blockType === SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
+    var hasCell = unit.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
@@ -2219,7 +2220,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             this.cclass(s);
             break;
         case Sk.astnodes.Return_:
-            if (this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
+            if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
             val = s.value ? this.vexpr(s.value) : "Sk.builtin.none.none$";
@@ -2305,7 +2306,7 @@ Compiler.prototype.isCell = function (name) {
     var mangled = mangleName(this.u.private_, name).v;
     var scope = this.u.ste.getScope(mangled);
     var dict = null;
-    return scope === SYMTAB_CONSTS.CELL;
+    return scope === Sk.SYMTAB_CONSTS.CELL;
 
 };
 
@@ -2350,26 +2351,26 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     scope = this.u.ste.getScope(mangled);
     dict = null;
     switch (scope) {
-        case SYMTAB_CONSTS.FREE:
+        case Sk.SYMTAB_CONSTS.FREE:
             dict = "$free";
             optype = OP_DEREF;
             break;
-        case SYMTAB_CONSTS.CELL:
+        case Sk.SYMTAB_CONSTS.CELL:
             dict = "$cell";
             optype = OP_DEREF;
             break;
-        case SYMTAB_CONSTS.LOCAL:
+        case Sk.SYMTAB_CONSTS.LOCAL:
             // can't do FAST in generators or at module/class scope
-            if (this.u.ste.blockType === SYMTAB_CONSTS.FunctionBlock && !this.u.ste.generator) {
+            if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && !this.u.ste.generator) {
                 optype = OP_FAST;
             }
             break;
-        case SYMTAB_CONSTS.GLOBAL_IMPLICIT:
-            if (this.u.ste.blockType === SYMTAB_CONSTS.FunctionBlock) {
+        case Sk.SYMTAB_CONSTS.GLOBAL_IMPLICIT:
+            if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock) {
                 optype = OP_GLOBAL;
             }
             break;
-        case SYMTAB_CONSTS.GLOBAL_EXPLICIT:
+        case Sk.SYMTAB_CONSTS.GLOBAL_EXPLICIT:
             optype = OP_GLOBAL;
         default:
             break;
@@ -2385,7 +2386,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     // in generator or at module scope, we need to store to $loc, rather that
     // to actual JS stack variables.
     mangledNoPre = mangled;
-    if (this.u.ste.generator || this.u.ste.blockType !== SYMTAB_CONSTS.FunctionBlock) {
+    if (this.u.ste.generator || this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         mangled = "$loc." + mangled;
     }
     else if (optype === OP_FAST || optype === OP_NAME) {

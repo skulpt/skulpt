@@ -83,7 +83,7 @@ var SYMTAB_CONSTS = {
     ClassBlock: ClassBlock
 };
 
-Sk.exportSymbol("SYMTAB_CONSTS", SYMTAB_CONSTS);
+Sk.exportSymbol("Sk.SYMTAB_CONSTS", SYMTAB_CONSTS);
 
 /**
  * @constructor

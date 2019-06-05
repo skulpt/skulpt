@@ -418,8 +418,7 @@ Sk.builtin.timSort.prototype.merge_lo = function (a, b) {
                 this.min_gallop = min_gallop;
             }
         }
-    }
-    finally {
+    } finally {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
         Sk.asserts.assert(a.len >= 0 && b.len >= 0);
@@ -551,8 +550,7 @@ Sk.builtin.timSort.prototype.merge_hi = function (a, b) {
                 this.min_gallop = min_gallop;
             }
         }
-    }
-    finally {
+    } finally {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
         Sk.asserts.assert(a.len >= 0 && b.len >= 0);

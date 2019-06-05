@@ -353,7 +353,8 @@ var testInDebugMode = process.argv.indexOf("--debug-mode") != -1;
 function testsMain()
 {
     var i, promise = Promise.resolve();
-
+    var starttime, endtime, elapsed;
+    
     if (doTestToken) {
         for (i = 0; i <= 100; i += 1)
         {
@@ -383,6 +384,7 @@ function testsMain()
         console.log(sprintf("symtab: %d/%d (+%d disabled)", symtabpass, symtabpass + symtabfail, symtabdisabled));
     }
     if (doTestRun) {
+	starttime = Date.now();
         for (i = 0; i <= 1000; ++i)
         {
             (function(i) {
@@ -392,7 +394,10 @@ function testsMain()
             })(i);
         }
         promise = promise.then(function() {
+	    endtime = Date.now();
             console.log(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
+	    elapsed = (endtime - starttime) / 1000;
+	    console.log("Total run time for all tests: " + elapsed.toString() + "s");
         }, function(e) {
             console.log("Internal error: "+e);
         });
@@ -432,7 +437,7 @@ function testsMain()
     }
     else
     {
-        console.log("closure: skipped");
+        console.log("closure library: skipped");
     }
     //return;
     //    for (i = 0; i <= 100; ++i)

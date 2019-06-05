@@ -5,10 +5,12 @@
 
   "predef": [
     "Sk",
-    "goog",
-    "COMPILED",
     "Promise",
-    "setImmediate"
+    "setImmediate",
+    "GITVERSION",
+    "GITHASH",
+    "GITBRANCH",
+    "BUILDDATE"
   ],
 
   /*** Enforcing options ***/

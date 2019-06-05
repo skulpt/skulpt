@@ -50,13 +50,58 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 * add unit-test
 * commit: `git commit -m 'failing test'` (you can do this more often)
 * write code
-* test: `npm test` and `npm run build`
+* test: `npm run devbuild`, `npm test`, `npm run test3`, and `npm run dist`
 * commit: `git commit -m 'implement fix'` (you can do this more often)
 * push: `git push -u origin feature_branch_name`
 * pull-request: (on github)
 
 
+### NPM Commands
 
+* `npm run help`
+
+   Help on all `npm` commands.
+
+* `npm run build`
+
+  Production, optimized build.
+
+* `npm run devbuild`
+
+  Development, unoptimized build
+
+* `npm run watch`
+
+  Development, unoptimized build, which will automatically be rebuilt when there are any source changes.
+
+* `npm run dist`
+
+  Prepare the distribution: build the optimized Skulpt, run all tests, build docs.
+
+* `npm run brun <pyfile>`
+
+  Run Python <pyfile> in the browser.  This will automatically rebuild the unoptimized Skulpt first.
+
+* `npm run btest`
+
+  Run the unit tests in the browser.
+
+* `npm run repl`
+
+  Open the REPL.  You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
+
+* `npm test`
+
+  Run all tests.  You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
+
+* `npm start <py2|py3> <pyfile>`
+
+  Run pyfile using either Python 2 (py2) or Python 3 (py3).  You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
+
+* `npm run profile <py2|py3> <pyfile>`
+
+  Run pyfile using either Python 2 (py2) or Python 3 (py3) with the profiler on.  Will report the profiling results to the console.  You need to build the optimized Skulpt (`npm run build`) first.
+  
 
 ## Coding Style and Conventions
 

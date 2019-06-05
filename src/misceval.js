@@ -185,7 +185,7 @@ Sk.misceval.arrayFromArguments = function (args) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
         for (it = Sk.abstr.iter(arg), i = it.tp$iternext();
-             i !== undefined; i = it.tp$iternext()) {
+            i !== undefined; i = it.tp$iternext()) {
             res.push(i);
         }
         return res;
@@ -254,14 +254,14 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
         numeric_types = [Sk.builtin.float_.prototype.ob$type,
-            Sk.builtin.int_.prototype.ob$type,
-            Sk.builtin.lng.prototype.ob$type,
-            Sk.builtin.bool.prototype.ob$type];
+                         Sk.builtin.int_.prototype.ob$type,
+                         Sk.builtin.lng.prototype.ob$type,
+                         Sk.builtin.bool.prototype.ob$type];
         sequence_types = [Sk.builtin.dict.prototype.ob$type,
-            Sk.builtin.enumerate.prototype.ob$type,
-            Sk.builtin.list.prototype.ob$type,
-            Sk.builtin.str.prototype.ob$type,
-            Sk.builtin.tuple.prototype.ob$type];
+                          Sk.builtin.enumerate.prototype.ob$type,
+                          Sk.builtin.list.prototype.ob$type,
+                          Sk.builtin.str.prototype.ob$type,
+                          Sk.builtin.tuple.prototype.ob$type];
 
         v_num_type = numeric_types.indexOf(v_type);
         v_seq_type = sequence_types.indexOf(v_type);
@@ -370,8 +370,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend), Sk.misceval.isTrue);
     }
     if (op === "NotIn") {
-        return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend),
-                                 function(x) { return !Sk.misceval.isTrue(x); });
+        return Sk.misceval.chain(
+            Sk.abstr.sequenceContains(w, v, canSuspend),
+            function(x) { return !Sk.misceval.isTrue(x); }
+        );
     }
 
     // Call Javascript shortcut method if exists for either object
@@ -961,12 +963,12 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                             // Assumes all yields are optional, as Sk.setTimeout might
                             // not be able to yield.
                             //Sk.setTimeout(resume, 0);
-                            setImmediate(resume);
+                            Sk.global["setImmediate"](resume);
                             return;
 
                         } else if (r.data["type"] == "Sk.delay") {
                             //Sk.setTimeout(resume, 1);
-                            setImmediate(resume);
+                            Sk.global["setImmediate"](resume);
                             return;
 
                         } else if (r.optional) {

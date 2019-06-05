@@ -1,17 +1,12 @@
-language: python
+language: node_js
 sudo: false
-python:
-- '2.7'
+node_js:
+- '10'
 install:
-- nvm install 'lts/*'
-- nvm use 'lts/*'
-- npm install npm@latest -g
 - npm install
-- pip install "GitPython>=0.2.0-beta1"
 - mkdir -p vendors
 script:
-- npm run build-min
-- npm test
+- npm run dist
 after_script:
 - ./dist-update.sh
 env:
