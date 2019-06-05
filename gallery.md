@@ -26,16 +26,14 @@ Ideally it would choose one each time the page loads but I haven't dug into that
  <h2>Skulpt in the Wild</h2>
     <p>
         <ul>
-            <li><a href="http://interactivepython.org/courselib/static/thinkcspy/index.html"> How to Think like a Computer
-                Scientist: Interactive Edition</a></li>
-            <li><a href="http://interactivepython.org/courselib/static/pythonds/index.html"> Problem Solving with Algorithms
+            <li><a href="https://runestone.academy/runestone/static/fopp/index.html"> Foundations of Python Programming</a></li>
+            <li><a href="https://runestone.academy/runestone/static/pythonds/index.html"> Problem Solving with Algorithms
                 and Data Structures using Python</a></li>
             <li><a href="http://www.pythonlearn.com/">PythonLearn</a></li>
             <li><a href="https://online.dr-chuck.com/">Dr. Chuck Online</a></li>
             <li><a href="http://www.codeskulptor.org">CodeSkulptor</a></li>
             <li><a href="https://trinket.io/">trinket</a></li>
-            <li><a href="http://www.geometryzen.org">Geometry Zen</a></li>
-            <li><a href="http://www.evaluzio.net">Evaluzio</a></li>
+            <li><a href="https://shrew.app">Code Shrew</a></li>
         </ul>
     </p>
     <p>If you have a project that uses skulpt and would like me to link to it here, let me know on our github page.</p>
