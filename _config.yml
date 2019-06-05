@@ -1,17 +1,17 @@
 name : Skulpt.org Homepage
 brand : Skulpt
 description : A Browser-based Python interpreter for education
-keyword : 
+keyword :
 url : http://skulpt.org
 email : skulpt-dev@groups.google.com
-twitter : 
+twitter :
 author : Brad Miller
 analytics : UA-10993568-1
 year : 2015
 markdown : kramdown
 kramdown:
   input: GFM
-highlighter: rogue
+highlighter: rouge
 
 repository: skulpt/skulpt
 
