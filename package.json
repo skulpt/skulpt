@@ -10,7 +10,7 @@
     "regenparser": "node support/build/regenparser.js",
     "prebrun": "npm run devbuild",
     "brun": "node support/run/brun.js -p",
-    "prebtest": "npm run devbuild && node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
+    "prebtest": "npm run build && node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
     "btest": "node support/run/brun.js -t",
     "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
     "dist": "npm run build && npm run test && npm run doc && node support/build/copy2docs.js",
