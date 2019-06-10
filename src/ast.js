@@ -26,7 +26,7 @@ function Compiling (encoding, filename, c_flags) {
  * @return {number}
  */
 function NCH (n) {
-    goog.asserts.assert(n !== undefined, "node must be defined");
+    Sk.asserts.assert(n !== undefined, "node must be defined");
     if (n.children === null) {
         return 0;
     }
@@ -34,13 +34,13 @@ function NCH (n) {
 }
 
 function CHILD (n, i) {
-    goog.asserts.assert(n !== undefined, "node must be defined");
-    goog.asserts.assert(i !== undefined, "index of child must be specified");
+    Sk.asserts.assert(n !== undefined, "node must be defined");
+    Sk.asserts.assert(i !== undefined, "index of child must be specified");
     return n.children[i];
 }
 
 function REQ (n, type) {
-    goog.asserts.assert(n.type === type, "node wasn't expected type");
+    Sk.asserts.assert(n.type === type, "node wasn't expected type");
 }
 
 function TYPE(n) {
@@ -60,7 +60,7 @@ function ast_error(c, n, msg) {
 }
 
 function strobj (s) {
-    goog.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
+    Sk.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
     return new Sk.builtin.str(s);
 }
 
@@ -105,7 +105,7 @@ function numStmts (n) {
             }
             break;
         default:
-            goog.asserts.fail("Non-statement found");
+            Sk.asserts.fail("Non-statement found");
     }
     return 0;
 }
@@ -132,7 +132,7 @@ function setContext (c, e, ctx, n) {
     var i;
     var exprName;
     var s;
-    goog.asserts.assert(ctx !== Sk.astnodes.AugStore && ctx !== Sk.astnodes.AugLoad, "context not AugStore or AugLoad");
+    Sk.asserts.assert(ctx !== Sk.astnodes.AugStore && ctx !== Sk.astnodes.AugLoad, "context not AugStore or AugLoad");
     s = null;
     exprName = null;
 
@@ -200,7 +200,7 @@ function setContext (c, e, ctx, n) {
             exprName = "conditional expression";
             break;
         default:
-            goog.asserts.fail("unhandled expression in assignment");
+            Sk.asserts.fail("unhandled expression in assignment");
     }
     if (exprName) {
         throw new Sk.builtin.SyntaxError("can't " + (ctx === Sk.astnodes.Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
@@ -229,7 +229,7 @@ var operatorMap = {};
 }());
 
 function getOperator (n) {
-    goog.asserts.assert(operatorMap[n.type] !== undefined, "Operator missing from operatorMap");
+    Sk.asserts.assert(operatorMap[n.type] !== undefined, "Operator missing from operatorMap");
     return operatorMap[n.type];
 }
 
@@ -276,7 +276,7 @@ function astForCompOp (c, n) {
             }
         }
     }
-    goog.asserts.fail("invalid comp_op");
+    Sk.asserts.fail("invalid comp_op");
 }
 
 function copy_location(e, n)
@@ -296,14 +296,14 @@ function seq_for_testlist (c, n) {
     */
     var i;
     var seq = [];
-    goog.asserts.assert(n.type === SYM.testlist ||
+    Sk.asserts.assert(n.type === SYM.testlist ||
         n.type === SYM.testlist_star_expr ||
         n.type === SYM.listmaker ||
         n.type === SYM.testlist_comp ||
         n.type === SYM.testlist_safe ||
         n.type === SYM.testlist1, "node type must be listlike");
     for (i = 0; i < NCH(n); i += 2) {
-        goog.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test || CHILD(n, i).type === SYM.star_expr);
+        Sk.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test || CHILD(n, i).type === SYM.star_expr);
         seq[i / 2] = ast_for_expr(c, CHILD(n, i));
     }
     return seq;
@@ -348,7 +348,7 @@ function astForSuite (c, n) {
                 REQ(ch, SYM.simple_stmt);
                 for (j = 0; j < NCH(ch); j += 2) {
                     if (NCH(CHILD(ch, j)) === 0) {
-                        goog.asserts.assert(j + 1 === NCH(ch));
+                        Sk.asserts.assert(j + 1 === NCH(ch));
                         break;
                     }
                     seq[pos++] = astForStmt(c, CHILD(ch, j));
@@ -356,7 +356,7 @@ function astForSuite (c, n) {
             }
         }
     }
-    goog.asserts.assert(pos === numStmts(n));
+    Sk.asserts.assert(pos === numStmts(n));
     return seq;
 }
 
@@ -376,7 +376,7 @@ function astForExceptClause (c, exc, body) {
         setContext(c, e, Sk.astnodes.Store, CHILD(exc, 3));
         return new Sk.astnodes.ExceptHandler(ast_for_expr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
-    goog.asserts.fail("wrong number of children for except clause");
+    Sk.asserts.fail("wrong number of children for except clause");
 }
 
 function astForTryStmt (c, n) {
@@ -471,7 +471,7 @@ function astForDecorated (c, n) {
     var decoratorSeq;
     REQ(n, SYM.decorated);
     decoratorSeq = astForDecorators(c, CHILD(n, 0));
-    goog.asserts.assert(CHILD(n, 1).type === SYM.funcdef || CHILD(n, 1).type === SYM.classdef);
+    Sk.asserts.assert(CHILD(n, 1).type === SYM.funcdef || CHILD(n, 1).type === SYM.classdef);
 
     thing = null;
     if (CHILD(n, 1).type === SYM.funcdef) {
@@ -531,7 +531,7 @@ function astForWithStmt (c, n) {
 function astForExecStmt (c, n) {
     var expr1, globals = null, locals = null;
     var nchildren = NCH(n);
-    goog.asserts.assert(nchildren === 2 || nchildren === 4 || nchildren === 6);
+    Sk.asserts.assert(nchildren === 2 || nchildren === 4 || nchildren === 6);
 
     /* exec_stmt: 'exec' expr ['in' test [',' test]] */
     REQ(n, SYM.exec_stmt);
@@ -614,7 +614,7 @@ function astForIfStmt (c, n) {
             orelse, n.lineno, n.col_offset);
     }
 
-    goog.asserts.fail("unexpected token in 'if' statement");
+    Sk.asserts.fail("unexpected token in 'if' statement");
 }
 
 function ast_for_exprlist (c, n, context) {
@@ -659,7 +659,7 @@ function astForAssertStmt (c, n) {
     else if (NCH(n) === 4) {
         return new Sk.astnodes.Assert(ast_for_expr(c, CHILD(n, 1)), ast_for_expr(c, CHILD(n, 3)), n.lineno, n.col_offset);
     }
-    goog.asserts.fail("improper number of parts to assert stmt");
+    Sk.asserts.fail("improper number of parts to assert stmt");
 }
 
 function aliasForImportName (c, n) {
@@ -689,7 +689,7 @@ function aliasForImportName (c, n) {
                 }
                 else {
                     a = aliasForImportName(c, CHILD(n, 0));
-                    goog.asserts.assert(!a.asname);
+                    Sk.asserts.assert(!a.asname);
                     a.asname = strobj(CHILD(n, 2).value);
                     return a;
                 }
@@ -801,7 +801,7 @@ function astForImportStmt (c, n) {
 function ast_for_testlistComp(c, n) {
     /* testlist_comp: test ( comp_for | (',' test)* [','] ) */
     /* argument: test [comp_for] */
-    goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
+    Sk.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
     if (NCH(n) > 1 && CHILD(n, 1).type === SYM.comp_for) {
         return ast_for_gen_expr(c, n);
     }
@@ -809,12 +809,12 @@ function ast_for_testlistComp(c, n) {
 }
 function ast_for_genexp(c, n)
 {
-    goog.asserts.assert(TYPE(n) == SYM.testlist_comp || TYPE(n) == SYM.argument);
+    Sk.asserts.assert(TYPE(n) == SYM.testlist_comp || TYPE(n) == SYM.argument);
     return ast_for_itercomp(c, n, COMP_GENEXP);
 }
 
 function  ast_for_listcomp(c, n) {
-    goog.asserts.assert(TYPE(n) == (SYM.testlist_comp));
+    Sk.asserts.assert(TYPE(n) == (SYM.testlist_comp));
     return ast_for_itercomp(c, n, COMP_LISTCOMP);
 }
 
@@ -852,7 +852,7 @@ function astForFactor (c, n) {
             return new Sk.astnodes.UnaryOp(Sk.astnodes.Invert, expression, n.lineno, n.col_offset);
     }
 
-    goog.asserts.fail("unhandled factor");
+    Sk.asserts.fail("unhandled factor");
 }
 
 function astForForStmt (c, n) {
@@ -1024,7 +1024,7 @@ function astForTrailer (c, n, leftExpr) {
             elts = [];
             for (j = 0; j < slices.length; ++j) {
                 slc = slices[j];
-                goog.asserts.assert(slc.constructor === Sk.astnodes.Index && slc.value !== null && slc.value !== undefined);
+                Sk.asserts.assert(slc.constructor === Sk.astnodes.Index && slc.value !== null && slc.value !== undefined);
                 elts[j] = slc.value;
             }
             e = new Sk.astnodes.Tuple(elts, Sk.astnodes.Load, n.lineno, n.col_offset);
@@ -1084,9 +1084,9 @@ function astForFlowStmt (c, n) {
             }
             break;
         default:
-            goog.asserts.fail("unexpected flow_stmt");
+            Sk.asserts.fail("unexpected flow_stmt");
     }
-    goog.asserts.fail("unhandled flow statement");
+    Sk.asserts.fail("unhandled flow statement");
 }
 
 function astForArg(c, n)
@@ -1095,7 +1095,7 @@ function astForArg(c, n)
     var annotation = null;
     var ch;
 
-    goog.asserts.assert(n.type === SYM.tfpdef || n.type === SYM.vfpdef);
+    Sk.asserts.assert(n.type === SYM.tfpdef || n.type === SYM.vfpdef);
     ch = CHILD(n, 0);
     forbiddenCheck(c, ch, ch.value, ch.lineno);
     name = strobj(ch.value);
@@ -1126,7 +1126,7 @@ function handleKeywordonlyArgs(c, n, start, kwonlyargs, kwdefaults)
     if (!kwonlyargs) {
         ast_error(c, CHILD(n, start), "named arguments must follow bare *");
     }
-    goog.asserts.assert(kwdefaults);
+    Sk.asserts.assert(kwdefaults);
     while (i < NCH(n)) {
         ch = CHILD(n, i);
         switch (ch.type) {
@@ -1199,7 +1199,7 @@ function astForArguments (c, n) {
         }
         n = CHILD(n, 1);
     }
-    goog.asserts.assert(n.type === SYM.varargslist ||
+    Sk.asserts.assert(n.type === SYM.varargslist ||
                         n.type === SYM.typedargslist);
 
 
@@ -1255,12 +1255,12 @@ function astForArguments (c, n) {
                 break;
             case TOK.T_DOUBLESTAR:
                 ch = CHILD(n, i+1);  /* tfpdef */
-                goog.asserts.assert(ch.type == SYM.tfpdef || ch.type == SYM.vfpdef);
+                Sk.asserts.assert(ch.type == SYM.tfpdef || ch.type == SYM.vfpdef);
                 kwarg = astForArg(c, ch);
                 i += 3;
                 break;
             default:
-                goog.asserts.fail("unexpected node in varargslist");
+                Sk.asserts.fail("unexpected node in varargslist");
                 return;
         }
     }
@@ -1301,7 +1301,7 @@ function astForAsyncFuncdef(c, n, decorator_seq)
     /* async_funcdef: 'async' funcdef */
     REQ(n, SYM.async_funcdef);
     REQ(CHILD(n, 0), TOK.T_NAME);
-    goog.asserts.assert(CHILD(n, 0).value === "async");
+    Sk.asserts.assert(CHILD(n, 0).value === "async");
     REQ(CHILD(n, 1), SYM.funcdef);
 
     return astForFuncdefImpl(c, n, decorator_seq,
@@ -1310,7 +1310,7 @@ function astForAsyncFuncdef(c, n, decorator_seq)
 
 function astForClassBases (c, n) {
     /* testlist: test (',' test)* [','] */
-    goog.asserts.assert(NCH(n) > 0);
+    Sk.asserts.assert(NCH(n) > 0);
     REQ(n, SYM.testlist);
     if (NCH(n) === 1) {
         return [ ast_for_expr(c, CHILD(n, 0)) ];
@@ -1421,7 +1421,7 @@ function astForComprehension(c, n) {
             }
             break;
         }
-        goog.asserts.fail("logic error in countCompFors");
+        Sk.asserts.fail("logic error in countCompFors");
     }
 
     function countCompIfs(c, n) {
@@ -1479,7 +1479,7 @@ function astForComprehension(c, n) {
 
 function astForIterComp(c, n, type) {
     var elt, comps;
-    goog.asserts.assert(NCH(n) > 1);
+    Sk.asserts.assert(NCH(n) > 1);
     elt = ast_for_expr(c, CHILD(n, 0));
     comps = astForComprehension(c, CHILD(n, 1));
     if (type === COMP_GENEXP) {
@@ -1505,7 +1505,7 @@ function count_comp_fors(c, n) {
         // } else if (NCH(n) === 1) {
         //     n = CHILD(n, 0);
         // } else {
-        //     goog.asserts.fail("logic error in count_comp_fors");
+        //     Sk.asserts.fail("logic error in count_comp_fors");
         // }
         // if (NCH(n) == (5)) {
         //     n = CHILD(n, 4);
@@ -1696,7 +1696,7 @@ function ast_for_itercomp(c, n, type) {
     var comps;
     var ch;
 
-    goog.asserts.assert(NCH(n) > 1);
+    Sk.asserts.assert(NCH(n) > 1);
 
     ch = CHILD(n, 0);
     elt = ast_for_expr(c, ch);
@@ -1733,13 +1733,13 @@ function ast_for_dictelement(c, n, i)
 {
     var expression;
     if (TYPE(CHILD(n, i)) == TOK.T_DOUBLESTAR) {
-        goog.asserts.assert(NCH(n) - i >= 2);
+        Sk.asserts.assert(NCH(n) - i >= 2);
 
         expression = ast_for_expr(c, CHILD(n, i + 1));
 
         return { key: null, value: expression, i: i + 2 }
     } else {
-        goog.asserts.assert(NCH(n) - i >= 3);
+        Sk.asserts.assert(NCH(n) - i >= 3);
 
         expression = ast_for_expr(c, CHILD(n, i));
         if (!expression)
@@ -1762,7 +1762,7 @@ function ast_for_dictelement(c, n, i)
 function ast_for_dictcomp(c, n) {
     var key, value;
     var comps = [];
-    goog.asserts.assert(NCH(n) > 3);
+    Sk.asserts.assert(NCH(n) > 3);
     REQ(CHILD(n, 1), TOK.T_COLON);
     key = ast_for_expr(c, CHILD(n, 0));
     value = ast_for_expr(c, CHILD(n, 2));
@@ -1790,12 +1790,12 @@ function ast_for_dictdisplay(c, n)
 }
 
 function ast_for_gen_expr(c, n) {
-    goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
+    Sk.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
     return astForIterComp(c, n, COMP_GENEXP);
 }
 
 function ast_for_setcomp(c, n) {
-    goog.asserts.assert(n.type === SYM.dictorsetmaker);
+    Sk.asserts.assert(n.type === SYM.dictorsetmaker);
     return astForIterComp(c, n, COMP_SETCOMP);
 }
 
@@ -1808,7 +1808,7 @@ function astForWhileStmt (c, n) {
     else if (NCH(n) === 7) {
         return new Sk.astnodes.While(ast_for_expr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
     }
-    goog.asserts.fail("wrong number of tokens for 'while' stmt");
+    Sk.asserts.fail("wrong number of tokens for 'while' stmt");
 }
 
 function astForAugassign (c, n) {
@@ -1842,7 +1842,7 @@ function astForAugassign (c, n) {
             }
             return Sk.astnodes.Mult;
         default:
-            goog.asserts.fail("invalid augassign");
+            Sk.asserts.fail("invalid augassign");
     }
 }
 
@@ -1873,14 +1873,14 @@ function astForBinop (c, n) {
 function ast_for_testlist (c, n) {
     /* testlist_comp: test (',' comp_for | (',' test)* [',']) */
     /* testlist: test (',' test)* [','] */
-    goog.asserts.assert(NCH(n) > 0);
+    Sk.asserts.assert(NCH(n) > 0);
     if (n.type === SYM.testlist_comp) {
         if (NCH(n) > 1) {
-            goog.asserts.assert(CHILD(n, 1).type !== SYM.comp_for);
+            Sk.asserts.assert(CHILD(n, 1).type !== SYM.comp_for);
         }
     }
     else {
-        goog.asserts.assert(n.type === SYM.testlist || n.type === SYM.testlist_star_expr);
+        Sk.asserts.assert(n.type === SYM.testlist || n.type === SYM.testlist_star_expr);
     }
 
     if (NCH(n) === 1) {
@@ -1973,7 +1973,7 @@ function ast_for_exprStmt (c, n) {
 
 function astForIfexpr (c, n) {
     /* test: or_test 'if' or_test 'else' test */
-    goog.asserts.assert(NCH(n) === 5);
+    Sk.asserts.assert(NCH(n) === 5);
     return new Sk.astnodes.IfExp(
         ast_for_expr(c, CHILD(n, 2)),
         ast_for_expr(c, CHILD(n, 0)),
@@ -2053,7 +2053,7 @@ function parsestr (c, s) {
                 else {
                     // Leave it alone
                     ret += "\\" + c;
-                    // goog.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
+                    // Sk.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
                 }
             }
             else {
@@ -2085,16 +2085,16 @@ function parsestr (c, s) {
         quote = s.charAt(0);
         rawmode = true;
     }
-    goog.asserts.assert(quote !== "b" && quote !== "B", "todo; haven't done b'' strings yet");
+    Sk.asserts.assert(quote !== "b" && quote !== "B", "todo; haven't done b'' strings yet");
 
-    goog.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
+    Sk.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
     s = s.substr(1, s.length - 2);
     if (unicode) {
         s = encodeUtf8(s);
     }
 
     if (s.length >= 4 && s.charAt(0) === quote && s.charAt(1) === quote) {
-        goog.asserts.assert(s.charAt(s.length - 1) === quote && s.charAt(s.length - 2) === quote);
+        Sk.asserts.assert(s.charAt(s.length - 1) === quote && s.charAt(s.length - 2) === quote);
         s = s.substr(2, s.length - 4);
     }
 
@@ -2503,7 +2503,7 @@ function astForAtom(c, n) {
             //throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
             return new Sk.astnodes.Repr(ast_for_testlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
         default:
-            goog.asserts.fail("unhandled atom", ch.type);
+            Sk.asserts.fail("unhandled atom", ch.type);
 
     }
 }
@@ -2517,7 +2517,7 @@ function astForAtomExpr(c, n) {
 
     if (CHILD(n, 0).type === TOK.T_AWAIT) {
         start = 1;
-        goog.asserts.assert(nch > 1);
+        Sk.asserts.assert(nch > 1);
     }
 
     e = ast_for_atom(c, CHILD(n, start));
@@ -2634,7 +2634,7 @@ function ast_for_expr (c, n) {
                 if (CHILD(n, 1).value === "and") {
                     return new Sk.astnodes.BoolOp(Sk.astnodes.And, seq, n.lineno, n.col_offset /*, c.c_arena*/);
                 }
-                goog.asserts.assert(CHILD(n, 1).value === "or");
+                Sk.asserts.assert(CHILD(n, 1).value === "or");
                 return new Sk.astnodes.BoolOp(Sk.astnodes.Or, seq, n.lineno, n.col_offset);
             case SYM.not_test:
                 if (NCH(n) === 1) {
@@ -2710,7 +2710,7 @@ function ast_for_expr (c, n) {
             case SYM.power:
                 return astForPower(c, n);
             default:
-                goog.asserts.fail("unhandled expr", "n.type: %d", n.type);
+                Sk.asserts.fail("unhandled expr", "n.type: %d", n.type);
         }
         break;
     }
@@ -2752,11 +2752,11 @@ function astForPrintStmt (c, n) {
 function astForStmt (c, n) {
     var ch;
     if (n.type === SYM.stmt) {
-        goog.asserts.assert(NCH(n) === 1);
+        Sk.asserts.assert(NCH(n) === 1);
         n = CHILD(n, 0);
     }
     if (n.type === SYM.simple_stmt) {
-        goog.asserts.assert(numStmts(n) === 1);
+        Sk.asserts.assert(numStmts(n) === 1);
         n = CHILD(n, 0);
     }
     if (n.type === SYM.small_stmt) {
@@ -2788,7 +2788,7 @@ function astForStmt (c, n) {
             case SYM.debugger_stmt:
                 return new Sk.astnodes.Debugger(n.lineno, n.col_offset);
             default:
-                goog.asserts.fail("unhandled small_stmt");
+                Sk.asserts.fail("unhandled small_stmt");
         }
     }
     else {
@@ -2817,7 +2817,7 @@ function astForStmt (c, n) {
             case SYM.async_stmt:
                 return astForAsyncStmt(c, ch);
             default:
-                goog.asserts.assert("unhandled compound_stmt");
+                Sk.asserts.assert("unhandled compound_stmt");
         }
     }
 };
@@ -2852,11 +2852,11 @@ Sk.astFromParse = function (n, filename, c_flags) {
             }
             return new Sk.astnodes.Module(stmts);
         case SYM.eval_input:
-            goog.asserts.fail("todo;");
+            Sk.asserts.fail("todo;");
         case SYM.single_input:
-            goog.asserts.fail("todo;");
+            Sk.asserts.fail("todo;");
         default:
-            goog.asserts.fail("todo;");
+            Sk.asserts.fail("todo;");
     }
 };
 
