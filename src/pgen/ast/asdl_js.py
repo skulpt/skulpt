@@ -114,7 +114,7 @@ class TypeDefVisitor(EmitVisitor):
         for i in range(len(sum.types)):
             self.emit("/** @constructor */", depth);
             type = sum.types[i]
-            self.emit("Sk.ast.%s = function %s() {}" % (type.name, type.name), depth)
+            self.emit("Sk.astnodes.%s = function %s() {}" % (type.name, type.name), depth)
         self.emit("", depth)
 
     def visitProduct(self, product, name, depth):
@@ -233,7 +233,7 @@ class FunctionVisitor(PrototypeVisitor):
         argstr = ", ".join(["/* {%s} */ %s" % (atype, aname)
                             for atype, aname, opt in args + attrs])
         emit("/** @constructor */")
-        emit("Sk.ast.%s = function %s(%s)" % (name, name, argstr))
+        emit("Sk.astnodes.%s = function %s(%s)" % (name, name, argstr))
         emit("{")
         for argtype, argname, opt in args:
             # XXX hack alert: false is allowed for a bool
@@ -301,8 +301,8 @@ class FieldNamesVisitor(PickleVisitor):
 
     def visitProduct(self, prod, name):
         if prod.fields:
-            self.emit('Sk.ast.%s.prototype._astname = "%s";' % (name, cleanName(name)), 0)
-            self.emit("Sk.ast.%s.prototype._fields = [" % name,0)
+            self.emit('Sk.astnodes.%s.prototype._astname = "%s";' % (name, cleanName(name)), 0)
+            self.emit("Sk.astnodes.%s.prototype._fields = [" % name,0)
             c = 0
             for f in prod.fields:
                 c += 1
@@ -312,15 +312,15 @@ class FieldNamesVisitor(PickleVisitor):
     def visitSum(self, sum, name):
         if is_simple(sum):
             for t in sum.types:
-                self.emit('Sk.ast.%s.prototype._astname = "%s";' % (t.name, cleanName(t.name)), 0)
-                self.emit('Sk.ast.%s.prototype._isenum = true;' % (t.name), 0)
+                self.emit('Sk.astnodes.%s.prototype._astname = "%s";' % (t.name, cleanName(t.name)), 0)
+                self.emit('Sk.astnodes.%s.prototype._isenum = true;' % (t.name), 0)
         else:
             for t in sum.types:
                 self.visitConstructor(t, name)
 
     def visitConstructor(self, cons, name):
-        self.emit('Sk.ast.%s.prototype._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
-        self.emit("Sk.ast.%s.prototype._fields = [" % cons.name, 0)
+        self.emit('Sk.astnodes.%s.prototype._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
+        self.emit("Sk.astnodes.%s.prototype._fields = [" % cons.name, 0)
         if cons.fields:
             c = 0
             for t in cons.fields:

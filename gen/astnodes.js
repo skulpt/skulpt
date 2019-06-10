@@ -6,83 +6,83 @@ Sk.ast = {}
 
 /* ----- expr_context ----- */
 /** @constructor */
-Sk.ast.Load = function Load() {}
+Sk.astnodes.Load = function Load() {}
 /** @constructor */
-Sk.ast.Store = function Store() {}
+Sk.astnodes.Store = function Store() {}
 /** @constructor */
-Sk.ast.Del = function Del() {}
+Sk.astnodes.Del = function Del() {}
 /** @constructor */
-Sk.ast.AugLoad = function AugLoad() {}
+Sk.astnodes.AugLoad = function AugLoad() {}
 /** @constructor */
-Sk.ast.AugStore = function AugStore() {}
+Sk.astnodes.AugStore = function AugStore() {}
 /** @constructor */
-Sk.ast.Param = function Param() {}
+Sk.astnodes.Param = function Param() {}
 
 /* ----- boolop ----- */
 /** @constructor */
-Sk.ast.And = function And() {}
+Sk.astnodes.And = function And() {}
 /** @constructor */
-Sk.ast.Or = function Or() {}
+Sk.astnodes.Or = function Or() {}
 
 /* ----- operator ----- */
 /** @constructor */
-Sk.ast.Add = function Add() {}
+Sk.astnodes.Add = function Add() {}
 /** @constructor */
-Sk.ast.Sub = function Sub() {}
+Sk.astnodes.Sub = function Sub() {}
 /** @constructor */
-Sk.ast.Mult = function Mult() {}
+Sk.astnodes.Mult = function Mult() {}
 /** @constructor */
-Sk.ast.MatMult = function MatMult() {}
+Sk.astnodes.MatMult = function MatMult() {}
 /** @constructor */
-Sk.ast.Div = function Div() {}
+Sk.astnodes.Div = function Div() {}
 /** @constructor */
-Sk.ast.Mod = function Mod() {}
+Sk.astnodes.Mod = function Mod() {}
 /** @constructor */
-Sk.ast.Pow = function Pow() {}
+Sk.astnodes.Pow = function Pow() {}
 /** @constructor */
-Sk.ast.LShift = function LShift() {}
+Sk.astnodes.LShift = function LShift() {}
 /** @constructor */
-Sk.ast.RShift = function RShift() {}
+Sk.astnodes.RShift = function RShift() {}
 /** @constructor */
-Sk.ast.BitOr = function BitOr() {}
+Sk.astnodes.BitOr = function BitOr() {}
 /** @constructor */
-Sk.ast.BitXor = function BitXor() {}
+Sk.astnodes.BitXor = function BitXor() {}
 /** @constructor */
-Sk.ast.BitAnd = function BitAnd() {}
+Sk.astnodes.BitAnd = function BitAnd() {}
 /** @constructor */
-Sk.ast.FloorDiv = function FloorDiv() {}
+Sk.astnodes.FloorDiv = function FloorDiv() {}
 
 /* ----- unaryop ----- */
 /** @constructor */
-Sk.ast.Invert = function Invert() {}
+Sk.astnodes.Invert = function Invert() {}
 /** @constructor */
-Sk.ast.Not = function Not() {}
+Sk.astnodes.Not = function Not() {}
 /** @constructor */
-Sk.ast.UAdd = function UAdd() {}
+Sk.astnodes.UAdd = function UAdd() {}
 /** @constructor */
-Sk.ast.USub = function USub() {}
+Sk.astnodes.USub = function USub() {}
 
 /* ----- cmpop ----- */
 /** @constructor */
-Sk.ast.Eq = function Eq() {}
+Sk.astnodes.Eq = function Eq() {}
 /** @constructor */
-Sk.ast.NotEq = function NotEq() {}
+Sk.astnodes.NotEq = function NotEq() {}
 /** @constructor */
-Sk.ast.Lt = function Lt() {}
+Sk.astnodes.Lt = function Lt() {}
 /** @constructor */
-Sk.ast.LtE = function LtE() {}
+Sk.astnodes.LtE = function LtE() {}
 /** @constructor */
-Sk.ast.Gt = function Gt() {}
+Sk.astnodes.Gt = function Gt() {}
 /** @constructor */
-Sk.ast.GtE = function GtE() {}
+Sk.astnodes.GtE = function GtE() {}
 /** @constructor */
-Sk.ast.Is = function Is() {}
+Sk.astnodes.Is = function Is() {}
 /** @constructor */
-Sk.ast.IsNot = function IsNot() {}
+Sk.astnodes.IsNot = function IsNot() {}
 /** @constructor */
-Sk.ast.In = function In() {}
+Sk.astnodes.In = function In() {}
 /** @constructor */
-Sk.ast.NotIn = function NotIn() {}
+Sk.astnodes.NotIn = function NotIn() {}
 
 
 
@@ -99,7 +99,7 @@ Sk.ast.NotIn = function NotIn() {}
 
 
 /** @constructor */
-Sk.ast.Module = function Module(/* {asdl_seq *} */ body, /* {string} */
+Sk.astnodes.Module = function Module(/* {asdl_seq *} */ body, /* {string} */
                                      docstring)
 {
     this.body = body;
@@ -108,14 +108,14 @@ Sk.ast.Module = function Module(/* {asdl_seq *} */ body, /* {string} */
 }
 
 /** @constructor */
-Sk.ast.Interactive = function Interactive(/* {asdl_seq *} */ body)
+Sk.astnodes.Interactive = function Interactive(/* {asdl_seq *} */ body)
 {
     this.body = body;
     return this;
 }
 
 /** @constructor */
-Sk.ast.Expression = function Expression(/* {expr_ty} */ body)
+Sk.astnodes.Expression = function Expression(/* {expr_ty} */ body)
 {
     goog.asserts.assert(body !== null && body !== undefined);
     this.body = body;
@@ -123,14 +123,14 @@ Sk.ast.Expression = function Expression(/* {expr_ty} */ body)
 }
 
 /** @constructor */
-Sk.ast.Suite = function Suite(/* {asdl_seq *} */ body)
+Sk.astnodes.Suite = function Suite(/* {asdl_seq *} */ body)
 {
     this.body = body;
     return this;
 }
 
 /** @constructor */
-Sk.ast.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
+Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
                                                {arguments_ty} */ args, /*
                                                {asdl_seq *} */ body, /*
                                                {asdl_seq *} */ decorator_list,
@@ -155,7 +155,7 @@ Sk.ast.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
 }
 
 /** @constructor */
-Sk.ast.AsyncFunctionDef = function AsyncFunctionDef(/* {identifier} */ name, /*
+Sk.astnodes.AsyncFunctionDef = function AsyncFunctionDef(/* {identifier} */ name, /*
                                                          {arguments_ty} */
                                                          args, /* {asdl_seq *}
                                                          */ body, /* {asdl_seq
@@ -182,7 +182,7 @@ Sk.ast.AsyncFunctionDef = function AsyncFunctionDef(/* {identifier} */ name, /*
 }
 
 /** @constructor */
-Sk.ast.ClassDef = function ClassDef(/* {identifier} */ name, /* {asdl_seq *} */
+Sk.astnodes.ClassDef = function ClassDef(/* {identifier} */ name, /* {asdl_seq *} */
                                          bases, /* {asdl_seq *} */ keywords, /*
                                          {asdl_seq *} */ body, /* {asdl_seq *}
                                          */ decorator_list, /* {string} */
@@ -204,7 +204,7 @@ Sk.ast.ClassDef = function ClassDef(/* {identifier} */ name, /* {asdl_seq *} */
 }
 
 /** @constructor */
-Sk.ast.Return = function Return(/* {expr_ty} */ value, /* {int} */ lineno, /*
+Sk.astnodes.Return = function Return(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                      {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -216,7 +216,7 @@ Sk.ast.Return = function Return(/* {expr_ty} */ value, /* {int} */ lineno, /*
 }
 
 /** @constructor */
-Sk.ast.Delete = function Delete(/* {asdl_seq *} */ targets, /* {int} */ lineno,
+Sk.astnodes.Delete = function Delete(/* {asdl_seq *} */ targets, /* {int} */ lineno,
                                      /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -228,7 +228,7 @@ Sk.ast.Delete = function Delete(/* {asdl_seq *} */ targets, /* {int} */ lineno,
 }
 
 /** @constructor */
-Sk.ast.Assign = function Assign(/* {asdl_seq *} */ targets, /* {expr_ty} */
+Sk.astnodes.Assign = function Assign(/* {asdl_seq *} */ targets, /* {expr_ty} */
                                      value, /* {int} */ lineno, /* {int} */
                                      col_offset)
 {
@@ -243,7 +243,7 @@ Sk.ast.Assign = function Assign(/* {asdl_seq *} */ targets, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.ast.AugAssign = function AugAssign(/* {expr_ty} */ target, /* {operator_ty}
+Sk.astnodes.AugAssign = function AugAssign(/* {expr_ty} */ target, /* {operator_ty}
                                            */ op, /* {expr_ty} */ value, /*
                                            {int} */ lineno, /* {int} */
                                            col_offset)
@@ -262,7 +262,7 @@ Sk.ast.AugAssign = function AugAssign(/* {expr_ty} */ target, /* {operator_ty}
 }
 
 /** @constructor */
-Sk.ast.AnnAssign = function AnnAssign(/* {expr_ty} */ target, /* {expr_ty} */
+Sk.astnodes.AnnAssign = function AnnAssign(/* {expr_ty} */ target, /* {expr_ty} */
                                            annotation, /* {expr_ty} */ value,
                                            /* {int} */ simple, /* {int} */
                                            lineno, /* {int} */ col_offset)
@@ -281,7 +281,7 @@ Sk.ast.AnnAssign = function AnnAssign(/* {expr_ty} */ target, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.ast.For = function For(/* {expr_ty} */ target, /* {expr_ty} */ iter, /*
+Sk.astnodes.For = function For(/* {expr_ty} */ target, /* {expr_ty} */ iter, /*
                                {asdl_seq *} */ body, /* {asdl_seq *} */ orelse,
                                /* {int} */ lineno, /* {int} */ col_offset)
 {
@@ -299,7 +299,7 @@ Sk.ast.For = function For(/* {expr_ty} */ target, /* {expr_ty} */ iter, /*
 }
 
 /** @constructor */
-Sk.ast.AsyncFor = function AsyncFor(/* {expr_ty} */ target, /* {expr_ty} */
+Sk.astnodes.AsyncFor = function AsyncFor(/* {expr_ty} */ target, /* {expr_ty} */
                                          iter, /* {asdl_seq *} */ body, /*
                                          {asdl_seq *} */ orelse, /* {int} */
                                          lineno, /* {int} */ col_offset)
@@ -318,7 +318,7 @@ Sk.ast.AsyncFor = function AsyncFor(/* {expr_ty} */ target, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.ast.While = function While(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
+Sk.astnodes.While = function While(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
                                    {asdl_seq *} */ orelse, /* {int} */ lineno,
                                    /* {int} */ col_offset)
 {
@@ -334,7 +334,7 @@ Sk.ast.While = function While(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
 }
 
 /** @constructor */
-Sk.ast.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
+Sk.astnodes.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
                              {asdl_seq *} */ orelse, /* {int} */ lineno, /*
                              {int} */ col_offset)
 {
@@ -350,7 +350,7 @@ Sk.ast.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
 }
 
 /** @constructor */
-Sk.ast.With = function With(/* {asdl_seq *} */ items, /* {asdl_seq *} */ body,
+Sk.astnodes.With = function With(/* {asdl_seq *} */ items, /* {asdl_seq *} */ body,
                                  /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -363,7 +363,7 @@ Sk.ast.With = function With(/* {asdl_seq *} */ items, /* {asdl_seq *} */ body,
 }
 
 /** @constructor */
-Sk.ast.AsyncWith = function AsyncWith(/* {asdl_seq *} */ items, /* {asdl_seq *}
+Sk.astnodes.AsyncWith = function AsyncWith(/* {asdl_seq *} */ items, /* {asdl_seq *}
                                            */ body, /* {int} */ lineno, /*
                                            {int} */ col_offset)
 {
@@ -377,7 +377,7 @@ Sk.ast.AsyncWith = function AsyncWith(/* {asdl_seq *} */ items, /* {asdl_seq *}
 }
 
 /** @constructor */
-Sk.ast.Raise = function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause, /*
+Sk.astnodes.Raise = function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause, /*
                                    {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -390,7 +390,7 @@ Sk.ast.Raise = function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause, /*
 }
 
 /** @constructor */
-Sk.ast.Try = function Try(/* {asdl_seq *} */ body, /* {asdl_seq *} */ handlers,
+Sk.astnodes.Try = function Try(/* {asdl_seq *} */ body, /* {asdl_seq *} */ handlers,
                                /* {asdl_seq *} */ orelse, /* {asdl_seq *} */
                                finalbody, /* {int} */ lineno, /* {int} */
                                col_offset)
@@ -407,7 +407,7 @@ Sk.ast.Try = function Try(/* {asdl_seq *} */ body, /* {asdl_seq *} */ handlers,
 }
 
 /** @constructor */
-Sk.ast.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg, /*
+Sk.astnodes.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg, /*
                                      {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(test !== null && test !== undefined);
@@ -421,7 +421,7 @@ Sk.ast.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg, /*
 }
 
 /** @constructor */
-Sk.ast.Import = function Import(/* {asdl_seq *} */ names, /* {int} */ lineno,
+Sk.astnodes.Import = function Import(/* {asdl_seq *} */ names, /* {int} */ lineno,
                                      /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -433,7 +433,7 @@ Sk.ast.Import = function Import(/* {asdl_seq *} */ names, /* {int} */ lineno,
 }
 
 /** @constructor */
-Sk.ast.ImportFrom = function ImportFrom(/* {identifier} */ module, /* {asdl_seq
+Sk.astnodes.ImportFrom = function ImportFrom(/* {identifier} */ module, /* {asdl_seq
                                              *} */ names, /* {int} */ level, /*
                                              {int} */ lineno, /* {int} */
                                              col_offset)
@@ -449,7 +449,7 @@ Sk.ast.ImportFrom = function ImportFrom(/* {identifier} */ module, /* {asdl_seq
 }
 
 /** @constructor */
-Sk.ast.Global = function Global(/* {asdl_seq *} */ names, /* {int} */ lineno,
+Sk.astnodes.Global = function Global(/* {asdl_seq *} */ names, /* {int} */ lineno,
                                      /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -461,7 +461,7 @@ Sk.ast.Global = function Global(/* {asdl_seq *} */ names, /* {int} */ lineno,
 }
 
 /** @constructor */
-Sk.ast.Nonlocal = function Nonlocal(/* {asdl_seq *} */ names, /* {int} */
+Sk.astnodes.Nonlocal = function Nonlocal(/* {asdl_seq *} */ names, /* {int} */
                                          lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -473,7 +473,7 @@ Sk.ast.Nonlocal = function Nonlocal(/* {asdl_seq *} */ names, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /* {int}
+Sk.astnodes.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /* {int}
                                  */ col_offset)
 {
     goog.asserts.assert(value !== null && value !== undefined);
@@ -486,7 +486,7 @@ Sk.ast.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /* {int}
 }
 
 /** @constructor */
-Sk.ast.Pass = function Pass(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Pass = function Pass(/* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
     goog.asserts.assert(col_offset !== null && col_offset !== undefined)
@@ -496,7 +496,7 @@ Sk.ast.Pass = function Pass(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
-Sk.ast.Break = function Break(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Break = function Break(/* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
     goog.asserts.assert(col_offset !== null && col_offset !== undefined)
@@ -506,7 +506,7 @@ Sk.ast.Break = function Break(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
-Sk.ast.Continue = function Continue(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Continue = function Continue(/* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
     goog.asserts.assert(col_offset !== null && col_offset !== undefined)
@@ -516,7 +516,7 @@ Sk.ast.Continue = function Continue(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
-Sk.ast.Print = function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */ values,
+Sk.astnodes.Print = function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */ values,
                                    /* {int} */ nl, /* {int} */ lineno, /* {int}
                                    */ col_offset)
 {
@@ -531,7 +531,7 @@ Sk.ast.Print = function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */ values,
 }
 
 /** @constructor */
-Sk.ast.Debugger = function Debugger(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Debugger = function Debugger(/* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
     goog.asserts.assert(col_offset !== null && col_offset !== undefined)
@@ -541,7 +541,7 @@ Sk.ast.Debugger = function Debugger(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
-Sk.ast.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
+Sk.astnodes.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
                                      values, /* {int} */ lineno, /* {int} */
                                      col_offset)
 {
@@ -556,7 +556,7 @@ Sk.ast.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
 }
 
 /** @constructor */
-Sk.ast.BinOp = function BinOp(/* {expr_ty} */ left, /* {operator_ty} */ op, /*
+Sk.astnodes.BinOp = function BinOp(/* {expr_ty} */ left, /* {operator_ty} */ op, /*
                                    {expr_ty} */ right, /* {int} */ lineno, /*
                                    {int} */ col_offset)
 {
@@ -574,7 +574,7 @@ Sk.ast.BinOp = function BinOp(/* {expr_ty} */ left, /* {operator_ty} */ op, /*
 }
 
 /** @constructor */
-Sk.ast.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
+Sk.astnodes.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
                                        operand, /* {int} */ lineno, /* {int} */
                                        col_offset)
 {
@@ -590,7 +590,7 @@ Sk.ast.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.ast.Lambda = function Lambda(/* {arguments_ty} */ args, /* {expr_ty} */
+Sk.astnodes.Lambda = function Lambda(/* {arguments_ty} */ args, /* {expr_ty} */
                                      body, /* {int} */ lineno, /* {int} */
                                      col_offset)
 {
@@ -606,7 +606,7 @@ Sk.ast.Lambda = function Lambda(/* {arguments_ty} */ args, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.ast.IfExp = function IfExp(/* {expr_ty} */ test, /* {expr_ty} */ body, /*
+Sk.astnodes.IfExp = function IfExp(/* {expr_ty} */ test, /* {expr_ty} */ body, /*
                                    {expr_ty} */ orelse, /* {int} */ lineno, /*
                                    {int} */ col_offset)
 {
@@ -624,7 +624,7 @@ Sk.ast.IfExp = function IfExp(/* {expr_ty} */ test, /* {expr_ty} */ body, /*
 }
 
 /** @constructor */
-Sk.ast.Dict = function Dict(/* {asdl_seq *} */ keys, /* {asdl_seq *} */ values,
+Sk.astnodes.Dict = function Dict(/* {asdl_seq *} */ keys, /* {asdl_seq *} */ values,
                                  /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -637,7 +637,7 @@ Sk.ast.Dict = function Dict(/* {asdl_seq *} */ keys, /* {asdl_seq *} */ values,
 }
 
 /** @constructor */
-Sk.ast.Set = function Set(/* {asdl_seq *} */ elts, /* {int} */ lineno, /* {int}
+Sk.astnodes.Set = function Set(/* {asdl_seq *} */ elts, /* {int} */ lineno, /* {int}
                                */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -649,7 +649,7 @@ Sk.ast.Set = function Set(/* {asdl_seq *} */ elts, /* {int} */ lineno, /* {int}
 }
 
 /** @constructor */
-Sk.ast.ListComp = function ListComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
+Sk.astnodes.ListComp = function ListComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
                                          generators, /* {int} */ lineno, /*
                                          {int} */ col_offset)
 {
@@ -664,7 +664,7 @@ Sk.ast.ListComp = function ListComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
 }
 
 /** @constructor */
-Sk.ast.SetComp = function SetComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
+Sk.astnodes.SetComp = function SetComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
                                        generators, /* {int} */ lineno, /* {int}
                                        */ col_offset)
 {
@@ -679,7 +679,7 @@ Sk.ast.SetComp = function SetComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
 }
 
 /** @constructor */
-Sk.ast.DictComp = function DictComp(/* {expr_ty} */ key, /* {expr_ty} */ value,
+Sk.astnodes.DictComp = function DictComp(/* {expr_ty} */ key, /* {expr_ty} */ value,
                                          /* {asdl_seq *} */ generators, /*
                                          {int} */ lineno, /* {int} */
                                          col_offset)
@@ -697,7 +697,7 @@ Sk.ast.DictComp = function DictComp(/* {expr_ty} */ key, /* {expr_ty} */ value,
 }
 
 /** @constructor */
-Sk.ast.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /* {asdl_seq
+Sk.astnodes.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /* {asdl_seq
                                                  *} */ generators, /* {int} */
                                                  lineno, /* {int} */ col_offset)
 {
@@ -712,7 +712,7 @@ Sk.ast.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /* {asdl_seq
 }
 
 /** @constructor */
-Sk.ast.Await = function Await(/* {expr_ty} */ value, /* {int} */ lineno, /*
+Sk.astnodes.Await = function Await(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                    {int} */ col_offset)
 {
     goog.asserts.assert(value !== null && value !== undefined);
@@ -725,7 +725,7 @@ Sk.ast.Await = function Await(/* {expr_ty} */ value, /* {int} */ lineno, /*
 }
 
 /** @constructor */
-Sk.ast.Yield = function Yield(/* {expr_ty} */ value, /* {int} */ lineno, /*
+Sk.astnodes.Yield = function Yield(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                    {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -737,7 +737,7 @@ Sk.ast.Yield = function Yield(/* {expr_ty} */ value, /* {int} */ lineno, /*
 }
 
 /** @constructor */
-Sk.ast.YieldFrom = function YieldFrom(/* {expr_ty} */ value, /* {int} */
+Sk.astnodes.YieldFrom = function YieldFrom(/* {expr_ty} */ value, /* {int} */
                                            lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(value !== null && value !== undefined);
@@ -750,7 +750,7 @@ Sk.ast.YieldFrom = function YieldFrom(/* {expr_ty} */ value, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq *} */
+Sk.astnodes.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq *} */
                                        ops, /* {asdl_seq *} */ comparators, /*
                                        {int} */ lineno, /* {int} */ col_offset)
 {
@@ -766,7 +766,7 @@ Sk.ast.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq *} */
 }
 
 /** @constructor */
-Sk.ast.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args, /*
+Sk.astnodes.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args, /*
                                  {asdl_seq *} */ keywords, /* {int} */ lineno,
                                  /* {int} */ col_offset)
 {
@@ -782,7 +782,7 @@ Sk.ast.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args, /*
 }
 
 /** @constructor */
-Sk.ast.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int} */
+Sk.astnodes.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int} */
                                col_offset)
 {
     goog.asserts.assert(n !== null && n !== undefined);
@@ -795,7 +795,7 @@ Sk.ast.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.Str = function Str(/* {string} */ s, /* {int} */ lineno, /* {int} */
+Sk.astnodes.Str = function Str(/* {string} */ s, /* {int} */ lineno, /* {int} */
                                col_offset)
 {
     goog.asserts.assert(s !== null && s !== undefined);
@@ -808,7 +808,7 @@ Sk.ast.Str = function Str(/* {string} */ s, /* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.FormattedValue = function FormattedValue(/* {expr_ty} */ value, /* {int}
+Sk.astnodes.FormattedValue = function FormattedValue(/* {expr_ty} */ value, /* {int}
                                                      */ conversion, /*
                                                      {expr_ty} */ format_spec,
                                                      /* {int} */ lineno, /*
@@ -826,7 +826,7 @@ Sk.ast.FormattedValue = function FormattedValue(/* {expr_ty} */ value, /* {int}
 }
 
 /** @constructor */
-Sk.ast.JoinedStr = function JoinedStr(/* {asdl_seq *} */ values, /* {int} */
+Sk.astnodes.JoinedStr = function JoinedStr(/* {asdl_seq *} */ values, /* {int} */
                                            lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
@@ -838,7 +838,7 @@ Sk.ast.JoinedStr = function JoinedStr(/* {asdl_seq *} */ values, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.Bytes = function Bytes(/* {bytes} */ s, /* {int} */ lineno, /* {int} */
+Sk.astnodes.Bytes = function Bytes(/* {bytes} */ s, /* {int} */ lineno, /* {int} */
                                    col_offset)
 {
     goog.asserts.assert(s !== null && s !== undefined);
@@ -851,7 +851,7 @@ Sk.ast.Bytes = function Bytes(/* {bytes} */ s, /* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
-Sk.ast.NameConstant = function NameConstant(/* {singleton} */ value, /* {int}
+Sk.astnodes.NameConstant = function NameConstant(/* {singleton} */ value, /* {int}
                                                  */ lineno, /* {int} */
                                                  col_offset)
 {
@@ -865,7 +865,7 @@ Sk.ast.NameConstant = function NameConstant(/* {singleton} */ value, /* {int}
 }
 
 /** @constructor */
-Sk.ast.Ellipsis = function Ellipsis(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Ellipsis = function Ellipsis(/* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(lineno !== null && lineno !== undefined)
     goog.asserts.assert(col_offset !== null && col_offset !== undefined)
@@ -875,7 +875,7 @@ Sk.ast.Ellipsis = function Ellipsis(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
-Sk.ast.Constant = function Constant(/* {constant} */ value, /* {int} */ lineno,
+Sk.astnodes.Constant = function Constant(/* {constant} */ value, /* {int} */ lineno,
                                          /* {int} */ col_offset)
 {
     goog.asserts.assert(value !== null && value !== undefined);
@@ -888,7 +888,7 @@ Sk.ast.Constant = function Constant(/* {constant} */ value, /* {int} */ lineno,
 }
 
 /** @constructor */
-Sk.ast.Attribute = function Attribute(/* {expr_ty} */ value, /* {identifier} */
+Sk.astnodes.Attribute = function Attribute(/* {expr_ty} */ value, /* {identifier} */
                                            attr, /* {expr_context_ty} */ ctx,
                                            /* {int} */ lineno, /* {int} */
                                            col_offset)
@@ -907,7 +907,7 @@ Sk.ast.Attribute = function Attribute(/* {expr_ty} */ value, /* {identifier} */
 }
 
 /** @constructor */
-Sk.ast.Subscript = function Subscript(/* {expr_ty} */ value, /* {slice_ty} */
+Sk.astnodes.Subscript = function Subscript(/* {expr_ty} */ value, /* {slice_ty} */
                                            slice, /* {expr_context_ty} */ ctx,
                                            /* {int} */ lineno, /* {int} */
                                            col_offset)
@@ -926,7 +926,7 @@ Sk.ast.Subscript = function Subscript(/* {expr_ty} */ value, /* {slice_ty} */
 }
 
 /** @constructor */
-Sk.ast.Starred = function Starred(/* {expr_ty} */ value, /* {expr_context_ty}
+Sk.astnodes.Starred = function Starred(/* {expr_ty} */ value, /* {expr_context_ty}
                                        */ ctx, /* {int} */ lineno, /* {int} */
                                        col_offset)
 {
@@ -942,7 +942,7 @@ Sk.ast.Starred = function Starred(/* {expr_ty} */ value, /* {expr_context_ty}
 }
 
 /** @constructor */
-Sk.ast.Name = function Name(/* {identifier} */ id, /* {expr_context_ty} */ ctx,
+Sk.astnodes.Name = function Name(/* {identifier} */ id, /* {expr_context_ty} */ ctx,
                                  /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(id !== null && id !== undefined);
@@ -957,7 +957,7 @@ Sk.ast.Name = function Name(/* {identifier} */ id, /* {expr_context_ty} */ ctx,
 }
 
 /** @constructor */
-Sk.ast.List = function List(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
+Sk.astnodes.List = function List(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
                                  ctx, /* {int} */ lineno, /* {int} */
                                  col_offset)
 {
@@ -972,7 +972,7 @@ Sk.ast.List = function List(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
 }
 
 /** @constructor */
-Sk.ast.Tuple = function Tuple(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
+Sk.astnodes.Tuple = function Tuple(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
                                    ctx, /* {int} */ lineno, /* {int} */
                                    col_offset)
 {
@@ -987,7 +987,7 @@ Sk.ast.Tuple = function Tuple(/* {asdl_seq *} */ elts, /* {expr_context_ty} */
 }
 
 /** @constructor */
-Sk.ast.Slice = function Slice(/* {expr_ty} */ lower, /* {expr_ty} */ upper, /*
+Sk.astnodes.Slice = function Slice(/* {expr_ty} */ lower, /* {expr_ty} */ upper, /*
                                    {expr_ty} */ step)
 {
     this.lower = lower;
@@ -997,14 +997,14 @@ Sk.ast.Slice = function Slice(/* {expr_ty} */ lower, /* {expr_ty} */ upper, /*
 }
 
 /** @constructor */
-Sk.ast.ExtSlice = function ExtSlice(/* {asdl_seq *} */ dims)
+Sk.astnodes.ExtSlice = function ExtSlice(/* {asdl_seq *} */ dims)
 {
     this.dims = dims;
     return this;
 }
 
 /** @constructor */
-Sk.ast.Index = function Index(/* {expr_ty} */ value)
+Sk.astnodes.Index = function Index(/* {expr_ty} */ value)
 {
     goog.asserts.assert(value !== null && value !== undefined);
     this.value = value;
@@ -1012,7 +1012,7 @@ Sk.ast.Index = function Index(/* {expr_ty} */ value)
 }
 
 /** @constructor */
-Sk.ast.comprehension = function comprehension(/* {expr_ty} */ target, /*
+Sk.astnodes.comprehension = function comprehension(/* {expr_ty} */ target, /*
                                                    {expr_ty} */ iter, /*
                                                    {asdl_seq *} */ ifs, /*
                                                    {int} */ is_async)
@@ -1027,7 +1027,7 @@ Sk.ast.comprehension = function comprehension(/* {expr_ty} */ target, /*
 }
 
 /** @constructor */
-Sk.ast.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
+Sk.astnodes.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
                                                    {identifier} */ name, /*
                                                    {asdl_seq *} */ body, /*
                                                    {int} */ lineno, /* {int} */
@@ -1044,7 +1044,7 @@ Sk.ast.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
 }
 
 /** @constructor */
-Sk.ast.arguments = function arguments(/* {asdl_seq *} */ args, /* {arg_ty} */
+Sk.astnodes.arguments = function arguments(/* {asdl_seq *} */ args, /* {arg_ty} */
                                            vararg, /* {asdl_seq *} */
                                            kwonlyargs, /* {asdl_seq *} */
                                            kw_defaults, /* {arg_ty} */ kwarg,
@@ -1060,7 +1060,7 @@ Sk.ast.arguments = function arguments(/* {asdl_seq *} */ args, /* {arg_ty} */
 }
 
 /** @constructor */
-Sk.ast.arg = function arg(/* {identifier} */ arg, /* {expr_ty} */ annotation)
+Sk.astnodes.arg = function arg(/* {identifier} */ arg, /* {expr_ty} */ annotation)
 {
     goog.asserts.assert(arg !== null && arg !== undefined);
     this.arg = arg;
@@ -1069,7 +1069,7 @@ Sk.ast.arg = function arg(/* {identifier} */ arg, /* {expr_ty} */ annotation)
 }
 
 /** @constructor */
-Sk.ast.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */ value)
+Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */ value)
 {
     goog.asserts.assert(value !== null && value !== undefined);
     this.arg = arg;
@@ -1078,7 +1078,7 @@ Sk.ast.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */ value)
 }
 
 /** @constructor */
-Sk.ast.alias = function alias(/* {identifier} */ name, /* {identifier} */
+Sk.astnodes.alias = function alias(/* {identifier} */ name, /* {identifier} */
                                    asname)
 {
     goog.asserts.assert(name !== null && name !== undefined);
@@ -1088,7 +1088,7 @@ Sk.ast.alias = function alias(/* {identifier} */ name, /* {identifier} */
 }
 
 /** @constructor */
-Sk.ast.withitem = function withitem(/* {expr_ty} */ context_expr, /* {expr_ty}
+Sk.astnodes.withitem = function withitem(/* {expr_ty} */ context_expr, /* {expr_ty}
                                          */ optional_vars)
 {
     goog.asserts.assert(context_expr !== null && context_expr !== undefined);
@@ -1098,25 +1098,25 @@ Sk.ast.withitem = function withitem(/* {expr_ty} */ context_expr, /* {expr_ty}
 }
 
 
-Sk.ast.Module.prototype._astname = "Module";
-Sk.ast.Module.prototype._fields = [
+Sk.astnodes.Module.prototype._astname = "Module";
+Sk.astnodes.Module.prototype._fields = [
     "body", function(n) { return n.body; },
     "docstring", function(n) { return n.docstring; }
 ];
-Sk.ast.Interactive.prototype._astname = "Interactive";
-Sk.ast.Interactive.prototype._fields = [
+Sk.astnodes.Interactive.prototype._astname = "Interactive";
+Sk.astnodes.Interactive.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Sk.ast.Expression.prototype._astname = "Expression";
-Sk.ast.Expression.prototype._fields = [
+Sk.astnodes.Expression.prototype._astname = "Expression";
+Sk.astnodes.Expression.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Sk.ast.Suite.prototype._astname = "Suite";
-Sk.ast.Suite.prototype._fields = [
+Sk.astnodes.Suite.prototype._astname = "Suite";
+Sk.astnodes.Suite.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Sk.ast.FunctionDef.prototype._astname = "FunctionDef";
-Sk.ast.FunctionDef.prototype._fields = [
+Sk.astnodes.FunctionDef.prototype._astname = "FunctionDef";
+Sk.astnodes.FunctionDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; },
@@ -1124,8 +1124,8 @@ Sk.ast.FunctionDef.prototype._fields = [
     "returns", function(n) { return n.returns; },
     "docstring", function(n) { return n.docstring; }
 ];
-Sk.ast.AsyncFunctionDef.prototype._astname = "AsyncFunctionDef";
-Sk.ast.AsyncFunctionDef.prototype._fields = [
+Sk.astnodes.AsyncFunctionDef.prototype._astname = "AsyncFunctionDef";
+Sk.astnodes.AsyncFunctionDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; },
@@ -1133,8 +1133,8 @@ Sk.ast.AsyncFunctionDef.prototype._fields = [
     "returns", function(n) { return n.returns; },
     "docstring", function(n) { return n.docstring; }
 ];
-Sk.ast.ClassDef.prototype._astname = "ClassDef";
-Sk.ast.ClassDef.prototype._fields = [
+Sk.astnodes.ClassDef.prototype._astname = "ClassDef";
+Sk.astnodes.ClassDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "bases", function(n) { return n.bases; },
     "keywords", function(n) { return n.keywords; },
@@ -1142,370 +1142,370 @@ Sk.ast.ClassDef.prototype._fields = [
     "decorator_list", function(n) { return n.decorator_list; },
     "docstring", function(n) { return n.docstring; }
 ];
-Sk.ast.Return.prototype._astname = "Return";
-Sk.ast.Return.prototype._fields = [
+Sk.astnodes.Return.prototype._astname = "Return";
+Sk.astnodes.Return.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Delete.prototype._astname = "Delete";
-Sk.ast.Delete.prototype._fields = [
+Sk.astnodes.Delete.prototype._astname = "Delete";
+Sk.astnodes.Delete.prototype._fields = [
     "targets", function(n) { return n.targets; }
 ];
-Sk.ast.Assign.prototype._astname = "Assign";
-Sk.ast.Assign.prototype._fields = [
+Sk.astnodes.Assign.prototype._astname = "Assign";
+Sk.astnodes.Assign.prototype._fields = [
     "targets", function(n) { return n.targets; },
     "value", function(n) { return n.value; }
 ];
-Sk.ast.AugAssign.prototype._astname = "AugAssign";
-Sk.ast.AugAssign.prototype._fields = [
+Sk.astnodes.AugAssign.prototype._astname = "AugAssign";
+Sk.astnodes.AugAssign.prototype._fields = [
     "target", function(n) { return n.target; },
     "op", function(n) { return n.op; },
     "value", function(n) { return n.value; }
 ];
-Sk.ast.AnnAssign.prototype._astname = "AnnAssign";
-Sk.ast.AnnAssign.prototype._fields = [
+Sk.astnodes.AnnAssign.prototype._astname = "AnnAssign";
+Sk.astnodes.AnnAssign.prototype._fields = [
     "target", function(n) { return n.target; },
     "annotation", function(n) { return n.annotation; },
     "value", function(n) { return n.value; },
     "simple", function(n) { return n.simple; }
 ];
-Sk.ast.For.prototype._astname = "For";
-Sk.ast.For.prototype._fields = [
+Sk.astnodes.For.prototype._astname = "For";
+Sk.astnodes.For.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.ast.AsyncFor.prototype._astname = "AsyncFor";
-Sk.ast.AsyncFor.prototype._fields = [
+Sk.astnodes.AsyncFor.prototype._astname = "AsyncFor";
+Sk.astnodes.AsyncFor.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.ast.While.prototype._astname = "While";
-Sk.ast.While.prototype._fields = [
+Sk.astnodes.While.prototype._astname = "While";
+Sk.astnodes.While.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.ast.If.prototype._astname = "If";
-Sk.ast.If.prototype._fields = [
+Sk.astnodes.If.prototype._astname = "If";
+Sk.astnodes.If.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.ast.With.prototype._astname = "With";
-Sk.ast.With.prototype._fields = [
+Sk.astnodes.With.prototype._astname = "With";
+Sk.astnodes.With.prototype._fields = [
     "items", function(n) { return n.items; },
     "body", function(n) { return n.body; }
 ];
-Sk.ast.AsyncWith.prototype._astname = "AsyncWith";
-Sk.ast.AsyncWith.prototype._fields = [
+Sk.astnodes.AsyncWith.prototype._astname = "AsyncWith";
+Sk.astnodes.AsyncWith.prototype._fields = [
     "items", function(n) { return n.items; },
     "body", function(n) { return n.body; }
 ];
-Sk.ast.Raise.prototype._astname = "Raise";
-Sk.ast.Raise.prototype._fields = [
+Sk.astnodes.Raise.prototype._astname = "Raise";
+Sk.astnodes.Raise.prototype._fields = [
     "exc", function(n) { return n.exc; },
     "cause", function(n) { return n.cause; }
 ];
-Sk.ast.Try.prototype._astname = "Try";
-Sk.ast.Try.prototype._fields = [
+Sk.astnodes.Try.prototype._astname = "Try";
+Sk.astnodes.Try.prototype._fields = [
     "body", function(n) { return n.body; },
     "handlers", function(n) { return n.handlers; },
     "orelse", function(n) { return n.orelse; },
     "finalbody", function(n) { return n.finalbody; }
 ];
-Sk.ast.Assert.prototype._astname = "Assert";
-Sk.ast.Assert.prototype._fields = [
+Sk.astnodes.Assert.prototype._astname = "Assert";
+Sk.astnodes.Assert.prototype._fields = [
     "test", function(n) { return n.test; },
     "msg", function(n) { return n.msg; }
 ];
-Sk.ast.Import.prototype._astname = "Import";
-Sk.ast.Import.prototype._fields = [
+Sk.astnodes.Import.prototype._astname = "Import";
+Sk.astnodes.Import.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
-Sk.ast.ImportFrom.prototype._astname = "ImportFrom";
-Sk.ast.ImportFrom.prototype._fields = [
+Sk.astnodes.ImportFrom.prototype._astname = "ImportFrom";
+Sk.astnodes.ImportFrom.prototype._fields = [
     "module", function(n) { return n.module; },
     "names", function(n) { return n.names; },
     "level", function(n) { return n.level; }
 ];
-Sk.ast.Global.prototype._astname = "Global";
-Sk.ast.Global.prototype._fields = [
+Sk.astnodes.Global.prototype._astname = "Global";
+Sk.astnodes.Global.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
-Sk.ast.Nonlocal.prototype._astname = "Nonlocal";
-Sk.ast.Nonlocal.prototype._fields = [
+Sk.astnodes.Nonlocal.prototype._astname = "Nonlocal";
+Sk.astnodes.Nonlocal.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
-Sk.ast.Expr.prototype._astname = "Expr";
-Sk.ast.Expr.prototype._fields = [
+Sk.astnodes.Expr.prototype._astname = "Expr";
+Sk.astnodes.Expr.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Pass.prototype._astname = "Pass";
-Sk.ast.Pass.prototype._fields = [
+Sk.astnodes.Pass.prototype._astname = "Pass";
+Sk.astnodes.Pass.prototype._fields = [
 ];
-Sk.ast.Break.prototype._astname = "Break";
-Sk.ast.Break.prototype._fields = [
+Sk.astnodes.Break.prototype._astname = "Break";
+Sk.astnodes.Break.prototype._fields = [
 ];
-Sk.ast.Continue.prototype._astname = "Continue";
-Sk.ast.Continue.prototype._fields = [
+Sk.astnodes.Continue.prototype._astname = "Continue";
+Sk.astnodes.Continue.prototype._fields = [
 ];
-Sk.ast.Print.prototype._astname = "Print";
-Sk.ast.Print.prototype._fields = [
+Sk.astnodes.Print.prototype._astname = "Print";
+Sk.astnodes.Print.prototype._fields = [
     "dest", function(n) { return n.dest; },
     "values", function(n) { return n.values; },
     "nl", function(n) { return n.nl; }
 ];
-Sk.ast.Debugger.prototype._astname = "Debugger";
-Sk.ast.Debugger.prototype._fields = [
+Sk.astnodes.Debugger.prototype._astname = "Debugger";
+Sk.astnodes.Debugger.prototype._fields = [
 ];
-Sk.ast.BoolOp.prototype._astname = "BoolOp";
-Sk.ast.BoolOp.prototype._fields = [
+Sk.astnodes.BoolOp.prototype._astname = "BoolOp";
+Sk.astnodes.BoolOp.prototype._fields = [
     "op", function(n) { return n.op; },
     "values", function(n) { return n.values; }
 ];
-Sk.ast.BinOp.prototype._astname = "BinOp";
-Sk.ast.BinOp.prototype._fields = [
+Sk.astnodes.BinOp.prototype._astname = "BinOp";
+Sk.astnodes.BinOp.prototype._fields = [
     "left", function(n) { return n.left; },
     "op", function(n) { return n.op; },
     "right", function(n) { return n.right; }
 ];
-Sk.ast.UnaryOp.prototype._astname = "UnaryOp";
-Sk.ast.UnaryOp.prototype._fields = [
+Sk.astnodes.UnaryOp.prototype._astname = "UnaryOp";
+Sk.astnodes.UnaryOp.prototype._fields = [
     "op", function(n) { return n.op; },
     "operand", function(n) { return n.operand; }
 ];
-Sk.ast.Lambda.prototype._astname = "Lambda";
-Sk.ast.Lambda.prototype._fields = [
+Sk.astnodes.Lambda.prototype._astname = "Lambda";
+Sk.astnodes.Lambda.prototype._fields = [
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; }
 ];
-Sk.ast.IfExp.prototype._astname = "IfExp";
-Sk.ast.IfExp.prototype._fields = [
+Sk.astnodes.IfExp.prototype._astname = "IfExp";
+Sk.astnodes.IfExp.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.ast.Dict.prototype._astname = "Dict";
-Sk.ast.Dict.prototype._fields = [
+Sk.astnodes.Dict.prototype._astname = "Dict";
+Sk.astnodes.Dict.prototype._fields = [
     "keys", function(n) { return n.keys; },
     "values", function(n) { return n.values; }
 ];
-Sk.ast.Set.prototype._astname = "Set";
-Sk.ast.Set.prototype._fields = [
+Sk.astnodes.Set.prototype._astname = "Set";
+Sk.astnodes.Set.prototype._fields = [
     "elts", function(n) { return n.elts; }
 ];
-Sk.ast.ListComp.prototype._astname = "ListComp";
-Sk.ast.ListComp.prototype._fields = [
+Sk.astnodes.ListComp.prototype._astname = "ListComp";
+Sk.astnodes.ListComp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
-Sk.ast.SetComp.prototype._astname = "SetComp";
-Sk.ast.SetComp.prototype._fields = [
+Sk.astnodes.SetComp.prototype._astname = "SetComp";
+Sk.astnodes.SetComp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
-Sk.ast.DictComp.prototype._astname = "DictComp";
-Sk.ast.DictComp.prototype._fields = [
+Sk.astnodes.DictComp.prototype._astname = "DictComp";
+Sk.astnodes.DictComp.prototype._fields = [
     "key", function(n) { return n.key; },
     "value", function(n) { return n.value; },
     "generators", function(n) { return n.generators; }
 ];
-Sk.ast.GeneratorExp.prototype._astname = "GeneratorExp";
-Sk.ast.GeneratorExp.prototype._fields = [
+Sk.astnodes.GeneratorExp.prototype._astname = "GeneratorExp";
+Sk.astnodes.GeneratorExp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
-Sk.ast.Await.prototype._astname = "Await";
-Sk.ast.Await.prototype._fields = [
+Sk.astnodes.Await.prototype._astname = "Await";
+Sk.astnodes.Await.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Yield.prototype._astname = "Yield";
-Sk.ast.Yield.prototype._fields = [
+Sk.astnodes.Yield.prototype._astname = "Yield";
+Sk.astnodes.Yield.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.YieldFrom.prototype._astname = "YieldFrom";
-Sk.ast.YieldFrom.prototype._fields = [
+Sk.astnodes.YieldFrom.prototype._astname = "YieldFrom";
+Sk.astnodes.YieldFrom.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Compare.prototype._astname = "Compare";
-Sk.ast.Compare.prototype._fields = [
+Sk.astnodes.Compare.prototype._astname = "Compare";
+Sk.astnodes.Compare.prototype._fields = [
     "left", function(n) { return n.left; },
     "ops", function(n) { return n.ops; },
     "comparators", function(n) { return n.comparators; }
 ];
-Sk.ast.Call.prototype._astname = "Call";
-Sk.ast.Call.prototype._fields = [
+Sk.astnodes.Call.prototype._astname = "Call";
+Sk.astnodes.Call.prototype._fields = [
     "func", function(n) { return n.func; },
     "args", function(n) { return n.args; },
     "keywords", function(n) { return n.keywords; }
 ];
-Sk.ast.Num.prototype._astname = "Num";
-Sk.ast.Num.prototype._fields = [
+Sk.astnodes.Num.prototype._astname = "Num";
+Sk.astnodes.Num.prototype._fields = [
     "n", function(n) { return n.n; }
 ];
-Sk.ast.Str.prototype._astname = "Str";
-Sk.ast.Str.prototype._fields = [
+Sk.astnodes.Str.prototype._astname = "Str";
+Sk.astnodes.Str.prototype._fields = [
     "s", function(n) { return n.s; }
 ];
-Sk.ast.FormattedValue.prototype._astname = "FormattedValue";
-Sk.ast.FormattedValue.prototype._fields = [
+Sk.astnodes.FormattedValue.prototype._astname = "FormattedValue";
+Sk.astnodes.FormattedValue.prototype._fields = [
     "value", function(n) { return n.value; },
     "conversion", function(n) { return n.conversion; },
     "format_spec", function(n) { return n.format_spec; }
 ];
-Sk.ast.JoinedStr.prototype._astname = "JoinedStr";
-Sk.ast.JoinedStr.prototype._fields = [
+Sk.astnodes.JoinedStr.prototype._astname = "JoinedStr";
+Sk.astnodes.JoinedStr.prototype._fields = [
     "values", function(n) { return n.values; }
 ];
-Sk.ast.Bytes.prototype._astname = "Bytes";
-Sk.ast.Bytes.prototype._fields = [
+Sk.astnodes.Bytes.prototype._astname = "Bytes";
+Sk.astnodes.Bytes.prototype._fields = [
     "s", function(n) { return n.s; }
 ];
-Sk.ast.NameConstant.prototype._astname = "NameConstant";
-Sk.ast.NameConstant.prototype._fields = [
+Sk.astnodes.NameConstant.prototype._astname = "NameConstant";
+Sk.astnodes.NameConstant.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Ellipsis.prototype._astname = "Ellipsis";
-Sk.ast.Ellipsis.prototype._fields = [
+Sk.astnodes.Ellipsis.prototype._astname = "Ellipsis";
+Sk.astnodes.Ellipsis.prototype._fields = [
 ];
-Sk.ast.Constant.prototype._astname = "Constant";
-Sk.ast.Constant.prototype._fields = [
+Sk.astnodes.Constant.prototype._astname = "Constant";
+Sk.astnodes.Constant.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.Attribute.prototype._astname = "Attribute";
-Sk.ast.Attribute.prototype._fields = [
+Sk.astnodes.Attribute.prototype._astname = "Attribute";
+Sk.astnodes.Attribute.prototype._fields = [
     "value", function(n) { return n.value; },
     "attr", function(n) { return n.attr; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.Subscript.prototype._astname = "Subscript";
-Sk.ast.Subscript.prototype._fields = [
+Sk.astnodes.Subscript.prototype._astname = "Subscript";
+Sk.astnodes.Subscript.prototype._fields = [
     "value", function(n) { return n.value; },
     "slice", function(n) { return n.slice; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.Starred.prototype._astname = "Starred";
-Sk.ast.Starred.prototype._fields = [
+Sk.astnodes.Starred.prototype._astname = "Starred";
+Sk.astnodes.Starred.prototype._fields = [
     "value", function(n) { return n.value; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.Name.prototype._astname = "Name";
-Sk.ast.Name.prototype._fields = [
+Sk.astnodes.Name.prototype._astname = "Name";
+Sk.astnodes.Name.prototype._fields = [
     "id", function(n) { return n.id; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.List.prototype._astname = "List";
-Sk.ast.List.prototype._fields = [
+Sk.astnodes.List.prototype._astname = "List";
+Sk.astnodes.List.prototype._fields = [
     "elts", function(n) { return n.elts; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.Tuple.prototype._astname = "Tuple";
-Sk.ast.Tuple.prototype._fields = [
+Sk.astnodes.Tuple.prototype._astname = "Tuple";
+Sk.astnodes.Tuple.prototype._fields = [
     "elts", function(n) { return n.elts; },
     "ctx", function(n) { return n.ctx; }
 ];
-Sk.ast.Load.prototype._astname = "Load";
-Sk.ast.Load.prototype._isenum = true;
-Sk.ast.Store.prototype._astname = "Store";
-Sk.ast.Store.prototype._isenum = true;
-Sk.ast.Del.prototype._astname = "Del";
-Sk.ast.Del.prototype._isenum = true;
-Sk.ast.AugLoad.prototype._astname = "AugLoad";
-Sk.ast.AugLoad.prototype._isenum = true;
-Sk.ast.AugStore.prototype._astname = "AugStore";
-Sk.ast.AugStore.prototype._isenum = true;
-Sk.ast.Param.prototype._astname = "Param";
-Sk.ast.Param.prototype._isenum = true;
-Sk.ast.Slice.prototype._astname = "Slice";
-Sk.ast.Slice.prototype._fields = [
+Sk.astnodes.Load.prototype._astname = "Load";
+Sk.astnodes.Load.prototype._isenum = true;
+Sk.astnodes.Store.prototype._astname = "Store";
+Sk.astnodes.Store.prototype._isenum = true;
+Sk.astnodes.Del.prototype._astname = "Del";
+Sk.astnodes.Del.prototype._isenum = true;
+Sk.astnodes.AugLoad.prototype._astname = "AugLoad";
+Sk.astnodes.AugLoad.prototype._isenum = true;
+Sk.astnodes.AugStore.prototype._astname = "AugStore";
+Sk.astnodes.AugStore.prototype._isenum = true;
+Sk.astnodes.Param.prototype._astname = "Param";
+Sk.astnodes.Param.prototype._isenum = true;
+Sk.astnodes.Slice.prototype._astname = "Slice";
+Sk.astnodes.Slice.prototype._fields = [
     "lower", function(n) { return n.lower; },
     "upper", function(n) { return n.upper; },
     "step", function(n) { return n.step; }
 ];
-Sk.ast.ExtSlice.prototype._astname = "ExtSlice";
-Sk.ast.ExtSlice.prototype._fields = [
+Sk.astnodes.ExtSlice.prototype._astname = "ExtSlice";
+Sk.astnodes.ExtSlice.prototype._fields = [
     "dims", function(n) { return n.dims; }
 ];
-Sk.ast.Index.prototype._astname = "Index";
-Sk.ast.Index.prototype._fields = [
+Sk.astnodes.Index.prototype._astname = "Index";
+Sk.astnodes.Index.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.ast.And.prototype._astname = "And";
-Sk.ast.And.prototype._isenum = true;
-Sk.ast.Or.prototype._astname = "Or";
-Sk.ast.Or.prototype._isenum = true;
-Sk.ast.Add.prototype._astname = "Add";
-Sk.ast.Add.prototype._isenum = true;
-Sk.ast.Sub.prototype._astname = "Sub";
-Sk.ast.Sub.prototype._isenum = true;
-Sk.ast.Mult.prototype._astname = "Mult";
-Sk.ast.Mult.prototype._isenum = true;
-Sk.ast.MatMult.prototype._astname = "MatMult";
-Sk.ast.MatMult.prototype._isenum = true;
-Sk.ast.Div.prototype._astname = "Div";
-Sk.ast.Div.prototype._isenum = true;
-Sk.ast.Mod.prototype._astname = "Mod";
-Sk.ast.Mod.prototype._isenum = true;
-Sk.ast.Pow.prototype._astname = "Pow";
-Sk.ast.Pow.prototype._isenum = true;
-Sk.ast.LShift.prototype._astname = "LShift";
-Sk.ast.LShift.prototype._isenum = true;
-Sk.ast.RShift.prototype._astname = "RShift";
-Sk.ast.RShift.prototype._isenum = true;
-Sk.ast.BitOr.prototype._astname = "BitOr";
-Sk.ast.BitOr.prototype._isenum = true;
-Sk.ast.BitXor.prototype._astname = "BitXor";
-Sk.ast.BitXor.prototype._isenum = true;
-Sk.ast.BitAnd.prototype._astname = "BitAnd";
-Sk.ast.BitAnd.prototype._isenum = true;
-Sk.ast.FloorDiv.prototype._astname = "FloorDiv";
-Sk.ast.FloorDiv.prototype._isenum = true;
-Sk.ast.Invert.prototype._astname = "Invert";
-Sk.ast.Invert.prototype._isenum = true;
-Sk.ast.Not.prototype._astname = "Not";
-Sk.ast.Not.prototype._isenum = true;
-Sk.ast.UAdd.prototype._astname = "UAdd";
-Sk.ast.UAdd.prototype._isenum = true;
-Sk.ast.USub.prototype._astname = "USub";
-Sk.ast.USub.prototype._isenum = true;
-Sk.ast.Eq.prototype._astname = "Eq";
-Sk.ast.Eq.prototype._isenum = true;
-Sk.ast.NotEq.prototype._astname = "NotEq";
-Sk.ast.NotEq.prototype._isenum = true;
-Sk.ast.Lt.prototype._astname = "Lt";
-Sk.ast.Lt.prototype._isenum = true;
-Sk.ast.LtE.prototype._astname = "LtE";
-Sk.ast.LtE.prototype._isenum = true;
-Sk.ast.Gt.prototype._astname = "Gt";
-Sk.ast.Gt.prototype._isenum = true;
-Sk.ast.GtE.prototype._astname = "GtE";
-Sk.ast.GtE.prototype._isenum = true;
-Sk.ast.Is.prototype._astname = "Is";
-Sk.ast.Is.prototype._isenum = true;
-Sk.ast.IsNot.prototype._astname = "IsNot";
-Sk.ast.IsNot.prototype._isenum = true;
-Sk.ast.In.prototype._astname = "In";
-Sk.ast.In.prototype._isenum = true;
-Sk.ast.NotIn.prototype._astname = "NotIn";
-Sk.ast.NotIn.prototype._isenum = true;
-Sk.ast.comprehension.prototype._astname = "comprehension";
-Sk.ast.comprehension.prototype._fields = [
+Sk.astnodes.And.prototype._astname = "And";
+Sk.astnodes.And.prototype._isenum = true;
+Sk.astnodes.Or.prototype._astname = "Or";
+Sk.astnodes.Or.prototype._isenum = true;
+Sk.astnodes.Add.prototype._astname = "Add";
+Sk.astnodes.Add.prototype._isenum = true;
+Sk.astnodes.Sub.prototype._astname = "Sub";
+Sk.astnodes.Sub.prototype._isenum = true;
+Sk.astnodes.Mult.prototype._astname = "Mult";
+Sk.astnodes.Mult.prototype._isenum = true;
+Sk.astnodes.MatMult.prototype._astname = "MatMult";
+Sk.astnodes.MatMult.prototype._isenum = true;
+Sk.astnodes.Div.prototype._astname = "Div";
+Sk.astnodes.Div.prototype._isenum = true;
+Sk.astnodes.Mod.prototype._astname = "Mod";
+Sk.astnodes.Mod.prototype._isenum = true;
+Sk.astnodes.Pow.prototype._astname = "Pow";
+Sk.astnodes.Pow.prototype._isenum = true;
+Sk.astnodes.LShift.prototype._astname = "LShift";
+Sk.astnodes.LShift.prototype._isenum = true;
+Sk.astnodes.RShift.prototype._astname = "RShift";
+Sk.astnodes.RShift.prototype._isenum = true;
+Sk.astnodes.BitOr.prototype._astname = "BitOr";
+Sk.astnodes.BitOr.prototype._isenum = true;
+Sk.astnodes.BitXor.prototype._astname = "BitXor";
+Sk.astnodes.BitXor.prototype._isenum = true;
+Sk.astnodes.BitAnd.prototype._astname = "BitAnd";
+Sk.astnodes.BitAnd.prototype._isenum = true;
+Sk.astnodes.FloorDiv.prototype._astname = "FloorDiv";
+Sk.astnodes.FloorDiv.prototype._isenum = true;
+Sk.astnodes.Invert.prototype._astname = "Invert";
+Sk.astnodes.Invert.prototype._isenum = true;
+Sk.astnodes.Not.prototype._astname = "Not";
+Sk.astnodes.Not.prototype._isenum = true;
+Sk.astnodes.UAdd.prototype._astname = "UAdd";
+Sk.astnodes.UAdd.prototype._isenum = true;
+Sk.astnodes.USub.prototype._astname = "USub";
+Sk.astnodes.USub.prototype._isenum = true;
+Sk.astnodes.Eq.prototype._astname = "Eq";
+Sk.astnodes.Eq.prototype._isenum = true;
+Sk.astnodes.NotEq.prototype._astname = "NotEq";
+Sk.astnodes.NotEq.prototype._isenum = true;
+Sk.astnodes.Lt.prototype._astname = "Lt";
+Sk.astnodes.Lt.prototype._isenum = true;
+Sk.astnodes.LtE.prototype._astname = "LtE";
+Sk.astnodes.LtE.prototype._isenum = true;
+Sk.astnodes.Gt.prototype._astname = "Gt";
+Sk.astnodes.Gt.prototype._isenum = true;
+Sk.astnodes.GtE.prototype._astname = "GtE";
+Sk.astnodes.GtE.prototype._isenum = true;
+Sk.astnodes.Is.prototype._astname = "Is";
+Sk.astnodes.Is.prototype._isenum = true;
+Sk.astnodes.IsNot.prototype._astname = "IsNot";
+Sk.astnodes.IsNot.prototype._isenum = true;
+Sk.astnodes.In.prototype._astname = "In";
+Sk.astnodes.In.prototype._isenum = true;
+Sk.astnodes.NotIn.prototype._astname = "NotIn";
+Sk.astnodes.NotIn.prototype._isenum = true;
+Sk.astnodes.comprehension.prototype._astname = "comprehension";
+Sk.astnodes.comprehension.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "ifs", function(n) { return n.ifs; },
     "is_async", function(n) { return n.is_async; }
 ];
-Sk.ast.ExceptHandler.prototype._astname = "ExceptHandler";
-Sk.ast.ExceptHandler.prototype._fields = [
+Sk.astnodes.ExceptHandler.prototype._astname = "ExceptHandler";
+Sk.astnodes.ExceptHandler.prototype._fields = [
     "type", function(n) { return n.type; },
     "name", function(n) { return n.name; },
     "body", function(n) { return n.body; }
 ];
-Sk.ast.arguments.prototype._astname = "arguments";
-Sk.ast.arguments.prototype._fields = [
+Sk.astnodes.arguments.prototype._astname = "arguments";
+Sk.astnodes.arguments.prototype._fields = [
     "args", function(n) { return n.args; },
     "vararg", function(n) { return n.vararg; },
     "kwonlyargs", function(n) { return n.kwonlyargs; },
@@ -1513,23 +1513,23 @@ Sk.ast.arguments.prototype._fields = [
     "kwarg", function(n) { return n.kwarg; },
     "defaults", function(n) { return n.defaults; }
 ];
-Sk.ast.arg.prototype._astname = "arg";
-Sk.ast.arg.prototype._fields = [
+Sk.astnodes.arg.prototype._astname = "arg";
+Sk.astnodes.arg.prototype._fields = [
     "arg", function(n) { return n.arg; },
     "annotation", function(n) { return n.annotation; }
 ];
-Sk.ast.keyword.prototype._astname = "keyword";
-Sk.ast.keyword.prototype._fields = [
+Sk.astnodes.keyword.prototype._astname = "keyword";
+Sk.astnodes.keyword.prototype._fields = [
     "arg", function(n) { return n.arg; },
     "value", function(n) { return n.value; }
 ];
-Sk.ast.alias.prototype._astname = "alias";
-Sk.ast.alias.prototype._fields = [
+Sk.astnodes.alias.prototype._astname = "alias";
+Sk.astnodes.alias.prototype._fields = [
     "name", function(n) { return n.name; },
     "asname", function(n) { return n.asname; }
 ];
-Sk.ast.withitem.prototype._astname = "withitem";
-Sk.ast.withitem.prototype._fields = [
+Sk.astnodes.withitem.prototype._astname = "withitem";
+Sk.astnodes.withitem.prototype._fields = [
     "context_expr", function(n) { return n.context_expr; },
     "optional_vars", function(n) { return n.optional_vars; }
 ];

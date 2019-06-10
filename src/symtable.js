@@ -347,7 +347,7 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     var i;
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
-        if (arg.constructor === Sk.ast.arg) {
+        if (arg.constructor === Sk.astnodes.arg) {
             // TODO arguments are more complicated in Python 3...
             this.addDef(arg.arg, DEF_PARAM, arg.lineno);
         }
@@ -408,7 +408,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
 SymbolTable.prototype.visitSlice = function (s) {
     var i;
     switch (s.constructor) {
-        case Sk.ast.Slice:
+        case Sk.astnodes.Slice:
             if (s.lower) {
                 this.visitExpr(s.lower);
             }
@@ -419,15 +419,15 @@ SymbolTable.prototype.visitSlice = function (s) {
                 this.visitExpr(s.step);
             }
             break;
-        case Sk.ast.ExtSlice:
+        case Sk.astnodes.ExtSlice:
             for (i = 0; i < s.dims.length; ++i) {
                 this.visitSlice(s.dims[i]);
             }
             break;
-        case Sk.ast.Index:
+        case Sk.astnodes.Index:
             this.visitExpr(s.value);
             break;
-        case Sk.ast.Ellipsis:
+        case Sk.astnodes.Ellipsis:
             break;
     }
 };
@@ -440,7 +440,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var tmp;
     goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
-        case Sk.ast.FunctionDef:
+        case Sk.astnodes.FunctionDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             if (s.args.defaults) {
                 this.SEQExpr(s.args.defaults);
@@ -453,7 +453,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Sk.ast.ClassDef:
+        case Sk.astnodes.ClassDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
             this.SEQExpr(s.bases);
             if (s.decorator_list) {
@@ -465,7 +465,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Sk.ast.Return:
+        case Sk.astnodes.Return:
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
@@ -474,24 +474,24 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Sk.ast.Delete:
+        case Sk.astnodes.Delete:
             this.SEQExpr(s.targets);
             break;
-        case Sk.ast.Assign:
+        case Sk.astnodes.Assign:
             this.SEQExpr(s.targets);
             this.visitExpr(s.value);
             break;
-        case Sk.ast.AugAssign:
+        case Sk.astnodes.AugAssign:
             this.visitExpr(s.target);
             this.visitExpr(s.value);
             break;
-        case Sk.ast.Print:
+        case Sk.astnodes.Print:
             if (s.dest) {
                 this.visitExpr(s.dest);
             }
             this.SEQExpr(s.values);
             break;
-        case Sk.ast.For:
+        case Sk.astnodes.For:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
             this.SEQStmt(s.body);
@@ -499,21 +499,21 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Sk.ast.While:
+        case Sk.astnodes.While:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Sk.ast.If:
+        case Sk.astnodes.If:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Sk.ast.Raise:
+        case Sk.astnodes.Raise:
             if (s.type) {
                 this.visitExpr(s.type);
                 if (s.inst) {
@@ -524,17 +524,17 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Sk.ast.Assert:
+        case Sk.astnodes.Assert:
             this.visitExpr(s.test);
             if (s.msg) {
                 this.visitExpr(s.msg);
             }
             break;
-        case Sk.ast.Import:
-        case Sk.ast.ImportFrom:
+        case Sk.astnodes.Import:
+        case Sk.astnodes.ImportFrom:
             this.visitAlias(s.names, s.lineno);
             break;
-        case Sk.ast.Global:
+        case Sk.astnodes.Global:
             nameslen = s.names.length;
             for (i = 0; i < nameslen; ++i) {
                 name = mangleName(this.curClass, s.names[i]).v;
@@ -551,16 +551,16 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL, s.lineno);
             }
             break;
-        case Sk.ast.Expr:
+        case Sk.astnodes.Expr:
             this.visitExpr(s.value);
             break;
-        case Sk.ast.Pass:
-        case Sk.ast.Break:
-        case Sk.ast.Continue:
-        case Sk.ast.Debugger:
+        case Sk.astnodes.Pass:
+        case Sk.astnodes.Break:
+        case Sk.astnodes.Continue:
+        case Sk.astnodes.Debugger:
             // nothing
             break;
-        case Sk.ast.With:
+        case Sk.astnodes.With:
             this.newTmpname(s.lineno);
             this.visitExpr(s.context_expr);
             if (s.optional_vars) {
@@ -580,17 +580,17 @@ SymbolTable.prototype.visitExpr = function (e) {
     goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
     //print("  e: ", e.constructor.name);
     switch (e.constructor) {
-        case Sk.ast.BoolOp:
+        case Sk.astnodes.BoolOp:
             this.SEQExpr(e.values);
             break;
-        case Sk.ast.BinOp:
+        case Sk.astnodes.BinOp:
             this.visitExpr(e.left);
             this.visitExpr(e.right);
             break;
-        case Sk.ast.UnaryOp:
+        case Sk.astnodes.UnaryOp:
             this.visitExpr(e.operand);
             break;
-        case Sk.ast.Lambda:
+        case Sk.astnodes.Lambda:
             this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL, e.lineno);
             if (e.args.defaults) {
                 this.SEQExpr(e.args.defaults);
@@ -600,28 +600,28 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.visitExpr(e.body);
             this.exitBlock();
             break;
-        case Sk.ast.IfExp:
+        case Sk.astnodes.IfExp:
             this.visitExpr(e.test);
             this.visitExpr(e.body);
             this.visitExpr(e.orelse);
             break;
-        case Sk.ast.Dict:
+        case Sk.astnodes.Dict:
             this.SEQExpr(e.keys);
             this.SEQExpr(e.values);
             break;
-        case Sk.ast.DictComp:
-        case Sk.ast.SetComp:    
+        case Sk.astnodes.DictComp:
+        case Sk.astnodes.SetComp:    
             this.visitComprehension(e.generators, 0);
             break;
-        case Sk.ast.ListComp:
+        case Sk.astnodes.ListComp:
             this.newTmpname(e.lineno);
             this.visitExpr(e.elt);
             this.visitComprehension(e.generators, 0);
             break;
-        case Sk.ast.GeneratorExp:
+        case Sk.astnodes.GeneratorExp:
             this.visitGenexp(e);
             break;
-        case Sk.ast.Yield:
+        case Sk.astnodes.Yield:
             if (e.value) {
                 this.visitExpr(e.value);
             }
@@ -630,11 +630,11 @@ SymbolTable.prototype.visitExpr = function (e) {
                 throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
             }
             break;
-        case Sk.ast.Compare:
+        case Sk.astnodes.Compare:
             this.visitExpr(e.left);
             this.SEQExpr(e.comparators);
             break;
-        case Sk.ast.Call:
+        case Sk.astnodes.Call:
             this.visitExpr(e.func);
             this.SEQExpr(e.args);
             for (i = 0; i < e.keywords.length; ++i) {
@@ -649,24 +649,24 @@ SymbolTable.prototype.visitExpr = function (e) {
                 this.visitExpr(e.kwargs);
             }
             break;
-        case Sk.ast.Num:
-        case Sk.ast.Str:
+        case Sk.astnodes.Num:
+        case Sk.astnodes.Str:
             break;
-        case Sk.ast.Attribute:
+        case Sk.astnodes.Attribute:
             this.visitExpr(e.value);
             break;
-        case Sk.ast.Subscript:
+        case Sk.astnodes.Subscript:
             this.visitExpr(e.value);
             this.visitSlice(e.slice);
             break;
-        case Sk.ast.Name:
-            this.addDef(e.id, e.ctx === Sk.ast.Load ? USE : DEF_LOCAL, e.lineno);
+        case Sk.astnodes.Name:
+            this.addDef(e.id, e.ctx === Sk.astnodes.Load ? USE : DEF_LOCAL, e.lineno);
             break;
-        case Sk.ast.NameConstant:
+        case Sk.astnodes.NameConstant:
             break;
-        case Sk.ast.List:
-        case Sk.ast.Tuple:
-        case Sk.ast.Set:
+        case Sk.astnodes.List:
+        case Sk.astnodes.Tuple:
+        case Sk.astnodes.Set:
             this.SEQExpr(e.elts);
             break;
         default:
