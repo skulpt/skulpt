@@ -110,6 +110,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
+        Sk.asserts.assert(ast.lineno !== undefined && ast.col_offset !== undefined);
         out("$currLineNo = ", lineno, ";\n$currColNo = ", col_offset, ";\n\n");
     }
 };
@@ -485,7 +486,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     target = this.vexpr(l.target, nexti);
 
-    n = l.ifs.length;
+    n = l.ifs ? l.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         ifres = this.vexpr(l.ifs[i]);
         this._jumpfalse(ifres, start);
@@ -858,6 +859,22 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             break;
         case Sk.astnodes.Name:
             return this.nameop(e.id, e.ctx, data);
+        case Sk.astnodes.NameConstant:
+            if (e.ctx === Sk.astnodes.Store || e.ctx === Sk.astnodes.AugStore || e.ctx === Sk.astnodes.Del) {
+                throw new Sk.builtin.SyntaxError("can not assign to a constant name");
+            }
+
+            switch (e.value) {
+                case Sk.builtin.none.none$:
+                    return "Sk.builtin.none.none$";
+                case Sk.builtin.bool.true$:
+                    return "Sk.builtin.bool.true$";
+                case Sk.builtin.bool.false$:
+                    return "Sk.builtin.bool.false$";
+                default:
+                    Sk.asserts.fail("invalid named constant")
+            }
+            break;
         case Sk.astnodes.List:
             return this.ctuplelistorset(e, data, 'list');
         case Sk.astnodes.Tuple:
@@ -865,7 +882,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Set:
             return this.ctuplelistorset(e, data, 'set');
         default:
-            Sk.asserts.fail("unhandled case in vexpr");
+            Sk.asserts.fail("unhandled case " + e.constructor + " vexpr");
     }
 };
 
@@ -1122,7 +1139,7 @@ Compiler.prototype.cif = function (s) {
     var next;
     var end;
     var constant;
-    Sk.asserts.assert(s instanceof Sk.astnodes.If_);
+    Sk.asserts.assert(s instanceof Sk.astnodes.If);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
         if (s.orelse && s.orelse.length > 0) {
@@ -1737,7 +1754,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.tempsToSave.push("$kwa");
         }
         for (i = 0; args && i < args.args.length; ++i) {
-            funcArgs.push(this.nameop(args.args[i].id, Sk.astnodes.Param));
+            funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
         }
     }
     if (hasFree) {
@@ -1804,7 +1821,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         // correlation in the ast)
         offset = args.args.length - defaults.length;
         for (i = 0; i < defaults.length; ++i) {
-            argname = this.nameop(args.args[i + offset].id, Sk.astnodes.Param);
+            argname = this.nameop(args.args[i + offset].arg, Sk.astnodes.Param);
             this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname + "=" + scopename + ".$defaults[" + i + "];";
         }
     }
@@ -1814,7 +1831,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // they can be accessed correctly by nested scopes.
     //
     for (i = 0; args && i < args.args.length; ++i) {
-        id = args.args[i].id;
+        id = args.args[i].arg;
         if (this.isCell(id)) {
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
         }
@@ -1885,7 +1902,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.args.length > 0) {
         argnamesarr = [];
         for (i = 0; i < args.args.length; ++i) {
-            argnamesarr.push(args.args[i].id.v);
+            argnamesarr.push(args.args[i].arg.v);
         }
 
         argnames = argnamesarr.join("', '");
@@ -2056,7 +2073,7 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     target = this.vexpr(ge.target, nexti);
 
-    n = ge.ifs.length;
+    n = ge.ifs ? ge.ifs.length : 0;
     for (i = 0; i < n; ++i) {
         this.annotateSource(ge.ifs[i]);
 
@@ -2219,7 +2236,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case Sk.astnodes.ClassDef:
             this.cclass(s);
             break;
-        case Sk.astnodes.Return_:
+        case Sk.astnodes.Return:
             if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
                 throw new SyntaxError("'return' outside function");
             }
@@ -2231,7 +2248,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 this._jump(this.peekFinallyBlock().blk);
             }
             break;
-        case Sk.astnodes.Delete_:
+        case Sk.astnodes.Delete:
             this.vseqexpr(s.targets);
             break;
         case Sk.astnodes.Assign:
@@ -2246,23 +2263,18 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case Sk.astnodes.Print:
             this.cprint(s);
             break;
-        case Sk.astnodes.For_:
+        case Sk.astnodes.For:
             return this.cfor(s);
-        case Sk.astnodes.While_:
+        case Sk.astnodes.While:
             return this.cwhile(s);
-        case Sk.astnodes.If_:
+        case Sk.astnodes.If:
             return this.cif(s);
         case Sk.astnodes.Raise:
             return this.craise(s);
-        case Sk.astnodes.TryExcept:
-            return this.ctryexcept(s);
-        case Sk.astnodes.TryFinally:
-            return this.ctryfinally(s);
-        case Sk.astnodes.With_:
-            return this.cwith(s);
+        // TODO compile Try and With here
         case Sk.astnodes.Assert:
             return this.cassert(s);
-        case Sk.astnodes.Import_:
+        case Sk.astnodes.Import:
             return this.cimport(s);
         case Sk.astnodes.ImportFrom:
             return this.cfromimport(s);
@@ -2273,13 +2285,13 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case Sk.astnodes.Pass:
             break;
-        case Sk.astnodes.Break_:
+        case Sk.astnodes.Break:
             this.cbreak(s);
             break;
-        case Sk.astnodes.Continue_:
+        case Sk.astnodes.Continue:
             this.ccontinue(s);
             break;
-        case Sk.astnodes.Debugger_:
+        case Sk.astnodes.Debugger:
             out("debugger;");
             break;
         default:
@@ -2330,15 +2342,6 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
         throw new Sk.builtin.SyntaxError("can not assign to None");
     }
 
-    if (name.v === "None") {
-        return "Sk.builtin.none.none$";
-    }
-    if (name.v === "True") {
-        return "Sk.builtin.bool.true$";
-    }
-    if (name.v === "False") {
-        return "Sk.builtin.bool.false$";
-    }
     if (name.v === "NotImplemented") {
         return "Sk.builtin.NotImplemented.NotImplemented$";
     }
@@ -2530,6 +2533,8 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
 };
 
+// TODO this is for Python 2 only;
+// we should gate this behind a __future__ flag
 Compiler.prototype.cprint = function (s) {
     var i;
     var n;

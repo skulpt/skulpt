@@ -17,9 +17,9 @@ def get_c_type(name):
     This function special cases the default types provided by asdl:
     identifier, string, int, bool.
     """
-    # XXX ack!  need to figure out where Id is useful and where string
-    if isinstance(name, asdl.Id):
-        name = name.value
+    # # XXX ack!  need to figure out where Id is useful and where string
+    # if isinstance(name, asdl.TokenId):
+    #     name = name.value
     if name in asdl.builtin_types:
         return name
     else:
@@ -189,7 +189,7 @@ class PrototypeVisitor(EmitVisitor):
                 name = f.name
             # XXX should extend get_c_type() to handle this
             if f.seq:
-                if f.type.value in ('cmpop',):
+                if f.type in ('cmpop',):
                     ctype = "asdl_int_seq *"
                 else:
                     ctype = "asdl_seq *"
@@ -235,9 +235,8 @@ class FunctionVisitor(PrototypeVisitor):
         emit("/** @constructor */")
         emit("Sk.astnodes.%s = function %s(%s)" % (name, name, argstr))
         emit("{")
-        for argtype, argname, opt in args:
-            # XXX hack alert: false is allowed for a bool
-            if not opt and not (argtype == "bool" or argtype == "int"):
+        for argtype, argname, opt in attrs:
+            if not opt:
                 emit("Sk.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
 
         if union:
@@ -366,7 +365,6 @@ def main(asdlfile, outputfile):
     f = open(outputfile, "wb")
 
     f.write(auto_gen_msg)
-
     f.write("/* Object that holds all nodes */\n");
     f.write("Sk.astnodes = {};\n\n");
     

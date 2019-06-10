@@ -160,7 +160,7 @@ Parser.prototype.addtoken = function (type, value, context) {
 // turn a token into a label
 Parser.prototype.classify = function (type, value, context) {
     var ilabel;
-    if (type === Sk.Tokenizer.Tokens.T_NAME) {
+    if (type === Sk.token.tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
@@ -263,94 +263,88 @@ Parser.prototype.pop = function () {
  * @param {string=} style root of parse tree (optional)
  */
 function makeParser (filename, style) {
-    var tokenizer;
-    var T_OP;
-    var T_NL;
-    var T_COMMENT;
-    var prefix;
-    var column;
-    var lineno;
-    var p;
     if (style === undefined) {
         style = "file_input";
     }
-    p = new Parser(filename, Sk.ParseTables);
+    var p = new Parser(filename, Sk.ParseTables);
     // for closure's benefit
     if (style === "file_input") {
         p.setup(Sk.ParseTables.sym.file_input);
     } else {
         Sk.asserts.fail("todo;");
     }
-    lineno = 1;
-    column = 0;
-    prefix = "";
-    T_COMMENT = Sk.Tokenizer.Tokens.T_COMMENT;
-    T_NL = Sk.Tokenizer.Tokens.T_NL;
-    T_OP = Sk.Tokenizer.Tokens.T_OP;
-    tokenizer = new Sk.Tokenizer(filename, style === "single_input", function (type, value, start, end, line) {
-        var s_lineno = start[0];
-        var s_column = start[1];
-        /*
+    return p;
+}
+
+Sk.parse = function parse (filename, input) {
+    var T_COMMENT = Sk.token.tokens.T_COMMENT;
+    var T_NL = Sk.token.tokens.T_NL;
+    var T_OP = Sk.token.tokens.T_OP;
+    var T_ENDMARKER = Sk.token.tokens.T_ENDMARKER;
+    var T_ENCODING = Sk.token.tokens.T_ENCODING;
+
+    var endmarker_seen = false;
+    var parser = makeParser(filename);
+
+    /**
+     * takes a string splits it on '\n' and returns a function that returns 
+     * @param {string[]} input 
+     * @returns {function(): string}
+     */
+    function readline(input) {
+        var lines = input.split("\n").reverse().map(function (l) { return l + '\n'; });
+
+        return function() {
+            if (lines.length === 0) {
+                throw new Exception("EOF");
+            }
+            
+            return lines.pop();
+        }
+    }
+
+    Sk._tokenize(readline(input), 'utf-8', function (tokenInfo) {
+        var s_lineno = tokenInfo.start[0];
+        var s_column = tokenInfo.start[1];
+        var type = null;
+        var prefix, lineno, column;
+
+        /* I don't know 
          if (s_lineno !== lineno && s_column !== column)
          {
          // todo; update prefix and line/col
          }
          */
-        if (type === T_COMMENT || type === T_NL) {
-            prefix += value;
-            lineno = end[0];
-            column = end[1];
-            if (value[value.length - 1] === "\n") {
+
+        if (tokenInfo.type === T_COMMENT || tokenInfo.type === T_NL || tokenInfo.type === T_ENCODING) {
+            prefix += tokenInfo.value;
+            lineno = tokenInfo.end[0];
+            column = tokenInfo.end[1];
+            if (tokenInfo.string[tokenInfo.string.length - 1] === "\n") {
                 lineno += 1;
                 column = 0;
             }
-            //print("  not calling addtoken");
-            return undefined;
-        }
-        if (type === T_OP) {
-            type = Sk.OpMap[value];
-        }
-        if (p.addtoken(type, value, [start, end, line])) {
-            return true;
+        } else {
+            if (tokenInfo.type === T_OP) {
+                type = Sk.OpMap[tokenInfo.string];
+            }
+
+            parser.addtoken(type || tokenInfo.type, tokenInfo.string, [tokenInfo.start, tokenInfo.end, tokenInfo.line]);
+
+            if (tokenInfo.type === T_ENDMARKER) {
+                endmarker_seen = true
+            }
         }
     });
 
-    // create parser function
-    var parseFunc = function (line) {
-        var ret = tokenizer.generateTokens(line);
-        //print("tok:"+ret);
-        if (ret) {
-            if (ret !== "done") {
-                throw new Sk.builtin.SyntaxError("incomplete input", this.filename);
-            }
-            return p.rootnode;
-        }
-        return false;
-    }.bind(this);
-
-    // set flags, and return
-    parseFunc.p_flags = p.p_flags;
-    return parseFunc;
-}
-
-Sk.parse = function parse (filename, input) {
-    var i;
-    var ret;
-    var lines;
-    var parseFunc = makeParser(filename);
-    if (input.substr(input.length - 1, 1) !== "\n") {
-        input += "\n";
-    }
-    //print("input:"+input);
-    lines = input.split("\n");
-    for (i = 0; i < lines.length; ++i) {
-        ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
+    if (!endmarker_seen) {
+        throw new Sk.builtin.SyntaxError("incomplete input", this.filename);
     }
 
-    /*
+    /**
      * Small adjustments here in order to return th flags and the cst
      */
-    return {"cst": ret, "flags": parseFunc.p_flags};
+    return {"cst": parser.rootnode, "flags": parser.p_flags};
 };
 
 Sk.parseTreeDump = function parseTreeDump (n, indent) {
@@ -366,7 +360,7 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
     } else {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
+        ret += Sk.token.tok_name[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
     }
     return ret;
 };
