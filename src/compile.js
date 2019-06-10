@@ -570,10 +570,11 @@ Compiler.prototype.ccall = function (e) {
     var i;
     var kwarray;
     var func = this.vexpr(e.func);
-    var args = this.vseqexpr(e.args);
+    var args = e.args ? this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.ast.Starred})) : [];
 
     //print(JSON.stringify(e, null, 2));
-    if (e.keywords.length > 0 || e.starargs || e.kwargs) {
+    var hasStarArgs = e.args ? e.args.some(function(a) { return a.constructor === Sk.ast.Starred}) : false;
+    if ((e.keywords && e.keywords.length > 0) || hasStarArgs || e.kwargs) {
         kwarray = [];
         for (i = 0; i < e.keywords.length; ++i) {
             kwarray.push("'" + e.keywords[i].arg.v + "'");
@@ -582,9 +583,15 @@ Compiler.prototype.ccall = function (e) {
         keywords = "[" + kwarray.join(",") + "]";
         starargs = "undefined";
         kwargs = "undefined";
-        if (e.starargs) {
-            starargs = this.vexpr(e.starargs);
+
+        var _this = this;
+
+        if (hasStarArgs) {
+            starargs = e.args
+                .filter(function(a) { return a.constructor === Sk.ast.Starred})
+                .map(function(a) { return _this.vexpr(a.value) });
         }
+
         if (e.kwargs) {
             kwargs = this.vexpr(e.kwargs);
         }
@@ -881,8 +888,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.ctuplelistorset(e, data, 'tuple');
         case Sk.astnodes.Set:
             return this.ctuplelistorset(e, data, 'set');
+        case Sk.ast.Starred:
+            break;
         default:
-            Sk.asserts.fail("unhandled case " + e.constructor + " vexpr");
+            Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }
 };
 
@@ -895,6 +904,11 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     var ret;
     Sk.asserts.assert(data === undefined || exprs.length === data.length);
     ret = [];
+
+    // if (exprs.length === 1 && exprs[0].constructor === Sk.ast.Starred) {
+    //     exprs = exprs[0].value;
+    // }
+
     for (i = 0; i < exprs.length; ++i) {
         ret.push(this.vexpr(exprs[i], data === undefined ? undefined : data[i]));
     }
@@ -1305,19 +1319,17 @@ Compiler.prototype.cfor = function (s) {
 
 Compiler.prototype.craise = function (s) {
     var inst = "", exc;
-    if (s.inst) {
-        // handles: raise Error, arguments
-        inst = this.vexpr(s.inst);
-        out("throw ", this.vexpr(s.type), "(", inst, ");");
-    }
-    else if (s.type) {
-        if (s.type.func) {
-            // handles: raise Error(arguments)
-            out("throw ", this.vexpr(s.type), ";");
-        }
-        else {
-            // handles: raise Error OR raise someinstance
-            exc = this._gr("err", this.vexpr(s.type));
+    // I don't think this still exists in py3
+    // And I'm unsure we'll want to add it back in
+    // if (s.inst) {
+    //     // handles: raise Error, arguments
+    //     inst = this.vexpr(s.inst);
+    //     out("throw ", this.vexpr(s.type), "(", inst, ");");
+    // }
+    if (s.exc) {
+        var exc = this.vexpr(s.exc);
+        if (s.exc.constructor === Sk.ast.Name) {
+            // var name = this.nameop(s.exc.id, s.exc.ctx)
             out("if(",exc," instanceof Sk.builtin.type) {",
                 "throw Sk.misceval.callsimArray(", exc, ");",
                 "} else if(typeof(",exc,") === 'function') {",
@@ -1325,6 +1337,8 @@ Compiler.prototype.craise = function (s) {
                 "} else {",
                 "throw ", exc, ";",
                 "}");
+        } else if (s.exc.constructor === Sk.ast.Call) {
+            out("throw ", exc, ";");
         }
     }
     else {
@@ -1855,16 +1869,17 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (vararg) {
         start = funcArgs.length;
 
-        this.u.localnames.push(vararg.v);
-        this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
+        this.u.localnames.push(vararg.arg.v);
+        this.u.varDeclsCode += vararg.arg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
+        this.u.varDeclsCode += "$gbl['" + vararg.arg.v + "']=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
     }
 
     //
     // initialize kwarg, if any
     //
     if (kwarg) {
-        this.u.localnames.push(kwarg.v);
-        this.u.varDeclsCode += kwarg.v + "=new Sk.builtins['dict']($kwa);";
+        this.u.localnames.push(kwarg.arg.v);
+        this.u.varDeclsCode += kwarg.arg.v + "=new Sk.builtins['dict']($kwa);";
     }
 
     //

@@ -1,4 +1,5 @@
 var tokens = Sk.token.tokens
+
 /**
  *
  * @constructor
@@ -48,99 +49,6 @@ function regexEscape(string) {
         ? string.replace(reRegExpChar, '\\$&')
         : string;
 }
-
-/* we have to use string and ctor to be able to build patterns up. + on /.../
- * does something strange.
- * Note: we use unicode matching for names ("\w") but ascii matching for
- * number literals. */
-var Whitespace = "[ \\f\\t]*";
-var Comment_ = "#[^\\r\\n]*";
-var Ignore = Whitespace + any('\\\\\\r?\\n' + Whitespace) + maybe(Comment_)
-var Name = "\\w+";
-
-var Hexnumber = '0[xX](?:_?[0-9a-fA-F])+';
-var Binnumber = '0[bB](?:_?[01])+';
-var Octnumber = '0[oO](?:_?[0-7])+';
-var Decnumber = '(?:0(?:_?0)*|[1-9](?:_?[0-9])*)';
-var Intnumber = group(Hexnumber, Binnumber, Octnumber, Decnumber);
-
-var Exponent = "[eE][-+]?[0-9](?:_?[0-9])*";
-var Pointfloat = group('[0-9](?:_?[0-9])*\\.(?:[0-9](?:_?[0-9])*)?',
-                       '\\.[0-9](?:_?[0-9])*') + maybe(Exponent)
-var Expfloat = "[0-9](?:_?[0-9])*" + Exponent;
-var Floatnumber = group(Pointfloat, Expfloat);
-var Imagnumber = group("[0-9](?:_?[0-9])*[jJ]", Floatnumber + "[jJ]");
-var Number_ = group(Imagnumber, Floatnumber, Intnumber);
-
-// Return the empty string, plus all of the valid string prefixes.
-function _all_string_prefixes() {
-    return [
-        '', 'FR', 'RF', 'Br', 'BR', 'Fr', 'r', 'B', 'R', 'b', 'bR',
-        'f', 'rb', 'rB', 'F', 'Rf', 'U', 'rF', 'u', 'RB', 'br', 'fR',
-        'fr', 'rf', 'Rb'];
-}
-
-// Note that since _all_string_prefixes includes the empty string,
-//  StringPrefix can be the empty string (making it optional).
-var StringPrefix = group.apply(null, _all_string_prefixes())
-
-// Tail end of ' string.
-var Single = "[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
-// Tail end of " string.
-var Double = '[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
-// Tail end of ''' string.
-var Single3 = "[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
-// Tail end of """ string.
-var Double3 = '[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
-var Triple = group(StringPrefix + "'''", StringPrefix + '"""');
-// Single-line ' or " string.
-var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
-                    StringPrefix + '"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*"');
-
-// Sorting in reverse order puts the long operators before their prefixes.
-// Otherwise if = came before ==, == would get recognized as two instances
-// of =.
-var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
-var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
-var Funny = group('\\r?\\n', Special);
-
-var PlainToken = group(Number_, Funny, String_, Name);
-var Token = Ignore + PlainToken;
-
-// First (or only) line of ' or " string.
-var ContStr = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
-                group("'", '\\\\\\r?\\n'),
-                StringPrefix + '"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
-                group('"', '\\\\\\r?\\n'))
-var PseudoExtras = group('\\\\\\r?\\n|\\Z', Comment_, Triple);
-var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
-
-// For a given string prefix plus quotes, endpats maps it to a regex
-//  to match the remainder of that string. _prefix can be empty, for
-//  a normal single or triple quoted string (with no prefix).
-var endpats = {}
-var prefixes = _all_string_prefixes();
-for (i in prefixes) {
-    var _prefix = prefixes[i];
-    endpats[_prefix + "'"] = Single
-    endpats[_prefix + '"'] = Double
-    endpats[_prefix + "'''"] = Single3
-    endpats[_prefix + '"""'] = Double3
-}
-
-// A set of all of the single and triple quoted string prefixes,
-//  including the opening quotes.
-single_quoted = []
-triple_quoted = []
-for (i in prefixes) {
-    var t = prefixes[i];
-    single_quoted.push(t + '"');
-    single_quoted.push(t + "'");
-    triple_quoted.push(t + '"""');
-    triple_quoted.push(t + "'''");
-}
-
-var tabsize = 8
 
 /**
  * Iterable contains
@@ -193,16 +101,109 @@ function isidentifier(str) {
     var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
     var r;
     // Fall back if we don't support unicode
-    // @albertjan is this even slightly acceptable?
-    try {
+    if (RegExp().unicode === false) {
         r = new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
-    } catch(e) {
+    } else {
         id_start = group(Lu, Ll, the_underscore);
         id_continue = group(id_start, '[0-9]');
         r = new RegExp('^' + id_start + '+' + id_continue + '*$');
     }
     return r.test(normalized);
 }
+
+/* we have to use string and ctor to be able to build patterns up. + on /.../
+ * does something strange.
+ * Note: we use unicode matching for names ("\w") but ascii matching for
+ * number literals. 
+ * 
+ * I don't know if the comment above is still actually correct */
+var Whitespace = "[ \\f\\t]*";
+var Comment_ = "#[^\\r\\n]*";
+var Ignore = Whitespace + any('\\\\\\r?\\n' + Whitespace) + maybe(Comment_)
+var Name = "\\w+";
+
+
+var Exponent = "[eE][-+]?[0-9](?:_?[0-9])*";
+var Pointfloat = group('[0-9](?:_?[0-9])*\\.(?:[0-9](?:_?[0-9])*)?',
+                       '\\.[0-9](?:_?[0-9])*') + maybe(Exponent)
+var Expfloat = "[0-9](?:_?[0-9])*" + Exponent;
+var Floatnumber = group(Pointfloat, Expfloat);
+var Imagnumber = group("[0-9](?:_?[0-9])*[jJ]", Floatnumber + "[jJ]");
+
+// Return the empty string, plus all of the valid string prefixes.
+function _all_string_prefixes() {
+    return [
+        '', 'FR', 'RF', 'Br', 'BR', 'Fr', 'r', 'B', 'R', 'b', 'bR',
+        'f', 'rb', 'rB', 'F', 'Rf', 'U', 'rF', 'u', 'RB', 'br', 'fR',
+        'fr', 'rf', 'Rb'];
+}
+
+// Note that since _all_string_prefixes includes the empty string,
+//  StringPrefix can be the empty string (making it optional).
+var StringPrefix = group.apply(null, _all_string_prefixes())
+
+// these regexes differ from python because .exec doesn't do the
+// same thing as .match in python. It's more like .search. 
+// .match matches from the start of the string.
+// to get the same behaviour we can add a ^ to the start of the 
+// regex
+// Tail end of ' string.
+var Single = "^[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
+// Tail end of " string.
+var Double = '^[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
+// Tail end of ''' string.
+var Single3 = "^[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
+// Tail end of """ string.
+var Double3 = '^[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
+var Triple = group(StringPrefix + "'''", StringPrefix + '"""');
+// Single-line ' or " string.
+var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
+                    StringPrefix + '"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*"');
+
+// Sorting in reverse order puts the long operators before their prefixes.
+// Otherwise if = came before ==, == would get recognized as two instances
+// of =.
+var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
+var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
+var Funny = group('\\r?\\n', Special);
+
+// these aren't actually used
+// var PlainToken = group(Number_, Funny, String_, Name);
+// var Token = Ignore + PlainToken;
+
+// First (or only) line of ' or " string.
+var ContStr = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
+                group("'", '\\\\\\r?\\n'),
+                StringPrefix + '"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
+                group('"', '\\\\\\r?\\n'))
+var PseudoExtras = group('\\\\\\r?\\n|\\Z', Comment_, Triple);
+
+// For a given string prefix plus quotes, endpats maps it to a regex
+//  to match the remainder of that string. _prefix can be empty, for
+//  a normal single or triple quoted string (with no prefix).
+var endpats = {}
+var prefixes = _all_string_prefixes();
+for (i in prefixes) {
+    var _prefix = prefixes[i];
+    endpats[_prefix + "'"] = Single
+    endpats[_prefix + '"'] = Double
+    endpats[_prefix + "'''"] = Single3
+    endpats[_prefix + '"""'] = Double3
+}
+
+// A set of all of the single and triple quoted string prefixes,
+//  including the opening quotes.
+single_quoted = []
+triple_quoted = []
+for (i in prefixes) {
+    var t = prefixes[i];
+    single_quoted.push(t + '"');
+    single_quoted.push(t + "'");
+    triple_quoted.push(t + '"""');
+    triple_quoted.push(t + "'''");
+}
+
+var tabsize = 8
 
 /**
  * internal tokenize function
@@ -212,6 +213,19 @@ function isidentifier(str) {
  * @param {function(TokenInfo): void} yield_
  */
 function _tokenize(readline, encoding, yield_) {
+    // we make these regexes here because they can 
+    // be changed by the configuration.
+    var LSuffix = Sk.__future__.l_suffix ? '(?:L?)' : '';
+    var Hexnumber = '0[xX](?:_?[0-9a-fA-F])+' + LSuffix;
+    var Binnumber = '0[bB](?:_?[01])+' + LSuffix;
+    var Octnumber = '0([oO])(?:_?[0-7])+' + LSuffix;
+    var SilentOctnumber = '0([oO]?)(?:_?[0-7])+' + LSuffix;
+    var Decnumber = '(?:0(?:_?0)*|[1-9](?:_?[0-9])*)' + LSuffix;
+    var Intnumber = group(Hexnumber, Binnumber, 
+                          (Sk.__future__.silent_octal_literal ? SilentOctnumber : Octnumber), Decnumber);
+    var Number_ = group(Imagnumber, Floatnumber, Intnumber);
+    var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
+
     var lnum = 0,
         parenlev = 0,
         continued = 0,
@@ -257,9 +271,9 @@ function _tokenize(readline, encoding, yield_) {
                 throw new TokenError("EOF in multi-line string", strstart);
             }
             endprog.lastIndex = 0;
-            var endmatch = endprog.match(line);
+            var endmatch = endprog.exec(line);
             if (endmatch) {
-                pos = end = this.endprog.lastIndex;
+                pos = end = endmatch[0].length;
                 yield_(new TokenInfo(tokens.T_STRING, contstr + line.substring(0, end),
                        strstart, [lnum, end], contline + line));
                 contstr = '';
@@ -370,10 +384,10 @@ function _tokenize(readline, encoding, yield_) {
                     //assert not token.endswith("\n")
                     yield_(new TokenInfo(tokens.T_COMMENT, token, spos, epos, line));
                 } else if (contains(triple_quoted, token)) {
-                    endprog = Regex(endpats[token]);
-                    endmatch = endprog.match(line, pos);
+                    endprog = RegExp(endpats[token]);
+                    endmatch = endprog.exec(line.substring(pos));
                     if (endmatch) {                       // all on one line
-                        pos = endprog.lastIndex + pos;
+                        pos = endmatch[0].length + pos;
                         token = line.substring(start, pos);
                         yield_(new TokenInfo(tokens.T_STRING, token, spos, (lnum, pos), line));
                     } else {
@@ -403,7 +417,7 @@ function _tokenize(readline, encoding, yield_) {
                         //  character. So it's really looking for
                         //  endpats["'"] or endpats['"'], by trying to
                         //  skip string prefix characters, if any.
-                        endprog = Regex(endpats[initial] ||
+                        endprog = RegExp(endpats[initial] ||
                                            endpats[token[1]] ||
                                            endpats[token[2]]);
                         contstr = line.substring(start);
