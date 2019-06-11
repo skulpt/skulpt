@@ -292,18 +292,18 @@ Sk.parse = function parse (filename, input) {
      * @returns {function(): string}
      */
     function readline(input) {
-        var lines = input.split("\n").reverse().map(function (l) { return l + '\n'; });
+        var lines = input.split("\n").reverse().map(function (l) { return l + "\n"; });
 
         return function() {
             if (lines.length === 0) {
-                throw new Exception("EOF");
+                throw new Sk.builtin.Exception("EOF");
             }
             
             return lines.pop();
-        }
+        };
     }
 
-    Sk._tokenize(readline(input), 'utf-8', function (tokenInfo) {
+    Sk._tokenize(readline(input), "utf-8", function (tokenInfo) {
         var s_lineno = tokenInfo.start[0];
         var s_column = tokenInfo.start[1];
         var type = null;
@@ -332,7 +332,7 @@ Sk.parse = function parse (filename, input) {
             parser.addtoken(type || tokenInfo.type, tokenInfo.string, [tokenInfo.start, tokenInfo.end, tokenInfo.line]);
 
             if (tokenInfo.type === T_ENDMARKER) {
-                endmarker_seen = true
+                endmarker_seen = true;
             }
         }
     });
