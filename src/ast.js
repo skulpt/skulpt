@@ -2437,7 +2437,7 @@ function astForSlice (c, n) {
     if (ch.type === SYM.sliceop) {
         if (NCH(ch) === 1) {
             ch = CHILD(ch, 0);
-            step = new Sk.astnodes.Name(strobj("None"), Sk.astnodes.Load, ch.lineno, ch.col_offset);
+            step = new Sk.astnodes.NameConstant(Sk.builtin.none.none$, Sk.astnodes.Load, ch.lineno, ch.col_offset);
         }
         else {
             ch = CHILD(ch, 1);

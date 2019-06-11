@@ -624,6 +624,9 @@ Compiler.prototype.ccall = function (e) {
 };
 
 Compiler.prototype.cslice = function (s) {
+    // TODO: This implements Python 2's idea of slice literals, which is...idiosyncratic.
+    // The rules for when you get None, and when you get an arbitrary integer (0 or maxint)
+    // seem pretty arbitrary. Python 3's are much saner.
     var step;
     var high;
     var low;
