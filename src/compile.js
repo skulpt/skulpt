@@ -1320,100 +1320,44 @@ Compiler.prototype.cfor = function (s) {
 };
 
 Compiler.prototype.craise = function (s) {
-    var inst = "", exc;
-    // I don't think this still exists in py3
-    // And I'm unsure we'll want to add it back in
-    // if (s.inst) {
-    //     // handles: raise Error, arguments
-    //     inst = this.vexpr(s.inst);
-    //     out("throw ", this.vexpr(s.type), "(", inst, ");");
-    // }
     if (s.exc) {
         var exc = this.vexpr(s.exc);
-        if (s.exc.constructor === Sk.astnodes.Name) {
-            // var name = this.nameop(s.exc.id, s.exc.ctx)
-            out("if(",exc," instanceof Sk.builtin.type) {",
-                "throw Sk.misceval.callsimArray(", exc, ");",
-                "} else if(typeof(",exc,") === 'function') {",
-                "throw ",exc,"();",
-                "} else {",
-                "throw ", exc, ";",
+        // This is tricky - we're supporting both the weird-ass semantics
+        // of the Python 2 "raise (exc), (inst), (tback)" version,
+        // plus the sensible Python "raise (exc) from (cause)".
+
+        var instantiatedException = this.newBlock("exception now instantiated");
+        var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type");
+        this._jumpfalse(instantiatedException, isClass);
+
+        // Instantiate exc with inst
+        if (s.inst) {
+            // TODO TODO raise a SyntaxError if you tried to use this syntax in Py3 mode
+            var inst = this.vexpr(s.inst);
+            var instsym = this.gensym("inst");
+            out("if(!(",inst," instanceof Sk.builtin.tuple)) {",
+                inst,"= new Sk.builtin.tuple([",inst,"]);",
                 "}");
-        } else if (s.exc.constructor === Sk.astnodes.Call) {
-            out("throw ", exc, ";");
+            out("$ret = Sk.misceval.callsimOrSuspendArray(",exc,",",inst,".v);");
+        } else {
+            out("$ret = Sk.misceval.callsimOrSuspend(",exc,");");
         }
+        this._checkSuspension(s);
+        out(exc,"=$ret;");
+
+        this._jump(instantiatedException);
+
+        this.setBlock(instantiatedException);
+
+        // TODO TODO TODO set cause appropriately
+        // (and perhaps traceback for py2 if we care before it gets fully deprecated)
+        
+        out("throw ",exc,";");
     }
     else {
         // re-raise
         out("throw $err;");
     }
-};
-
-Compiler.prototype.ctryexcept = function (s) {
-    var check;
-    var next;
-    var handlertype;
-    var handler;
-    var end;
-    var orelse;
-    var unhandled;
-    var i;
-    var n = s.handlers.length;
-
-    // Create a block for each except clause
-    var handlers = [];
-    for (i = 0; i < n; ++i) {
-        handlers.push(this.newBlock("except_" + i + "_"));
-    }
-
-    unhandled = this.newBlock("unhandled");
-    orelse = this.newBlock("orelse");
-    end = this.newBlock("end");
-
-    this.setupExcept(handlers[0]);
-    this.vseqstmt(s.body);
-    this.endExcept();
-    this._jump(orelse);
-
-    for (i = 0; i < n; ++i) {
-        this.setBlock(handlers[i]);
-        handler = s.handlers[i];
-        if (!handler.type && i < n - 1) {
-            throw new SyntaxError("default 'except:' must be last");
-        }
-
-        if (handler.type) {
-            // should jump to next handler if err not isinstance of handler.type
-            handlertype = this.vexpr(handler.type);
-            next = (i == n - 1) ? unhandled : handlers[i + 1];
-
-            // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
-            // var check = this._gr('call', "Sk.misceval.callsimArray(", isinstance, ", [$err, ", handlertype, "])");
-
-            check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
-            this._jumpfalse(check, next);
-        }
-
-        if (handler.name) {
-            this.vexpr(handler.name, "$err");
-        }
-
-        this.vseqstmt(handler.body);
-
-        // Should jump to finally, but finally is not implemented yet
-        this._jump(end);
-    }
-
-    // If no except clause catches exception, throw it again
-    this.setBlock(unhandled);
-    // Should execute finally first
-    out("throw $err;");
-
-    this.setBlock(orelse);
-    this.vseqstmt(s.orelse);
-    this._jump(end);
-
-    this.setBlock(end);
 };
 
 Compiler.prototype.outputFinallyCascade = function (thisFinally) {
@@ -1462,37 +1406,108 @@ Compiler.prototype.outputFinallyCascade = function (thisFinally) {
     }
 };
 
-Compiler.prototype.ctryfinally = function (s) {
+Compiler.prototype.ctry = function (s) {
+    var check;
+    var next;
+    var handlertype;
+    var handler;
+    var end;
+    var orelse;
+    var unhandled;
+    var i;
+    var n = s.handlers.length;
 
-    var finalBody = this.newBlock("finalbody");
-    var exceptionHandler = this.newBlock("finalexh")
-    var exceptionToReRaise = this._gr("finally_reraise", "undefined");
+    var finalBody, finalExceptionHandler, finalExceptionToReRaise;
     var thisFinally;
-    this.u.tempsToSave.push(exceptionToReRaise);
+    if (s.finalbody) {
+        finalBody = this.newBlock("finalbody");
+        finalExceptionHandler = this.newBlock("finalexh")
+        finalExceptionToReRaise = this._gr("finally_reraise", "undefined");
 
-    this.pushFinallyBlock(finalBody);
-    thisFinally = this.peekFinallyBlock();
-    this.setupExcept(exceptionHandler);
+        this.u.tempsToSave.push(finalExceptionToReRaise);
+        this.pushFinallyBlock(finalBody);
+        thisFinally = this.peekFinallyBlock();
+        this.setupExcept(finalExceptionHandler);
+    }
+
+    // Create a block for each except clause
+    var handlers = [];
+    for (i = 0; i < n; ++i) {
+        handlers.push(this.newBlock("except_" + i + "_"));
+    }
+
+    unhandled = this.newBlock("unhandled");
+    orelse = this.newBlock("orelse");
+    end = this.newBlock("end");
+
+    if (handlers.length != 0) {
+        this.setupExcept(handlers[0]);
+    }
     this.vseqstmt(s.body);
-    this.endExcept();
-    // Normal execution falls through to finally body
-    this._jump(finalBody);
+    if (handlers.length != 0) {
+        this.endExcept();
+    }
+    this._jump(orelse);
 
-    this.setBlock(exceptionHandler);
-    // Exception handling also goes to the finally body,
-    // stashing the original exception to re-raise
-    out(exceptionToReRaise,"=$err;");
-    this._jump(finalBody);
+    for (i = 0; i < n; ++i) {
+        this.setBlock(handlers[i]);
+        handler = s.handlers[i];
+        if (!handler.type && i < n - 1) {
+            throw new SyntaxError("default 'except:' must be last");
+        }
 
-    this.setBlock(finalBody);
-    this.popFinallyBlock();
-    this.vseqstmt(s.finalbody);
-    // If finalbody executes normally, AND we have an exception
-    // to re-raise, we raise it.
-    out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+        if (handler.type) {
+            // should jump to next handler if err not isinstance of handler.type
+            handlertype = this.vexpr(handler.type);
+            next = (i == n - 1) ? unhandled : handlers[i + 1];
 
-    this.outputFinallyCascade(thisFinally);
-    // Else, we continue from here.
+            // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
+            // var check = this._gr('call', "Sk.misceval.callsimArray(", isinstance, ", [$err, ", handlertype, "])");
+
+            check = this._gr("instance", "Sk.misceval.isTrue(Sk.builtin.isinstance($err, ", handlertype, "))");
+            this._jumpfalse(check, next);
+        }
+
+        if (handler.name) {
+            this.vexpr(handler.name, "$err");
+        }
+
+        this.vseqstmt(handler.body);
+
+        this._jump(end);
+    }
+
+    // If no except clause catches exception, throw it again
+    this.setBlock(unhandled);
+    out("throw $err;");
+
+    this.setBlock(orelse);
+    this.vseqstmt(s.orelse);
+    this._jump(end);
+
+    this.setBlock(end);
+    // End of the try/catch/else segment
+    if (s.finalbody) {
+        this.endExcept();
+
+        this._jump(finalBody);
+
+        this.setBlock(finalExceptionHandler);
+        // Exception handling also goes to the finally body,
+        // stashing the original exception to re-raise
+        out(exceptionToReRaise,"=$err;");
+        this._jump(finalBody);
+
+        this.setBlock(finalBody);
+        this.popFinallyBlock();
+        this.vseqstmt(s.finalbody);
+        // If finalbody executes normally, AND we have an exception
+        // to re-raise, we raise it.
+        out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+
+        this.outputFinallyCascade(thisFinally);
+        // Else, we continue from here.
+    }
 };
 
 Compiler.prototype.cwith = function (s) {
@@ -2288,7 +2303,9 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.cif(s);
         case Sk.astnodes.Raise:
             return this.craise(s);
-        // TODO compile Try and With here
+        case Sk.astnodes.Try:
+            return this.ctry(s);
+        // TODO compile With here
         case Sk.astnodes.Assert:
             return this.cassert(s);
         case Sk.astnodes.Import:
@@ -2655,6 +2672,7 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     //print("FILE:", filename);
     var parse = Sk.parse(filename, source);
     var ast = Sk.astFromParse(parse.cst, filename, parse.flags);
+    //console.log(ast);
 
     // compilers flags, later we can add other ones too
     var flags = {};

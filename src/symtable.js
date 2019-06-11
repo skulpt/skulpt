@@ -549,13 +549,18 @@ SymbolTable.prototype.visitStmt = function (s) {
             }
             break;
         case Sk.astnodes.Raise:
-            if (s.type) {
-                this.visitExpr(s.type);
+            if (s.exc) {
+                this.visitExpr(s.exc);
+                // Our hacked AST supports both Python 2 (inst, tback)
+                // and Python 3 (cause) versions of the Raise statement
                 if (s.inst) {
                     this.visitExpr(s.inst);
                     if (s.tback) {
                         this.visitExpr(s.tback);
                     }
+                }
+                if (s.cause) {
+                    this.visitExpr(s.cause);
                 }
             }
             break;
@@ -603,6 +608,13 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.visitExpr(s.optional_vars);
             }
             this.SEQStmt(s.body);
+            break;
+
+        case Sk.astnodes.Try:
+            this.SEQStmt(s.body);
+            this.visitExcepthandlers(s.handlers)
+            this.SEQStmt(s.orelse);
+            this.SEQStmt(s.finalbody);
             break;
 
         default:

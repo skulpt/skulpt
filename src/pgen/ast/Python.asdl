@@ -42,7 +42,10 @@ module Python
           | With(withitem* items, stmt* body)
           | AsyncWith(withitem* items, stmt* body)
 
-          | Raise(expr? exc, expr? cause)
+          -- Skulpt hack:
+          -- This is a union of the Python 3-style "raise exc from cause"
+          -- and the Python 2-style "raise exc, inst, tback"
+          | Raise(expr? exc, expr? cause, expr? inst, expr? tback)
           | Try(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
           | Assert(expr test, expr? msg)
 

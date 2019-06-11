@@ -371,13 +371,16 @@ Sk.astnodes.AsyncWith = function AsyncWith(/* {asdl_seq *} */ items, /*
 
 /** @constructor */
 Sk.astnodes.Raise = function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause,
-                                        /* {int} */ lineno, /* {int} */
+                                        /* {expr_ty} */ inst, /* {expr_ty} */
+                                        tback, /* {int} */ lineno, /* {int} */
                                         col_offset)
 {
     Sk.asserts.assert(lineno !== null && lineno !== undefined);
     Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.exc = exc;
     this.cause = cause;
+    this.inst = inst;
+    this.tback = tback;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -1171,7 +1174,9 @@ Sk.astnodes.AsyncWith.prototype._fields = [
 Sk.astnodes.Raise.prototype._astname = "Raise";
 Sk.astnodes.Raise.prototype._fields = [
     "exc", function(n) { return n.exc; },
-    "cause", function(n) { return n.cause; }
+    "cause", function(n) { return n.cause; },
+    "inst", function(n) { return n.inst; },
+    "tback", function(n) { return n.tback; }
 ];
 Sk.astnodes.Try.prototype._astname = "Try";
 Sk.astnodes.Try.prototype._fields = [

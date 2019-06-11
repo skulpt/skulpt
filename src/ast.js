@@ -391,6 +391,7 @@ function astForExceptClause (c, exc, body) {
         return new Sk.astnodes.ExceptHandler(ast_for_expr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
     else if (NCH(exc) === 4) {
+        var expression = ast_for_expr(c, CHILD(exc, 1));
         e = ast_for_expr(c, CHILD(exc, 3));
         setContext(c, e, Sk.astnodes.Store, CHILD(exc, 3));
         return new Sk.astnodes.ExceptHandler(ast_for_expr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
@@ -401,7 +402,7 @@ function astForExceptClause (c, exc, body) {
 function astForTryStmt (c, n) {
     var exceptSt;
     var i;
-    var handlers;
+    var handlers = [];
     var nc = NCH(n);
     var nexcept = (nc - 3) / 3;
     var body, orelse = [],
@@ -433,6 +434,14 @@ function astForTryStmt (c, n) {
         throw new Sk.builtin.SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
     }
 
+    if (nexcept > 0) {
+        /* process except statements to create a try ... except */
+        for (i = 0; i < nexcept; i++) {
+            handlers[i] = astForExceptClause(c, CHILD(n, 3 + i * 3), CHILD(n, 5 + i * 3));
+        }
+    }
+
+    Sk.asserts.assert(!!finally_ || handlers.length != 0);
     return new Sk.astnodes.Try(body, handlers, orelse, finally_, n.lineno, n.col_offset);
 }
 
@@ -1168,22 +1177,34 @@ function ast_for_flow_stmt(c, n)
                               n.end_lineno, n.end_col_offset);
             }
         case SYM.raise_stmt:
+            // This is tricky and Skulpt-specific, because we need to handle
+            // both Python 3-style and Python 2-style 'raise' statements
+            // TODO TODO TODO use parser flags to reject one or the other
+            // as a SyntaxError, depending on __future__ flags
             if (NCH(ch) == 1)
                 return new Sk.astnodes.Raise(null, null, LINENO(n), n.col_offset,
                              n.end_lineno, n.end_col_offset);
             else if (NCH(ch) >= 2) {
                 var cause = null;
                 var expression = ast_for_expr(c, CHILD(ch, 1));
-                if (!expression) {
-                    return null;
-                }
-                if (NCH(ch) == 4) {
+                var inst = null, tback = null;
+
+                // raise [expression] from [cause]
+                if (NCH(ch) == 4 && CHILD(ch, 2).value == 'from') {
                     cause = ast_for_expr(c, CHILD(ch, 3));
                     if (!cause) {
                         return null;
                     }
+                } else if (NCH(ch) >= 4 && CHILD(ch, 2).value == ',') {
+                    // raise [exception_type], [instantiation value] [, [traceback]]
+                    // NB traceback isn't implemented in Skulpt yet
+                    inst = ast_for_expr(c, CHILD(ch, 3));
+
+                    if (NCH(ch) == 6) {
+                        tback = ast_for_expr(c, CHILD(ch, 5));
+                    }
                 }
-                return new Sk.astnodes.Raise(expression, cause, LINENO(n), n.col_offset,
+                return new Sk.astnodes.Raise(expression, cause, inst, tback, LINENO(n), n.col_offset,
                              n.end_lineno, n.end_col_offset);
             }
             /* fall through */
