@@ -430,12 +430,14 @@ Compiler.prototype.cdict = function (e) {
     var v;
     var i;
     var items;
-    Sk.asserts.assert(e.values.length === e.keys.length);
     items = [];
-    for (i = 0; i < e.values.length; ++i) {
-        v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
-        items.push(this.vexpr(e.keys[i]));
-        items.push(v);
+    if (e.keys !== null) {
+        Sk.asserts.assert(e.values.length === e.keys.length);
+        for (i = 0; i < e.values.length; ++i) {
+            v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
+            items.push(this.vexpr(e.keys[i]));
+            items.push(v);
+        }
     }
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };
@@ -570,10 +572,10 @@ Compiler.prototype.ccall = function (e) {
     var i;
     var kwarray;
     var func = this.vexpr(e.func);
-    var args = e.args ? this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.ast.Starred})) : [];
+    var args = e.args ? this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.astnodes.Starred})) : [];
 
     //print(JSON.stringify(e, null, 2));
-    var hasStarArgs = e.args ? e.args.some(function(a) { return a.constructor === Sk.ast.Starred}) : false;
+    var hasStarArgs = e.args ? e.args.some(function(a) { return a.constructor === Sk.astnodes.Starred}) : false;
     if ((e.keywords && e.keywords.length > 0) || hasStarArgs || e.kwargs) {
         kwarray = [];
         for (i = 0; i < e.keywords.length; ++i) {
@@ -588,7 +590,7 @@ Compiler.prototype.ccall = function (e) {
 
         if (hasStarArgs) {
             starargs = e.args
-                .filter(function(a) { return a.constructor === Sk.ast.Starred})
+                .filter(function(a) { return a.constructor === Sk.astnodes.Starred})
                 .map(function(a) { return _this.vexpr(a.value) });
         }
 
@@ -888,7 +890,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.ctuplelistorset(e, data, 'tuple');
         case Sk.astnodes.Set:
             return this.ctuplelistorset(e, data, 'set');
-        case Sk.ast.Starred:
+        case Sk.astnodes.Starred:
             break;
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
@@ -905,7 +907,7 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     Sk.asserts.assert(data === undefined || exprs.length === data.length);
     ret = [];
 
-    // if (exprs.length === 1 && exprs[0].constructor === Sk.ast.Starred) {
+    // if (exprs.length === 1 && exprs[0].constructor === Sk.astnodes.Starred) {
     //     exprs = exprs[0].value;
     // }
 
@@ -1328,7 +1330,7 @@ Compiler.prototype.craise = function (s) {
     // }
     if (s.exc) {
         var exc = this.vexpr(s.exc);
-        if (s.exc.constructor === Sk.ast.Name) {
+        if (s.exc.constructor === Sk.astnodes.Name) {
             // var name = this.nameop(s.exc.id, s.exc.ctx)
             out("if(",exc," instanceof Sk.builtin.type) {",
                 "throw Sk.misceval.callsimArray(", exc, ");",
@@ -1337,7 +1339,7 @@ Compiler.prototype.craise = function (s) {
                 "} else {",
                 "throw ", exc, ";",
                 "}");
-        } else if (s.exc.constructor === Sk.ast.Call) {
+        } else if (s.exc.constructor === Sk.astnodes.Call) {
             out("throw ", exc, ";");
         }
     }

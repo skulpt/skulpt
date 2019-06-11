@@ -1019,12 +1019,12 @@ function ast_for_call(c, n, func, allowgen)
                  * SF bug 132313 points out that complaining about a keyword
                  * then is very confusing.
                  */
-                if (e.constructor === Sk.ast.Lambda) {
+                if (e.constructor === Sk.astnodes.Lambda) {
                     ast_error(c, chch,
                             "lambda cannot contain assignment");
                     return NULL;
                 }
-                else if (e.constructor !== Sk.ast.Name) {
+                else if (e.constructor !== Sk.astnodes.Name) {
                     ast_error(c, chch,
                             "keyword can't be an expression");
                     return NULL;
@@ -1061,7 +1061,7 @@ function ast_for_trailer(c, n, left_expr) {
     REQ(n, SYM.trailer);
     if (TYPE(CHILD(n, 0)) == TOK.T_LPAR) {
         if (NCH(n) == 2)
-            return new Sk.ast.Call(left_expr, NULL, NULL, LINENO(n),
+            return new Sk.astnodes.Call(left_expr, NULL, NULL, LINENO(n),
                         n.col_offset);
         else
             return ast_for_call(c, CHILD(n, 1), left_expr, true);
@@ -2250,7 +2250,7 @@ function parsestr (c, s) {
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
-    if((c.c_flags & Parser.CO_FUTURE_UNICODE_LITERALS || Sk.__future__.unicode_literals === true)) {
+    if((c.c_flags & Sk.Parser.CO_FUTURE_UNICODE_LITERALS || Sk.__future__.unicode_literals === true)) {
         unicode = true;
     }
 
