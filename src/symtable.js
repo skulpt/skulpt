@@ -323,12 +323,14 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
-    len = nodes.length;
-    for (i = 0; i < len; ++i) {
-        val = nodes[i];
-        if (val) {
-            this.visitStmt(val);
+    if (nodes !== null) {
+        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        len = nodes.length;
+        for (i = 0; i < len; ++i) {
+            val = nodes[i];
+            if (val) {
+                this.visitStmt(val);
+            }
         }
     }
 };
@@ -336,12 +338,14 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
-    len = nodes.length;
-    for (i = 0; i < len; ++i) {
-        val = nodes[i];
-        if (val) {
-            this.visitExpr(val);
+    if (nodes !== null) {
+        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        len = nodes.length;
+        for (i = 0; i < len; ++i) {
+            val = nodes[i];
+            if (val) {
+                this.visitExpr(val);
+            }
         }
     }
 };
@@ -700,7 +704,7 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Set:
             this.SEQExpr(e.elts);
             break;
-        case Sk.ast.Starred:
+        case Sk.astnodes.Starred:
             this.visitExpr(e.value);
             break;
         default:
