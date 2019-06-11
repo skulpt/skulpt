@@ -41,7 +41,8 @@ Sk.python2 = {
     bankers_rounding: false,
     python_version: false,
     dunder_next: false,
-    dunder_round: false,
+    dunder_round: false,    
+    dunder_clear: false,
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false
@@ -62,6 +63,7 @@ Sk.python3 = {
     python_version: true,
     dunder_next: true,
     dunder_round: true,
+    dunder_clear: true,
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true
@@ -111,6 +113,7 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.python_version, "Sk.__future__.python_version");
     Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
     Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
+    Sk.bool_check(Sk.__future__.dunder_clear, "Sk.__future__.dunder_clear");
     Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
     Sk.bool_check(Sk.__future__.ceil_floor_int, "Sk.__future__.ceil_floor_int");
@@ -196,6 +199,7 @@ Sk.configure = function (options) {
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);
+    Sk.switch_version("clear$", Sk.__future__.dunder_clear);
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 };
@@ -319,6 +323,11 @@ Sk.setup_method_mappings = function () {
                         Sk.builtin.nmber],
             2: null,
             3: "__round__"
+        },
+        "clear$": {
+            "classes": [Sk.builtin.list],
+            2: null,
+            3: "clear"
         },
         "next$": {
             "classes": [Sk.builtin.dict_iter_,
