@@ -625,7 +625,7 @@ SymbolTable.prototype.visitStmt = function (s) {
 SymbolTable.prototype.visitExpr = function (e) {
     var i;
     Sk.asserts.assert(e !== undefined, "visitExpr called with undefined");
-    //print("  e: ", e.constructor.name);
+    // console.log("  e: ", e.constructor.name);
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:
             this.SEQExpr(e.values);
@@ -684,11 +684,13 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Call:
             this.visitExpr(e.func);
             this.SEQExpr(e.args);
-            // for (i = 0; i < e.keywords.length; ++i) {
-            //     this.visitExpr(e.keywords[i].value);
-            // }
-            // //print(JSON.stringify(e.starargs, null, 2));
-            // //print(JSON.stringify(e.kwargs, null,2));
+            if (e.keywords !== null) {
+                for (i = 0; i < e.keywords.length; ++i) {
+                    this.visitExpr(e.keywords[i].value);
+                }
+            }
+            //print(JSON.stringify(e.starargs, null, 2));
+            //print(JSON.stringify(e.kwargs, null,2));
             // if (e.starargs) {
             //     this.visitExpr(e.starargs);
             // }
