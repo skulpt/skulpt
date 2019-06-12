@@ -683,20 +683,20 @@ SymbolTable.prototype.visitExpr = function (e) {
             break;
         case Sk.astnodes.Call:
             this.visitExpr(e.func);
-            this.SEQExpr(e.args);
-            if (e.keywords !== null) {
-                for (i = 0; i < e.keywords.length; ++i) {
-                    this.visitExpr(e.keywords[i].value);
+            if (e.args) {
+                for (let a of e.args) {
+                    if (a.constructor === Sk.astnodes.Starred) {
+                        this.visitExpr(a.value);
+                    } else {
+                        this.visitExpr(a);
+                    }
                 }
             }
-            //print(JSON.stringify(e.starargs, null, 2));
-            //print(JSON.stringify(e.kwargs, null,2));
-            // if (e.starargs) {
-            //     this.visitExpr(e.starargs);
-            // }
-            // if (e.kwargs) {
-            //     this.visitExpr(e.kwargs);
-            // }
+            if (e.keywords) {
+                for (let k of e.keywords) {
+                    this.visitExpr(k.value);
+                }
+            }
             break;
         case Sk.astnodes.Num:
         case Sk.astnodes.Str:

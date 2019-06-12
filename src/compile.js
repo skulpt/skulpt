@@ -379,20 +379,51 @@ Compiler.prototype._checkSuspension = function(e) {
         out ("if ($ret && $ret.$isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
     }
 };
+Compiler.prototype.cunpackstarstoarray = function(elts) {
+    if (!elts || elts.length == 0) {
+        return "[]";
+    }
+    let arr = this._gr("unpack", "[]")
+    for (let elt of elts) {
+        if (elt.constructor !== Sk.astnodes.Starred) {
+            out(arr,".push(",this.vexpr(elt),");");
+        } else {
+            out("$ret = Sk.misceval.iterFor(Sk.abstr.iter(",this.vexpr(elt.value),"), function(e) { ",arr,".push(e); });");
+            this._checkSuspension();
+        }
+    }
+    return arr;
+}
+
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
     var item;
     var allconsts;
     Sk.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
+
+    let hasStars = false;
+    for (let elt of e.elts) {
+        if (elt.constructor === Sk.astnodes.Starred) { hasStars = true; break; }
+    }
+
     if (e.ctx === Sk.astnodes.Store) {
+        if (hasStars) {
+            // TODO support this in Python 3 mode
+            throw new Sk.builting.SyntaxError("Tuple unpacking with stars is not supported");
+        }
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
-    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to.
-        if (tuporlist === "tuple") {
+    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to. 
+
+        if (hasStars) {
+            // TODO refuse to support this in Python 2 mode
+            return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "'](", this.cunpackstarstoarray(e.elts), ")");
+        }
+        else if (tuporlist === "tuple") {
             allconsts = true;
             items = [];
             for (i = 0; i < e.elts.length; ++i) {
@@ -408,6 +439,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
                 }
                 items.push(item);
             }
+
             if (allconsts) {
                 return this.makeConstant("new Sk.builtin.tuple([" + items + "])");
             } else {
@@ -566,56 +598,56 @@ Compiler.prototype.ccompare = function (e) {
 };
 
 Compiler.prototype.ccall = function (e) {
-    var kwargs;
-    var starargs;
-    var keywords;
-    var i;
-    var kwarray;
     var func = this.vexpr(e.func);
-    var args = e.args ? this.vseqexpr(e.args.filter(function(a) { return a.constructor !== Sk.astnodes.Starred})) : [];
+    
+    // Okay, here's the deal. We have some set of positional args
+    // and we need to unpack them. We have some set of keyword args
+    // and we need to unpack those too. Then we make a call.
+    // The existing Sk.misceval.call() and .apply() signatures do not
+    // help us here; we do it by hand.
+    // This is less than optimal (yep, that's the @rixner bat-sign),
+    // but should be correct.
 
-    //print(JSON.stringify(e, null, 2));
-    var hasStarArgs = e.args ? e.args.some(function(a) { return a.constructor === Sk.astnodes.Starred}) : false;
-    if ((e.keywords && e.keywords.length > 0) || hasStarArgs || e.kwargs) {
+    let positionalArgs = this.cunpackstarstoarray(e.args);
+    let keywordArgs = "undefined";
+
+    if (e.keywords && e.keywords.length > 0) {
+        let hasStars = false;
         kwarray = [];
-        for (i = 0; i < e.keywords.length; ++i) {
-            kwarray.push("'" + e.keywords[i].arg.v + "'");
-            kwarray.push(this.vexpr(e.keywords[i].value));
+        for (let kw of e.keywords) {
+            if (kw.arg) {
+                kwarray.push("'" + kw.arg.v + "'");
+                kwarray.push(this.vexpr(kw.value));
+            } else {
+                hasStars = true;
+            }
         }
-        keywords = "[" + kwarray.join(",") + "]";
-        starargs = "undefined";
-        kwargs = "undefined";
-
-        var _this = this;
-
-        if (hasStarArgs) {
-            starargs = e.args
-                .filter(function(a) { return a.constructor === Sk.astnodes.Starred})
-                .map(function(a) { return _this.vexpr(a.value) });
+        keywordArgs = "[" + kwarray.join(",") + "]";
+        if (hasStars) {
+            keywordArgs = this._gr("keywordArgs", keywordArgs);
+            for (let kw of e.keywords) {
+                if (!kw.arg) {
+                    out("$ret = Sk.abstr.mappingUnpackInto(",keywordArgs,",",this.vexpr(kw.value),");");
+                    this._checkSuspension();
+                }
+            }
         }
-
-        if (e.kwargs) {
-            kwargs = this.vexpr(e.kwargs);
-        }
-        out ("$ret;"); // This forces a failure if $ret isn't defined
-        out ("$ret = Sk.misceval.callOrSuspend(", func, ",", kwargs, ",", starargs, ",", keywords, args.length > 0 ? "," : "", args, ");");
     }
-    else {
-        out ("$ret;"); // This forces a failure if $ret isn't defined
-        if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super" && args.length == 0) {
-            // make sure there is a self variable
-            // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
-            // so we should probably add self to the mangling
-            // TODO: feel free to ignore the above
-            out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
-            args.push("$gbl.__class__");
-            args.push("self");
-        }
-        if (args.length > 0) {
-            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ", [", args, "]);");
-        } else {
-            out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ");");
-        }
+
+    if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super" && positionalArgs === "[]") {
+        // make sure there is a self variable
+        // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
+        // so we should probably add self to the mangling
+        // TODO: feel free to ignore the above
+        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
+        positionalArgs = "[$gbl.__class__,self]";
+    }
+    if (keywordArgs !== "undefined") {
+        out("$ret = Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
+    } else if (positionalArgs != "[]") {
+        out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ", ", positionalArgs, ");");
+    } else {
+        out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ");");
     }
 
     this._checkSuspension(e);

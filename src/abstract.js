@@ -667,6 +667,21 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
     return res;
 };
 
+// Unpack mapping into a JS array of alternating keys/values, possibly suspending
+Sk.abstr.mappingUnpackInto = function(jsArray, pyMapping) {
+    return Sk.misceval.chain(pyMapping.tp$getattr(new Sk.builtin.str("items")),
+        function(itemfn) {
+            if (!itemfn) { throw new Sk.builtin.TypeError("Object is not a mapping"); }
+            return Sk.misceval.callsimOrSuspend(itemfn);
+        }, function(items) {
+            return Sk.misceval.iterFor(Sk.abstr.iter(items), function(item) {
+                if (!item || !item.v) { throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples"); }
+                jsArray.push(item.v[0], item.v[1]);
+            });
+        }
+    );
+}
+
 //
 // Object
 //
