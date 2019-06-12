@@ -176,7 +176,7 @@ var ContStr = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
                 group("'", '\\\\\\r?\\n'),
                 StringPrefix + '"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
                 group('"', '\\\\\\r?\\n'))
-var PseudoExtras = group('\\\\\\r?\\n|\\Z', Comment_, Triple);
+var PseudoExtras = group('\\\\\\r?\\n|$', Comment_, Triple);
 
 // For a given string prefix plus quotes, endpats maps it to a regex
 //  to match the remainder of that string. _prefix can be empty, for
