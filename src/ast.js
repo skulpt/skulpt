@@ -1182,7 +1182,7 @@ function ast_for_flow_stmt(c, n)
             // TODO TODO TODO use parser flags to reject one or the other
             // as a SyntaxError, depending on __future__ flags
             if (NCH(ch) == 1)
-                return new Sk.astnodes.Raise(null, null, LINENO(n), n.col_offset,
+                return new Sk.astnodes.Raise(null, null, null, null, LINENO(n), n.col_offset,
                              n.end_lineno, n.end_col_offset);
             else if (NCH(ch) >= 2) {
                 var cause = null;

@@ -1356,20 +1356,20 @@ Compiler.prototype.cfor = function (s) {
 
 Compiler.prototype.craise = function (s) {
     if (s.exc) {
-        var exc = this.vexpr(s.exc);
+        var exc = this._gr("exc", this.vexpr(s.exc));
         // This is tricky - we're supporting both the weird-ass semantics
         // of the Python 2 "raise (exc), (inst), (tback)" version,
         // plus the sensible Python "raise (exc) from (cause)".
 
         var instantiatedException = this.newBlock("exception now instantiated");
-        var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type");
-        this._jumpfalse(instantiatedException, isClass);
+        var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type || " + exc + ".prototype instanceof Sk.builtin.BaseException");
+        this._jumpfalse(isClass, instantiatedException);
+        //this._jumpfalse(instantiatedException, isClass);
 
         // Instantiate exc with inst
         if (s.inst) {
             // TODO TODO raise a SyntaxError if you tried to use this syntax in Py3 mode
-            var inst = this.vexpr(s.inst);
-            var instsym = this.gensym("inst");
+            var inst = this._gr("inst", this.vexpr(s.inst));
             out("if(!(",inst," instanceof Sk.builtin.tuple)) {",
                 inst,"= new Sk.builtin.tuple([",inst,"]);",
                 "}");
