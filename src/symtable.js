@@ -334,6 +334,7 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
         }
     }
 };
+
 SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
@@ -601,13 +602,8 @@ SymbolTable.prototype.visitStmt = function (s) {
             // nothing
             break;
         case Sk.astnodes.With:
-            this.newTmpname(s.lineno);
-            this.visitExpr(s.context_expr);
-            if (s.optional_vars) {
-                this.newTmpname(s.lineno);
-                this.visitExpr(s.optional_vars);
-            }
-            this.SEQStmt(s.body);
+            VISIT_SEQ(this.visit_withitem.bind(this), s.items);
+            VISIT_SEQ(this.visitStmt.bind(this), s.body);
             break;
 
         case Sk.astnodes.Try:
@@ -621,6 +617,22 @@ SymbolTable.prototype.visitStmt = function (s) {
             Sk.asserts.fail("Unhandled type " + s.constructor.name + " in visitStmt");
     }
 };
+
+SymbolTable.prototype.visit_withitem = function(item) {
+    this.visitExpr(item.context_expr);
+    if (item.optional_vars) {
+        this.visitExpr(item.optional_vars);
+    }
+}
+
+
+function VISIT_SEQ(visitFunc, seq) {
+    var i;
+    for (i = 0; i < seq.length; i++) {
+        var elt = seq[i];
+        visitFunc(elt)
+    }
+}
 
 SymbolTable.prototype.visitExpr = function (e) {
     var i;

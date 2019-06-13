@@ -517,8 +517,8 @@ function astForDecorated (c, n) {
 
 
 /* with_item: test ['as' expr] */
-function astForWithItem (c, n, content) {
-    var expr_ty, context_expr, optional_vars;
+function ast_for_with_item (c, n) {
+    var context_expr, optional_vars;
     REQ(n, SYM.with_item);
     context_expr = ast_for_expr(c, CHILD(n, 0));
     if (NCH(n) == 3) {
@@ -526,34 +526,29 @@ function astForWithItem (c, n, content) {
         setContext(c, optional_vars, Sk.astnodes.Store, n);
     }
 
-    return new With(context_expr, optional_vars, content, n.lineno, n.col_offset);
+    return new Sk.astnodes.withitem(context_expr, optional_vars);
 }
 
-function astForWithStmt (c, n) {
-    /* with_stmt: 'with' with_item (',' with_item)* ':' suite */
-    var i;
-    var ret
-    var inner;
+/* with_stmt: 'with' with_item (',' with_item)* ':' suite */
+function ast_for_with_stmt(c, n0, is_async) {
+    const n = is_async ? CHILD(n0, 1) : n0;
+    var i
+    var items = [], body;
 
-    REQ(n, SYM.with_stmt)
+    REQ(n, SYM.with_stmt);
 
-    /* process the with items inside-out */
-    i = NCH(n) -1 
-    /* the suite of the innermost with item is the suite of the with stmt */
-    inner = astForSuite(c, CHILD(n,i));
+    for (i = 1; i < NCH(n) - 2; i += 2) {
+        var item = ast_for_with_item(c, CHILD(n, i));
+        items[(i - 1) / 2] = item;
+    }
 
-    while (true) {
-        i-=2;
-        ret = astForWithItem(c, CHILD(n, i), inner)
-        /* was this the last item? */
-        if (i == 1) {
-            break;
-        }
+    body = astForSuite(c, CHILD(n, NCH(n) - 1));
 
-        inner = [ret];
-    } 
-
-    return ret
+    if (is_async) {
+        return new Sk.astnodes.AsyncWith(items, body, LINENO(n0), n0.col_offset);
+    } else {
+        return new Sk.astnodes.With(items, body, LINENO(n), n.col_offset);
+    }
 }
 
 function astForExecStmt (c, n) {
@@ -2601,6 +2596,22 @@ function ast_for_atom(c, n)
     }
 }
 
+function ast_for_setdisplay(c, n) {
+    var i;
+    var elts = [];
+
+    Sk.asserts.assert(TYPE(n) === SYM.dictorsetmaker);
+
+    for (i = 0; i < NCH(n); i += 2) {
+        var expression;
+        expression = ast_for_expr(c, CHILD(n, i));
+        elts[i / 2] = expression;
+    }
+
+    return new Sk.astnodes.Set(elts, LINENO(n), n.col_offset);
+}
+
+
 function astForAtom(c, n) {
     /* atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']'
        | '{' [dictmaker|testlist_comp] '}' | NAME | NUMBER | STRING+
@@ -3007,7 +3018,7 @@ function astForStmt (c, n) {
             case SYM.try_stmt:
                 return astForTryStmt(c, ch);
             case SYM.with_stmt:
-                return astForWithStmt(c, ch);
+                return ast_for_with_stmt(c, ch);
             case SYM.funcdef:
                 return astForFuncdef(c, ch, []);
             case SYM.classdef:
