@@ -2596,6 +2596,22 @@ function ast_for_atom(c, n)
     }
 }
 
+function ast_for_setdisplay(c, n) {
+    var i;
+    var elts = [];
+
+    Sk.asserts.assert(TYPE(n) === SYM.dictorsetmaker);
+
+    for (i = 0; i < NCH(n); i += 2) {
+        var expression;
+        expression = ast_for_expr(c, CHILD(n, i));
+        elts[i / 2] = expression;
+    }
+
+    return new Sk.astnodes.Set(elts, LINENO(n), n.col_offset);
+}
+
+
 function astForAtom(c, n) {
     /* atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']'
        | '{' [dictmaker|testlist_comp] '}' | NAME | NUMBER | STRING+
