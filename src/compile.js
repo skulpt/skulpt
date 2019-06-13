@@ -1545,7 +1545,7 @@ Compiler.prototype.ctry = function (s) {
     }
 };
 
-Compiler.prototype.cwith = function (s) {
+Compiler.prototype.cwith = function (s, itemIdx) {
     var mgr, exit, value, exception;
     var exceptionHandler = this.newBlock("withexh"), tidyUp = this.newBlock("withtidyup");
     var carryOn = this.newBlock("withcarryon");
@@ -1555,7 +1555,7 @@ Compiler.prototype.cwith = function (s) {
     // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
     // presumably for performance reasons.
 
-    mgr = this._gr("mgr", this.vexpr(s.context_expr));
+    mgr = this._gr("mgr", this.vexpr(s.items[itemIdx]));
 
     // exit = mgr.__exit__
     out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$exit, true);");
@@ -1581,7 +1581,15 @@ Compiler.prototype.cwith = function (s) {
     }
 
     //    (try body)
-    this.vseqstmt(s.body);
+
+    if (itemIdx +1 < s.items.length) {
+        // "with" statements with multiple items (context managers) are
+        // treated as nested "with" statements
+        this.cwith(s, itemIdx + 1);
+    } else {
+        this.vseqstmt(s.body);
+    }
+
     this.endExcept();
     this._jump(tidyUp);
 
@@ -2340,7 +2348,8 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.craise(s);
         case Sk.astnodes.Try:
             return this.ctry(s);
-        // TODO compile With here
+        case Sk.astnodes.With:
+            return this.cwith(s, 0);
         case Sk.astnodes.Assert:
             return this.cassert(s);
         case Sk.astnodes.Import:
