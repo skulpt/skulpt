@@ -1122,6 +1122,7 @@ function ast_for_trailer(c, n, left_expr) {
             /* extract Index values and put them in a Tuple */
             elts = [];
             for (j = 0; j < slices.length; ++j) {
+                // @meredydd any idea how we reach this?
                 slc = slices[j];
                 Sk.asserts.assert(slc.kind == _slice_kind.Index_kind  && slc.v.Index.value);
                 elts[j] = slc.v.Index.value;
