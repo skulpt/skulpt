@@ -380,8 +380,8 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
 
         for (let i = co_argcount; i < totalArgs; i++) {
             if (args[i] === undefined) {
-                if (kwdefs.hasOwnProperty(varnames[i])) {
-                    args[i] = kwdefs[varnames[i]];
+                if (kwdefs[i-co_argcount] !== undefined) {
+                    args[i] = kwdefs[i-co_argcount];
                 } else {
                     missing.push(varnames[i]);
                 }

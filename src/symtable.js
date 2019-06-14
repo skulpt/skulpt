@@ -398,6 +398,9 @@ SymbolTable.prototype.visitArguments = function (a, lineno) {
     if (a.args) {
         this.visitParams(a.args, true);
     }
+    if (a.kwonlyargs) {
+        this.visitParams(a.kwonlyargs, true);
+    }
     if (a.vararg) {
         this.addDef(a.vararg.arg, DEF_PARAM, lineno);
         this.cur.varargs = true;
