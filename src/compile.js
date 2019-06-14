@@ -241,6 +241,7 @@ function mangleName (priv, ident) {
     var name = ident.v;
     var strpriv = null;
 
+
     if (priv === null || name === null || name.charAt(0) !== "_" || name.charAt(1) !== "_") {
         return ident;
     }
@@ -1830,14 +1831,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         for (i = 0; args && i < args.args.length; ++i) {
             funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
         }
+        if (vararg) {
+            funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
+        }
     }
     if (hasFree) {
-        if (vararg) {
-            this.u.varDeclsCode += "$free = arguments[arguments.length-1];"
-        } else {
-            funcArgs.push("$free");
-            this.u.tempsToSave.push("$free");
-        }
+        funcArgs.push("$free");
+        this.u.tempsToSave.push("$free");
     }
 
     this.u.prefixCode += funcArgs.join(",");
@@ -1889,7 +1889,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // initialize default arguments. we store the values of the defaults to
     // this code object as .$defaults just below after we exit this scope.
     //
-    if (defaults.length > 0) {
+    if (isGenerator && defaults.length > 0) {
         // defaults have to be "right justified" so if there's less defaults
         // than args we offset to make them match up (we don't need another
         // correlation in the ast)
@@ -1910,28 +1910,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
         }
     }
-
-    //
-    // make sure correct number of arguments were passed (generators handled below)
-    //
-    if (!isGenerator) {
-        minargs = args ? args.args.length - defaults.length : 0;
-        maxargs = vararg ? Infinity : (args ? args.args.length : 0);
-        kw = kwarg ? true : false;
-        this.u.varDeclsCode += "Sk.builtin.pyCheckArgsLen(\"" + coname.v +
-            "\", arguments.length, " + minargs + ", " + maxargs + ", " + kw +
-            ", " + hasFree + ");";
-    }
-
-    //
-    // initialize vararg, if any
-    //
-    if (vararg) {
-        start = funcArgs.length;
-
-        this.u.localnames.push(vararg.arg.v);
-        this.u.varDeclsCode += vararg.arg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
-        this.u.varDeclsCode += "$gbl['" + vararg.arg.v + "']=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + (hasFree ? ",-1)" : ")") + "); /*vararg*/";
+    if (vararg && this.isCell(vararg.arg)) {
+        this.u.varDeclsCode += "$cell." + vararg.arg.v + "=" + vararg.arg.v + ";";
     }
 
     //
@@ -1940,6 +1920,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (kwarg) {
         this.u.localnames.push(kwarg.arg.v);
         this.u.varDeclsCode += kwarg.arg.v + "=new Sk.builtins['dict']($kwa);";
+        if (this.isCell(kwarg.arg)) {
+            this.u.varDeclsCode += "$cell." + kwarg.arg.v + "=" + kwarg.arg.v + ";";
+        }
     }
 
     //
@@ -2009,6 +1992,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     if (argnames) {
         out(scopename, ".co_varnames=['", argnames, "'];");
+    } else {
+        out(scopename, ".co_varnames=[];");
     }
 
     //
@@ -2016,6 +2001,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     if (kwarg) {
         out(scopename, ".co_kwargs=1;");
+    }
+    if (vararg) {
+        out(scopename, ".co_varargs=1;");
     }
 
     //

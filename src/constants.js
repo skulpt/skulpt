@@ -18,11 +18,11 @@ Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builti
 
 // Sk.builtin.int_
 Sk.builtin.int_.co_varnames = [ "number", "base" ];
-Sk.builtin.int_.$defaults = [ Sk.builtin.none.none$ ];
+Sk.builtin.int_.$defaults = [ 0, Sk.builtin.none.none$ ];
 
 // Sk.builtin.lng
 Sk.builtin.lng.co_varnames = [ "number", "base" ];
-Sk.builtin.lng.$defaults = [ Sk.builtin.none.none$ ];
+Sk.builtin.lng.$defaults = [ 0, Sk.builtin.none.none$ ];
 
 // Sk.builtin.sorted
 Sk.builtin.sorted.co_varnames = ["list", "cmp", "key", "reverse"];
