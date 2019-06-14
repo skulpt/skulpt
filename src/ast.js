@@ -1315,7 +1315,7 @@ function astForArguments (c, n) {
     if (n.type === SYM.parameters) {
         if (NCH(n) === 2) // () as arglist
         {
-            return new Sk.astnodes.arguments([], null, [], [], null, []);
+            return new Sk.astnodes.arguments_([], null, [], [], null, []);
         }
         n = CHILD(n, 1);
     }
@@ -1384,7 +1384,7 @@ function astForArguments (c, n) {
                 return;
         }
     }
-    return new Sk.astnodes.arguments(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
+    return new Sk.astnodes.arguments_(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
 }
 
 function ast_for_funcdef(c, n, decorator_seq) {
@@ -1418,7 +1418,7 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
     if (forbiddenCheck(c, name, CHILD(n, name_i), 0)) {
         return NULL;
     }
-    args = ast_for_arguments(c, CHILD(n, name_i + 1));
+    args = astForArguments(c, CHILD(n, name_i + 1));
     if (!args) {
         return NULL;
     }
@@ -1429,13 +1429,15 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
         }
         name_i += 2;
     }
-    // if (TYPE(CHILD(n, name_i + 3)) == TOK.T_TYPE_COMMENT) {
-    //     type_comment = TOK.T_NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
-    //     if (!type_comment)
-    //         return NULL;
-    //     name_i += 1;
-    // }
-    body = ast_for_suite(c, CHILD(n, name_i + 3));
+
+    if (TYPE(CHILD(n, name_i + 3)) == TOK.T_TYPE_COMMENT) {
+        type_comment = TOK.T_NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
+        if (!type_comment)
+            return NULL;
+        name_i += 1;
+    }
+
+    body = astForSuite(c, CHILD(n, name_i + 3));
     if (!body) {
         return NULL;
     }
@@ -1462,47 +1464,6 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
     else
         return new Sk.astnodes.FunctionDef(name, args, body, decorator_seq, returns, type_comment,
                            LINENO(n), n.col_offset, end_lineno, end_col_offset);
-}
-
-function astForFuncdef(c, n0, decorator_seq, is_async)
-{
-    /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
-    var n = is_async ? CHILD(n0, 1) : n0;
-    var name;
-    var args;
-    var body = [];
-    var returns = null;
-    var name_i = 1;
-
-    REQ(n, SYM.funcdef);
-
-    forbiddenCheck(c, CHILD(n, name_i), CHILD(n, name_i).value, n.lineno);
-    name = strobj(CHILD(n, name_i).value);
-    args = astForArguments(c, CHILD(n, name_i + 1));
-    if (CHILD(n, name_i+2).type == TOK.T_RARROW) {
-        returns = ast_for_expr(c, CHILD(n, name_i + 3));
-        name_i += 2;
-    }
-    body = astForSuite(c, CHILD(n, name_i + 3));
-
-    if (is_async)
-        return new Sk.astnodes.AsyncFunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
-                                            n0.lineno, n0.col_offset);
-    else
-        return new Sk.astnodes.FunctionDef(name, args, body, decorator_seq, returns, null /*docstring*/,
-                                        n.lineno, n.col_offset);
-}
-
-function astForAsyncFuncdef(c, n, decorator_seq)
-{
-    /* async_funcdef: 'async' funcdef */
-    REQ(n, SYM.async_funcdef);
-    REQ(CHILD(n, 0), TOK.T_NAME);
-    Sk.asserts.assert(CHILD(n, 0).value === "async");
-    REQ(CHILD(n, 1), SYM.funcdef);
-
-    return astForFuncdefImpl(c, n, decorator_seq,
-                                true /* is_async */);
 }
 
 function astForClassBases (c, n) {
@@ -1562,7 +1523,7 @@ function astForLambdef (c, n) {
     var args;
     var expression;
     if (NCH(n) === 3) {
-        args = new Sk.astnodes.arguments([], null, null, []);
+        args = new Sk.astnodes.arguments_([], null, null, []);
         expression = ast_for_expr(c, CHILD(n, 2));
     }
     else {
@@ -3020,7 +2981,7 @@ function astForStmt (c, n) {
             case SYM.with_stmt:
                 return ast_for_with_stmt(c, ch);
             case SYM.funcdef:
-                return astForFuncdef(c, ch, []);
+                return ast_for_funcdef(c, ch, []);
             case SYM.classdef:
                 return astForClassdef(c, ch, []);
             case SYM.decorated:
