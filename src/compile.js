@@ -1758,8 +1758,7 @@ Compiler.prototype.cfromimport = function (s) {
 Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, callback, class_for_super) {
     var containingHasFree;
     var frees;
-    var argnamesarr;
-    var argnames;
+    var argnamesarr = [];
     var start;
     var kw;
     var maxargs;
@@ -1778,6 +1777,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     var scopename;
     var decos = [];
     var defaults = [];
+    var kw_defaults = [];
     var vararg = null;
     var kwarg = null;
 
@@ -1790,6 +1790,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (args && args.defaults) {
         defaults = this.vseqexpr(args.defaults);
+    }
+    if (args && args.kw_defaults) {
+        kw_defaults = args.kw_defaults.map(e => e ? this.vexpr(e) : 'undefined');
     }
     if (args && args.vararg) {
         vararg = args.vararg;
@@ -1816,6 +1819,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     funcArgs = [];
     if (isGenerator) {
+        // TODO make generators deal with arguments properly
         if (kwarg) {
             throw new SyntaxError(coname.v + "(): keyword arguments in generators not supported");
         }
@@ -1831,6 +1835,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
         for (i = 0; args && i < args.args.length; ++i) {
             funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
+        }
+        // TODO blow up if we try to do this in Python 2
+        for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
+            funcArgs.push(this.nameop(args.kwonlyargs[i].arg, Sk.astnodes.Param));
         }
         if (vararg) {
             funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
@@ -1886,6 +1894,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
 
+    // TODO update generators to do their arg checks in outside generated code,
+    // like functions do
+    //
     // this could potentially get removed if generators would learn to deal with args, kw, kwargs, varargs
     // initialize default arguments. we store the values of the defaults to
     // this code object as .$defaults just below after we exit this scope.
@@ -1907,6 +1918,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     for (i = 0; args && i < args.args.length; ++i) {
         id = args.args[i].arg;
+        if (this.isCell(id)) {
+            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+        }
+    }
+    for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
+        id = args.kwonlyargs[i].arg;
         if (this.isCell(id)) {
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
         }
@@ -1958,13 +1975,14 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // get a list of all the argument names (used to attach to the code
     // object, and also to allow us to declare only locals that aren't also
     // parameters).
-    if (args && args.args.length > 0) {
-        argnamesarr = [];
-        for (i = 0; i < args.args.length; ++i) {
-            argnamesarr.push(args.args[i].arg.v);
+    if (args) {
+        for (let arg of args.args) {
+            argnamesarr.push(arg.arg.v);
+        }
+        for (let arg of args.kwonlyargs || []) {
+            argnamesarr.push(arg.arg.v);
         }
 
-        argnames = argnamesarr.join("', '");
         // store to unit so we know what local variables not to declare
         this.u.argnames = argnamesarr;
     }
@@ -1982,6 +2000,11 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (defaults.length > 0) {
         out(scopename, ".$defaults=[", defaults.join(","), "];");
     }
+    if (args && args.kwonlyargs && args.kwonlyargs.length > 0) {
+        out(scopename, ".co_argcount=", args.args.length, ";");
+        out(scopename, ".co_kwonlyargcount=", args.kwonlyargs.length, ";");
+        out(scopename, ".$kwdefs=[", kw_defaults.join(","), "];");
+    }
 
     if (decos.length > 0) {
         out(scopename, ".$decorators=[", decos.join(","), "];");
@@ -1991,8 +2014,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // attach co_varnames (only the argument names) for keyword argument
     // binding.
     //
-    if (argnames) {
-        out(scopename, ".co_varnames=['", argnames, "'];");
+    if (argnamesarr.length > 0) {
+        out(scopename, ".co_varnames=['", argnamesarr.join("','"), "'];");
     } else {
         out(scopename, ".co_varnames=[];");
     }
