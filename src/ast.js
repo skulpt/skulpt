@@ -934,11 +934,9 @@ function ast_for_call(c, n, func, allowgen)
                 nargs++;
                 if (!allowgen) {
                     ast_error(c, ch, "invalid syntax");
-                    return NULL;
                 }
                 if (NCH(n) > 1) {
                     ast_error(c, ch, "Generator expression must be parenthesized");
-                    return NULL;
                 }
             } else if (TYPE(CHILD(ch, 0)) == TOK.T_STAR) {
                 nargs++;
@@ -972,7 +970,6 @@ function ast_for_call(c, n, func, allowgen)
                                 "positional argument follows " +
                                 "keyword argument");
                     }
-                    return NULL;
                 }
                 e = ast_for_expr(c, chch);
                 if (!e) {
