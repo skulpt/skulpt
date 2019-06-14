@@ -129,7 +129,7 @@ Sk.astnodes.Suite = function Suite(/* {asdl_seq *} */ body)
 
 /** @constructor */
 Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
-                                                    {arguments_ty} */ args, /*
+                                                    {arguments__ty} */ args, /*
                                                     {asdl_seq *} */ body, /*
                                                     {asdl_seq *} */
                                                     decorator_list, /*
@@ -154,8 +154,8 @@ Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
 /** @constructor */
 Sk.astnodes.AsyncFunctionDef = function AsyncFunctionDef(/* {identifier} */
                                                               name, /*
-                                                              {arguments_ty} */
-                                                              args, /*
+                                                              {arguments__ty}
+                                                              */ args, /*
                                                               {asdl_seq *} */
                                                               body, /*
                                                               {asdl_seq *} */
@@ -583,9 +583,9 @@ Sk.astnodes.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
 }
 
 /** @constructor */
-Sk.astnodes.Lambda = function Lambda(/* {arguments_ty} */ args, /* {expr_ty} */
-                                          body, /* {int} */ lineno, /* {int} */
-                                          col_offset)
+Sk.astnodes.Lambda = function Lambda(/* {arguments__ty} */ args, /* {expr_ty}
+                                          */ body, /* {int} */ lineno, /* {int}
+                                          */ col_offset)
 {
     Sk.asserts.assert(lineno !== null && lineno !== undefined);
     Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
@@ -1012,12 +1012,13 @@ Sk.astnodes.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
 }
 
 /** @constructor */
-Sk.astnodes.arguments = function arguments(/* {asdl_seq *} */ args, /* {arg_ty}
-                                                */ vararg, /* {asdl_seq *} */
-                                                kwonlyargs, /* {asdl_seq *} */
-                                                kw_defaults, /* {arg_ty} */
-                                                kwarg, /* {asdl_seq *} */
-                                                defaults)
+Sk.astnodes.arguments_ = function arguments_(/* {asdl_seq *} */ args, /*
+                                                  {arg_ty} */ vararg, /*
+                                                  {asdl_seq *} */ kwonlyargs,
+                                                  /* {asdl_seq *} */
+                                                  kw_defaults, /* {arg_ty} */
+                                                  kwarg, /* {asdl_seq *} */
+                                                  defaults)
 {
     this.args = args;
     this.vararg = vararg;
@@ -1473,8 +1474,8 @@ Sk.astnodes.ExceptHandler.prototype._fields = [
     "name", function(n) { return n.name; },
     "body", function(n) { return n.body; }
 ];
-Sk.astnodes.arguments.prototype._astname = "arguments";
-Sk.astnodes.arguments.prototype._fields = [
+Sk.astnodes.arguments_.prototype._astname = "arguments";
+Sk.astnodes.arguments_.prototype._fields = [
     "args", function(n) { return n.args; },
     "vararg", function(n) { return n.vararg; },
     "kwonlyargs", function(n) { return n.kwonlyargs; },
