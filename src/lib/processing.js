@@ -1341,16 +1341,18 @@ var $builtinmodule = function (name) {
     // NOTE: difference with ProcessingJS
     // Use environment.focused
 
-    mod.width = new Sk.builtin.int_(100);
-    mod.height = new Sk.builtin.int_(100);
+    mod.width = new Sk.builtin.int_(0);
+    mod.height = new Sk.builtin.int_(0);
+    mod.renderMode = mod.P2D;
 
     mod.size = new Sk.builtin.func(function (w, h, mode) {
         if (typeof(mode) === "undefined") {
             mode = mod.P2D;
         }
         mod.processing.size(w.v, h.v, mode.v);
-	mod.width = new Sk.builtin.int_(mod.processing.width);
-	mod.height = new Sk.builtin.int_(mod.processing.height);
+        mod.width = new Sk.builtin.int_(mod.processing.width);
+        mod.height = new Sk.builtin.int_(mod.processing.height);
+        mod.renderMode = mode;
     });
 
     mod.exitp = new Sk.builtin.func(function (h, w) {
@@ -1568,7 +1570,11 @@ var $builtinmodule = function (name) {
             instance.exit();
         }
         mod.p = new window.Processing(canvas, sketchProc);
-
+        if (mod.width.v === 0 && mod.height.v === 0) {
+            var width = canvas.offsetWidth;
+            var height = canvas.offsetHeight;
+            Sk.misceval.callsimArray(mod.size, [new Sk.builtin.int_(width), new Sk.builtin.int_(height), mod.renderMode]);
+        }
 
     });
 
