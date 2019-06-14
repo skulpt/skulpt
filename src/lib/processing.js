@@ -1550,15 +1550,9 @@ var $builtinmodule = function (name) {
         }
 
         var canvas = document.getElementById(Sk.canvas);
-        if (canvas.tagName !== "CANVAS") {
-            var mydiv = canvas;
-            canvas = document.createElement('canvas');
-            while (mydiv.firstChild) {
-                mydiv.removeChild(mydiv.firstChild);
-            }
-            mydiv.appendChild(canvas);
+        if (!canvas) {
+            throw new Error("Processing module: Canvas element not specified")
         }
-        window.$(canvas).show();
         window.Processing.logger = { log : function(message) {
             Sk.misceval.print_(message);
         }};
