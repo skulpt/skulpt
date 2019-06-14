@@ -116,15 +116,13 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     }
 
 
-    // compile internal python files and add them to the __builtin__ module
-    // TODO get these compiling
-    // for (var file in Sk.internalPy.files) {
-    //     var fileWithoutExtension = file.split(".")[0].split("/")[1];
-    //     var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-    //     mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-    //     Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
-    //     Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
-    // }
+    for (var file in Sk.internalPy.files) {
+        var fileWithoutExtension = file.split(".")[0].split("/")[1];
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
+        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+        Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+    }
 };
 
 /**
