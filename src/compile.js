@@ -1454,6 +1454,7 @@ Compiler.prototype.ctry = function (s) {
 
     var finalBody, finalExceptionHandler, finalExceptionToReRaise;
     var thisFinally;
+
     if (s.finalbody) {
         finalBody = this.newBlock("finalbody");
         finalExceptionHandler = this.newBlock("finalexh")
@@ -1530,7 +1531,7 @@ Compiler.prototype.ctry = function (s) {
         this.setBlock(finalExceptionHandler);
         // Exception handling also goes to the finally body,
         // stashing the original exception to re-raise
-        out(exceptionToReRaise,"=$err;");
+        out(finalExceptionToReRaise,"=$err;");
         this._jump(finalBody);
 
         this.setBlock(finalBody);
@@ -1538,7 +1539,7 @@ Compiler.prototype.ctry = function (s) {
         this.vseqstmt(s.finalbody);
         // If finalbody executes normally, AND we have an exception
         // to re-raise, we raise it.
-        out("if(",exceptionToReRaise,"!==undefined) { throw ",exceptionToReRaise,";}");
+        out("if(",finalExceptionToReRaise,"!==undefined) { throw ",finalExceptionToReRaise,";}");
 
         this.outputFinallyCascade(thisFinally);
         // Else, we continue from here.
@@ -1555,7 +1556,7 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
     // presumably for performance reasons.
 
-    mgr = this._gr("mgr", this.vexpr(s.items[itemIdx]));
+    mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
     out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$exit, true);");
