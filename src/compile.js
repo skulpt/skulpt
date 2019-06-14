@@ -1577,8 +1577,8 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     this.setupExcept(exceptionHandler);
 
     //    VAR = value
-    if (s.optional_vars) {
-        this.nameop(s.optional_vars.id, Sk.astnodes.Store, value);
+    if (s.items[itemIdx].optional_vars) {
+        this.nameop(s.items[itemIdx].optional_vars.id, Sk.astnodes.Store, value);
     }
 
     //    (try body)
