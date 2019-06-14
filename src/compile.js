@@ -628,7 +628,7 @@ Compiler.prototype.ccall = function (e) {
             keywordArgs = this._gr("keywordArgs", keywordArgs);
             for (let kw of e.keywords) {
                 if (!kw.arg) {
-                    out("$ret = Sk.abstr.mappingUnpackInto(",keywordArgs,",",this.vexpr(kw.value),");");
+                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",func,");");
                     this._checkSuspension();
                 }
             }
