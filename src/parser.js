@@ -287,8 +287,8 @@ Sk.parse = function parse (filename, input) {
     var parser = makeParser(filename);
 
     /**
-     * takes a string splits it on '\n' and returns a function that returns 
-     * @param {string[]} input 
+     * takes a string splits it on '\n' and returns a function that returns
+     * @param {Array<string>} input
      * @returns {function(): string}
      */
     function readline(input) {
@@ -298,7 +298,7 @@ Sk.parse = function parse (filename, input) {
             if (lines.length === 0) {
                 throw new Sk.builtin.Exception("EOF");
             }
-            
+
             return lines.pop();
         };
     }
@@ -309,7 +309,7 @@ Sk.parse = function parse (filename, input) {
         var type = null;
         var prefix, lineno, column;
 
-        /* I don't know 
+        /* I don't know
          if (s_lineno !== lineno && s_column !== column)
          {
          // todo; update prefix and line/col

@@ -418,7 +418,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
             this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
-    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to. 
+    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to.
 
         if (hasStars) {
             if (!Sk.__future__.python3) {
@@ -603,7 +603,7 @@ Compiler.prototype.ccompare = function (e) {
 
 Compiler.prototype.ccall = function (e) {
     var func = this.vexpr(e.func);
-    
+    var kwarray = null;
     // Okay, here's the deal. We have some set of positional args
     // and we need to unpack them. We have some set of keyword args
     // and we need to unpack those too. Then we make a call.
@@ -1397,7 +1397,7 @@ Compiler.prototype.craise = function (s) {
 
         // TODO TODO TODO set cause appropriately
         // (and perhaps traceback for py2 if we care before it gets fully deprecated)
-        
+
         out("throw ",exc,";");
     }
     else {
