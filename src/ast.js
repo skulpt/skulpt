@@ -1430,8 +1430,8 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
         name_i += 2;
     }
     // if (TYPE(CHILD(n, name_i + 3)) == TOK.T_TYPE_COMMENT) {
-    //     type_comment = NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
-    //     if (!type_comment) 
+    //     type_comment = TOK.T_NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
+    //     if (!type_comment)
     //         return NULL;
     //     name_i += 1;
     // }
@@ -1445,12 +1445,12 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
         /* Check if the suite has a type comment in it. */
         tc = CHILD(CHILD(n, name_i + 3), 1);
 
-        if (TYPE(tc) == TYPE_COMMENT) {
+        if (TYPE(tc) == TOK.T_TYPE_COMMENT) {
             if (type_comment != NULL) {
                 ast_error(c, n, "Cannot have two type comments on def");
                 return NULL;
             }
-            type_comment = NEW_TYPE_COMMENT(tc);
+            type_comment = TOK.T_NEW_TYPE_COMMENT(tc);
             if (!type_comment)
                 return NULL;
         }
@@ -1575,7 +1575,7 @@ function astForLambdef (c, n) {
 function astForComprehension(c, n) {
     /* testlist_comp: test ( comp_for | (',' test)* [','] )
        argument: test [comp_for] | test '=' test       # Really [keyword '='] test */
-    
+
     var j;
     var ifs;
     var nifs;
@@ -1781,12 +1781,12 @@ function ast_for_comprehension(c, n) {
         }
 
         expression = ast_for_expr(c, CHILD(n, 3 + is_async));
-        
+
         if (!expression) {
             return null;
         }
-        
-        // again new grammar needed 
+
+        // again new grammar needed
         // REQ(n, SYM.comp_for);
 
         // if (NCH(n) == 2) {
@@ -1841,7 +1841,7 @@ function ast_for_comprehension(c, n) {
                 if (!expression) {
                     return null;
                 }
-                
+
                 ifs[j] = expression;
                 if (NCH(n) == 3) {
                     n = CHILD(n, 2);
@@ -1947,7 +1947,7 @@ function ast_for_dictelement(c, n, i)
         if (!expression) {
             return false;
         }
-        
+
         var value = expression;
 
         return { key: key, value: value, i: i + 3 };
@@ -2557,7 +2557,7 @@ function ast_for_atom(c, n)
             ch = CHILD(n, 1);
             if (TYPE(ch) == TOK.T_RBRACE) {
                 /* It's an empty dict. */
-                return new Sk.astnodes.Dict(null, null, LINENO(n), n.col_offset, 
+                return new Sk.astnodes.Dict(null, null, LINENO(n), n.col_offset,
                     n.end_lineno, n.end_col_offset);
             }
             else {

@@ -1,12 +1,15 @@
 var tokens = Sk.token.tokens
 
+const TokenError = Error;
+const IndentationError = Error;
+
 /**
  *
  * @constructor
  * @param {number} type
  * @param {string} string
- * @param {number[]} start
- * @param {number[]} end
+ * @param {Array<number>} start
+ * @param {Array<number>} end
  * @param {string} line
  */
 function TokenInfo(type, string, start, end, line) {
@@ -78,8 +81,8 @@ function rstrip (input, what) {
 
 /**
  * test if string is an identifier
- * 
- * @param {str} string 
+ *
+ * @param {str} string
  * @returns {boolean}
  */
 function isidentifier(str) {
@@ -114,8 +117,8 @@ function isidentifier(str) {
 /* we have to use string and ctor to be able to build patterns up. + on /.../
  * does something strange.
  * Note: we use unicode matching for names ("\w") but ascii matching for
- * number literals. 
- * 
+ * number literals.
+ *
  * I don't know if the comment above is still actually correct */
 var Whitespace = "[ \\f\\t]*";
 var Comment_ = "#[^\\r\\n]*";
@@ -143,9 +146,9 @@ function _all_string_prefixes() {
 var StringPrefix = group.apply(null, _all_string_prefixes())
 
 // these regexes differ from python because .exec doesn't do the
-// same thing as .match in python. It's more like .search. 
+// same thing as .match in python. It's more like .search.
 // .match matches from the start of the string.
-// to get the same behaviour we can add a ^ to the start of the 
+// to get the same behaviour we can add a ^ to the start of the
 // regex
 // Tail end of ' string.
 var Single = "^[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
@@ -183,8 +186,7 @@ var PseudoExtras = group('\\\\\\r?\\n|$', Comment_, Triple);
 //  a normal single or triple quoted string (with no prefix).
 var endpats = {}
 var prefixes = _all_string_prefixes();
-for (i in prefixes) {
-    var _prefix = prefixes[i];
+for (let _prefix of prefixes) {
     endpats[_prefix + "'"] = Single
     endpats[_prefix + '"'] = Double
     endpats[_prefix + "'''"] = Single3
@@ -193,10 +195,9 @@ for (i in prefixes) {
 
 // A set of all of the single and triple quoted string prefixes,
 //  including the opening quotes.
-single_quoted = []
-triple_quoted = []
-for (i in prefixes) {
-    var t = prefixes[i];
+let single_quoted = []
+let triple_quoted = []
+for (let t of prefixes) {
     single_quoted.push(t + '"');
     single_quoted.push(t + "'");
     triple_quoted.push(t + '"""');
@@ -213,7 +214,7 @@ var tabsize = 8
  * @param {function(TokenInfo): void} yield_
  */
 function _tokenize(readline, encoding, yield_) {
-    // we make these regexes here because they can 
+    // we make these regexes here because they can
     // be changed by the configuration.
     var LSuffix = Sk.__future__.l_suffix ? '(?:L?)' : '';
     var Hexnumber = '0[xX](?:_?[0-9a-fA-F])+' + LSuffix;
@@ -221,7 +222,7 @@ function _tokenize(readline, encoding, yield_) {
     var Octnumber = '0([oO])(?:_?[0-7])+' + LSuffix;
     var SilentOctnumber = '0([oO]?)(?:_?[0-7])+' + LSuffix;
     var Decnumber = '(?:0(?:_?0)*|[1-9](?:_?[0-9])*)' + LSuffix;
-    var Intnumber = group(Hexnumber, Binnumber, 
+    var Intnumber = group(Hexnumber, Binnumber,
                           (Sk.__future__.silent_octal_literal ? SilentOctnumber : Octnumber), Decnumber);
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
     var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
@@ -234,7 +235,11 @@ function _tokenize(readline, encoding, yield_) {
         needcont = 0,
         contline = null,
         indents = [0],
-        capos = null;
+        capos = null,
+        endprog = undefined,
+        strstart = undefined,
+        end = undefined,
+        pseudomatch = undefined;
 
     if (encoding !== undefined) {
         if (encoding == "utf-8-sig") {
@@ -242,7 +247,7 @@ function _tokenize(readline, encoding, yield_) {
             encoding = "utf-8";
         }
 
-        yield_(new TokenInfo(tokens.T_ENCODING, encoding, (0, 0), (0, 0), ''));
+        yield_(new TokenInfo(tokens.T_ENCODING, encoding, [0, 0], [0, 0], ''));
     }
 
     var last_line = '';
@@ -389,7 +394,7 @@ function _tokenize(readline, encoding, yield_) {
                     if (endmatch) {                       // all on one line
                         pos = endmatch[0].length + pos;
                         token = line.substring(start, pos);
-                        yield_(new TokenInfo(tokens.T_STRING, token, spos, (lnum, pos), line));
+                        yield_(new TokenInfo(tokens.T_STRING, token, spos, [lnum, pos], line));
                     } else {
                         strstart = [lnum, start];           // multiple lines
                         contstr = line.substring(start);

@@ -310,7 +310,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     /* Copy positional arguments into arguments to our JS function*/
     let nposargs = posargs.length;
     let args = (posargs.length <= co_argcount) ? posargs : posargs.slice(0, co_argcount);
-    
+
 
     /* Pack other positional arguments into the *args argument */
     if (this.func_code.co_varargs) {
@@ -346,7 +346,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
 
     /* "Check the number of positional arguments" (which only checks for too many)
        has been handled before keywords */
-    
+
     /* Add missing positional arguments (copy default values from defs)
        (also checks for missing args where no defaults) */
     {
@@ -396,7 +396,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
         // todo; OK to modify?
         if (varnames) {
             // Make sure all default arguments are in args before adding closure
-            for (i = args.length; i < varnames.length; i++) {
+            for (let i = args.length; i < varnames.length; i++) {
                 args.push(undefined);
             }
         }

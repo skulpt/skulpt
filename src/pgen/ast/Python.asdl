@@ -13,10 +13,10 @@ module Python
         -- not really an actual node but useful in Jython's typesystem.
         | Suite(stmt* body)
 
-    stmt = FunctionDef(identifier name, arguments args,
+    stmt = FunctionDef(identifier name, arguments_ args,
                        stmt* body, expr* decorator_list, expr? returns,
                        string? docstring)
-          | AsyncFunctionDef(identifier name, arguments args,
+          | AsyncFunctionDef(identifier name, arguments_ args,
                              stmt* body, expr* decorator_list, expr? returns,
                              string? docstring)
 
@@ -68,7 +68,7 @@ module Python
     expr = BoolOp(boolop op, expr* values)
          | BinOp(expr left, operator op, expr right)
          | UnaryOp(unaryop op, expr operand)
-         | Lambda(arguments args, expr body)
+         | Lambda(arguments_ args, expr body)
          | IfExp(expr test, expr body, expr orelse)
          | Dict(expr* keys, expr* values)
          | Set(expr* elts)
@@ -124,7 +124,9 @@ module Python
     excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)
                     attributes (int lineno, int col_offset)
 
-    arguments = (arg* args, arg? vararg, arg* kwonlyargs, expr* kw_defaults,
+    -- Skulpt: added the underscore because aguments is a reserved word in
+    -- javascript
+    arguments_ = (arg* args, arg? vararg, arg* kwonlyargs, expr* kw_defaults,
                  arg? kwarg, expr* defaults)
 
     arg = (identifier arg, expr? annotation)
