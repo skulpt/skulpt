@@ -33,6 +33,7 @@ Sk.python2 = {
     absolute_import: null,
     unicode_literals: false,
     // skulpt specific
+    python3: false,
     set_repr: false,
     class_repr: false,
     inherit_from_object: false,
@@ -55,6 +56,7 @@ Sk.python3 = {
     absolute_import: null,
     unicode_literals: true,
     // skulpt specific
+    python3: true,
     set_repr: true,
     class_repr: true,
     inherit_from_object: true,

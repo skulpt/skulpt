@@ -411,7 +411,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     if (e.ctx === Sk.astnodes.Store) {
         if (hasStars) {
             // TODO support this in Python 3 mode
-            throw new Sk.builting.SyntaxError("Tuple unpacking with stars is not supported");
+            throw new Sk.builtin.SyntaxError("Tuple unpacking with stars is not supported");
         }
         items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
@@ -421,6 +421,9 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to. 
 
         if (hasStars) {
+            if (!Sk.__future__.python3) {
+                throw new Sk.builtin.SyntaxError("List packing with stars is not supported");
+            }
             // TODO refuse to support this in Python 2 mode
             return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "'](", this.cunpackstarstoarray(e.elts), ")");
         }
@@ -657,16 +660,22 @@ Compiler.prototype.ccall = function (e) {
 };
 
 Compiler.prototype.cslice = function (s) {
-    // TODO: This implements Python 2's idea of slice literals, which is...idiosyncratic.
-    // The rules for when you get None, and when you get an arbitrary integer (0 or maxint)
-    // seem pretty arbitrary. Python 3's are much saner.
     var step;
     var high;
     var low;
     Sk.asserts.assert(s instanceof Sk.astnodes.Slice);
-    low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(0)"; // todo;ideally, these numbers would be constants
-    high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(2147483647)";
-    step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
+    if (Sk.__future__.python3) {
+        low = s.lower ? this.vexpr(s.lower) : "Sk.builtin.none.none$";
+        high = s.upper ? this.vexpr(s.upper) : "Sk.builtin.none.none$";
+        step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
+    } else {
+        // This implements Python 2's idea of slice literals, which is...idiosyncratic.
+        // The rules for when you get None, and when you get an arbitrary integer (0 or maxint)
+        // seem pretty arbitrary. Python 3's are much saner.
+        low = s.lower ? this.vexpr(s.lower) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(0)"; // todo;ideally, these numbers would be constants
+        high = s.upper ? this.vexpr(s.upper) : s.step ? "Sk.builtin.none.none$" : "new Sk.builtin.int_(2147483647)";
+        step = s.step ? this.vexpr(s.step) : "Sk.builtin.none.none$";
+    }
     return this._gr("slice", "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 
@@ -1361,6 +1370,8 @@ Compiler.prototype.craise = function (s) {
         // This is tricky - we're supporting both the weird-ass semantics
         // of the Python 2 "raise (exc), (inst), (tback)" version,
         // plus the sensible Python "raise (exc) from (cause)".
+        // ast.js takes care of ensuring that you can only use the right one
+        // for the Python version you're using.
 
         var instantiatedException = this.newBlock("exception now instantiated");
         var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type || " + exc + ".prototype instanceof Sk.builtin.BaseException");
@@ -1369,7 +1380,6 @@ Compiler.prototype.craise = function (s) {
 
         // Instantiate exc with inst
         if (s.inst) {
-            // TODO TODO raise a SyntaxError if you tried to use this syntax in Py3 mode
             var inst = this._gr("inst", this.vexpr(s.inst));
             out("if(!(",inst," instanceof Sk.builtin.tuple)) {",
                 inst,"= new Sk.builtin.tuple([",inst,"]);",
@@ -1800,6 +1810,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.kwarg) {
         kwarg = args.kwarg;
     }
+    if (!Sk.__future__.python3 && args && args.kwonlyargs && args.kwonlyargs.length != 0) {
+        throw new Sk.builtin.SyntaxError("Keyword-only arguments are not supported in Python 2");
+    }
 
     //
     // enter the new scope, and create the first block
@@ -1836,7 +1849,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         for (i = 0; args && i < args.args.length; ++i) {
             funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
         }
-        // TODO blow up if we try to do this in Python 2
         for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
             funcArgs.push(this.nameop(args.kwonlyargs[i].arg, Sk.astnodes.Param));
         }
@@ -2623,8 +2635,6 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
 };
 
-// TODO this is for Python 2 only;
-// we should gate this behind a __future__ flag
 Compiler.prototype.cprint = function (s) {
     var i;
     var n;
@@ -2726,6 +2736,12 @@ Compiler.prototype.cmod = function (mod) {
  */
 Sk.compile = function (source, filename, mode, canSuspend) {
     //print("FILE:", filename);
+    // __future__ flags can be set from code
+    // (with "from __future__ import ..." statements),
+    // so make a temporary object that can be edited.
+    var savedFlags = Sk.__future__;
+    Sk.__future__ = Object.create(Sk.__future__);
+
     var parse = Sk.parse(filename, source);
     var ast = Sk.astFromParse(parse.cst, filename, parse.flags);
     // console.log(JSON.stringify(ast, undefined, 2));
@@ -2737,6 +2753,9 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     var st = Sk.symboltable(ast, filename);
     var c = new Compiler(filename, st, flags.cf_flags, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
+
+    // Restore the global __future__ flags
+    Sk.__future__ = savedFlags;
 
     var ret = "$compiledmod = function() {" + c.result.join("") + "\nreturn " + funcname + ";}();";
     return {

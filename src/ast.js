@@ -1,5 +1,6 @@
 //
-// This is pretty much a straight port of ast.c from CPython 2.6.5.
+// This is pretty much a straight port of ast.c from CPython 3.7.3
+// (with a few leftovers from 2.6.5).
 //
 // The previous version was easier to work with and more JS-ish, but having a
 // somewhat different ast structure than cpython makes testing more difficult.
@@ -1174,8 +1175,6 @@ function ast_for_flow_stmt(c, n)
         case SYM.raise_stmt:
             // This is tricky and Skulpt-specific, because we need to handle
             // both Python 3-style and Python 2-style 'raise' statements
-            // TODO TODO TODO use parser flags to reject one or the other
-            // as a SyntaxError, depending on __future__ flags
             if (NCH(ch) == 1)
                 return new Sk.astnodes.Raise(null, null, null, null, LINENO(n), n.col_offset,
                              n.end_lineno, n.end_col_offset);
@@ -1186,11 +1185,14 @@ function ast_for_flow_stmt(c, n)
 
                 // raise [expression] from [cause]
                 if (NCH(ch) == 4 && CHILD(ch, 2).value == 'from') {
-                    cause = ast_for_expr(c, CHILD(ch, 3));
-                    if (!cause) {
-                        return null;
+                    if (!Sk.__future__.python3) {
+                        ast_error(c, CHILD(ch, 2), "raise ... from ... is not available in Python 2");
                     }
+                    cause = ast_for_expr(c, CHILD(ch, 3));
                 } else if (NCH(ch) >= 4 && CHILD(ch, 2).value == ',') {
+                    if (Sk.__future__.python3) {
+                        ast_error(c, n, "Old raise syntax is not available in Python 3")
+                    }
                     // raise [exception_type], [instantiation value] [, [traceback]]
                     // NB traceback isn't implemented in Skulpt yet
                     inst = ast_for_expr(c, CHILD(ch, 3));
@@ -2936,9 +2938,12 @@ function astForAsyncStmt(c, n) {
 }
 
 // This is only used for Python 2 support.
-// TODO we should have something in c.c_flags
-// gating whether this is permissible or a SyntaxError
 function astForPrintStmt (c, n) {
+
+    if (Sk.__future__.print_function) {
+        ast_error(c, n, "Missing parentheses in call to 'print'");
+    }
+
     /* print_stmt: 'print' ( [ test (',' test)* [','] ]
      | '>>' test [ (',' test)+ [','] ] )
      */
@@ -2993,7 +2998,6 @@ function astForStmt (c, n) {
                 return astForNonLocalStmt(c, n);
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
-            // TODO this should both be gated behind a __future__ flag
             case SYM.print_stmt:
                 return astForPrintStmt(c, n);
             case SYM.debugger_stmt:
