@@ -294,6 +294,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     // _PyEval_EvalCodeWithName, and follows its logic.
 
     let co_argcount = this.func_code.co_argcount;
+
     if (co_argcount === undefined) {
         co_argcount = this.func_code.co_varnames ? this.func_code.co_varnames.length : posargs.length;
     }

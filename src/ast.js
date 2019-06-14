@@ -494,27 +494,33 @@ function astForDecorators (c, n) {
     return decoratorSeq;
 }
 
-function astForDecorated (c, n) {
-    var thing;
-    var decoratorSeq;
-    REQ(n, SYM.decorated);
-    decoratorSeq = astForDecorators(c, CHILD(n, 0));
-    Sk.asserts.assert(CHILD(n, 1).type === SYM.funcdef || CHILD(n, 1).type === SYM.classdef);
+function ast_for_decorated (c, n) {
+    /* decorated: decorators (classdef | funcdef | async_funcdef) */
+    var thing = null;
+    var decorator_seq = null;
 
-    thing = null;
-    if (CHILD(n, 1).type === SYM.funcdef) {
-        thing = astForFuncdef(c, CHILD(n, 1), decoratorSeq);
+    REQ(n, SYM.decorated);
+
+    decorator_seq = astForDecorators(c, CHILD(n, 0));
+    Sk.asserts.assert(TYPE(CHILD(n, 1)) == SYM.funcdef ||
+            TYPE(CHILD(n, 1)) == SYM.async_funcdef ||
+            TYPE(CHILD(n, 1)) == SYM.classdef);
+
+    if (TYPE(CHILD(n, 1)) == SYM.funcdef) {
+        thing = ast_for_funcdef(c, CHILD(n, 1), decorator_seq);
+    } else if (TYPE(CHILD(n, 1)) == SYM.classdef) {
+        thing = astForClassdef(c, CHILD(n, 1), decorator_seq);
+    } else if (TYPE(CHILD(n, 1)) == SYM.async_funcdef) {
+        thing = ast_for_async_funcdef(c, CHILD(n, 1), decorator_seq);
     }
-    else if (CHILD(n, 1) === SYM.classdef) {
-        thing = astForClassdef(c, CHILD(n, 1), decoratorSeq);
-    }
+    /* we count the decorators in when talking about the class' or
+        * function's line number */
     if (thing) {
-        thing.lineno = n.lineno;
+        thing.lineno = LINENO(n);
         thing.col_offset = n.col_offset;
     }
     return thing;
 }
-
 
 /* with_item: test ['as' expr] */
 function ast_for_with_item (c, n) {
@@ -1117,10 +1123,10 @@ function ast_for_trailer(c, n, left_expr) {
             elts = [];
             for (j = 0; j < slices.length; ++j) {
                 slc = slices[j];
-                assert(slc.kind == _slice_kind.Index_kind  && slc.v.Index.value);
+                Sk.asserts.assert(slc.kind == _slice_kind.Index_kind  && slc.v.Index.value);
                 elts[j] = slc.v.Index.value;
             }
-            e = new Sk.astnodes.Tuple(elts, Load, LINENO(n), n.col_offset);
+            e = new Sk.astnodes.Tuple(elts, Sk.astnodes.Load, LINENO(n), n.col_offset);
 
             return new Sk.astnodes.Subscript(left_expr, new Sk.astnodes.Index(e),
                              Sk.astnodes.Load, LINENO(n), n.col_offset);
@@ -1292,6 +1298,7 @@ function astForArguments (c, n) {
     var kwdefaults = [];
     var vararg = null;
     var kwarg = null;
+    var ch = null;
 
     /* This function handles both typedargslist (function definition)
        and varargslist (lambda definition).
@@ -1385,6 +1392,18 @@ function astForArguments (c, n) {
         }
     }
     return new Sk.astnodes.arguments_(posargs, vararg, kwonlyargs, kwdefaults, kwarg, posdefaults);
+}
+
+function ast_for_async_funcdef(c, n, decorator_seq)
+{
+    /* async_funcdef: 'async' funcdef */
+    REQ(n, SYM.async_funcdef);
+    REQ(CHILD(n, 0), TOK.T_NAME);
+    Sk.asserts.assert(STR(CHILD(n, 0) === "async"));
+    REQ(CHILD(n, 1), SYM.funcdef);
+
+    return ast_for_funcdef_impl(c, n, decorator_seq,
+                                true /* is_async */);
 }
 
 function ast_for_funcdef(c, n, decorator_seq) {
@@ -2985,7 +3004,7 @@ function astForStmt (c, n) {
             case SYM.classdef:
                 return astForClassdef(c, ch, []);
             case SYM.decorated:
-                return astForDecorated(c, ch);
+                return ast_for_decorated(c, ch);
             case SYM.async_stmt:
                 return astForAsyncStmt(c, ch);
             default:
