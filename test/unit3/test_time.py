@@ -27,8 +27,12 @@ class TimeTestCase(unittest.TestCase):
         time.sleep(0.01)
 
     def test_strftime(self):
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
+        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.gmtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
 
+    def test_strptime(self):
+        result = time.struct_time((1970, 1, 1, 1, 1, 1, 3, 1, -1))
+        self.assertEqual(time.strptime("Jan 01 1970 01:01:01", "%b %d %Y %H:%M:%S"), result);
+        
     def _test_dir(self):
         # this test fails because the compare 
         self.assertEqual(dir(time), [
