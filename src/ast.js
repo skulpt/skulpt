@@ -206,6 +206,9 @@ function setContext (c, e, ctx, n) {
         case Sk.astnodes.Str:
             exprName = "literal";
             break;
+        case Sk.astnodes.NameConstant:
+            exprName = "True, False or None";
+            break;
         case Sk.astnodes.Compare:
             exprName = "comparison";
             break;

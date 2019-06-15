@@ -2440,9 +2440,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     if ((ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore || ctx === Sk.astnodes.Del) && name.v === "__debug__") {
         throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     }
-    if ((ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore || ctx === Sk.astnodes.Del) && name.v === "None") {
-        throw new Sk.builtin.SyntaxError("can not assign to None");
-    }
+    Sk.asserts.assert(name.v !== "None");
 
     if (name.v === "NotImplemented") {
         return "Sk.builtin.NotImplemented.NotImplemented$";
