@@ -380,17 +380,22 @@ Compiler.prototype._checkSuspension = function(e) {
         out ("if ($ret && $ret.$isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
     }
 };
-Compiler.prototype.cunpackstarstoarray = function(elts) {
+Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
     if (!elts || elts.length == 0) {
         return "[]";
     }
-    let arr = this._gr("unpack", "[]")
+    let arr = this._gr("unpack", "[]");
+    let hasStars = false;
     for (let elt of elts) {
+        if (permitEndOnly && hasStars) {
+            throw new Sk.builtin.SyntaxError("Extended argument unpacking is not permitted in Python 2");
+        }
         if (elt.constructor !== Sk.astnodes.Starred) {
             out(arr,".push(",this.vexpr(elt),");");
         } else {
             out("$ret = Sk.misceval.iterFor(Sk.abstr.iter(",this.vexpr(elt.value),"), function(e) { ",arr,".push(e); });");
             this._checkSuspension();
+            hasStars = true;
         }
     }
     return arr;
@@ -422,9 +427,8 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
 
         if (hasStars) {
             if (!Sk.__future__.python3) {
-                throw new Sk.builtin.SyntaxError("List packing with stars is not supported");
+                throw new Sk.builtin.SyntaxError("List packing with stars is not supported in Python 2");
             }
-            // TODO refuse to support this in Python 2 mode
             return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "'](", this.cunpackstarstoarray(e.elts), ")");
         }
         else if (tuporlist === "tuple") {
@@ -612,13 +616,16 @@ Compiler.prototype.ccall = function (e) {
     // This is less than optimal (yep, that's the @rixner bat-sign),
     // but should be correct.
 
-    let positionalArgs = this.cunpackstarstoarray(e.args);
+    let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
     let keywordArgs = "undefined";
 
     if (e.keywords && e.keywords.length > 0) {
         let hasStars = false;
         kwarray = [];
         for (let kw of e.keywords) {
+            if (hasStars && !Sk.__future__.python3) {
+                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+            }
             if (kw.arg) {
                 kwarray.push("'" + kw.arg.v + "'");
                 kwarray.push(this.vexpr(kw.value));
