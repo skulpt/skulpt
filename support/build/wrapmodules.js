@@ -83,7 +83,13 @@ if (process.argv.includes("internal")) {
 
     buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], [".js", ".py"], "dist/skulpt-stdlib.js", opts)
 } else if (process.argv.includes("unit2")) {
+    if (!fs.existsSync("support/tmp")) {
+	fs.mkdirSync("support/tmp");
+    }
     buildJsonFile("unit2", ["test/unit"], [".py"], "support/tmp/unit2.js", { recursive: true });
 } else if (process.argv.includes("unit3")) {
+    if (!fs.existsSync("support/tmp")) {
+	fs.mkdirSync("support/tmp");
+    }
     buildJsonFile("unit3", ["test/unit3"], [".py"], "support/tmp/unit3.js");
 }

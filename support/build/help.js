@@ -2,7 +2,10 @@ const chalk = require('chalk');
 
 var commands = {
     "run help": "Help on all " + chalk.green("npm") + " commands.",
-    "run build": "Production, optimized build.",
+    "run build": "Production, optimized build. (Output language: ECMASCRIPT_2015)\n\n\tSelect an aribitrary output language with " + chalk.green("npm run build -- --env.languageOut=<language>") + "\n\twhere <language> is an output language supported by the closure compiler",
+    "run build-es3": "Production, optimized build. (Output language: ECMASCRIPT3)",
+    "run build-es5": "Production, optimized build. (Output language: ECMASCRIPT5)",
+    "run build-es19": "Production, optimized build. (Output language: ECMASCRIPT_2019)",
     "run devbuild": "Development, unoptimized build",
     "run watch": "Development, unoptimized build, which will automatically be rebuilt when there are any source changes.",
     "run dist": "Prepare the distribution: build the optimized Skulpt, run all tests, build docs.",
