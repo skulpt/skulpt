@@ -8,9 +8,8 @@
   "scripts": {
     "help": "node support/build/help.js",
     "regenparser": "node support/build/regenparser.js",
-    "prebrun": "npm run devbuild",
     "brun": "node support/run/brun.js -p",
-    "prebtest": "npm run devbuild && node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
+    "prebtest": "node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
     "btest": "node support/run/brun.js -t",
     "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
     "dist": "npm run build && npm run test && npm run doc && node support/build/copy2docs.js",
@@ -18,6 +17,9 @@
     "prebuild": "node support/build/wrapmodules.js internal",
     "build": "webpack --mode production",
     "postbuild": "node support/build/wrapmodules.js builtin",
+    "build-es3": "npm run build -- --env.languageOut=ECMASCRIPT3",
+    "build-es5": "npm run build -- --env.languageOut=ECMASCRIPT5",
+    "build-es19": "npm run build -- --env.languageOut=ECMASCRIPT_2019",
     "predevbuild": "node support/build/wrapmodules.js internal",
     "devbuild": "webpack --mode development",
     "postdevbuild": "node support/build/wrapmodules.js builtin",
@@ -41,6 +43,7 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "acorn": "^6.1.1",
     "babel-minify": "^0.5.0",
     "chalk": "^2.4.2",
     "clean-webpack-plugin": "^2.0.2",
