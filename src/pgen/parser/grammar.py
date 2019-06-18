@@ -16,7 +16,8 @@ fallback token code OP, but the parser needs the actual token code.
 import pickle
 
 # Local imports
-import token, tokenize
+import token
+import tokenize
 
 
 class Grammar(object):
@@ -165,7 +166,6 @@ opmap_raw = """
 = EQUAL
 . DOT
 % PERCENT
-` BACKQUOTE
 { LBRACE
 } RBRACE
 @ AT
@@ -193,6 +193,8 @@ opmap_raw = """
 // DOUBLESLASH
 //= DOUBLESLASHEQUAL
 -> RARROW
+... ELLIPSIS
+@= ATEQUAL
 """
 
 opmap = {}

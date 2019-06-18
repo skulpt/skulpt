@@ -1,4 +1,4 @@
-Sk.asserts = {};
+Sk.asserts = {ENABLE_ASSERTS: true};
 
 /**
  * Cause assertion failure when condition is false.

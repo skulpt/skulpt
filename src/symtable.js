@@ -323,25 +323,30 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
-    len = nodes.length;
-    for (i = 0; i < len; ++i) {
-        val = nodes[i];
-        if (val) {
-            this.visitStmt(val);
+    if (nodes !== null) {
+        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        len = nodes.length;
+        for (i = 0; i < len; ++i) {
+            val = nodes[i];
+            if (val) {
+                this.visitStmt(val);
+            }
         }
     }
 };
+
 SymbolTable.prototype.SEQExpr = function (nodes) {
     var val;
     var i;
     var len;
-    Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
-    len = nodes.length;
-    for (i = 0; i < len; ++i) {
-        val = nodes[i];
-        if (val) {
-            this.visitExpr(val);
+    if (nodes !== null) {
+        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        len = nodes.length;
+        for (i = 0; i < len; ++i) {
+            val = nodes[i];
+            if (val) {
+                this.visitExpr(val);
+            }
         }
     }
 };
@@ -378,9 +383,9 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     var i;
     for (i = 0; i < args.length; ++i) {
         arg = args[i];
-        if (arg.constructor === Sk.astnodes.Name) {
-            Sk.asserts.assert(arg.ctx === Sk.astnodes.Param || (arg.ctx === Sk.astnodes.Store && !toplevel));
-            this.addDef(arg.id, DEF_PARAM, arg.lineno);
+        if (arg.constructor === Sk.astnodes.arg) {
+            // TODO arguments are more complicated in Python 3...
+            this.addDef(arg.arg, DEF_PARAM, arg.lineno);
         }
         else {
             // Tuple isn't supported
@@ -393,12 +398,15 @@ SymbolTable.prototype.visitArguments = function (a, lineno) {
     if (a.args) {
         this.visitParams(a.args, true);
     }
+    if (a.kwonlyargs) {
+        this.visitParams(a.kwonlyargs, true);
+    }
     if (a.vararg) {
-        this.addDef(a.vararg, DEF_PARAM, lineno);
+        this.addDef(a.vararg.arg, DEF_PARAM, lineno);
         this.cur.varargs = true;
     }
     if (a.kwarg) {
-        this.addDef(a.kwarg, DEF_PARAM, lineno);
+        this.addDef(a.kwarg.arg, DEF_PARAM, lineno);
         this.cur.varkeywords = true;
     }
 };
@@ -496,7 +504,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Sk.astnodes.Return_:
+        case Sk.astnodes.Return:
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
@@ -505,7 +513,7 @@ SymbolTable.prototype.visitStmt = function (s) {
                 }
             }
             break;
-        case Sk.astnodes.Delete_:
+        case Sk.astnodes.Delete:
             this.SEQExpr(s.targets);
             break;
         case Sk.astnodes.Assign:
@@ -522,7 +530,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             }
             this.SEQExpr(s.values);
             break;
-        case Sk.astnodes.For_:
+        case Sk.astnodes.For:
             this.visitExpr(s.target);
             this.visitExpr(s.iter);
             this.SEQStmt(s.body);
@@ -530,14 +538,14 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Sk.astnodes.While_:
+        case Sk.astnodes.While:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
                 this.SEQStmt(s.orelse);
             }
             break;
-        case Sk.astnodes.If_:
+        case Sk.astnodes.If:
             this.visitExpr(s.test);
             this.SEQStmt(s.body);
             if (s.orelse) {
@@ -545,24 +553,20 @@ SymbolTable.prototype.visitStmt = function (s) {
             }
             break;
         case Sk.astnodes.Raise:
-            if (s.type) {
-                this.visitExpr(s.type);
+            if (s.exc) {
+                this.visitExpr(s.exc);
+                // Our hacked AST supports both Python 2 (inst, tback)
+                // and Python 3 (cause) versions of the Raise statement
                 if (s.inst) {
                     this.visitExpr(s.inst);
                     if (s.tback) {
                         this.visitExpr(s.tback);
                     }
                 }
+                if (s.cause) {
+                    this.visitExpr(s.cause);
+                }
             }
-            break;
-        case Sk.astnodes.TryExcept:
-            this.SEQStmt(s.body);
-            this.SEQStmt(s.orelse);
-            this.visitExcepthandlers(s.handlers);
-            break;
-        case Sk.astnodes.TryFinally:
-            this.SEQStmt(s.body);
-            this.SEQStmt(s.finalbody);
             break;
         case Sk.astnodes.Assert:
             this.visitExpr(s.test);
@@ -570,18 +574,9 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.visitExpr(s.msg);
             }
             break;
-        case Sk.astnodes.Import_:
+        case Sk.astnodes.Import:
         case Sk.astnodes.ImportFrom:
             this.visitAlias(s.names, s.lineno);
-            break;
-        case Sk.astnodes.Exec:
-            this.visitExpr(s.body);
-            if (s.globals) {
-                this.visitExpr(s.globals);
-                if (s.locals) {
-                    this.visitExpr(s.locals);
-                }
-            }
             break;
         case Sk.astnodes.Global:
             nameslen = s.names.length;
@@ -604,19 +599,21 @@ SymbolTable.prototype.visitStmt = function (s) {
             this.visitExpr(s.value);
             break;
         case Sk.astnodes.Pass:
-        case Sk.astnodes.Break_:
-        case Sk.astnodes.Debugger_:
-        case Sk.astnodes.Continue_:
+        case Sk.astnodes.Break:
+        case Sk.astnodes.Continue:
+        case Sk.astnodes.Debugger:
             // nothing
             break;
-        case Sk.astnodes.With_:
-            this.newTmpname(s.lineno);
-            this.visitExpr(s.context_expr);
-            if (s.optional_vars) {
-                this.newTmpname(s.lineno);
-                this.visitExpr(s.optional_vars);
-            }
+        case Sk.astnodes.With:
+            VISIT_SEQ(this.visit_withitem.bind(this), s.items);
+            VISIT_SEQ(this.visitStmt.bind(this), s.body);
+            break;
+
+        case Sk.astnodes.Try:
             this.SEQStmt(s.body);
+            this.visitExcepthandlers(s.handlers)
+            this.SEQStmt(s.orelse);
+            this.SEQStmt(s.finalbody);
             break;
 
         default:
@@ -624,10 +621,26 @@ SymbolTable.prototype.visitStmt = function (s) {
     }
 };
 
+SymbolTable.prototype.visit_withitem = function(item) {
+    this.visitExpr(item.context_expr);
+    if (item.optional_vars) {
+        this.visitExpr(item.optional_vars);
+    }
+}
+
+
+function VISIT_SEQ(visitFunc, seq) {
+    var i;
+    for (i = 0; i < seq.length; i++) {
+        var elt = seq[i];
+        visitFunc(elt)
+    }
+}
+
 SymbolTable.prototype.visitExpr = function (e) {
     var i;
     Sk.asserts.assert(e !== undefined, "visitExpr called with undefined");
-    //print("  e: ", e.constructor.name);
+    // console.log("  e: ", e.constructor.name);
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:
             this.SEQExpr(e.values);
@@ -685,17 +698,19 @@ SymbolTable.prototype.visitExpr = function (e) {
             break;
         case Sk.astnodes.Call:
             this.visitExpr(e.func);
-            this.SEQExpr(e.args);
-            for (i = 0; i < e.keywords.length; ++i) {
-                this.visitExpr(e.keywords[i].value);
+            if (e.args) {
+                for (let a of e.args) {
+                    if (a.constructor === Sk.astnodes.Starred) {
+                        this.visitExpr(a.value);
+                    } else {
+                        this.visitExpr(a);
+                    }
+                }
             }
-            //print(JSON.stringify(e.starargs, null, 2));
-            //print(JSON.stringify(e.kwargs, null,2));
-            if (e.starargs) {
-                this.visitExpr(e.starargs);
-            }
-            if (e.kwargs) {
-                this.visitExpr(e.kwargs);
+            if (e.keywords) {
+                for (let k of e.keywords) {
+                    this.visitExpr(k.value);
+                }
             }
             break;
         case Sk.astnodes.Num:
@@ -711,10 +726,15 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Name:
             this.addDef(e.id, e.ctx === Sk.astnodes.Load ? USE : DEF_LOCAL, e.lineno);
             break;
+        case Sk.astnodes.NameConstant:
+            break;
         case Sk.astnodes.List:
         case Sk.astnodes.Tuple:
         case Sk.astnodes.Set:
             this.SEQExpr(e.elts);
+            break;
+        case Sk.astnodes.Starred:
+            this.visitExpr(e.value);
             break;
         default:
             Sk.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");

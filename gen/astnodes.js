@@ -31,6 +31,8 @@ Sk.astnodes.Sub = function Sub() {}
 /** @constructor */
 Sk.astnodes.Mult = function Mult() {}
 /** @constructor */
+Sk.astnodes.MatMult = function MatMult() {}
+/** @constructor */
 Sk.astnodes.Div = function Div() {}
 /** @constructor */
 Sk.astnodes.Mod = function Mod() {}
@@ -77,7 +79,7 @@ Sk.astnodes.Is = function Is() {}
 /** @constructor */
 Sk.astnodes.IsNot = function IsNot() {}
 /** @constructor */
-Sk.astnodes.In_ = function In_() {}
+Sk.astnodes.In = function In() {}
 /** @constructor */
 Sk.astnodes.NotIn = function NotIn() {}
 
@@ -96,9 +98,11 @@ Sk.astnodes.NotIn = function NotIn() {}
 
 
 /** @constructor */
-Sk.astnodes.Module = function Module(/* {asdl_seq *} */ body)
+Sk.astnodes.Module = function Module(/* {asdl_seq *} */ body, /* {string} */
+                                          docstring)
 {
     this.body = body;
+    this.docstring = docstring;
     return this;
 }
 
@@ -112,7 +116,6 @@ Sk.astnodes.Interactive = function Interactive(/* {asdl_seq *} */ body)
 /** @constructor */
 Sk.astnodes.Expression = function Expression(/* {expr_ty} */ body)
 {
-    Sk.asserts.assert(body !== null && body !== undefined);
     this.body = body;
     return this;
 }
@@ -129,16 +132,50 @@ Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
                                                     {arguments__ty} */ args, /*
                                                     {asdl_seq *} */ body, /*
                                                     {asdl_seq *} */
-                                                    decorator_list, /* {int} */
-                                                    lineno, /* {int} */
-                                                    col_offset)
+                                                    decorator_list, /*
+                                                    {expr_ty} */ returns, /*
+                                                    {string} */ docstring, /*
+                                                    {int} */ lineno, /* {int}
+                                                    */ col_offset)
 {
-    Sk.asserts.assert(name !== null && name !== undefined);
-    Sk.asserts.assert(args !== null && args !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.name = name;
     this.args = args;
     this.body = body;
     this.decorator_list = decorator_list;
+    this.returns = returns;
+    this.docstring = docstring;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.AsyncFunctionDef = function AsyncFunctionDef(/* {identifier} */
+                                                              name, /*
+                                                              {arguments__ty}
+                                                              */ args, /*
+                                                              {asdl_seq *} */
+                                                              body, /*
+                                                              {asdl_seq *} */
+                                                              decorator_list,
+                                                              /* {expr_ty} */
+                                                              returns, /*
+                                                              {string} */
+                                                              docstring, /*
+                                                              {int} */ lineno,
+                                                              /* {int} */
+                                                              col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.name = name;
+    this.args = args;
+    this.body = body;
+    this.decorator_list = decorator_list;
+    this.returns = returns;
+    this.docstring = docstring;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -147,24 +184,31 @@ Sk.astnodes.FunctionDef = function FunctionDef(/* {identifier} */ name, /*
 /** @constructor */
 Sk.astnodes.ClassDef = function ClassDef(/* {identifier} */ name, /* {asdl_seq
                                               *} */ bases, /* {asdl_seq *} */
+                                              keywords, /* {asdl_seq *} */
                                               body, /* {asdl_seq *} */
-                                              decorator_list, /* {int} */
-                                              lineno, /* {int} */ col_offset)
+                                              decorator_list, /* {string} */
+                                              docstring, /* {int} */ lineno, /*
+                                              {int} */ col_offset)
 {
-    Sk.asserts.assert(name !== null && name !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.name = name;
     this.bases = bases;
+    this.keywords = keywords;
     this.body = body;
     this.decorator_list = decorator_list;
+    this.docstring = docstring;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.Return_ = function Return_(/* {expr_ty} */ value, /* {int} */
-                                            lineno, /* {int} */ col_offset)
+Sk.astnodes.Return = function Return(/* {expr_ty} */ value, /* {int} */ lineno,
+                                          /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -172,9 +216,11 @@ Sk.astnodes.Return_ = function Return_(/* {expr_ty} */ value, /* {int} */
 }
 
 /** @constructor */
-Sk.astnodes.Delete_ = function Delete_(/* {asdl_seq *} */ targets, /* {int} */
-                                            lineno, /* {int} */ col_offset)
+Sk.astnodes.Delete = function Delete(/* {asdl_seq *} */ targets, /* {int} */
+                                          lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.targets = targets;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -186,7 +232,8 @@ Sk.astnodes.Assign = function Assign(/* {asdl_seq *} */ targets, /* {expr_ty}
                                           */ value, /* {int} */ lineno, /*
                                           {int} */ col_offset)
 {
-    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.targets = targets;
     this.value = value;
     this.lineno = lineno;
@@ -200,9 +247,8 @@ Sk.astnodes.AugAssign = function AugAssign(/* {expr_ty} */ target, /*
                                                 {expr_ty} */ value, /* {int} */
                                                 lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(target !== null && target !== undefined);
-    Sk.asserts.assert(op !== null && op !== undefined);
-    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.target = target;
     this.op = op;
     this.value = value;
@@ -212,26 +258,31 @@ Sk.astnodes.AugAssign = function AugAssign(/* {expr_ty} */ target, /*
 }
 
 /** @constructor */
-Sk.astnodes.Print = function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */
-                                        values, /* {bool} */ nl, /* {int} */
-                                        lineno, /* {int} */ col_offset)
+Sk.astnodes.AnnAssign = function AnnAssign(/* {expr_ty} */ target, /* {expr_ty}
+                                                */ annotation, /* {expr_ty} */
+                                                value, /* {int} */ simple, /*
+                                                {int} */ lineno, /* {int} */
+                                                col_offset)
 {
-    this.dest = dest;
-    this.values = values;
-    this.nl = nl;
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.target = target;
+    this.annotation = annotation;
+    this.value = value;
+    this.simple = simple;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.For_ = function For_(/* {expr_ty} */ target, /* {expr_ty} */ iter,
-                                      /* {asdl_seq *} */ body, /* {asdl_seq *}
-                                      */ orelse, /* {int} */ lineno, /* {int}
-                                      */ col_offset)
+Sk.astnodes.For = function For(/* {expr_ty} */ target, /* {expr_ty} */ iter, /*
+                                    {asdl_seq *} */ body, /* {asdl_seq *} */
+                                    orelse, /* {int} */ lineno, /* {int} */
+                                    col_offset)
 {
-    Sk.asserts.assert(target !== null && target !== undefined);
-    Sk.asserts.assert(iter !== null && iter !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.target = target;
     this.iter = iter;
     this.body = body;
@@ -242,12 +293,30 @@ Sk.astnodes.For_ = function For_(/* {expr_ty} */ target, /* {expr_ty} */ iter,
 }
 
 /** @constructor */
-Sk.astnodes.While_ = function While_(/* {expr_ty} */ test, /* {asdl_seq *} */
-                                          body, /* {asdl_seq *} */ orelse, /*
-                                          {int} */ lineno, /* {int} */
-                                          col_offset)
+Sk.astnodes.AsyncFor = function AsyncFor(/* {expr_ty} */ target, /* {expr_ty}
+                                              */ iter, /* {asdl_seq *} */ body,
+                                              /* {asdl_seq *} */ orelse, /*
+                                              {int} */ lineno, /* {int} */
+                                              col_offset)
 {
-    Sk.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.target = target;
+    this.iter = iter;
+    this.body = body;
+    this.orelse = orelse;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.While = function While(/* {expr_ty} */ test, /* {asdl_seq *} */
+                                        body, /* {asdl_seq *} */ orelse, /*
+                                        {int} */ lineno, /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -257,11 +326,12 @@ Sk.astnodes.While_ = function While_(/* {expr_ty} */ test, /* {asdl_seq *} */
 }
 
 /** @constructor */
-Sk.astnodes.If_ = function If_(/* {expr_ty} */ test, /* {asdl_seq *} */ body,
-                                    /* {asdl_seq *} */ orelse, /* {int} */
-                                    lineno, /* {int} */ col_offset)
+Sk.astnodes.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
+                                  {asdl_seq *} */ orelse, /* {int} */ lineno,
+                                  /* {int} */ col_offset)
 {
-    Sk.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -271,26 +341,44 @@ Sk.astnodes.If_ = function If_(/* {expr_ty} */ test, /* {asdl_seq *} */ body,
 }
 
 /** @constructor */
-Sk.astnodes.With_ = function With_(/* {expr_ty} */ context_expr, /* {expr_ty}
-                                        */ optional_vars, /* {asdl_seq *} */
-                                        body, /* {int} */ lineno, /* {int} */
+Sk.astnodes.With = function With(/* {asdl_seq *} */ items, /* {asdl_seq *} */
+                                      body, /* {int} */ lineno, /* {int} */
+                                      col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.items = items;
+    this.body = body;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.AsyncWith = function AsyncWith(/* {asdl_seq *} */ items, /*
+                                                {asdl_seq *} */ body, /* {int}
+                                                */ lineno, /* {int} */
+                                                col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.items = items;
+    this.body = body;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Raise = function Raise(/* {expr_ty} */ exc, /* {expr_ty} */ cause,
+                                        /* {expr_ty} */ inst, /* {expr_ty} */
+                                        tback, /* {int} */ lineno, /* {int} */
                                         col_offset)
 {
-    Sk.asserts.assert(context_expr !== null && context_expr !== undefined);
-    this.context_expr = context_expr;
-    this.optional_vars = optional_vars;
-    this.body = body;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
-Sk.astnodes.Raise = function Raise(/* {expr_ty} */ type, /* {expr_ty} */ inst,
-                                        /* {expr_ty} */ tback, /* {int} */
-                                        lineno, /* {int} */ col_offset)
-{
-    this.type = type;
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.exc = exc;
+    this.cause = cause;
     this.inst = inst;
     this.tback = tback;
     this.lineno = lineno;
@@ -299,27 +387,16 @@ Sk.astnodes.Raise = function Raise(/* {expr_ty} */ type, /* {expr_ty} */ inst,
 }
 
 /** @constructor */
-Sk.astnodes.TryExcept = function TryExcept(/* {asdl_seq *} */ body, /*
-                                                {asdl_seq *} */ handlers, /*
-                                                {asdl_seq *} */ orelse, /*
-                                                {int} */ lineno, /* {int} */
-                                                col_offset)
+Sk.astnodes.Try = function Try(/* {asdl_seq *} */ body, /* {asdl_seq *} */
+                                    handlers, /* {asdl_seq *} */ orelse, /*
+                                    {asdl_seq *} */ finalbody, /* {int} */
+                                    lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.body = body;
     this.handlers = handlers;
     this.orelse = orelse;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
-Sk.astnodes.TryFinally = function TryFinally(/* {asdl_seq *} */ body, /*
-                                                  {asdl_seq *} */ finalbody, /*
-                                                  {int} */ lineno, /* {int} */
-                                                  col_offset)
-{
-    this.body = body;
     this.finalbody = finalbody;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -331,7 +408,8 @@ Sk.astnodes.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg,
                                           /* {int} */ lineno, /* {int} */
                                           col_offset)
 {
-    Sk.asserts.assert(test !== null && test !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.test = test;
     this.msg = msg;
     this.lineno = lineno;
@@ -340,9 +418,11 @@ Sk.astnodes.Assert = function Assert(/* {expr_ty} */ test, /* {expr_ty} */ msg,
 }
 
 /** @constructor */
-Sk.astnodes.Import_ = function Import_(/* {asdl_seq *} */ names, /* {int} */
-                                            lineno, /* {int} */ col_offset)
+Sk.astnodes.Import = function Import(/* {asdl_seq *} */ names, /* {int} */
+                                          lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.names = names;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -356,7 +436,8 @@ Sk.astnodes.ImportFrom = function ImportFrom(/* {identifier} */ module, /*
                                                   lineno, /* {int} */
                                                   col_offset)
 {
-    Sk.asserts.assert(module !== null && module !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.module = module;
     this.names = names;
     this.level = level;
@@ -366,23 +447,23 @@ Sk.astnodes.ImportFrom = function ImportFrom(/* {identifier} */ module, /*
 }
 
 /** @constructor */
-Sk.astnodes.Exec = function Exec(/* {expr_ty} */ body, /* {expr_ty} */ globals,
-                                      /* {expr_ty} */ locals, /* {int} */
-                                      lineno, /* {int} */ col_offset)
+Sk.astnodes.Global = function Global(/* {asdl_seq *} */ names, /* {int} */
+                                          lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(body !== null && body !== undefined);
-    this.body = body;
-    this.globals = globals;
-    this.locals = locals;
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.names = names;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.Global = function Global(/* {asdl_seq *} */ names, /* {int} */
-                                          lineno, /* {int} */ col_offset)
+Sk.astnodes.Nonlocal = function Nonlocal(/* {asdl_seq *} */ names, /* {int} */
+                                              lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.names = names;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -393,7 +474,8 @@ Sk.astnodes.Global = function Global(/* {asdl_seq *} */ names, /* {int} */
 Sk.astnodes.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /*
                                       {int} */ col_offset)
 {
-    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -403,32 +485,55 @@ Sk.astnodes.Expr = function Expr(/* {expr_ty} */ value, /* {int} */ lineno, /*
 /** @constructor */
 Sk.astnodes.Pass = function Pass(/* {int} */ lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.Break_ = function Break_(/* {int} */ lineno, /* {int} */ col_offset)
+Sk.astnodes.Break = function Break(/* {int} */ lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.Continue_ = function Continue_(/* {int} */ lineno, /* {int} */
-                                                col_offset)
+Sk.astnodes.Continue = function Continue(/* {int} */ lineno, /* {int} */
+                                              col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
 }
 
 /** @constructor */
-Sk.astnodes.Debugger_ = function Debugger_(/* {int} */ lineno, /* {int} */
-                                                col_offset)
+Sk.astnodes.Print = function Print(/* {expr_ty} */ dest, /* {asdl_seq *} */
+                                        values, /* {int} */ nl, /* {int} */
+                                        lineno, /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.dest = dest;
+    this.values = values;
+    this.nl = nl;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Debugger = function Debugger(/* {int} */ lineno, /* {int} */
+                                              col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -439,7 +544,8 @@ Sk.astnodes.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
                                           values, /* {int} */ lineno, /* {int}
                                           */ col_offset)
 {
-    Sk.asserts.assert(op !== null && op !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.op = op;
     this.values = values;
     this.lineno = lineno;
@@ -452,9 +558,8 @@ Sk.astnodes.BinOp = function BinOp(/* {expr_ty} */ left, /* {operator_ty} */
                                         op, /* {expr_ty} */ right, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(left !== null && left !== undefined);
-    Sk.asserts.assert(op !== null && op !== undefined);
-    Sk.asserts.assert(right !== null && right !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.left = left;
     this.op = op;
     this.right = right;
@@ -468,8 +573,8 @@ Sk.astnodes.UnaryOp = function UnaryOp(/* {unaryop_ty} */ op, /* {expr_ty} */
                                             operand, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    Sk.asserts.assert(op !== null && op !== undefined);
-    Sk.asserts.assert(operand !== null && operand !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.op = op;
     this.operand = operand;
     this.lineno = lineno;
@@ -482,8 +587,8 @@ Sk.astnodes.Lambda = function Lambda(/* {arguments__ty} */ args, /* {expr_ty}
                                           */ body, /* {int} */ lineno, /* {int}
                                           */ col_offset)
 {
-    Sk.asserts.assert(args !== null && args !== undefined);
-    Sk.asserts.assert(body !== null && body !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.args = args;
     this.body = body;
     this.lineno = lineno;
@@ -496,9 +601,8 @@ Sk.astnodes.IfExp = function IfExp(/* {expr_ty} */ test, /* {expr_ty} */ body,
                                         /* {expr_ty} */ orelse, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(test !== null && test !== undefined);
-    Sk.asserts.assert(body !== null && body !== undefined);
-    Sk.asserts.assert(orelse !== null && orelse !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.test = test;
     this.body = body;
     this.orelse = orelse;
@@ -512,6 +616,8 @@ Sk.astnodes.Dict = function Dict(/* {asdl_seq *} */ keys, /* {asdl_seq *} */
                                       values, /* {int} */ lineno, /* {int} */
                                       col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.keys = keys;
     this.values = values;
     this.lineno = lineno;
@@ -523,6 +629,8 @@ Sk.astnodes.Dict = function Dict(/* {asdl_seq *} */ keys, /* {asdl_seq *} */
 Sk.astnodes.Set = function Set(/* {asdl_seq *} */ elts, /* {int} */ lineno, /*
                                     {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elts = elts;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -534,7 +642,8 @@ Sk.astnodes.ListComp = function ListComp(/* {expr_ty} */ elt, /* {asdl_seq *}
                                               */ generators, /* {int} */
                                               lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elt = elt;
     this.generators = generators;
     this.lineno = lineno;
@@ -547,7 +656,8 @@ Sk.astnodes.SetComp = function SetComp(/* {expr_ty} */ elt, /* {asdl_seq *} */
                                             generators, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    Sk.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elt = elt;
     this.generators = generators;
     this.lineno = lineno;
@@ -561,8 +671,8 @@ Sk.astnodes.DictComp = function DictComp(/* {expr_ty} */ key, /* {expr_ty} */
                                               generators, /* {int} */ lineno,
                                               /* {int} */ col_offset)
 {
-    Sk.asserts.assert(key !== null && key !== undefined);
-    Sk.asserts.assert(value !== null && value !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.key = key;
     this.value = value;
     this.generators = generators;
@@ -578,9 +688,22 @@ Sk.astnodes.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /*
                                                       lineno, /* {int} */
                                                       col_offset)
 {
-    Sk.asserts.assert(elt !== null && elt !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elt = elt;
     this.generators = generators;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Await = function Await(/* {expr_ty} */ value, /* {int} */ lineno,
+                                        /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -590,6 +713,20 @@ Sk.astnodes.GeneratorExp = function GeneratorExp(/* {expr_ty} */ elt, /*
 Sk.astnodes.Yield = function Yield(/* {expr_ty} */ value, /* {int} */ lineno,
                                         /* {int} */ col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.YieldFrom = function YieldFrom(/* {expr_ty} */ value, /* {int} */
+                                                lineno, /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -602,7 +739,8 @@ Sk.astnodes.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq
                                             comparators, /* {int} */ lineno, /*
                                             {int} */ col_offset)
 {
-    Sk.asserts.assert(left !== null && left !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.left = left;
     this.ops = ops;
     this.comparators = comparators;
@@ -613,27 +751,14 @@ Sk.astnodes.Compare = function Compare(/* {expr_ty} */ left, /* {asdl_int_seq
 
 /** @constructor */
 Sk.astnodes.Call = function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args,
-                                      /* {asdl_seq *} */ keywords, /* {expr_ty}
-                                      */ starargs, /* {expr_ty} */ kwargs, /*
-                                      {int} */ lineno, /* {int} */ col_offset)
+                                      /* {asdl_seq *} */ keywords, /* {int} */
+                                      lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(func !== null && func !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.func = func;
     this.args = args;
     this.keywords = keywords;
-    this.starargs = starargs;
-    this.kwargs = kwargs;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
-Sk.astnodes.Repr = function Repr(/* {expr_ty} */ value, /* {int} */ lineno, /*
-                                      {int} */ col_offset)
-{
-    Sk.asserts.assert(value !== null && value !== undefined);
-    this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -643,7 +768,8 @@ Sk.astnodes.Repr = function Repr(/* {expr_ty} */ value, /* {int} */ lineno, /*
 Sk.astnodes.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int}
                                     */ col_offset)
 {
-    Sk.asserts.assert(n !== null && n !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.n = n;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -654,8 +780,88 @@ Sk.astnodes.Num = function Num(/* {object} */ n, /* {int} */ lineno, /* {int}
 Sk.astnodes.Str = function Str(/* {string} */ s, /* {int} */ lineno, /* {int}
                                     */ col_offset)
 {
-    Sk.asserts.assert(s !== null && s !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.s = s;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.FormattedValue = function FormattedValue(/* {expr_ty} */ value, /*
+                                                          {int} */ conversion,
+                                                          /* {expr_ty} */
+                                                          format_spec, /* {int}
+                                                          */ lineno, /* {int}
+                                                          */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
+    this.conversion = conversion;
+    this.format_spec = format_spec;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.JoinedStr = function JoinedStr(/* {asdl_seq *} */ values, /* {int}
+                                                */ lineno, /* {int} */
+                                                col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.values = values;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Bytes = function Bytes(/* {bytes} */ s, /* {int} */ lineno, /*
+                                        {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.s = s;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.NameConstant = function NameConstant(/* {singleton} */ value, /*
+                                                      {int} */ lineno, /* {int}
+                                                      */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Ellipsis = function Ellipsis(/* {int} */ lineno, /* {int} */
+                                              col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Constant = function Constant(/* {constant} */ value, /* {int} */
+                                              lineno, /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
     this.lineno = lineno;
     this.col_offset = col_offset;
     return this;
@@ -668,9 +874,8 @@ Sk.astnodes.Attribute = function Attribute(/* {expr_ty} */ value, /*
                                                 {int} */ lineno, /* {int} */
                                                 col_offset)
 {
-    Sk.asserts.assert(value !== null && value !== undefined);
-    Sk.asserts.assert(attr !== null && attr !== undefined);
-    Sk.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.value = value;
     this.attr = attr;
     this.ctx = ctx;
@@ -685,11 +890,24 @@ Sk.astnodes.Subscript = function Subscript(/* {expr_ty} */ value, /* {slice_ty}
                                                 */ ctx, /* {int} */ lineno, /*
                                                 {int} */ col_offset)
 {
-    Sk.asserts.assert(value !== null && value !== undefined);
-    Sk.asserts.assert(slice !== null && slice !== undefined);
-    Sk.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.value = value;
     this.slice = slice;
+    this.ctx = ctx;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Starred = function Starred(/* {expr_ty} */ value, /*
+                                            {expr_context_ty} */ ctx, /* {int}
+                                            */ lineno, /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.value = value;
     this.ctx = ctx;
     this.lineno = lineno;
     this.col_offset = col_offset;
@@ -701,8 +919,8 @@ Sk.astnodes.Name = function Name(/* {identifier} */ id, /* {expr_context_ty} */
                                       ctx, /* {int} */ lineno, /* {int} */
                                       col_offset)
 {
-    Sk.asserts.assert(id !== null && id !== undefined);
-    Sk.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.id = id;
     this.ctx = ctx;
     this.lineno = lineno;
@@ -715,7 +933,8 @@ Sk.astnodes.List = function List(/* {asdl_seq *} */ elts, /* {expr_context_ty}
                                       */ ctx, /* {int} */ lineno, /* {int} */
                                       col_offset)
 {
-    Sk.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elts = elts;
     this.ctx = ctx;
     this.lineno = lineno;
@@ -728,17 +947,12 @@ Sk.astnodes.Tuple = function Tuple(/* {asdl_seq *} */ elts, /*
                                         {expr_context_ty} */ ctx, /* {int} */
                                         lineno, /* {int} */ col_offset)
 {
-    Sk.asserts.assert(ctx !== null && ctx !== undefined);
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.elts = elts;
     this.ctx = ctx;
     this.lineno = lineno;
     this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
-Sk.astnodes.Ellipsis = function Ellipsis()
-{
     return this;
 }
 
@@ -762,7 +976,6 @@ Sk.astnodes.ExtSlice = function ExtSlice(/* {asdl_seq *} */ dims)
 /** @constructor */
 Sk.astnodes.Index = function Index(/* {expr_ty} */ value)
 {
-    Sk.asserts.assert(value !== null && value !== undefined);
     this.value = value;
     return this;
 }
@@ -770,23 +983,26 @@ Sk.astnodes.Index = function Index(/* {expr_ty} */ value)
 /** @constructor */
 Sk.astnodes.comprehension = function comprehension(/* {expr_ty} */ target, /*
                                                         {expr_ty} */ iter, /*
-                                                        {asdl_seq *} */ ifs)
+                                                        {asdl_seq *} */ ifs, /*
+                                                        {int} */ is_async)
 {
-    Sk.asserts.assert(target !== null && target !== undefined);
-    Sk.asserts.assert(iter !== null && iter !== undefined);
     this.target = target;
     this.iter = iter;
     this.ifs = ifs;
+    this.is_async = is_async;
     return this;
 }
 
 /** @constructor */
 Sk.astnodes.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
-                                                        {expr_ty} */ name, /*
-                                                        {asdl_seq *} */ body,
-                                                        /* {int} */ lineno, /*
-                                                        {int} */ col_offset)
+                                                        {identifier} */ name,
+                                                        /* {asdl_seq *} */
+                                                        body, /* {int} */
+                                                        lineno, /* {int} */
+                                                        col_offset)
 {
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
     this.type = type;
     this.name = name;
     this.body = body;
@@ -797,14 +1013,28 @@ Sk.astnodes.ExceptHandler = function ExceptHandler(/* {expr_ty} */ type, /*
 
 /** @constructor */
 Sk.astnodes.arguments_ = function arguments_(/* {asdl_seq *} */ args, /*
-                                                  {identifier} */ vararg, /*
-                                                  {identifier} */ kwarg, /*
-                                                  {asdl_seq *} */ defaults)
+                                                  {arg_ty} */ vararg, /*
+                                                  {asdl_seq *} */ kwonlyargs,
+                                                  /* {asdl_seq *} */
+                                                  kw_defaults, /* {arg_ty} */
+                                                  kwarg, /* {asdl_seq *} */
+                                                  defaults)
 {
     this.args = args;
     this.vararg = vararg;
+    this.kwonlyargs = kwonlyargs;
+    this.kw_defaults = kw_defaults;
     this.kwarg = kwarg;
     this.defaults = defaults;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.arg = function arg(/* {identifier} */ arg, /* {expr_ty} */
+                                    annotation)
+{
+    this.arg = arg;
+    this.annotation = annotation;
     return this;
 }
 
@@ -812,8 +1042,6 @@ Sk.astnodes.arguments_ = function arguments_(/* {asdl_seq *} */ args, /*
 Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */
                                             value)
 {
-    Sk.asserts.assert(arg !== null && arg !== undefined);
-    Sk.asserts.assert(value !== null && value !== undefined);
     this.arg = arg;
     this.value = value;
     return this;
@@ -823,16 +1051,25 @@ Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */
 Sk.astnodes.alias = function alias(/* {identifier} */ name, /* {identifier} */
                                         asname)
 {
-    Sk.asserts.assert(name !== null && name !== undefined);
     this.name = name;
     this.asname = asname;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.withitem = function withitem(/* {expr_ty} */ context_expr, /*
+                                              {expr_ty} */ optional_vars)
+{
+    this.context_expr = context_expr;
+    this.optional_vars = optional_vars;
     return this;
 }
 
 
 Sk.astnodes.Module.prototype._astname = "Module";
 Sk.astnodes.Module.prototype._fields = [
-    "body", function(n) { return n.body; }
+    "body", function(n) { return n.body; },
+    "docstring", function(n) { return n.docstring; }
 ];
 Sk.astnodes.Interactive.prototype._astname = "Interactive";
 Sk.astnodes.Interactive.prototype._fields = [
@@ -851,21 +1088,34 @@ Sk.astnodes.FunctionDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; },
-    "decorator_list", function(n) { return n.decorator_list; }
+    "decorator_list", function(n) { return n.decorator_list; },
+    "returns", function(n) { return n.returns; },
+    "docstring", function(n) { return n.docstring; }
+];
+Sk.astnodes.AsyncFunctionDef.prototype._astname = "AsyncFunctionDef";
+Sk.astnodes.AsyncFunctionDef.prototype._fields = [
+    "name", function(n) { return n.name; },
+    "args", function(n) { return n.args; },
+    "body", function(n) { return n.body; },
+    "decorator_list", function(n) { return n.decorator_list; },
+    "returns", function(n) { return n.returns; },
+    "docstring", function(n) { return n.docstring; }
 ];
 Sk.astnodes.ClassDef.prototype._astname = "ClassDef";
 Sk.astnodes.ClassDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "bases", function(n) { return n.bases; },
+    "keywords", function(n) { return n.keywords; },
     "body", function(n) { return n.body; },
-    "decorator_list", function(n) { return n.decorator_list; }
+    "decorator_list", function(n) { return n.decorator_list; },
+    "docstring", function(n) { return n.docstring; }
 ];
-Sk.astnodes.Return_.prototype._astname = "Return";
-Sk.astnodes.Return_.prototype._fields = [
+Sk.astnodes.Return.prototype._astname = "Return";
+Sk.astnodes.Return.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Sk.astnodes.Delete_.prototype._astname = "Delete";
-Sk.astnodes.Delete_.prototype._fields = [
+Sk.astnodes.Delete.prototype._astname = "Delete";
+Sk.astnodes.Delete.prototype._fields = [
     "targets", function(n) { return n.targets; }
 ];
 Sk.astnodes.Assign.prototype._astname = "Assign";
@@ -879,52 +1129,61 @@ Sk.astnodes.AugAssign.prototype._fields = [
     "op", function(n) { return n.op; },
     "value", function(n) { return n.value; }
 ];
-Sk.astnodes.Print.prototype._astname = "Print";
-Sk.astnodes.Print.prototype._fields = [
-    "dest", function(n) { return n.dest; },
-    "values", function(n) { return n.values; },
-    "nl", function(n) { return n.nl; }
+Sk.astnodes.AnnAssign.prototype._astname = "AnnAssign";
+Sk.astnodes.AnnAssign.prototype._fields = [
+    "target", function(n) { return n.target; },
+    "annotation", function(n) { return n.annotation; },
+    "value", function(n) { return n.value; },
+    "simple", function(n) { return n.simple; }
 ];
-Sk.astnodes.For_.prototype._astname = "For";
-Sk.astnodes.For_.prototype._fields = [
+Sk.astnodes.For.prototype._astname = "For";
+Sk.astnodes.For.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.astnodes.While_.prototype._astname = "While";
-Sk.astnodes.While_.prototype._fields = [
+Sk.astnodes.AsyncFor.prototype._astname = "AsyncFor";
+Sk.astnodes.AsyncFor.prototype._fields = [
+    "target", function(n) { return n.target; },
+    "iter", function(n) { return n.iter; },
+    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; }
+];
+Sk.astnodes.While.prototype._astname = "While";
+Sk.astnodes.While.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.astnodes.If_.prototype._astname = "If";
-Sk.astnodes.If_.prototype._fields = [
+Sk.astnodes.If.prototype._astname = "If";
+Sk.astnodes.If.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Sk.astnodes.With_.prototype._astname = "With";
-Sk.astnodes.With_.prototype._fields = [
-    "context_expr", function(n) { return n.context_expr; },
-    "optional_vars", function(n) { return n.optional_vars; },
+Sk.astnodes.With.prototype._astname = "With";
+Sk.astnodes.With.prototype._fields = [
+    "items", function(n) { return n.items; },
+    "body", function(n) { return n.body; }
+];
+Sk.astnodes.AsyncWith.prototype._astname = "AsyncWith";
+Sk.astnodes.AsyncWith.prototype._fields = [
+    "items", function(n) { return n.items; },
     "body", function(n) { return n.body; }
 ];
 Sk.astnodes.Raise.prototype._astname = "Raise";
 Sk.astnodes.Raise.prototype._fields = [
-    "type", function(n) { return n.type; },
+    "exc", function(n) { return n.exc; },
+    "cause", function(n) { return n.cause; },
     "inst", function(n) { return n.inst; },
     "tback", function(n) { return n.tback; }
 ];
-Sk.astnodes.TryExcept.prototype._astname = "TryExcept";
-Sk.astnodes.TryExcept.prototype._fields = [
+Sk.astnodes.Try.prototype._astname = "Try";
+Sk.astnodes.Try.prototype._fields = [
     "body", function(n) { return n.body; },
     "handlers", function(n) { return n.handlers; },
-    "orelse", function(n) { return n.orelse; }
-];
-Sk.astnodes.TryFinally.prototype._astname = "TryFinally";
-Sk.astnodes.TryFinally.prototype._fields = [
-    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; },
     "finalbody", function(n) { return n.finalbody; }
 ];
 Sk.astnodes.Assert.prototype._astname = "Assert";
@@ -932,8 +1191,8 @@ Sk.astnodes.Assert.prototype._fields = [
     "test", function(n) { return n.test; },
     "msg", function(n) { return n.msg; }
 ];
-Sk.astnodes.Import_.prototype._astname = "Import";
-Sk.astnodes.Import_.prototype._fields = [
+Sk.astnodes.Import.prototype._astname = "Import";
+Sk.astnodes.Import.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
 Sk.astnodes.ImportFrom.prototype._astname = "ImportFrom";
@@ -942,14 +1201,12 @@ Sk.astnodes.ImportFrom.prototype._fields = [
     "names", function(n) { return n.names; },
     "level", function(n) { return n.level; }
 ];
-Sk.astnodes.Exec.prototype._astname = "Exec";
-Sk.astnodes.Exec.prototype._fields = [
-    "body", function(n) { return n.body; },
-    "globals", function(n) { return n.globals; },
-    "locals", function(n) { return n.locals; }
-];
 Sk.astnodes.Global.prototype._astname = "Global";
 Sk.astnodes.Global.prototype._fields = [
+    "names", function(n) { return n.names; }
+];
+Sk.astnodes.Nonlocal.prototype._astname = "Nonlocal";
+Sk.astnodes.Nonlocal.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
 Sk.astnodes.Expr.prototype._astname = "Expr";
@@ -959,14 +1216,20 @@ Sk.astnodes.Expr.prototype._fields = [
 Sk.astnodes.Pass.prototype._astname = "Pass";
 Sk.astnodes.Pass.prototype._fields = [
 ];
-Sk.astnodes.Break_.prototype._astname = "Break";
-Sk.astnodes.Break_.prototype._fields = [
+Sk.astnodes.Break.prototype._astname = "Break";
+Sk.astnodes.Break.prototype._fields = [
 ];
-Sk.astnodes.Continue_.prototype._astname = "Continue";
-Sk.astnodes.Continue_.prototype._fields = [
+Sk.astnodes.Continue.prototype._astname = "Continue";
+Sk.astnodes.Continue.prototype._fields = [
 ];
-Sk.astnodes.Debugger_.prototype._astname = "Debugger";
-Sk.astnodes.Debugger_.prototype._fields = [
+Sk.astnodes.Print.prototype._astname = "Print";
+Sk.astnodes.Print.prototype._fields = [
+    "dest", function(n) { return n.dest; },
+    "values", function(n) { return n.values; },
+    "nl", function(n) { return n.nl; }
+];
+Sk.astnodes.Debugger.prototype._astname = "Debugger";
+Sk.astnodes.Debugger.prototype._fields = [
 ];
 Sk.astnodes.BoolOp.prototype._astname = "BoolOp";
 Sk.astnodes.BoolOp.prototype._fields = [
@@ -1025,8 +1288,16 @@ Sk.astnodes.GeneratorExp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
+Sk.astnodes.Await.prototype._astname = "Await";
+Sk.astnodes.Await.prototype._fields = [
+    "value", function(n) { return n.value; }
+];
 Sk.astnodes.Yield.prototype._astname = "Yield";
 Sk.astnodes.Yield.prototype._fields = [
+    "value", function(n) { return n.value; }
+];
+Sk.astnodes.YieldFrom.prototype._astname = "YieldFrom";
+Sk.astnodes.YieldFrom.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
 Sk.astnodes.Compare.prototype._astname = "Compare";
@@ -1039,13 +1310,7 @@ Sk.astnodes.Call.prototype._astname = "Call";
 Sk.astnodes.Call.prototype._fields = [
     "func", function(n) { return n.func; },
     "args", function(n) { return n.args; },
-    "keywords", function(n) { return n.keywords; },
-    "starargs", function(n) { return n.starargs; },
-    "kwargs", function(n) { return n.kwargs; }
-];
-Sk.astnodes.Repr.prototype._astname = "Repr";
-Sk.astnodes.Repr.prototype._fields = [
-    "value", function(n) { return n.value; }
+    "keywords", function(n) { return n.keywords; }
 ];
 Sk.astnodes.Num.prototype._astname = "Num";
 Sk.astnodes.Num.prototype._fields = [
@@ -1054,6 +1319,31 @@ Sk.astnodes.Num.prototype._fields = [
 Sk.astnodes.Str.prototype._astname = "Str";
 Sk.astnodes.Str.prototype._fields = [
     "s", function(n) { return n.s; }
+];
+Sk.astnodes.FormattedValue.prototype._astname = "FormattedValue";
+Sk.astnodes.FormattedValue.prototype._fields = [
+    "value", function(n) { return n.value; },
+    "conversion", function(n) { return n.conversion; },
+    "format_spec", function(n) { return n.format_spec; }
+];
+Sk.astnodes.JoinedStr.prototype._astname = "JoinedStr";
+Sk.astnodes.JoinedStr.prototype._fields = [
+    "values", function(n) { return n.values; }
+];
+Sk.astnodes.Bytes.prototype._astname = "Bytes";
+Sk.astnodes.Bytes.prototype._fields = [
+    "s", function(n) { return n.s; }
+];
+Sk.astnodes.NameConstant.prototype._astname = "NameConstant";
+Sk.astnodes.NameConstant.prototype._fields = [
+    "value", function(n) { return n.value; }
+];
+Sk.astnodes.Ellipsis.prototype._astname = "Ellipsis";
+Sk.astnodes.Ellipsis.prototype._fields = [
+];
+Sk.astnodes.Constant.prototype._astname = "Constant";
+Sk.astnodes.Constant.prototype._fields = [
+    "value", function(n) { return n.value; }
 ];
 Sk.astnodes.Attribute.prototype._astname = "Attribute";
 Sk.astnodes.Attribute.prototype._fields = [
@@ -1065,6 +1355,11 @@ Sk.astnodes.Subscript.prototype._astname = "Subscript";
 Sk.astnodes.Subscript.prototype._fields = [
     "value", function(n) { return n.value; },
     "slice", function(n) { return n.slice; },
+    "ctx", function(n) { return n.ctx; }
+];
+Sk.astnodes.Starred.prototype._astname = "Starred";
+Sk.astnodes.Starred.prototype._fields = [
+    "value", function(n) { return n.value; },
     "ctx", function(n) { return n.ctx; }
 ];
 Sk.astnodes.Name.prototype._astname = "Name";
@@ -1094,9 +1389,6 @@ Sk.astnodes.AugStore.prototype._astname = "AugStore";
 Sk.astnodes.AugStore.prototype._isenum = true;
 Sk.astnodes.Param.prototype._astname = "Param";
 Sk.astnodes.Param.prototype._isenum = true;
-Sk.astnodes.Ellipsis.prototype._astname = "Ellipsis";
-Sk.astnodes.Ellipsis.prototype._fields = [
-];
 Sk.astnodes.Slice.prototype._astname = "Slice";
 Sk.astnodes.Slice.prototype._fields = [
     "lower", function(n) { return n.lower; },
@@ -1121,6 +1413,8 @@ Sk.astnodes.Sub.prototype._astname = "Sub";
 Sk.astnodes.Sub.prototype._isenum = true;
 Sk.astnodes.Mult.prototype._astname = "Mult";
 Sk.astnodes.Mult.prototype._isenum = true;
+Sk.astnodes.MatMult.prototype._astname = "MatMult";
+Sk.astnodes.MatMult.prototype._isenum = true;
 Sk.astnodes.Div.prototype._astname = "Div";
 Sk.astnodes.Div.prototype._isenum = true;
 Sk.astnodes.Mod.prototype._astname = "Mod";
@@ -1163,15 +1457,16 @@ Sk.astnodes.Is.prototype._astname = "Is";
 Sk.astnodes.Is.prototype._isenum = true;
 Sk.astnodes.IsNot.prototype._astname = "IsNot";
 Sk.astnodes.IsNot.prototype._isenum = true;
-Sk.astnodes.In_.prototype._astname = "In";
-Sk.astnodes.In_.prototype._isenum = true;
+Sk.astnodes.In.prototype._astname = "In";
+Sk.astnodes.In.prototype._isenum = true;
 Sk.astnodes.NotIn.prototype._astname = "NotIn";
 Sk.astnodes.NotIn.prototype._isenum = true;
 Sk.astnodes.comprehension.prototype._astname = "comprehension";
 Sk.astnodes.comprehension.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
-    "ifs", function(n) { return n.ifs; }
+    "ifs", function(n) { return n.ifs; },
+    "is_async", function(n) { return n.is_async; }
 ];
 Sk.astnodes.ExceptHandler.prototype._astname = "ExceptHandler";
 Sk.astnodes.ExceptHandler.prototype._fields = [
@@ -1183,8 +1478,15 @@ Sk.astnodes.arguments_.prototype._astname = "arguments";
 Sk.astnodes.arguments_.prototype._fields = [
     "args", function(n) { return n.args; },
     "vararg", function(n) { return n.vararg; },
+    "kwonlyargs", function(n) { return n.kwonlyargs; },
+    "kw_defaults", function(n) { return n.kw_defaults; },
     "kwarg", function(n) { return n.kwarg; },
     "defaults", function(n) { return n.defaults; }
+];
+Sk.astnodes.arg.prototype._astname = "arg";
+Sk.astnodes.arg.prototype._fields = [
+    "arg", function(n) { return n.arg; },
+    "annotation", function(n) { return n.annotation; }
 ];
 Sk.astnodes.keyword.prototype._astname = "keyword";
 Sk.astnodes.keyword.prototype._fields = [
@@ -1195,6 +1497,11 @@ Sk.astnodes.alias.prototype._astname = "alias";
 Sk.astnodes.alias.prototype._fields = [
     "name", function(n) { return n.name; },
     "asname", function(n) { return n.asname; }
+];
+Sk.astnodes.withitem.prototype._astname = "withitem";
+Sk.astnodes.withitem.prototype._fields = [
+    "context_expr", function(n) { return n.context_expr; },
+    "optional_vars", function(n) { return n.optional_vars; }
 ];
 
 Sk.exportSymbol("Sk.astnodes", Sk.astnodes);

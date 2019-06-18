@@ -289,70 +289,107 @@ Sk.builtin.func.prototype.tp$getname = function () {
     return (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
 };
 
-Sk.builtin.func.prototype.tp$call = function (args, kw) {
-    var i;
-    var kwix;
-    var varnames = this.func_code.co_varnames || [];
-    var defaults = this.func_code.$defaults || [];
-    var kwargsarr = [];
-    var expectskw = this.func_code["co_kwargs"];
-    var name;
-    var nargs = args.length;
-    var varargs = [];
-    var defaultsNeeded = varnames.length - nargs > defaults.length ? defaults.length : varnames.length - nargs;
-    var offset = varnames.length - defaults.length;
+Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
+    // This function is a logical Javascript port of
+    // _PyEval_EvalCodeWithName, and follows its logic.
 
-    if (this.func_code["no_kw"] && kw) {
-        throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+    let co_argcount = this.func_code.co_argcount;
+
+    if (co_argcount === undefined) {
+        co_argcount = this.func_code.co_varnames ? this.func_code.co_varnames.length : posargs.length;
+    }
+    let varnames = this.func_code.co_varnames || [];
+    let co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+    let totalArgs = co_argcount + co_kwonlyargcount;
+    let kwargs;
+
+    /* Create a NOT-a-dictionary for keyword parameters (**kwags) */
+    if (this.func_code.co_kwargs) {
+        kwargs = [];
     }
 
+    /* Copy positional arguments into arguments to our JS function*/
+    let nposargs = posargs.length;
+    let args = (posargs.length <= co_argcount) ? posargs : posargs.slice(0, co_argcount);
+
+
+    /* Pack other positional arguments into the *args argument */
+    if (this.func_code.co_varargs) {
+        let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
+        args[totalArgs] = new Sk.builtin.tuple(vararg);
+    } else if (nposargs > co_argcount) {
+        throw new Sk.builtin.TypeError(this.tp$getname() + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+    }
+
+    /* Handle keyword arguments */
     if (kw) {
-        for (i = 0; i < kw.length; i += 2) {
-            if (varnames && ((kwix = varnames.indexOf(kw[i])) !== -1)) {
-                if (kwix < nargs) {
-                    name = this.tp$getname();
-                    if (name in Sk.builtins && this === Sk.builtins[name]) {
-                        throw new Sk.builtin.TypeError("Argument given by name ('" + kw[i] + "') and position (" + (kwix + 1) + ")");
-                    }
-                    throw new Sk.builtin.TypeError(name + "() got multiple values for keyword argument '" + kw[i] + "'");
+        if (this.func_code["no_kw"]) {
+            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+        }
+
+        for (let i = 0; i < kw.length; i += 2) {
+            let name = kw[i]; // JS string
+            let value = kw[i+1]; // Python value
+            let idx = varnames.indexOf(name);
+
+            if (idx >= 0) {
+                if (args[idx] !== undefined) {
+                    throw new Sk.builtin.TypeError(this.tp$getname() + "() got multiple values for argument '" + name + "'");
                 }
-                varargs[kwix] = kw[i + 1];
-            } else if (expectskw) {
-                // build kwargs dict
-                kwargsarr.push(new Sk.builtin.str(kw[i]));
-                kwargsarr.push(kw[i + 1]);
+                args[idx] = value;
+            } else if (kwargs) {
+                kwargs.push(new Sk.builtin.str(name), value);
             } else {
-                name = this.tp$getname();
-                if (name in Sk.builtins && this === Sk.builtins[name]) {
-                    throw new Sk.builtin.TypeError("'" + kw[i] + "' is an invalid keyword argument for this function");
+                throw new Sk.builtin.TypeError(this.tp$getname() + "() got an unexpected keyword argument '" + name + "'");
+            }
+        }
+    }
+
+    /* "Check the number of positional arguments" (which only checks for too many)
+       has been handled before keywords */
+
+    /* Add missing positional arguments (copy default values from defs)
+       (also checks for missing args where no defaults) */
+    {
+        let defaults = this.func_code.$defaults || [];
+        let i = 0, missing = [], missingUnnamed = false;
+        // Positional args for which we *don't* have a default
+        let defaultStart = co_argcount - defaults.length;
+        for (; i < defaultStart; i++) {
+            if (args[i] === undefined) {
+                missing.push(varnames[i]);
+                if (varnames[i] === undefined) {
+                    missingUnnamed = true;
                 }
-                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+            }
+        }
+        if (missing.length != 0 && (this.func_code.co_argcount || this.func_code.co_varnames)) {
+            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
+        }
+        for (; i < co_argcount; i++) {
+            if (args[i] === undefined) {
+                args[i] = defaults[i - defaultStart];
             }
         }
     }
 
-    // add defaults if there are enough because if we add them and leave a hole in the args array, pycheckargs doesn't work correctly
-    // maybe we should fix pycheckargs too though.
-    if (defaultsNeeded <= defaults.length) {
-        for (i = defaults.length - defaultsNeeded; i < defaults.length; i++) {
-            if (!varargs[offset + i]) {
-                varargs[offset + i] = defaults[i];
+    /* Add missing keyword arguments (copy default values from kwdefs) */
+
+    if (co_kwonlyargcount > 0) {
+        let missing = [];
+        let kwdefs = this.func_code.$kwdefs;
+
+        for (let i = co_argcount; i < totalArgs; i++) {
+            if (args[i] === undefined) {
+                if (kwdefs[i-co_argcount] !== undefined) {
+                    args[i] = kwdefs[i-co_argcount];
+                } else {
+                    missing.push(varnames[i]);
+                }
             }
         }
-    }
-
-    // add arguments found in varargs
-    for (i = 0; i < varargs.length; i++) {
-        if (varargs[i]) {
-            args[i] = varargs[i];
-        }
-    }
-
-    if (kw && nargs < varnames.length - defaults.length) {
-        for (i = nargs; i < varnames.length - defaults.length; i++) {
-            if (kw.indexOf(varnames[i]) === -1) {
-                throw new Sk.builtin.TypeError(this.tp$getname() + "() takes atleast " + (varnames.length - defaults.length) + " arguments (" + (nargs + varargs.filter(function(x) { return x; }).length) +  " given)");
-            }
+        if (missing.length !== 0) {
+            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required keyword argument" + (missing.length==1?"":"s") + ": " + missing.join(", "));
         }
     }
 
@@ -360,7 +397,7 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
         // todo; OK to modify?
         if (varnames) {
             // Make sure all default arguments are in args before adding closure
-            for (i = args.length; i < varnames.length; i++) {
+            for (let i = args.length; i < varnames.length; i++) {
                 args.push(undefined);
             }
         }
@@ -368,13 +405,14 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
         args.push(this.func_closure);
     }
 
-    if (expectskw) {
-        args.unshift(kwargsarr);
+    if (kwargs) {
+        args.unshift(kwargs);
     }
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
+
 };
 
 Sk.builtin.func.prototype["$r"] = function () {

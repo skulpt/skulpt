@@ -667,6 +667,27 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
     return res;
 };
 
+// Unpack mapping into a JS array of alternating keys/values, possibly suspending
+// Skulpt uses a slightly grungy format for keyword args
+// into misceval.apply() and friends (alternating JS strings and Python values).
+// We should probably migrate that interface to using Python strings
+// at some point, but in the meantime we have this function to
+// unpack keyword dictionaries into our special format
+Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObject) {
+    return Sk.misceval.chain(pyMapping.tp$getattr(new Sk.builtin.str("items")), function(itemfn) {
+        if (!itemfn) { throw new Sk.builtin.TypeError("Object is not a mapping"); }
+        return Sk.misceval.callsimOrSuspend(itemfn);
+    }, function(items) {
+        return Sk.misceval.iterFor(Sk.abstr.iter(items), function(item) {
+            if (!item || !item.v) { throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples"); }
+            if (!(item.v[0] instanceof Sk.builtin.str)) {
+                throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name +":" : "") + "keywords must be strings");
+            }
+            jsArray.push(item.v[0].v, item.v[1]);
+        });
+    });
+};
+
 //
 // Object
 //

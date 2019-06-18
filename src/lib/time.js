@@ -316,7 +316,10 @@ var $builtinmodule = function (name) {
             format = new Sk.builtin.str("%a %b %d %H:%M:%S %Y");
         }
 
-        return date_to_struct_time(strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
+        let t = date_to_struct_time(strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
+        // We have no idea whether this was a DST time or not
+        t.v[8] = new Sk.builtin.int_(-1);
+        return t;
     }
 
     mod.strptime = new Sk.builtin.func(strptime_f);

@@ -47,6 +47,7 @@ require("./file.js");
 require("./ffi.js");
 require("./iterator.js");
 require("./enumerate.js");
+require("./token.js");
 require("./tokenize.js");
 require("../gen/parse_tables.js");
 require("./parser.js");

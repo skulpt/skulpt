@@ -33,6 +33,7 @@ Sk.python2 = {
     absolute_import: null,
     unicode_literals: false,
     // skulpt specific
+    python3: false,
     set_repr: false,
     class_repr: false,
     inherit_from_object: false,
@@ -45,7 +46,9 @@ Sk.python2 = {
     list_clear: false,
     exceptions: false,
     no_long_type: false,
-    ceil_floor_int: false
+    ceil_floor_int: false,
+    l_suffix: true,
+    silent_octal_literal: true
 };
 
 Sk.python3 = {
@@ -54,6 +57,7 @@ Sk.python3 = {
     absolute_import: null,
     unicode_literals: true,
     // skulpt specific
+    python3: true,
     set_repr: true,
     class_repr: true,
     inherit_from_object: true,
@@ -66,7 +70,9 @@ Sk.python3 = {
     list_clear: true,
     exceptions: true,
     no_long_type: true,
-    ceil_floor_int: true
+    ceil_floor_int: true,
+    l_suffix: false,
+    silent_octal_literal: false
 };
 
 Sk.configure = function (options) {
@@ -117,6 +123,8 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
     Sk.bool_check(Sk.__future__.ceil_floor_int, "Sk.__future__.ceil_floor_int");
+    Sk.bool_check(Sk.__future__.silent_octal_literal, "Sk.__future__.silent_octal_literal");
+    Sk.bool_check(Sk.__future__.l_suffix, "Sk.__future__.l_suffix");
 
     // in __future__ add checks for absolute_import
 

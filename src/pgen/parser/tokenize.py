@@ -31,12 +31,15 @@ __credits__ = \
 
 import string, re
 from codecs import BOM_UTF8, lookup
-from lib2to3.pgen2.token import *
 
-import token
-__all__ = [x for x in dir(token) if x[0] != '_'] + ["tokenize",
-           "generate_tokens", "untokenize"]
-del token
+# Meredydd changed - why were we using a Python 2 token table from the
+# filesystem that disagrees with our local token.py?
+#from lib2to3.pgen2.token import *
+# from import token
+# __all__ = [x for x in dir(token) if x[0] != '_'] + ["tokenize",
+#            "generate_tokens", "untokenize"]
+# del token
+from token import *
 
 def group(*choices): return '(' + '|'.join(choices) + ')'
 def any(*choices): return group(*choices) + '*'
