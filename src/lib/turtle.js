@@ -365,14 +365,9 @@ function generateTurtleModule(_target) {
             if (managers && managers.length) {
                 computeCoordinates();
                 for (i = managers.length; --i >= 0;) {
-                    if (type === "mousemove") {
-                        if (managers[i].canMove()) {
-                            managers[i].trigger([localX, localY]);
-                        }
-                        continue;
-                    }
-
-                    if (managers[i].test(x, y, localX, localY)) {
+                    if (type === "mousemove" && managers[i].canMove() && managers[i].test(x, y, localX, localY)) {
+                        managers[i].trigger([localX, localY]);
+                    }else if(type==="mousedown" && managers[i].test(x, y, localX, localY)){//For onclick event
                         managers[i].trigger([localX, localY]);
                     }
                 }

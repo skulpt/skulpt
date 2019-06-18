@@ -587,6 +587,12 @@ Sk.builtin.list.prototype["remove"] = new Sk.builtin.func(function (self, item) 
     return Sk.builtin.none.none$;
 });
 
+Sk.builtin.list.prototype.clear$ = function (self) {
+    Sk.builtin.pyCheckArgsLen("clear", arguments.length, 1, 1);
+    self.v = [];
+    return Sk.builtin.none.none$;
+};
+
 Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, start, stop) {
     var i;
     var obj;
