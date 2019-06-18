@@ -56,27 +56,26 @@ Sk.builtin._tryGetSubscript = function(dict, pyName) {
         return undefined;
     }
 };
-goog.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
+Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 
 /**
  * Get an attribute
- * @param {string} name JS name of the attribute
+ * @param {Object} pyName Python string name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
+Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     var res;
     var f;
     var descr;
     var tp;
     var dict;
     var getf;
-    var pyName = new Sk.builtin.str(name);
-    goog.asserts.assert(typeof name === "string");
+    var jsName = pyName.$jsstr();
 
     tp = this.ob$type;
-    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
     //print("getattr", tp.tp$name, name);
@@ -88,14 +87,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
         } else if (dict.mp$subscript) {
             res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            res = dict[name];
+            res = dict[jsName];
         }
         if (res !== undefined) {
             return res;
         }
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
+    descr = Sk.builtin.type.typeLookup(tp, pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined &amp;&amp; descr !== null) {
@@ -114,7 +113,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
 
     // OK, try __getattr__
 
-    descr = Sk.builtin.type.typeLookup(tp, "__getattr__");
+    descr = Sk.builtin.type.typeLookup(tp, Sk.builtin.str.$getattr);
     if (descr !== undefined &amp;&amp; descr !== null) {
         f = descr.tp$descr_get;
         if (f) {
@@ -138,48 +137,46 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
 
     return undefined;
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
-Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
-    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v, true);
+Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, pyName) {
+    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, pyName, true);
     if (r === undefined) {
-        throw new Sk.builtin.AttributeError(name);
+        throw new Sk.builtin.AttributeError(pyName);
     }
     return r;
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 /**
- * @param {string} name
+ * @param {Object} pyName
  * @param {Object} value
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
-Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) {
+Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
-    var pyname;
+    var jsName = pyName.$jsstr();
     var dict;
     var tp = this.ob$type;
     var descr;
     var f;
 
-    goog.asserts.assert(typeof name === "string");
-    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
 
-    if (name == "__class__") {
-        if (value.tp$mro === undefined || value.tp$name === undefined ||
-            value.tp$name === undefined) {
+    if (jsName == "__class__") {
+        if (value.tp$mro === undefined || value.tp$name === undefined) {
             throw new Sk.builtin.TypeError(
-                      "attempted to assign non-class to __class__");
+                "attempted to assign non-class to __class__");
         }
         this.ob$type = value;
         this.tp$name = value.tp$name;
         return;
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, name);
+    descr = Sk.builtin.type.typeLookup(tp, pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined &amp;&amp; descr !== null) {
@@ -191,24 +188,22 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value, canSuspend) 
     }
 
     if (dict.mp$ass_subscript) {
-        pyname = new Sk.builtin.str(name);
-
         if (this instanceof Sk.builtin.object &amp;&amp; !(this.ob$type.sk$klass) &amp;&amp;
-            dict.mp$lookup(pyname) === undefined) {
+            dict.mp$lookup(pyName) === undefined) {
             // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(name) + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
         }
-        dict.mp$ass_subscript(new Sk.builtin.str(name), value);
+        dict.mp$ass_subscript(pyName, value);
     } else if (typeof dict === "object") {
-        dict[name] = value;
+        dict[jsName] = value;
     }
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
-Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
-    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value, true);
+Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, pyName, value) {
+    return Sk.builtin.object.prototype.GenericSetAttr.call(self, pyName, value, true);
 };
-goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
+Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
 
 Sk.builtin.object.prototype.HashNotImplemented = function () {
     throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
@@ -509,10 +504,12 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * Array of all the Python functions which are methods of this class.
  * @type {Array}
  */
-Sk.builtin.object.pythonFunctions = ["__repr__", "__str__", "__hash__",
-                                     "__eq__", "__ne__", "__lt__", "__le__",
-                                     "__gt__", "__ge__", "__getattribute__",
-                                     "__setattr__", "__format__"];
+Sk.builtin.object.pythonFunctions = [
+    "__repr__", "__str__", "__hash__",
+    "__eq__", "__ne__", "__lt__", "__le__",
+    "__gt__", "__ge__", "__getattribute__",
+    "__setattr__", "__format__"
+];
 
 /**
  * @constructor
@@ -557,8 +554,8 @@ Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.
  */
 Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
 
-goog.exportSymbol("Sk.builtin.none", Sk.builtin.none);
-goog.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
+Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
+Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
 </code></pre>
         </article>
     </section>
@@ -569,13 +566,13 @@ goog.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Break.html">Break</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.inherits-tempCtor.html">tempCtor</a></li><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Break.html">Break</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 16 2019 09:23:21 GMT-0500 (CDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jun 18 2019 11:14:14 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

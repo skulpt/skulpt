@@ -70,7 +70,7 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
         throw new Sk.builtin.TypeError(msg);
     }
 };
-goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
+Sk.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
  * Check arguments to Python functions to ensure the correct number of
@@ -123,12 +123,12 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
         throw new Sk.builtin.TypeError(name + " must be a " + exptype);
     }
 };
-goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
+Sk.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
     return (arg !== null &amp;&amp; arg.mp$subscript !== undefined);
 };
-goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
+Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
 /**
  * Use this to test whether or not a Python object is iterable.  You should **not** rely
@@ -158,7 +158,7 @@ Sk.builtin.checkIterable = function (arg) {
     }
     return ret;
 };
-goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
+Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (obj) {
     // takes care of builtin functions and methods, builtins
@@ -174,7 +174,7 @@ Sk.builtin.checkCallable = function (obj) {
         return true;
     }
     // go up the prototype chain to see if the class has a __call__ method
-    if (Sk.abstr.lookupSpecial(obj, "__call__") !== undefined) {
+    if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) !== undefined) {
         return true;
     }
     return false;
@@ -186,7 +186,7 @@ Sk.builtin.checkNumber = function (arg) {
         arg instanceof Sk.builtin.float_ ||
         arg instanceof Sk.builtin.lng));
 };
-goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
+Sk.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
 /**
  * Checks for complex type, delegates to internal method
@@ -195,44 +195,44 @@ goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 Sk.builtin.checkComplex = function (arg) {
     return Sk.builtin.complex._complex_check(arg);
 };
-goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
+Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) &amp;&amp; ((typeof arg === "number" &amp;&amp; arg === (arg | 0)) ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.lng);
 };
-goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
+Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
     return (arg !== null) &amp;&amp; (arg instanceof Sk.builtin.float_);
 };
-goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
+Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
     return (arg !== null &amp;&amp; arg.__class__ == Sk.builtin.str);
 };
-goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
+Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkClass = function (arg) {
     return (arg !== null &amp;&amp; arg.sk$type);
 };
-goog.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
+Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
 Sk.builtin.checkBool = function (arg) {
     return (arg instanceof Sk.builtin.bool);
 };
-goog.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
+Sk.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
 Sk.builtin.checkNone = function (arg) {
     return (arg instanceof Sk.builtin.none);
 };
-goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
+Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null &amp;&amp; arg.tp$call !== undefined);
 };
-goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
+Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 /**
  * @constructor
@@ -289,12 +289,12 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
 
 Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
 
-goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
+Sk.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
 Sk.builtin.func.prototype.tp$name = "function";
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    goog.asserts.assert(!(obj === undefined &amp;&amp; objtype === undefined));
+    Sk.asserts.assert(!(obj === undefined &amp;&amp; objtype === undefined));
     if (objtype &amp;&amp; objtype.tp$name in Sk.builtin &amp;&amp; Sk.builtin[objtype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);
@@ -423,13 +423,13 @@ Sk.builtin.func.prototype["$r"] = function () {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Break.html">Break</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.abstr.inherits-tempCtor.html">tempCtor</a></li><li><a href="Sk.abstr.iter-seqIter.html">seqIter</a></li><li><a href="Sk.builtin.bool.html">bool</a></li><li><a href="Sk.builtin.float_.html">float_</a></li><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.builtin.int_.html">int_</a></li><li><a href="Sk.builtin.none.html">none</a></li><li><a href="Sk.builtin.NotImplemented.html">NotImplemented</a></li><li><a href="Sk.builtin.numtype.html">numtype</a></li><li><a href="Sk.builtin.object.html">object</a></li><li><a href="Sk.builtin.seqtype.html">seqtype</a></li><li><a href="Sk.misceval.Break.html">Break</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.html">Sk</a></li><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 16 2019 09:23:21 GMT-0500 (CDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jun 18 2019 11:14:14 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

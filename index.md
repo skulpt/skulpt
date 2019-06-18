@@ -75,7 +75,7 @@ for c in ['red', 'green', 'yellow', 'blue']:
 <div class="small-12 columns">
     <p>The code is run entirely in your browser, so don't feel
     obligated to &quot;crash the server&quot;, you'll only stub your
-    toe. 
+    toe.
     </p>
     <h2>Interactive:</h2>
     <p>This is a very cool new feature that is just getting off the ground.  This would be a great project to jump in and help out on!</p>
@@ -84,11 +84,13 @@ for c in ['red', 'green', 'yellow', 'blue']:
 
 
 
- 
-    
+
+
     <h2>What's New?</h2>
     <p>
         <ul>
+            <li>Python 3 Grammar.  The master branch is now building and running using the grammar for Python 3.7.3.  There are still lots of things to implement under the hood, but we have made a huge leap forward in Python 3 compatibility.  We will still support Python 2 as an option going forward for projects that rely on it.</li>
+            <li>Node JS and Webpack -- We have updated our toolchain for development to use node and webpack.</li>
             <li>Suspensions!  This may not mean a lot to you, but trust me its going to be big.  Suspensions provide the foundation for the asynchronous execution we need to build an interactive debugger, a smoother turtle module, enhanced urllib and other cool features.  For developers you should check out the time module and the suspensions.txt file under doc/.</li>
             <li>Stub implementations of the standard library modules. You will now get an unimplemented exceptions rather than some other file not found error.</li>
             <li>General cleanup and standardization of the code.  See the short description of the coding standards in the CONTRIBUTING file</li>
