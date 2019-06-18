@@ -26,9 +26,13 @@ class TimeTestCase(unittest.TestCase):
         time.sleep(0.01)
 
     def test_strftime(self):
-        is_dst = time.localtime().tm_isdst == 1
-        tz = time.altzone if is_dst else time.timezone
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + tz)), "Jan 01 1970 01:01:01");
+        # TODO: Test timezone handling by using localtime() rather than
+        # (or as well as) gmtime().
+        # Although we're currently behaving the same as CPython, we don't
+        # actually understand why:
+        # https://github.com/skulpt/skulpt/issues/908
+
+        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.gmtime(3661)), "Jan 01 1970 01:01:01");
 
     def test_strptime(self):
         result = time.struct_time((1970, 1, 1, 1, 1, 1, 3, 1, -1))
