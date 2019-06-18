@@ -10,15 +10,27 @@ Skulpt is a Javascript implementation of Python 2.x. Python that runs in your br
 
 Skulpt is the brainchild of Scott Graham. See [Skulpt.org](http://skulpt.org) for some early demos of skulpt in action.
 
-Brad Miller has been shepherding the development since sometime in 2010/2011.
+Brad Miller has been project maintainer since sometime in 2010/2011 along with core contributors Albert-Jan Nijburg, Scott Rixner,  Meredydd Luff and others.
+
+## Current Priorities
+
+* We have updated our development toolchain to include nodejs and webpack.  If you have been a developer in the past make sure you check out the documentation for the current procedures on building skulpt.
+* Work on Python3 - With python 2 coming to the end of its life at the end of this year, being more and more Python3 compliant is a high priority.  Of course how Python3 you need to be depends on the situation.  For many uses, Skulpt is already there.  But for more advanced work we are not. You can keep up with this work by configuring skulpt to run in Python3 mode.
+
+```
+Sk.configure({
+    .... other settings
+    __future__: Sk.python3
+});
+```
 
 ## How can I help?
 
-Welcome to the Skulpt developer community! Check out the ideas list below. And then some practical things for getting started after that.
+Welcome to the Skulpt developer community! We welcome new developers of all levels and abilities. Check out the ideas list below. And then some practical things for getting started after that.
 
 ### Ideas List
 
-We are coordinating sprints on some of the ideas below, builtins, stdlib, third party modules, and core performance [here](https://github.com/skulpt/skulpt/issues/400).  We always welcome interested developers becoming Primarily Repsonsible Persons (PRP) for features they're working on.
+1. Python 3 -- see above.
 
 1. Expand the skulpt standard library to include more modules from the CPython standard library.  So far we have math, random, turtle, time (partial) random (partial) urllib (partial) unittest, image, DOM (partial) and re (partial).  Any of the partial modules could be completed, or many other CPython modules could be added.  Potential new modules from the standard library include:  functools, itertools, collections, datetime, operator, and string.  Many of these would be relatively easy projects for a less experienced student to take on.
 
@@ -26,9 +38,7 @@ We are coordinating sprints on some of the ideas below, builtins, stdlib, third 
 
 3. Expand and clean up the foreign function API.  This API is critical for implementing parts of the standard library.
 
-4. Currently builtin types (list, tuple, string, etc) are not subclassable.  Making the builtins subclassable would eliminate several known bugs in Skulpt.
-
-5. Do a better job of supporting Python3 semantics, but make Python2/Python3 behavior configurable with a single flag. Sk.python3 is already there for this purpose.  Another positive step in this direction would be to update our grammar to Python2.7.  Updating the grammar would allow us to add set literals, dictionary comprehensions, and other features present in 2.7.x and Python 3.3.x.  This would be an excellent project for a student interested in language design, parsing, and the use of abstract syntax trees.
+4. Do a better job of supporting Python3 semantics, but make Python2/Python3 behavior configurable with a single flag. Sk.python3 is already there for this purpose.  Another positive step in this direction would be to update our grammar to Python2.7.  Updating the grammar would allow us to add set literals, dictionary comprehensions, and other features present in 2.7.x and Python 3.3.x.  This would be an excellent project for a student interested in language design, parsing, and the use of abstract syntax trees.
 
 6. Make fully workable, and expand support for DOM access as part of the standard library.
 
