@@ -38,7 +38,7 @@ module.exports = (env, argv) => {
             minimizer: [
                 new ClosureWebpackPlugin({mode: 'STANDARD'}, {
                     jscomp_error: ['accessControls', 'checkRegExp', 'checkTypes', 'checkVars',
-                                   'deprecated', 'invalidCasts', 'missingProperties',
+                                   'invalidCasts', 'missingProperties',
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['fileoverviewTags', 'deprecated'],
