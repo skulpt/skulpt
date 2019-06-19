@@ -21,3 +21,4 @@ src/internalpython.js
 /tmp.js
 Pipfile
 package-lock.json
+*~
