@@ -59,7 +59,6 @@
     "google-closure-compiler": "^20190415.0.0",
     "js-beautify": "^1.10.0",
     "jsdoc": "~3.5.5",
-    "jshint": "^2.5.11",
     "micro-strptime": "^0.2.3",
     "open": "^6.3.0",
     "readline-sync": "^1.4.9",
@@ -67,8 +66,7 @@
     "shelljs": "^0.8.3",
     "strftime": "^0.10.0",
     "webpack": "^4.32.0",
-    "webpack-cli": "^3.3.2",
-    "webpack-jshint-loader": "^0.9.1"
+    "webpack-cli": "^3.3.2"
   },
   "engines": {
     "node": ">=8.10"

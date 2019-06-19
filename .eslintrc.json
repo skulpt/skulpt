@@ -1,5 +1,6 @@
 {
     "env": {
+        "es6": true,
         "browser": true
     },
     "rules": {
@@ -16,6 +17,6 @@
         "quotes": ["error", "double", {"avoidEscape": true}]
     },
     "parserOptions": {
-        "ecmaVersion": 6
+        "ecmaVersion": 2019
     }
 }
