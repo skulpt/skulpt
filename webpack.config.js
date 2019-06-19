@@ -52,19 +52,6 @@ module.exports = (env, argv) => {
         mod = {
             rules: [
                 {
-                    test: /\.js$/,
-                    enforce: 'pre',
-                    exclude: styleexcludes,
-                    use: [
-                        {
-                            loader: 'webpack-jshint-loader',
-                            options: {
-                                emitErrors: true
-                            }
-                        }
-                    ]
-                },
-                {
                      test: /\.js$/,
                      enforce: 'pre',
                      exclude: styleexcludes,

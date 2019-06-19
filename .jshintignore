@@ -1,4 +1,0 @@
-src/tokenize.js
-src/symtable.js
-src/compile.js
-src/ast.js
