@@ -38,7 +38,7 @@ module.exports = (env, argv) => {
             minimizer: [
                 new ClosureWebpackPlugin({mode: 'STANDARD'}, {
                     jscomp_error: ['accessControls', 'checkRegExp', 'checkTypes', 'checkVars',
-                                   'deprecated', 'invalidCasts', 'missingProperties',
+                                   'invalidCasts', 'missingProperties',
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['fileoverviewTags', 'deprecated'],
@@ -51,19 +51,6 @@ module.exports = (env, argv) => {
         assertfile = './assert-prod.js';
         mod = {
             rules: [
-                {
-                    test: /\.js$/,
-                    enforce: 'pre',
-                    exclude: styleexcludes,
-                    use: [
-                        {
-                            loader: 'webpack-jshint-loader',
-                            options: {
-                                emitErrors: true
-                            }
-                        }
-                    ]
-                },
                 {
                      test: /\.js$/,
                      enforce: 'pre',

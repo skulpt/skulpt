@@ -55,6 +55,10 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
     cd ..
     cp bower.json ../dist
     cp .bowerrc ../dist
+    npm run devbuild
+    cp dist/skulpt.js ../dist/skulpt.js
+    npm run build-es5
+    cp dist/skulpt.min.js ../dist/skulpt.es5.min.js
     #put the new version in the dist repository
     cd ../dist
     git add .
@@ -80,6 +84,10 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" && "$TRA
   cd ..
   cp bower.json ../dist
   cp .bowerrc ../dist
+  npm run devbuild
+  cp dist/skulpt.js ../dist/skulpt.js
+  npm run build-es5
+  cp dist/skulpt.min.js ../dist/skulpt.es5.min.js
 
   #add, commit and push files to the dist repository
   cd ../dist
