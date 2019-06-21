@@ -242,6 +242,7 @@ var operatorMap = {};
     operatorMap[TOK.T_PLUS] = Sk.astnodes.Add;
     operatorMap[TOK.T_MINUS] = Sk.astnodes.Sub;
     operatorMap[TOK.T_STAR] = Sk.astnodes.Mult;
+    operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
     operatorMap[TOK.T_SLASH] = Sk.astnodes.Div;
     operatorMap[TOK.T_DOUBLESLASH] = Sk.astnodes.FloorDiv;
     operatorMap[TOK.T_PERCENT] = Sk.astnodes.Mod;
@@ -2019,6 +2020,8 @@ function astForAugassign (c, n) {
                 return Sk.astnodes.Pow;
             }
             return Sk.astnodes.Mult;
+        case "@":
+            return Sk.astnodes.MatMult;
         default:
             Sk.asserts.fail("invalid augassign");
     }
