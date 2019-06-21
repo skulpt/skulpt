@@ -123,6 +123,8 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
             return obj.nb$inplace_subtract ? obj.nb$inplace_subtract : obj["__isub__"];
         case "Mult":
             return obj.nb$inplace_multiply ? obj.nb$inplace_multiply : obj["__imul__"];
+        case "MatMult":
+            return obj.tp$inplace_matmul ? obj.tp$inplace_matmul : obj["__imatmul__"];
         case "Div":
             return obj.nb$inplace_divide ? obj.nb$inplace_divide : obj["__idiv__"];
         case "FloorDiv":
