@@ -92,6 +92,8 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
             return obj.nb$reflected_subtract ? obj.nb$reflected_subtract : obj["__rsub__"];
         case "Mult":
             return obj.nb$reflected_multiply ? obj.nb$reflected_multiply : obj["__rmul__"];
+        case "MatMult":
+            return obj.tp$reflected_matmul ? obj.tp$reflected_matmul : obj["__rmatmul__"]
         case "Div":
             return obj.nb$reflected_divide ? obj.nb$reflected_divide : obj["__rdiv__"];
         case "FloorDiv":

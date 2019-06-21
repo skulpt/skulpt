@@ -30,6 +30,7 @@ Sk.dunderToSkulpt = {
     "__ge__": "ob$ge",
     "__hash__": "tp$hash",
     "__matmul__": "tp$matmul",
+    "__rmatmul__": "tp$reflected_matmul",
     "__abs__": "nb$abs",
     "__neg__": "nb$negative",
     "__pos__": "nb$positive",
