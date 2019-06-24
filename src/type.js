@@ -29,8 +29,6 @@ Sk.dunderToSkulpt = {
     "__gt__": "ob$gt",
     "__ge__": "ob$ge",
     "__hash__": "tp$hash",
-    "__matmul__": "tp$matmul",
-    "__rmatmul__": "tp$reflected_matmul",
     "__abs__": "nb$abs",
     "__neg__": "nb$negative",
     "__pos__": "nb$positive",
@@ -59,6 +57,14 @@ Sk.dunderToSkulpt = {
     "__set__": ["tp$descr_set", 3]
 };
 
+function matmuls(py3) {
+    if (py3) {
+        Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
+        Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
+    }
+};
+
+Sk.exportSymbol("Sk.type.matmuls", matmuls);
 /**
  *
  * @constructor

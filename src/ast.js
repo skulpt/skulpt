@@ -242,14 +242,22 @@ var operatorMap = {};
     operatorMap[TOK.T_PLUS] = Sk.astnodes.Add;
     operatorMap[TOK.T_MINUS] = Sk.astnodes.Sub;
     operatorMap[TOK.T_STAR] = Sk.astnodes.Mult;
-    operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
     operatorMap[TOK.T_SLASH] = Sk.astnodes.Div;
     operatorMap[TOK.T_DOUBLESLASH] = Sk.astnodes.FloorDiv;
     operatorMap[TOK.T_PERCENT] = Sk.astnodes.Mod;
 }());
 
+function py3_operators(py3) {
+    if (py3) {
+        operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
+    }
+}
+Sk.exportSymbol("Sk.ast.py3_operators", py3_operators);
+
 function getOperator (n) {
-    Sk.asserts.assert(operatorMap[n.type] !== undefined, "Operator missing from operatorMap");
+    if (operatorMap[n.type] === undefined) {
+        throw new Sk.builtin.SyntaxError("invalid syntax", n.type, n.lineno);
+    }
     return operatorMap[n.type];
 }
 
@@ -2021,7 +2029,9 @@ function astForAugassign (c, n) {
             }
             return Sk.astnodes.Mult;
         case "@":
-            return Sk.astnodes.MatMult;
+            if (Sk.__future__.python3) {
+                return Sk.astnodes.MatMult;
+            }
         default:
             Sk.asserts.fail("invalid augassign");
     }

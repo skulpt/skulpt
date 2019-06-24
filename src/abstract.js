@@ -56,7 +56,9 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
         case "Mult":
             return obj.nb$multiply ? obj.nb$multiply : obj["__mul__"];
         case "MatMult":
-            return obj.tp$matmul ? obj.tp$matmul : obj["__matmul__"];
+            if (Sk.__future__.python3) {
+                return obj.tp$matmul ? obj.tp$matmul : obj["__matmul__"];
+            }
         case "Div":
             return obj.nb$divide ? obj.nb$divide : obj["__div__"];
         case "FloorDiv":
@@ -93,7 +95,9 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
         case "Mult":
             return obj.nb$reflected_multiply ? obj.nb$reflected_multiply : obj["__rmul__"];
         case "MatMult":
-            return obj.tp$reflected_matmul ? obj.tp$reflected_matmul : obj["__rmatmul__"];
+            if (Sk.__future__.python3) {
+                return obj.tp$reflected_matmul ? obj.tp$reflected_matmul : obj["__rmatmul__"];
+            }
         case "Div":
             return obj.nb$reflected_divide ? obj.nb$reflected_divide : obj["__rdiv__"];
         case "FloorDiv":
@@ -126,7 +130,9 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
         case "Mult":
             return obj.nb$inplace_multiply ? obj.nb$inplace_multiply : obj["__imul__"];
         case "MatMult":
-            return obj.tp$inplace_matmul ? obj.tp$inplace_matmul : obj["__imatmul__"];
+            if (Sk.__future__.python3) {
+                return obj.tp$inplace_matmul ? obj.tp$inplace_matmul : obj["__imatmul__"];
+            }
         case "Div":
             return obj.nb$inplace_divide ? obj.nb$inplace_divide : obj["__idiv__"];
         case "FloorDiv":
