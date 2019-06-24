@@ -250,6 +250,10 @@ var operatorMap = {};
 function py3_operators(py3) {
     if (py3) {
         operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
+    } else {
+        if (operatorMap[TOK.T_AT]) {
+            delete operatorMap[TOK.T_AT];
+        }
     }
 }
 Sk.exportSymbol("Sk.ast.py3_operators", py3_operators);

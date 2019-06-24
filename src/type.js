@@ -61,6 +61,13 @@ function matmuls(py3) {
     if (py3) {
         Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
         Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
+    } else {
+        if (Sk.dunderToSkulpt["__matmul__"]) {
+            delete Sk.dunderToSkulpt["__matmul__"];
+        }
+        if (Sk.dunderToSkulpt["__rmatmul__"]) {
+            delete Sk.dunderToSkulpt["__rmatmul__"];
+        }
     }
 };
 
