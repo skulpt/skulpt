@@ -259,9 +259,12 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                          Sk.builtin.bool.prototype.ob$type];
         sequence_types = [Sk.builtin.dict.prototype.ob$type,
                           Sk.builtin.enumerate.prototype.ob$type,
+                          Sk.builtin.filter.prototype.ob$type,
                           Sk.builtin.list.prototype.ob$type,
+                          Sk.builtin.map.prototype.ob$type,
                           Sk.builtin.str.prototype.ob$type,
-                          Sk.builtin.tuple.prototype.ob$type];
+                          Sk.builtin.tuple.prototype.ob$type,
+                          Sk.builtin.zip.prototype.ob$type];
 
         v_num_type = numeric_types.indexOf(v_type);
         v_seq_type = sequence_types.indexOf(v_type);
