@@ -6,7 +6,7 @@
  */
 Sk.builtin.enumerate = function (iterable, start) {
     var it;
-    if (!(this instanceof Sk.builtin.enumerate)) {
+    if (!(this instanceof Sk.builtin.enumerate) && (Sk.__future__.python_version)) {
         return new Sk.builtin.enumerate(iterable, start);
     }
 
@@ -24,12 +24,26 @@ Sk.builtin.enumerate = function (iterable, start) {
     } else {
         start = 0;
     }
-
     it = iterable.tp$iter();
-
     this.tp$iter = function () {
         return this;
     };
+    if (!(Sk.__future__.python_version)){
+        var ret;
+        var tup;
+        var el;
+        var i;
+        ret = [];
+        for (i = start; i < it.sq$length; i ++) {
+            el = it.tp$iternext();
+            if (el === undefined) {
+                break;
+            }
+            tup = new Sk.builtin.tuple([i, el]);
+            ret.push(tup);
+        }
+        return new Sk.builtin.list(ret);
+    }
     this.$index = start;
     this.tp$iternext = function () {
         // todo; StopIteration
