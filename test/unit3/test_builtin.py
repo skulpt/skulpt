@@ -326,11 +326,12 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(list(filter(None, Squares(10))), [1, 4, 9, 16, 25, 36, 49, 64, 81])
         self.assertEqual(list(filter(lambda x: x%2, Squares(10))), [1, 9, 25, 49, 81])
         self.assertEqual(list(filter(add_one, lst1)), [1, 3, 4, 5])
-        # self.assertEqual(str(filter(add_one, lst1))[:7], "<filter")
+        self.assertEqual(str(filter(add_one, lst1))[:7], "<filter")
         self.assertEqual(list(filter(add_one, lst2)), [4, 8, 10])
-        # self.assertEqual(str(filter(add_one, lst2))[:7], "<filter")
+        self.assertEqual(str(filter(add_one, lst2))[:7], "<filter")
         self.assertEqual(list(filter(add_one, lst3)), [-150, -151, -151.49, -151.500001, -152])
-        # self.assertEqual(str(filter(add_one, lst3))[:7], "<filter")
+        self.assertEqual(str(filter(add_one, lst3))[:7], "<filter")
+        self.assertEqual(type(filter(add_one, lst3)), filter)
         def identity(item):
             return 1
         filter(identity, Squares(5))
@@ -681,6 +682,11 @@ class BuiltinTest(unittest.TestCase):
         #     list(map(Max, Squares(3), Squares(2))),
         #     [0, 1]
         # )
+        a = [1,2,3]
+        b = map(lambda x: x**2, a)
+        self.assertEqual(str(b)[:4], '<map')
+        self.assertEqual(type(b), map)
+
         self.assertRaises(TypeError, map)
         self.assertRaises(TypeError, map, lambda x: x, 42)
         class BadSeq:
@@ -1066,8 +1072,8 @@ class BuiltinTest(unittest.TestCase):
 
     def test_zip(self):
         self.assertEqual(list(zip(str1, str2)), [('A', 'x'), ('B', 'y')])
-        # self.assertEqual(str(zip(str1, str2))[1:11], "zip object")
-        # self.assertEqual(str(type(zip(str1, str2))), "<class 'zip'>")
+        self.assertEqual(str(zip(str1, str2))[1:11], "zip object")
+        self.assertEqual(str(type(zip(str1, str2))), "<class 'zip'>")
         self.assertEqual(list(zip(lst1, str3, str4)), [(1, 'A', 'a'), (2, 'B', 'b'), (3, 'C', 'c'), (4, 'D', 'd'), (5, 'E', 'e')])
         # self.assertEqual(str(zip(lst1, str3, str4))[1:11], "zip object")
         # self.assertEqual(str(type(zip(lst1, str3, str4))), "<class 'zip'>")
