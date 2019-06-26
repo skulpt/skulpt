@@ -17,7 +17,7 @@ Sk.builtin.map = function map (fun, seq) {
     var args;
     Sk.builtin.pyCheckArgsLen("map", arguments.length, 2);
     if (!(this instanceof Sk.builtin.map) && (Sk.__future__.python_version)) {
-        args = Array.prototype.slice.apply(arguments).slice(1)
+        args = Array.prototype.slice.apply(arguments).slice(1);
         return new Sk.builtin.map(fun, ...args);
     }
 
