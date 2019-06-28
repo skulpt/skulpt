@@ -8,6 +8,7 @@ Sk.builtins = {
     "min"       : new Sk.builtin.func(Sk.builtin.min),
     "max"       : new Sk.builtin.func(Sk.builtin.max),
     "sum"       : new Sk.builtin.func(Sk.builtin.sum),
+    "zip"       : new Sk.builtin.func(Sk.builtin.zip),
     "abs"       : new Sk.builtin.func(Sk.builtin.abs),
     "fabs"      : new Sk.builtin.func(Sk.builtin.fabs),
     "ord"       : new Sk.builtin.func(Sk.builtin.ord),
@@ -24,6 +25,8 @@ Sk.builtins = {
     "hasattr"   : new Sk.builtin.func(Sk.builtin.hasattr),
     "id"        : new Sk.builtin.func(Sk.builtin.id),
 
+    "map"       : new Sk.builtin.func(Sk.builtin.map),
+    "filter"    : new Sk.builtin.func(Sk.builtin.filter),
     "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
     "sorted"    : new Sk.builtin.func(Sk.builtin.sorted),
     "any"       : new Sk.builtin.func(Sk.builtin.any),
@@ -57,12 +60,10 @@ Sk.builtins = {
     "enumerate" : Sk.builtin.enumerate,
     "dict"      : Sk.builtin.dict,
     "file"      : Sk.builtin.file,
-    "filter"    : Sk.builtin.filter,
     "function"  : Sk.builtin.func,
     "generator" : Sk.builtin.generator,
     "list"      : Sk.builtin.list,
     "long_$rw$" : Sk.builtin.lng,
-    "map"       : Sk.builtin.map,
     "method"    : Sk.builtin.method,
     "object"    : Sk.builtin.object,
     "slice"     : Sk.builtin.slice,
@@ -70,7 +71,6 @@ Sk.builtins = {
     "set"       : Sk.builtin.set,
     "tuple"     : Sk.builtin.tuple,
     "type"      : Sk.builtin.type,
-    "zip"       : Sk.builtin.zip,
 
     "input"     : new Sk.builtin.func(Sk.builtin.input),
     "raw_input" : new Sk.builtin.func(Sk.builtin.raw_input),
@@ -110,4 +110,5 @@ Sk.builtins = {
     "coerce"    : Sk.builtin.coerce,
     "intern"    : Sk.builtin.intern
 };
+
 Sk.exportSymbol("Sk.builtins", Sk.builtins);

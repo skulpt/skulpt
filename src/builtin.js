@@ -420,6 +420,49 @@ Sk.builtin.sum = function sum (iter, start) {
     return tot;
 };
 
+Sk.builtin.zip = function zip () {
+    var el;
+    var tup;
+    var done;
+    var res;
+    var i;
+    var iters;
+
+    if (Sk.__future__.python_version) {
+        return new Sk.builtin.zip_(...arguments);
+    }
+
+    if (arguments.length === 0) {
+        return new Sk.builtin.list([]);
+    }
+
+    iters = [];
+    for (i = 0; i < arguments.length; i++) {
+        if (Sk.builtin.checkIterable(arguments[i])) {
+            iters.push(Sk.abstr.iter(arguments[i]));
+        } else {
+            throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
+        }
+    }
+    res = [];
+    done = false;
+    while (!done) {
+        tup = [];
+        for (i = 0; i < arguments.length; i++) {
+            el = iters[i].tp$iternext();
+            if (el === undefined) {
+                done = true;
+                break;
+            }
+            tup.push(el);
+        }
+        if (!done) {
+            res.push(new Sk.builtin.tuple(tup));
+        }
+    }
+    return new Sk.builtin.list(res);
+};
+
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgsLen("abs", arguments.length, 1, 1);
 
@@ -860,6 +903,86 @@ Sk.builtin.eval_ = function eval_ () {
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 };
 
+Sk.builtin.map = function map (fun, seq) {
+    var retval = [];
+    var next;
+    var nones;
+    var args;
+    var argnum;
+    var i;
+    var iterables;
+    var combined;
+    Sk.builtin.pyCheckArgsLen("map", arguments.length, 2);
+
+    if (Sk.__future__.python_version) {
+        iterables = Array.prototype.slice.apply(arguments).slice(1);
+        return new Sk.builtin.map_(fun, ...iterables);
+    }
+
+    if (arguments.length > 2) {
+        // Pack sequences into one list of Javascript Arrays
+
+        combined = [];
+        iterables = Array.prototype.slice.apply(arguments).slice(1);
+        for (i = 0; i < iterables.length; i++) {
+            if (!Sk.builtin.checkIterable(iterables[i])) {
+                argnum = parseInt(i, 10) + 2;
+                throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
+            }
+            iterables[i] = Sk.abstr.iter(iterables[i]);
+        }
+
+        while (true) {
+            args = [];
+            nones = 0;
+            for (i = 0; i < iterables.length; i++) {
+                next = iterables[i].tp$iternext();
+                if (next === undefined) {
+                    args.push(Sk.builtin.none.none$);
+                    nones++;
+                } else {
+                    args.push(next);
+                }
+            }
+            if (nones !== iterables.length) {
+                combined.push(args);
+            } else {
+                // All iterables are done
+                break;
+            }
+        }
+        seq = new Sk.builtin.list(combined);
+    }
+
+    if (!Sk.builtin.checkIterable(seq)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+    }
+
+    return Sk.misceval.chain(Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
+
+        if (fun === Sk.builtin.none.none$) {
+            if (item instanceof Array) {
+                // With None function and multiple sequences,
+                // map should return a list of tuples
+                item = new Sk.builtin.tuple(item);
+            }
+            retval.push(item);
+        } else {
+            if (!(item instanceof Array)) {
+                // If there was only one iterable, convert to Javascript
+                // Array for call to apply.
+                item = [item];
+            }
+
+            return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
+                retval.push(result);
+            });
+        }
+    }), function () {
+        return new Sk.builtin.list(retval);
+    });
+};
+
 Sk.builtin.reduce = function reduce (fun, seq, initializer) {
     var item;
     var accum_value;
@@ -884,6 +1007,66 @@ Sk.builtin.reduce = function reduce (fun, seq, initializer) {
     }
 
     return accum_value;
+};
+
+Sk.builtin.filter = function filter (fun, iterable) {
+    var result;
+    var iter, item;
+    var retval;
+    var ret;
+    var add;
+    var ctor;
+    Sk.builtin.pyCheckArgsLen("filter", arguments.length, 2, 2);
+    if (Sk.__future__.python_version) {
+        return new Sk.builtin.filter_(fun, iterable);
+    }
+    if (!Sk.builtin.checkIterable(iterable)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+    }
+    ctor = function () {
+        return [];
+    };
+    add = function (iter, item) {
+        iter.push(item);
+        return iter;
+    };
+    ret = function (iter) {
+        return new Sk.builtin.list(iter);
+    };
+
+    if (iterable.__class__ === Sk.builtin.str) {
+        ctor = function () {
+            return new Sk.builtin.str("");
+        };
+        add = function (iter, item) {
+            return iter.sq$concat(item);
+        };
+        ret = function (iter) {
+            return iter;
+        };
+    } else if (iterable.__class__ === Sk.builtin.tuple) {
+        ret = function (iter) {
+            return new Sk.builtin.tuple(iter);
+        };
+    }
+
+    retval = ctor();
+
+    for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
+        item !== undefined;
+        item = iter.tp$iternext()) {
+        if (fun === Sk.builtin.none.none$) {
+            result = new Sk.builtin.bool( item);
+        } else {
+            result = Sk.misceval.callsimArray(fun, [item]);
+        }
+
+        if (Sk.misceval.isTrue(result)) {
+            retval = add(retval, item);
+        }
+    }
+
+    return ret(retval);
 };
 
 Sk.builtin.hasattr = function hasattr (obj, attr) {

@@ -348,9 +348,9 @@ Sk.setup_method_mappings = function () {
                         Sk.builtin.tuple_iter_,
                         Sk.builtin.generator,
                         Sk.builtin.enumerate,
-                        Sk.builtin.filter,
-                        Sk.builtin.zip,
-                        Sk.builtin.map,
+                        Sk.builtin.filter_,
+                        Sk.builtin.zip_,
+                        Sk.builtin.map_,
                         Sk.builtin.iterator],
             2: "next",
             3: "__next__"

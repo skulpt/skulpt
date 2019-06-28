@@ -3,29 +3,24 @@
  * @param {Object} iterable
  * @extends Sk.builtin.object
  */
-Sk.builtin.map = function map (fun, seq) {
-    var retval = [];
+Sk.builtin.map_ = function map_ (fun, seq) {
     var next;
     var nones;
     var args;
     var argnum;
+    var getnext;
     var i;
+    var item;
     var iterables;
     var combined;
-    var ret;
-    var ret1;
     var args;
-    Sk.builtin.pyCheckArgsLen("map", arguments.length, 2);
-    if (!(this instanceof Sk.builtin.map) && (Sk.__future__.python_version)) {
+    if (!(this instanceof Sk.builtin.map_)) {
         args = Array.prototype.slice.apply(arguments).slice(1);
-        return new Sk.builtin.map(fun, ...args);
+        return new Sk.builtin.map_(fun, ...args);
     }
-
 
     if (arguments.length > 2) {
         // Pack sequences into one list of Javascript Arrays
-
-        combined = [];
         iterables = Array.prototype.slice.apply(arguments).slice(1);
         for (i = 0; i < iterables.length; i++) {
             if (!Sk.builtin.checkIterable(iterables[i])) {
@@ -35,85 +30,74 @@ Sk.builtin.map = function map (fun, seq) {
             iterables[i] = Sk.abstr.iter(iterables[i]);
         }
 
-        while (true) {
-            args = [];
-            nones = 0;
+        getnext = function () {
+            combined = [];
             for (i = 0; i < iterables.length; i++) {
                 next = iterables[i].tp$iternext();
                 if (next === undefined) {
-                    args.push(Sk.builtin.none.none$);
-                    nones++;
+                    return undefined;
+
                 } else {
-                    args.push(next);
+                    combined.push(next);
                 }
             }
             if (nones !== iterables.length) {
-                combined.push(args);
-            } else {
-                // All iterables are done
-                break;
+                return combined;
             }
-        }
-        seq = new Sk.builtin.list(combined);
+            return undefined;
+        };
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    ret = Sk.misceval.chain(Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
-
-        if (fun === Sk.builtin.none.none$) {
-            if (item instanceof Array) {
-                // With None function and multiple sequences,
-                // map should return a list of tuples
-                item = new Sk.builtin.tuple(item);
-            }
-            retval.push(item);
-        } else {
-            if (!(item instanceof Array)) {
-                // If there was only one iterable, convert to Javascript
-                // Array for call to apply.
-                item = [item];
-            }
-
-            return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
-                retval.push(result);
-            });
-        }
-    }), function () {
-        return new Sk.builtin.list(retval);
-    });
-    if (!(Sk.__future__.python_version)) {
-        return ret;
+    if (!(arguments.length > 2)) {
+        seq = Sk.abstr.iter(seq);
     }
-    ret1 = ret.tp$iter();
     this.tp$iternext = function () {
-        var next = ret1.tp$iternext();
-        if (next === undefined) {
+        if (getnext) {
+            item = getnext();
+        } else {
+            item = seq.tp$iternext();
+        }
+        if (item === undefined) {
             return undefined;
         }
-        return next;
+        if (fun === Sk.builtin.none.none$) {
+            if (item instanceof Array) {
+                item = new Sk.builtin.tuple(item);
+                return item;
+            }
+            return item;
+        }
+        if (!(item instanceof Array)) {
+            item = [item];
+        }
+        return Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item);
     };
+
     this.tp$iter = function () {
         return this;
     };
 
-    this.__class__ = Sk.builtin.map;
+    this.__class__ = Sk.builtin.map_;
     return this;
 
 };
 
-Sk.abstr.setUpInheritance("map", Sk.builtin.map, Sk.builtin.object);
+Sk.abstr.setUpInheritance("map_", Sk.builtin.map_, Sk.builtin.object);
 
-Sk.builtin.map.prototype["__iter__"] = new Sk.builtin.func(function (self) {
+Sk.builtin.map_.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     return self.tp$iter();
 });
 
-Sk.builtin.map.prototype.next$ = function (self) {
+Sk.builtin.map_.prototype.next$ = function (self) {
     return self.tp$iternext();
 };
 
-Sk.builtin.map.prototype["$r"] = function () {
+Sk.builtin.map_.prototype["$r"] = function () {
     return new Sk.builtin.str("<map object>");
 };
+
+Sk.exportSymbol("Sk.builtin.map_", Sk.builtin.map_);
