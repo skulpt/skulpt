@@ -8,7 +8,6 @@ Sk.builtins = {
     "min"       : new Sk.builtin.func(Sk.builtin.min),
     "max"       : new Sk.builtin.func(Sk.builtin.max),
     "sum"       : new Sk.builtin.func(Sk.builtin.sum),
-    "zip"       : new Sk.builtin.func(Sk.builtin.zip),
     "abs"       : new Sk.builtin.func(Sk.builtin.abs),
     "fabs"      : new Sk.builtin.func(Sk.builtin.fabs),
     "ord"       : new Sk.builtin.func(Sk.builtin.ord),
@@ -25,8 +24,6 @@ Sk.builtins = {
     "hasattr"   : new Sk.builtin.func(Sk.builtin.hasattr),
     "id"        : new Sk.builtin.func(Sk.builtin.id),
 
-    "map"       : new Sk.builtin.func(Sk.builtin.map),
-    "filter"    : new Sk.builtin.func(Sk.builtin.filter),
     "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
     "sorted"    : new Sk.builtin.func(Sk.builtin.sorted),
     "any"       : new Sk.builtin.func(Sk.builtin.any),
@@ -111,4 +108,17 @@ Sk.builtins = {
     "intern"    : Sk.builtin.intern
 };
 
+function py3_objects(py3) {
+    if (py3) {
+        Sk.builtins["filter"] = Sk.builtin.filter_;
+        Sk.builtins["map"] = Sk.builtin.map_;
+        Sk.builtins["zip"] = Sk.builtin.zip_;
+    } else {
+        Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
+        Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
+        Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
+    }
+};
+
+Sk.exportSymbol("Sk.builtindict.py3_objects", py3_objects);
 Sk.exportSymbol("Sk.builtins", Sk.builtins);

@@ -14,6 +14,9 @@ Sk.builtin.map_ = function map_ (fun, seq) {
     var iterables;
     var combined;
     var args;
+
+    Sk.builtin.pyCheckArgsLen("map_", arguments.length, 2);
+
     if (!(this instanceof Sk.builtin.map_)) {
         args = Array.prototype.slice.apply(arguments).slice(1);
         return new Sk.builtin.map_(fun, ...args);
@@ -86,7 +89,7 @@ Sk.builtin.map_ = function map_ (fun, seq) {
 
 };
 
-Sk.abstr.setUpInheritance("map_", Sk.builtin.map_, Sk.builtin.object);
+Sk.abstr.setUpInheritance("map", Sk.builtin.map_, Sk.builtin.object);
 
 Sk.builtin.map_.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     return self.tp$iter();

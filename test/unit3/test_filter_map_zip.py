@@ -74,10 +74,10 @@ class FilterTest(unittest.TestCase):
                 if index<4:
                     return 42
                 raise ValueError
-        # self.assertRaises(ValueError, list, filter(lambda x: x, BadSeq()))
+        self.assertRaises(ValueError, list, filter(lambda x: x, BadSeq()))
         def badfunc():
             pass
-        # self.assertRaises(TypeError, list, filter(badfunc, range(5)))
+        self.assertRaises(TypeError, list, filter(badfunc, range(5)))
 
         # test bltinmodule.c::filtertuple()
         self.assertEqual(list(filter(None, (1, 2))), [1, 2])
@@ -89,7 +89,7 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(str(filter(add_one, lst2))[:7], "<filter")
         self.assertEqual(list(filter(add_one, lst3)), [-150, -151, -151.49, -151.500001, -152])
         self.assertEqual(str(filter(add_one, lst3))[:7], "<filter")
-        ########self.assertEqual(type(filter(add_one, lst3)), filter)
+        self.assertEqual(type(filter(add_one, lst3)), filter)
 
         a = BasicIterClass(0, 6)
         def foo(x):
@@ -145,7 +145,7 @@ class FilterTest(unittest.TestCase):
         a = [1,2,3]
         b = map(lambda x: x**2, a)
         self.assertEqual(str(b)[:4], '<map')
-        #########self.assertEqual(type(b), map)
+        self.assertEqual(type(b), map)
 
         self.assertRaises(TypeError, map)
         self.assertRaises(TypeError, map, lambda x: x, 42)
@@ -171,8 +171,8 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(str(zip(str1, str2))[1:11], "zip object")
         self.assertEqual(str(type(zip(str1, str2))), "<class 'zip'>")
         self.assertEqual(list(zip(lst1, str3, str4)), [(1, 'A', 'a'), (2, 'B', 'b'), (3, 'C', 'c'), (4, 'D', 'd'), (5, 'E', 'e')])
-        # self.assertEqual(str(zip(lst1, str3, str4))[1:11], "zip object")
-        # self.assertEqual(str(type(zip(lst1, str3, str4))), "<class 'zip'>")
+        self.assertEqual(str(zip(lst1, str3, str4))[1:11], "zip object")
+        self.assertEqual(str(type(zip(lst1, str3, str4))), "<class 'zip'>")
         lst1b, str3b, str4b = zip(*zip(lst1, str3, str4))
         self.assertEqual(list(lst1b), lst1)
         self.assertEqual(''.join(str3b), str3)
@@ -216,6 +216,7 @@ class FilterTest(unittest.TestCase):
         a.change_high(8)
         b.change_high(18)
         self.assertEqual(list(z), [(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (5, 15), (6, 16), (7, 17), (8, 18)])
+        self.assertEqual(type(z), zip)
 
 if __name__ == '__main__':
     unittest.main()

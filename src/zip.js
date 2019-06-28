@@ -1,7 +1,6 @@
 /**
  * @constructor
  * @param {Object} iterable
- * @param {number=} start
  * @extends Sk.builtin.object
  */
 Sk.builtin.zip_ = function zip_ () {

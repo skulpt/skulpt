@@ -10,6 +10,8 @@ Sk.builtin.filter_ = function filter_ (fun, iterable) {
     var result;
     var item;
 
+    Sk.builtin.pyCheckArgsLen("filter_", arguments.length, 2, 2);
+
     if (!(this instanceof Sk.builtin.filter_)) {
         return new Sk.builtin.filter_(fun, iterable);
     }

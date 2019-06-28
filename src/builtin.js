@@ -427,11 +427,6 @@ Sk.builtin.zip = function zip () {
     var res;
     var i;
     var iters;
-
-    if (Sk.__future__.python_version) {
-        return new Sk.builtin.zip_(...arguments);
-    }
-
     if (arguments.length === 0) {
         return new Sk.builtin.list([]);
     }
@@ -914,11 +909,6 @@ Sk.builtin.map = function map (fun, seq) {
     var combined;
     Sk.builtin.pyCheckArgsLen("map", arguments.length, 2);
 
-    if (Sk.__future__.python_version) {
-        iterables = Array.prototype.slice.apply(arguments).slice(1);
-        return new Sk.builtin.map_(fun, ...iterables);
-    }
-
     if (arguments.length > 2) {
         // Pack sequences into one list of Javascript Arrays
 
@@ -1017,9 +1007,6 @@ Sk.builtin.filter = function filter (fun, iterable) {
     var add;
     var ctor;
     Sk.builtin.pyCheckArgsLen("filter", arguments.length, 2, 2);
-    if (Sk.__future__.python_version) {
-        return new Sk.builtin.filter_(fun, iterable);
-    }
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
