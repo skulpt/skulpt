@@ -2122,8 +2122,53 @@ function ast_for_exprStmt (c, n) {
         return new Sk.astnodes.AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
     }
     else if (CHILD(n, 1).type === SYM.annassign) {
-        // TODO translate the relevant section from ast.c
-        throw new Sk.builtin.SyntaxError("Skulpt does not yet support type assignments", c.c_filename, n.lineno);
+        // annotated assignment
+        ch = CHILD(n, 0);
+        ann = CHILD(n, 1);
+        simple = 1;
+        deep = ch;
+        while (NCH(deep) == 1) {
+            deep = CHILD(deep, 0);
+        }
+        if (NCH(deep) > 0 && TYPE(CHILD(deep, 0)) == TOK.T_LPAR) {
+            simple = 0;
+        }
+        expr1 = ast_for_testlist(c, ch);
+        switch (expr1.constructor) {
+            case Sk.astnodes.Name:
+                varName = expr1.id;
+                forbiddenCheck(c, ch, varName, n.lineno);
+                setContext(c, expr1, Sk.astnodes.Store, ch);
+                break;
+            case Sk.astnodes.Attribute:
+                varName = expr1.attr;
+                forbiddenCheck(c, ch, varName, n.lineno);
+                setContext(c, expr1, Sk.astnodes.Store, ch);
+                break;
+            case Sk.astnodes.Subscript:
+                setContext(c, expr1, Sk.astnodes.Store, ch);
+                break;
+            case Sk.astnodes.List:
+                throw new Sk.builtin.SyntaxError("only single target (not list) can be annotated", c.c_filename, n.lineno);
+            case Sk.astnodes.Tuple:
+                throw new Sk.builtin.SyntaxError("only single target (not tuple) can be annotated", c.c_filename, n.lineno);
+            default:
+                throw new Sk.builtin.SyntaxError("illegal target for annotation", c.c_filename, n.lineno);
+        }
+        
+        if (expr1.constructor != Sk.astnodes.Name) {
+            simple = 0;
+        }
+        
+        ch = CHILD(ann, 1);
+        expr2 = ast_for_expr(c, ch);
+        if (NCH(ann) == 2) {
+            return new Sk.astnodes.AnnAssign(expr1, expr2, null, simple, n.lineno, n.col_offset);
+        } else {
+            ch = CHILD(ann, 3);
+            expr3 = ast_for_expr(c, ch);
+            return new Sk.astnodes.AnnAssign(expr1, expr2, expr3, simple, n.lineno, n.col_offset);
+        }
     }
     else {
         // normal assignment
