@@ -2079,6 +2079,10 @@ function ast_for_exprStmt (c, n) {
     var varName;
     var expr1;
     var ch;
+    var ann;
+    var simple;
+    var deep;
+    var expr3;
     REQ(n, SYM.expr_stmt);
     /* expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
                             ('=' (yield_expr|testlist_star_expr))*)

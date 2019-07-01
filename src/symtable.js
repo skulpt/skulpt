@@ -481,6 +481,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var i;
     var nameslen;
     var tmp;
+    var e_name;
     Sk.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
         case Sk.astnodes.FunctionDef:
