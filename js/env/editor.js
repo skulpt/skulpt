@@ -3,10 +3,12 @@ $(document).ready(function () {
     var outf = function (text) {
         output.text(output.text() + text);
     };
-    
+
     var keymap = {
         "Ctrl-Enter" : function (editor) {
-            Sk.configure({output: outf, read: builtinRead});
+            Sk.configure({output: outf,
+                 read: builtinRead,
+                 __future__: Sk.python3});
             Sk.canvas = "mycanvas";
             if (editor.getValue().indexOf('turtle') > -1 ) {
                 $('#mycanvas').show()
@@ -22,7 +24,9 @@ $(document).ready(function () {
             }
         },
         "Shift-Enter": function (editor) {
-            Sk.configure({output: outf, read: builtinRead});
+            Sk.configure({output: outf,
+                read: builtinRead,
+                __future__: Sk.python3});
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
             if (editor.getValue().indexOf('turtle') > -1 ) {
