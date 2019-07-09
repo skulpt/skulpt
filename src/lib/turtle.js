@@ -113,6 +113,7 @@ function generateTurtleModule(_target) {
         if (typeof asset === "string") {
             return new Promise(function(resolve, reject) {
                 var img = new Image();
+                img.crossOrigin='';
                 img.onload = function() {
                     _config.assets[name] = this;
                     resolve(img);
