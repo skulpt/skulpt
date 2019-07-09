@@ -893,35 +893,20 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encoding, errors) {
-    var buffer;
-    var ret;
-    var iter;
 
     Sk.builtin.pyCheckArgsLen("encode", arguments.length, 1, 3);
-    
-    if (errors) {
-        throw new Sk.builtin.NotImplementedError("Bytes error handling not implemented in Skulpt");
-    }
-    if (encoding !== undefined) {
-        // should throw lookup error but can't find in skulpt
-        if (encoding.v !== "ascii") {
-            if (encoding.v == "utf-8") {
-                throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
-            }
-            throw new Sk.builtin.SyntaxError("unknown encoding: " + encoding.v);
-        }
-
-    }
-    buffer = new ArrayBuffer(self.v.length);
+    /*
     ret = new textEncoding.TextEncoder(encoding.$jsstr()).encode(self.v);
-    
     iter = [];
     for (i in ret) {
         iter.push(new Sk.builtin.int_(ret[i]));
     };
 
-    iter = new Sk.builtin.list(iter);
-    return new Sk.builtin.bytes(iter);
+    iter = new Sk.builtin.list(iter);*/
+    if (errors) {
+        throw new Sk.builtin.NotImplementedError("Bytes error handling not implemented in Skulpt");
+    }
+    return new Sk.builtin.bytes(self, encoding);
 
 });
 

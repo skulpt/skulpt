@@ -23,6 +23,8 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(len(b), 3)
         it0[0] = 5
         self.assertEqual(str(b)[2:-1], "\\x01\\xe6\\x03")
+        c = bytes([65, 66, 200, 3])
+        self.assertEqual(str(c)[2:-1], "AB\\xc8\\x03")
         self.assertRaises(TypeError, bytes, "string")
         self.assertRaises(TypeError, bytes, [1,2, "3"])
         self.assertRaises(ValueError, bytes, [257, 2, 3])
@@ -37,27 +39,33 @@ class BytesTests(unittest.TestCase):
 
         self.assertRaises(TypeError, bytes, "abc", [])
         self.assertRaises(TypeError, bytes, ["a", "b"], "ascii")
-        #fails below because we don't have a LookupError, but it throws a diff one
-        #self.assertRaises(LookupError, bytes, "abc", "asd")
+        self.assertRaises(LookupError, bytes, "abc", "asd")
         #self.assertRaises(NotImplementedError, bytes, "abc", "utf-8")
-        #fails below bc no UEE
-        #self.assertRaises(UnicodeEncodeError, bytes, "ÿ", "ascii")
-        #this isn't exactly what it's supposed to do but I just wan't to make sure it raises something VV
-        self.assertRaises(ValueError, bytes, "ÿ", "ascii")
-        self.assertRaises(ValueError, bytes, "ӳ", "ascii")
+        self.assertRaises(UnicodeEncodeError, bytes, "ÿ", "ascii")
 
     def test_comparisons(self):
         self.assertTrue(bytes([97, 98, 122]) == bytes("abz", 'ascii'))
+        self.assertFalse(bytes([97, 98, 122]) != bytes("abz", 'ascii'))
+        self.assertFalse(bytes([97, 120]) == bytes([97, 120, 100]))
+        self.assertFalse(bytes([97, 98, 99]) == bytes("abd", "ascii"))
 
     def test_decode(self):
         a = bytes("abc", "ascii")
         b0 = [98,130,102]
         b = bytes(b0)
-        print(b.decode('ascii'))
+        self.assertRaises(UnicodeDecodeError, b.decode, "ascii")
+        self.assertRaises(LookupError, a.decode, "a")
         self.assertEqual(a.decode('ascii'), "abc")
 
+    def test_encode(self):
+        a = "abc".encode("ascii")
+        self.assertEqual(list(a), [97, 98, 99])
+        self.assertEqual(type(a), bytes)
 
+    def test_errors(self):
+        self.assertRaises(UnicodeEncodeError, bytes, "aÿ", "ascii", "strict")
+        a = bytes("aÿ", "ascii", "ignore")
+        self.assertEqual(str(a)[2:-1], "a")
 
 if __name__ == '__main__':
-    unittest.main()
-            
+    unittest.main()  

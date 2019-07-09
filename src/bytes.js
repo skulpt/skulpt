@@ -13,10 +13,16 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     var val;
     var view;
     var buffer;
+    var errs;
+    var string;
     if (!(this instanceof Sk.builtin.bytes)) {
         return new Sk.builtin.bytes(...arguments);
     }
     Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
+
+    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore") {
+        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
+    }
     if (arguments.length == 0) {
         buffer = new ArrayBuffer(0);
         view = new DataView(buffer);
@@ -25,7 +31,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         if (source instanceof Sk.builtin.int_) {
             buffer = new ArrayBuffer(source.v);
             view = new DataView(buffer);
-        } else if (Sk.builtin.checkIterable(source)) {
+        } else if (Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) {
             buffer = new ArrayBuffer(source.sq$length());
             view = new DataView(buffer);
             i = 0;
@@ -34,7 +40,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                 item = iter.tp$iternext()) {
                 if (item instanceof Sk.builtin.int_) {
                     if (item.v >= 0 && item.v <= 256) {
-                        view.setInt8(i, item.v);
+                        view.setUint8(i, item.v);
                         i ++;
                     } else {
                         throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
@@ -50,34 +56,35 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         } else {
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
         }
-    }
-
-    if (arguments.length == 2) {
+    } else if (arguments.length >1) {
         if (encoding instanceof Sk.builtin.str) {
             if (source instanceof Sk.builtin.str) {
                 if (encoding.v == "ascii") {
-                    buffer = new ArrayBuffer(encoding.sq$length());
-                    view = new DataView(buffer);
+                    string = "";
+                    errs = 0;
                     for (i in source.v) {
                         val = source.v[i].charCodeAt(0);
-                        if (val < 128) {
-                            view.setInt8(i, val);
-                        } else {
-                            if (val <= 256) {
+                        if (val < 0 || val > 127) {
+                            if (errors === undefined || errors.v == "strict") {
                                 val = makehexform(val);
-                            } else {
-                                val = makehexform(val);
+                                throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
+                            } else if (errors.v == "ignore") {
+                                errs++;
                             }
-                            //made this up
-                            throw new Sk.builtin.ValueError("UnicodeEncodeError, msg: 'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
+                        } else {
+                            string += source.v[i];
                         }
                     }
+                    buffer = new ArrayBuffer(source.sq$length() - errs);
+                    view = new DataView(buffer);
+                    for (i in string) {
+                        val = string[i].charCodeAt(0);
+                        view.setUint8(i, val);
+                    }
                 } else if (encoding.v == "utf-8") {
-                    //made this up
                     throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
                 } else {
-                    //Throws lookuperror in real python but I couldn't find that in skulpt
-                    throw new Sk.builtin.SyntaxError("unknown encoding: " + encoding.v);
+                    throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
                 }
             } else {
                 throw new Sk.builtin.TypeError("encoding without a string argument");
@@ -90,10 +97,6 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     this.v = view;
     this.__class__ = Sk.builtin.bytes;
     this.arraybuffer = buffer;
-    if (errors) {
-        //made this up
-        throw new Sk.builtin.NotImplementedError("Bytes error handling not implemented in Skulpt");
-    }
 
     this.tp$iter = function () {
         return this;
@@ -102,10 +105,10 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     this.index$ = -1;
     this.tp$iternext = function () {
         this.index$++;
-        if (this.index$ == view.byteLength) {
+        if (this.index$ >= view.byteLength) {
             return undefined;
         }
-        return new Sk.builtin.int_(view.getInt8(this.index$));
+        return new Sk.builtin.int_(view.getUint8(this.index$));
     };
     return this;
 };
@@ -118,7 +121,6 @@ var makehexform = function (num) {
         leading = "\\u";
     }
     num = num.toString(16);
-    console.log(num);
     if (num.length == 3) {
         num = num.slice(1,3);
     }
@@ -136,10 +138,9 @@ Sk.builtin.bytes.prototype["$r"] = function () {
     var ret;
     var i;
     var num;
-    // this doesn't work for values > 127
     ret = "";
     for (i = 0; i < this.v.byteLength; i++) {
-        num = this.v.getInt8(i);
+        num = this.v.getUint8(i);
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
             ret += makehexform(num);
         } else {
@@ -152,60 +153,74 @@ Sk.builtin.bytes.prototype["$r"] = function () {
 
 Sk.builtin.bytes.prototype.ob$eq = function (other) {
     var i;
-    /*
-    if (this["__len__"] != other["__len__"]) {
+    var val1;
+    var val2;
+    var iter1;
+    var iter2;
+
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    if (!(other instanceof Sk.builtin.bytes)) {
         return Sk.builtin.bool.false$;
     }
-    for (i in this.val$.v) {
-        if (this.val$.v.v != other.val$.v.v) {
+    if (this.sq$length() != other.sq$length()) {
+        return Sk.builtin.bool.false$;
+    }
+    iter1 = this.tp$iter();
+    iter2 = other.tp$iter();
+
+    for (i = 0; i < this.sq$length(); i ++) {
+        val1 = iter1.tp$iternext();
+        val2 = iter2.tp$iternext();
+        if (val1 === undefined || val2 === undefined) {
+            break;
+        }
+        if (val1.v != val2.v) {
             return Sk.builtin.bool.false$;
         }
-    }*/
+    }
+
     return Sk.builtin.bool.true$;
 };
+
+Sk.builtin.bytes.prototype.ob$ne = function (other) {
+    return (!(this.ob$eq(other)));
+};
+
 
 Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
 
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
-
+    var i;
+    var val;
     Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-    
-    if (errors) {
-        throw new Sk.builtin.NotImplementedError("Bytes error handling not implemented in Skulpt");
+
+    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore") {
+        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
+
     if (encoding !== undefined) {
-        // should throw lookup error but can't find in skulpt
         if (encoding.v !== "ascii") {
             if (encoding.v == "utf-8") {
                 throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
             }
-            throw new Sk.builtin.SyntaxError("unknown encoding: " + encoding.v);
+            throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
         }
 
     }
-    var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.arraybuffer);
-    return new Sk.builtin.str(string);
 
-});
-
-Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
-
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-    
-    if (errors) {
-        throw new Sk.builtin.NotImplementedError("Bytes error handling not implemented in Skulpt");
-    }
-    if (encoding !== undefined) {
-        // should throw lookup error but can't find in skulpt
-        if (encoding.v !== "ascii") {
-            if (encoding.v == "utf-8") {
-                throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val  > 127) {
+            if (errors === undefined || errors.v == "strict") {
+                val = val.toString(16);
+                throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte '0x" + val + "' in position " + i + ": ordinal not in range(128)");
             }
-            throw new Sk.builtin.SyntaxError("unknown encoding: " + encoding.v);
         }
-
     }
     var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.arraybuffer);
     return new Sk.builtin.str(string);
