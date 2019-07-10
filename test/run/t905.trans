@@ -1,3 +1,0 @@
-Module(body=[AnnAssign(target=Name(id='a', ctx=Store()),
-                       annotation=Name(id='int', ctx=Load()), value=Num(n=0), simple=1)
-                       ])
