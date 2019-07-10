@@ -2219,14 +2219,14 @@ function parsestr (c, s) {
                 else if (c === "x") {
                     d0 = s.charAt(++i);
                     d1 = s.charAt(++i);
-                    ret += String.fromCharCode(parseInt(d0 + d1, 16));
+                    ret += encodeUtf8(String.fromCharCode(parseInt(d0 + d1, 16)));
                 }
                 else if (c === "u" || c === "U") {
                     d0 = s.charAt(++i);
                     d1 = s.charAt(++i);
                     d2 = s.charAt(++i);
                     d3 = s.charAt(++i);
-                    ret += String.fromCharCode(parseInt(d0 + d1, 16), parseInt(d2 + d3, 16));
+                    ret += encodeUtf8(String.fromCharCode(parseInt(d0 + d1, 16), parseInt(d2 + d3, 16)));
                 }
                 else {
                     // Leave it alone
@@ -2238,7 +2238,7 @@ function parsestr (c, s) {
                 ret += c;
             }
         }
-        return ret;
+        return decodeUtf8(ret);
     };
 
     //print("parsestr", s);
