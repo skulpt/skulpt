@@ -2126,6 +2126,9 @@ function ast_for_exprStmt (c, n) {
         return new Sk.astnodes.AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
     }
     else if (CHILD(n, 1).type === SYM.annassign) {
+        if (!Sk.__future__.python3) {
+            throw new Sk.builtin.SyntaxError("Annotated assignment is not supported in Python 2", c.c_filename, n.lineno);
+        }
         // annotated assignment
         ch = CHILD(n, 0);
         ann = CHILD(n, 1);
