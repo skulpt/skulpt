@@ -13,34 +13,34 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     var val;
     var view;
     var buffer;
-    var errs;
     var string;
+    var ret;
+    var final;
+    var arr;
     if (!(this instanceof Sk.builtin.bytes)) {
         return new Sk.builtin.bytes(...arguments);
     }
     Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
 
-    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore") {
+    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore" && errors.v !== "replace") {
         throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
     if (arguments.length == 0) {
-        buffer = new ArrayBuffer(0);
-        view = new DataView(buffer);
+        return new Sk.builtin.bytes(new Sk.builtin.int_(0));
     }
     if (arguments.length == 1) {
         if (source instanceof Sk.builtin.int_) {
             buffer = new ArrayBuffer(source.v);
             view = new DataView(buffer);
         } else if (Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) {
-            buffer = new ArrayBuffer(source.sq$length());
-            view = new DataView(buffer);
+            final = [];
             i = 0;
             for (iter = Sk.abstr.iter(source), item = iter.tp$iternext();
                 item !== undefined;
                 item = iter.tp$iternext()) {
                 if (item instanceof Sk.builtin.int_) {
                     if (item.v >= 0 && item.v <= 256) {
-                        view.setUint8(i, item.v);
+                        final.push(item.v);
                         i ++;
                     } else {
                         throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
@@ -49,6 +49,9 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
                 }
             }
+            arr = new Uint8Array(final);
+            buffer = arr.buffer;
+            view = new DataView(buffer);
         } else if (source instanceof Sk.builtin.bytes) {
             return source;
         } else if (source instanceof Sk.builtin.str) {
@@ -56,31 +59,27 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         } else {
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
         }
-    } else if (arguments.length >1) {
+    } else if (arguments.length > 1) {
         if (encoding instanceof Sk.builtin.str) {
             if (source instanceof Sk.builtin.str) {
                 if (encoding.v == "ascii") {
                     string = "";
-                    errs = 0;
                     for (i in source.v) {
                         val = source.v[i].charCodeAt(0);
                         if (val < 0 || val > 127) {
                             if (errors === undefined || errors.v == "strict") {
                                 val = makehexform(val);
                                 throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
-                            } else if (errors.v == "ignore") {
-                                errs++;
+                            } else if (errors.v == "replace") {
+                                string += "?";
                             }
                         } else {
                             string += source.v[i];
                         }
                     }
-                    buffer = new ArrayBuffer(source.sq$length() - errs);
+                    ret = new textEncoding.TextEncoder(encoding.$jsstr()).encode(string);
+                    buffer = ret.buffer;
                     view = new DataView(buffer);
-                    for (i in string) {
-                        val = string[i].charCodeAt(0);
-                        view.setUint8(i, val);
-                    }
                 } else if (encoding.v == "utf-8") {
                     throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
                 } else {
@@ -96,7 +95,6 @@ Sk.builtin.bytes = function (source, encoding, errors) {
 
     this.v = view;
     this.__class__ = Sk.builtin.bytes;
-    this.arraybuffer = buffer;
 
     this.tp$iter = function () {
         return this;
@@ -106,6 +104,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     this.tp$iternext = function () {
         this.index$++;
         if (this.index$ >= view.byteLength) {
+            this.index$ = -1;
             return undefined;
         }
         return new Sk.builtin.int_(view.getUint8(this.index$));
@@ -197,9 +196,11 @@ Sk.builtin.bytes.prototype.sq$length = function () {
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
     var i;
     var val;
+    var final;
+    var buffer;
     Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
 
-    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore") {
+    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore" && errors.v !== "replace") {
         throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
 
@@ -212,19 +213,26 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
         }
 
     }
-
+    final = [];
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
         if (val  > 127) {
             if (errors === undefined || errors.v == "strict") {
                 val = val.toString(16);
                 throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte '0x" + val + "' in position " + i + ": ordinal not in range(128)");
+            } else if (errors.v == "replace") {
+                val = 63;
+                final.push(val);
             }
+        } else {
+            final.push(val);
         }
     }
-    var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.arraybuffer);
-    return new Sk.builtin.str(string);
+    final = new Uint8Array(final);
+    buffer = final.buffer;
+    var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(buffer);
 
+    return new Sk.builtin.str(string);
 });
 
 Sk.builtin.bytes.prototype["__iter__"] = new Sk.builtin.func(function (self) {
