@@ -11,11 +11,14 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(str(b)[1:], "''")
         self.assertEqual(str(bytes())[1:], "''")
 
+        self.assertEqual(str(bytes), "<class 'bytes'>")
+        self.assertEqual(type(bytes), type)
+
     def test_iterables(self):
         a = [1,2,3]
         a1 = bytes(a)
         self.assertEqual(str(a1)[2:-1], "\\x01\\x02\\x03")
-        self.assertEqual(a1, bytes(a1))
+        self.assertEqual(str(a1)[2:-1], str(bytes(a1))[2:-1])
         #self.assertEqual(a1, bytes(a1))
         it0 = [1,230,3]
         b = bytes(it0)
@@ -75,19 +78,43 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(bytes([97, 98, 122]) != bytes("abz", 'ascii'))
         self.assertFalse(bytes([97, 120]) == bytes([97, 120, 100]))
         self.assertFalse(bytes([97, 98, 99]) == bytes("abd", "ascii"))
+##        a = bytes([1,2])
+##        b = bytes(a)
+##        self.assertTrue(a is b)
+##        a = bytes([1,2,3])
+##        b = bytes([1,2,3,0])
+##        self.assertTrue(a < b)
+##        self.assertTrue(a <= b)
+##        self.assertFalse(a > b)
+##        b = bytes([0, 200, 200])
+##        self.assertTrue(a > b)
+##        self.assertTrue(a >= b)
+##        self.assertFalse(a <= b)
+##        b = bytes([1,2,3])
+##        self.assertFalse(a is b)
 
     def test_decode(self):
         a = bytes("abc", "ascii")
-        b0 = [98,130,102]
+        b0 = [67,127,102]
         b = bytes(b0)
-        self.assertRaises(UnicodeDecodeError, b.decode, "ascii")
+        #self.assertRaises(UnicodeDecodeError, b.decode, "ascii")
         self.assertRaises(LookupError, a.decode, "a")
-        self.assertEqual(a.decode('ascii'), "abc")
+        #self.assertEqual(a.decode('ascii'), "abc")
+        u = b.decode("utf-8")
 
     def test_encode(self):
         a = "abc".encode("ascii")
         self.assertEqual(list(a), [97, 98, 99])
         self.assertEqual(type(a), bytes)
+        self.assertEqual(str(a)[2:-1], "abc")
+
+        a = "abc".encode("utf-8")
+        self.assertEqual(list(a), [97, 98, 99])
+        b = "abcÿ".encode("utf-8")
+        self.assertEqual(str(b)[2:-1], "abc\\xc3\\xbf")
+        self.assertEqual(list(b), [97, 98, 99, 195, 191])
+        self.assertEqual(b, "abcÿ".encode())
+
 
     def test_errors(self):
         self.assertRaises(UnicodeEncodeError, bytes, "aÿ", "ascii", "strict")
@@ -105,6 +132,11 @@ class BytesTests(unittest.TestCase):
         b = bytes([250, 100, 101])
         c = b.decode("ascii", "replace")
         #self.assertEqual(c, "?de")
+        d = [97, 98, 99, 140, 50]
+        d0 = bytes(d)
+        self.assertEqual(str(d0)[2:-1], "abc\\x8c2")
+        self.assertEqual(d0.decode("utf-8", "ignore"), "abc2")
+        self.assertEqual(d0.decode("utf-8", "replace"), "abc�2") 
         
 
     def test_iteration(self):
@@ -151,8 +183,6 @@ class BytesTests(unittest.TestCase):
         for i in a0:
             a1.append(i)
         self.assertEqual(a1, [1, 2, 3])
-            
-            
 
 if __name__ == '__main__':
     unittest.main()  
