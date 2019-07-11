@@ -25,6 +25,9 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore" && errors.v !== "replace") {
         throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
+    if (encoding === undefined) {
+        encoding = new Sk.builtin.str("utf-8");
+    }
     if (arguments.length == 0) {
         return new Sk.builtin.bytes(new Sk.builtin.int_(0));
     }
@@ -66,6 +69,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     string = "";
                     for (i in source.v) {
                         val = source.v[i].charCodeAt(0);
+
                         if (val < 0 || val > 127) {
                             if (errors === undefined || errors.v == "strict") {
                                 val = makehexform(val);
@@ -77,14 +81,14 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                             string += source.v[i];
                         }
                     }
-                    ret = new textEncoding.TextEncoder(encoding.$jsstr()).encode(string);
-                    buffer = ret.buffer;
-                    view = new DataView(buffer);
                 } else if (encoding.v == "utf-8") {
-                    throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
+                    string = source.v;
                 } else {
                     throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
                 }
+                ret = new textEncoding.TextEncoder(encoding.$jsstr()).encode(string);
+                buffer = ret.buffer;
+                view = new DataView(buffer);
             } else {
                 throw new Sk.builtin.TypeError("encoding without a string argument");
             }
@@ -188,7 +192,6 @@ Sk.builtin.bytes.prototype.ob$ne = function (other) {
     return (!(this.ob$eq(other)));
 };
 
-
 Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
@@ -204,34 +207,56 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
         throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
 
-    if (encoding !== undefined) {
-        if (encoding.v !== "ascii") {
-            if (encoding.v == "utf-8") {
-                throw new Sk.builtin.NotImplementedError("utf-8 not implemented in Skulpt");
-            }
-            throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
-        }
-
+    if (encoding === undefined) {
+        encoding = new Sk.builtin.str("utf-8");
     }
-    final = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
-        if (val  > 127) {
-            if (errors === undefined || errors.v == "strict") {
-                val = val.toString(16);
-                throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte '0x" + val + "' in position " + i + ": ordinal not in range(128)");
-            } else if (errors.v == "replace") {
-                val = 63;
+
+    if (errors === undefined) {
+        errors = new Sk.builtin.str("strict");
+    }
+    if (encoding.v != "ascii" && encoding.v !== "utf-8") {
+        throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
+    }
+
+    if (encoding.v == "ascii") {
+        final = [];
+        for (i = 0; i < self.v.byteLength; i++) {
+            val = self.v.getUint8(i);
+            if (val  > 127) {
+                if (errors === undefined || errors.v == "strict") {
+                    val = val.toString(16);
+                    throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte '0x" + val + "' in position " + i + ": ordinal not in range(128)");
+                }
+                if (errors.v == "replace") {
+                    val = 63;
+                    final.push(val);
+                }
+            } else {
                 final.push(val);
             }
-        } else {
-            final.push(val);
         }
+        final = new Uint8Array(final);
+        buffer = final.buffer;
+        var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(buffer);
+    } else {
+        var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.v);
+        final = "";
+        for (i in string) {
+            if (string[i].charCodeAt(0) == 65533) {
+                if (errors.v == "strict") {
+                    val = self.v.getUint8(i);
+                    val = val.toString(16);
+                    throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + val + " in position " + i.toString() + ": invalid start byte");
+                } else if (errors.v == "replace") {
+                    final += string[i];
+                } else {
+                }
+            } else {
+                final += string[i];
+            }
+        }
+        string = final;
     }
-    final = new Uint8Array(final);
-    buffer = final.buffer;
-    var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(buffer);
-
     return new Sk.builtin.str(string);
 });
 
