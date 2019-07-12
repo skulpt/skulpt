@@ -146,6 +146,21 @@ Sk.builtin.bytes.prototype["$r"] = function () {
         num = this.v.getUint8(i);
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
             ret += makehexform(num);
+        } else if (num == 9 || num == 10 || num == 13 || num == 92) {
+            switch (num) {
+                case 9:
+                    ret += "\\t";
+                    break;
+                case 10:
+                    ret += "\\n";
+                    break;
+                case 13:
+                    ret += "\\r";
+                    break;
+                case 92:
+                    ret += "\\\\";
+                    break;
+            }
         } else {
             ret += String.fromCharCode(num);
         }
@@ -240,6 +255,9 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
         var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(buffer);
     } else {
         var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.v);
+        if (errors.v == "replace") {
+            return new Sk.builtin.str(string);
+        }
         final = "";
         for (i in string) {
             if (string[i].charCodeAt(0) == 65533) {
@@ -247,9 +265,6 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
                     val = self.v.getUint8(i);
                     val = val.toString(16);
                     throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + val + " in position " + i.toString() + ": invalid start byte");
-                } else if (errors.v == "replace") {
-                    final += string[i];
-                } else {
                 }
             } else {
                 final += string[i];
