@@ -57,7 +57,7 @@ Sk.dunderToSkulpt = {
     "__set__": ["tp$descr_set", 3]
 };
 
-function setupDunderMethods(py3) {
+Sk.setupDunderMethods = function (py3) {
     if (py3) {
         Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
         Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
@@ -71,7 +71,7 @@ function setupDunderMethods(py3) {
     }
 };
 
-Sk.exportSymbol("Sk.setupDunderMethods", setupDunderMethods);
+Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 /**
  *
  * @constructor

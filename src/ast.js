@@ -247,7 +247,7 @@ var operatorMap = {};
     operatorMap[TOK.T_PERCENT] = Sk.astnodes.Mod;
 }());
 
-function setupOperators(py3) {
+Sk.setupOperators = function (py3) {
     if (py3) {
         operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
     } else {
@@ -256,7 +256,7 @@ function setupOperators(py3) {
         }
     }
 }
-Sk.exportSymbol("Sk.setupOperators", setupOperators);
+Sk.exportSymbol("Sk.setupOperators", Sk.setupOperators);
 
 function getOperator (n) {
     if (operatorMap[n.type] === undefined) {
