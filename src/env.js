@@ -211,8 +211,8 @@ Sk.configure = function (options) {
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 
-    Sk.ast.py3_operators(Sk.__future__.python3);
-    Sk.type.matmuls(Sk.__future__.python3);
+    Sk.setupOperators(Sk.__future__.python3);
+    Sk.setupDunderMethods(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
