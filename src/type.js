@@ -57,6 +57,21 @@ Sk.dunderToSkulpt = {
     "__set__": ["tp$descr_set", 3]
 };
 
+Sk.setupDunderMethods = function (py3) {
+    if (py3) {
+        Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
+        Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
+    } else {
+        if (Sk.dunderToSkulpt["__matmul__"]) {
+            delete Sk.dunderToSkulpt["__matmul__"];
+        }
+        if (Sk.dunderToSkulpt["__rmatmul__"]) {
+            delete Sk.dunderToSkulpt["__rmatmul__"];
+        }
+    }
+};
+
+Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 /**
  *
  * @constructor

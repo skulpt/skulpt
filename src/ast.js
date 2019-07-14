@@ -247,8 +247,21 @@ var operatorMap = {};
     operatorMap[TOK.T_PERCENT] = Sk.astnodes.Mod;
 }());
 
+Sk.setupOperators = function (py3) {
+    if (py3) {
+        operatorMap[TOK.T_AT] = Sk.astnodes.MatMult;
+    } else {
+        if (operatorMap[TOK.T_AT]) {
+            delete operatorMap[TOK.T_AT];
+        }
+    }
+}
+Sk.exportSymbol("Sk.setupOperators", Sk.setupOperators);
+
 function getOperator (n) {
-    Sk.asserts.assert(operatorMap[n.type] !== undefined, "Operator missing from operatorMap");
+    if (operatorMap[n.type] === undefined) {
+        throw new Sk.builtin.SyntaxError("invalid syntax", n.type, n.lineno);
+    }
     return operatorMap[n.type];
 }
 
@@ -2019,6 +2032,10 @@ function astForAugassign (c, n) {
                 return Sk.astnodes.Pow;
             }
             return Sk.astnodes.Mult;
+        case "@":
+            if (Sk.__future__.python3) {
+                return Sk.astnodes.MatMult;
+            }
         default:
             Sk.asserts.fail("invalid augassign");
     }
