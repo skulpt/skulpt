@@ -78,20 +78,6 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(bytes([97, 98, 122]) != bytes("abz", 'ascii'))
         self.assertFalse(bytes([97, 120]) == bytes([97, 120, 100]))
         self.assertFalse(bytes([97, 98, 99]) == bytes("abd", "ascii"))
-##        a = bytes([1,2])
-##        b = bytes(a)
-##        self.assertTrue(a is b)
-##        a = bytes([1,2,3])
-##        b = bytes([1,2,3,0])
-##        self.assertTrue(a < b)
-##        self.assertTrue(a <= b)
-##        self.assertFalse(a > b)
-##        b = bytes([0, 200, 200])
-##        self.assertTrue(a > b)
-##        self.assertTrue(a >= b)
-##        self.assertFalse(a <= b)
-##        b = bytes([1,2,3])
-##        self.assertFalse(a is b)
 
     def test_decode(self):
         a = bytes("abc", "ascii")
@@ -128,16 +114,18 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(str(a)[2:-1], "ab?")
         b = bytes([200, 100, 101])
         c = b.decode("ascii", "replace")
-        #self.assertEqual(c, "?de")
+        self.assertEqual(c, "�de")
         b = bytes([250, 100, 101])
         c = b.decode("ascii", "replace")
-        #self.assertEqual(c, "?de")
+        self.assertEqual(c, "�de")
         d = [97, 98, 99, 140, 50]
         d0 = bytes(d)
         self.assertEqual(str(d0)[2:-1], "abc\\x8c2")
         self.assertEqual(d0.decode("utf-8", "ignore"), "abc2")
-        self.assertEqual(d0.decode("utf-8", "replace"), "abc�2") 
-        
+        self.assertEqual(d0.decode("utf-8", "replace"), "abc�2")
+
+        self.assertRaises(UnicodeDecodeError, d0.decode, "utf-8")
+        self.assertRaises(UnicodeDecodeError, d0.decode, "ascii")
 
     def test_iteration(self):
         a = bytes("abc", "ascii")
@@ -183,6 +171,82 @@ class BytesTests(unittest.TestCase):
         for i in a0:
             a1.append(i)
         self.assertEqual(a1, [1, 2, 3])
+
+    def test_fromhex(self):
+        a = "0f34"
+        self.assertEqual(bytes.fromhex(a), bytes([15, 52]))
+        b = "123456"
+        self.assertEqual(bytes.fromhex(b), bytes([18, 52, 86]))
+        self.assertEqual(bytes([1,2]).fromhex("ff"), bytes.fromhex("ff"))
+        self.assertEqual(bytes.fromhex("AA"), bytes.fromhex("aa"))
+
+        self.assertRaises(ValueError, bytes.fromhex, "ag")
+        self.assertRaises(ValueError, bytes.fromhex, "0f0")
+        self.assertRaises(ValueError, bytes.fromhex, "0f340/")
+        #this raises a weird error, idk how to fix
+        #self.assertRaises(TypeError, bytes.fromhex)
+        self.assertRaises(TypeError, bytes.fromhex, [1])
+        self.assertRaises(TypeError, bytes.fromhex, "0f", "0f")
+
+    def test_slicing(self):
+        a = bytes([1, 2, 3])
+        self.assertEqual(a[0], 1)
+        self.assertEqual(a[0:2], bytes([1, 2]))
+        self.assertEqual(a[-6:2], a[0:2])
+        self.assertEqual(a[2:1], bytes(0))
+        self.assertEqual(a[0:-2], a[0:1])
+
+        def foo(x):
+            return a[0:x]
+        def foo2(x):
+            return a[x]
+        self.assertRaises(TypeError, foo, "a")
+        self.assertRaises(IndexError, foo2, 4)
+
+
+    def test_count(self):
+        a = bytes([1, 2, 3, 1, 2, 3, 1, 2, 3])
+        self.assertEqual(a.count(1), 3)
+        self.assertEqual(a.count(bytes([1, 2, 3])), 3)
+        self.assertEqual(a.count(4), 0)
+        self.assertEqual(a.count(bytes([1,2,3,1,2,3])), 1)
+        a = bytes([1, 2, 1, 4, 5, 4, 5])
+        self.assertEqual(a.count(bytes([4, 5])), 2)
+
+        b = bytes([1, 2, 3, 4, 5])
+        self.assertEqual(b.count(4, 0, 3), 0)
+        self.assertEqual(b.count(bytes([4, 5]), 0, 5), 1)
+
+        self.assertRaises(TypeError, a.count, 4, 0, 3, 1)
+        self.assertRaises(TypeError, a.count, "hi")
+
+    def test_find(self):
+        a = bytes([1, 2, 1, 4, 5, 4, 5])
+        self.assertEqual(a.find(1), 0)
+        self.assertEqual(a.find(3), -1)
+        self.assertEqual(a.find(bytes([4, 5])), 3)
+        self.assertEqual(a.find(bytes([1, 5])), -1)
+
+        b = bytes([1, 2, 3, 4, 5])
+        self.assertEqual(b.find(4, 0, 3), -1)
+        self.assertEqual(b.find(bytes([4, 5]), 0, 5), 3)
+
+        self.assertRaises(TypeError, a.find, "hi")
+        self.assertRaises(TypeError, a.find, 4, 0, 3, 1)
+
+    def test_index(self):
+        a = bytes([1, 2, 1, 4, 5, 4, 5])
+        self.assertEqual(a.index(1), 0)
+        self.assertRaises(ValueError, a.index, 3)
+        self.assertEqual(a.index(bytes([4, 5])), 3)
+        self.assertRaises(ValueError, a.index, bytes([1, 5]))
+
+        b = bytes([1, 2, 3, 4, 5])
+        self.assertRaises(ValueError, b.index, 4, 0, 3)
+        self.assertEqual(b.index(bytes([4, 5]), 0, 5), 3)
+
+        self.assertRaises(TypeError, a.index, "hi")
+        self.assertRaises(TypeError, a.index, 4, 0, 3, 1)
 
 if __name__ == '__main__':
     unittest.main()  
