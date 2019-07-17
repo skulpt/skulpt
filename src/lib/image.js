@@ -545,7 +545,7 @@ $builtinmodule = function (name) {
 
         //getColorTuple
         $loc.getColorTuple = new Sk.builtin.func(function (self) {
-            return Sk.ffi.remapToPy([parseInt(self.red), parseInt(self.green), parseInt(self.blue)]);
+            return Sk.ffi.remapToPy([self.red, self.green, self.blue]);
         });
 
         //setRange -- change from 0..255 to 0.0 .. 1.0
