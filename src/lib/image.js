@@ -366,7 +366,23 @@ $builtinmodule = function (name) {
         });
 
         // toList
-
+        $loc.toList = $loc.to_list = new Sk.builtin.func(function (self){
+            // Convert the image to a List of Lists representation
+            var res = [];
+            var v;
+            for(var i = 0; i < self.height; i++){
+                res.push([]);
+                for(var j = 0; j< self.width; j++){
+                    v = Sk.misceval.callsimArray(self.getPixel, [self,j,i]);
+                    res[i].push([v.red, v.green, v.blue]);
+                }
+            }
+            return Sk.builtin.list(res.map( function( row ) {
+                return Sk.builtin.list(row.map(function(sub_row){                   
+                    return Sk.builtin.tuple(sub_row);
+                    }));
+                }));
+        });
     };
 
     mod.Image = Sk.misceval.buildClass(mod, image, "Image", []);
@@ -528,8 +544,8 @@ $builtinmodule = function (name) {
         });
 
         //getColorTuple
-        $loc.getColorTuple = new Sk.builtin.func(function (self, x, y) {
-
+        $loc.getColorTuple = new Sk.builtin.func(function (self) {
+            return Sk.ffi.remapToPy([parseInt(self.red), parseInt(self.green), parseInt(self.blue)]);
         });
 
         //setRange -- change from 0..255 to 0.0 .. 1.0
