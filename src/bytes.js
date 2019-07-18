@@ -163,7 +163,7 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
         i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
-                i = this.v.length + i;
+                i = this.v.byteLength + i;
             }
             if (i < 0 || i >= this.v.byteLength) {
                 throw new Sk.builtin.IndexError("index out of range");
@@ -364,12 +364,24 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
     if (end === undefined) {
         end = self.v.byteLength;
     } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         end = end.v;
+        if (end > self.v.byteLength) {
+            end = self.v.byteLength;
+        }
     }
     if (start === undefined) {
         start = 0;
     } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         start = start.v;
+        if (start < 0) {
+            start = 0;
+        }
     }
     count = 0;
     if (sub instanceof Sk.builtin.int_) {
@@ -383,7 +395,7 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
         while (start + len <= end) {
             index = new Sk.builtin.slice(start, start + len);
             val = self.mp$subscript(index);
-            if (val.ob$eq(sub).v == 1) {
+            if (val.ob$eq(sub) == Sk.builtin.bool.true$) {
                 count += 1;
                 start += len;
             } else {
@@ -396,8 +408,66 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
     return new Sk.builtin.int_(count);
 });
 
-Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("endswith() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
+    var len;
+    var iter;
+    var item;
+    var index;
+    var val;
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
+    if (!(suffix instanceof Sk.builtin.bytes || suffix instanceof Sk.builtin.tuple)) {
+        throw new Sk.builtin.TypeError("endswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(suffix));
+    }
+    if (start === undefined) {
+        start = 0;
+    } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        start = start.v;
+        if (start < 0) {
+            start = 0;
+        }
+    }
+    if (end === undefined) {
+        end = self.v.byteLength;
+    } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        end = end.v;
+        if (end > self.v.byteLength) {
+            end = self.v.byteLength;
+        }
+    }
+    if (suffix instanceof Sk.builtin.tuple) {
+        for (iter = Sk.abstr.iter(suffix), item = iter.tp$iternext();
+            item !== undefined;
+            item = iter.tp$iternext()) {
+            if (!(item instanceof Sk.builtin.bytes)) {
+                throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
+            }
+            len = item.v.byteLength;
+            if ((end - start) >= len) {
+                index = new Sk.builtin.slice(end - len, end);
+                val = self.mp$subscript(index);
+                if (val.ob$eq(item) == Sk.builtin.bool.true$) {
+                    return Sk.builtin.bool.true$;
+                }
+            }
+        }
+        return Sk.builtin.bool.false$;
+    } else {
+        len = suffix.v.byteLength;
+        if ((end - start) >= len) {
+            index = new Sk.builtin.slice(end - len, end);
+            val = self.mp$subscript(index);
+            if (val.ob$eq(suffix) == Sk.builtin.bool.true$) {
+                return Sk.builtin.bool.true$;
+            }
+        }
+        return Sk.builtin.bool.false$;
+    }
 });
 
 Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, start, end) {
@@ -409,12 +479,24 @@ Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, st
     if (start === undefined) {
         start = 0;
     } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         start = start.v;
+        if (start < 0) {
+            start = 0;
+        }
     }
     if (end === undefined) {
         end = self.v.byteLength;
     } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         end = end.v;
+        if (end > self.v.byteLength) {
+            end = self.v.byteLength;
+        }
     }
     if (sub instanceof Sk.builtin.int_) {
         for (i = start; i < end; i++) {
@@ -447,12 +529,24 @@ Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, s
     if (start === undefined) {
         start = 0;
     } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         start = start.v;
+        if (start < 0) {
+            start = 0;
+        }
     }
     if (end === undefined) {
         end = self.v.byteLength;
     } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
         end = end.v;
+        if (end > self.v.byteLength) {
+            end = self.v.byteLength;
+        }
     }
     if (sub instanceof Sk.builtin.int_) {
         for (i = start; i < end; i++) {
@@ -477,20 +571,145 @@ Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, s
     
 });
 
-Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("join() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterable) {
+    var final;
+    var i;
+    var sep;
+    var iter;
+    var item;
+    Sk.builtin.pyCheckArgsLen("join", arguments.length - 1, 1, 1);
+    if (!(Sk.builtin.checkIterable(iterable))) {
+        throw Sk.builtin.TypeError("can only join an iterable");
+    }
+    final = [];
+    sep = [];
+    for (i = 0; i < self.v.byteLength; i++) {
+        sep.push(new Sk.builtin.int_(self.v.getUint8(i)));
+    }
+    i = 0;
+    for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
+        item !== undefined;
+        item = iter.tp$iternext()) {
+        if (!(item instanceof Sk.builtin.bytes)) {
+            throw new Sk.builtin.TypeError("sequence item " + i.toString() + ": expected a bytes-like object, " + Sk.abstr.typeName(item) + " found");
+        }
+        if (final.length > 0) {
+            final = final.concat(sep);
+        }
+        for (i = 0; i < item.v.byteLength; i++) {
+            final.push(new Sk.builtin.int_(item.v.getUint8(i)));
+        }
+        i++;
+    }
+    return new Sk.builtin.bytes(new Sk.builtin.list(final));
 });
 
 Sk.builtin.bytes.prototype["maketrans"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("maketrans() bytes method not implemented in Skulpt");
 });
 
-Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("partition() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
+    var final1;
+    var final2;
+    var final3;
+    var idx;
+    var len;
+    var i;
+    var zero;
+    var empty1;
+    var empty2;
+    Sk.builtin.pyCheckArgsLen("partition", arguments.length - 1, 1, 1);
+    if (!(sep instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
+    }
+    len = sep.v.byteLength;
+    final1 = [];
+    final2 = [];
+    final3 = [];
+    i = 0;
+    while (i + len <= self.v.byteLength) {
+        index = new Sk.builtin.slice(i, i + len);
+        val = self.mp$subscript(index);
+        if (val.ob$eq(sep) == Sk.builtin.bool.true$) {
+            for (idx = 0; idx < sep.v.byteLength; idx++) {
+                val = sep.v.getUint8(idx);
+                val = new Sk.builtin.int_(val);
+                final2.push(val);
+            }
+            for (idx = i + len; idx < self.v.byteLength; idx++) {
+                val = self.v.getUint8(idx);
+                val = new Sk.builtin.int_(val);
+                final3.push(val);
+            }
+            break;
+        } else if (self.v.byteLength - i == sep.v.byteLength) {
+            for (idx = i; idx < self.v.byteLength; idx++) {
+                val = self.v.getUint8(idx);
+                val = new Sk.builtin.int_(val);
+                final1.push(val);
+            }
+            final1 = new Sk.builtin.bytes(new Sk.builtin.list(final1));
+            zero = new Sk.builtin.int_(0);
+            empty1 = new Sk.builtin.bytes(zero);
+            empty2 = new Sk.builtin.bytes(zero);
+            return new Sk.builtin.tuple([final1, empty1, empty2]);
+        } else {
+            val = self.v.getUint8(i);
+            val = new Sk.builtin.int_(val);
+            final1.push(val);
+            i++;
+        } 
+    }
+    final1 = new Sk.builtin.bytes(new Sk.builtin.list(final1));
+    final2 = new Sk.builtin.bytes(new Sk.builtin.list(final2));
+    final3 = new Sk.builtin.bytes(new Sk.builtin.list(final3));
+
+    return new Sk.builtin.tuple([final1, final2, final3]);
 });
 
-Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("replace() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old, repl, count) {
+    var final;
+    var len;
+    var i;
+    Sk.builtin.pyCheckArgsLen("replace", arguments.length - 1, 2, 3);
+    if (!(old instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(old) + "'");
+    }
+    if (!(repl instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(repl) + "'");
+    }
+    if (count !== undefined && (!(count instanceof Sk.builtin.int_))) {
+        throw new  Sk.builtin.TypeError("'" + Sk.abstr.typeName(count) + "' " + "object cannot be interpreted as an integer");
+    }
+    final = [];
+    sep = []
+    for (i = 0; i < repl.v.byteLength; i++) {
+        sep.push(new Sk.builtin.int_(repl.v.getUint8(i)));
+    }
+    len = old.v.byteLength;
+    i = 0;
+    tot = 0;
+    while (i + len <= self.v.byteLength) {
+        index = new Sk.builtin.slice(i, i + len);
+        val = self.mp$subscript(index);
+        if ((val.ob$eq(old) == Sk.builtin.bool.true$) && (count === undefined || tot < count.v)) {
+            final = final.concat(sep);
+            i += len;
+            tot++;
+        } else {
+            final.push(new Sk.builtin.int_(self.v.getUint8(i)));
+            i++;
+        }
+        if (i > self.v.byteLength - len) {
+            for (idx = i; i < self.v.byteLength; i++) {
+                final.push(new Sk.builtin.int_(self.v.getUint8(idx)));
+            }
+            break;
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
+
 });
 
 Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function () {
@@ -505,8 +724,92 @@ Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("rpartition() bytes method not implemented in Skulpt");
 });
 
-Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("startswith() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
+    var len;
+    var iter;
+    var item;
+    var index;
+    var val;
+    var negstart;
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length - 1, 1, 3);
+    if (!(prefix instanceof Sk.builtin.bytes || prefix instanceof Sk.builtin.tuple)) {
+        throw new Sk.builtin.TypeError("startswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(prefix));
+    }
+    if (start === undefined) {
+        start = 0;
+    } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        start = start.v;
+        if (start + self.v.byteLength < 0) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    if (end === undefined) {
+        end = self.v.byteLength;
+    } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        end = end.v;
+        if (end > self.v.byteLength) {
+            end = self.v.byteLength;
+        }
+    }
+    negstart = function (idx, object, pref) {
+        var i;
+        var val1;
+        var val2;
+        for (i = idx, j = 0; j < pref.v.byteLength; i++, j++) {
+            if (i < 0) {
+                val1 = object.v.getUint8(i + object.v.byteLength);
+            } else {
+                val1 = object.v.getUint8(i);
+            }
+            val2 = pref.v.getUint8(j);
+            if (val1 != val2) {
+                return Sk.builtin.bool.false$;
+            }
+        }
+        return Sk.builtin.bool.true$
+    };
+    if (prefix instanceof Sk.builtin.tuple) {
+        for (iter = Sk.abstr.iter(prefix), item = iter.tp$iternext();
+            item !== undefined;
+            item = iter.tp$iternext()) {
+            if (!(item instanceof Sk.builtin.bytes)) {
+                throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
+            }
+            len = item.v.byteLength;
+            if (start + len <= end) {
+                if (start < 0) {
+                    if (negstart(start, self, prefix) == Sk.builtin.bool.true$) {
+                        return Sk.builtin.bool.true$;
+                    }
+                }
+                index = new Sk.builtin.slice(start, start + len);
+                val = self.mp$subscript(index);
+                if (val.ob$eq(item) == Sk.builtin.bool.true$) {
+                    return Sk.builtin.bool.true$;
+                }
+            }
+        }
+        return Sk.builtin.bool.false$;
+    } else {
+        len = prefix.v.byteLength;
+        if (start + len <= end) {
+            if (start < 0) {
+                return negstart(start, self, prefix);
+            }
+            index = new Sk.builtin.slice(start, start + len);
+            val = self.mp$subscript(index);
+            if (val.ob$eq(prefix) == Sk.builtin.bool.true$) {
+                return Sk.builtin.bool.true$;
+            }
+        }
+        return Sk.builtin.bool.false$;
+    }
 });
 
 Sk.builtin.bytes.prototype["translate"] = new Sk.builtin.func(function () {
@@ -519,6 +822,55 @@ Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function () {
 
 Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("ljust() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("isalnum", arguments.length - 1, 0, 0);
+    if (self.v.byteLength == 0) {
+        return Sk.builtin.bool.false$;
+    }
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (!((val >= 48 && val <= 57) || (val >= 65 && val <= 90) || (val >= 97&& val <= 122))) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    return Sk.builtin.bool.true$;
+
+});
+
+Sk.builtin.bytes.prototype["isalpha"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("isalpha", arguments.length - 1, 0, 0);
+    if (self.v.byteLength == 0) {
+        return Sk.builtin.bool.false$;
+    }
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (!((val >= 65 && val <= 90) || (val >= 97&& val <= 122))) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    return Sk.builtin.bool.true$;
+
+});
+
+Sk.builtin.bytes.prototype["isascii"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("isascii", arguments.length - 1, 0, 0);
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        console.log(val);
+        if (!(i >= 0 && i < 128)) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    return Sk.builtin.bool.true$;
+
 });
 
 Sk.builtin.bytes.prototype["__iter__"] = new Sk.builtin.func(function (self) {
