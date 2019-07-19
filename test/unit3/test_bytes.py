@@ -19,7 +19,7 @@ class BytesTests(unittest.TestCase):
         a1 = bytes(a)
         self.assertEqual(str(a1)[2:-1], "\\x01\\x02\\x03")
         self.assertEqual(str(a1)[2:-1], str(bytes(a1))[2:-1])
-        #self.assertEqual(a1, bytes(a1))
+        self.assertEqual(a1, bytes(a1))
         it0 = [1,230,3]
         b = bytes(it0)
         self.assertEqual(str(b)[2:-1], "\\x01\\xe6\\x03")
@@ -68,7 +68,8 @@ class BytesTests(unittest.TestCase):
         
         self.assertRaises(TypeError, bytes, "abc")
         self.assertRaises(TypeError, bytes, "abc", [])
-        self.assertRaises(TypeError, bytes, ["a", "b"], "ascii")
+        self.assertRaises(TypeError, bytes, ["a", "b"], "ascii", "strict")
+        self.assertRaises(TypeError, bytes, "abc", "ascii", [])
         self.assertRaises(LookupError, bytes, "abc", "asd")
         self.assertRaises(UnicodeEncodeError, bytes, "ÿ", "ascii")
 
@@ -85,6 +86,9 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(LookupError, a.decode, "a")
         self.assertEqual(a.decode('ascii'), "abc")
         u = b.decode("utf-8")
+
+        self.assertRaises(TypeError, a.decode, [], "strict")
+        self.assertRaises(TypeError, a.decode, "ascii", [])
 
     def test_encode(self):
         a = "abc".encode("ascii")
@@ -175,14 +179,18 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(bytes.fromhex(a), bytes([15, 52]))
         b = "123456"
         self.assertEqual(bytes.fromhex(b), bytes([18, 52, 86]))
-        self.assertEqual(bytes([1,2]).fromhex("ff"), bytes.fromhex("ff"))
         self.assertEqual(bytes.fromhex("AA"), bytes.fromhex("aa"))
+        c = "2ef0 f1\nf2\r\v\
+"
+        self.assertEqual(bytes.fromhex(c), bytes([46, 240, 241, 242]))
+        d = " 2ef0  \tf1f2  "
+        self.assertEqual(bytes.fromhex(d), bytes([46, 240, 241, 242]))
 
         self.assertRaises(ValueError, bytes.fromhex, "ag")
         self.assertRaises(ValueError, bytes.fromhex, "0f0")
         self.assertRaises(ValueError, bytes.fromhex, "0f340/")
-        #this raises a weird error, idk how to fix
-        #self.assertRaises(TypeError, bytes.fromhex)
+        self.assertRaises(ValueError, bytes.fromhex, "2ef 0")
+        self.assertRaises(ValueError, bytes.fromhex, "2ef0 f1 2")
         self.assertRaises(TypeError, bytes.fromhex, [1])
         self.assertRaises(TypeError, bytes.fromhex, "0f", "0f")
 
@@ -331,6 +339,7 @@ class BytesTests(unittest.TestCase):
         e = bytes([3])
 
         self.assertTrue(a.startswith(b, 0, 4))
+        self.assertTrue(bytes.startswith(a, b, 0, 4))
         self.assertTrue(a.startswith(b, 0, 5))
         self.assertTrue(a.startswith(bytes([2]), 1, 4))
         self.assertFalse(a.startswith(b, -2, 4))
@@ -347,11 +356,22 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.startswith, b, 0, 4, 4)
         self.assertRaises(TypeError, a.startswith, (c, 2), 0, 4)
 
+    def test_capitalize(self):
+        a = bytes([97, 65, 99, 68, 1])
+        self.assertEqual(a.capitalize(), bytes([65, 97, 99, 100, 1]))
+        b = bytes([48, 64, 91])
+        self.assertEqual(b.capitalize(), b)
+        c = bytes([])
+        self.assertEqual(c.capitalize(), c)
+
+        self.assertRaises(TypeError, b.capitalize, 1)
+
     def test_isalnum(self):
         a = bytes([])
         self.assertFalse(a.isalnum())
         b = bytes("ABCabc1", "ascii")
         self.assertTrue(b.isalnum())
+        self.assertTrue(bytes.isalnum(b))
         c = bytes("ABc 456", "ascii")
         self.assertFalse(c.isalnum())
         a = bytes("/", "ascii")
@@ -370,6 +390,7 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(a.isalpha())
         a = bytes("Abc", "ascii")
         self.assertTrue(a.isalpha())
+        self.assertTrue(bytes.isalpha(a))
 
         self.assertRaises(TypeError, a.isalpha, 1)
 
@@ -378,12 +399,110 @@ class BytesTests(unittest.TestCase):
         self.assertTrue(a.isascii())
         b = bytes("Ab1{/'", "ascii")
         self.assertTrue(b.isascii())
+        self.assertTrue(bytes.isascii(b))
         c = bytes("abc1ÿ/}", "utf-8")
-        #self.assertFalse(c.isascii())
+        self.assertFalse(c.isascii())
+        d = bytes([100, 101, 128])
+        self.assertFalse(d.isascii())
 
         self.assertRaises(TypeError, a.isascii, 1)
+
+    def test_isdigit(self):
+        a = bytes([])
+        self.assertFalse(a.isdigit())
+        b = bytes("123a", "ascii")
+        self.assertFalse(b.isdigit())
+        c = bytes("095", "ascii")
+        self.assertTrue(c.isdigit())
+        self.assertTrue(bytes.isdigit(c))
+
+        self.assertRaises(TypeError, a.isdigit, 1)
+
+    def test_islower(self):
+        a = bytes([])
+        self.assertFalse(a.islower())
+        b = bytes("12/a", "ascii")
+        self.assertTrue(b.islower())
+        self.assertTrue(bytes.islower(b))
+        c = bytes("abC", "ascii")
+        self.assertFalse(c.islower())
+        d = bytes("123", "ascii")
+        self.assertFalse(d.islower())
+
+        self.assertRaises(TypeError, d.islower, 1)
+
+    def test_isspace(self):
+        a = bytes([])
+        self.assertFalse(a.isspace())
+        b = bytes(" 9", "ascii")
+        self.assertFalse(a.isspace())
+        c = bytes([32, 9, 10])
+        self.assertTrue(c.isspace())
+        self.assertTrue(bytes.isspace(c))
+        d = bytes([13, 11, 12])
+        self.assertTrue(d.isspace())
+
+        self.assertRaises(TypeError, c.isspace, 1)
+
+    def test_isupper(self):
+        a = bytes([])
+        self.assertFalse(a.isupper())
+        b = bytes("AZ", "ascii")
+        self.assertTrue(b.isupper())
+        self.assertTrue(bytes.isupper(b))
+        c = bytes("123/", "ascii")
+        self.assertFalse(c.isupper())
+        d = bytes("ABCd", "ascii")
+        self.assertFalse(d.isupper())
+
+        self.assertRaises(TypeError, d.isupper, 1)
+
+    def test_lower(self):
+        a = bytes([77, 78, 45, 111])
+        self.assertEqual(a.lower(), bytes([109, 110, 45, 111]))
+        b = bytes([65, 90, 64, 91])
+        self.assertTrue(b.lower().islower())
+        self.assertEqual(b.lower(), bytes([97, 122, 64, 91]))
+        self.assertTrue(b.lower().islower())
+
+        self.assertRaises(TypeError, b.lower, 1)
+
+    def test_swapcase(self):
+        a = bytes([77, 78, 45, 111])
+        self.assertEqual(a.swapcase(), bytes([109, 110, 45, 79]))
+        b = bytes([65, 90, 97, 122])
+        self.assertEqual(b.swapcase(), bytes([97, 122, 65, 90]))
+        c = bytes([64, 91, 96, 123])
+        self.assertEqual(c.swapcase(), c)
+
+        self.assertRaises(TypeError, c.swapcase, 1)
+
+    def test_upper(self):
+        a = bytes([109, 110, 45, 111])
+        self.assertEqual(a.upper(), bytes([77, 78, 45, 79]))
+        b = bytes([97, 122, 64, 91])
+        self.assertEqual(b.upper(), bytes([65, 90, 64, 91]))
+        self.assertTrue(b.upper().isupper())
         
-        
+        self.assertRaises(TypeError, b.upper, 1)
+
+    def test_zfill(self):
+        a = bytes([1, 2, 3])
+        self.assertEqual(a.zfill(2), a)
+        #this should work bc it should return the same object
+        #but "is" doesn't work for bytes yet
+        #self.assertTrue(a.zfill(2) is a)
+        self.assertEqual(a.zfill(5), bytes([48, 48, 1, 2, 3]))
+        b = bytes([43, 1, 2])
+        self.assertEqual(b.zfill(5), bytes([43, 48, 48, 1, 2]))
+        c = bytes([45, 2])
+        self.assertEqual(c.zfill(3), bytes([45, 48, 2]))
+        d = bytes([1, 43, 2])
+        self.assertEqual(d.zfill(4), bytes([48, 1, 43, 2]))
+
+        self.assertRaises(TypeError, d.zfill, "2")
+        self.assertRaises(TypeError, d.zfill)
+        self.assertRaises(TypeError, d.zfill, 3, 3)
 
 if __name__ == '__main__':
     unittest.main()  

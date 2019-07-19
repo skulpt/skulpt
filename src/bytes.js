@@ -22,7 +22,15 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     }
     Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
 
-    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore" && errors.v !== "replace") {
+    if (errors === undefined) {
+        errors = new Sk.builtin.str("strict");
+    } else if (!(errors instanceof Sk.builtin.str)) {
+        throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not " + Sk.abstr.typeName(errors));
+    }
+    if (encoding === undefined) {
+        encoding = new Sk.builtin.str("utf-8");
+    }
+    if (!(errors.v == "strict" || errors.v == "ignore" || errors.v == "replace")) {
         throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
     }
     if (encoding === undefined) {
@@ -71,7 +79,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                         val = source.v[i].charCodeAt(0);
 
                         if (val < 0 || val > 127) {
-                            if (errors === undefined || errors.v == "strict") {
+                            if (errors.v == "strict") {
                                 val = makehexform(val);
                                 throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
                             } else if (errors.v == "replace") {
@@ -93,7 +101,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                 throw new Sk.builtin.TypeError("encoding without a string argument");
             }
         } else {
-            throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not int");
+            throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not " + Sk.abstr.typeName(encoding));
         }
     }
 
@@ -236,21 +244,29 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
     var i;
     var val;
     var final;
-    var buffer;
     Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 1, 2);
-
-    if (errors !== undefined && errors.v !== "strict" && errors.v !== "ignore" && errors.v !== "replace") {
-        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
-    }
 
     if (encoding === undefined) {
         encoding = new Sk.builtin.str("utf-8");
     }
 
+    if (!(encoding instanceof Sk.builtin.str)) {
+        throw new Sk.builtin.TypeError("decode() argument 1 must be str, not " + Sk.abstr.typeName(encoding));
+    }
+
     if (errors === undefined) {
         errors = new Sk.builtin.str("strict");
     }
-    if (encoding.v != "ascii" && encoding.v !== "utf-8") {
+
+    if (!(errors instanceof Sk.builtin.str)) {
+        throw new Sk.builtin.TypeError("decode() argument 2 must be str, not " + Sk.abstr.typeName(errors));
+    }
+
+    if (!(errors.v == "strict" || errors.v == "ignore" || errors.v == "replace")) {
+        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
+    }
+
+    if (!(encoding.v == "ascii" || encoding.v == "utf-8")) {
         throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
     }
 
@@ -297,14 +313,10 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
     var final;
     var checkhex;
     var i;
-    var val1;
-    var len;
-    if (string instanceof Sk.builtin.bytes) {
-        Sk.builtin.pyCheckArgsLen("fromhex", arguments.length, 1, 2);
-        string = arguments[1];
-    } else {
-        Sk.builtin.pyCheckArgsLen("fromhex", arguments.length, 1, 1);
-    }
+    var char;
+    var checkspace;
+    Sk.builtin.pyCheckArgsLen("fromhex", arguments.length, 1, 1);
+
     if (!(string instanceof Sk.builtin.str)) {
         throw new Sk.builtin.TypeError("fromhex() argument must be str, not " + Sk.abstr.typeName(string));
     }
@@ -317,21 +329,38 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
         return false;
     };
 
-    if (string.v.length % 2 != 0) {
-        string.v += "g";
-    }
-    len = (string.v.length) / 2;
-    for (i = 0; i < len; i++) {
-        if (checkhex(string.v[i*2]) && checkhex(string.v[i*2+1])) {
-            val1 = string.v.slice(i*2, i*2 + 2);
-            val1 = parseInt(val1, 16);
-            final.push(new Sk.builtin.int_(val1));
-        } else if (checkhex(string.v[i*2])) {
-            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (2*i + 1).toString());
+    checkspace = function (val) {
+        var code;
+        code = val.charCodeAt(0);
+        if (val == 9 || val == 10 || val == 12 || val == 13 || val == 32) {
+            return true;
         } else {
-            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (2*i).toString());
+            return false;
+        }
+    };
+
+    while (i < string.v.length) {
+        char = string.v.charAt(i);
+        if (checkhex(char)) {
+            if (i + 1 < string.v.length) {
+                if (checkhex(string.v.charAt(i+1))) {
+                    val1 = string.v.slice(i, i + 1);
+                    val1 = parseInt(val1, 16);
+                    final.push(new Sk.builtin.int_(val1));
+                    i += 2;
+                } else {
+                    throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i+1).toString());
+                }
+            } else {
+                throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
+            }
+        } else if (checkspace(char)) {
+            i ++;
+        } else {
+            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
         }
     }
+
     final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
@@ -613,6 +642,8 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
     var final2;
     var final3;
     var idx;
+    var index;
+    var val;
     var len;
     var i;
     var zero;
@@ -671,6 +702,11 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     var final;
     var len;
     var i;
+    var sep;
+    var tot;
+    var idx;
+    var index;
+    var val;
     Sk.builtin.pyCheckArgsLen("replace", arguments.length - 1, 2, 3);
     if (!(old instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(old) + "'");
@@ -682,7 +718,7 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
         throw new  Sk.builtin.TypeError("'" + Sk.abstr.typeName(count) + "' " + "object cannot be interpreted as an integer");
     }
     final = [];
-    sep = []
+    sep = [];
     for (i = 0; i < repl.v.byteLength; i++) {
         sep.push(new Sk.builtin.int_(repl.v.getUint8(i)));
     }
@@ -759,6 +795,7 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
     }
     negstart = function (idx, object, pref) {
         var i;
+        var j;
         var val1;
         var val2;
         for (i = idx, j = 0; j < pref.v.byteLength; i++, j++) {
@@ -772,7 +809,7 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
                 return Sk.builtin.bool.false$;
             }
         }
-        return Sk.builtin.bool.true$
+        return Sk.builtin.bool.true$;
     };
     if (prefix instanceof Sk.builtin.tuple) {
         for (iter = Sk.abstr.iter(prefix), item = iter.tp$iternext();
@@ -824,6 +861,68 @@ Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("ljust() bytes method not implemented in Skulpt");
 });
 
+Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("lstrip() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("rjust() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["rsplit"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("rsplit() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("rstrip() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("split() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("strip() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("strip() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
+    var final;
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("capitalize", arguments.length - 1, 0, 0);
+
+    if (self.v.byteLength == 0) {
+        return new Sk.builtin.bytes(new Sk.builtin.int_(0));
+    }
+    final = [];
+    if (self.v.getUint8(0) >= 97 && self.v.getUint8(0) <= 122) {
+        val = new Sk.builtin.int_(self.v.getUint8(0) - 32);
+    } else {
+        val = val = new Sk.builtin.int_(self.v.getUint8(0));
+    }
+    final.push(val);
+    for (i = 1; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val >= 65 && val <= 90) {
+            val = new Sk.builtin.int_(val + 32);
+            final.push(val);
+        } else {
+            val = new Sk.builtin.int_(val);
+            final.push(val);
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
+});
+
+Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function () {
+    throw new Sk.builtin.NotImplementedError("expandtabs() bytes method not implemented in Skulpt");
+});
+
 Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     var i;
     var val;
@@ -833,7 +932,7 @@ Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     }
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
-        if (!((val >= 48 && val <= 57) || (val >= 65 && val <= 90) || (val >= 97&& val <= 122))) {
+        if (!((val >= 48 && val <= 57) || (val >= 65 && val <= 90) || (val >= 97 && val <= 122))) {
             return Sk.builtin.bool.false$;
         }
     }
@@ -864,13 +963,201 @@ Sk.builtin.bytes.prototype["isascii"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isascii", arguments.length - 1, 0, 0);
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
-        console.log(val);
-        if (!(i >= 0 && i < 128)) {
+        if (!(val >= 0 && val < 128)) {
             return Sk.builtin.bool.false$;
         }
     }
     return Sk.builtin.bool.true$;
 
+});
+
+Sk.builtin.bytes.prototype["isdigit"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("isdigit", arguments.length - 1, 0, 0);
+    if (self.v.byteLength == 0) {
+        return Sk.builtin.bool.false$;
+    }
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (!(val >= 48 && val < 58)) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    return Sk.builtin.bool.true$;
+
+});
+
+Sk.builtin.bytes.prototype["islower"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var flag;
+    Sk.builtin.pyCheckArgsLen("islower", arguments.length - 1, 0, 0);
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val >= 65 && val <= 90) {
+            return Sk.builtin.bool.false$;
+        }
+        if (!(flag) && (val >= 97 && val <= 122)) {
+            flag = true;
+        }
+    }
+    if (flag) {
+        return Sk.builtin.bool.true$;
+    }
+    return Sk.builtin.bool.false$;
+
+});
+
+Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var flag;
+    Sk.builtin.pyCheckArgsLen("isspace", arguments.length - 1, 0, 0);
+    if (self.v.byteLength == 0) {
+        return Sk.builtin.bool.false$;
+    }
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (!(val == 32 || val == 9 || val == 10 || val == 13 || val == 11 || val == 12)) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    return Sk.builtin.bool.true$;
+
+});
+
+Sk.builtin.bytes.prototype["istitle"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("istitle() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["isupper"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var flag;
+    Sk.builtin.pyCheckArgsLen("isupper", arguments.length - 1, 0, 0);
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (!(flag) && (val >= 65 && val <= 90)) {
+            flag = true;
+        }
+        if (val >= 97 && val <= 122) {
+            return Sk.builtin.bool.false$;
+        }
+    }
+    if (flag) {
+        return Sk.builtin.bool.true$;
+    }
+
+    return Sk.builtin.bool.false$;
+});
+
+Sk.builtin.bytes.prototype["lower"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var final;
+    Sk.builtin.pyCheckArgsLen("lower", arguments.length - 1, 0, 0);
+    final = [];
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val >= 65 && val <= 90) {
+            val = new Sk.builtin.int_(val + 32);
+            final.push(val);
+        } else {
+            val = new Sk.builtin.int_(val);
+            final.push(val);
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
+});
+
+Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("splitlines() bytes method not implemented in Skulpt");
+});
+
+Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var final;
+    Sk.builtin.pyCheckArgsLen("swapcase", arguments.length - 1, 0, 0);
+    final = [];
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val >= 65 && val <= 90) {
+            val = new Sk.builtin.int_(val + 32);
+            final.push(val);
+        } else if (val >= 97 && val <= 122) {
+            val = new Sk.builtin.int_(val - 32);
+            final.push(val);
+        } else {
+            val = new Sk.builtin.int_(val);
+            final.push(val);
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
+});
+
+Sk.builtin.bytes.prototype["title"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("title() bytes method not implemented in Skulpt"); 
+});
+
+Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {
+    var i;
+    var val;
+    var final;
+    Sk.builtin.pyCheckArgsLen("upper", arguments.length - 1, 0, 0);
+    final = [];
+    for (i = 0; i < self.v.byteLength; i++) {
+        val = self.v.getUint8(i);
+        if (val >= 97 && val <= 122) {
+            val = new Sk.builtin.int_(val - 32);
+            final.push(val);
+        } else {
+            val = new Sk.builtin.int_(val);
+            final.push(val);
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
+});
+
+Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, width) {
+    var fill;
+    var final;
+    var i;
+    var val;
+    Sk.builtin.pyCheckArgsLen("zfill", arguments.length - 1, 1, 1);
+    if (!(width instanceof Sk.builtin.int_)) {
+        throw new Sk.builtin.TypeError( "'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
+    }
+    if (width.v <= self.v.byteLength) {
+        return self;
+    }
+    final = [];
+    fill = width.v - self.v.byteLength;
+    if (self.v.getUint8(0) == 43 || self.v.getUint8(0) == 45) {
+        val = new Sk.builtin.int_(self.v.getUint8(0));
+        final.push(val);
+        for (i = 0; i < fill; i++) {
+            final.push(new Sk.builtin.int_(48));
+        }
+        for (i = 1; i < self.v.byteLength; i++) {
+            val = new Sk.builtin.int_(self.v.getUint8(i));
+            final.push(val);
+        }
+    } else {
+        for (i = 0; i < fill; i++) {
+            final.push(new Sk.builtin.int_(48));
+        }
+        for (i = 0; i < self.v.byteLength; i++) {
+            val = new Sk.builtin.int_(self.v.getUint8(i));
+            final.push(val);
+        }
+    }
+    final = new Sk.builtin.list(final);
+    return new Sk.builtin.bytes(final);
 });
 
 Sk.builtin.bytes.prototype["__iter__"] = new Sk.builtin.func(function (self) {
