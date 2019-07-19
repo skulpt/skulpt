@@ -111,7 +111,11 @@ Sk.builtins = {
     "intern"    : Sk.builtin.intern
 };
 
+<<<<<<< HEAD
 Sk.setupObjects = function (py3) {
+=======
+Sk.setupBuiltins = function (py3)  {
+>>>>>>>  commiting stuff
     if (py3) {
         Sk.builtins["filter"] = Sk.builtin.filter_;
         Sk.builtins["map"] = Sk.builtin.map_;
