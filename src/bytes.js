@@ -36,7 +36,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
     }
     if (arguments.length == 0) {
-        return new Sk.builtin.bytes(new Sk.builtin.int_(0));
+        return new Sk.builtin.bytes(0);
     }
     if (arguments.length == 1) {
         if (source instanceof Sk.builtin.int_ || typeof source == "number") {
@@ -416,8 +416,11 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     } else {
         start = start.v;
-        if (start + self.byteLength < 0) {
-            start = 0 - self.byteLength;
+        if (start + self.v.byteLength < 0) {
+            start = 0 - self.v.byteLength;
+        }
+        if (start < 0) {
+            start += self.v.byteLength;
         }
     }
     if (end === undefined) {
@@ -428,6 +431,9 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
+        }
+        if (end < 0) {
+            end += self.v.byteLength;
         }
     }
     count = 0;
@@ -474,7 +480,10 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
         }
         start = start.v;
         if (start + self.v.byteLength < 0) {
-            return Sk.builtin.bool.false$;
+            start = 0 - self.v.byteLength
+        }
+        if (start < 0) {
+            start += self.v.byteLength;
         }
     }
     if (end === undefined) {
@@ -486,6 +495,9 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
+        }
+        if (end < 0) {
+            end += self.v.byteLength;
         }
     }
 
@@ -559,8 +571,11 @@ Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, st
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
         }
         start = start.v;
+        if (start + self.v.byteLength < 0) {
+            start = 0 - self.v.byteLength;
+        }
         if (start < 0) {
-            start = 0;
+            start += self.v.byteLength;
         }
     }
     if (end === undefined) {
@@ -572,6 +587,9 @@ Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, st
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
+        }
+        if (end < 0) {
+            end += self.v.byteLength;
         }
     }
     if (sub instanceof Sk.builtin.int_) {
@@ -609,8 +627,11 @@ Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, s
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
         }
         start = start.v;
+        if (start + self.v.byteLength < 0) {
+            start = 0 - self.v.byteLength;
+        }
         if (start < 0) {
-            start = 0;
+            start += self.v.byteLength;
         }
     }
     if (end === undefined) {
@@ -622,6 +643,9 @@ Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, s
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
+        }
+        if (end < 0) {
+            end += self.v.byteLength;
         }
     }
     if (sub instanceof Sk.builtin.int_) {
@@ -724,9 +748,8 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
                 final1.push(val);
             }
             final1 = new Sk.builtin.bytes(final1);
-            zero = new Sk.builtin.int_(0);
-            empty1 = new Sk.builtin.bytes(zero);
-            empty2 = new Sk.builtin.bytes(zero);
+            empty1 = new Sk.builtin.bytes(0);
+            empty2 = new Sk.builtin.bytes(0);
             return new Sk.builtin.tuple([final1, empty1, empty2]);
         } else {
             val = self.v.getUint8(i);
@@ -821,7 +844,10 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
         }
         start = start.v;
         if (start + self.v.byteLength < 0) {
-            return Sk.builtin.bool.false$;
+            start = 0 - self.v.byteLength;
+        }
+        if (start < 0) {
+            start += self.v.byteLength;
         }
     }
     if (end === undefined) {
@@ -833,6 +859,9 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
+        }
+        if (end < 0) {
+            end += self.v.byteLength;
         }
     }
     negstart = function (idx, object, pref) {
@@ -938,7 +967,7 @@ Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("capitalize", arguments.length - 1, 0, 0);
 
     if (self.v.byteLength == 0) {
-        return new Sk.builtin.bytes(new Sk.builtin.int_(0));
+        return new Sk.builtin.bytes(0);
     }
     final = [];
     if (self.v.getUint8(0) >= 97 && self.v.getUint8(0) <= 122) {
