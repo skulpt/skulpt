@@ -213,6 +213,7 @@ class BytesTests(unittest.TestCase):
     def test_count(self):
         a = bytes([1, 2, 3, 1, 2, 3, 1, 2, 3])
         self.assertEqual(a.count(1), 3)
+        print(a.count(bytes([1]),-3, 14))
         self.assertEqual(a.count(bytes([1, 2, 3])), 3)
         self.assertEqual(a.count(4), 0)
         self.assertEqual(a.count(bytes([1,2,3,1,2,3])), 1)
@@ -222,6 +223,7 @@ class BytesTests(unittest.TestCase):
         b = bytes([1, 2, 3, 4, 5])
         self.assertEqual(b.count(4, 0, 3), 0)
         self.assertEqual(b.count(4, -2, 8), 1)
+        self.assertEqual(b.count(bytes([4]), -2, 8), 1)
         self.assertEqual(b.count(bytes([4, 5]), 0, 5), 1)
 
         self.assertRaises(TypeError, a.count, 4, 0, 3, 1)
@@ -285,6 +287,10 @@ class BytesTests(unittest.TestCase):
         self.assertTrue(a.endswith((b, 2)))
         self.assertFalse(a.endswith((c, d)))
         self.assertFalse(a.endswith(d))
+        self.assertTrue(a.endswith(d, -3, -2))
+        self.assertTrue(a.endswith(bytes([2]), -3, -1))
+        self.assertFalse(a.endswith(b, -4, -3))
+        self.assertTrue(a.endswith(d, -4, -2))
 
         a = bytes([2, 3, 2, 2])
         b = bytes([2, 2])

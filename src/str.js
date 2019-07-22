@@ -1,5 +1,4 @@
 Sk.builtin.interned = {};
-const textEncoding = require("text-encoding");
 
 /**
  * @constructor
@@ -20,7 +19,6 @@ Sk.builtin.str = function (x) {
     if (!(this instanceof Sk.builtin.str)) {
         return new Sk.builtin.str(x);
     }
-
 
     // convert to js string
     if (x === true) {

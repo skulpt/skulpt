@@ -35,6 +35,8 @@ Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(Sk.builtin.dict.$fro
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
 
+Sk.builtin.str.$utf8 = new Sk.builtin.str("utf-8");
+
 Sk.builtin.str.$default_factory = new Sk.builtin.str("default_factory");
 Sk.builtin.str.$imag = new Sk.builtin.str("imag");
 Sk.builtin.str.$real = new Sk.builtin.str("real");

@@ -23,41 +23,57 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
 
     if (errors === undefined) {
-        errors = new Sk.builtin.str("strict");
+        errors = "strict";
     } else if (!(errors instanceof Sk.builtin.str)) {
         throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not " + Sk.abstr.typeName(errors));
+    } else {
+        errors = errors.v;
     }
     if (encoding === undefined) {
-        encoding = new Sk.builtin.str("utf-8");
+        encoding = Sk.builtin.str.$utf8;
     }
-    if (!(errors.v == "strict" || errors.v == "ignore" || errors.v == "replace")) {
-        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
-    }
-    if (encoding === undefined) {
-        encoding = new Sk.builtin.str("utf-8");
+    if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
+        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
     }
     if (arguments.length == 0) {
         return new Sk.builtin.bytes(new Sk.builtin.int_(0));
     }
     if (arguments.length == 1) {
-        if (source instanceof Sk.builtin.int_) {
-            buffer = new ArrayBuffer(source.v);
+        if (source instanceof Sk.builtin.int_ || typeof source == "number") {
+            if (source instanceof Sk.builtin.int_) {
+                source = source.v;
+            }
+            buffer = new ArrayBuffer(source);
             view = new DataView(buffer);
-        } else if (Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) {
+        } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) || source instanceof Array) {
             final = [];
             i = 0;
-            for (iter = Sk.abstr.iter(source), item = iter.tp$iternext();
-                item !== undefined;
-                item = iter.tp$iternext()) {
-                if (item instanceof Sk.builtin.int_) {
-                    if (item.v >= 0 && item.v <= 256) {
-                        final.push(item.v);
-                        i ++;
+            if (source instanceof Array) {
+                for (i in source) {
+                    if (typeof source[i] == "number") {
+                        if (source[i] >= 0 && source[i] < 256) {
+                            final.push(source[i]);
+                        } else {
+                            throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+                        }
                     } else {
-                        throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+                        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(source[i]) + "' " + "object cannot be interpreted as an integer");
                     }
-                } else {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
+                }
+            } else {
+                for (iter = Sk.abstr.iter(source), item = iter.tp$iternext();
+                    item !== undefined;
+                    item = iter.tp$iternext()) {
+                    if (item instanceof Sk.builtin.int_ ) {
+                        if (item.v >= 0 && item.v <= 256) {
+                            final.push(item.v);
+                            i ++;
+                        } else {
+                            throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+                        }
+                    } else {
+                        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
+                    }
                 }
             }
             arr = new Uint8Array(final);
@@ -65,32 +81,35 @@ Sk.builtin.bytes = function (source, encoding, errors) {
             view = new DataView(buffer);
         } else if (source instanceof Sk.builtin.bytes) {
             return source;
-        } else if (source instanceof Sk.builtin.str) {
+        } else if ((source instanceof Sk.builtin.str) || (typeof source == "string")) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         } else {
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
         }
     } else if (arguments.length > 1) {
         if (encoding instanceof Sk.builtin.str) {
-            if (source instanceof Sk.builtin.str) {
+            if ((source instanceof Sk.builtin.str) || (typeof source == "string")){
+                if (source instanceof Sk.builtin.str) {
+                    source = source.$jsstr();
+                }
                 if (encoding.v == "ascii") {
                     string = "";
-                    for (i in source.v) {
-                        val = source.v[i].charCodeAt(0);
+                    for (i in source) {
+                        val = source[i].charCodeAt(0);
 
                         if (val < 0 || val > 127) {
-                            if (errors.v == "strict") {
+                            if (errors == "strict") {
                                 val = makehexform(val);
                                 throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
-                            } else if (errors.v == "replace") {
+                            } else if (errors == "replace") {
                                 string += "?";
                             }
                         } else {
-                            string += source.v[i];
+                            string += source[i];
                         }
                     }
                 } else if (encoding.v == "utf-8") {
-                    string = source.v;
+                    string = source;
                 } else {
                     throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
                 }
@@ -247,7 +266,7 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
     Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 1, 2);
 
     if (encoding === undefined) {
-        encoding = new Sk.builtin.str("utf-8");
+        encoding = Sk.builtin.str.$utf8;
     }
 
     if (!(encoding instanceof Sk.builtin.str)) {
@@ -255,15 +274,15 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
     }
 
     if (errors === undefined) {
-        errors = new Sk.builtin.str("strict");
-    }
-
-    if (!(errors instanceof Sk.builtin.str)) {
+        errors = "strict";
+    } else if (!(errors instanceof Sk.builtin.str)) {
         throw new Sk.builtin.TypeError("decode() argument 2 must be str, not " + Sk.abstr.typeName(errors));
+    } else {
+        errors = errors.v;
     }
 
-    if (!(errors.v == "strict" || errors.v == "ignore" || errors.v == "replace")) {
-        throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
+    if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
+        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
     }
 
     if (!(encoding.v == "ascii" || encoding.v == "utf-8")) {
@@ -275,11 +294,11 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
         final = "";
         for (i in string) {
             if (string[i].charCodeAt(0) > 127) {
-                if (errors.v == "strict") {
+                if (errors == "strict") {
                     val = self.v.getUint8(i);
                     val = val.toString(16);
                     throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte 0x" + val + " in position " + i.toString() + ": ordinal not in range(128)");
-                } else if (errors.v == "replace") {
+                } else if (errors == "replace") {
                     final += String.fromCharCode(65533);
                 }
             } else {
@@ -289,13 +308,13 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
         string = final;
     } else {
         var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.v);
-        if (errors.v == "replace") {
+        if (errors == "replace") {
             return new Sk.builtin.str(string);
         }
         final = "";
         for (i in string) {
             if (string[i].charCodeAt(0) == 65533) {
-                if (errors.v == "strict") {
+                if (errors == "strict") {
                     val = self.v.getUint8(i);
                     val = val.toString(16);
                     throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + val + " in position " + i.toString() + ": invalid start byte");
@@ -312,6 +331,7 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
 Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
     var final;
     var checkhex;
+    var val1;
     var i;
     var char;
     var checkspace;
@@ -332,21 +352,21 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
     checkspace = function (val) {
         var code;
         code = val.charCodeAt(0);
-        if (val == 9 || val == 10 || val == 12 || val == 13 || val == 32) {
+        if (code == 9 || code == 10 || code == 11 || code == 12 || code == 13 || code == 32 || code == 133) {
             return true;
         } else {
             return false;
         }
     };
-
+    i = 0;
     while (i < string.v.length) {
         char = string.v.charAt(i);
         if (checkhex(char)) {
             if (i + 1 < string.v.length) {
                 if (checkhex(string.v.charAt(i+1))) {
-                    val1 = string.v.slice(i, i + 1);
+                    val1 = string.v.slice(i, i + 2);
                     val1 = parseInt(val1, 16);
-                    final.push(new Sk.builtin.int_(val1));
+                    final.push(val1);
                     i += 2;
                 } else {
                     throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i+1).toString());
@@ -361,7 +381,6 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
         }
     }
 
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
@@ -390,26 +409,25 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
     var val1;
     var index;
     Sk.builtin.pyCheckArgsLen("count", arguments.length - 1, 1, 3);
+    
+    if (start === undefined) {
+        start = 0;
+    } else if (!(start instanceof Sk.builtin.int_)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    } else {
+        start = start.v;
+        if (start + self.byteLength < 0) {
+            start = 0 - self.byteLength;
+        }
+    }
     if (end === undefined) {
         end = self.v.byteLength;
+    } else if (!(end instanceof Sk.builtin.int_)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     } else {
-        if (!(end instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
         end = end.v;
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
-        }
-    }
-    if (start === undefined) {
-        start = 0;
-    } else {
-        if (!(start instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        start = start.v;
-        if (start < 0) {
-            start = 0;
         }
     }
     count = 0;
@@ -443,6 +461,7 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
     var item;
     var index;
     var val;
+    var negend;
     Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
     if (!(suffix instanceof Sk.builtin.bytes || suffix instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("endswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(suffix));
@@ -454,8 +473,8 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
         }
         start = start.v;
-        if (start < 0) {
-            start = 0;
+        if (start + self.v.byteLength < 0) {
+            return Sk.builtin.bool.false$;
         }
     }
     if (end === undefined) {
@@ -469,6 +488,26 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
             end = self.v.byteLength;
         }
     }
+
+    negend = function (idx, object, suff) {
+        var i;
+        var j;
+        var val1;
+        var val2;
+        for (i = idx - suff.v.byteLength, j = 0; j < suff.v.byteLength; i++, j++) {
+            if (i < 0) {
+                val1 = object.v.getUint8(i + object.v.byteLength);
+            } else {
+                val1 = object.v.getUint8(i);
+            }
+            val2 = suff.v.getUint8(j);
+            if (val1 != val2) {
+                return Sk.builtin.bool.$false;
+            }
+        }
+        return Sk.builtin.bool.$true;
+    };
+
     if (suffix instanceof Sk.builtin.tuple) {
         for (iter = Sk.abstr.iter(suffix), item = iter.tp$iternext();
             item !== undefined;
@@ -478,6 +517,11 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
             }
             len = item.v.byteLength;
             if ((end - start) >= len) {
+                if (end < 0) {
+                    if (negend(end, self, item) == Sk.builtin.bool.$true) {
+                        return Sk.builtin.bool.$true;
+                    }
+                }
                 index = new Sk.builtin.slice(end - len, end);
                 val = self.mp$subscript(index);
                 if (val.ob$eq(item) == Sk.builtin.bool.true$) {
@@ -489,6 +533,9 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
     } else {
         len = suffix.v.byteLength;
         if ((end - start) >= len) {
+            if (end < 0) {
+                return (negend(end, self, suffix));
+            }
             index = new Sk.builtin.slice(end - len, end);
             val = self.mp$subscript(index);
             if (val.ob$eq(suffix) == Sk.builtin.bool.true$) {
@@ -613,7 +660,7 @@ Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterabl
     final = [];
     sep = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        sep.push(new Sk.builtin.int_(self.v.getUint8(i)));
+        sep.push(self.v.getUint8(i));
     }
     i = 0;
     for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
@@ -626,11 +673,11 @@ Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterabl
             final = final.concat(sep);
         }
         for (i = 0; i < item.v.byteLength; i++) {
-            final.push(new Sk.builtin.int_(item.v.getUint8(i)));
+            final.push(item.v.getUint8(i));
         }
         i++;
     }
-    return new Sk.builtin.bytes(new Sk.builtin.list(final));
+    return new Sk.builtin.bytes(final);
 });
 
 Sk.builtin.bytes.prototype["maketrans"] = new Sk.builtin.func(function () {
@@ -664,36 +711,32 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
         if (val.ob$eq(sep) == Sk.builtin.bool.true$) {
             for (idx = 0; idx < sep.v.byteLength; idx++) {
                 val = sep.v.getUint8(idx);
-                val = new Sk.builtin.int_(val);
                 final2.push(val);
             }
             for (idx = i + len; idx < self.v.byteLength; idx++) {
                 val = self.v.getUint8(idx);
-                val = new Sk.builtin.int_(val);
                 final3.push(val);
             }
             break;
         } else if (self.v.byteLength - i == sep.v.byteLength) {
             for (idx = i; idx < self.v.byteLength; idx++) {
                 val = self.v.getUint8(idx);
-                val = new Sk.builtin.int_(val);
                 final1.push(val);
             }
-            final1 = new Sk.builtin.bytes(new Sk.builtin.list(final1));
+            final1 = new Sk.builtin.bytes(final1);
             zero = new Sk.builtin.int_(0);
             empty1 = new Sk.builtin.bytes(zero);
             empty2 = new Sk.builtin.bytes(zero);
             return new Sk.builtin.tuple([final1, empty1, empty2]);
         } else {
             val = self.v.getUint8(i);
-            val = new Sk.builtin.int_(val);
             final1.push(val);
             i++;
         } 
     }
-    final1 = new Sk.builtin.bytes(new Sk.builtin.list(final1));
-    final2 = new Sk.builtin.bytes(new Sk.builtin.list(final2));
-    final3 = new Sk.builtin.bytes(new Sk.builtin.list(final3));
+    final1 = new Sk.builtin.bytes(final1);
+    final2 = new Sk.builtin.bytes(final2);
+    final3 = new Sk.builtin.bytes(final3);
 
     return new Sk.builtin.tuple([final1, final2, final3]);
 });
@@ -720,7 +763,7 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     final = [];
     sep = [];
     for (i = 0; i < repl.v.byteLength; i++) {
-        sep.push(new Sk.builtin.int_(repl.v.getUint8(i)));
+        sep.push(repl.v.getUint8(i));
     }
     len = old.v.byteLength;
     i = 0;
@@ -733,17 +776,16 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
             i += len;
             tot++;
         } else {
-            final.push(new Sk.builtin.int_(self.v.getUint8(i)));
+            final.push(self.v.getUint8(i));
             i++;
         }
         if (i > self.v.byteLength - len) {
             for (idx = i; i < self.v.byteLength; i++) {
-                final.push(new Sk.builtin.int_(self.v.getUint8(idx)));
+                final.push(self.v.getUint8(idx));
             }
             break;
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 
 });
@@ -900,22 +942,20 @@ Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
     }
     final = [];
     if (self.v.getUint8(0) >= 97 && self.v.getUint8(0) <= 122) {
-        val = new Sk.builtin.int_(self.v.getUint8(0) - 32);
+        val = self.v.getUint8(0) - 32;
     } else {
-        val = val = new Sk.builtin.int_(self.v.getUint8(0));
+        val = self.v.getUint8(0);
     }
     final.push(val);
     for (i = 1; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
         if (val >= 65 && val <= 90) {
-            val = new Sk.builtin.int_(val + 32);
+            val += 32;
             final.push(val);
         } else {
-            val = new Sk.builtin.int_(val);
             final.push(val);
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
@@ -1061,14 +1101,12 @@ Sk.builtin.bytes.prototype["lower"] = new Sk.builtin.func(function (self) {
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
         if (val >= 65 && val <= 90) {
-            val = new Sk.builtin.int_(val + 32);
+            val += 32;
             final.push(val);
         } else {
-            val = new Sk.builtin.int_(val);
             final.push(val);
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
@@ -1085,17 +1123,15 @@ Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
         if (val >= 65 && val <= 90) {
-            val = new Sk.builtin.int_(val + 32);
+            val += 32;
             final.push(val);
         } else if (val >= 97 && val <= 122) {
-            val = new Sk.builtin.int_(val - 32);
+            val -= 32;
             final.push(val);
         } else {
-            val = new Sk.builtin.int_(val);
             final.push(val);
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
@@ -1112,14 +1148,12 @@ Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {
     for (i = 0; i < self.v.byteLength; i++) {
         val = self.v.getUint8(i);
         if (val >= 97 && val <= 122) {
-            val = new Sk.builtin.int_(val - 32);
+            val -= 32;
             final.push(val);
         } else {
-            val = new Sk.builtin.int_(val);
             final.push(val);
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
@@ -1138,25 +1172,24 @@ Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, width)
     final = [];
     fill = width.v - self.v.byteLength;
     if (self.v.getUint8(0) == 43 || self.v.getUint8(0) == 45) {
-        val = new Sk.builtin.int_(self.v.getUint8(0));
+        val = self.v.getUint8(0);
         final.push(val);
         for (i = 0; i < fill; i++) {
-            final.push(new Sk.builtin.int_(48));
+            final.push(48);
         }
         for (i = 1; i < self.v.byteLength; i++) {
-            val = new Sk.builtin.int_(self.v.getUint8(i));
+            val = self.v.getUint8(i);
             final.push(val);
         }
     } else {
         for (i = 0; i < fill; i++) {
-            final.push(new Sk.builtin.int_(48));
+            final.push(48);
         }
         for (i = 0; i < self.v.byteLength; i++) {
-            val = new Sk.builtin.int_(self.v.getUint8(i));
+            val = self.v.getUint8(i);
             final.push(val);
         }
     }
-    final = new Sk.builtin.list(final);
     return new Sk.builtin.bytes(final);
 });
 
