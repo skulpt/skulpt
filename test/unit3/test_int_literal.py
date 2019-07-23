@@ -90,9 +90,29 @@ class TestHexOctBin(unittest.TestCase):
         self.assertEqual(-0o1000000000000000000000, -9223372036854775808)
         self.assertEqual(-0o1777777777777777777777, -18446744073709551615)
 
-    """
-      we do not support binary literals
-    """
+    def test_binary_literal(self):
+        self.assertEqual(0b1010, 10)
+        self.assertEqual(str(0b1010), '10')
+        self.assertEqual(-0b1010, -10)
+        self.assertEqual(str(-0b1010), '-10')
+        self.assertEqual(0, -0)
+
+    def test_big_numbers(self):
+        def helper(func,x):
+            return (func(x), func(-x))
+        big = 123456789123456789123456789123456789
+        self.assertEqual(helper(hex,10), ('0xa', '-0xa'))
+        self.assertEqual(helper(hex,0xff), ('0xff', '-0xff'))
+        self.assertEqual(helper(hex,0b1110011), ('0x73', '-0x73'))
+        self.assertEqual(helper(hex,big), ('0x17c6e3c032f89045ad746684045f15', '-0x17c6e3c032f89045ad746684045f15'))
+        self.assertEqual(helper(oct,10), ('0o12', '-0o12'))
+        self.assertEqual(helper(oct,0xff), ('0o377', '-0o377'))
+        self.assertEqual(helper(oct,0b1110011), ('0o163', '-0o163'))
+        self.assertEqual(helper(oct,big), ('0o574334360031370440426553506320401057425', '-0o574334360031370440426553506320401057425'))
+        self.assertEqual(helper(bin,10), ('0b1010', '-0b1010'))
+        self.assertEqual(helper(bin,0xff), ('0b11111111', '-0b11111111'))
+        self.assertEqual(helper(bin,0b1110011), ('0b1110011', '-0b1110011'))
+        self.assertEqual(helper(bin,big), ('0b101111100011011100011110000000011001011111000100100000100010110101101011101000110011010000100000001000101111100010101', '-0b101111100011011100011110000000011001011111000100100000100010110101101011101000110011010000100000001000101111100010101'))
 
 if __name__ == '__main__':
     unittest.main()
