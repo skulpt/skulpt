@@ -4,8 +4,6 @@ import unittest
 
 
 class IterInheritsTestCase(unittest.TestCase):
-
-
     def test_generator(self):
         def counter(low, high):
             current = low
@@ -56,9 +54,63 @@ class IterInheritsTestCase(unittest.TestCase):
         # print(l)
         # self.assertTrue(105 in l)
 
+    def test_slicing(self):
+        a = tuple([1,2,3,4,5,6,7,8])
+        b = a[5::-4]
+        self.assertEqual(b, (6,2))
 
+    def test_str(self):
+        self.assertEqual(str((1,2,3)), "(1, 2, 3)")
 
+    def test_repr(self):
+        self.assertEqual(repr((1,2,3)), "(1, 2, 3)")
+        self.assertEqual(repr(()), "()")
 
+    def test_multiplication(self):
+        self.assertEqual((5,)*10, (5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
+        self.assertEqual((1,2,3)*4, (1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3))
+        self.assertEqual(10*(5,), (5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
+        self.assertEqual(4*(1,2,3), (1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3))
+
+    def test_comparisons(self):
+        #equality
+        self.assertTrue(() == ())
+        self.assertFalse(() == (1,))
+        self.assertTrue((1,) == (1,))
+        self.assertFalse((1,2) == (3,4))
+        self.assertFalse((1,2) == (1,))
+        self.assertTrue(() != (1,))
+        self.assertFalse(() != ())
+        self.assertTrue((1,2) != (1,))
+        #greater/less than
+        self.assertTrue(() < (1,))
+        self.assertTrue((1,2) < (3,4))
+        self.assertTrue((1,2) != (1,))
+        self.assertTrue(() != (1,))
+        self.assertTrue((1,2,3) > (1,2))
+        self.assertFalse((1,) > (1,))
+        self.assertFalse((1,2,3) < (1,2,3))
+        self.assertFalse((1,2) < (1,2))
+        self.assertFalse((1,2) > (1,2,3))
+        self.assertTrue(() <= (1,))
+        self.assertTrue((1,2) <= (1,2))
+        self.assertTrue((1,2) <= (1,2,3))
+        self.assertFalse((1,2,3) <= (1,2))
+        self.assertFalse(() >= (1,))
+
+    def test_index(self):
+        self.assertEqual((1, 2, 3).index(2), 1)
+        self.assertEqual((1, 2, 3).index(1), 0)
+
+    def test_len(self):
+        self.assertEqual(len(()), 0)
+        self.assertEqual(len((1,2,3,4)), 4)
+
+    def test_count(self):
+        t = (1,2,3,4,2,1)
+        self.assertEqual(t.count(1), 2)
+        self.assertEqual(t.count(2), 2)
+        self.assertEqual(t.count(4), 1)
 
 if __name__ == "__main__":
     unittest.main()

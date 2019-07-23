@@ -83,6 +83,8 @@ class RangeTest(unittest.TestCase):
         self.assertRaises(TypeError, range, 0, "spam")
         self.assertRaises(TypeError, range, 0, 42, "spam")
 
+        self.assertRaises(TypeError, range, "2", 4)
+
         self.assertEqual(len(range(0, sys.maxsize, sys.maxsize-1)), 2)
 
     def test_large_operands(self):
@@ -395,6 +397,46 @@ class RangeTest(unittest.TestCase):
     #         check(0, -1)
     #         check(-1, -3, -1)
 
+    def test_slice(self):
+        self.assertEqual(slice(1), slice(None, 1, None))
+        a = range(10)[slice(0, 5, 2)]
+        self.assertEqual(a, range(0,5,2))
+        b = slice(1,2)
+        self.assertEqual(b,  slice(1, 2, None))
+        self.assertEqual(slice(1,2,3), slice(1,2,3))
+        l = range(10)
+        self.assertEqual(l[slice(1,6,2,)], range(1, 6, 2))
+        self.assertEqual(l[slice(-6)], range(0, 4))
+        self.assertEqual(l[slice(-1,-6,-3)], range(9, 4, -3))
+        a = range(30)
+        b = a[-10::5]
+        self.assertEqual(b, range(20, 30, 5))
+        c = a[-10::-6]
+        self.assertEqual(c, range(20, -1, -6))
+        a = tuple(range(30))
+        b = a[-10::5]
+        self.assertEqual(b, (20, 25))
+        c = a[-10::-6]
+        self.assertEqual(c, (20, 14, 8, 2))
+        self.assertEqual(range(4)[0], 0)
+        self.assertEqual(range(4)[1], 1)
+        self.assertEqual(range(4)[-1], 3)
+        self.assertEqual(range(0,5,3)[0], 0)
+        self.assertEqual(range(0,5,3)[1], 3)
+        self.assertEqual(range(0,5,3)[-1], 3)
+        self.assertEqual(range(-8,-4)[0], -8)
+        self.assertEqual(range(-8,-4)[1], -7)
+        self.assertEqual(range(-8,-4)[-1], -5)
+        self.assertEqual(range(-4,-8,-1)[0], -4)
+        self.assertEqual(range(-4,-8,-1)[1], -5)                         
+        self.assertEqual(range(-4,-8,-1)[-1], -7)
+        l = range(9)
+        self.assertEqual(l[-10:], range(0, 9))
+        self.assertEqual(l[8:-10:-1], range(8, -1, -1))
+        def foo(x):
+            x[4] = 4
+        self.assertRaises(TypeError, foo, l)
+
     def test_contains(self):
         r = range(10)
         self.assertIn(0, r)
@@ -508,6 +550,25 @@ class RangeTest(unittest.TestCase):
     #     self.assertRaises(AttributeError, rangeobj, start, 0)
     #     self.assertRaises(AttributeError, rangeobj, stop, 10)
     #     self.assertRaises(AttributeError, rangeobj, step, 1)
+
+##    def test_str(self):
+##        self.assertEqual(str(range(4))[:5], "range")
+##        self.assertEqual(str(range(-44))[:5], "range")
+##        self.assertEqual(str(range(0,5,3))[:5], "range")
+##        self.assertEqual(str(range(-8,-4))[:5], "range")
+##        self.assertEqual(str(range(-4,-8))[:5], "range")
+##        self.assertEqual(str(range(-4,-8,-1))[:5], "range")
+##        self.assertEqual(str(range(-8,-4,-1))[:5], "range")
+
+
+    def test_len(self):
+        self.assertEqual(len(range(4)), 4)
+        self.assertEqual(len(range(-4)), 0)
+        self.assertEqual(len(range(0,5,3)), 2)
+        self.assertEqual(len(range(-8,-4)), 4)
+        self.assertEqual(len(range(-4,-8)), 0)
+        self.assertEqual(len(range(-4,-8,-1)), 4)
+        self.assertEqual(len(range(-8,-4,-1)), 0)
 
 if __name__ == "__main__":
     unittest.main()
