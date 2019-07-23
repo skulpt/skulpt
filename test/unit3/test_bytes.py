@@ -436,6 +436,22 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.rindex, 2, "a", 3)
         self.assertRaises(TypeError, a.rindex, 2, 0, "3")
 
+    def test_rpartition(self):
+        a = bytes([1, 2, 2, 3])
+        b = bytes([2])
+        self.assertEqual(a.rpartition(b), (bytes([1, 2]), b, bytes([3])))
+        self.assertEqual(a.rpartition(bytes(4)), (bytes([]), bytes([]), a))
+        self.assertEqual(a.rpartition(bytes([4])), (bytes([]), bytes([]), a))
+        self.assertEqual(a.rpartition(bytes([2, 3])), (bytes([1, 2]), bytes([2, 3]), bytes([])))
+
+        a = bytes([1, 2, 2, 2, 4, 2, 2])
+        b = bytes([2, 2])
+        self.assertEqual(a.rpartition(b), (bytes([1, 2, 2, 2, 4]), bytes([2, 2]), bytes([])))
+        self.assertEqual(a.rpartition(bytes([2])), (bytes([1, 2, 2, 2, 4, 2]), bytes([2]), bytes([])))
+
+        self.assertRaises(TypeError, a.rpartition, 2)
+        self.assertRaises(TypeError, a.rpartition, bytes([2]), bytes([2]))
+
     def test_partition(self):
         a = bytes([1, 2, 2, 3])
         b = bytes([2])
@@ -488,6 +504,49 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.startswith, b, 0, "4")
         self.assertRaises(TypeError, a.startswith, b, 0, 4, 4)
         self.assertRaises(TypeError, a.startswith, (c, 2), 0, 4)
+
+    def test_center(self):
+        a = bytes([1, 2, 3])
+        b = bytes([4])
+        self.assertEqual(a.center(2), a)
+        self.assertEqual(a.center(3), a)
+        self.assertEqual(a.center(6), bytes([32, 1, 2, 3, 32, 32]))
+        self.assertEqual(a.center(5, b), bytes([4, 1, 2, 3, 4]))
+        self.assertEqual(a.center(6, b), bytes([4, 1, 2, 3, 4, 4]))
+
+        self.assertRaises(TypeError, a.center, "3")
+        self.assertRaises(TypeError, a.center, 3, 3)
+        self.assertRaises(TypeError, a.center, 3, bytes([]))
+        self.assertRaises(TypeError, a.center, 3, bytes([1]), 1)
+
+    def test_ljust(self):
+        a = bytes([1, 2, 3])
+        b = bytes([4])
+        self.assertEqual(a.ljust(2), a)
+        self.assertEqual(a.ljust(3), a)
+        self.assertEqual(a.ljust(6), bytes([1, 2, 3, 32, 32, 32]))
+        self.assertEqual(a.ljust(5, b), bytes([1, 2, 3, 4, 4]))
+
+        self.assertRaises(TypeError, a.ljust, "3")
+        self.assertRaises(TypeError, a.ljust, 3, 3)
+        self.assertRaises(TypeError, a.ljust, 3, bytes([]))
+        self.assertRaises(TypeError, a.ljust, 3, bytes([1]), 1)
+
+    def test_lstrip(self):
+        pass
+
+    def test_rjust(self):
+        a = bytes([1, 2, 3])
+        b = bytes([4])
+        self.assertEqual(a.rjust(2), a)
+        self.assertEqual(a.rjust(3), a)
+        self.assertEqual(a.rjust(6), bytes([32, 32, 32,1, 2, 3]))
+        self.assertEqual(a.rjust(5, b), bytes([4, 4, 1, 2, 3]))
+
+        self.assertRaises(TypeError, a.rjust, "3")
+        self.assertRaises(TypeError, a.rjust, 3, 3)
+        self.assertRaises(TypeError, a.rjust, 3, bytes([]))
+        self.assertRaises(TypeError, a.rjust, 3, bytes([1]), 1)
 
     def test_capitalize(self):
         a = bytes([97, 65, 99, 68, 1])
