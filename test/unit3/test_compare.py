@@ -44,6 +44,15 @@ class ComparisonTest(unittest.TestCase):
                 self.assertEqual(a == b, id(a) == id(b),
                                  'a=%r, b=%r' % (a, b))
 
+    def test_is_comparisons(self):
+        flag = False
+        a = "a"
+        self.assertTrue(a is "a")
+        self.assertFalse(a is "b")
+        self.assertTrue(a is not "b")
+        self.assertFalse(a is not "a")
+        self.assertTrue(None is None)
+
     def test_ne_defaults_to_not_eq(self):
         a = Cmp(1)
         b = Cmp(1)
@@ -106,6 +115,87 @@ class ComparisonTest(unittest.TestCase):
         self.assertEqual(y, Anything())
         self.assertEqual(Anything(), y)
 
+    def test_compare_operator(self):
+        def helper(x,y,expect):
+            l = [0]*6
+            if expect < 0:  # x < y
+                l[0] = (x < y) == True
+                l[1] = (x <= y) == True
+                l[2] = (x > y) == False
+                l[3] = (x >= y) == False
+                l[4] = (x == y) == False
+                l[5] = (x != y) == True
+                if isinstance(x,(int,float,str)) or isinstance(y,(int,float,str)):
+                    l.append((x is y)==False)
+                    l.append((x is not y)==True)
+            elif expect == 0: # x == y
+                l[0] = (x < y) == False
+                l[1] = (x <= y) == True
+                l[2] = (x > y) == False
+                l[3] = (x >= y) == True
+                l[4] = (x == y) == True
+                l[5] = (x != y) == False
+                if isinstance(x,(int,float,str)) or isinstance(y,(int,float,str)):
+                    l.append((x is y)==True)
+                    l.append((x is not y)==False)
+            elif expect > 0:  # x > y
+                l[0] = (x < y) == False
+                l[1] = (x <= y) == False
+                l[2] = (x > y) == True
+                l[3] = (x >= y) == True
+                l[4] = (x == y) == False
+                l[5] = (x != y) == True
+                if isinstance(x,(int,float,str)) or isinstance(y,(int,float,str)):
+                    l.append((x is y)==False)
+                    l.append((x is not y)==True)
+            if not isinstance(x,(int,float,str)) and not isinstance(y,(int,float,str)):
+                l.append((x is y)==False)
+                l.append((x is not y)==True)
+            if all(l):
+                return True
+            else:
+                return False
+        #integers
+        self.assertTrue(helper(1,2,-1))
+        self.assertTrue(helper(1,1,0))
+        self.assertTrue(helper(2,1,1))
+        self.assertTrue(helper(-2,-1,-1))
+        self.assertTrue(helper(-2,-2,0))
+        self.assertTrue(helper(-1,-2,1))
+        self.assertTrue(helper(-1,1,-1))
+        self.assertTrue(helper(1,-1,1))
+        #floats
+        self.assertTrue(helper(1.0,2.0,-1))
+        self.assertTrue(helper(1.0,1.0,0))
+        self.assertTrue(helper(2.0,1.0,1))
+        self.assertTrue(helper(-2.0,-1.0,-1))
+        self.assertTrue(helper(-2.0,-2.0,0))
+        self.assertTrue(helper(-1.0,-2.0,1))
+        self.assertTrue(helper(-1.0,1.0,-1))
+        self.assertTrue(helper(1.0,-1.0,1))
+        #lists
+        self.assertTrue(helper([],[1],-1))
+        self.assertTrue(helper([1,2],[1,2],0))
+        self.assertTrue(helper([1,2,3],[1,2],1))
+        self.assertTrue(helper([1,2],[2,1],-1))
+        self.assertTrue(helper([1,2,3],[1,2,1,5],1))
+        #tuples
+        self.assertTrue(helper(tuple(),(1,),-1))
+        self.assertTrue(helper((1,2,3),(1,2),1))
+        self.assertTrue(helper((1,2),(2,1),-1))
+        self.assertTrue(helper((1,2,3),(1,2,1,5),1))
+        #strings
+        self.assertTrue(helper('','a',-1))
+        self.assertTrue(helper('a','a',0))
+        self.assertTrue(helper('ab','a',1))
+        self.assertTrue(helper('ABCD','abcd',-1))
+        self.assertTrue(helper('ABCD','ABCD',0))
+        self.assertTrue(helper('aBCD','Abcd',1))
+        class A:
+            def __init__(self,x): self.x = x
+            def __cmp__(self,other): return self.x
+        #__cmp__ no longer supported in python 3
+        self.assertRaises(TypeError, helper, A(-1), A(1), -1)
 
 if __name__ == '__main__':
     unittest.main()

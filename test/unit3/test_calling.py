@@ -9,12 +9,6 @@ def f1(x, y, *args, **kwargs):
 def f2(x=None, y=None, *args, **kwargs):
     return (x, y, args, kwargs)
 
-def f3(x=None, *, y=None, z):
-    return (x, y, z)
-
-def f4(x=None, *args, y=None, z, **kwargs):
-    return (x, y, z, args, kwargs)
-
 class C:
     def f1(self, x, y, *args, **kwargs):
         return (self, x, y, args, kwargs)
@@ -40,13 +34,6 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(f1(**{'x': 1, 'y': 2, 'z': 3}), (1, 2, (), {'z': 3}))
         self.assertEqual(f1(*[1, 2, 3], **{'z': 4}), (1, 2, (3,), {'z': 4}))
         self.assertRaises(TypeError, lambda: f1(*[1, 2, 3], **{'y', 4}))
-
-        self.assertEqual(f3(1, z=2), (1, None, 2))
-        self.assertEqual(f3(1, **{'y':2, 'z':3}), (1, 2, 3))
-        self.assertRaises(TypeError, lambda: f3(1))
-        self.assertRaises(TypeError, lambda: f3(1, 2))
-        self.assertRaises(TypeError, lambda: f3(1, 2, w=3))
-        self.assertEqual(f4(1, 2, z=3, w=4), (1, None, 3, (2,), {'w': 4}))
 
 
     def test_method_call(self):
