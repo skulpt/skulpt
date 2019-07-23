@@ -376,6 +376,66 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.replace, b, c, "1")
         self.assertRaises(TypeError, a.replace, b)
 
+    def test_rfind(self):
+        a = bytes([1, 2, 1, 4, 5, 4, 5])
+        self.assertEqual(a.rfind(1), 2)
+        self.assertEqual(a.rfind(3), -1)
+        self.assertEqual(a.rfind(bytes([4, 5])), 5)
+        self.assertEqual(a.rfind(bytes([1, 5])), -1)
+
+        b = bytes([1, 2, 3, 4, 5])
+        self.assertEqual(b.rfind(4, 0, 3), -1)
+        self.assertEqual(b.rfind(4, -2, 8), 3)
+        self.assertEqual(b.rfind(bytes([4, 5]), 0, 5), 3)
+
+        c = bytes([1, 1, 1, 1])
+        self.assertEqual(c.rfind(1, -5, 0), -1)
+        self.assertEqual(c.rfind(1, -5, 2), 1)
+        self.assertEqual(c.rfind(1, -5, -1), 2)
+        self.assertEqual(c.rfind(1, -5, 3), 2)
+        self.assertEqual(c.rfind(1, -3, -1), 2)
+        self.assertEqual(c.rfind(1, -4, 0), -1)
+        self.assertEqual(c.rfind(1, -4, -2), 1)
+        self.assertEqual(c.rfind(1, -1, -2), -1)
+        self.assertEqual(c.rfind(1, -6, 5), 3)
+        self.assertEqual(c.rfind(1, -4, 5), 3)
+        self.assertEqual(c.rfind(1, -2, 5), 3)
+
+        self.assertRaises(TypeError, a.rfind, "hi")
+        self.assertRaises(TypeError, a.rfind, 4, 0, 3, 1)
+        self.assertRaises(TypeError, a.rfind, 2, "a", 3)
+        self.assertRaises(TypeError, a.rfind, 2, 0, "3")
+
+    def test_rindex(self):
+        a = bytes([1, 2, 1, 4, 5, 4, 5])
+        self.assertEqual(a.rindex(1), 2)
+        self.assertRaises(ValueError, a.rindex, 3)
+        self.assertEqual(a.rindex(bytes([4, 5])), 5)
+        self.assertRaises(ValueError, a.rindex, bytes([1, 5]))
+
+        b = bytes([1, 2, 3, 4, 5])
+        self.assertRaises(ValueError, b.rindex, 4, 0, 3)
+        self.assertEqual(b.rindex(4, -2, 8), 3)
+        self.assertEqual(b.rindex(bytes([4, 5]), 0, 5), 3)
+
+        c = bytes([1, 1, 1, 1])
+        self.assertRaises(ValueError, c.rindex, 1, -5, 0)
+        self.assertEqual(c.rindex(1, -5, 2), 1)
+        self.assertEqual(c.rindex(1, -5, -1), 2)
+        self.assertEqual(c.rindex(1, -5, 3), 2)
+        self.assertEqual(c.rindex(1, -3, -1), 2)
+        self.assertRaises(ValueError, c.rindex, 1, -4, 0)
+        self.assertEqual(c.rindex(1, -4, -2), 1)
+        self.assertRaises(ValueError, c.rindex, 1, -1, -2)
+        self.assertEqual(c.rindex(1, -6, 5), 3)
+        self.assertEqual(c.rindex(1, -4, 5), 3)
+        self.assertEqual(c.rindex(1, -2, 5), 3)
+
+        self.assertRaises(TypeError, a.rindex, "hi")
+        self.assertRaises(TypeError, a.rindex, 4, 0, 3, 1)
+        self.assertRaises(TypeError, a.rindex, 2, "a", 3)
+        self.assertRaises(TypeError, a.rindex, 2, 0, "3")
+
     def test_partition(self):
         a = bytes([1, 2, 2, 3])
         b = bytes([2])

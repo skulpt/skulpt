@@ -259,6 +259,15 @@ Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
 
+Sk.builtin.bytes.prototype.bytes_copy_ = function () {
+    var i;
+    var final;
+    final = [];
+    for (i = 0; i < this.v.byteLength; i++) {
+        final.push(this.v.getUint8(i));
+    }
+    return new Sk.builtin.bytes(final);
+}
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
     var i;
     var val;
@@ -480,7 +489,7 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
         }
         start = start.v;
         if (start + self.v.byteLength < 0) {
-            start = 0 - self.v.byteLength
+            start = 0 - self.v.byteLength;
         }
         if (start < 0) {
             start += self.v.byteLength;
@@ -610,8 +619,9 @@ Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, st
             start++;
         }
         return new Sk.builtin.int_(-1);
+    } else {
+        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
     }
-    throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
 });
 
 Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, start, end) {
@@ -813,16 +823,106 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
 
 });
 
-Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("rfind() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype.right_find_ = function (sub, start, end) {
+    var i;
+    var len;
+    var val;
+    var final;
+    final = -1;
+    if (start === undefined) {
+        start = 0;
+    } else {
+        if (!(start instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        start = start.v;
+        if (start + this.v.byteLength < 0) {
+            start = 0 - this.v.byteLength;
+        }
+        if (start < 0) {
+            start += this.v.byteLength;
+        }
+    }
+    if (end === undefined) {
+        end = this.v.byteLength;
+    } else {
+        if (!(end instanceof Sk.builtin.int_)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        end = end.v;
+        if (end > this.v.byteLength) {
+            end = this.v.byteLength;
+        }
+        if (end < 0) {
+            end += this.v.byteLength;
+        }
+    }
+    if (sub instanceof Sk.builtin.int_) {
+        for (i = start; i < end; i++) {
+            if (this.v.getUint8(i) == sub.v) {
+                final = i;
+            }
+        }
+    } else if (sub instanceof Sk.builtin.bytes) {
+        len = sub.v.byteLength;
+        while (start + len <= end) {
+            i = new Sk.builtin.slice(start, start + len);
+            val = this.mp$subscript(i);
+            if (val.ob$eq(sub) == Sk.builtin.bool.true$) {
+                final = start;
+            }
+            start++;
+        }
+    } else {
+        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
+    }
+    return new Sk.builtin.int_(final);
+};
+
+Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function (self, sub, start, end) {
+    Sk.builtin.pyCheckArgsLen("rfind", arguments.length - 1, 1, 3);
+    return Sk.builtin.bytes.prototype.right_find_.call(self, sub, start, end);
 });
 
-Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("rindex() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function (self, sub, start, end) {
+    var val;
+    Sk.builtin.pyCheckArgsLen("rindex", arguments.length - 1, 1, 3);
+    val = Sk.builtin.bytes.prototype.right_find_.call(self, sub, start, end);
+    if (val.v == -1) {
+        throw new Sk.builtin.ValueError("subsection not found");
+    } else {
+        return val;
+    }
 });
 
-Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("rpartition() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
+    var val;
+    var final1;
+    var final2;
+    var final3;
+    var index;
+    Sk.builtin.pyCheckArgsLen("rpartition", arguments.length - 1, 1, 1);
+
+    if (!(sep instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
+    }
+    val = Sk.builtin.bytes.prototype.right_find_.call(self, sep);
+    val = val.v;
+    if (val.v == -1) {
+        final1 = new Sk.builtin.bytes(0);
+        final2 = new Sk.builtin.bytes(0);
+        final3 = Sk.builtin.bytes.prototype.bytes_copy_.call(self);
+        return new Sk.builtin.tuple([final1, final2, final3]);
+
+    }
+    index = new Sk.builtin.slice(0, val);
+    final1 = self.mp$subscript(index);
+    index = new Sk.builtin.slice(val, val + sep.byteLength);
+    final2 = self.mp$subscript(index);
+    index = new Sk.builtin.slice(val + sep.byteLength, self.v.byteLength);
+    final3 = self.mp$subscript(index);
+
+    return new Sk.builtin.tuple([final1, final2, final3]);
 });
 
 Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
