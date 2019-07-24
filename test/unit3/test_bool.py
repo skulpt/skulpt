@@ -274,7 +274,7 @@ class BoolTest(unittest.TestCase):
         self.assertEqual(math.fabs(True), 1.0)
         self.assertEqual(math.cos(True), 0.5403023058681398)
 
-    def test_nonzero(self):
+    def test_truth_value_testing(self):
         class A:
             def __len__(self):
                 return 0
@@ -294,41 +294,45 @@ class BoolTest(unittest.TestCase):
             def __nonzero__(self):
                 return False
         self.assertTrue(bool(D()))
-
         class E:
             def __len__(self):
                 return 1
         self.assertTrue(bool(E()))
 
         class F:
-            def __nonzero__(self):
-                return 1
+            def __bool__(self):
+                return True
+            def __len__(self):
+                return 0
         self.assertTrue(bool(F()))
+
+        class F:
+            def __bool__(self):
+                return False
+            def __len__(self):
+                return 1
+        self.assertFalse(bool(F()))
 
         class G:
             def __nonzero__ (self):
-                return 0
+                return 1
 
             def __len__ (self):
-                return 1
-        self.assertTrue(bool(G()))
+                return 0
+        self.assertFalse(bool(G()))
         class A:
             def __nonzero__(self):
                 return "not the right value"
 
-        try:
-            error1 = bool(A())
-        except TypeError as e:
-            error1 = e
-        self.assertEqual(error1, True)
+        self.assertTrue(bool(A()))
         class B:
             def __len__(self):
                 return "not the right value"
-        try:
-            error2 = bool(B())
-        except TypeError as e:
-            error2 = str(e)
-        self.assertEqual(error2, "'str' object cannot be interpreted as an integer")
+        self.assertRaises(TypeError, bool, B())
+        class C:
+            def __bool__(self):
+                return 1
+        self.assertRaises(TypeError, bool, C())
 
 
     def test_assert(self):

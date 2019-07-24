@@ -627,12 +627,22 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.float_) {
         return x.v !== 0;
     }
-    if (x["__nonzero__"]) {
-        ret = Sk.misceval.callsimArray(x["__nonzero__"], [x]);
-        if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__nonzero__ should return an int");
+    if (Sk.__future__.python3) {
+        if (x["__bool__"]) {
+            ret = Sk.misceval.callsimArray(x["__bool__"], [x]);
+            if (!(ret instanceof Sk.builtin.bool)) {
+                throw new Sk.builtin.TypeError("__bool__ should return bool, returned " + Sk.abstr.typeName(ret));
+            }
+            return ret.v;
         }
-        return Sk.builtin.asnum$(ret) !== 0;
+    } else {
+        if (x["__nonzero__"]) {
+            ret = Sk.misceval.callsimArray(x["__nonzero__"], [x]);
+            if (!Sk.builtin.checkInt(ret)) {
+                throw new Sk.builtin.TypeError("__nonzero__ should return an int");
+            }
+            return Sk.builtin.asnum$(ret) !== 0;
+        }
     }
     if (x["__len__"]) {
         ret = Sk.misceval.callsimArray(x["__len__"], [x]);
