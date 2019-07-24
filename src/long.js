@@ -814,7 +814,13 @@ Sk.builtin.lng.prototype.ob$ge = function (other) {
 };
 
 Sk.builtin.lng.prototype.$r = function () {
-    return new Sk.builtin.str(this.str$(10, true) + "L");
+    var suffix;
+    if (Sk.__future__.python3) {
+        suffix = "";
+    } else {
+        suffix = "L";
+    }
+    return new Sk.builtin.str(this.str$(10, true) + suffix);
 };
 
 Sk.builtin.lng.prototype.tp$str = function () {

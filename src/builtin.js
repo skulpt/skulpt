@@ -536,10 +536,9 @@ Sk.builtin.int2str_ = function helper_ (x, radix, prefix) {
     var str = "";
     if (x instanceof Sk.builtin.lng) {
         suffix = "";
-        if (radix !== 2) {
+        if (radix !== 2 && (!(Sk.__future__.python3))) {
             suffix = "L";
         }
-
         str = x.str$(radix, false);
         if (x.nb$isnegative()) {
             return new Sk.builtin.str("-" + prefix + str + suffix);
