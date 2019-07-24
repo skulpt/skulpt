@@ -675,6 +675,7 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
     var final3;
     var val;
     var index;
+    var len;
     Sk.builtin.pyCheckArgsLen("partition", arguments.length - 1, 1, 1);
     if (!(sep instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
@@ -955,6 +956,9 @@ Sk.builtin.bytes.prototype["translate"] = new Sk.builtin.func(function () {
 Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function (self, width, fillbyte) {
     var final;
     var i;
+    var fill;
+    var fill1;
+    var fill2;
     Sk.builtin.pyCheckArgsLen("center", arguments.length - 1, 1, 2);
 
     if (fillbyte === undefined) {
@@ -1026,8 +1030,43 @@ Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, width,
 
 });
 
-Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("lstrip() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype.left_strip_ = function (chars) {
+    var leading;
+    var i;
+    var j;
+    var final;
+    
+    if (chars === undefined || chars == Sk.builtin.none.none$) {
+        // default is to remove ASCII whitespace
+        leading = [9, 10, 11, 12, 13, 32, 133];
+    } else if (!(chars instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");  
+    } else {
+        leading = [];
+        for (i = 0; i < chars.v.byteLength; i++) {
+            leading.push(chars.v.getUint8(i));
+        }
+    }
+    final = [];
+    i = 0;
+    while (i < this.v.byteLength) {
+        if (!(leading.includes(this.v.getUint8(i)))) {
+            break;
+        } else {
+            i++;
+        }
+    }
+    for (j = i; j < this.v.byteLength; j++) {
+        final.push(this.v.getUint8(j));
+    }
+
+    return new Sk.builtin.bytes(final);
+};
+
+Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
+    Sk.builtin.pyCheckArgsLen("lstrip", arguments.length - 1, 0, 1);
+
+    return Sk.builtin.bytes.prototype.left_strip_.call(self, chars);
 });
 
 Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width, fillbyte) {
