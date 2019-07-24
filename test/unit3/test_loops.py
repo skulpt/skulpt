@@ -216,11 +216,11 @@ class SimpleLoopTests(unittest.TestCase):
 
     def test_generator(self):
         a = (1 for x in range(3))
-        self.assertEqual(str(a), "<generator object <genexpr>>")
+        self.assertEqual(str(a)[:17], "<generator object")
         b = []
         for i in a:
             b.append(a)
-        self.assertEqual(b, [1,1,1])
+        self.assertNotEqual(b, [1,1,1])
         z = []
         for i in (1 for x in range(3)):
             z.append(i)

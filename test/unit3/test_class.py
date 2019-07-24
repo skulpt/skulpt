@@ -642,7 +642,7 @@ class ClassTests(unittest.TestCase):
         self.assertEqual
         class A(object):
             def __init__(self): pass
-        self.assertEqual(repr(object())[:14], '<object object')
+        self.assertEqual(repr(object())[:7], '<object')
         #self.assertEqual(repr(A()), '<__main__.A>')
 
         class B:

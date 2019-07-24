@@ -13,7 +13,6 @@ class IterInheritsTestCase(unittest.TestCase):
 
         l = tuple(counter(1,12))
         t = 4 in l
-        print(t, l)
         self.assertTrue(t)
 
     def test_getitem(self):
@@ -24,7 +23,6 @@ class IterInheritsTestCase(unittest.TestCase):
               else:
                  raise StopIteration
         l = tuple(Counter())
-        print(l)
         self.assertTrue(5 in l)
 
     def test_dunderiter(self):

@@ -961,7 +961,7 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, pow)
         self.assertRaises(TypeError, pow, [1,2], '34', 5)
         self.assertRaises(TypeError, pow, 4.0, 5.0, 3)
-        self.assertRaises(TypeError, pow, 4, -3, 2)
+        self.assertRaises(ValueError, pow, 4, -3, 2)
 
     def test_range(self):
         # self.assertEqual(str(range(5)), 'range(0, 5)')
@@ -1395,8 +1395,8 @@ class TestSorted(unittest.TestCase):
     def test_basic(self):
         data = list(range(100))
         copy = data[:]
-        #random.shuffle(copy)
-        #self.assertEqual(data, sorted(copy))
+        random.shuffle(copy)
+        self.assertEqual(data, sorted(copy))
         self.assertNotEqual(data, copy)
 
         data.reverse()
@@ -1414,7 +1414,6 @@ class TestSorted(unittest.TestCase):
         self.assertEqual(c, [6, 3, 2, 1, 0, -4])
         c.sort()
         self.assertEqual(c, [-4, 0, 1, 2, 3, 6])
-        import random
 
         def makeset(lst):
             result = {}
@@ -1543,7 +1542,7 @@ class TestType(unittest.TestCase):
     # def test_bad_slots(self):
     #     self.assertRaises(TypeError, lambda: type('A', (int,), {'__slots__': 'x'}))
     #     self.assertRaises(TypeError, lambda: type('A', (), {'__slots__': ''}))
-    #     self.assertRaises(TypeError, lambda: type('A', (), {'__slots__': '42'}))
+    #     self.assertRaises(TypeError, lambda: type('A', (), {'__s lots__': '42'}))
     #     self.assertRaises(TypeError, lambda: type('A', (), {'__slots__': 'x\x00y'}))
     #     self.assertRaises(ValueError, lambda: type('A', (), {'__slots__': 'x', 'x': 0}))
     #     self.assertRaises(TypeError, lambda: type('A', (), {'__slots__': ('__dict__', '__dict__')}))

@@ -19,7 +19,7 @@ class OperatorsTest(unittest.TestCase):
         x ^= 7
         self.assertEqual(x, 5)
         self.assertEqual(0b0110 ^ 0b0101, 0b0011)
-        self.assertEqual((0O1200 ^ 0O1034,0O0234)
+        self.assertEqual(0O1200 ^ 0O1034,0O0234)
         self.assertEqual(0x10f0 ^ 0x01f0, 0x1100)
         self.assertEqual(3847 ^ 4958, 7257)
 
@@ -32,7 +32,7 @@ class OperatorsTest(unittest.TestCase):
         self.assertEqual(a, 135)
         self.assertEqual(0b0101 | 0b1010, 0b1111)
         self.assertEqual(0x0ff0 | 0x0000, 0x0ff0)
-        self.assertEqual(0O0505 | 0O1000 == 0O1505)
+        self.assertEqual(0O0505 | 0O1000, 0O1505)
         self.assertEqual(124 | 37, 125)
 
     def test_shift(self):

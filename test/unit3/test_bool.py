@@ -319,7 +319,7 @@ class BoolTest(unittest.TestCase):
         try:
             error1 = bool(A())
         except TypeError as e:
-            error1 = str(e)
+            error1 = e
         self.assertEqual(error1, True)
         class B:
             def __len__(self):
@@ -329,6 +329,7 @@ class BoolTest(unittest.TestCase):
         except TypeError as e:
             error2 = str(e)
         self.assertEqual(error2, "'str' object cannot be interpreted as an integer")
+
 
     def test_assert(self):
         def func():

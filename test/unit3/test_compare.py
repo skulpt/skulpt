@@ -45,7 +45,6 @@ class ComparisonTest(unittest.TestCase):
                                  'a=%r, b=%r' % (a, b))
 
     def test_is_comparisons(self):
-        flag = False
         a = "a"
         self.assertTrue(a is "a")
         self.assertFalse(a is "b")
@@ -195,6 +194,7 @@ class ComparisonTest(unittest.TestCase):
             def __init__(self,x): self.x = x
             def __cmp__(self,other): return self.x
         #__cmp__ no longer supported in python 3
+        #below should raise a TypeError but it doesn't in skulpt
         self.assertRaises(TypeError, helper, A(-1), A(1), -1)
 
 if __name__ == '__main__':
