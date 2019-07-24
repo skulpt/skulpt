@@ -533,7 +533,22 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.ljust, 3, bytes([1]), 1)
 
     def test_lstrip(self):
-        pass
+        a = bytes([1, 1, 2, 3, 1, 3])
+        b = bytes([1])
+        self.assertEqual(a.lstrip(b), bytes([2, 3, 1, 3]))
+        self.assertEqual(a.lstrip(bytes([2])), a)
+
+        c = bytes(" \t\n\vABC", "ascii")
+        self.assertEqual(c.lstrip(), bytes([65, 66, 67]))
+        self.assertEqual(c.lstrip(None), bytes([65, 66, 67]))
+
+        d = bytes([1, 2, 3, 4])
+        e = bytes([2, 3, 1])
+        self.assertEqual(d.lstrip(e), bytes([4]))
+        self.assertEqual(d.lstrip(bytes([2, 3, 4, 1])), bytes([]))
+
+        self.assertRaises(TypeError, a.lstrip, 1)
+        self.assertRaises(TypeError, a.lstrip, b, 1)
 
     def test_rjust(self):
         a = bytes([1, 2, 3])
