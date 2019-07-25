@@ -62,9 +62,19 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual("dog"*19, "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog")
         self.assertEqual(40*"weee", "weeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweee")
 
+        def foo(x, y):
+            return x * y
+        self.assertRaises(TypeError,  foo, "a", "b")
+        self.assertRaises(TypeError,  foo, "a", 3.4)
+        self.assertRaises(TypeError,  foo, 3.4,  "a")
+        self.assertRaises(TypeError,  foo, "a", [2])
+        self.assertRaises(TypeError,  foo, [2], "b")
+
     def test_percent_operator(self):
         self.assertEqual("formatting with just %d argument" % 1, "formatting with just 1 argument")
-        self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10,1.23,-1.23), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
+        #self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10,1.23,-1.23), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
+        #self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+        self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
         self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
         self.assertEqual("%r is a repr and %s is a string" % ("this","this"), "'this' is a repr and this is a string")
         self.assertEqual("I can also use a %(structure)s to format." % {'structure':'dictionary'}, "I can also use a dictionary to format.")

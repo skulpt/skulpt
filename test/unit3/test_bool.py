@@ -333,7 +333,7 @@ class BoolTest(unittest.TestCase):
             def __bool__(self):
                 return 1
         self.assertRaises(TypeError, bool, C())
-
+        self.assertEqual(C().__bool__(), 1)
 
     def test_assert(self):
         def func():

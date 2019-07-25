@@ -1335,9 +1335,6 @@ class DepreciatedTest(unittest.TestCase):
     # def test_reduce(self):
     #     self.assertRaises(NameError, lambda: reduce(lambda x, y: x + y, [1, 2, 3, 4, 5]))
 
-    def test_reload(self):
-        self.assertRaises(NameError, lambda: reload(math))
-
     # def test_unichr(self):
     #     self.assertRaises(NameError, lambda: unichr(97))
     #     self.assertRaises(NameError, lambda: unichr(-2))

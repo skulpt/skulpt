@@ -86,32 +86,6 @@ class TryExceptFinallyTest(unittest.TestCase):
             error7 = "Did not catch OverflowError"
         self.assertEqual(error7, "Caught OverflowError")
 
-        error1, error2, error3, error4, error5 = None, None, None, None, None
-        try:
-            print("a" * "b")
-        except TypeError as e:
-            error1 = str(e)
-        self.assertEqual(error1, "can't multiply sequence by non-int of type 'str'")
-        try:
-            print("a" * 3.4)
-        except TypeError as e:
-            error2 = str(e)
-        self.assertEqual(error2, "can't multiply sequence by non-int of type 'float'")
-        try:
-            print(3.4 * "b")
-        except TypeError as e:
-            error3 = str(e)
-        self.assertEqual(error3, "can't multiply sequence by non-int of type 'float'")
-        try:
-            print("a" * [2])
-        except TypeError as e:
-            error4 = str(e)
-        self.assertEqual(error4, "can't multiply sequence by non-int of type 'list'")
-        try:
-            print([2] * "b")
-        except TypeError as e:
-            error5 = str(e)
-        self.assertEqual(error5, "can't multiply sequence by non-int of type 'str'")
 
     def test_exception(self):
         class C:

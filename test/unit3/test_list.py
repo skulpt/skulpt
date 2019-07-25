@@ -314,48 +314,15 @@ class IterInheritsTestCase(unittest.TestCase):
         self.assertEqual(myList.index("foo"), 3)
         self.assertEqual(myList.index(True), 0)
         l = ['h','e','l','l','o']
-        error1, error2, error3, error4, error5, error6 = None, None, None, None, None, None
-        try:
-            error1 = l.index('l', 4)
-        except ValueError as e:
-            error1 = str(e)
-        self.assertEqual(error1, "'l' is not in list")
-        try:
-            error2 = l.index('l', -1)
-        except ValueError as e:
-            error2 = str(e)
-        self.assertEqual(error2, "'l' is not in list")
-        try:
-            error3 = l.index('l', 2, 2)
-        except ValueError as e:
-            error3 = str(e)
-        self.assertEqual(error3, "'l' is not in list")
-        try:
-            error4 = l.index('l', 3, 2)
-        except ValueError as e:
-            error4 = str(e)
-        self.assertEqual(error4, "'l' is not in list")
-        try:
-            error5 = l.index('l', 3, -2)
-        except ValueError as e:
-            error5 = str(e)
-        self.assertEqual(error5, "'l' is not in list")
-        try:
-            error6 = l.index('l', 3, 0)
-        except ValueError as e:
-            error6 = str(e)
-        self.assertEqual(error6, "'l' is not in list")
-        error7, error8 = None, None
-        try:
-            error7 = l.index('l', 4.3)
-        except TypeError as e:
-            error7 = str(e)
-        self.assertEqual(error7, "slice indices must be integers or have an __index__ method")
-        try:
-            error8 = l.index('l', 3, 0.6)
-        except TypeError as e:
-            error8 = str(e)
-        self.assertEqual(error8, "slice indices must be integers or have an __index__ method")
+
+        self.assertRaises(ValueError, l.index, "l", 4)
+        self.assertRaises(ValueError, l.index, "l", -1)
+        self.assertRaises(ValueError, l.index, "l", 2, 2)
+        self.assertRaises(ValueError, l.index, "l", 3, 2)
+        self.assertRaises(ValueError, l.index, "l", 3, -2)
+        self.assertRaises(ValueError, l.index, "l", 3, 0)
+        self.assertRaises(TypeError, l.index, "l", 4.3)
+        self.assertRaises(TypeError, l.index, "l", 3, 0.6)
 
         def foo(lst):
             i = 0
@@ -430,17 +397,13 @@ class IterInheritsTestCase(unittest.TestCase):
         self.assertTrue(l[0:] == l[0:None] == l[:] == [0,1,2,3,4])
         l = [0, 1, 2, 3]
         error1, error2, = None, None
-        try:
-            print(l[1 : : 0])
-        except ValueError as e:
-            error1 = str(e)
-        self.assertEqual(error1, "slice step cannot be zero")
-        try:
-            print(l[1 : 3 : 0])
-        except ValueError as e:
-            error2 = str(e)
-        self.assertEqual(error2, "slice step cannot be zero")
 
+        def foo(x, y):
+            return l[x: : y]
+        self.assertRaises(ValueError, foo, 1, 0)
+        def foo2(x, y, z):
+            return l[x : y : z]
+        self.assertRaises(ValueError, foo2, 1, 3, 0)
 
     def test_contains(self):
         a = self.type2test(range(15))
