@@ -5,65 +5,47 @@
  */
 Sk.builtin.map_ = function map_ (fun, seq) {
     var next;
-    var nones;
     var args;
-    var argnum;
     var getnext;
     var i;
     var item;
     var iterables;
     var combined;
     var args;
-
     Sk.builtin.pyCheckArgsLen("map_", arguments.length, 2);
 
     if (!(this instanceof Sk.builtin.map_)) {
         args = Array.prototype.slice.apply(arguments).slice(1);
         return new Sk.builtin.map_(fun, ...args);
     }
-
     if (arguments.length > 2) {
         // Pack sequences into one list of Javascript Arrays
         iterables = Array.prototype.slice.apply(arguments).slice(1);
         for (i = 0; i < iterables.length; i++) {
-            if (!Sk.builtin.checkIterable(iterables[i])) {
-                argnum = parseInt(i, 10) + 2;
-                throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
-            }
+            //don't need to check if iterables[i] is an iterable bc Sk.abstr.iter will check and throw the correct error msg
             iterables[i] = Sk.abstr.iter(iterables[i]);
         }
-
         getnext = function () {
             combined = [];
             for (i = 0; i < iterables.length; i++) {
                 next = iterables[i].tp$iternext();
                 if (next === undefined) {
                     return undefined;
-
                 } else {
                     combined.push(next);
                 }
             }
-            if (nones !== iterables.length) {
-                return combined;
-            }
-            return undefined;
+            return combined;
+        };
+    } else {
+        //don't need to check if seq is iterable bc Sk.abstr.iter will throw the right error msg
+        seq = Sk.abstr.iter(seq);
+        getnext = function () {
+            return seq.tp$iternext();
         };
     }
-
-    if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
-    }
-
-    if (!(arguments.length > 2)) {
-        seq = Sk.abstr.iter(seq);
-    }
     this.tp$iternext = function () {
-        if (getnext) {
-            item = getnext();
-        } else {
-            item = seq.tp$iternext();
-        }
+        item = getnext();
         if (item === undefined) {
             return undefined;
         }
@@ -79,14 +61,11 @@ Sk.builtin.map_ = function map_ (fun, seq) {
         }
         return Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item);
     };
-
     this.tp$iter = function () {
         return this;
     };
-
     this.__class__ = Sk.builtin.map_;
     return this;
-
 };
 
 Sk.abstr.setUpInheritance("map", Sk.builtin.map_, Sk.builtin.object);

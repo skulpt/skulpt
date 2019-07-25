@@ -7,18 +7,22 @@ Sk.builtin.zip_ = function zip_ () {
     var i;
     var iters;
     var next;
-    if (!(this instanceof Sk.builtin.zip_) && (Sk.__future__.python_version)) {
+    if (!(this instanceof Sk.builtin.zip_)) {
         return new Sk.builtin.zip_(...arguments);
     }
     if (arguments.length === 0) {
-        return new Sk.builtin.zip_(Sk.builtin.list([]));
+        return new Sk.builtin.zip_(new Sk.builtin.list([]));
     }
     iters = [];
     for (i = 0; i < arguments.length; i++) {
-        if (Sk.builtin.checkIterable(arguments[i])) {
+        try {
             iters.push(Sk.abstr.iter(arguments[i]));
-        } else {
-            throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                throw new Sk.builtin.TypeError("zip argument #" + (i + 1) + " must support iteration");         
+            } else {
+                throw e;
+            }
         }
     }
 

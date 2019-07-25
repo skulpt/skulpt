@@ -98,7 +98,8 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(list(f), [0, 2, 4, 6])
         a.change_high(8)
         self.assertEqual(list(f), [0, 2, 4, 6, 8])
-            
+
+        self.assertRaises(TypeError, filter, foo, 2)
 
     def test_map(self):
         self.assertEqual(
@@ -166,6 +167,9 @@ class FilterTest(unittest.TestCase):
         a.change_high(8)
         self.assertEqual(list(m), [0, 1, 4, 9, 16, 25, 36, 49,  64])
 
+        self.assertRaises(TypeError, map, foo, 1)
+        self.assertRaises(TypeError, map, foo, [1], 1)
+
     def test_zip(self):
         self.assertEqual(list(zip(str1, str2)), [('A', 'x'), ('B', 'y')])
         self.assertEqual(str(zip(str1, str2))[1:11], "zip object")
@@ -217,6 +221,9 @@ class FilterTest(unittest.TestCase):
         b.change_high(18)
         self.assertEqual(list(z), [(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (5, 15), (6, 16), (7, 17), (8, 18)])
         self.assertEqual(type(z), zip)
+
+        self.assertRaises(TypeError, zip, 1)
+        self.assertRaises(TypeError, zip, [1], 1)
 
 if __name__ == '__main__':
     unittest.main()

@@ -9,19 +9,16 @@ Sk.builtin.filter_ = function filter_ (fun, iterable) {
     var getitem;
     var result;
     var item;
-
     Sk.builtin.pyCheckArgsLen("filter_", arguments.length, 2, 2);
 
     if (!(this instanceof Sk.builtin.filter_)) {
         return new Sk.builtin.filter_(fun, iterable);
     }
-    if (!Sk.builtin.checkIterable(iterable)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
-    }
+    //don't need to check if iterable is an iterable because Sk.abstr.iter will throw the right error msg
     it = Sk.abstr.iter(iterable);
     getitem = function (item) {
         if (fun === Sk.builtin.none.none$) {
-            result = new Sk.builtin.bool(item);
+            result = item;
         } else {
             result = Sk.misceval.callsimArray(fun, [item]);
         }
@@ -46,15 +43,10 @@ Sk.builtin.filter_ = function filter_ (fun, iterable) {
                 return undefined;
             }
             result = getitem(item);
-
         }
-        if (item !== undefined) {
-            return item;
-        }
-        return undefined;
+        return item;
     };
     this.__class__ = Sk.builtin.filter_;
-
     return this;
 };
 
