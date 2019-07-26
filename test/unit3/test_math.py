@@ -210,7 +210,7 @@ class MathTests(unittest.TestCase):
         # self.assertRaises(ValueError, math.acosh, NINF)
         self.assertTrue(math.isnan(math.acosh(NAN)))
         self.assertEqual(math.acosh(2), 1.3169578969248166)
-        self.assertEqual(math.acosh(1.2), 0.6223625037147786)
+        self.assertAlmostEqual(math.acosh(1.2), 0.6223625037147786, 15)
 
     def testAsin(self):
         self.assertRaises(TypeError, math.asin)
@@ -232,7 +232,7 @@ class MathTests(unittest.TestCase):
         # self.assertEqual(math.asinh(NINF), NINF)
         self.assertTrue(math.isnan(math.asinh(NAN)))
         self.assertEqual(math.asinh(2), 1.4436354751788103)
-        self.assertEqual(math.asinh(-7.5), -2.712465305184344)
+        self.assertAlmostEqual(math.asinh(-7.5), -2.712465305184344, 14)
         self.assertEqual(math.asinh(0), 0.0)
 
     def testAtan(self):
@@ -254,9 +254,9 @@ class MathTests(unittest.TestCase):
         # self.assertRaises(ValueError, math.atanh, INF)
         # self.assertRaises(ValueError, math.atanh, NINF)
         self.assertTrue(math.isnan(math.atanh(NAN)))
-        self.assertEqual(math.atanh(-0.2), -0.2027325540540822)
+        self.assertAlmostEqual(math.atanh(-0.2), -0.2027325540540822, 15)
         self.assertEqual(math.atanh(0), 0.0)
-        self.assertEqual(math.atanh(0.5), 0.5493061443340549)
+        self.assertAlmostEqual(math.atanh(0.5), 0.5493061443340549, 15)
 
     def testAtan2(self):
         self.assertRaises(TypeError, math.atan2)
@@ -396,8 +396,8 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.cosh(INF), INF)
         self.assertEqual(math.cosh(NINF), INF)
         self.assertTrue(math.isnan(math.cosh(NAN)))
-        self.assertEqual(math.cosh(2), 3.7621956910836314)
-        self.assertEqual(math.cosh(-7.5), 904.0214837702167)
+        self.assertAlmostEqual(math.cosh(2), 3.7621956910836314, 15)
+        self.assertAlmostEqual(math.cosh(-7.5), 904.0214837702167, 11)
         self.assertEqual(math.cosh(0), 1.0)
 
     def testDegrees(self):
@@ -942,7 +942,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.sinh(NINF), NINF)
         self.assertTrue(math.isnan(math.sinh(NAN)))
         self.assertEqual(math.sinh(2), 3.6268604078470186)
-        self.assertEqual(math.sinh(-7.5), -904.0209306858466)
+        self.assertAlmostEqual(math.sinh(-7.5), -904.0209306858466, 11)
         self.assertEqual(math.sinh(0), 0.0)
 
     def testSqrt(self):
@@ -976,8 +976,8 @@ class MathTests(unittest.TestCase):
         # self.ftest('tanh(inf)', math.tanh(INF), 1)
         # self.ftest('tanh(-inf)', math.tanh(NINF), -1)
         self.assertTrue(math.isnan(math.tanh(NAN)))
-        self.assertEqual(math.tanh(2), 0.9640275800758169)
-        self.assertEqual(math.tanh(-7.5), -0.9999993881955461)
+        self.assertAlmostEqual(math.tanh(2), 0.9640275800758169, 15)
+        self.assertAlmostEqual(math.tanh(-7.5), -0.9999993881955461, 15)
         self.assertEqual(math.tanh(0), 0.0)
 
     def testTanhSign(self):
