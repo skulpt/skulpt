@@ -108,7 +108,7 @@ Sk.builtins = {
     "intern"    : Sk.builtin.intern
 };
 
-function py3_objects(py3) {
+Sk.setupObjects = function (py3) {
     if (py3) {
         Sk.builtins["filter"] = Sk.builtin.filter_;
         Sk.builtins["map"] = Sk.builtin.map_;
@@ -119,6 +119,5 @@ function py3_objects(py3) {
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
     }
 };
-
-Sk.exportSymbol("Sk.builtindict.py3_objects", py3_objects);
+Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);
 Sk.exportSymbol("Sk.builtins", Sk.builtins);
