@@ -72,10 +72,7 @@ class StringMethodsTests(unittest.TestCase):
 
     def test_percent_operator(self):
         self.assertEqual("formatting with just %d argument" % 1, "formatting with just 1 argument")
-        #self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10,1.23,-1.23), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
-        #self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
-        self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
-        self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+        
         self.assertEqual("%r is a repr and %s is a string" % ("this","this"), "'this' is a repr and this is a string")
         self.assertEqual("I can also use a %(structure)s to format." % {'structure':'dictionary'}, "I can also use a dictionary to format.")
         self.assertEqual("+%s+" % "hello","+hello+")
@@ -89,6 +86,16 @@ class StringMethodsTests(unittest.TestCase):
             return str("f(%s) called" % x)
         self.assertEqual(f(3), "f(3) called")
 
+    def test_number_precision(self):
+        self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10,1.23,-1.23), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
+        self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+        self.assertEqual("%g" % (.00000012), "1.2e-07")
+        self.assertEqual("%g" % (.0000012), "1.2e-06")
+        self.assertEqual("%g" % (.000012), "1.2e-05")
+        self.assertEqual("%g %g" % (.0000012, .000012), "1.2e-06 1.2e-05")
+        self.assertEqual("%g" % (.00012), "0.00012")
+        self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
+        self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
 if __name__ == '__main__':
     unittest.main()
             
