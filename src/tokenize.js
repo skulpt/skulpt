@@ -79,14 +79,7 @@ function rstrip (input, what) {
     return input.substring(0, i);
 }
 
-/**
- * test if string is an identifier
- *
- * @param {str} string
- * @returns {boolean}
- */
-function isidentifier(str) {
-    var normalized = str.normalize('NFKC');
+const IS_IDENTIFIER_REGEX = (function() {
     var the_underscore = '_';
     var Lu = '[A-Z]';
     var Ll = '[a-z]';
@@ -102,16 +95,26 @@ function isidentifier(str) {
     var Other_ID_Continue = '[\\u00B7\\u0387\\u1369-\\u1371\\u19DA]';
     var id_start = group(Lu, Ll,Lt, Lm, Lo, Nl, the_underscore, Other_ID_Start);
     var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
-    var r;
+
     // Fall back if we don't support unicode
     if (RegExp().unicode === false) {
-        r = new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
+        return new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
     } else {
         id_start = group(Lu, Ll, the_underscore);
         id_continue = group(id_start, '[0-9]');
-        r = new RegExp('^' + id_start + '+' + id_continue + '*$');
+        return new RegExp('^' + id_start + '+' + id_continue + '*$');
     }
-    return r.test(normalized);
+})();
+
+/**
+ * test if string is an identifier
+ *
+ * @param {str} string
+ * @returns {boolean}
+ */
+function isidentifier(str) {
+    var normalized = str.normalize('NFKC');
+    return IS_IDENTIFIER_REGEX.test(normalized);
 }
 
 /* we have to use string and ctor to be able to build patterns up. + on /.../
