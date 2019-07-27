@@ -230,6 +230,8 @@ function _tokenize(readline, encoding, yield_) {
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
     var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
 
+    const PseudoTokenRegexp = new RegExp(PseudoToken);
+
     var lnum = 0,
         parenlev = 0,
         continued = 0,
@@ -365,7 +367,7 @@ function _tokenize(readline, encoding, yield_) {
                 capos = line.charAt(pos);
             }
 
-            pseudomatch = RegExp(PseudoToken).exec(line.substring(pos))
+            pseudomatch = PseudoTokenRegexp.exec(line.substring(pos))
             if (pseudomatch) {                                // scan for tokens
                 var start = pos;
                 var end = start + pseudomatch[1].length;
