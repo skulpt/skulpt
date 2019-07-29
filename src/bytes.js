@@ -259,6 +259,16 @@ Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
 
+Sk.builtin.bytes.prototype.bytes_copy_ = function () {
+    var i;
+    var final;
+    final = [];
+    for (i = 0; i < this.v.byteLength; i++) {
+        final.push(this.v.getUint8(i));
+    }
+    return new Sk.builtin.bytes(final);
+};
+
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
     var i;
     var val;
