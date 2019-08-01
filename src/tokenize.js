@@ -219,7 +219,7 @@ var tabsize = 8
 function _tokenize(readline, encoding, yield_) {
     // we make these regexes here because they can
     // be changed by the configuration.
-    var LSuffix = Sk.__future__.l_suffix ? '(?:L?)' : '';
+    var LSuffix = !Sk.__future__.python3 ? '(?:L?)' : '';
     var Hexnumber = '0[xX](?:_?[0-9a-fA-F])+' + LSuffix;
     var Binnumber = '0[bB](?:_?[01])+' + LSuffix;
     var Octnumber = '0([oO])(?:_?[0-7])+' + LSuffix;
