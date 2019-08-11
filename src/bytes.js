@@ -268,6 +268,41 @@ Sk.builtin.bytes.prototype.bytes_copy_ = function () {
     }
     return new Sk.builtin.bytes(final);
 };
+Sk.builtin.bytes.prototype.sq$concat = function (other) {
+    var i;
+    var lis;
+    if (!(other instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("can't concat " + Sk.abstr.typeName(other) + " to bytes");
+    }
+    lis = [];
+    for (i = 0; i < this.v.byteLength; i++) {
+        lis.push(this.v.getUint8(i));
+    }
+    for (i = 0; i < other.v.byteLength; i++) {
+        lis.push(other.v.getUint8(i));
+    }
+    return new Sk.builtin.bytes(lis);
+};
+Sk.builtin.bytes.prototype.nb$add = Sk.builtin.bytes.prototype.sq$concat;
+Sk.builtin.bytes.prototype.nb$inplace_add = Sk.builtin.bytes.prototype.sq$concat;
+
+Sk.builtin.bytes.prototype.sq$repeat = function (n) {
+    var i;
+    var j;
+    var ret;
+    if (!(n instanceof Sk.builtin.int_)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+    ret = [];
+    for (j = 0; j < n.v; j++) {
+        for (i = 0; i < this.v.byteLength; i++) {
+            ret.push(this.v.getUint8(i));
+        }
+    }
+    return new Sk.builtin.bytes(ret);
+};
+Sk.builtin.bytes.prototype.nb$multiply = Sk.builtin.bytes.prototype.sq$repeat;
+Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.sq$repeat;
 
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
     var i;
@@ -1114,20 +1149,56 @@ Sk.builtin.bytes.prototype["rsplit"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("rsplit() bytes method not implemented in Skulpt");
 });
 
-Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("rstrip() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype.right_strip_ = function (chars) {
+    var ending;
+    var i;
+    var j;
+    var final;
+    
+    if (chars === undefined || chars == Sk.builtin.none.none$) {
+        // default is to remove ASCII whitespace
+        ending = [9, 10, 11, 12, 13, 32, 133];
+    } else if (!(chars instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");  
+    } else {
+        ending = [];
+        for (i = 0; i < chars.v.byteLength; i++) {
+            ending.push(chars.v.getUint8(i));
+        }
+    }
+    final = [];
+    i = this.v.byteLength - 1;
+    while (i > -1) {
+        if (!(ending.includes(this.v.getUint8(i)))) {
+            break;
+        } else {
+            i--;
+        }
+    }
+    for (j = 0; j <= i; j++) {
+        final.push(this.v.getUint8(j));
+    }
+
+    return new Sk.builtin.bytes(final);
+};
+
+Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
+    Sk.builtin.pyCheckArgsLen("rstrip", arguments.length - 1, 0, 1);
+
+    return Sk.builtin.bytes.prototype.right_strip_.call(self, chars);
 });
 
 Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function () {
     throw new Sk.builtin.NotImplementedError("split() bytes method not implemented in Skulpt");
 });
 
-Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("strip() bytes method not implemented in Skulpt");
-});
+Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
+    var lstripped;
+    //double check the description
+    Sk.builtin.pyCheckArgsLen("strip", arguments.length - 1, 0, 1);
+    lstripped  = Sk.builtin.bytes.prototype.left_strip_.call(self, chars);
 
-Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("strip() bytes method not implemented in Skulpt");
+    return Sk.builtin.bytes.prototype.right_strip_.call(lstripped, chars);
 });
 
 Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {

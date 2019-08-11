@@ -5,7 +5,7 @@ class BytesTests(unittest.TestCase):
     def test_integer_arg(self):
         self.assertRaises(TypeError, bytes, "3")
         a = bytes(4)
-        self.assertEqual(str(a), "b'\\x00\\x00\\x00\\x00'")
+        self.assertEqual(str(a)[2:-1], "\\x00\\x00\\x00\\x00")
         self.assertEqual(len(a), 4)
         b = bytes(0)
         self.assertEqual(str(b)[1:], "''")
@@ -173,6 +173,23 @@ class BytesTests(unittest.TestCase):
         for i in a0:
             a1.append(i)
         self.assertEqual(a1, [1, 2, 3])
+
+    def test_add(self):
+        a = bytes([1, 2, 3])
+        b = bytes([4, 5, 6])
+        c = a + b
+        self.assertEqual(c, bytes([1, 2, 3, 4, 5, 6]))
+        a += b
+        self.assertEqual(a, bytes([1, 2, 3, 4, 5, 6]))
+
+        self.assertRaises(TypeError, lambda x: a + x, "bytes")
+
+    def test_multiply(self):
+        a = bytes([1,2])
+        self.assertEqual(a * 3, bytes([1, 2, 1, 2, 1, 2]))
+        self.assertEqual(2 * a, bytes([1, 2, 1, 2]))
+
+        self.assertRaises(TypeError, lambda x: x * x, a)
 
     def test_fromhex(self):
         a = "0f34"
@@ -562,6 +579,36 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.rjust, 3, 3)
         self.assertRaises(TypeError, a.rjust, 3, bytes([]))
         self.assertRaises(TypeError, a.rjust, 3, bytes([1]), 1)
+
+    def test_rstrip(self):
+        a = bytes([2, 3, 1, 3, 1, 1])
+        b = bytes([1])
+        self.assertEqual(a.rstrip(b), bytes([2, 3, 1, 3]))
+        self.assertEqual(a.rstrip(bytes([3])), a)
+
+        c = bytes("ABC \t\n\v", "ascii")
+        self.assertEqual(c.rstrip(), bytes([65, 66, 67]))
+        self.assertEqual(c.rstrip(None), bytes([65, 66, 67]))
+
+        d = bytes([1, 2, 3, 4])
+        e = bytes([3, 4, 2])
+        self.assertEqual(d.rstrip(e), bytes([1]))
+        self.assertEqual(d.rstrip(bytes([2, 3, 4, 1])), bytes([]))
+
+        self.assertRaises(TypeError, a.rstrip, 1)
+        self.assertRaises(TypeError, a.rstrip, b, 1)
+
+    def test_strip(self):
+        a = bytes([2, 3, 1, 3, 1, 1])
+        b = bytes([1, 2])
+        self.assertEqual(a.strip(b), bytes([3, 1, 3]))
+
+        c = bytes(" \v\t\nABC \t\n\v", "ascii")
+        self.assertEqual(c.strip(), bytes([65, 66, 67]))
+        self.assertEqual(c.strip(None), bytes([65, 66, 67]))
+
+        self.assertRaises(TypeError, a.strip, 1)
+        self.assertRaises(TypeError, a.strip, b, 1)
 
     def test_capitalize(self):
         a = bytes([97, 65, 99, 68, 1])
