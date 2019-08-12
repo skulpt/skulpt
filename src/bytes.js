@@ -149,7 +149,7 @@ var makehexform = function (num) {
     return num;
 };
 
-Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.object);
+Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
 
 Sk.builtin.bytes.prototype["$r"] = function () {
     var ret;
@@ -303,6 +303,17 @@ Sk.builtin.bytes.prototype.sq$repeat = function (n) {
 };
 Sk.builtin.bytes.prototype.nb$multiply = Sk.builtin.bytes.prototype.sq$repeat;
 Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.sq$repeat;
+
+Sk.builtin.bytes.prototype.sq$contains = function (item) {
+    var it;
+    var i;
+    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(i, item, "Eq")) {
+            return true;
+        }
+    }
+    return false;
+};
 
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
     var i;
