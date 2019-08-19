@@ -174,6 +174,10 @@ class BytesTests(unittest.TestCase):
             a1.append(i)
         self.assertEqual(a1, [1, 2, 3])
 
+    def test_literals(self):
+        self.assertEqual(b'abc', bytes([97, 98, 99]))
+        self.assertEqual(b'xyz', bytes("xyz", "ascii"))
+
     def test_add(self):
         a = bytes([1, 2, 3])
         b = bytes([4, 5, 6])
@@ -181,6 +185,7 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(c, bytes([1, 2, 3, 4, 5, 6]))
         a += b
         self.assertEqual(a, bytes([1, 2, 3, 4, 5, 6]))
+        self.assertEqual(b'123' + b'abc', b'123abc')
 
         self.assertRaises(TypeError, lambda x: a + x, "bytes")
 
@@ -188,6 +193,8 @@ class BytesTests(unittest.TestCase):
         a = bytes([1,2])
         self.assertEqual(a * 3, bytes([1, 2, 1, 2, 1, 2]))
         self.assertEqual(2 * a, bytes([1, 2, 1, 2]))
+        self.assertEqual(b'dk3' * 3, b'dk3dk3dk3')
+        self.assertEqual(3 * b'dk3', b'dk3dk3dk3')
 
         self.assertRaises(TypeError, lambda x: x * x, a)
 
