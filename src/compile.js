@@ -861,7 +861,11 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             }
             Sk.asserts.fail("unhandled Num type");
         case Sk.astnodes.Str:
-            return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
+            if (e.s instanceof Sk.builtin.bytes) {
+                return this.makeConstant("new Sk.builtin.bytes('", Sk.builtin.bytes.prototype.$decode(e.s, Sk.builtin.str.$ascii).v, "', Sk.builtin.str.$ascii)");
+            } else {
+                return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
+            }      
         case Sk.astnodes.Attribute:
             if (e.ctx !== Sk.astnodes.AugLoad && e.ctx !== Sk.astnodes.AugStore) {
                 val = this.vexpr(e.value);

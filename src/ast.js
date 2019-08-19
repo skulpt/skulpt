@@ -80,6 +80,11 @@ function strobj (s) {
     return new Sk.builtin.str(s);
 }
 
+function bytesobj (s) {
+    Sk.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
+    return new Sk.builtin.bytes(s, Sk.builtin.str.$ascii);
+}
+
 /** @return {number} */
 function numStmts (n) {
     var ch;
@@ -2310,11 +2315,12 @@ function parsestr (c, s) {
         return decodeUtf8(ret);
     };
 
-    //print("parsestr", s);
+    //console.log("parsestr", s);
 
     var quote = s.charAt(0);
     var rawmode = false;
     var unicode = false;
+    var bytes = false;
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
@@ -2332,7 +2338,11 @@ function parsestr (c, s) {
         quote = s.charAt(0);
         rawmode = true;
     }
-    Sk.asserts.assert(quote !== "b" && quote !== "B", "todo; haven't done b'' strings yet");
+    else if (quote === "b" || quote === "B") {
+        s = s.substr(1);
+        quote = s.charAt(0);
+        bytes = true;
+    }
 
     Sk.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
     s = s.substr(1, s.length - 2);
@@ -2346,23 +2356,35 @@ function parsestr (c, s) {
     }
 
     if (rawmode || s.indexOf("\\") === -1) {
-        return strobj(decodeUtf8(s));
+        if (bytes && Sk.__future__.python3) {
+            return bytesobj(decodeUtf8(s));
+        } else {
+            return strobj(decodeUtf8(s));
+        }
     }
-    return strobj(decodeEscape(s, quote));
+
+    if (bytes && Sk.__future__.python3) {
+        return bytesobj(decodeEscape(s, quote));
+    } else {
+        return strobj(decodeEscape(s, quote));
+    }
 }
 
 function parsestrplus (c, n) {
     var i;
     var ret;
+
     REQ(CHILD(n, 0), TOK.T_STRING);
-    ret = new Sk.builtin.str("");
-    for (i = 0; i < NCH(n); ++i) {
-        try {
+    try {
+        i = 0;
+        ret = parsestr(c, CHILD(n, i).value);
+        for (i = 1; i < NCH(n); ++i) {
             ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
-        } catch (x) {
-            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
+    } catch (x) {
+        throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
     }
+
     return ret;
 }
 
