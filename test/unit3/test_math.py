@@ -209,6 +209,8 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.acosh(INF), INF)
         # self.assertRaises(ValueError, math.acosh, NINF)
         self.assertTrue(math.isnan(math.acosh(NAN)))
+        self.assertEqual(math.acosh(2), 1.3169578969248166)
+        self.assertAlmostEqual(math.acosh(1.2), 0.6223625037147786, 15)
 
     def testAsin(self):
         self.assertRaises(TypeError, math.asin)
@@ -229,6 +231,9 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.asinh(INF), INF)
         # self.assertEqual(math.asinh(NINF), NINF)
         self.assertTrue(math.isnan(math.asinh(NAN)))
+        self.assertEqual(math.asinh(2), 1.4436354751788103)
+        self.assertAlmostEqual(math.asinh(-7.5), -2.712465305184344, 14)
+        self.assertEqual(math.asinh(0), 0.0)
 
     def testAtan(self):
         self.assertRaises(TypeError, math.atan)
@@ -249,6 +254,9 @@ class MathTests(unittest.TestCase):
         # self.assertRaises(ValueError, math.atanh, INF)
         # self.assertRaises(ValueError, math.atanh, NINF)
         self.assertTrue(math.isnan(math.atanh(NAN)))
+        self.assertAlmostEqual(math.atanh(-0.2), -0.2027325540540822, 15)
+        self.assertEqual(math.atanh(0), 0.0)
+        self.assertAlmostEqual(math.atanh(0.5), 0.5493061443340549, 15)
 
     def testAtan2(self):
         self.assertRaises(TypeError, math.atan2)
@@ -388,6 +396,9 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.cosh(INF), INF)
         self.assertEqual(math.cosh(NINF), INF)
         self.assertTrue(math.isnan(math.cosh(NAN)))
+        self.assertAlmostEqual(math.cosh(2), 3.7621956910836314, 15)
+        self.assertAlmostEqual(math.cosh(-7.5), 904.0214837702167, 11)
+        self.assertEqual(math.cosh(0), 1.0)
 
     def testDegrees(self):
         self.assertRaises(TypeError, math.degrees)
@@ -401,12 +412,20 @@ class MathTests(unittest.TestCase):
         self.ftest('exp(-1)', math.exp(-1), 1/math.e)
         self.ftest('exp(0)', math.exp(0), 1)
         self.ftest('exp(1)', math.exp(1), math.e)
+        self.assertEqual(math.exp(0), 1.0)
+        self.assertEqual(math.exp(1), 2.718281828459045)
+        self.assertEqual(math.exp(5), 148.4131591025766)
+        self.assertEqual(math.exp(-5), 0.006737946999085467)
+        self.assertEqual(math.exp(12.3), 219695.9886721379)
+        self.assertEqual(math.exp(-21.3), 5.6172989244173e-10)
         self.assertEqual(math.exp(INF), INF)
         self.assertEqual(math.exp(NINF), 0.)
         self.assertTrue(math.isnan(math.exp(NAN)))
         # self.assertRaises(OverflowError, math.exp, 1000000)
 
     def testFabs(self):
+        self.assertEqual(math.fabs(-1), 1.0)
+        self.assertEqual(math.fabs(0), 0.0)
         self.assertRaises(TypeError, math.fabs)
         self.ftest('fabs(-1)', math.fabs(-1), 1)
         self.ftest('fabs(0)', math.fabs(0), 0)
@@ -415,6 +434,9 @@ class MathTests(unittest.TestCase):
 
     def testFloor(self):
         self.assertRaises(TypeError, math.floor)
+        self.assertEqual(math.floor(-0.1), -1)
+        self.assertEqual(math.floor(-0.9), -1)
+        self.assertEqual(math.floor(0.9), 0)
         self.assertEqual(int, type(math.floor(0.5)))
         self.ftest('floor(0.5)', math.floor(0.5), 0)
         self.ftest('floor(1.0)', math.floor(1.0), 1)
@@ -876,6 +898,8 @@ class MathTests(unittest.TestCase):
         self.ftest('radians(90)', math.radians(90), math.pi/2)
         self.ftest('radians(-45)', math.radians(-45), -math.pi/4)
         self.ftest('radians(0)', math.radians(0), 0)
+        self.assertEqual("%10.5f" % math.radians(180), "   3.14159")
+        self.assertEqual("%10.5f" % math.degrees(math.radians(180)), " 180.00000")
 
     def testSin(self):
         self.assertRaises(TypeError, math.sin)
@@ -889,6 +913,25 @@ class MathTests(unittest.TestCase):
             self.assertRaises(ValueError, math.sin, INF)
             self.assertRaises(ValueError, math.sin, NINF)
         self.assertTrue(math.isnan(math.sin(NAN)))
+        self.assertRaises(TypeError, math.sin, "3")
+
+        def differentiate(f, method, h=1.0E-5):
+                if method == 'Forward1':
+                        def Forward1(x):
+                                return (f(x+h) -f(x)) / h
+                        return Forward1
+                elif method == 'Backward1':
+                        def Backward1(x):
+                                return (f(x) -f(x-h)) / h
+                        return Backward1
+
+        mycos = differentiate(math.sin, 'Forward1')
+        mysin = differentiate(mycos, 'Backward1', 1.0E-6)
+        x = math.pi
+        self.assertEqual(mycos(x), -0.9999999999898844)
+        self.assertEqual(math.cos(x), -1.0)
+        self.assertEqual(mysin(x), 4.500066985713147e-06)
+        self.assertEqual(-math.sin(x), -1.2246467991473532e-16)
 
     def testSinh(self):
         self.assertRaises(TypeError, math.sinh)
@@ -898,6 +941,9 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.sinh(INF), INF)
         self.assertEqual(math.sinh(NINF), NINF)
         self.assertTrue(math.isnan(math.sinh(NAN)))
+        self.assertEqual(math.sinh(2), 3.6268604078470186)
+        self.assertAlmostEqual(math.sinh(-7.5), -904.0209306858466, 11)
+        self.assertEqual(math.sinh(0), 0.0)
 
     def testSqrt(self):
         self.assertRaises(TypeError, math.sqrt)
@@ -930,6 +976,9 @@ class MathTests(unittest.TestCase):
         # self.ftest('tanh(inf)', math.tanh(INF), 1)
         # self.ftest('tanh(-inf)', math.tanh(NINF), -1)
         self.assertTrue(math.isnan(math.tanh(NAN)))
+        self.assertAlmostEqual(math.tanh(2), 0.9640275800758169, 15)
+        self.assertAlmostEqual(math.tanh(-7.5), -0.9999993881955461, 15)
+        self.assertEqual(math.tanh(0), 0.0)
 
     def testTanhSign(self):
         # check that tanh(-0.) == -0. on IEEE 754 systems

@@ -71,6 +71,30 @@ class EnumerateTestCase(unittest.TestCase):
         self.assertEqual(iter(e), e)
         self.assertEqual(list(self.enum(self.seq)), self.res)
         # self.enum.__doc__
+        a = []
+        for x in enumerate([14, 8, 2, "abc", -7], 2):
+            a.append(x)
+        self.assertEqual(a, [(2, 14), (3, 8), (4, 2), (5, 'abc'), (6, -7)])
+        def enumerate_helper(iterable,start=0):
+            x = []
+            for i in enumerate(iterable,start):
+                x.append(i)
+            return x
+        # list
+        self.assertEqual(enumerate_helper([1,2,3,4]), [(0, 1), (1, 2), (2, 3), (3, 4)])
+        self.assertEqual(enumerate_helper([1,2,3,4],10), [(10, 1), (11, 2), (12, 3), (13, 4)])
+
+        # string
+        self.assertEqual(enumerate_helper("hello"), [(0, 'h'), (1, 'e'), (2, 'l'), (3, 'l'), (4, 'o')])
+        self.assertEqual(enumerate_helper("WORLD",2), [(2, 'W'), (3, 'O'), (4, 'R'), (5, 'L'), (6, 'D')])
+
+        # tuple
+        self.assertEqual(enumerate_helper((1,2,3,)), [(0, 1), (1, 2), (2, 3)])
+        self.assertEqual(enumerate_helper((1,2,3,),-1), [(-1, 1), (0, 2), (1, 3)])
+
+        # dict
+        self.assertEqual(enumerate_helper({1:'a',2:'b',3:'c'}), [(0, 1), (1, 2), (2, 3)])
+        self.assertEqual(enumerate_helper({1:'a',2:'b',3:'c'},5), [(5, 1), (6, 2), (7, 3)])
 
     # def test_getitemseqn(self):
     #     self.assertEqual(list(self.enum(G(self.seq))), self.res)
@@ -107,6 +131,11 @@ class EnumerateTestCase(unittest.TestCase):
         # whenever nothing else holds a reference to it
         self.assertEqual(len(set(map(id, list(enumerate(self.seq))))), len(self.seq))
         # self.assertEqual(len(set(map(id, enumerate(self.seq)))), min(1,len(self.seq)))
+
+    def test_repr(self):
+        self.assertEqual(str(enumerate), "<class 'enumerate'>")
+        e = enumerate([4, 8, 12], -3)
+        self.assertEqual(repr(e), "<enumerate object>")
 
 class MyEnum(enumerate):
     pass
@@ -211,7 +240,6 @@ class TestReversed(unittest.TestCase):
             __reversed__ = None
         b = Blocked()
         self.assertRaises(TypeError, reversed, b)
-
 
 # class EnumerateStartTestCase(EnumerateTestCase):
 #

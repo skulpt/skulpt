@@ -644,6 +644,23 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
     return new Sk.builtin.int_(count);
 });
 
+Sk.builtin.list.prototype["copy"] = new Sk.builtin.func(function (self) {
+    var it;
+    var k;
+    var items;
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length - 1, 0, 0);
+
+    items = [];
+    for (it = Sk.abstr.iter(self), k = it.tp$iternext();
+        k !== undefined;
+        k = it.tp$iternext()) {
+        items.push(k);
+    
+    }
+    return new Sk.builtin.list(items);
+    
+});
+
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 

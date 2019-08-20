@@ -883,7 +883,12 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 
 
     if (base === undefined || base === 10) {
-        tmp = work.toPrecision(12);
+        if (Sk.__future__.python3) {
+            tmp = work.toPrecision(16);
+        } else {
+            tmp = work.toPrecision(12);
+        }
+        
 
         // transform fractions with 4 or more leading zeroes into exponents
         idx = tmp.indexOf(".");

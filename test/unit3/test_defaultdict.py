@@ -14,6 +14,16 @@ class TestDefaultDict(unittest.TestCase):
         d1 = defaultdict()
         self.assertEqual(d1.default_factory, None)
         d1.default_factory = list
+        d = defaultdict(list, {1:2})
+        d[2].append(5)
+        self.assertEqual(d[2], [5])
+        self.assertEqual(d.get(2), [5])
+        def abc():
+            return 6
+        d = defaultdict(abc)
+        self.assertEqual(d[4], 6)
+        d[4] += 8
+        self.assertEqual(d[4], 14)
         # d1[12].append(42)
         # self.assertEqual(d1, {12: [42]})
         # d1[12].append(24)
@@ -162,6 +172,17 @@ class TestDefaultDict(unittest.TestCase):
     #         s = pickle.dumps(d, proto)
     #         o = pickle.loads(s)
     #         self.assertEqual(d, o)
+
+    def test_errors(self):
+        error = None
+        self.assertRaises(TypeError, defaultdict, 1)
+        self.assertRaises(TypeError, defaultdict, list(), {})
+        self.assertRaises(TypeError, list, 12)
+        d = defaultdict(None)
+        self.assertRaises(KeyError, lambda x: d[x], 5)
+        self.assertEqual(d.get(5), None)
+        self.assertRaises(TypeError, d.__missing__, 1, 2)
+        self.assertRaises(KeyError, d.__missing__, {1:2})
 
 if __name__ == "__main__":
     unittest.main()

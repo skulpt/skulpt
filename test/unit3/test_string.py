@@ -30,6 +30,5 @@ class ModuleTest(unittest.TestCase):
         # self.assertEqual(string.capwords('\taBc\tDeF\t'), 'Abc Def')
         # self.assertEqual(string.capwords('\taBc\tDeF\t', '\t'), '\tAbc\tDef\t')
 
-
 if __name__ == '__main__':
     unittest.main()

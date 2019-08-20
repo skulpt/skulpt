@@ -1,6 +1,7 @@
 # Test properties of bool promised by PEP 285
 
 import unittest
+import math
 
 
 class BoolTest(unittest.TestCase):
@@ -31,6 +32,8 @@ class BoolTest(unittest.TestCase):
         # self.assertIsNot(int(False), False)
         self.assertEqual(int(True), 1)
         # self.assertIsNot(int(True), True)
+        self.assertEqual([1,2][True], 2)
+        self.assertEqual([1,2][False], 1)
 
     def test_float(self):
         self.assertEqual(float(False), 0.0)
@@ -149,13 +152,25 @@ class BoolTest(unittest.TestCase):
 
     def test_convert(self):
         # self.assertRaises(TypeError, bool, 42, 42)
-        self.assertIs(bool(10), True)
         self.assertIs(bool(1), True)
         self.assertIs(bool(-1), True)
-        self.assertIs(bool(0), False)
-        self.assertIs(bool("hello"), True)
-        self.assertIs(bool(""), False)
         # self.assertIs(bool(), False)
+        self.assertIs(bool(0), False)
+        self.assertIs(bool(0.0), False)
+        self.assertIs(bool(10), True)
+        self.assertIs(bool(""), False)
+        self.assertIs(bool("hello"), True)
+        self.assertIs(bool(''), False)
+        self.assertIs(bool('False'), True)
+        self.assertIs(bool(()), False)
+        self.assertIs(bool((2,)), True)
+        self.assertIs(bool([]), False)
+        self.assertIs(bool([12]), True)
+        self.assertIs(bool({}), False)
+        self.assertIs(bool({1:2}), True)
+        self.assertIs(bool(None), False)
+        self.assertIs(bool(False), False)
+        self.assertIs(bool(True), True)
 
     def test_format(self):
         self.assertEqual("%d" % False, "0")
@@ -170,14 +185,6 @@ class BoolTest(unittest.TestCase):
     def test_callable(self):
         self.assertIs(callable(len), True)
         self.assertIs(callable(1), False)
-
-    def test_isinstance(self):
-        self.assertIs(isinstance(True, bool), True)
-        self.assertIs(isinstance(False, bool), True)
-        self.assertIs(isinstance(True, int), True)
-        self.assertIs(isinstance(False, int), True)
-        self.assertIs(isinstance(1, bool), False)
-        self.assertIs(isinstance(0, bool), False)
 
     # def test_issubclass(self):
     #     self.assertIs(issubclass(bool, int), True)
@@ -225,6 +232,10 @@ class BoolTest(unittest.TestCase):
         self.assertEqual(True ^ 1, 0)
         self.assertNotIsInstance(True ^ 1, bool)
         self.assertIs(True ^ True, False)
+        def foo(x):
+            if true:
+                return x
+        self.assertRaises(NameError, foo, 1)
 
     def test_types(self):
         # types are always true.
@@ -247,6 +258,92 @@ class BoolTest(unittest.TestCase):
         self.assertIs(operator.is_not(True, True), False)
         self.assertIs(operator.is_not(True, False), True)
 
+    def test_boolean_arithmetic(self):
+        self.assertEqual(1 + True, 2)
+        self.assertEqual(2 - True, 1)
+        self.assertEqual(3 * False, 0)
+        self.assertEqual(4 / True, 4.0)
+        self.assertEqual(5 % True, 0)
+        self.assertEqual(6 ** False, 1)
+        self.assertEqual(1.5 + True, 2.5)
+        self.assertEqual(2.5 - True, 1.5)
+        self.assertEqual(3.5 * False, 0.0)
+        self.assertEqual(4.5 / True, 4.5)
+        self.assertEqual(5.5 % True, 0.5)
+        self.assertEqual(6.5 ** False, 1.0)
+        self.assertEqual(math.fabs(True), 1.0)
+        self.assertEqual(math.cos(True), 0.5403023058681398)
+
+    def test_truth_value_testing(self):
+        class A:
+            def __len__(self):
+                return 0
+        self.assertFalse(bool(A()))
+
+        class B:
+            def __len__(self):
+                return False
+        self.assertFalse(bool(B()))
+
+        class C:
+            def __nonzero__(self):
+                return 0
+        self.assertTrue(bool(C()))
+
+        class D:
+            def __nonzero__(self):
+                return False
+        self.assertTrue(bool(D()))
+        class E:
+            def __len__(self):
+                return 1
+        self.assertTrue(bool(E()))
+
+        class F:
+            def __bool__(self):
+                return True
+            def __len__(self):
+                return 0
+        self.assertTrue(bool(F()))
+
+        class F:
+            def __bool__(self):
+                return False
+            def __len__(self):
+                return 1
+        self.assertFalse(bool(F()))
+
+        class G:
+            def __nonzero__ (self):
+                return 1
+
+            def __len__ (self):
+                return 0
+        self.assertFalse(bool(G()))
+        class A:
+            def __nonzero__(self):
+                return "not the right value"
+
+        self.assertTrue(bool(A()))
+        class B:
+            def __len__(self):
+                return "not the right value"
+        self.assertRaises(TypeError, bool, B())
+        class C:
+            def __bool__(self):
+                return 1
+        self.assertRaises(TypeError, bool, C())
+        self.assertEqual(C().__bool__(), 1)
+
+    def test_assert(self):
+        def func():
+            return "dog"
+        def foo(x, y):
+            assert x == y
+            return 0
+        self.assertRaises(AssertionError, foo, 1, 2)
+        self.assertEqual(0, foo(1, 1))
+        self.assertEqual(0, foo("dog", func()))
     # def test_marshal(self):
     #     import marshal
     #     self.assertIs(marshal.loads(marshal.dumps(True)), True)
@@ -318,6 +415,7 @@ class BoolTest(unittest.TestCase):
     #     self.assertEqual(False.imag, 0)
     #     self.assertIs(type(False.real), int)
     #     self.assertIs(type(False.imag), int)
+    
 
 
 if __name__ == "__main__":
