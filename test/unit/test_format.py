@@ -201,6 +201,9 @@ class FormatTest(unittest.TestCase):
         self.doboth("%s",{'a':1}, "{'a': 1}")
         self.doboth("%s",[], "[]")
 
+        # test escaping
+        self.doboth("%d%%",(100),"100%")
+
         # alternate float formatting
 #        testformat('%g', 1.1, '1.1')
 #        testformat('%#g', 1.1, '1.10000')
