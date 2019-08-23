@@ -27,7 +27,7 @@ Sk.OpMap = {
 "@=": Sk.token.tokens.T_ATEQUAL,
 "==": Sk.token.tokens.T_EQEQUAL,
 "!=": Sk.token.tokens.T_NOTEQUAL,
-"<>": Sk.token.tokens.T_NOTEQUAL,
+"<>": Sk.token.tokens.T_NOTEQUAL_PY2ONLY,
 "<=": Sk.token.tokens.T_LESSEQUAL,
 ">=": Sk.token.tokens.T_GREATEREQUAL,
 "~": Sk.token.tokens.T_TILDE,

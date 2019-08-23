@@ -67,10 +67,12 @@ OP = 53
 AWAIT = 54
 ASYNC = 55
 # Extras hacked in
-COMMENT = 56
-NL = 57
-ERRORTOKEN = 58
-N_TOKENS = 59
+NOTEQUAL_PY2ONLY = 56
+
+ERRORTOKEN = 57
+COMMENT = 58
+NL = 59
+N_TOKENS = 60
 NT_OFFSET = 256
 #--end constants--
 

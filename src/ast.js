@@ -293,6 +293,11 @@ function astForCompOp (c, n) {
                 return Sk.astnodes.GtE;
             case TOK.T_NOTEQUAL:
                 return Sk.astnodes.NotEq;
+            case TOK.T_NOTEQUAL_PY2ONLY:
+                if (Sk.__future__.python3) {
+                    throw new Sk.builtin.SyntaxError("The <> operator is not supported in Python 3", c.c_filename, n.lineno);
+                }
+                return Sk.astnodes.NotEq;
             case TOK.T_NAME:
                 if (n.value === "in") {
                     return Sk.astnodes.In;

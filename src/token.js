@@ -67,21 +67,25 @@ var tokens = {
     T_OP: 53,
     T_AWAIT: 54,
     T_ASYNC: 55,
-    T_ERRORTOKEN: 56,
+    // Python 2 <> operator
+    T_NOTEQUAL_PY2ONLY: 56,
+
+    T_ERRORTOKEN: 57,
+
+    //taken from tokenize.py
+    T_COMMENT: 58,
+    T_NL: 59,
+    T_ENCODING: 60,
 
     //special cases
     T_NT_OFFSET: 256,
-    T_N_TOKENS: 60,
-
-    //taken from tokenize.py
-    T_COMMENT: 57,
-    T_NL: 58,
-    T_ENCODING: 59
+    T_N_TOKENS: 61,
 };
 // #--end constants--
 
 var EXACT_TOKEN_TYPES = {
     "!=": tokens.NOTEQUAL,
+    "<>": tokens.NOTEQUAL_PY2ONLY,
     "%": tokens.PERCENT,
     "%=": tokens.PERCENTEQUAL,
     "&": tokens.AMPER,
