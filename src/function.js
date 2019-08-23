@@ -290,8 +290,9 @@ Sk.builtin.func.prototype.tp$getname = function () {
 };
 
 Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
-    // This function is a logical Javascript port of
-    // _PyEval_EvalCodeWithName, and follows its logic.
+    // The rest of this function is a logical Javascript port of
+    // _PyEval_EvalCodeWithName, and follows its logic,
+    // plus fast-paths imported from _PyFunction_FastCall* as marked
 
     let co_argcount = this.func_code.co_argcount;
 
@@ -301,6 +302,29 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     let varnames = this.func_code.co_varnames || [];
     let co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
     let totalArgs = co_argcount + co_kwonlyargcount;
+
+    // Fast path from _PyFunction_FastCallDict
+    if (co_kwonlyargcount === 0 && !this.func_code.co_kwargs && (!kw || kw.length === 0) && !this.func_code.co_varargs) {
+        if (posargs.length == co_argcount) {
+            if (this.func_closure) {
+                posargs.push(this.func_closure);
+            }
+            return this.func_code.apply(this.func_globals, posargs);
+        } else if(posargs.length === 0 && this.func_code.$defaults &&
+                    this.func_code.$defaults.length === co_argcount) {
+            for (let i=0; i!=this.func_code.$defaults.length; i++) {
+                posargs[i] = this.func_code.$defaults[i];
+            }
+            if (this.func_closure) {
+                posargs.push(this.func_closure);
+            }
+            return this.func_code.apply(this.func_globals, posargs);
+        }
+    }
+    // end fast path from _PyFunction_FastCallDict
+    
+
+
     let kwargs;
 
     /* Create a NOT-a-dictionary for keyword parameters (**kwags) */
