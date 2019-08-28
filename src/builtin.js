@@ -536,10 +536,9 @@ Sk.builtin.int2str_ = function helper_ (x, radix, prefix) {
     var str = "";
     if (x instanceof Sk.builtin.lng) {
         suffix = "";
-        if (radix !== 2) {
+        if (radix !== 2 && (!(Sk.__future__.python3))) {
             suffix = "L";
         }
-
         str = x.str$(radix, false);
         if (x.nb$isnegative()) {
             return new Sk.builtin.str("-" + prefix + str + suffix);
@@ -1007,11 +1006,9 @@ Sk.builtin.filter = function filter (fun, iterable) {
     var add;
     var ctor;
     Sk.builtin.pyCheckArgsLen("filter", arguments.length, 2, 2);
-
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
-
     ctor = function () {
         return [];
     };

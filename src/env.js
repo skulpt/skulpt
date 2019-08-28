@@ -47,7 +47,6 @@ Sk.python2 = {
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false,
-    l_suffix: true,
     silent_octal_literal: true
 };
 
@@ -71,7 +70,6 @@ Sk.python3 = {
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true,
-    l_suffix: false,
     silent_octal_literal: false
 };
 
@@ -124,7 +122,6 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
     Sk.bool_check(Sk.__future__.ceil_floor_int, "Sk.__future__.ceil_floor_int");
     Sk.bool_check(Sk.__future__.silent_octal_literal, "Sk.__future__.silent_octal_literal");
-    Sk.bool_check(Sk.__future__.l_suffix, "Sk.__future__.l_suffix");
 
     // in __future__ add checks for absolute_import
 
@@ -213,6 +210,7 @@ Sk.configure = function (options) {
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
+    Sk.setupObjects(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
@@ -348,6 +346,9 @@ Sk.setup_method_mappings = function () {
                         Sk.builtin.tuple_iter_,
                         Sk.builtin.generator,
                         Sk.builtin.enumerate,
+                        Sk.builtin.filter_,
+                        Sk.builtin.zip_,
+                        Sk.builtin.map_,
                         Sk.builtin.iterator],
             2: "next",
             3: "__next__"

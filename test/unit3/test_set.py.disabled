@@ -50,8 +50,12 @@ class TestJointOps:
         # self.assertEqual(actual, expected)
         self.assertRaises(TypeError, self.thetype, [[]])
 
-    # def test_len(self):
+    #def test_len(self):
     #     self.assertEqual(len(self.s), len(self.d))
+    def test_len(self):
+        l = [1,2,3,4,1,1]
+        s = set(l)
+        self.assertEqual(len(s), 4)
 
     # def test_contains(self):
     #     for c in self.letters:
@@ -403,6 +407,11 @@ class TestSet(TestJointOps, unittest.TestCase):
             self.assertNotIn(elem, self.s)
         self.assertRaises(KeyError, self.s.pop)
 
+    def test_max_min(self):
+        s = set([1,2,3])
+        self.assertEqual(max(s), 3)
+        self.assertEqual(min(s), 1)
+    
     def test_update(self):
         retval = self.s.update(self.otherword)
         self.assertEqual(retval, None)
@@ -731,7 +740,16 @@ class TestBasicOps:
 
     def test_copy(self):
         self.assertEqual(self.set.copy(), self.dup)
-
+        l = [1,2,3,4,1,1]
+        s = set(l)
+        t = set(s)
+        self.assertEqual(s,t)
+        t.add(100)
+        self.assertNotEqual(t,s)
+        self.assertTrue(100 not in s)
+        self.assertTrue(len(t) > len(s))
+        t.discard(2)
+        self.assertTrue(len(t) == len(s))
     # def test_self_union(self):
     #     result = self.set | self.set
     #     self.assertEqual(result, self.dup)

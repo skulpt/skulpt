@@ -13,9 +13,6 @@ class TimeTestCase(unittest.TestCase):
         time.timezone
         time.tzname
 
-    def test_clock(self):
-        time.clock()
-
     def test_conversions(self):
         self.assertTrue(time.ctime(self.t)
                      == time.asctime(time.localtime(self.t)))
@@ -26,19 +23,84 @@ class TimeTestCase(unittest.TestCase):
     def test_sleep(self):
         time.sleep(0.01)
 
+        class A(object):
+                def __getattr__(self, name):
+                        time.sleep(0.001)
+                        return name
+
+                def __setattr__(self, name, value):
+                        time.sleep(0.001)
+                        object.__setattr__(self, name, value)
+
+        class B(A):
+                pass
+
+
+        class C(A):
+                def __getattribute__(self, name):
+                        time.sleep(0.001)
+                        return "FOO"
+        b = B()
+        self.assertEqual(b.x, "x")
+        b.x = "BAR"
+        self.assertEqual(b.x, "BAR")
+        c = C()
+        c.x = "BAR"
+        self.assertEqual(c.x, "FOO")
+
+        class A(object):
+          def __init__(self):
+            object.__setattr__(self, "x", 42)
+
+          def __getattr__(self, attr):
+            if attr == "y":
+              return 41
+            else:
+              return 43
+
+        a = A()
+        self.assertEqual(str(a.x), "42")
+        self.assertEqual(str(a.y), "41")
+        self.assertEqual(str(a.z), "43")
+        # Should not touch __getattr__ or __setattr__ at all
+        A.foo = "bar"
+
+        class B(object):
+          def __getattr__(self, attr):
+            time.sleep(0.01)
+            return object.__getattr__(self, attr)
+          
+          def __setattr__(self, attr, value):
+            time.sleep(0.01)
+            return object.__setattr__(self, attr, value)
+
+        b = B()
+        b.x = 42
+        self.assertEqual(str(b.x), "42")
+        b.x += 1
+        self.assertEqual(str(b.x), "43")
+
+        class GeneratorClass:
+            def __init__(self):
+                pass
+            def generator(self):
+                for i in range(10):
+                    yield i
+            def sleeping_generator(self):
+                for i in range(10):
+                    time.sleep(0.01)
+                    yield i
+
+        gen = GeneratorClass()
+
+        self.assertEqual(list(gen.generator()), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(list(gen.sleeping_generator()), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual([x*2 for x in gen.generator()], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
+        self.assertEqual([x*2 for x in gen.sleeping_generator()], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
+
     def test_strftime(self):
-        # TODO: Test timezone handling by using localtime() rather than
-        # (or as well as) gmtime().
-        # Although we're currently behaving the same as CPython, we don't
-        # actually understand why:
-        # https://github.com/skulpt/skulpt/issues/908
+        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
 
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.gmtime(3661)), "Jan 01 1970 01:01:01");
-
-    def test_strptime(self):
-        result = time.struct_time((1970, 1, 1, 1, 1, 1, 3, 1, -1))
-        self.assertEqual(time.strptime("Jan 01 1970 01:01:01", "%b %d %Y %H:%M:%S"), result);
-        
     def _test_dir(self):
         # this test fails because the compare 
         self.assertEqual(dir(time), [

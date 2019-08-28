@@ -259,9 +259,12 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                          Sk.builtin.bool.prototype.ob$type];
         sequence_types = [Sk.builtin.dict.prototype.ob$type,
                           Sk.builtin.enumerate.prototype.ob$type,
+                          Sk.builtin.filter_.prototype.ob$type,
                           Sk.builtin.list.prototype.ob$type,
+                          Sk.builtin.map_.prototype.ob$type,
                           Sk.builtin.str.prototype.ob$type,
-                          Sk.builtin.tuple.prototype.ob$type];
+                          Sk.builtin.tuple.prototype.ob$type,
+                          Sk.builtin.zip_.prototype.ob$type];
 
         v_num_type = numeric_types.indexOf(v_type);
         v_seq_type = sequence_types.indexOf(v_type);
@@ -436,66 +439,69 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             return Sk.misceval.isTrue(ret);
         }
     }
-
-    vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
-    if (vcmp) {
-        try {
-            ret = Sk.misceval.callsimArray(vcmp, [v, w]);
-            if (Sk.builtin.checkNumber(ret)) {
-                ret = Sk.builtin.asnum$(ret);
-                if (op === "Eq") {
-                    return ret === 0;
-                } else if (op === "NotEq") {
-                    return ret !== 0;
-                } else if (op === "Lt") {
-                    return ret < 0;
-                } else if (op === "Gt") {
-                    return ret > 0;
-                } else if (op === "LtE") {
-                    return ret <= 0;
-                } else if (op === "GtE") {
-                    return ret >= 0;
+    if (!Sk.__future__.python3) {
+        vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
+        if (vcmp) {
+            try {
+                ret = Sk.misceval.callsimArray(vcmp, [v, w]);
+                if (Sk.builtin.checkNumber(ret)) {
+                    ret = Sk.builtin.asnum$(ret);
+                    if (op === "Eq") {
+                        return ret === 0;
+                    } else if (op === "NotEq") {
+                        return ret !== 0;
+                    } else if (op === "Lt") {
+                        return ret < 0;
+                    } else if (op === "Gt") {
+                        return ret > 0;
+                    } else if (op === "LtE") {
+                        return ret <= 0;
+                    } else if (op === "GtE") {
+                        return ret >= 0;
+                    }
                 }
-            }
-
-            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+    
+                if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                    throw new Sk.builtin.TypeError("comparison did not return an int");
+                }
+            } catch (e) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
-        } catch (e) {
-            throw new Sk.builtin.TypeError("comparison did not return an int");
         }
-    }
-
-    wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
-    if (wcmp) {
-        // note, flipped on return value and call
-        try {
-            ret = Sk.misceval.callsimArray(wcmp, [w, v]);
-            if (Sk.builtin.checkNumber(ret)) {
-                ret = Sk.builtin.asnum$(ret);
-                if (op === "Eq") {
-                    return ret === 0;
-                } else if (op === "NotEq") {
-                    return ret !== 0;
-                } else if (op === "Lt") {
-                    return ret > 0;
-                } else if (op === "Gt") {
-                    return ret < 0;
-                } else if (op === "LtE") {
-                    return ret >= 0;
-                } else if (op === "GtE") {
-                    return ret <= 0;
+        wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
+        if (wcmp) {
+            // note, flipped on return value and call
+            try {
+                ret = Sk.misceval.callsimArray(wcmp, [w, v]);
+                if (Sk.builtin.checkNumber(ret)) {
+                    ret = Sk.builtin.asnum$(ret);
+                    if (op === "Eq") {
+                        return ret === 0;
+                    } else if (op === "NotEq") {
+                        return ret !== 0;
+                    } else if (op === "Lt") {
+                        return ret > 0;
+                    } else if (op === "Gt") {
+                        return ret < 0;
+                    } else if (op === "LtE") {
+                        return ret >= 0;
+                    } else if (op === "GtE") {
+                        return ret <= 0;
+                    }
                 }
-            }
 
-            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                    throw new Sk.builtin.TypeError("comparison did not return an int");
+                }
+            } catch (e) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
-        } catch (e) {
-            throw new Sk.builtin.TypeError("comparison did not return an int");
         }
-    }
 
+    }
+    
+
+    
     // handle special cases for comparing None with None or Bool with Bool
     if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) ||
         ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool))) {
@@ -540,7 +546,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     vname = Sk.abstr.typeName(v);
     wname = Sk.abstr.typeName(w);
-    throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
+    throw new Sk.builtin.TypeError("'" + "OPERATION SYMBOL" + "' not supported between instances of '" + vname + "' and '" + wname + "'");
+    //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
@@ -624,15 +631,25 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.float_) {
         return x.v !== 0;
     }
-    if (x["__nonzero__"]) {
-        ret = Sk.misceval.callsimArray(x["__nonzero__"], [x]);
-        if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__nonzero__ should return an int");
+    if (Sk.__future__.python3) {
+        if (x.__bool__) {
+            ret = Sk.misceval.callsimArray(x.__bool__, [x]);
+            if (!(ret instanceof Sk.builtin.bool)) {
+                throw new Sk.builtin.TypeError("__bool__ should return bool, returned " + Sk.abstr.typeName(ret));
+            }
+            return ret.v;
         }
-        return Sk.builtin.asnum$(ret) !== 0;
+    } else {
+        if (x.__nonzero__) {
+            ret = Sk.misceval.callsimArray(x.__nonzero__, [x]);
+            if (!Sk.builtin.checkInt(ret)) {
+                throw new Sk.builtin.TypeError("__nonzero__ should return an int");
+            }
+            return Sk.builtin.asnum$(ret) !== 0;
+        }
     }
-    if (x["__len__"]) {
-        ret = Sk.misceval.callsimArray(x["__len__"], [x]);
+    if (x.__len__) {
+        ret = Sk.misceval.callsimArray(x.__len__, [x]);
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
