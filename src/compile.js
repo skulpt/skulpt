@@ -384,21 +384,34 @@ Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
     if (!elts || elts.length == 0) {
         return "[]";
     }
-    let arr = this._gr("unpack", "[]");
+
     let hasStars = false;
+    // If there are no stars, we have a nice fast path here
     for (let elt of elts) {
         if (permitEndOnly && hasStars) {
             throw new Sk.builtin.SyntaxError("Extended argument unpacking is not permitted in Python 2");
         }
-        if (elt.constructor !== Sk.astnodes.Starred) {
-            out(arr,".push(",this.vexpr(elt),");");
-        } else {
-            out("$ret = Sk.misceval.iterFor(Sk.abstr.iter(",this.vexpr(elt.value),"), function(e) { ",arr,".push(e); });");
-            this._checkSuspension();
+        if (elt.constructor === Sk.astnodes.Starred) {
             hasStars = true;
         }
     }
-    return arr;
+
+    if (hasStars) {
+        // Slow path
+        let arr = this._gr("unpack", "[]");
+        for (let elt of elts) {
+            if (elt.constructor !== Sk.astnodes.Starred) {
+                out(arr,".push(",this.vexpr(elt),");");
+            } else {
+                out("$ret = Sk.misceval.iterFor(Sk.abstr.iter(",this.vexpr(elt.value),"), function(e) { ",arr,".push(e); });");
+                this._checkSuspension();
+            }
+        }
+        return arr;
+    } else {
+        // Fast path
+        return "[" + elts.map((expr) => this.vexpr(expr)).join(",") + "]";
+    }
 }
 
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
@@ -613,8 +626,6 @@ Compiler.prototype.ccall = function (e) {
     // and we need to unpack those too. Then we make a call.
     // The existing Sk.misceval.call() and .apply() signatures do not
     // help us here; we do it by hand.
-    // This is less than optimal (yep, that's the @rixner bat-sign),
-    // but should be correct.
 
     let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
     let keywordArgs = "undefined";
@@ -2363,6 +2374,11 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             for (i = 0; i < n; ++i) {
                 this.vexpr(s.targets[i], val);
             }
+            break;
+        case Sk.astnodes.AnnAssign:
+            val = this.vexpr(s.value);
+            this.vexpr(s.target, val);
+            this.vexpr(s.annotation);
             break;
         case Sk.astnodes.AugAssign:
             return this.caugassign(s);

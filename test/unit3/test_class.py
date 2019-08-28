@@ -1,4 +1,4 @@
-"Test the functionality of Python classes implementing operators."
+##Test the functionality of Python classes implementing operators."
 
 import unittest
 
@@ -254,6 +254,23 @@ class ClassTests(unittest.TestCase):
         self.assertCallStack([('__index__', (testme,))])
         callLst[:] = []
         self.assertCallStack([('__index__', (testme,))])
+        class U(object):
+            def __repr__(self): return "<U>"
+            def __pos__(self): return 'pos'
+            def __neg__(self): return 'neg'
+            def __invert__(self): return 'invert'
+
+        self.assertEqual(repr(U()), "<U>")
+        self.assertEqual(-(U()), 'neg')
+        self.assertEqual(+(U()),'pos')
+        self.assertEqual(~(U()), 'invert')
+
+        class E(object):
+            def __repr__(self): return "<U>"
+        err = None
+        try: err = +E()
+        except TypeError: err = 'no +'
+        self.assertEqual(err, 'no +')
 
 
     def testMisc(self):
@@ -296,6 +313,12 @@ class ClassTests(unittest.TestCase):
         callLst[:] = []
         1 != testme
         self.assertCallStack([('__ne__', (1, testme))])
+
+        class Foo:
+            def __init__(self):
+                self.x = 3
+        f = Foo()
+        self.assertRaises(TypeError, lambda x: x[4], f)
 
 
     def testGetSetAndDel(self):
@@ -502,6 +525,291 @@ class ClassTests(unittest.TestCase):
         self.assertNotEqual(c.f, a1.f)
         self.assertNotEqual(hash(c.f), hash(a1.f))
         self.assertNotEqual(hash(c), hash(a1))
+
+    def test__call__(self):
+        class Test:
+            def __init__(self, v):
+                self.value = v
+            def __call__(self):
+                return self.value
+        x = Test('OK')
+        self.assertEqual(x(), "OK")
+
+    def test__class__(self):
+        class A:
+            val1 = "A"
+
+            def __init__(self, v):
+                self.val1 = v
+
+            def do(self):
+                return tuple([self.__class__.val1, self.val1])
+
+            def update(self, newv):
+                self.val1 = newv
+        a = A("sa")
+        self.assertEqual(a.do(), tuple(["A", "sa"]))
+        a.update("sa-new")
+        self.assertEqual(a.do(), tuple(["A", "sa-new"]))
+
+    def test__len__(self):
+        class HasLen:
+            def __init__(self, l):
+                self.l = l
+            def __len__(self):
+                return self.l
+        class SubLen(HasLen):
+            def __init__(self, l):
+                HasLen.__init__(self, l)
+        class NoLen:
+            def __init__(self, l):
+                self.l = l
+        h = HasLen(42)
+        self.assertEqual(len(h), 42)
+        h2 = SubLen(43)
+        self.assertEqual(len(h2), 43)
+        h3 = NoLen(44)
+        self.assertRaises(TypeError, len, h3)
+
+    def testMethodCall(self):
+        class C:
+            def __init__(self, data):
+                self.data = data
+            def pr(self):
+                 return (self.data)
+        self.assertEqual(C("OK").pr(), "OK")
+        class A:
+            def __init__(self):
+                self.a = 'O'
+                self.b = 'x'
+            def test(self):
+                return "KO"
+        class B(A):
+            def __init__(self):
+                A.__init__(self)
+                self.b = 'K'
+            def test(self):
+                return self.a + self.b
+        b = B()
+        self.assertEqual(b.test(), "OK")
+        class Stuff:
+            def __init__(self):
+                self.a = 0
+                self.b = 'b'
+                self.c = [1,2,3]
+                self.d = 100000000000000
+
+        s = Stuff()
+        s.a += 10
+        s.b += 'dog'
+        s.c += [9,10]
+        s.d += 10000
+        self.assertEqual(s.a, 10)
+        self.assertEqual(s.b, "bdog")
+        self.assertEqual(s.c, [1, 2, 3, 9, 10])
+        self.assertEqual(s.d, 100000000010000)
+        class Stuff:
+            def __init__(self):
+                self.a = 0
+                self.b = 'b'
+                self.c = [1,2,3]
+                self.d = 100000000000000
+            def doit(self):
+                self.a += 10
+                self.b += 'dog'
+                self.c += [9,10]
+                self.d += 10000
+        z = Stuff()
+        z.doit()
+        self.assertEqual(z.a, 10)
+        self.assertEqual(z.b, "bdog")
+        self.assertEqual(z.c, [1, 2, 3, 9, 10])
+        self.assertEqual(z.d, 100000000010000)
+        class X:
+            def __init__(self):
+                self.px = 3
+            def y(self):
+                l = "xyz"
+                if len(l) == self.px:
+                    return "OK"
+        x = X()
+        self.assertEqual(x.y(), "OK")
+
+    def testRepr(self):
+        class X: pass
+        #self.assertEqual(repr(X())[:20], "<__main__.ClassTests")
+        self.assertEqual(repr(int), "<class 'int'>")
+        self.assertEqual
+        class A(object):
+            def __init__(self): pass
+        self.assertEqual(repr(object())[:7], '<object')
+        #self.assertEqual(repr(A()), '<__main__.A>')
+
+        class B:
+            def __init__(self): pass
+            def __repr__(self): return 'custom repr'
+        self.assertEqual(repr(B()), 'custom repr')
+
+##
+##    def testStr(self):
+##        class X: pass
+##        self.assertEqual(str(X()), "<__main__.X object>")
+##        self.assertEqual(str(int), "<class 'int'>")
+##        class Point:
+##            def __init__(self, initX, initY):
+##                self.x = initX
+##                self.y = initY
+##
+##            def __str__(self):
+##                return str(self.x) + "," + str(self.y)
+##        p = Point(1,2)
+##        self.assertEqual(str(p), "1,2")
+##        class Silly:
+##            def __init__(self, x):
+##                self.h = x
+##
+##            def __str__(self):
+##                return str(self.h)
+##        a = Silly(1)
+##        b = Silly(2)
+##        self.assertEqual(str(a), '1')
+##        self.assertEqual(str(b), '2')
+
+    def testComplexMethods(self):
+        class Stuff:
+            def __init__(self):
+                self.x = lambda: self.things()
+            def things(self):
+                return "OK"
+        y = Stuff()
+        self.assertEqual(y.x(), "OK")
+        class Stuff:
+            def __init__(self):
+                def tmp():
+                    return self.things()
+                self.x = tmp
+            def things(self):
+                return "OK"
+        y = Stuff()
+        self.assertEqual(y.x(), "OK")
+        class Stuff:
+            def blah(self, x, y=False):
+                return [x,y]
+        s = Stuff()
+        self.assertEqual(s.blah("x",y="OK"), ['x', 'OK'])
+        class Ship:
+            def __init__(self, name):
+                self.name = name
+                self.thrust = False
+
+            def thrust(self):
+                  self.thrust = True
+                  print("Thrust", self.thrust)
+
+        my_ship = Ship("a_name")
+        self.assertRaises(TypeError,my_ship.thrust)
+        class A(object):
+            message = 'a'
+            def test(self):
+                 return 'a>' + self.__class__.__name__
+
+        class B(object):
+            def test(self):
+                return 'b>' + self.__class__.__name__
+
+        class C(A, B):
+            def test(self):
+                return (A.test(self), B.test(self))
+
+        self.assertEqual(C().test(), ("a>C", "b>C"))
+
+    def testGetAttr(self):
+        class X: pass
+        x = X()
+        self.assertEqual(getattr(x, 'wee', 14),14)
+        self.assertEqual(getattr(X, 'doggy', 'OK'), 'OK')
+        class X: pass
+        x = X()
+        self.assertRaises(AttributeError, getattr, x, "wee")
+
+    def testGetItem(self):
+        class Matrix(object):
+            def __init__(self, matrix=None):
+                #check if all rows same size
+
+                self.mat = matrix
+
+            #identity matrix initilization
+
+            #scalar matrix multiplication
+
+            def __getitem__(self, index):
+                #print index
+                return self.mat[index[0]][index[1]]
+
+
+            def __setitem__(self, index, item):
+                """
+                """
+
+                self.mat[index[0]][index[1]] = item
+
+        trial=Matrix([[543]])
+        trial[0,0]=100
+        self.assertEqual(trial[0,0], 100)
+        class A:
+            def __getitem__(self, slices):
+                return slices
+
+        a = A()
+
+        self.assertEqual(a[1], 1)
+        self.assertEqual(a[0:2], slice(0, 2, None))
+        self.assertEqual(a[:2], slice(None, 2, None))
+        self.assertEqual(slice(2), slice(None, 2, None))
+        self.assertEqual(a[1:], slice(1, None, None))
+        self.assertEqual(a[:], slice(None, None, None))
+        self.assertEqual(a[::], slice(None, None, None))
+        self.assertEqual(a[::-1], slice(None, None, -1))
+        self.assertEqual(a[0,1:2], (0, slice(1, 2, None)))
+        self.assertEqual(a[0:2,2:30:1], (slice(0, 2, None), slice(2, 30, 1)))
+
+        self.assertEqual(a[1], 1)
+        self.assertEqual(a[0:2], slice(0,2))
+        self.assertEqual(a[0,1:2], (0,slice(1,2)))
+        self.assertEqual(a[0:2,2:30:1], (slice(0,2), slice(2,30,1)))
+
+        self.assertEqual(slice(0,2), slice(0,2))
+        self.assertTrue(slice(0,2) < slice(1,2))
+        self.assertTrue(slice(0,2) < slice(1,1))
+        #Below doesn't work properly in skulpt yet but it works in real python 3
+        #self.assertRaises(TypeError, lambda x,y: x < y,slice(2), slice(0,2))
+        self.assertTrue(slice(1,2,3) < slice(1,2,4))
+        self.assertTrue(slice(1,-1) < slice(1,1))
+        self.assertTrue(slice(0,1) < slice(1,-1))
+
+        self.assertEqual(a["foo"], "foo")
+        self.assertEqual(a["foo":(1,2):True].start, "foo")
+        self.assertEqual(a["foo":(1,2):True].stop, (1,2))
+        self.assertEqual(a["foo":(1,2):True].step, True)
+
+    def testLessThan(self):
+        class Comparable:    
+            def __init__(self,value):
+                self.value = value
+         
+            def __lt__(self,other):
+                return self.value < other.value
+         
+            def __repr__(self):
+                return "Value :" + str(self.value)
+         
+        lst = [5,9,2,7]
+        otherLst = [Comparable(a) for a in lst]
+        self.assertEqual(str(otherLst), '[Value :5, Value :9, Value :2, Value :7]')
+        self.assertEqual(min(lst), 2)
+        self.assertEqual(str(min(otherLst)), 'Value :2')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,11 @@ __author__ = 'albertjan'
 import unittest
 
 class ListSort(unittest.TestCase):
+    def test_regular(self):
+        x = [4,5,0]
+        list.sort(x)
+        self.assertEqual(x, [0,4,5])
+
     def test_sortReverseFalseShouldWork(self):
         x = [1,2,3]
         x.sort(reverse=False)

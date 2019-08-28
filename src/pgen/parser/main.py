@@ -24,6 +24,7 @@ Sk.OpMap = {
 "{": Sk.token.tokens.T_LBRACE,
 "}": Sk.token.tokens.T_RBRACE,
 "@": Sk.token.tokens.T_AT,
+"@=": Sk.token.tokens.T_ATEQUAL,
 "==": Sk.token.tokens.T_EQEQUAL,
 "!=": Sk.token.tokens.T_NOTEQUAL,
 "<>": Sk.token.tokens.T_NOTEQUAL,

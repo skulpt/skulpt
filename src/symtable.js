@@ -22,6 +22,10 @@ var DEF_FREE_CLASS = 2 << 8;
 /* free variable from class's method */
 var DEF_IMPORT = 2 << 9;
 /* assignment occurred via import */
+var DEF_NONLOCAL = 2 << 10;
+/* nonlocal stmt */
+var DEF_ANNOT = 2 << 11;
+/* this name is annotated */
 
 var DEF_BOUND = (DEF_LOCAL | DEF_PARAM | DEF_IMPORT);
 
@@ -477,6 +481,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var i;
     var nameslen;
     var tmp;
+    var e_name;
     Sk.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
         case Sk.astnodes.FunctionDef:
@@ -519,6 +524,30 @@ SymbolTable.prototype.visitStmt = function (s) {
         case Sk.astnodes.Assign:
             this.SEQExpr(s.targets);
             this.visitExpr(s.value);
+            break;
+        case Sk.astnodes.AnnAssign:
+            if (s.target.constructor == Sk.astnodes.Name) {
+                e_name = s.target;
+                name = Sk.mangleName(this.curClass, e_name.id).v;
+                name = Sk.fixReservedNames(name);
+                cur = this.cur.symFlags[name];
+                if ((cur & (DEF_GLOBAL | DEF_NONLOCAL) )
+                    && (this.global != this.cur.symFlags) // TODO
+                    && (s.simple)) {
+                    throw new Sk.builtin.SyntaxError("annotated name '"+ name +"' can't be global", this.filename, s.lineno);
+                }
+                if (s.simple) {
+                    this.addDef(new Sk.builtin.str(name), DEF_ANNOT | DEF_LOCAL, s.lineno);
+                } else if (s.value) {
+                    this.addDef(new Sk.builtin.str(name), DEF_LOCAL, s.lineno);
+                }
+            } else {
+                this.visitExpr(s.target);
+            }
+            this.visitExpr(s.annotation);
+            if (s.value) {
+                this.visitExpr(s.value);
+            }
             break;
         case Sk.astnodes.AugAssign:
             this.visitExpr(s.target);
