@@ -96,6 +96,10 @@ class EnumerateTestCase(unittest.TestCase):
         self.assertEqual(enumerate_helper({1:'a',2:'b',3:'c'}), [(0, 1), (1, 2), (2, 3)])
         self.assertEqual(enumerate_helper({1:'a',2:'b',3:'c'},5), [(5, 1), (6, 2), (7, 3)])
 
+        # start and list
+        self.assertEqual(enumerate_helper(range(1, 4), start=1), [(1, 1), (2, 2), (3, 3)])
+        grocery = ['bread', 'milk', 'butter']  # issue 954
+        self.assertEqual(list(enumerate(grocery, start=10)), [(10, "bread"), (11, "milk"), (12, "butter")])
     # def test_getitemseqn(self):
     #     self.assertEqual(list(self.enum(G(self.seq))), self.res)
     #     e = self.enum(G(''))
