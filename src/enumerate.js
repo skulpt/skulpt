@@ -56,8 +56,7 @@ Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self)
 Sk.builtin.enumerate.prototype.next$ = function (self) {
     return self.tp$iternext();
 };
-
-Sk.builtin.enumerate.co_varnames = ["", "start"];
+Sk.builtin.enumerate.co_varnames = ["iterable", "start"];
 Sk.builtin.enumerate.co_argcount = 2;
 Sk.builtin.enumerate.$defaults = [Sk.builtin.none.none$,0];
 Sk.builtin.enumerate.co_name = Sk.builtin.str("enumerate");
