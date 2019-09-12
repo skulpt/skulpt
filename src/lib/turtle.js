@@ -1801,9 +1801,9 @@ function generateTurtleModule(_target) {
             context.lineWidth   = 1;
             context.strokeStyle = state.color;
             context.fillStyle   = state.fill;
-            context.moveTo(shape[0][0], shape[0][1]);
+            context.moveTo(-shape[0][0], shape[0][1]);
             for(var i = 1; i < shape.length; i++) {
-                context.lineTo(shape[i][0], shape[i][1]);
+                context.lineTo(-shape[i][0], shape[i][1]);
             }
             context.closePath();
             context.fill();
