@@ -1790,7 +1790,8 @@ function generateTurtleModule(_target) {
         context.scale(xScale,yScale);
 
         if (shape.nodeName) {
-            context.rotate(bearing + Math.PI);
+            // Image shapes do not rotate when turning the turtle, so they do not display the heading of the turtle!
+            // context.rotate(bearing + Math.PI);
             var iw = shape.naturalWidth;
             var ih = shape.naturalHeight;
             context.drawImage(shape, 0, 0, iw, ih, -iw/2, -ih/2, iw, ih);
