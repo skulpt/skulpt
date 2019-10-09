@@ -884,9 +884,10 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 
     if (base === undefined || base === 10) {
         if (Sk.__future__.python3) {
+            // 17 would get another number string
             var tmpCheckString = work.toString();
             var tmpCheckPrecision = work.toPrecision(17);
-            tmp = tmpCheckString === tmpCheckPrecision?  tmpCheckPrecision: work.toPrecision(16);
+            tmp = tmpCheckString === tmpCheckPrecision ? tmpCheckPrecision : work.toPrecision(16);
         } else {
             tmp = work.toPrecision(12);
         }
