@@ -32,6 +32,17 @@ class FloatTestCases(unittest.TestCase):
 
     def test_repr(self):
         self.assertEqual(repr(1.5), '1.5')
+        self.assertEqual(repr(0.3000000000000000004), "0.3")
+
+    def test_str(self):
+        self.assertEqual(str(0.3000000000000000004), "0.3")
+
+    def test_str_and_add(self):
+        self.assertEqual(str(0.1 + 0.2), "0.30000000000000004")  # issue 968
+
+    def test_repr_and_add(self):
+        self.assertEqual(repr(0.1 + 0.2), "0.30000000000000004")  # issue 968
+
 
 if __name__ == '__main__':
     unittest.main()
