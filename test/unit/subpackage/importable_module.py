@@ -9,6 +9,9 @@ if __name__ != "subpackage.importable_module":
 
 from implicit_import import *
 
+_implicit_y # will fail if the import isn't right
+if 'implicit_z' in globals() or '_implicit_y' not in globals():
+    raise Exception("Wildcard import not successfully masked off by __all__")
 
 from .explicit_relative_import import explicit_load_succeeded
 if not explicit_load_succeeded:
