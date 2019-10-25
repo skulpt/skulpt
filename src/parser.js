@@ -303,7 +303,7 @@ Sk.parse = function parse (filename, input) {
         };
     }
 
-    Sk._tokenize(readline(input), "utf-8", function (tokenInfo) {
+    Sk._tokenize(filename, readline(input), "utf-8", function (tokenInfo) {
         var s_lineno = tokenInfo.start[0];
         var s_column = tokenInfo.start[1];
         var type = null;
