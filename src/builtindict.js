@@ -68,7 +68,6 @@ Sk.builtins = {
     "set"       : Sk.builtin.set,
     "tuple"     : Sk.builtin.tuple,
     "type"      : Sk.builtin.type,
-    "unicode"   : Sk.builtin.str,
 
     "input"     : new Sk.builtin.func(Sk.builtin.input),
     "raw_input" : new Sk.builtin.func(Sk.builtin.raw_input),
@@ -117,6 +116,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.xrange);
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
+        delete Sk.builtins["unicode"];
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
@@ -124,6 +124,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
+        Sk.builtins["unicode"] = Sk.builtin.str;
     }
 };
 Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);
