@@ -2382,7 +2382,7 @@ function fstring_compile_expr(str, expr_start, expr_end, c, n) {
        here, and not when we call PyParser_SimpleParseStringFlagsFilename,
        because turning the expression '' in to '()' would go from being invalid
        to valid. */
-    if (/^\s+$/.test(s)) {
+    if (/^\s*$/.test(s)) {
         ast_error(c, n, "f-string: empty expression not allowed");
     }
     s = "(" + s + ")";
