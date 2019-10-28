@@ -585,7 +585,7 @@ Sk.importStar = function (module, loc, global) {
     } else {
         let props = Object["getOwnPropertyNames"](module["$d"]);
         for (let i in props) {
-            if (props[i].substr(0,2) != "_") {
+            if (props[i].charAt(0) != "_") {
                 loc[props[i]] = module["$d"][props[i]];
             }
         }
