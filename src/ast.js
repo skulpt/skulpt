@@ -2535,6 +2535,7 @@ function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
 
         /* Parse the format spec. */
         format_spec = fstring_parse(str, i, end, raw, recurse_lvl+1, c, n);
+        i = end-1;
     }
 
     if (i >= end || str.charAt(i) != '}')
@@ -2564,12 +2565,24 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
             }
             literal = literal.replace(/}}/g, "}");
         }
-        values.push(new Sk.astnodes.Str(literal, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset));
+        values.push(new Sk.astnodes.Str(new Sk.builtin.str(literal), LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset));
     };
 
     
     while (idx < end) {
         let bidx = str.indexOf("{", idx);
+        if (recurse_lvl !== 0) {
+            // If there's a closing brace before the next open brace,
+            // that's our end-of-expression
+            let cbidx = str.indexOf("}", idx);
+            if (cbidx !== -1) {
+                if (bidx === -1) {
+                    end = cbidx;
+                } else if (bidx > cbidx) {
+                    bidx = end = cbidx;
+                }
+            }
+        }
         if (bidx === -1) {
             addLiteral(str.substring(idx, end));
             break;

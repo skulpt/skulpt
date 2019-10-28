@@ -750,6 +750,12 @@ SymbolTable.prototype.visitExpr = function (e) {
                 this.visitExpr(s);
             }
             break;
+        case Sk.astnodes.FormattedValue:
+            this.visitExpr(e.value);
+            if (e.format_spec) {
+                this.visitExpr(e.format_spec);
+            }
+            break;
         case Sk.astnodes.Attribute:
             this.visitExpr(e.value);
             break;

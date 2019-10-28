@@ -785,6 +785,40 @@ Compiler.prototype.cboolop = function (e) {
 };
 
 
+Compiler.prototype.cjoinedstr = function (e) {
+    let ret;
+    Sk.asserts.assert(e instanceof Sk.astnodes.JoinedStr);
+
+    for (let s of e.values) {
+        let v = this.vexpr(s);
+        if (!ret) {
+            ret = this._gr("joinedstr", v);
+        } else {
+            out(ret,"=",ret,".sq$concat(",v,");");
+        }
+    }
+
+    return ret;
+};
+
+Compiler.prototype.cformattedvalue = function(e) {
+    let value = this.vexpr(e.value);
+    switch (e.conversion) {
+        case 's':
+            out(value,"=Sk.builtin.str(",value,");");
+            break;
+        case 'a':
+            // TODO when repr() becomes more unicode-aware,
+            // we'll want to handle repr() and ascii() differently.
+            // For now, they're the same
+        case 'r':
+            out(value,"=Sk.builtin.repr(",value,");");
+            break;
+    }
+    return this._gr("formatted", "Sk.abstr.objectFormat("+value+","+(e.format_spec ? this.vexpr(e.format_spec) : "Sk.builtin.str.$emptystr")+")");
+};
+
+
 /**
  *
  * compiles an expression. to 'return' something, it'll gensym a var and store
@@ -956,8 +990,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Starred:
             break;
         case Sk.astnodes.JoinedStr:
-            console.log("f-strings:", e);
-            // fall through, we can't compile these yet
+            return this.cjoinedstr(e);
+        case Sk.astnodes.FormattedValue:
+            return this.cformattedvalue(e);
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }
