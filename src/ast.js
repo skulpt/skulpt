@@ -2371,10 +2371,39 @@ function parsestr (c, s) {
     return [strobj(decodeEscape(s, quote)), fmode];
 }
 
-function fstring_find_expr(parsedstr, startIdx, c, n) {
-    let i = startIdx;
+function fstring_compile_expr(str, expr_start, expr_end, c, n) {
+    Sk.asserts.assert(expr_end >= expr_start);
+    Sk.asserts.assert(str.charAt(expr_start-1) == '{');
+    Sk.asserts.assert(str.charAt(expr_end) == '}' || str.charAt(expr_end) == '!' || str.charAt(expr_end) == ':');
+
+    let s = str.substring(expr_start, expr_end);
+
+    /* If the substring is all whitespace, it's an error.  We need to catch this
+       here, and not when we call PyParser_SimpleParseStringFlagsFilename,
+       because turning the expression '' in to '()' would go from being invalid
+       to valid. */
+    if (/^\s+$/.test(s)) {
+        ast_error(c, n, "f-string: empty expression not allowed");
+    }
+    s = "(" + s + ")";
+
+    // TODO catch errors and fix them up to the correct line/col
+
+    let parsed = Sk.parse("<fstring>", s);
+    let ast = Sk.astFromParse(parsed.cst, "<fstring>", parsed.flags);
+
+    // TODO fstring_fix_node_location
+
+    Sk.asserts.assert(ast.body.length == 1 && ast.body[0].constructor === Sk.astnodes.Expr);
+
+    return ast.body[0].value;
+}
+
+function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
+    let i = start;
     Sk.asserts.assert(str.charAt(i) == "{");
     i++;
+    let expr_start = i;
     /* null if we're not in a string, else the quote char we're trying to
        match (single or double quote). */
     let quote_char = null;
@@ -2383,19 +2412,19 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
     /* Keep track of nesting level for braces/parens/brackets in
        expressions. */
     let nested_depth = 0;
-    let end = parsedstr.length;
 
     let format_spec, conversion;
 
+    let unexpected_end_of_string = () => ast_error(c, n, "f-string: expecting '}'");
+
     for (; i != end; i++) {
-        let ch = parsedstr.charAt(i);
+        let ch = str.charAt(i);
 
         /* Nowhere inside an expression is a backslash allowed. */
         if (ch == '\\') {
             /* Error: can't include a backslash character, inside
                parens or strings or not. */
-            ast_error(c, n, "f-string expression part "
-                            "cannot include a backslash");
+            ast_error(c, n, "f-string expression part cannot include a backslash");
         }
         if (quote_char) {
             /* We're inside a string. See if we're at the end. */
@@ -2412,7 +2441,7 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
                 /* Does this match the string_type (single or triple
                    quoted)? */
                 if (string_type == 3) {
-                    if (i+2 < end && parsedstr.charAt(i+1) == ch && parsedstr.charAt(i+2) == ch) {
+                    if (i+2 < end && str.charAt(i+1) == ch && str.charAt(i+2) == ch) {
                         /* We're at the end of a triple quoted string. */
                         i += 2;
                         string_type = 0;
@@ -2428,7 +2457,7 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
             }
         } else if (ch == '\'' || ch == '"') {
             /* Is this a triple quoted string? */
-            if (i+2 < end && parsedstr.charAt(i+1) == ch && parsedstr.charAt(i+2) == ch) {
+            if (i+2 < end && str.charAt(i+1) == ch && str.charAt(i+2) == ch) {
                 string_type = 3;
                 i += 2;
             } else {
@@ -2451,7 +2480,7 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
             /* First, test for the special case of "!=". Since '=' is
                not an allowed conversion character, nothing is lost in
                this test. */
-            if (ch == '!' && i+1 < end && parsedstr.charAt(i+1) == '=') {
+            if (ch == '!' && i+1 < end && str.charAt(i+1) == '=') {
                 /* This isn't a conversion character, just continue. */
                 continue;
             }
@@ -2473,44 +2502,43 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
         ast_error(c, n, "f-string: mismatched '(', '{', or '['");
     }
 
+    let expr_end = i;
+
     /* Compile the expression as soon as possible, so we show errors
        related to the expression before errors related to the
        conversion or format_spec. */
-    let simple_expression = fstring_compile_expr(parsedstr, expr_start, expr_end, c, n);
+    let simple_expression = fstring_compile_expr(str, expr_start, expr_end, c, n);
  
     /* Check for a conversion char, if present. */
-    if (parsedstr.charAt(i) == '!') {
+    if (str.charAt(i) == '!') {
         i++;
         if (i >= end)
-            goto unexpected_end_of_string;
+            unexpected_end_of_string();
 
-        conversion = parsedstr.charAt(i);
+        conversion = str.charAt(i);
         i++;
 
         /* Validate the conversion. */
         if (!(conversion == 's' || conversion == 'r'
               || conversion == 'a')) {
-            ast_error(c, n, "f-string: invalid conversion character: "
-                            "expected 's', 'r', or 'a'");
+            ast_error(c, n, "f-string: invalid conversion character: expected 's', 'r', or 'a'");
         }
     }
 
     /* Check for the format spec, if present. */
     if (i >= end)
-        goto unexpected_end_of_string;
-    if (parsedstr.charAt(i) == ':') {
+        unexpected_end_of_string();
+    if (str.charAt(i) == ':') {
         i++
         if (i >= end)
-            goto unexpected_end_of_string;
+            unexpected_end_of_string();
 
         /* Parse the format spec. */
-        format_spec = fstring_parse(str, end, raw, recurse_lvl+1, c, n);
-        if (!format_spec)
-            return -1;
+        format_spec = fstring_parse(str, i, end, raw, recurse_lvl+1, c, n);
     }
 
-    if (i >= end || parsedstr.charAt(i) != '}')
-        goto unexpected_end_of_string;
+    if (i >= end || str.charAt(i) != '}')
+        unexpected_end_of_string();
 
     /* We're at a right brace. Consume it. */
     i++;
@@ -2518,17 +2546,14 @@ function fstring_find_expr(parsedstr, startIdx, c, n) {
     /* And now create the FormattedValue node that represents this
        entire expression with the conversion and format spec. */
     let expr = new Sk.astnodes.FormattedValue(simple_expression, conversion,
-                                              format_spec, LINENO(n), n.n_col_offset);
+                                              format_spec, LINENO(n), n.col_offset);
 
     return [expr, i];
-
-unexpected_end_of_string:
-    ast_error(c, n, "f-string: expecting '}'");
 }
 
-function parsefstring(c, n, parsedstr) {
+function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
     let values = [];
-    let idx = 0;
+    let idx = start;
 
     let addLiteral = (literal) => {
         if (literal.indexOf("}") !== -1) {
@@ -2539,49 +2564,61 @@ function parsefstring(c, n, parsedstr) {
             }
             literal = literal.replace(/}}/g, "}");
         }
-        values.push(Sk.astnodes.Str(literal, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset));
+        values.push(new Sk.astnodes.Str(literal, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset));
     };
 
     
-    while (idx < parsedstr.length) {
-        let bidx = parsedstr.indexOf("{", idx);
+    while (idx < end) {
+        let bidx = str.indexOf("{", idx);
         if (bidx === -1) {
-            addLiteral(parsedstr.substring(idx));
+            addLiteral(str.substring(idx, end));
             break;
         }
-        else if (bidx+1 < parsedstr.length && parsedstr.charAt(bidx+1) === "{") {
+        else if (bidx+1 < end && str.charAt(bidx+1) === "{") {
             // Swallow the double {{
-            addLiteral(parsedstr.substring(idx, bidx+1));
+            addLiteral(str.substring(idx, bidx+1));
             idx = bidx + 1;
             continue;
         }
         else {
-            addLiteral(parsedstr.substring(idx, bidx));
+            addLiteral(str.substring(idx, bidx));
             idx = bidx;
 
             // And now parse the f-string expression itself
-            let expr, endIdx = fstring_find_expr(parsedstr, bidx, c, n);
+            let [expr, endIdx] = fstring_find_expr(str, bidx, end, raw, recurse_lvl, c, n);
             values.push(expr);
             idx = endIdx;
         }
     }
-    return values;
+    Sk.asserts.assert(values.length != 0);
+    return new Sk.astnodes.JoinedStr(values, LINENO(n), n.col_offset);
 }
 
 function parsestrplus (c, n) {
     let strs = [];
+    let lastStrNode;
 
-    for (i = 0; i < NCH(n); ++i) {
+    for (let i = 0; i < NCH(n); ++i) {
         let chstr = CHILD(n, i).value;
-        let parsedstr, fmode;
+        let str, fmode;
         try {
-            parsedstr, fmode = parsestr(c, chstr);
+            let r = parsestr(c, chstr);
+            str = r[0];
+            fmode = r[1];
         } catch (x) {
-            console.log(x)
             throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
         if (fmode) {
-            strs.push.apply(strs, parsefstring(c, CHILD(n, i), parsedstr))
+            let jss = str.$jsstr();
+            strs.push.apply(strs, fstring_parse(jss, 0, jss.length, false, 0, c, CHILD(n, i)).values);
+            lastStrNode = null;
+        } else {
+            if (lastStrNode) {
+                lastStrNode.s = lastStrNode.s.sq$concat(str);
+            } else {
+                lastStrNode = new Sk.astnodes.Str(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset)
+                strs.push(lastStrNode);
+            }
         }
     }
 
@@ -2590,20 +2627,6 @@ function parsestrplus (c, n) {
     } else {
         return new Sk.astnodes.JoinedStr(strs, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset);
     }
-    //;;;
-    return new Sk.astnodes.Str(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset);
-
-
-    var i;
-    var ret;
-    REQ(CHILD(n, 0), TOK.T_STRING);
-    ret = new Sk.builtin.str("");
-    for (i = 0; i < NCH(n); ++i) {
-        let parse, fmode;
-
-        ret = ret.sq$concat(parse);
-    }
-    return ret;
 }
 
 function parsenumber (c, s, lineno) {

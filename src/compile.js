@@ -955,6 +955,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.ctuplelistorset(e, data, 'set');
         case Sk.astnodes.Starred:
             break;
+        case Sk.astnodes.JoinedStr:
+            console.log("f-strings:", e);
+            // fall through, we can't compile these yet
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }

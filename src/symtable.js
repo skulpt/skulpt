@@ -745,6 +745,11 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Num:
         case Sk.astnodes.Str:
             break;
+        case Sk.astnodes.JoinedStr:
+            for (let s of e.values) {
+                this.visitExpr(s);
+            }
+            break;
         case Sk.astnodes.Attribute:
             this.visitExpr(e.value);
             break;
