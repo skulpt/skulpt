@@ -68,6 +68,7 @@ Sk.builtins = {
     "set"       : Sk.builtin.set,
     "tuple"     : Sk.builtin.tuple,
     "type"      : Sk.builtin.type,
+    "unicode"   : Sk.builtin.str,
 
     "input"     : new Sk.builtin.func(Sk.builtin.input),
     "raw_input" : new Sk.builtin.func(Sk.builtin.raw_input),

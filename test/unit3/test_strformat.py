@@ -68,10 +68,19 @@ class string_format(unittest.TestCase):
 
     ## Datetime requires more work.
     
-    # def test_datetome(self):
-    #     import datetime
-    #     d = datetime.datetime(2010, 7, 4, 12, 15, 58)
-    #     self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
+    #def test_datetime(self):
+    #    import datetime
+    #    d = datetime.datetime(2010, 7, 4, 12, 15, 58)
+    #    self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
+
+    def test_fstrings(self):
+        self.assertEqual('1 + 2 = 3', f'1 + 2 = {1+2}')
+        self.assertEqual("'hello'", F'{"hello"!r}')
+        self.assertEqual("hi{there}", f"hi{{{'there'}}}")
+
+        import datetime
+        d = datetime.datetime(2010, 7, 4, 12, 15, 58)
+        self.assertEqual('2010-07-04 12:15:58', f'{d:%Y-%m-%d %H:%M:%S}')
 
 if __name__ == '__main__':
     unittest.main()

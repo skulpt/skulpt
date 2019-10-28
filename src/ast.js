@@ -2598,7 +2598,7 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
         else if (bidx+1 < end && str.charAt(bidx+1) === "{") {
             // Swallow the double {{
             addLiteral(str.substring(idx, bidx+1));
-            idx = bidx + 1;
+            idx = bidx + 2;
             continue;
         }
         else {
