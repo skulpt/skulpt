@@ -2387,10 +2387,18 @@ function fstring_compile_expr(str, expr_start, expr_end, c, n) {
     }
     s = "(" + s + ")";
 
-    // TODO catch errors and fix them up to the correct line/col
-
-    let parsed = Sk.parse("<fstring>", s);
-    let ast = Sk.astFromParse(parsed.cst, "<fstring>", parsed.flags);
+    let ast;
+    try {
+        let parsed = Sk.parse("<fstring>", s);
+        ast = Sk.astFromParse(parsed.cst, "<fstring>", parsed.flags);
+    } catch(e) {
+        if (e.traceback && e.traceback[0]) {
+            let tb = e.traceback[0];
+            tb.lineno = (tb.lineno || 1) - 1 + LINENO(n);
+            tb.filename = c.c_filename;
+        }
+        throw e;
+    }
 
     // TODO fstring_fix_node_location
 
@@ -2622,6 +2630,9 @@ function parsestrplus (c, n) {
             throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
         if (fmode) {
+            if (!Sk.__future__.python3) {
+                throw new Sk.builtin.SyntaxError("invalid string (f-strings are not supported in Python 2)", c.c_filename, CHILD(n, i).lineno);
+            }
             let jss = str.$jsstr();
             strs.push.apply(strs, fstring_parse(jss, 0, jss.length, false, 0, c, CHILD(n, i)).values);
             lastStrNode = null;
