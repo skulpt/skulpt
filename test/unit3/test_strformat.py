@@ -81,6 +81,8 @@ class string_format(unittest.TestCase):
         import datetime
         d = datetime.datetime(2010, 7, 4, 12, 15, 58)
         self.assertEqual('2010-07-04 12:15:58', f'{d:%Y-%m-%d %H:%M:%S}')
+        # Make sure we can format multiple objects next to each other (bug regression)
+        self.assertEqual('2010-07-04 12:15:58 TIME', f'{d:%Y-%m-%d %H:%M:%S} {"TIME"}')
 
 if __name__ == '__main__':
     unittest.main()

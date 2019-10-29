@@ -24,6 +24,10 @@ and pickle support (which requires 'struct', which Skulpt does not currently
 import time as _time
 import math as _math
 
+# Python 2-vs-3 compat hack
+import sys
+unicode = unicode if sys.version_info < (3,) else str
+
 _SENTINEL = object()
 
 def _cmp(x, y):

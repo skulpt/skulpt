@@ -2425,7 +2425,9 @@ function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
 
     let unexpected_end_of_string = () => ast_error(c, n, "f-string: expecting '}'");
 
-    for (; i != end; i++) {
+    Sk.asserts.assert(i <= end);
+
+    for (; i < end; i++) {
         let ch = str.charAt(i);
 
         /* Nowhere inside an expression is a backslash allowed. */
@@ -2542,8 +2544,7 @@ function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
             unexpected_end_of_string();
 
         /* Parse the format spec. */
-        format_spec = fstring_parse(str, i, end, raw, recurse_lvl+1, c, n);
-        i = end-1;
+        [format_spec, i] = fstring_parse(str, i, end, raw, recurse_lvl+1, c, n);
     }
 
     if (i >= end || str.charAt(i) != '}')
@@ -2587,12 +2588,14 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
                 if (bidx === -1) {
                     end = cbidx;
                 } else if (bidx > cbidx) {
-                    bidx = end = cbidx;
+                    bidx = -1;
+                    end = cbidx;
                 }
             }
         }
         if (bidx === -1) {
             addLiteral(str.substring(idx, end));
+            idx = end;
             break;
         }
         else if (bidx+1 < end && str.charAt(bidx+1) === "{") {
@@ -2612,7 +2615,7 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
         }
     }
     Sk.asserts.assert(values.length != 0);
-    return new Sk.astnodes.JoinedStr(values, LINENO(n), n.col_offset);
+    return [new Sk.astnodes.JoinedStr(values, LINENO(n), n.col_offset), idx];
 }
 
 function parsestrplus (c, n) {
@@ -2634,7 +2637,8 @@ function parsestrplus (c, n) {
                 throw new Sk.builtin.SyntaxError("invalid string (f-strings are not supported in Python 2)", c.c_filename, CHILD(n, i).lineno);
             }
             let jss = str.$jsstr();
-            strs.push.apply(strs, fstring_parse(jss, 0, jss.length, false, 0, c, CHILD(n, i)).values);
+            let [astnode, _] = fstring_parse(jss, 0, jss.length, false, 0, c, CHILD(n, i));
+            strs.push.apply(strs, astnode.values);
             lastStrNode = null;
         } else {
             if (lastStrNode) {

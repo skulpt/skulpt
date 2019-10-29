@@ -41,7 +41,11 @@ var compilableLines = [],
     lines = [],
     origLines;
 
-console.log("Python 2.6(ish) (skulpt, " + new Date() + ")");
+if (Sk.__future__.python3) {
+    console.log("Python 3.7(ish) (skulpt, " + new Date() + ")");
+} else {
+    console.log("Python 2.7(ish) (skulpt, " + new Date() + ")");
+}
 console.log("[node: " + process.version + "] on a system");
 console.log('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
 
