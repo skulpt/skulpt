@@ -84,5 +84,12 @@ class string_format(unittest.TestCase):
         # Make sure we can format multiple objects next to each other (bug regression)
         self.assertEqual('2010-07-04 12:15:58 TIME', f'{d:%Y-%m-%d %H:%M:%S} {"TIME"}')
 
+        class Dummy:
+            def __format__(self, fmtstring):
+                return fmtstring
+        x = Dummy()
+        self.assertEqual('hello world!', f'hello {x:world}!')
+        self.assertEqual('hello world!!', f'{x:hello {x:world}!}!')
+
 if __name__ == '__main__':
     unittest.main()
