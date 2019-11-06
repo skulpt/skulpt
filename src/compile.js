@@ -2242,10 +2242,8 @@ Compiler.prototype.cclass = function (s) {
     var bases;
     var decos;
     Sk.asserts.assert(s instanceof Sk.astnodes.ClassDef);
-    decos = s.decorator_list;
 
-    // decorators and bases need to be eval'd out here
-    //this.vseqexpr(decos);
+    decos = this.vseqexpr(s.decorator_list);
 
     bases = this.vseqexpr(s.bases);
 
@@ -2276,15 +2274,20 @@ Compiler.prototype.cclass = function (s) {
 
     // build class
 
-    // apply decorators
-
     this.exitScope();
 
     // todo; metaclass
-    wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell)");
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);")
+
+    // apply decorators
+
+    for (let decorator of decos) {
+        out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ", [$ret]);");
+        this._checkSuspension();
+    }
 
     // store our new class under the right name
-    this.nameop(s.name, Sk.astnodes.Store, wrapped);
+    this.nameop(s.name, Sk.astnodes.Store, "$ret");
 };
 
 Compiler.prototype.ccontinue = function (s) {

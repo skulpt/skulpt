@@ -319,7 +319,22 @@ class TestDecorators(unittest.TestCase):
 
         self.assertEqual(42, f(42))
         self.assertEqual(['inner', 'outer'], calls)
-        
+
+
+    def test_class_decorator(self):
+        def decorate(c):
+            def f():
+                return c(42)
+            return f
+
+        @decorate
+        class Foo:
+            def __init__(self, value):
+                self.value = value
+
+        foo = Foo()
+        self.assertEqual(42, foo.value)
+
 
 if __name__ == '__main__':
     unittest.main()
