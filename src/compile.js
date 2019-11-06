@@ -2036,10 +2036,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         out(scopename, ".$kwdefs=[", kw_defaults.join(","), "];");
     }
 
-    if (decos.length > 0) {
-        out(scopename, ".$decorators=[", decos.join(","), "];");
-    }
-
     //
     // attach co_varnames (only the argument names) for keyword argument
     // binding.
@@ -2101,8 +2097,11 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     else {
         var res;
         if (decos.length > 0) {
-            out("$ret = Sk.misceval.callsimOrSuspendArray(", scopename, ".$decorators[0], [new Sk.builtins['function'](", scopename, ",$gbl", frees, ")]);");
-            this._checkSuspension();
+            out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
+            for (let decorator of decos) {
+                out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
+                this._checkSuspension();
+            }
             return this._gr("funcobj", "$ret");
         }
 

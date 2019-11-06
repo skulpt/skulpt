@@ -312,13 +312,13 @@ class TestDecorators(unittest.TestCase):
                 return wrapped
             return wrap
 
-        @decorate('first')
-        @decorate('second')
+        @decorate('outer')
+        @decorate('inner')
         def f(x):
             return x
 
         self.assertEqual(42, f(42))
-        self.assertEqual(['first', 'second'], calls)
+        self.assertEqual(['inner', 'outer'], calls)
         
 
 if __name__ == '__main__':
