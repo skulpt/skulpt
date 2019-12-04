@@ -67,7 +67,7 @@ Sk.builtin.bytes = function(source, encoding, errors) {
 
     for (let i=0; i < source.length; i++) {
         if (source.charCodeAt(i) > 0xff) {
-            throw new ValueError("bytes must be in range(0, 256)");
+            throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
         }
     }
 
@@ -78,7 +78,7 @@ Sk.builtin.bytes = function(source, encoding, errors) {
     } else {
         return new Sk.builtin.bytes(source);
     }
-}
+};
 Sk.exportSymbol("Sk.builtin.bytes", Sk.builtin.bytes);
 
 Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
@@ -196,7 +196,7 @@ Sk.builtin.str.prototype.$hasAstralCodePoints = function() {
     }
     this.codepoints = null;
     return false;
-}
+};
 
 Sk.builtin.bytes.prototype.$hasAstralCodePoints = () => false;
 
@@ -656,7 +656,7 @@ Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk
     normaltext = pat.v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     m = new RegExp(normaltext, "g");
     slice = self.v.slice(self.codepoints ? self.codepoints[start] : start,
-                            self.codepoints ? self.codepoints[end] : end);
+                         self.codepoints ? self.codepoints[end] : end);
     ctl = slice.match(m);
     if (!ctl) {
         return  new Sk.builtin.int_(0);
@@ -670,7 +670,7 @@ function mkJust(isRight, isCenter) {
     return new Sk.builtin.func(function (self, len, fillchar) {
         var newstr;
         Sk.builtin.pyCheckArgsLen(isCenter ? "center" : isRight ? "rjust" : "ljust",
-                                    arguments.length, 2, 3);
+                                  arguments.length, 2, 3);
         if (!Sk.builtin.checkInt(len)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
         }
@@ -1104,7 +1104,7 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.staticfunc(function(hex) 
     let v = "";
 
     for (let i = 0; i < h.length; i += 2) {
-        let s = h.substr(i, 2)
+        let s = h.substr(i, 2);
         let n = parseInt(s, 16);
         if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
             throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
@@ -1430,7 +1430,7 @@ Sk.builtin.str_iter_ = function (obj) {
             let r = new this.$cls(this.$obj.substring(this.$codepoints[this.$index], this.$codepoints[this.$index+1]));
             this.$index++;
             return r;
-        }
+        };
     } else {
         this.sq$length = this.$obj.length;
         this.tp$iternext = function () {
@@ -1438,7 +1438,7 @@ Sk.builtin.str_iter_ = function (obj) {
                 return undefined;
             }
             return new Sk.builtin.str(this.$obj.substr(this.$index++, 1));
-        }
+        };
     }
     this.$r = function () {
         return new Sk.builtin.str("iterator");
