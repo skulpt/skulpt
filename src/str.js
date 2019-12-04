@@ -25,7 +25,7 @@ Sk.builtin.bytes = function(source, encoding, errors) {
         if (!(encoding instanceof Sk.builtin.str)) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         }
-        return Sk.builtin.str.prototype["encode"](source, encoding, errors);
+        return Sk.misceval.callsimArray(Sk.builtin.str.prototype["encode"], [source, encoding, errors]);
 
     } else if (source instanceof Sk.builtin.int_) {
         source = "\x00".repeat(source.v);
@@ -33,16 +33,16 @@ Sk.builtin.bytes = function(source, encoding, errors) {
     } else if (source instanceof Sk.builtin.bytes) {
         source = source.v;
 
-    } else if ((dunderBytes = Sk.builtin.type.typeLookup(s.ob$type, Sk.builtin.str.$bytes))) {
-        let r = Sk.misceval.callsim(dunderBytes);
+    } else if ((dunderBytes = Sk.builtin.type.typeLookup(source.ob$type, Sk.builtin.str.$bytes))) {
+        let r = Sk.misceval.callsimArray(dunderBytes, [source]);
         return isConstructor ? Sk.misceval.retryOptionalSuspensionOrThrow(r) : r;
 
     } else {
         // Try to iterate.
         let v = "";
         let r = Sk.misceval.iterFor(Sk.abstr.iter(source), (byte) => {
-            if (!Sk.builtin.checkInt(j)) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
+            if (!Sk.builtin.checkInt(byte)) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(byte) + "' object cannot be interpreted as an integer");
             }
             let n = Sk.builtin.asnum$(byte);
             if (n < 0 || n > 255) {
