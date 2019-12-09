@@ -664,14 +664,6 @@ class TestCase(unittest.TestCase):
         # self.assertEqual(f'\\N{AMPERSAND}', '\\Nspam')
         # self.assertEqual(fr'\N{AMPERSAND}', '\\Nspam')
         # self.assertEqual(f'\\\N{AMPERSAND}', '\\&')
-
-        # Skulpt: This will be easier to fix after PR#983 lands
-        # (This is a Skulpt-compatible version of the test above)
-        # AMPERSAND = '26'
-        # self.assertEqual(f'\x{AMPERSAND}', '&')
-        # self.assertEqual(f'\\x{AMPERSAND}', '\\x26')
-        # self.assertEqual(fr'\x{AMPERSAND}', '\\x26')
-        # self.assertEqual(f'\\\x{AMPERSAND}', '\\&')
                 
 
     # Skulpt: \N escapes (named Unicode chars) not implemented
