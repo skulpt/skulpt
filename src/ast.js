@@ -801,10 +801,15 @@ function astForImportStmt (c, n) {
                 idx++;
                 break;
             }
-            else if (CHILD(n, idx).type !== TOK.T_DOT) {
+            else if (CHILD(n, idx).type === TOK.T_DOT) {
+                ndots++;
+            }
+            else if (CHILD(n, idx).type === TOK.T_ELLIPSIS) {
+                ndots += 3;
+            }
+            else {
                 break;
             }
-            ndots++;
         }
         ++idx; // skip the import keyword
         switch (CHILD(n, idx).type) {
