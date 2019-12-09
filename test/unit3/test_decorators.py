@@ -302,5 +302,39 @@ class TestDecorators(unittest.TestCase):
         self.assertEqual(ff.__get__(0, int)(42), (int, 42))
         self.assertEqual(ff.__get__(0)(42), (int, 42))
 
+    def test_nested_decorators(self):
+        calls = []
+        def decorate(call_name):
+            def wrap(f):
+                def wrapped(*args, **kwargs):
+                    calls.append(call_name)
+                    return f(*args, **kwargs)
+                return wrapped
+            return wrap
+
+        @decorate('outer')
+        @decorate('inner')
+        def f(x):
+            return x
+
+        self.assertEqual(42, f(42))
+        self.assertEqual(['inner', 'outer'], calls)
+
+
+    def test_class_decorator(self):
+        def decorate(c):
+            def f():
+                return c(42)
+            return f
+
+        @decorate
+        class Foo:
+            def __init__(self, value):
+                self.value = value
+
+        foo = Foo()
+        self.assertEqual(42, foo.value)
+
+
 if __name__ == '__main__':
     unittest.main()

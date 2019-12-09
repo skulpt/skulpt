@@ -894,7 +894,8 @@ SymbolTable.prototype.analyzeBlock = function (ste, bound, free, global) {
     if (ste.blockType === FunctionBlock) {
         this.analyzeCells(scope, newfree);
     }
-    this.updateSymbols(ste.symFlags, scope, bound, newfree, ste.blockType === ClassBlock);
+    let discoveredFree = this.updateSymbols(ste.symFlags, scope, bound, newfree, ste.blockType === ClassBlock);
+    ste.hasFree = ste.hasFree || discoveredFree;
 
     _dictUpdate(free, newfree);
 };
@@ -941,6 +942,7 @@ SymbolTable.prototype.updateSymbols = function (symbols, scope, bound, free, cla
     var w;
     var flags;
     var name;
+    var discoveredFree = false;
     for (name in symbols) {
         flags = symbols[name];
         w = scope[name];
@@ -966,7 +968,9 @@ SymbolTable.prototype.updateSymbols = function (symbols, scope, bound, free, cla
             continue;
         }
         symbols[name] = freeValue;
+        discoveredFree = true;
     }
+    return discoveredFree;
 };
 
 SymbolTable.prototype.analyzeName = function (ste, dict, name, flags, bound, local, free, global) {
