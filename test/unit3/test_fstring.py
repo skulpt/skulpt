@@ -420,8 +420,7 @@ class TestCase(unittest.TestCase):
         x = 'def'
         self.assertEqual('abc' f'## {x}ghi', 'abc## defghi')
         self.assertEqual('abc' f'{x}' 'ghi', 'abcdefghi')
-        # Skulpt: Format specifiers not yet supported
-        # self.assertEqual('abc' f'{x}' 'gh' f'i{x:4}', 'abcdefghidef ')
+        self.assertEqual('abc' f'{x}' 'gh' f'i{x:4}', 'abcdefghidef ')
         self.assertEqual('{x}' f'{x}', '{x}def')
         self.assertEqual('{x' f'{x}', '{xdef')
         self.assertEqual('{x}' f'{x}', '{x}def')
@@ -490,44 +489,45 @@ class TestCase(unittest.TestCase):
     #     s = "f'{1}' 'x' 'y'" * 1024
     #     self.assertEqual(eval(s), '1xy' * 1024)
 
-    # # Skulpt: Neither common format specifiers nor the decimal module are yet implemented
-    # def test_format_specifier_expressions(self):
-    #     width = 10
-    #     precision = 4
-    #     value = decimal.Decimal('12.34567')
-    #     self.assertEqual(f'result: {value:{width}.{precision}}', 'result:      12.35')
-    #     self.assertEqual(f'result: {value:{width!r}.{precision}}', 'result:      12.35')
-    #     self.assertEqual(f'result: {value:{width:0}.{precision:1}}', 'result:      12.35')
-    #     self.assertEqual(f'result: {value:{1}{0:0}.{precision:1}}', 'result:      12.35')
-    #     self.assertEqual(f'result: {value:{ 1}{ 0:0}.{ precision:1}}', 'result:      12.35')
-    #     self.assertEqual(f'{10:#{1}0x}', '       0xa')
-    #     self.assertEqual(f'{10:{"#"}1{0}{"x"}}', '       0xa')
-    #     self.assertEqual(f'{-10:-{"#"}1{0}x}', '      -0xa')
-    #     self.assertEqual(f'{-10:{"-"}#{1}0{"x"}}', '      -0xa')
-    #     self.assertEqual(f'{10:#{3 != {4:5} and width}x}', '       0xa')
+    def test_format_specifier_expressions(self):
+        width = 10
+        precision = 4
+        # Skulpt: The decimal module is not yet implemented
+        #value = decimal.Decimal('12.34567')
+        value = 12.34567
+        self.assertEqual(f'result: {value:{width}.{precision}}', 'result:      12.35')
+        self.assertEqual(f'result: {value:{width!r}.{precision}}', 'result:      12.35')
+        self.assertEqual(f'result: {value:{width:0}.{precision:1}}', 'result:      12.35')
+        self.assertEqual(f'result: {value:{1}{0:0}.{precision:1}}', 'result:      12.35')
+        self.assertEqual(f'result: {value:{ 1}{ 0:0}.{ precision:1}}', 'result:      12.35')
+        self.assertEqual(f'{10:#{1}0x}', '       0xa')
+        self.assertEqual(f'{10:{"#"}1{0}{"x"}}', '       0xa')
+        self.assertEqual(f'{-10:-{"#"}1{0}x}', '      -0xa')
+        self.assertEqual(f'{-10:{"-"}#{1}0{"x"}}', '      -0xa')
+        self.assertEqual(f'{10:#{3 != {4:5} and width}x}', '       0xa')
 
-    #     # Skulpt: unittest functionality not implemented
-    #     # self.assertAllRaise(SyntaxError, "f-string: expecting '}'",
-    #     #                     ["""f'{"s"!r{":10"}}'""",
+        # Skulpt: unittest functionality not implemented
+        # self.assertAllRaise(SyntaxError, "f-string: expecting '}'",
+        #                     ["""f'{"s"!r{":10"}}'""",
 
-    #     #                      # This looks like a nested format spec.
-    #     #                      ])
+        #                      # This looks like a nested format spec.
+        #                      ])
 
-    #     # self.assertAllRaise(SyntaxError, "invalid syntax",
-    #     #                     [# Invalid syntax inside a nested spec.
-    #     #                      "f'{4:{/5}}'",
-    #     #                      ])
+        # self.assertAllRaise(SyntaxError, "invalid syntax",
+        #                     [# Invalid syntax inside a nested spec.
+        #                      "f'{4:{/5}}'",
+        #                      ])
 
-    #     # self.assertAllRaise(SyntaxError, "f-string: expressions nested too deeply",
-    #     #                     [# Can't nest format specifiers.
-    #     #                      "f'result: {value:{width:{0}}.{precision:1}}'",
-    #     #                      ])
+        # self.assertAllRaise(SyntaxError, "f-string: expressions nested too deeply",
+        #                     [# Can't nest format specifiers.
+        #                      "f'result: {value:{width:{0}}.{precision:1}}'",
+        #                      ])
 
-    #     # self.assertAllRaise(SyntaxError, 'f-string: invalid conversion character',
-    #     #                     [# No expansion inside conversion or for
-    #     #                      #  the : or ! itself.
-    #     #                      """f'{"s"!{"r"}}'""",
-    #     #                      ])
+        # self.assertAllRaise(SyntaxError, 'f-string: invalid conversion character',
+        #                     [# No expansion inside conversion or for
+        #                      #  the : or ! itself.
+        #                      """f'{"s"!{"r"}}'""",
+        #                      ])
 
     def test_side_effect_order(self):
         class X:
@@ -714,9 +714,8 @@ class TestCase(unittest.TestCase):
     def test_lambda(self):
         x = 5
         self.assertEqual(f'{(lambda y:x*y)("8")!r}', "'88888'")
-        # Skulpt: Format strings not yet implemented
-        # self.assertEqual(f'{(lambda y:x*y)("8")!r:10}', "'88888'   ")
-        # self.assertEqual(f'{(lambda y:x*y)("8"):10}', "88888     ")
+        self.assertEqual(f'{(lambda y:x*y)("8")!r:10}', "'88888'   ")
+        self.assertEqual(f'{(lambda y:x*y)("8"):10}', "88888     ")
 
         # Skulpt: unittest functionality not implemented
         # # lambda doesn't work without parens, because the colon
@@ -780,15 +779,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(outer('987')(), 'x:987')
         self.assertEqual(outer(7)(), 'x:7')
 
-    # Skulpt TODO: Format spec is not yet implemented
-    # def test_arguments(self):
-    #     y = 2
-    #     def f(x, width):
-    #         return f'x={x*y:{width}}'
+    def test_arguments(self):
+        y = 2
+        def f(x, width):
+            return f'x={x*y:{width}}'
 
-    #     self.assertEqual(f('foo', 10), 'x=foofoo    ')
-    #     x = 'bar'
-    #     self.assertEqual(f(10, 10), 'x=        20')
+        self.assertEqual(f('foo', 10), 'x=foofoo    ')
+        x = 'bar'
+        self.assertEqual(f(10, 10), 'x=        20')
 
     def test_locals(self):
         value = 123
@@ -895,42 +893,41 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f'{3!=4}', 'True')
         self.assertEqual(f'{3!=4:}', 'True')
         self.assertEqual(f'{3!=4!s}', 'True')
-        # Skulpt: Format strings not implemented
-        # self.assertEqual(f'{3!=4!s:.3}', 'Tru')
+        self.assertEqual(f'{3!=4!s:.3}', 'Tru')
 
-    # Skulpt: Format specs not yet implemented
-    # def test_conversions(self):
-    #     self.assertEqual(f'{3.14:10.10}', '      3.14')
-    #     self.assertEqual(f'{3.14!s:10.10}', '3.14      ')
-    #     self.assertEqual(f'{3.14!r:10.10}', '3.14      ')
-    #     self.assertEqual(f'{3.14!a:10.10}', '3.14      ')
+    def test_conversions(self):
+        self.assertEqual(f'{3.14:10.10}', '      3.14')
+        self.assertEqual(f'{3.14!s:10.10}', '3.14      ')
+        self.assertEqual(f'{3.14!r:10.10}', '3.14      ')
+        self.assertEqual(f'{3.14!a:10.10}', '3.14      ')
 
-    #     self.assertEqual(f'{"a"}', 'a')
-    #     self.assertEqual(f'{"a"!r}', "'a'")
-    #     self.assertEqual(f'{"a"!a}', "'a'")
+        self.assertEqual(f'{"a"}', 'a')
+        self.assertEqual(f'{"a"!r}', "'a'")
+        self.assertEqual(f'{"a"!a}', "'a'")
 
-    #     # Not a conversion.
-    #     self.assertEqual(f'{"a!r"}', "a!r")
+        # Not a conversion.
+        self.assertEqual(f'{"a!r"}', "a!r")
 
-    #     # Not a conversion, but show that ! is allowed in a format spec.
-    #     self.assertEqual(f'{3.14:!<10.10}', '3.14!!!!!!')
+        # Not a conversion, but show that ! is allowed in a format spec.
+        self.assertEqual(f'{3.14:!<10.10}', '3.14!!!!!!')
 
-    #     self.assertAllRaise(SyntaxError, 'f-string: invalid conversion character',
-    #                         ["f'{3!g}'",
-    #                          "f'{3!A}'",
-    #                          "f'{3!3}'",
-    #                          "f'{3!G}'",
-    #                          "f'{3!!}'",
-    #                          "f'{3!:}'",
-    #                          "f'{3! s}'",  # no space before conversion char
-    #                          ])
+        # Skulpt: unittest functionality not yet implemented
+        # self.assertAllRaise(SyntaxError, 'f-string: invalid conversion character',
+        #                     ["f'{3!g}'",
+        #                      "f'{3!A}'",
+        #                      "f'{3!3}'",
+        #                      "f'{3!G}'",
+        #                      "f'{3!!}'",
+        #                      "f'{3!:}'",
+        #                      "f'{3! s}'",  # no space before conversion char
+        #                      ])
 
-    #     self.assertAllRaise(SyntaxError, "f-string: expecting '}'",
-    #                         ["f'{x!s{y}}'",
-    #                          "f'{3!ss}'",
-    #                          "f'{3!ss:}'",
-    #                          "f'{3!ss:s}'",
-    #                          ])
+        # self.assertAllRaise(SyntaxError, "f-string: expecting '}'",
+        #                     ["f'{x!s{y}}'",
+        #                      "f'{3!ss}'",
+        #                      "f'{3!ss:}'",
+        #                      "f'{3!ss:s}'",
+        #                      ])
 
     # Skulpt: This unittest functionality (and, indeed, eval()) is not yet implemented
     # def test_assignment(self):
@@ -981,9 +978,8 @@ class TestCase(unittest.TestCase):
         # But these are just normal strings.
         self.assertEqual(f'{"{"}', '{')
         self.assertEqual(f'{"}"}', '}')
-        # Skulpt: Format strings not implemented
-        # self.assertEqual(f'{3:{"}"}>10}', '}}}}}}}}}3')
-        # self.assertEqual(f'{2:{"{"}>10}', '{{{{{{{{{2')
+        self.assertEqual(f'{3:{"}"}>10}', '}}}}}}}}}3')
+        self.assertEqual(f'{2:{"{"}>10}', '{{{{{{{{{2')
 
     def test_if_conditional(self):
         # There's special logic in compile.c to test if the
@@ -1039,8 +1035,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f'{d["a"]}', 'string')
         self.assertEqual(f'{d[a]}', 'integer')
         self.assertEqual('{d[a]}'.format(d=d), 'string')
-        # Skulpt: .format() is broken with regard to integers
-        # self.assertEqual('{d[0]}'.format(d=d), 'integer')
+        self.assertEqual('{d[0]}'.format(d=d), 'integer')
 
     # Skulpt: unittest functionality not implemented
     # def test_invalid_expressions(self):

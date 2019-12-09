@@ -804,26 +804,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
     }
 };
 
-Sk.builtin.float_.prototype.__format__= function (obj, format_spec) {
-    var formatstr;
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
-    if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.__future__.exceptions) {
-            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
-        } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
-        }
-    } else {
-        formatstr = Sk.ffi.remapToJs(format_spec);
-        if (formatstr !== "") {
-            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
-        }
-    }
-
-    return new Sk.builtin.str(obj);
-};
-
+Sk.builtin.float_.prototype.__format__ = Sk.formatting.mkNumber__format__(true);
 
 Sk.builtin.float_.prototype.conjugate = new Sk.builtin.func(function (self) {
     return new Sk.builtin.float_(self.v);
