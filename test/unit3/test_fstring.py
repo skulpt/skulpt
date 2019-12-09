@@ -611,20 +611,19 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f'{2}\t{3}', '2\t3')
         self.assertEqual(f'\t{3}', '\t3')
 
-        # Skulpt TODO: These will work after PR#983 (real unicode strings) lands
-        # self.assertEqual(f'\u0394', '\u0394')
-        # self.assertEqual(r'\u0394', '\\u0394')
-        # self.assertEqual(rf'\u0394', '\\u0394')
-        # self.assertEqual(f'{2}\u0394', '2\u0394')
-        # self.assertEqual(f'{2}\u0394{3}', '2\u03943')
-        # self.assertEqual(f'\u0394{3}', '\u03943')
+        self.assertEqual(f'\u0394', '\u0394')
+        self.assertEqual(r'\u0394', '\\u0394')
+        self.assertEqual(rf'\u0394', '\\u0394')
+        self.assertEqual(f'{2}\u0394', '2\u0394')
+        self.assertEqual(f'{2}\u0394{3}', '2\u03943')
+        self.assertEqual(f'\u0394{3}', '\u03943')
 
-        # self.assertEqual(f'\U00000394', '\u0394')
-        # self.assertEqual(r'\U00000394', '\\U00000394')
-        # self.assertEqual(rf'\U00000394', '\\U00000394')
-        # self.assertEqual(f'{2}\U00000394', '2\u0394')
-        # self.assertEqual(f'{2}\U00000394{3}', '2\u03943')
-        # self.assertEqual(f'\U00000394{3}', '\u03943')
+        self.assertEqual(f'\U00000394', '\u0394')
+        self.assertEqual(r'\U00000394', '\\U00000394')
+        self.assertEqual(rf'\U00000394', '\\U00000394')
+        self.assertEqual(f'{2}\U00000394', '2\u0394')
+        self.assertEqual(f'{2}\U00000394{3}', '2\u03943')
+        self.assertEqual(f'\U00000394{3}', '\u03943')
 
         # Skulpt doesn't support \N{} escapes, because we don't bundle the
         # Unicode database
