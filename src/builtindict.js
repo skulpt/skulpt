@@ -49,6 +49,7 @@ Sk.builtins = {
     "NegativePowerError" : Sk.builtin.NegativePowerError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
     "StopIteration"      : Sk.builtin.StopIteration,
+    "SyntaxError"        : Sk.builtin.SyntaxError,
 
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,

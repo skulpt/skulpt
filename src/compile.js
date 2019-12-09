@@ -798,6 +798,10 @@ Compiler.prototype.cjoinedstr = function (e) {
         }
     }
 
+    if (!ret) {
+        ret = 'Sk.builtin.str.$emptystr';
+    }
+
     return ret;
 };
 
@@ -805,17 +809,18 @@ Compiler.prototype.cformattedvalue = function(e) {
     let value = this.vexpr(e.value);
     switch (e.conversion) {
         case 's':
-            out(value,"=Sk.builtin.str(",value,");");
+            value = this._gr("value", "Sk.builtin.str(",value,")");
             break;
         case 'a':
             // TODO when repr() becomes more unicode-aware,
             // we'll want to handle repr() and ascii() differently.
             // For now, they're the same
         case 'r':
-            out(value,"=Sk.builtin.repr(",value,");");
+            value = this._gr("value", "Sk.builtin.repr(",value,")");
             break;
     }
-    return this._gr("formatted", "Sk.abstr.objectFormat("+value+","+(e.format_spec ? this.vexpr(e.format_spec) : "Sk.builtin.str.$emptystr")+")");
+    let formatSpec = (e.format_spec ? this.vexpr(e.format_spec) : "Sk.builtin.str.$emptystr");
+    return this._gr("formatted", "Sk.abstr.objectFormat("+value+","+formatSpec+")");
 };
 
 
