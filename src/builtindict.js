@@ -111,19 +111,19 @@ Sk.builtins = {
     "intern"    : Sk.builtin.intern
 };
 
-<<<<<<< HEAD
 Sk.setupObjects = function (py3) {
-=======
-Sk.setupBuiltins = function (py3)  {
->>>>>>>  commiting stuff
     if (py3) {
         Sk.builtins["filter"] = Sk.builtin.filter_;
         Sk.builtins["map"] = Sk.builtin.map_;
         Sk.builtins["zip"] = Sk.builtin.zip_;
+        Sk.builtins["bytes"] = Sk.builtin.bytes;
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
+        if (Sk.builtins["bytes"]) {
+            delete Sk.builtins["bytes"];
+        }
     }
 };
 Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);
