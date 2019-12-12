@@ -211,6 +211,19 @@ Sk.misceval.swappedOp_ = {
     "NotIn": "In_"
 };
 
+Sk.misceval.opSymbols = {
+    "Eq"   : "==",
+    "NotEq": "!=",
+    "Lt"   : "<",
+    "LtE"  : "<=",
+    "Gt"   : ">",
+    "GtE"  : ">=",
+    "Is"   : "is",
+    "IsNot": "is not",
+    "In_"  : "in",
+    "NotIn": "not in"
+};
+
 /**
 * @param{*} v
 * @param{*} w
@@ -247,10 +260,11 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     v_type = new Sk.builtin.type(v);
     w_type = new Sk.builtin.type(w);
 
-    // Python has specific rules when comparing two different builtin types
+    // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
-    if ((v_type !== w_type) &&
+    if (!Sk.__future__.python3 &&
+        (v_type !== w_type) &&
         (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
         numeric_types = [Sk.builtin.float_.prototype.ob$type,
@@ -546,7 +560,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     vname = Sk.abstr.typeName(v);
     wname = Sk.abstr.typeName(w);
-    throw new Sk.builtin.TypeError("'" + "OPERATION SYMBOL" + "' not supported between instances of '" + vname + "' and '" + wname + "'");
+    throw new Sk.builtin.TypeError("'" + Sk.misceval.opSymbols[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
     //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
