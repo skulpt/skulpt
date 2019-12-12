@@ -171,6 +171,9 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
             return true;
         }
 
+        if (Sk.__future__.python3) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        }
         // todo; other types should have an arbitrary order
         return false;
     }

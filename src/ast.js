@@ -408,6 +408,10 @@ function astForExceptClause (c, exc, body) {
         return new Sk.astnodes.ExceptHandler(ast_for_expr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
     }
     else if (NCH(exc) === 4) {
+        if (Sk.__future__.python3 && CHILD(exc, 2).value == ",") {
+            ast_error(c, exc, "Old-style 'except' clauses are not supported in Python 3");
+        }
+
         var expression = ast_for_expr(c, CHILD(exc, 1));
         e = ast_for_expr(c, CHILD(exc, 3));
         setContext(c, e, Sk.astnodes.Store, CHILD(exc, 3));
