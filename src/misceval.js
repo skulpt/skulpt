@@ -211,19 +211,6 @@ Sk.misceval.swappedOp_ = {
     "NotIn": "In_"
 };
 
-Sk.misceval.opSymbols = {
-    "Eq"   : "==",
-    "NotEq": "!=",
-    "Lt"   : "<",
-    "LtE"  : "<=",
-    "Gt"   : ">",
-    "GtE"  : ">=",
-    "Is"   : "is",
-    "IsNot": "is not",
-    "In_"  : "in",
-    "NotIn": "not in"
-};
-
 /**
 * @param{*} v
 * @param{*} w
@@ -260,11 +247,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     v_type = new Sk.builtin.type(v);
     w_type = new Sk.builtin.type(w);
 
-    // Python 2 has specific rules when comparing two different builtin types
+    // Python has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
-    if (!Sk.__future__.python3 &&
-        (v_type !== w_type) &&
+    if ((v_type !== w_type) && (!Sk.__future__.python3) &&
         (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
         numeric_types = [Sk.builtin.float_.prototype.ob$type,
@@ -474,7 +460,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                         return ret >= 0;
                     }
                 }
-    
+
                 if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                     throw new Sk.builtin.TypeError("comparison did not return an int");
                 }
@@ -513,9 +499,9 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
 
     }
-    
 
-    
+
+
     // handle special cases for comparing None with None or Bool with Bool
     if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) ||
         ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool))) {
@@ -560,7 +546,18 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     vname = Sk.abstr.typeName(v);
     wname = Sk.abstr.typeName(w);
-    throw new Sk.builtin.TypeError("'" + Sk.misceval.opSymbols[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
+    if (Sk.__future__.python3) {
+        const compareSignMap = {
+            "Eq"   : "==",
+            "NotEq": "!=",
+            "Gt"   : ">",
+            "GtE"  : ">=",
+            "Lt"   : "<",
+            "LtE"  : "<="
+        };
+        throw new Sk.builtin.TypeError("'" + compareSignMap[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
+    }
+    throw new Sk.builtin.TypeError("'" + "OPERATION SYMBOL" + "' not supported between instances of '" + vname + "' and '" + wname + "'");
     //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
