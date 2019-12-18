@@ -362,7 +362,7 @@ def main(asdlfile, outputfile):
     if not asdl.check(mod):
         sys.exit(1)
 
-    f = open(outputfile, "wb")
+    f = open(outputfile, "w")
 
     f.write(auto_gen_msg)
     f.write("/* Object that holds all nodes */\n");
@@ -390,6 +390,6 @@ def main(asdlfile, outputfile):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 3:
-        print "usage: asdl_js.py input.asdl output.js"
+        print("usage: asdl_js.py input.asdl output.js")
         raise SystemExit()
     main(sys.argv[1], sys.argv[2])

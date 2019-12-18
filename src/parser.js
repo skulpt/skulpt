@@ -17,6 +17,7 @@
 function Parser (filename, grammar) {
     this.filename = filename;
     this.grammar = grammar;
+    this.comments = {};
     this.p_flags = 0;
     return this;
 }
@@ -67,6 +68,11 @@ function findInDfa (a, obj) {
     }
     return false;
 }
+
+// Add a comment
+Parser.prototype.addcomment = function(value, start, end, line) {
+    this.comments[start] = value;
+};
 
 
 // Add a token; return true if we're done
@@ -143,7 +149,7 @@ Parser.prototype.addtoken = function (type, value, context) {
 
         //print("findInDfa: " + JSON.stringify(arcs)+" vs. " + tp.state);
         if (findInDfa(arcs, [0, tp.state])) {
-            // an accepting state, pop it and try somethign else
+            // an accepting state, pop it and try something else
             //print("WAA");
             this.pop();
             if (this.stack.length === 0) {
@@ -203,6 +209,8 @@ Parser.prototype.shift = function (type, value, newstate, context) {
         value     : value,
         lineno    : context[0][0],         // throwing away end here to match cpython
         col_offset: context[0][1],
+        end_lineno : context[1][0],
+        end_col_offset: context[1][1],
         children  : null
     };
     if (newnode) {
@@ -224,6 +232,8 @@ Parser.prototype.push = function (type, newdfa, newstate, context) {
         value     : null,
         lineno    : context[0][0],      // throwing away end here to match cpython
         col_offset: context[0][1],
+        end_lineno : context[1][0],
+        end_col_offset: context[1][1],
         children  : []
     };
     this.stack[this.stack.length - 1] = {
@@ -332,6 +342,10 @@ Sk.parse = function parse (filename, input) {
                 lineno += 1;
                 column = 0;
             }
+            
+            if (tokenInfo.type === T_COMMENT) {
+                parser.addcomment(tokenInfo.string, tokenInfo.start, tokenInfo.end, tokenInfo.line);
+            }
         } else {
             if (tokenInfo.type === T_OP) {
                 type = Sk.OpMap[tokenInfo.string];
@@ -352,7 +366,8 @@ Sk.parse = function parse (filename, input) {
     /**
      * Small adjustments here in order to return th flags and the cst
      */
-    return {"cst": parser.rootnode, "flags": parser.p_flags};
+    var result = {"cst": parser.rootnode, "flags": parser.p_flags, "comments": parser.comments};
+    return result;
 };
 
 Sk.parseTreeDump = function parseTreeDump (n, indent) {
