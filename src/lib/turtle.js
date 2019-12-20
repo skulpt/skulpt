@@ -569,7 +569,6 @@ function generateTurtleModule(_target) {
             this._down       = true;
             this._color      = "black";
             this._fill       = "black";
-            // this._shape      = "classic";
             this._size       = 1;
             this._filling    = false;
             this._undoBuffer = [];
