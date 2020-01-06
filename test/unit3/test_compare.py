@@ -197,9 +197,18 @@ class ComparisonTest(unittest.TestCase):
         self.assertRaises(TypeError, helper, A(-1), A(1), -1)
 
         # Built-in type comparisons should no longer work in python 3
+        # (but equality should)
         self.assertRaises(TypeError, lambda: (1,2) > [3,4])
+        self.assertFalse((1,2) == [3,4])
+        self.assertTrue((1,2) != [3,4])
+
         self.assertRaises(TypeError, lambda: None > (1,2))
+        self.assertFalse(None == (1,2))
+        self.assertTrue(None != (1,2))
+
         self.assertRaises(TypeError, lambda: 2 > "2")
+        self.assertFalse(2 == "2")
+        self.assertTrue(2 != "2")
 ##
 if __name__ == '__main__':
     unittest.main()
