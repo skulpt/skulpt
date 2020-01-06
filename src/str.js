@@ -156,11 +156,7 @@ Sk.builtin.str.prototype.tp$iter = function () {
 
 Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
     if (!(other instanceof Sk.builtin.str)) {
-        if (Sk.__future__.python3) {
-            return Sk.builtin.NotImplemented.NotImplemented$;
-        } else {
-            return false;
-        }
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
 
     switch (op) {
