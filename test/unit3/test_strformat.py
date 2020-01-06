@@ -76,6 +76,7 @@ class string_format(unittest.TestCase):
 
     def test_comma_sep(self):
         self.assertEqual('1,234,567,890',  '{:,}'.format(1234567890))
+        self.assertEqual('1,234,567.89',  '{:,.2f}'.format(1234567.888))
 
     def test_percentage(self):
         points = 19.5

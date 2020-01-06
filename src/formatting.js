@@ -189,6 +189,11 @@ let formatNumber = function(num, formatSpec, isFractional) {
                     result += ".0";
                 }
             }
+            if (m[FMT.COMMA]){
+                var parts = result.toString().split(".");
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                result = parts.join(".");
+            }
 
             return handleWidth(m, result, signForNeg(m, neg), true);
         };
