@@ -4,7 +4,7 @@
  notes:
  - struct_time is a structseq but structseq does not implement methods: 'n_fields', 'n_sequence_fields', 'n_unnamed_fields' yet
 
- ['__doc__', '__file__', '__name__', '__package__', 'accept2dyear', 'altzone', 'asctime', 'clock', 'ctime', 'daylight', 'gmtime', 'localtime', 'mktime', 'sleep', 'strftime', 'strptime', 'struct_time', 'time', 'timezone', 'tzname', 'tzset']
+ ['__doc__', '__file__', '__name__', '__package__', 'accept2dyear', 'altzone', 'asctime', 'clock', 'ctime', 'daylight', 'gmtime', 'localtime', 'mktime', 'sleep', 'strftime', 'strptime', 'struct_time', 'time', 'timezone', 'tzname', 'tzset', 'get_time', 'is_leap_year']
  */
 
 var $builtinmodule = function (name) {
@@ -273,6 +273,27 @@ var $builtinmodule = function (name) {
             res = new Date().getTime() / 1000;
         }
         return new Sk.builtin.float_(res);
+    });
+
+    mod.is_leap_year = new Sk.builtin.func(function(year){ 
+        var toJsYear = Sk.ffi.remapToJs(year); 
+        if(isLeapYear(toJsYear)) {
+            return Sk.builtin.bool.true$; 
+        } else {
+            return Sk.builtin.bool.false$; 
+        }
+    });
+
+    mod.get_time = new Sk.builtin.func(function(){
+        var date = new Date();
+        var ret = new Sk.builtin.dict([]);
+        ret.mp$ass_subscript(new Sk.builtin.str('年'), Sk.builtin.str(date.getFullYear()));
+        ret.mp$ass_subscript(new Sk.builtin.str('月'), date.getMonth() < 9 ? Sk.builtin.str('0' + (date.getMonth() + 1)) : Sk.builtin.str(date.getMonth() + 1));
+        ret.mp$ass_subscript(new Sk.builtin.str('日'), date.getDate() < 10 ? Sk.builtin.str('0' + date.getDate()) : Sk.builtin.str(date.getDate()));
+        ret.mp$ass_subscript(new Sk.builtin.str('时'), Sk.builtin.str(date.getHours()));
+        ret.mp$ass_subscript(new Sk.builtin.str('分'), date.getMinutes() < 10 ? Sk.builtin.str('0' + date.getMinutes()) : Sk.builtin.str(date.getMinutes()));
+        ret.mp$ass_subscript(new Sk.builtin.str('秒'), date.getSeconds() < 10 ? Sk.builtin.str('0' + date.getSeconds()) : Sk.builtin.str(date.getSeconds()));
+        return ret; 
     });
 
     function strftime_f(format, t) {
