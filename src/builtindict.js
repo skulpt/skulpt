@@ -49,6 +49,7 @@ Sk.builtins = {
     "NegativePowerError" : Sk.builtin.NegativePowerError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
     "StopIteration"      : Sk.builtin.StopIteration,
+    "SyntaxError"        : Sk.builtin.SyntaxError,
 
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
@@ -116,6 +117,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.xrange);
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
+        delete Sk.builtins["unicode"];
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
@@ -123,6 +125,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
+        Sk.builtins["unicode"] = Sk.builtin.str;
     }
 };
 Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);

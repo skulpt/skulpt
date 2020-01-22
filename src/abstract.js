@@ -711,7 +711,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format);
     if (meth == null) {
-        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + " doesn't define __format__");
+        return Sk.misceval.callsimArray(Sk.builtin.object.prototype["__format__"], [obj, format_spec]);
     }
 
     // And call it
