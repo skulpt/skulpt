@@ -10,34 +10,36 @@ class string_format(unittest.TestCase):
         self.assertEqual('c, b, a', '{2}, {1}, {0}'.format(*'abc'))
         self.assertEqual('abracadabra', '{0}{1}{0}'.format('abra', 'cad'))
 
-    #Kwargs don't work
     def test_arg_names(self):
         self.assertEqual('Coordinates: 37.24N, -115.81W', 'Coordinates: {latitude}, {longitude}'.format(latitude='37.24N', longitude='-115.81W'))
-        ## **kwargs does not work properly in Skulpt
-        # coord = {'latitude': '37.24N', 'longitude': '-115.81W'}
-        # self.assertEqual('Coordinates: 37.24N, -115.81W', 'Coordinates: {latitude}, {longitude}'.format(**coord))
+
+        coord = {'latitude': '37.24N', 'longitude': '-115.81W'}
+        self.assertEqual('Coordinates: 37.24N, -115.81W', 'Coordinates: {latitude}, {longitude}'.format(**coord))
     
-    ## Complex Numbers Currently unsupported
     
-    # def test_arg_attr(self):
-    #     c = 3-5j
-    #     self.assertEqual('The complex number (3-5j) is formed from the real part 3.0 and the imaginary part -5.0.', ('The complex number {0} is formed from the real part {0.real} and the imaginary part {0.imag}.').format(c))
-    #     class Point(object):
-    #         def __init__(self, x, y):
-    #             self.x, self.y = x, y
-    #         def __str__(self):
-    #             return 'Point({self.x}, {self.y})'.format(self=self)
-    #     self.assertEqual('Point(4, 2)', str(Point(4, 2)))
+    def test_arg_attr(self):
+        # Skulpt:  Complex Numbers Currently unsupported
+        # c = 3-5j
+        # self.assertEqual('The complex number (3-5j) is formed from the real part 3.0 and the imaginary part -5.0.', ('The complex number {0} is formed from the real part {0.real} and the imaginary part {0.imag}.').format(c))
+
+        class Point(object):
+            def __init__(self, x, y):
+                self.x, self.y = x, y
+            def __str__(self):
+                return 'Point({self.x}, {self.y})'.format(self=self)
+        self.assertEqual('Point(4, 2)', str(Point(4, 2)))
+
+        self.assertEqual('4, 2', "{0.x}, {0.y}".format(Point(4, 2)))
+        self.assertEqual('4, 2', "{.x}, {.y}".format(Point(4, 3), Point(3, 2)))
 
     def test_arg_items(self):
         coord = (3, 5)
         self.assertEqual('X: 3;  Y: 5','X: {0[0]};  Y: {0[1]}'.format(coord))
         self.assertEqual('My name is Fred',"My name is {0[name]}".format({'name':'Fred'}))
 
-# TODO:  make these pass
-#    def test_width(self):
-#        self.assertEqual('         2,2',"{0:10},{0}".format(2))
-#        self.assertEqual('foo bar baz ',"{0:4}{1:4}{2:4}".format("foo","bar","baz")) 
+    def test_width(self):
+        self.assertEqual('         2,2',"{0:10},{0}".format(2))
+        self.assertEqual('foo bar baz ',"{0:4}{1:4}{2:4}".format("foo","bar","baz")) 
         
 
     def test_conversion(self):
@@ -70,12 +72,10 @@ class string_format(unittest.TestCase):
         self.assertEqual('(1, 2, 3)', '{}'.format((1, 2, 3)))
         self.assertEqual('[1, 2, 3]', '{}'.format([1, 2, 3]))
 
-    ## Datetime requires more work.
-    
-    # def test_datetome(self):
-    #     import datetime
-    #     d = datetime.datetime(2010, 7, 4, 12, 15, 58)
-    #     self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
+    def test_datetime(self):
+        import datetime
+        d = datetime.datetime(2010, 7, 4, 12, 15, 58)
+        self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
 
 if __name__ == '__main__':
     unittest.main()
