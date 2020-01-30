@@ -79,6 +79,7 @@ def ulp(x):
 # multiplying by all j in {n >> i+1 < j <= n >> i; j odd}.  In Python terms,
 # this set is range((n >> i+1) + 1 | 1, (n >> i) + 1 | 1, 2).
 
+
 def count_set_bits(n):
     """Number of '1' bits in binary expansion of a nonnnegative integer."""
     return 1 + count_set_bits(n & n - 1) if n else 0
@@ -187,7 +188,7 @@ class MathTests(unittest.TestCase):
         # Ref: Abramowitz & Stegun (Dover, 1965)
         self.ftest('pi', math.pi, 3.141592653589793238462643)
         self.ftest('e', math.e, 2.718281828459045235360287)
-        # self.assertEqual(math.tau, 2*math.pi)
+        self.assertEqual(math.tau, 2*math.pi)
 
     def testAcos(self):
         self.assertRaises(TypeError, math.acos)
@@ -423,6 +424,67 @@ class MathTests(unittest.TestCase):
         self.assertTrue(math.isnan(math.exp(NAN)))
         # self.assertRaises(OverflowError, math.exp, 1000000)
 
+    def testExpm1(self):
+        # taken from cpython/Lib/test/math_testcases.txt
+        # special cases
+        self.assertEqual(math.expm1(0.0), 0.0)
+        self.assertEqual(math.expm1(-0.0), -0.0)
+        self.assertEqual(math.expm1(INF), INF)
+        self.assertEqual(math.expm1(-INF), -1.0)
+        self.assertTrue(math.isnan(math.expm1(NAN)))
+
+        # timy x
+        self.assertEqual(math.expm1(5e-324), 5e-324)
+        self.assertEqual(math.expm1(1e-320), 1e-320)
+        self.assertEqual(math.expm1(1e-300), 1e-300)
+        self.assertEqual(math.expm1(1e-150), 1e-150)
+        self.assertEqual(math.expm1(1e-20), 1e-20)
+        self.assertEqual(math.expm1(-5e-324), -5e-324)
+        self.assertEqual(math.expm1(-1e-320), -1e-320)
+        self.assertEqual(math.expm1(-1e-300), -1e-300)
+        self.assertEqual(math.expm1(-1e-150), -1e-150)
+        self.assertEqual(math.expm1(-1e-20), -1e-20)
+
+        # moderate size - direct evaluation runs into trouble
+        self.assertAlmostEqual(math.expm1(1e-10), 1.0000000000500000e-10, 15)
+        self.assertAlmostEqual(math.expm1(-9.9999999999999995e-08), -9.9999995000000163e-8, 15)
+        self.assertAlmostEqual(math.expm1(3.0000000000000001e-05), 3.0000450004500034e-5, 15)
+        self.assertEqual(math.expm1(-0.0070000000000000001), -0.0069755570667648951)
+        self.assertEqual(math.expm1(-0.071499208740094633), -0.069002985744820250)
+        self.assertAlmostEqual(math.expm1(-0.063296004180116799), -0.061334416373633009, 15)
+        self.assertEqual(math.expm1(0.02390954035597756), 0.024197665143819942)
+        self.assertEqual(math.expm1(0.085637352649044901), 0.089411184580357767)
+        self.assertAlmostEqual(math.expm1(0.5966174947411006), 0.81596588596501485, 15)
+        self.assertEqual(math.expm1(0.30247206212075139), 0.35319987035848677)
+        self.assertEqual(math.expm1(0.74574727375889516), 1.1080161116737459)
+        self.assertEqual(math.expm1(0.97767512926555711), 1.6582689207372185)
+        self.assertEqual(math.expm1(0.8450154566787712), 1.3280137976535897)
+        self.assertEqual(math.expm1(-0.13979260323125264), -0.13046144381396060)
+        self.assertAlmostEqual(math.expm1(-0.52899322039643271), -0.41080213643695923, 15)
+        self.assertEqual(math.expm1(-0.74083261478900631), -0.52328317124797097)
+        self.assertEqual(math.expm1(-0.93847766984546055), -0.60877704724085946)
+        self.assertEqual(math.expm1(10.0), 22025.465794806718)
+        self.assertEqual(math.expm1(27.0), 532048240600.79865)
+        self.assertEqual(math.expm1(123), 2.6195173187490626e+53)
+        self.assertEqual(math.expm1(-12.0), -0.99999385578764666)
+        self.assertEqual(math.expm1(-35.100000000000001), -0.99999999999999944)
+
+        # extreme negative
+        self.assertEqual(math.expm1(-37.0), -0.99999999999999989)
+        self.assertEqual(math.expm1(-38.0), -1.0)
+        self.assertEqual(math.expm1(-710.0), -1.0)
+        self.assertEqual(math.expm1(-1420.0), -1.0)
+        self.assertEqual(math.expm1(-1450.0), -1.0)
+        self.assertEqual(math.expm1(-1500.0), -1.0)
+        self.assertEqual(math.expm1(-1e50), -1.0)
+        self.assertEqual(math.expm1(-1.79e308), -1.0)
+
+
+        # extreme positive
+        self.assertEqual(math.expm1(300), 1.9424263952412558e+130)
+        self.assertEqual(math.expm1(700), 1.0142320547350045e+304)
+
+
     def testFabs(self):
         self.assertEqual(math.fabs(-1), 1.0)
         self.assertEqual(math.fabs(0), 0.0)
@@ -430,6 +492,23 @@ class MathTests(unittest.TestCase):
         self.ftest('fabs(-1)', math.fabs(-1), 1)
         self.ftest('fabs(0)', math.fabs(0), 0)
         self.ftest('fabs(1)', math.fabs(1), 1)
+
+ 
+
+    def testFactorial(self):
+        self.assertEqual(math.factorial(0), 1)
+        self.assertEqual(math.factorial(0.0), 1)
+        total = 1
+        for i in range(1, 1000):
+            total *= i
+            self.assertEqual(math.factorial(i), total)
+            self.assertEqual(math.factorial(float(i)), total)
+            # self.assertEqual(math.factorial(i), py_factorial(i))
+        self.assertRaises(ValueError, math.factorial, -1)
+        self.assertRaises(ValueError, math.factorial, -1.0)
+        self.assertRaises(ValueError, math.factorial, -10**100)
+        self.assertRaises(ValueError, math.factorial, -1e100)
+        self.assertRaises(ValueError, math.factorial, math.pi)
 
 
     def testFloor(self):
@@ -465,42 +544,42 @@ class MathTests(unittest.TestCase):
         self.assertRaises(TypeError, math.floor, t)
         self.assertRaises(TypeError, math.floor, t, 0)
 
-    # def testFmod(self):
-    #     self.assertRaises(TypeError, math.fmod)
-    #     self.ftest('fmod(10, 1)', math.fmod(10, 1), 0.0)
-    #     self.ftest('fmod(10, 0.5)', math.fmod(10, 0.5), 0.0)
-    #     self.ftest('fmod(10, 1.5)', math.fmod(10, 1.5), 1.0)
-    #     self.ftest('fmod(-10, 1)', math.fmod(-10, 1), -0.0)
-    #     self.ftest('fmod(-10, 0.5)', math.fmod(-10, 0.5), -0.0)
-    #     self.ftest('fmod(-10, 1.5)', math.fmod(-10, 1.5), -1.0)
-    #     self.assertTrue(math.isnan(math.fmod(NAN, 1.)))
-    #     self.assertTrue(math.isnan(math.fmod(1., NAN)))
-    #     self.assertTrue(math.isnan(math.fmod(NAN, NAN)))
-    #     self.assertRaises(ValueError, math.fmod, 1., 0.)
-    #     self.assertRaises(ValueError, math.fmod, INF, 1.)
-    #     self.assertRaises(ValueError, math.fmod, NINF, 1.)
-    #     self.assertRaises(ValueError, math.fmod, INF, 0.)
-    #     self.assertEqual(math.fmod(3.0, INF), 3.0)
-    #     self.assertEqual(math.fmod(-3.0, INF), -3.0)
-    #     self.assertEqual(math.fmod(3.0, NINF), 3.0)
-    #     self.assertEqual(math.fmod(-3.0, NINF), -3.0)
-    #     self.assertEqual(math.fmod(0.0, 3.0), 0.0)
-    #     self.assertEqual(math.fmod(0.0, NINF), 0.0)
+    def testFmod(self):
+        self.assertRaises(TypeError, math.fmod)
+        self.ftest('fmod(10, 1)', math.fmod(10, 1), 0.0)
+        self.ftest('fmod(10, 0.5)', math.fmod(10, 0.5), 0.0)
+        self.ftest('fmod(10, 1.5)', math.fmod(10, 1.5), 1.0)
+        self.ftest('fmod(-10, 1)', math.fmod(-10, 1), -0.0)
+        self.ftest('fmod(-10, 0.5)', math.fmod(-10, 0.5), -0.0)
+        self.ftest('fmod(-10, 1.5)', math.fmod(-10, 1.5), -1.0)
+        self.assertTrue(math.isnan(math.fmod(NAN, 1.)))
+        self.assertTrue(math.isnan(math.fmod(1., NAN)))
+        self.assertTrue(math.isnan(math.fmod(NAN, NAN)))
+        self.assertRaises(ValueError, math.fmod, 1., 0.)
+        self.assertRaises(ValueError, math.fmod, INF, 1.)
+        self.assertRaises(ValueError, math.fmod, NINF, 1.)
+        self.assertRaises(ValueError, math.fmod, INF, 0.)
+        self.assertEqual(math.fmod(3.0, INF), 3.0)
+        self.assertEqual(math.fmod(-3.0, INF), -3.0)
+        self.assertEqual(math.fmod(3.0, NINF), 3.0)
+        self.assertEqual(math.fmod(-3.0, NINF), -3.0)
+        self.assertEqual(math.fmod(0.0, 3.0), 0.0)
+        self.assertEqual(math.fmod(0.0, NINF), 0.0)
 
     # def testFrexp(self):
     #     self.assertRaises(TypeError, math.frexp)
-    #
+    
     #     def testfrexp(name, result, expected):
     #         (mant, exp), (emant, eexp) = result, expected
     #         if abs(mant-emant) > eps or exp != eexp:
     #             self.fail('%s returned %r, expected %r'%\
     #                       (name, result, expected))
-    #
+    
     #     testfrexp('frexp(-1)', math.frexp(-1), (-0.5, 1))
     #     testfrexp('frexp(0)', math.frexp(0), (0, 0))
     #     testfrexp('frexp(1)', math.frexp(1), (0.5, 1))
     #     testfrexp('frexp(2)', math.frexp(2), (0.5, 2))
-    #
+    
     #     self.assertEqual(math.frexp(INF)[0], INF)
     #     self.assertEqual(math.frexp(NINF)[0], NINF)
     #     self.assertTrue(math.isnan(math.frexp(NAN)[0]))
@@ -579,48 +658,47 @@ class MathTests(unittest.TestCase):
         #     s = msum(vals)
         #     self.assertEqual(msum(vals), math.fsum(vals))
 
-    # def testGcd(self):
-    #     gcd = math.gcd
-    #     self.assertEqual(gcd(0, 0), 0)
-    #     self.assertEqual(gcd(1, 0), 1)
-    #     self.assertEqual(gcd(-1, 0), 1)
-    #     self.assertEqual(gcd(0, 1), 1)
-    #     self.assertEqual(gcd(0, -1), 1)
-    #     self.assertEqual(gcd(7, 1), 1)
-    #     self.assertEqual(gcd(7, -1), 1)
-    #     self.assertEqual(gcd(-23, 15), 1)
-    #     self.assertEqual(gcd(120, 84), 12)
-    #     self.assertEqual(gcd(84, -120), 12)
-    #     self.assertEqual(gcd(1216342683557601535506311712,
-    #                          436522681849110124616458784), 32)
-    #     c = 652560
-    #     x = 434610456570399902378880679233098819019853229470286994367836600566
-    #     y = 1064502245825115327754847244914921553977
-    #     a = x * c
-    #     b = y * c
-    #     self.assertEqual(gcd(a, b), c)
-    #     self.assertEqual(gcd(b, a), c)
-    #     self.assertEqual(gcd(-a, b), c)
-    #     self.assertEqual(gcd(b, -a), c)
-    #     self.assertEqual(gcd(a, -b), c)
-    #     self.assertEqual(gcd(-b, a), c)
-    #     self.assertEqual(gcd(-a, -b), c)
-    #     self.assertEqual(gcd(-b, -a), c)
-    #     c = 576559230871654959816130551884856912003141446781646602790216406874
-    #     a = x * c
-    #     b = y * c
-    #     self.assertEqual(gcd(a, b), c)
-    #     self.assertEqual(gcd(b, a), c)
-    #     self.assertEqual(gcd(-a, b), c)
-    #     self.assertEqual(gcd(b, -a), c)
-    #     self.assertEqual(gcd(a, -b), c)
-    #     self.assertEqual(gcd(-b, a), c)
-    #     self.assertEqual(gcd(-a, -b), c)
-    #     self.assertEqual(gcd(-b, -a), c)
-    #
-    #     self.assertRaises(TypeError, gcd, 120.0, 84)
-    #     self.assertRaises(TypeError, gcd, 120, 84.0)
-    #     self.assertEqual(gcd(MyIndexable(120), MyIndexable(84)), 12)
+    def testGcd(self):
+        gcd = math.gcd
+        self.assertEqual(gcd(0, 0), 0)
+        self.assertEqual(gcd(1, 0), 1)
+        self.assertEqual(gcd(-1, 0), 1)
+        self.assertEqual(gcd(0, 1), 1)
+        self.assertEqual(gcd(0, -1), 1)
+        self.assertEqual(gcd(7, 1), 1)
+        self.assertEqual(gcd(7, -1), 1)
+        self.assertEqual(gcd(-23, 15), 1)
+        self.assertEqual(gcd(120, 84), 12)
+        self.assertEqual(gcd(84, -120), 12)
+        self.assertEqual(gcd(1216342683557601535506311712, 436522681849110124616458784), 32)
+        c = 652560
+        x = 434610456570399902378880679233098819019853229470286994367836600566
+        y = 1064502245825115327754847244914921553977
+        a = x * c
+        b = y * c
+        self.assertEqual(gcd(a, b), c)
+        self.assertEqual(gcd(b, a), c)
+        self.assertEqual(gcd(-a, b), c)
+        self.assertEqual(gcd(b, -a), c)
+        self.assertEqual(gcd(a, -b), c)
+        self.assertEqual(gcd(-b, a), c)
+        self.assertEqual(gcd(-a, -b), c)
+        self.assertEqual(gcd(-b, -a), c)
+        c = 576559230871654959816130551884856912003141446781646602790216406874
+        a = x * c
+        b = y * c
+        self.assertEqual(gcd(a, b), c)
+        self.assertEqual(gcd(b, a), c)
+        self.assertEqual(gcd(-a, b), c)
+        self.assertEqual(gcd(b, -a), c)
+        self.assertEqual(gcd(a, -b), c)
+        self.assertEqual(gcd(-b, a), c)
+        self.assertEqual(gcd(-a, -b), c)
+        self.assertEqual(gcd(-b, -a), c)
+    
+        self.assertRaises(TypeError, gcd, 120.0, 84)
+        self.assertRaises(TypeError, gcd, 120, 84.0)
+        # self.assertEqual(gcd(MyIndexable(120), MyIndexable(84)), 12)
 
     def testHypot(self):
         self.assertRaises(TypeError, math.hypot)
@@ -633,37 +711,37 @@ class MathTests(unittest.TestCase):
         self.assertTrue(math.isnan(math.hypot(1.0, NAN)))
         self.assertTrue(math.isnan(math.hypot(NAN, -2.0)))
 
-    # def testLdexp(self):
-    #     self.assertRaises(TypeError, math.ldexp)
-    #     self.ftest('ldexp(0,1)', math.ldexp(0,1), 0)
-    #     self.ftest('ldexp(1,1)', math.ldexp(1,1), 2)
-    #     self.ftest('ldexp(1,-1)', math.ldexp(1,-1), 0.5)
-    #     self.ftest('ldexp(-1,1)', math.ldexp(-1,1), -2)
-    #     self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
-    #     self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
-    #     self.assertEqual(math.ldexp(1., -1000000), 0.)
-    #     self.assertEqual(math.ldexp(-1., -1000000), -0.)
-    #     self.assertEqual(math.ldexp(INF, 30), INF)
-    #     self.assertEqual(math.ldexp(NINF, -213), NINF)
-    #     self.assertTrue(math.isnan(math.ldexp(NAN, 0)))
-    #
-    #     # large second argument
-    #     for n in [10**5, 10**10, 10**20, 10**40]:
-    #         self.assertEqual(math.ldexp(INF, -n), INF)
-    #         self.assertEqual(math.ldexp(NINF, -n), NINF)
-    #         self.assertEqual(math.ldexp(1., -n), 0.)
-    #         self.assertEqual(math.ldexp(-1., -n), -0.)
-    #         self.assertEqual(math.ldexp(0., -n), 0.)
-    #         self.assertEqual(math.ldexp(-0., -n), -0.)
-    #         self.assertTrue(math.isnan(math.ldexp(NAN, -n)))
-    #
-    #         self.assertRaises(OverflowError, math.ldexp, 1., n)
-    #         self.assertRaises(OverflowError, math.ldexp, -1., n)
-    #         self.assertEqual(math.ldexp(0., n), 0.)
-    #         self.assertEqual(math.ldexp(-0., n), -0.)
-    #         self.assertEqual(math.ldexp(INF, n), INF)
-    #         self.assertEqual(math.ldexp(NINF, n), NINF)
-    #         self.assertTrue(math.isnan(math.ldexp(NAN, n)))
+    def testLdexp(self):
+        self.assertRaises(TypeError, math.ldexp)
+        self.ftest('ldexp(0,1)', math.ldexp(0,1), 0)
+        self.ftest('ldexp(1,1)', math.ldexp(1,1), 2)
+        self.ftest('ldexp(1,-1)', math.ldexp(1,-1), 0.5)
+        self.ftest('ldexp(-1,1)', math.ldexp(-1,1), -2)
+        self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
+        self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
+        self.assertEqual(math.ldexp(1., -1000000), 0.)
+        self.assertEqual(math.ldexp(-1., -1000000), -0.)
+        self.assertEqual(math.ldexp(INF, 30), INF)
+        self.assertEqual(math.ldexp(NINF, -213), NINF)
+        self.assertTrue(math.isnan(math.ldexp(NAN, 0)))
+    
+        # large second argument
+        for n in [10**5, 10**10, 10**20, 10**40]:
+            self.assertEqual(math.ldexp(INF, -n), INF)
+            self.assertEqual(math.ldexp(NINF, -n), NINF)
+            self.assertEqual(math.ldexp(1., -n), 0.)
+            self.assertEqual(math.ldexp(-1., -n), -0.)
+            self.assertEqual(math.ldexp(0., -n), 0.)
+            self.assertEqual(math.ldexp(-0., -n), -0.)
+            self.assertTrue(math.isnan(math.ldexp(NAN, -n)))
+    
+            self.assertRaises(OverflowError, math.ldexp, 1., n)
+            self.assertRaises(OverflowError, math.ldexp, -1., n)
+            self.assertEqual(math.ldexp(0., n), 0.)
+            self.assertEqual(math.ldexp(-0., n), -0.)
+            self.assertEqual(math.ldexp(INF, n), INF)
+            self.assertEqual(math.ldexp(NINF, n), NINF)
+            self.assertTrue(math.isnan(math.ldexp(NAN, n)))
 
     def testLog(self):
         self.assertRaises(TypeError, math.log)
@@ -681,31 +759,31 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.log(INF), INF)
         self.assertTrue(math.isnan(math.log(NAN)))
 
-    # def testLog1p(self):
-    #     self.assertRaises(TypeError, math.log1p)
-    #     for n in [2, 2**90, 2**300]:
-    #         self.assertAlmostEqual(math.log1p(n), math.log1p(float(n)))
-    #     self.assertRaises(ValueError, math.log1p, -1)
-    #     self.assertEqual(math.log1p(INF), INF)
+    def testLog1p(self):
+        self.assertRaises(TypeError, math.log1p)
+        for n in [2, 2**90, 2**300]:
+            self.assertAlmostEqual(math.log1p(n), math.log1p(float(n)))
+        self.assertRaises(ValueError, math.log1p, -1)
+        # self.assertEqual(math.log1p(INF), INF)
 
-    # def testLog2(self):
-    #     self.assertRaises(TypeError, math.log2)
-    #
-    #     # Check some integer values
-    #     self.assertEqual(math.log2(1), 0.0)
-    #     self.assertEqual(math.log2(2), 1.0)
-    #     self.assertEqual(math.log2(4), 2.0)
-    #
-    #     # Large integer values
-    #     self.assertEqual(math.log2(2**1023), 1023.0)
-    #     self.assertEqual(math.log2(2**1024), 1024.0)
-    #     self.assertEqual(math.log2(2**2000), 2000.0)
-    #
-    #     self.assertRaises(ValueError, math.log2, -1.5)
-    #     self.assertRaises(ValueError, math.log2, NINF)
-    #     self.assertTrue(math.isnan(math.log2(NAN)))
+    def testLog2(self):
+        self.assertRaises(TypeError, math.log2)
+    
+        # Check some integer values
+        self.assertEqual(math.log2(1), 0.0)
+        self.assertEqual(math.log2(2), 1.0)
+        self.assertEqual(math.log2(4), 2.0)
+    
+        # Large integer values
+        self.assertEqual(math.log2(2**1023), 1023.0)
+        self.assertEqual(math.log2(2**1024), 1024.0)
+        self.assertEqual(math.log2(2**2000), 2000.0)
+    
+        self.assertRaises(ValueError, math.log2, -1.5)
+        self.assertRaises(ValueError, math.log2, NINF)
+        self.assertTrue(math.isnan(math.log2(NAN)))
 
-    # log2() is not accurate enough on Mac OS X Tiger (10.4)
+    # # log2() is not accurate enough on Mac OS X Tiger (10.4)
     # def testLog2Exact(self):
     #     # Check that we get exact equality for log2 of powers of 2.
     #     actual = [math.log2(math.ldexp(1.0, n)) for n in range(-1074, 1024)]
@@ -724,24 +802,24 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.log(INF), INF)
         self.assertTrue(math.isnan(math.log10(NAN)))
 
-    # def testModf(self):
-    #     self.assertRaises(TypeError, math.modf)
-    #
-    #     def testmodf(name, result, expected):
-    #         (v1, v2), (e1, e2) = result, expected
-    #         if abs(v1-e1) > eps or abs(v2-e2):
-    #             self.fail('%s returned %r, expected %r'%\
-    #                       (name, result, expected))
-    #
-    #     testmodf('modf(1.5)', math.modf(1.5), (0.5, 1.0))
-    #     testmodf('modf(-1.5)', math.modf(-1.5), (-0.5, -1.0))
-    #
-    #     self.assertEqual(math.modf(INF), (0.0, INF))
-    #     self.assertEqual(math.modf(NINF), (-0.0, NINF))
-    #
-    #     modf_nan = math.modf(NAN)
-    #     self.assertTrue(math.isnan(modf_nan[0]))
-    #     self.assertTrue(math.isnan(modf_nan[1]))
+    def testModf(self):
+        self.assertRaises(TypeError, math.modf)
+    
+        def testmodf(name, result, expected):
+            (v1, v2), (e1, e2) = result, expected
+            if abs(v1-e1) > eps or abs(v2-e2):
+                self.fail('%s returned %r, expected %r'%\
+                          (name, result, expected))
+    
+        testmodf('modf(1.5)', math.modf(1.5), (0.5, 1.0))
+        testmodf('modf(-1.5)', math.modf(-1.5), (-0.5, -1.0))
+    
+        self.assertEqual(math.modf(INF), (0.0, INF))
+        self.assertEqual(math.modf(NINF), (-0.0, NINF))
+    
+        modf_nan = math.modf(NAN)
+        self.assertTrue(math.isnan(modf_nan[0]))
+        self.assertTrue(math.isnan(modf_nan[1]))
 
     def testPow(self):
         self.assertRaises(TypeError, math.pow)
@@ -1011,14 +1089,14 @@ class MathTests(unittest.TestCase):
         self.assertRaises(TypeError, math.trunc, 1, 2)
         self.assertRaises(TypeError, math.trunc, TestNoTrunc())
 
-    # def testIsfinite(self):
-    #     self.assertTrue(math.isfinite(0.0))
-    #     self.assertTrue(math.isfinite(-0.0))
-    #     self.assertTrue(math.isfinite(1.0))
-    #     self.assertTrue(math.isfinite(-1.0))
-    #     self.assertFalse(math.isfinite(float("nan")))
-    #     self.assertFalse(math.isfinite(float("inf")))
-    #     self.assertFalse(math.isfinite(float("-inf")))
+    def testIsfinite(self):
+        self.assertTrue(math.isfinite(0.0))
+        self.assertTrue(math.isfinite(-0.0))
+        self.assertTrue(math.isfinite(1.0))
+        self.assertTrue(math.isfinite(-1.0))
+        self.assertFalse(math.isfinite(float("nan")))
+        self.assertFalse(math.isfinite(float("inf")))
+        self.assertFalse(math.isfinite(float("-inf")))
 
     def testIsnan(self):
         self.assertTrue(math.isnan(float("nan")))
