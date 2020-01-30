@@ -2,8 +2,8 @@ var $builtinmodule = function (name) {
     var mod = {};
 
     // Mathematical Constants
-    mod.pi = new Sk.builtin.float_(Math.PI);
-    mod.e = new Sk.builtin.float_(Math.E);
+    mod.pi  = new Sk.builtin.float_(Math.PI);
+    mod.e   = new Sk.builtin.float_(Math.E);
     mod.tau = new Sk.builtin.float_(2*Math.PI);
     mod.nan = new Sk.builtin.float_(NaN);
     mod.inf = new Sk.builtin.float_(Infinity);
@@ -137,9 +137,9 @@ var $builtinmodule = function (name) {
             return _gcd(b, a%b);
         };
 
-        var _a = Math.abs(Sk.ffi.remapToJs(a));
-        var _b = Math.abs(Sk.ffi.remapToJs(b));
-        var max_safe = false;
+        let _a = Math.abs(Sk.ffi.remapToJs(a));
+        let _b = Math.abs(Sk.ffi.remapToJs(b));
+        let max_safe = false;
 
         if (_a >= Number.MAX_SAFE_INTEGER || _b >= Number.MAX_SAFE_INTEGER){
             _a = BigInt(Sk.ffi.remapToJs(Sk.builtin.str(a)));
@@ -147,10 +147,9 @@ var $builtinmodule = function (name) {
             max_safe = true;
         };
 
-        var res = _gcd(_a, _b)
-        if(res < 0){
-            res = -res  // python only returns positive gcds
-        };
+        let res = _gcd(_a, _b);
+            res = res<0 ? -res : res; // python only returns positive gcds
+
         if (max_safe){
             return new Sk.builtin.lng(res.toString());
         };
