@@ -199,60 +199,44 @@ var $builtinmodule = function (name) {
     });
 
     
-    _isclose = function(a,b,kwargs){
-        Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 3, true);
-        return kwargs
-        return new Sk.builtin.tuple([a,b,c,d])
+    _isclose = function(a,b,rel_tol,abs_tol){
+        Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 4, true);
+        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a)); 
+        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
+        Sk.builtin.pyCheckType("rel_tol", "number", Sk.builtin.checkNumber(rel_tol)); 
+        Sk.builtin.pyCheckType("abs_tol", "number", Sk.builtin.checkNumber(abs_tol));
+
+        const _a = Sk.ffi.remapToJs(a);
+        const _b = Sk.ffi.remapToJs(b);
+        const _rel_tol = Sk.ffi.remapToJs(rel_tol);
+        const _abs_tol = Sk.ffi.remapToJs(abs_tol);
+
+        // return new Sk.builtin.tuple([a,b,rel_tol,abs_tol])
+
+        if (_rel_tol < 0.0 || _abs_tol < 0.0 ) {
+            throw new Sk.builtin.ValueError("tolerances must be non-negative");
+        };
+        if (_a == _b){
+            return Sk.builtin.bool.true$;
+        };
+
+        if (_a == Infinity || _a == -Infinity || _b == Infinity || _b == -Infinity){
+            // same sign infinities were caut in previous test
+            return Sk.builtin.bool.false$;
+        };
+        const diff = Math.abs(_b - _a);
+        const res =  (((diff <= Math.abs(_rel_tol * _b)) ||
+                     (diff <= Math.abs(_rel_tol * _a))) ||
+                     (diff <= _abs_tol));
+        return new Sk.builtin.bool(res)
     };
     
-    _isclose.$defaults = [Sk.builtin.none.none$ ,Sk.builtin.none.none$,5,4]
-    _isclose.co_varnames = ['a' ,'b','c','d']
-    // _isclose.co_kwonlyargcount = 2;
+    _isclose.co_varnames = ['a','b','rel_tol','abs_tol']
     _isclose.co_argcount = 2;
-    _isclose.co_kwargs = true;
-    _isclose.$kwdefs = {'c':5, 'd':3}
-
+    _isclose.co_kwonlyargcount = 2;
+    _isclose.$kwdefs = [1e-09, 0.0];
 
     mod.isclose = new Sk.builtin.func(_isclose);
-
-        
-        
-    //     Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 2, true);
-    //     Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a)); 
-    //     Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
-    //     console.log(kwargs)
-    //     var allowed_kwargs = {"rel_tol": 1e-09, "abs_tol": 0.0}  //this was awkward
-    //     var kwargs = new Sk.builtins['dict'](kwargs);
-    //     var kwargs = kwargs.assign(kwargs, allowed_kwargs)
-
-    //     if (kwargs.length > 2){
-    //         throw new Sk.builtin.TypeError("got an unexpected keword argument for isclose()")
-    //     };
-    //     Sk.builtin.pyCheckType("rel_tol", "number", Sk.builtin.checkNumber(kwargs['rel_tol'])); 
-    //     Sk.builtin.pyCheckType("abs_tol", "number", Sk.builtin.checkNumber(kwargs['abs_tol']));
-
-    //     var _a = Sk.ffi.remapToJs(a);
-    //     var _b = Sk.ffi.remapToJs(b);
-    //     var _rel_tol = Sk.ffi.remapToJs(rel_tol);
-    //     var _abs_tol = Sk.ffi.remapToJs(abs_tol);
-
-    //     if (_rel_tol < 0.0 || _abs_tol < 0.0 ) {
-    //         throw new Sk.builtin.ValueError("tolerances must be non-negative");
-    //     };
-    //     if (_a == _b){
-    //         return Sk.builtin.bool.true$;
-    //     };
-
-    //     if (_a == Infinity || _a == -Infinity || _b == Infinity || _b == -Infinity){
-    //         // same sign infinities were caut in previous test
-    //         return Sk.builtin.bool.false$;
-    //     };
-    //     var diff = Math.abs(b - a);
-    //     var res =  (((diff <= Math.abs(_rel_tol * _b)) ||
-    //                  (diff <= Math.abs(_rel_tol * _a))) ||
-    //                  (diff <= _abs_tol));
-    //     return new Sk.builtin.bool(res)
-    // });
 
     mod.isfinite = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("isfinite", arguments.length, 1, 1);
@@ -398,12 +382,24 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log", arguments.length, 1, 2);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
+        const _x = Sk.builtin.asnum$(x)
+
+        if (_x<0){
+            throw new Sk.builtin.ValueError("math domain error")
+        };
         if (base === undefined) {
-            return new Sk.builtin.float_(Math.log(Sk.builtin.asnum$(x)));
-        } else {
-            Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
-            var ret = Math.log(Sk.builtin.asnum$(x)) / Math.log(Sk.builtin.asnum$(base));
-            return new Sk.builtin.float_(ret);
+            return new Sk.builtin.float_(Math.log(_x));
+        }; 
+
+        Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
+        const _base = Sk.builtin.asnum$(base)
+
+        if (_base<=0){
+            throw new Sk.builtin.ValueError("math domain error")
+        }
+        else {
+            const res = Math.log(_x) / Math.log(_base);
+            return new Sk.builtin.float_(res);
         }
     });
 
@@ -413,8 +409,10 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log1p", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         
-        _x = Sk.ffi.remapToJs(x);
-
+        const _x = Sk.ffi.remapToJs(x);
+        if (_x<0){
+            throw new Sk.builtin.ValueError("math domain error")
+        }  
         if (_x==0.){
             return new Sk.builtin.float_(_x); // respects log1p(-0.0) return -0.0
         }
@@ -437,18 +435,23 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log2", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        // want to check if it's a big int
-
-        var ret = Math.log(Sk.builtin.asnum$(x)) / Math.log(2);
-        return new Sk.builtin.float_(ret);
+        const _x = Sk.builtin.asnum$(x)
+        if (_x<0){
+            throw new Sk.builtin.ValueError("math domain error")
+        }  
+        const res = Math.log2(_x);
+        return new Sk.builtin.float_(res);
     });
 
     mod.log10 = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("log10", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        var ret = Math.log2(Sk.builtin.asnum$(x));
-        return new Sk.builtin.float_(ret);
+        const _x = Sk.builtin.asnum$(x)
+        if (_x<0){
+            throw new Sk.builtin.ValueError("math domain error")
+        }  
+        const res = Math.log10(_x);
+        return new Sk.builtin.float_(res);
     });
 
     mod.pow = new Sk.builtin.func(function (x, y) {
