@@ -38,8 +38,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        var _x = Sk.ffi.remapToJs(x);
-        var _y = Sk.ffi.remapToJs(y);
+        var _x = Sk.builtin.asnum$(x);
+        var _y = Sk.builtin.asnum$(y);
         var res;
 
         var isNeg_x = _x < 0;
@@ -126,8 +126,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x)); 
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        var _x = Sk.ffi.remapToJs(x);
-        var _y = Sk.ffi.remapToJs(y);
+        var _x = Sk.builtin.asnum$(x);
+        var _y = Sk.builtin.asnum$(y);
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)){
             return new Sk.builtin.float_(_x)
@@ -184,15 +184,15 @@ var $builtinmodule = function (name) {
     
     _isclose = function(a,b,rel_tol,abs_tol){
         Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 4, true);
-        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a)); 
-        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
+        Sk.builtin.pyCheckType("a",       "number", Sk.builtin.checkNumber(a)); 
+        Sk.builtin.pyCheckType("b",       "number", Sk.builtin.checkNumber(b));
         Sk.builtin.pyCheckType("rel_tol", "number", Sk.builtin.checkNumber(rel_tol)); 
         Sk.builtin.pyCheckType("abs_tol", "number", Sk.builtin.checkNumber(abs_tol));
 
-        const _a = Sk.ffi.remapToJs(a);
-        const _b = Sk.ffi.remapToJs(b);
-        const _rel_tol = Sk.ffi.remapToJs(rel_tol);
-        const _abs_tol = Sk.ffi.remapToJs(abs_tol);
+        const _a       = Sk.builtin.asnum$(a);
+        const _b       = Sk.builtin.asnum$(b);
+        const _rel_tol = Sk.builtin.asnum$(rel_tol);
+        const _abs_tol = Sk.builtin.asnum$(abs_tol);
 
         // return new Sk.builtin.tuple([a,b,rel_tol,abs_tol])
 
@@ -214,7 +214,7 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.bool(res)
     };
     
-    _isclose.co_name = new Sk.builtins.str('isclose');
+    _isclose.co_name     = new Sk.builtins.str('isclose');
     _isclose.co_varnames = ['a','b','rel_tol','abs_tol'];
     _isclose.co_argcount = 2;
     _isclose.co_kwonlyargcount = 2;
@@ -270,24 +270,24 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
-        _x = Sk.ffi.remapToJs(x)
-        _i = Sk.ffi.remapToJs(i)
+        _x = Sk.builtin.asnum$(x)
+        _i = Sk.builtin.asnum$(i)
 
         if (_x == Infinity || _x==-Infinity){
             return new Sk.builtin.float_(_x)
         }
         else if (_x == 0){
-            return new Sk.ffi.remapToPy(_x)
+            return new Sk.builtin.float_(_x)
         }
         var res = _x * Math.pow(2,_i)
-        return new Sk.ffi.remapToPy(res)
+        return new Sk.builtin.float_(res)
     });
 
     mod.modf = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("exp", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        var _x = Sk.ffi.remapToJs(x)
+        var _x = Sk.builtin.asnum$(x)
         if (!isFinite(_x)){
             if (_x == Infinity){
                 return new Sk.builtin.tuple([Sk.builtin.float_(0.0), Sk.builtin.float_(_x)])
@@ -344,7 +344,7 @@ var $builtinmodule = function (name) {
         // for smaller values of x
         Sk.builtin.pyCheckArgsLen("expm1", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        var _x = Sk.ffi.remapToJs(x);
+        var _x = Sk.builtin.asnum$(x);
 
         if (Math.abs(_x) < .7){
             var _u = Math.exp(_x)
@@ -393,7 +393,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log1p", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         
-        const _x = Sk.ffi.remapToJs(x);
+        const _x = Sk.builtin.asnum$(x);
         if (_x<0){
             throw new Sk.builtin.ValueError("math domain error")
         }  
