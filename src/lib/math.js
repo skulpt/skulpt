@@ -126,13 +126,13 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x)); 
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        var _x = Sk.builtin.asnum$(x);
-        var _y = Sk.builtin.asnum$(y);
+        const _x = Sk.builtin.asnum$(x);
+        const _y = Sk.builtin.asnum$(y);
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)){
             return new Sk.builtin.float_(_x)
         };
-        var r = _x % _y
+        const r = _x % _y
         if (isNaN(r)){
             if(!isNaN(_x) && !isNaN(_y)){
                 throw new Sk.builtin.ValueError("math domain error");
@@ -226,7 +226,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("isfinite", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        var _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
         if(isFinite(_x)) {
             return Sk.builtin.bool.true$;
         } else {
@@ -239,7 +239,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("isinf", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        var _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
         if(isFinite(_x) && !isNaN(_x)) {
             return Sk.builtin.bool.false$;
         } else {
@@ -252,7 +252,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("isnan", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "float", Sk.builtin.checkFloat(x));
 
-        var _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
         if(isNaN(_x)) {
             return Sk.builtin.bool.true$;
         } else {
@@ -270,44 +270,44 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
-        _x = Sk.builtin.asnum$(x)
-        _i = Sk.builtin.asnum$(i)
+        const _x = Sk.builtin.asnum$(x);
+        const _i = Sk.builtin.asnum$(i);
 
         if (_x == Infinity || _x==-Infinity){
-            return new Sk.builtin.float_(_x)
+            return new Sk.builtin.float_(_x);
         }
         else if (_x == 0){
-            return new Sk.builtin.float_(_x)
-        }
-        var res = _x * Math.pow(2,_i)
-        return new Sk.builtin.float_(res)
+            return new Sk.builtin.float_(_x);
+        };
+        const res = _x * Math.pow(2,_i);
+        return new Sk.builtin.float_(res);
     });
 
     mod.modf = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("exp", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        var _x = Sk.builtin.asnum$(x)
+        let _x = Sk.builtin.asnum$(x)
         if (!isFinite(_x)){
             if (_x == Infinity){
-                return new Sk.builtin.tuple([Sk.builtin.float_(0.0), Sk.builtin.float_(_x)])
+                return new Sk.builtin.tuple([Sk.builtin.float_(0.0), Sk.builtin.float_(_x)]);
             }
             else if (_x == -Infinity){
-                return new Sk.builtin.tuple([Sk.builtin.float_(-0.0),Sk.builtin.float_(_x)])
+                return new Sk.builtin.tuple([Sk.builtin.float_(-0.0),Sk.builtin.float_(_x)]);
             }
             else if (isNaN(_x)){
-                return new Sk.builtin.tuple([Sk.builtin.float_(_x), Sk.builtin.float_(_x)])
-            }
-        }
-        var isNeg = _x < 0.0
-        _x = Math.abs(_x)
-        var i = Math.floor(_x) //integer part
-        var d = _x - Math.floor(_x) //decimal part
+                return new Sk.builtin.tuple([Sk.builtin.float_(_x), Sk.builtin.float_(_x)]);
+            };
+        };
+        const isNeg = _x < 0.0;
+        _x = Math.abs(_x);
+        const i = Math.floor(_x); //integer part
+        const d = _x - Math.floor(_x); //decimal part
         if (isNeg){
-            return new Sk.builtin.tuple([Sk.builtin.float_(-d), Sk.builtin.float_(-i)])
+            return new Sk.builtin.tuple([Sk.builtin.float_(-d), Sk.builtin.float_(-i)]);
         }
         else {
-            return new Sk.builtin.tuple([Sk.builtin.float_(d), Sk.builtin.float_(i)])
+            return new Sk.builtin.tuple([Sk.builtin.float_(d), Sk.builtin.float_(i)]);
         }
     });
 
@@ -344,20 +344,20 @@ var $builtinmodule = function (name) {
         // for smaller values of x
         Sk.builtin.pyCheckArgsLen("expm1", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        var _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
 
         if (Math.abs(_x) < .7){
-            var _u = Math.exp(_x)
+            const _u = Math.exp(_x)
             if (_u == 1.0){
                 return Sk.builtin.float_(_x)
             }
             else {
-                var res = (_u - 1.0) * _x / Math.log(_u);
+                const res = (_u - 1.0) * _x / Math.log(_u);
                 return new Sk.builtin.float_(res)
             };
         }
         else {
-            var res = Math.exp(_x) - 1.0;
+            const res = Math.exp(_x) - 1.0;
             return new Sk.builtin.float_(res)
         };
     });
@@ -404,12 +404,12 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.float_(_x); 
         }
         else if (-0.5 <= _x && _x <= 1.){
-            var _y = 1.+ _x;
-            var res =  Math.log(_y) - ((_y - 1.) - _x) / _y;
+            const _y = 1.+ _x;
+            const res =  Math.log(_y) - ((_y - 1.) - _x) / _y;
             return new Sk.builtin.float_(res);
         }
         else {
-            var res = Math.log(1+Sk.builtin.asnum$(x));
+            const res = Math.log(1+Sk.builtin.asnum$(x));
             return new Sk.builtin.float_(res);
         }
     });
