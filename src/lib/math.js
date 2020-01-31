@@ -81,8 +81,33 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.abs(Sk.builtin.asnum$(x)));
     });
 
+    var MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
     mod.factorial = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.factorial() is not yet implemented in Skulpt")
+        Sk.builtin.pyCheckArgsLen("factorial", arguments.length, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        let _x = Sk.builtin.asnum$(x);
+
+        if (!Number.isInteger(_x)){
+            throw new Sk.builtin.ValueError('factorial() only accepts integral values')
+        };
+        if (_x<0){
+            throw new Sk.builtin.ValueError('factorial() not defined for negative numbers')
+        };
+
+        let res = 1;
+        if (_x>MAX_SAFE_INTEGER_FACTORIAL){  // correct results for large x!
+            _x = Sk.builtin.str(x).$jsstr().replace('.0', ''); // x could be a float
+            _x = BigInt(_x);
+            res = BigInt(res);
+        }
+        for (let i = res; i <= _x; i++) {
+            res *= i;
+        }
+        if (_x > MAX_SAFE_INTEGER_FACTORIAL){
+            return new Sk.builtin.lng(res.toString());
+        }
+        return new Sk.builtin.int_(res);
     });
 
     mod.floor = new Sk.builtin.func(function (x) {
@@ -137,13 +162,13 @@ var $builtinmodule = function (name) {
             return _gcd(b, a%b);
         };
 
-        let _a = Math.abs(Sk.ffi.remapToJs(a));
-        let _b = Math.abs(Sk.ffi.remapToJs(b));
+        let _a = Math.abs(Sk.builtin.asnum$(a));
+        let _b = Math.abs(Sk.builtin.asnum$(b));
         let max_safe = false;
 
         if (_a >= Number.MAX_SAFE_INTEGER || _b >= Number.MAX_SAFE_INTEGER){
-            _a = BigInt(Sk.ffi.remapToJs(Sk.builtin.str(a)));
-            _b = BigInt(Sk.ffi.remapToJs(Sk.builtin.str(b)));
+            _a = BigInt(Sk.builtin.str(a).$jsstr());;
+            _b = BigInt(Sk.builtin.str(b).$jsstr());;
             max_safe = true;
         };
 
@@ -154,47 +179,6 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.lng(res.toString());
         };
         return new Sk.builtin.int_(res);
-    });
-
-    var MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
-    mod.factorial = new Sk.builtin.func(function (x) {
-        Sk.builtin.pyCheckArgsLen("factorial", arguments.length, 1, 1);
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        x = Sk.builtin.asnum$(x);
-
-        if (!Number.isInteger(x)){
-            throw new Sk.builtin.ValueError('factorial() only accepts integral values')
-        };
-        if (x<0){
-            throw new Sk.builtin.ValueError('factorial() not defined for negative numbers')
-        };
-
-        var r = 1;
-        for (var i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
-            r *= i;
-        }
-        if(x<=MAX_SAFE_INTEGER_FACTORIAL){
-            return new Sk.builtin.int_(r);
-        }else{
-            // for big numbers (19 and larger) we first calculate 18! above
-            // and then use bigintegers to continue the process.
-
-            // This is inefficient as hell, but it produces correct answers.
-
-            // promotes an integer to a biginteger
-            function bigup(number){
-              var n = Sk.builtin.asnum$nofloat(number);
-              return new Sk.builtin.biginteger(number);
-            }
-
-            r = bigup(r);
-            for (var i = MAX_SAFE_INTEGER_FACTORIAL+1; i <= x; i++) {
-                var i_bigup = bigup(i);
-                r = r.multiply(i_bigup);
-            }
-            return new Sk.builtin.lng(r);
-        }
     });
 
     
@@ -230,7 +214,8 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.bool(res)
     };
     
-    _isclose.co_varnames = ['a','b','rel_tol','abs_tol']
+    _isclose.co_name = new Sk.builtins.str('isclose');
+    _isclose.co_varnames = ['a','b','rel_tol','abs_tol'];
     _isclose.co_argcount = 2;
     _isclose.co_kwonlyargcount = 2;
     _isclose.$kwdefs = [1e-09, 0.0];
