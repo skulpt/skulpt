@@ -248,12 +248,12 @@ var $builtinmodule = function (name) {
     });
     
     mod.isinf = new Sk.builtin.func(function(x) {
-        /* Return True if x is infinite, and False otherwise. */
+        /* Return True if x is infinite or nan, and False otherwise. */
         Sk.builtin.pyCheckArgsLen("isinf", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
-        if(isFinite(_x) && !isNaN(_x)) {
+        if(isFinite(_x) || isNaN(_x)) {
             return Sk.builtin.bool.false$;
         } else {
             return Sk.builtin.bool.true$
