@@ -653,10 +653,14 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("tanh", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
+
+        if (_x===0){
+            return x
+        }
 
         var e = Math.E;
-        var p = Math.pow(e, x);
+        var p = Math.pow(e, _x);
         var n = 1 / p;
         var result = ((p - n) / 2) / ((p + n) / 2);
 
