@@ -257,8 +257,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
-    v_type = new Sk.builtin.type(v);
-    w_type = new Sk.builtin.type(w);
+    v_type = v.ob$type;
+    w_type = w.ob$type;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
@@ -423,13 +423,13 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
 
     if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
