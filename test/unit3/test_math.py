@@ -422,7 +422,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.exp(INF), INF)
         self.assertEqual(math.exp(NINF), 0.)
         self.assertTrue(math.isnan(math.exp(NAN)))
-        # self.assertRaises(OverflowError, math.exp, 1000000)
+        self.assertRaises(OverflowError, math.exp, 1000000)
 
     def testExpm1(self):
         # taken from cpython/Lib/test/math_testcases.txt
@@ -717,8 +717,8 @@ class MathTests(unittest.TestCase):
         self.ftest('ldexp(1,1)', math.ldexp(1,1), 2)
         self.ftest('ldexp(1,-1)', math.ldexp(1,-1), 0.5)
         self.ftest('ldexp(-1,1)', math.ldexp(-1,1), -2)
-        # self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
-        # self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
+        self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
+        self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
         self.assertEqual(math.ldexp(1., -1000000), 0.)
         self.assertEqual(math.ldexp(-1., -1000000), -0.)
         self.assertEqual(math.ldexp(INF, 30), INF)
@@ -735,8 +735,8 @@ class MathTests(unittest.TestCase):
             self.assertEqual(math.ldexp(-0., -n), -0.)
             self.assertTrue(math.isnan(math.ldexp(NAN, -n)))
     
-            # self.assertRaises(OverflowError, math.ldexp, 1., n)
-            # self.assertRaises(OverflowError, math.ldexp, -1., n)
+            self.assertRaises(OverflowError, math.ldexp, 1., n)
+            self.assertRaises(OverflowError, math.ldexp, -1., n)
             self.assertEqual(math.ldexp(0., n), 0.)
             self.assertEqual(math.ldexp(-0., n), -0.)
             self.assertEqual(math.ldexp(INF, n), INF)

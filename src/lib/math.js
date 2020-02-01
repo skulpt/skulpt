@@ -281,17 +281,18 @@ var $builtinmodule = function (name) {
         const _x = Sk.builtin.asnum$(x);
         const _i = Sk.builtin.asnum$(i);
 
-        if (_x == Infinity || _x == -Infinity) {
-            return new Sk.builtin.float_(_x);
-        } else if (_x == 0) {
-            return new Sk.builtin.float_(_x);
+        if (_x == Infinity || _x == -Infinity || _x == 0 || isNaN(_x)) {
+            return x;
         };
         const res = _x * Math.pow(2, _i);
+        if (!isFinite(res)) {
+            throw new Sk.builtin.OverflowError("math range error")
+        };
         return new Sk.builtin.float_(res);
     });
 
     mod.modf = new Sk.builtin.func(function (x) {
-        Sk.builtin.pyCheckArgsLen("exp", arguments.length, 1, 1);
+        Sk.builtin.pyCheckArgsLen("modf", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x)
@@ -338,8 +339,16 @@ var $builtinmodule = function (name) {
     mod.exp = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("exp", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        const _x = Sk.builtin.asnum$(x);
+        if (_x == Infinity || _x == -Infinity || isNaN(_x)) {
+            return new Sk.builtin.float_(Math.exp(_x));
+        }
+        const res = Math.exp(_x);
+        if (!isFinite(res)) {
+            throw new Sk.builtin.OverflowError("math range error");
+        }
 
-        return new Sk.builtin.float_(Math.exp(Sk.builtin.asnum$(x)));
+        return new Sk.builtin.float_(res);
     });
 
     mod.expm1 = new Sk.builtin.func(function (x) {
