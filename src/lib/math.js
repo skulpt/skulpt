@@ -354,7 +354,9 @@ var $builtinmodule = function (name) {
     mod.trunc = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("trunc", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
+        if (Sk.builtin.checkInt(x)) {
+            return x  //deals with large ints being passed 
+        };
         return new Sk.builtin.int_(Sk.builtin.asnum$(x) | 0);
     });
 

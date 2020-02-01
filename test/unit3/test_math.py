@@ -1152,6 +1152,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.trunc(-1.999999), -1)
         self.assertEqual(math.trunc(-0.999999), -0)
         self.assertEqual(math.trunc(-100.999), -100)
+        self.assertEqual(math.trunc(2**2048), 2**2048)
 
         class TestTrunc(object):
             def __trunc__(self):
