@@ -457,24 +457,43 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x)
+        let res;
         if (_x<0){
             throw new Sk.builtin.ValueError("math domain error")
         }  
-        if (Sk.builtin.checkInt(x) && _x > Number.MAX_SAFE_INTEGER){
+        else if (Sk.builtin.checkFloat(x) || _x < Number.MAX_SAFE_INTEGER) {
+            res = Math.log2(_x);
+        }
+        else {  //int that is larger than max safe integer
+            // use idea x = 123456789 = .123456789 * 10**9
+            // log2(x)  = 9 * log2(10) + log2(.123456789)
             _x = Sk.builtin.str(x).$jsstr();
-        };
-        const res = Math.log2(_x);
+            const digits  = _x.length;
+            const decimal = parseFloat('0.' + _x);
+            res = digits * Math.log2(10) + Math.log2(decimal);
+        }
         return new Sk.builtin.float_(res);
     });
 
     mod.log10 = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("log10", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        const _x = Sk.builtin.asnum$(x)
+        let _x = Sk.builtin.asnum$(x);
+        let res;
         if (_x<0){
             throw new Sk.builtin.ValueError("math domain error")
-        }  
-        const res = Math.log10(_x);
+        }
+        else if (Sk.builtin.checkFloat(x) || _x < Number.MAX_SAFE_INTEGER) {
+            res = Math.log10(_x);
+        }
+        else {  //int that is larger than max safe integer
+            // use idea x = 123456789 = .123456789 * 10**9
+            // log10(x)  = 9 + log10(.123456789)
+            _x = Sk.builtin.str(x).$jsstr();
+            const digits  = _x.length;
+            const decimal = parseFloat('0.' + _x);
+            res = digits + Math.log10(decimal);
+        }
         return new Sk.builtin.float_(res);
     });
 
