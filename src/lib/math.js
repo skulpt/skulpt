@@ -31,6 +31,17 @@ var $builtinmodule = function (name) {
         var res;
 
     });
+
+    var get_sign = function(n){
+        //deals with signed zeros
+        // returns -1 or +1 for the sign
+        if (n){
+            n =  n < 0 ? -1 : 1;
+        } else {
+            n =  1/n < 0 ? -1 : 1;
+        };
+        return n
+    };
     
     mod.copysign = new Sk.builtin.func(function (x, y) {
         // returns abs of x with sign y
@@ -39,17 +50,17 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
         
-        function get_sign(n){
-            //deals with signed zeros
-            // returns -1 or +1 for the sign
-            if (n){
-                n =  n < 0 ? -1 : 1;
-            }
-            else {
-                n =  1/n < 0 ? -1 : 1;
-            };
-            return n
-        };
+        // function get_sign(n){
+        //     //deals with signed zeros
+        //     // returns -1 or +1 for the sign
+        //     if (n){
+        //         n =  n < 0 ? -1 : 1;
+        //     }
+        //     else {
+        //         n =  1/n < 0 ? -1 : 1;
+        //     };
+        //     return n
+        // };
 
         const _y = Sk.builtin.asnum$(y);
         const _x = Sk.builtin.asnum$(x);
@@ -217,7 +228,7 @@ var $builtinmodule = function (name) {
         };
 
         if (_a == Infinity || _a == -Infinity || _b == Infinity || _b == -Infinity){
-            // same sign infinities were caut in previous test
+            // same sign infinities were caught in previous test
             return Sk.builtin.bool.false$;
         };
         const diff = Math.abs(_b - _a);
@@ -241,7 +252,7 @@ var $builtinmodule = function (name) {
 
         let _x = Sk.builtin.asnum$(x);
         if (Sk.builtin.checkInt(x)){
-            return Sk.builtin.bool.true$;  //deals with big integers returning True
+            return Sk.builtin.bool.true$;  //deals with big integers returning False
         }
         else if (isFinite(_x)) {
             return Sk.builtin.bool.true$;
@@ -265,7 +276,7 @@ var $builtinmodule = function (name) {
         } 
         else {
             return Sk.builtin.bool.true$;
-        }
+        };
     });
 
     mod.isnan = new Sk.builtin.func(function(x) {
@@ -309,7 +320,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x)
-        if (!isFinite(_x)){
+        if (!isFinite(_x)){ //special cases
             if (_x == Infinity){
                 return new Sk.builtin.tuple([Sk.builtin.float_(0.0), Sk.builtin.float_(_x)]);
             }
@@ -320,16 +331,12 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.tuple([Sk.builtin.float_(_x), Sk.builtin.float_(_x)]);
             };
         };
-        const isNeg = _x < 0.0;
+        const sign = get_sign(_x);
         _x = Math.abs(_x);
-        const i = Math.floor(_x); //integer part
-        const d = _x - Math.floor(_x); //decimal part
-        if (isNeg){
-            return new Sk.builtin.tuple([Sk.builtin.float_(-d), Sk.builtin.float_(-i)]);
-        }
-        else {
-            return new Sk.builtin.tuple([Sk.builtin.float_(d), Sk.builtin.float_(i)]);
-        }
+        const i = sign * Math.floor(_x); //integer part
+        const d = sign * (_x - Math.floor(_x)); //decimal part
+        
+        return new Sk.builtin.tuple([Sk.builtin.float_(d), Sk.builtin.float_(i)]);
     });
 
     mod.perm = new Sk.builtin.func(function (x) {

@@ -882,6 +882,7 @@ class MathTests(unittest.TestCase):
     
         testmodf('modf(1.5)', math.modf(1.5), (0.5, 1.0))
         testmodf('modf(-1.5)', math.modf(-1.5), (-0.5, -1.0))
+        testmodf('modf(-0.0)', math.modf(-0.0),(-0.0,-0.0))
     
         self.assertEqual(math.modf(INF), (0.0, INF))
         self.assertEqual(math.modf(NINF), (-0.0, NINF))
