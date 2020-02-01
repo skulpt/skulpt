@@ -911,12 +911,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.Load:
-                    // This was an Sk.abstr.gattr() call, but inlining the
-                    // tp$getattr() call saved us nearly 5% on a benchmark.
-                    // No clue why. -Meredydd, 1/Feb/2020
-                    out("$ret = ", val, ".tp$getattr(", mname, ", true);");
+                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
                     this._checkSuspension(e);
-                    out("if ($ret===undefined) { throw new Sk.builtin.AttributeError(\"'\"+Sk.abstr.typeName(",val,")+\"' object has no attribute " + e.attr["$r"]().v + "\"); }");
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
