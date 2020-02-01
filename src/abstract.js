@@ -830,26 +830,29 @@ Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
-    var ret, f;
-    var objname = Sk.abstr.typeName(obj);
-    var jsName = pyName.$jsstr();
-
-    if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
+    // TODO is this valid usage? You shouldn't be able to get a JS null
+    // into native code. Perhaps this wants to be an assert.
+    if (obj === null || !obj.tp$getattr) {
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
     }
 
-    if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(pyName, canSuspend);
+    // This is a sufficiently hot path to hoist the suspension check
+    // (but even that ends up costing too much, even if we strip this function
+    // down to a tiny number of lines, so we now fast-path the tp$getattr()
+    // call directly in generated code. Seriously surprising and confusing.)
+    let ret = obj.tp$getattr(pyName, canSuspend);
+    if (ret && ret.$isSuspension) {
+        return Sk.misceval.chain(ret, function(r) {
+            if (r === undefined) {
+                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+            }
+            return r;
+        });
+    } else if (ret === undefined) {
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+    } else {
+        return ret;
     }
-
-    ret = Sk.misceval.chain(ret, function(r) {
-        if (r === undefined) {
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-        }
-        return r;
-    });
-
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
