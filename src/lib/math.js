@@ -638,7 +638,7 @@ var $builtinmodule = function (name) {
         const _x = Sk.builtin.asnum$(x);
 
         if (_x === 0) {
-            return x;
+            return Sk.builtin.float_(x);
         };
 
         var e = Math.E;
