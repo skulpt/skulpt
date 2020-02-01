@@ -854,9 +854,9 @@ Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  * Does the same thing as callsim without expensive call to Array.slice.
  * Requires args to be a Javascript array.
  */
-Sk.misceval.callsimArray = function(func, args) {
+Sk.misceval.callsimArray = function(func, args, kws) {
     var argarray = args ? args : [];
-    return Sk.misceval.apply(func, undefined, undefined, undefined, argarray);
+    return Sk.misceval.apply(func, undefined, undefined, kws, argarray);
 };
 Sk.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
 
@@ -884,14 +884,24 @@ Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
 
 /**
  * @param {Object} func the thing to call
- * @param {Array=} args an array of arguments to pass to the func
+ * @param {Array} args an array of arguments to pass to the func
+ * @param {Array=} kws an array of keyword arguments to pass to the func
  *
  * Does the same thing as callsimOrSuspend without expensive call to
- * Array.slice.  Requires args to be a Javascript array.
+ * Array.slice.  Requires args+kws to be Javascript arrays.
  */
-Sk.misceval.callsimOrSuspendArray = function (func, args) {
-    var argarray = args ? args : [];
-    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, argarray);
+Sk.misceval.callsimOrSuspendArray = function (func, args, kws) {
+    if (!args) {
+        args = [];
+    }
+    if (func.tp$call) {
+        return func.tp$call(args, kws);
+    } else {
+        // Slow path handles things like calling native JS fns
+        // (perhaps we should stop supporting that), and weird
+        // detection of the __call__ method (everything should use tp$call)
+        return Sk.misceval.applyOrSuspend(func, undefined, undefined, kws, args);
+    }
 };
 Sk.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
 
