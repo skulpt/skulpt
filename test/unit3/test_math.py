@@ -566,23 +566,23 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.fmod(0.0, 3.0), 0.0)
         self.assertEqual(math.fmod(0.0, NINF), 0.0)
 
-    # def testFrexp(self):
-    #     self.assertRaises(TypeError, math.frexp)
+    def testFrexp(self):
+        self.assertRaises(TypeError, math.frexp)
     
-    #     def testfrexp(name, result, expected):
-    #         (mant, exp), (emant, eexp) = result, expected
-    #         if abs(mant-emant) > eps or exp != eexp:
-    #             self.fail('%s returned %r, expected %r'%\
-    #                       (name, result, expected))
+        def testfrexp(name, result, expected):
+            (mant, exp), (emant, eexp) = result, expected
+            if abs(mant-emant) > eps or exp != eexp:
+                self.fail('%s returned %r, expected %r'%\
+                          (name, result, expected))
     
-    #     testfrexp('frexp(-1)', math.frexp(-1), (-0.5, 1))
-    #     testfrexp('frexp(0)', math.frexp(0), (0, 0))
-    #     testfrexp('frexp(1)', math.frexp(1), (0.5, 1))
-    #     testfrexp('frexp(2)', math.frexp(2), (0.5, 2))
+        testfrexp('frexp(-1)', math.frexp(-1), (-0.5, 1))
+        testfrexp('frexp(0)', math.frexp(0), (0, 0))
+        testfrexp('frexp(1)', math.frexp(1), (0.5, 1))
+        testfrexp('frexp(2)', math.frexp(2), (0.5, 2))
     
-    #     self.assertEqual(math.frexp(INF)[0], INF)
-    #     self.assertEqual(math.frexp(NINF)[0], NINF)
-    #     self.assertTrue(math.isnan(math.frexp(NAN)[0]))
+        self.assertEqual(math.frexp(INF)[0], INF)
+        self.assertEqual(math.frexp(NINF)[0], NINF)
+        self.assertTrue(math.isnan(math.frexp(NAN)[0]))
 
     # def testFsum(self):
     #     # math.fsum relies on exact rounding for correct operation.

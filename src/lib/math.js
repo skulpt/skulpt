@@ -142,7 +142,35 @@ var $builtinmodule = function (name) {
     });
 
     mod.frexp = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.frexp() is not yet implemented in Skulpt")
+            //  algorithm taken from https://locutus.io/c/math/frexp/
+            Sk.builtin.pyCheckArgsLen("frexp", arguments.length, 1, 1);
+            Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+            const arg = Sk.builtin.asnum$(x);
+            const res = [arg, 0];
+          
+            if (arg !== 0 && Number.isFinite(arg)) {
+              const absArg = Math.abs(arg);
+              let exp = Math.max(-1023, Math.floor(Math.log2(absArg)) + 1);
+              let m = absArg * Math.pow(2, -exp);
+              // These while loops compensate for rounding errors that sometimes occur because of ECMAScript's Math.log2's undefined precision
+              // and also works around the issue of Math.pow(2, -exp) === Infinity when exp <= -1024
+              while (m < 0.5) {
+                m *= 2
+                exp--
+              };
+              while (m >= 1) {
+                m *= 0.5
+                exp++
+              };
+              if (arg < 0) {
+                m = -m
+              };
+              res[0] = m;
+              res[1] = exp;
+            };
+            res[0] = new Sk.builtin.float_(res[0]);
+            res[1] = new Sk.builtin.int_(res[1]);
+            return new Sk.builtin.tuple(res)
     });
 
     mod.fsum = new Sk.builtin.func(function (x) {
@@ -167,8 +195,8 @@ var $builtinmodule = function (name) {
         let max_safe = false;
 
         if (_a >= Number.MAX_SAFE_INTEGER || _b >= Number.MAX_SAFE_INTEGER){
-            _a = BigInt(Sk.builtin.str(a).$jsstr());;
-            _b = BigInt(Sk.builtin.str(b).$jsstr());;
+            _a = BigInt(Sk.builtin.str(a).$jsstr());
+            _b = BigInt(Sk.builtin.str(b).$jsstr());
             max_safe = true;
         };
 
@@ -193,8 +221,6 @@ var $builtinmodule = function (name) {
         const _b       = Sk.builtin.asnum$(b);
         const _rel_tol = Sk.builtin.asnum$(rel_tol);
         const _abs_tol = Sk.builtin.asnum$(abs_tol);
-
-        // return new Sk.builtin.tuple([a,b,rel_tol,abs_tol])
 
         if (_rel_tol < 0.0 || _abs_tol < 0.0 ) {
             throw new Sk.builtin.ValueError("tolerances must be non-negative");
@@ -365,26 +391,36 @@ var $builtinmodule = function (name) {
     mod.log = new Sk.builtin.func(function (x, base) {
         Sk.builtin.pyCheckArgsLen("log", arguments.length, 1, 2);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        
 
-        const _x = Sk.builtin.asnum$(x)
-
+        let _x = Sk.builtin.asnum$(x)
+        let _base, res;
         if (_x<=0){
             throw new Sk.builtin.ValueError("math domain error")
         };
         if (base === undefined) {
-            return new Sk.builtin.float_(Math.log(_x));
-        }; 
-
-        Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
-        const _base = Sk.builtin.asnum$(base)
+            _base = Math.E;
+        }
+        else {
+            Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
+            _base = Sk.builtin.asnum$(base);
+        };
 
         if (_base<=0){
             throw new Sk.builtin.ValueError("math domain error")
         }
-        else {
-            const res = Math.log(_x) / Math.log(_base);
-            return new Sk.builtin.float_(res);
+        else if (Sk.builtin.checkFloat(x) || _x < Number.MAX_SAFE_INTEGER) {
+            res = Math.log(_x) / Math.log(_base);
         }
+        else {  //int that is larger than max safe integer
+            // use idea x = 123456789 = .123456789 * 10**9
+            // log(x)  = 9 * log(10) + log(.123456789)
+            _x = Sk.builtin.str(x).$jsstr();
+            const digits  = _x.length;
+            const decimal = parseFloat('0.' + _x);
+            res = (digits * Math.log(10) + Math.log(decimal)) / Math.log(_base);
+        }
+        return new Sk.builtin.float_(res);
     });
 
     mod.log1p = new Sk.builtin.func(function (x) {
@@ -420,10 +456,13 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log2", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        const _x = Sk.builtin.asnum$(x)
+        let _x = Sk.builtin.asnum$(x)
         if (_x<0){
             throw new Sk.builtin.ValueError("math domain error")
         }  
+        if (Sk.builtin.checkInt(x) && _x > Number.MAX_SAFE_INTEGER){
+            _x = Sk.builtin.str(x).$jsstr();
+        };
         const res = Math.log2(_x);
         return new Sk.builtin.float_(res);
     });
@@ -459,7 +498,7 @@ var $builtinmodule = function (name) {
         else if (_x==-1 && (_y == -Infinity || _y == Infinity)){
             return new Sk.builtin.float_(1.0);
         };
-        
+
         const res = Math.pow(_x, _y);
         if (!Number.isFinite(_x) || !Number.isFinite(_y)){
             return new Sk.builtin.float_(res);
