@@ -1127,8 +1127,8 @@ class MathTests(unittest.TestCase):
         self.ftest('tanh(0)', math.tanh(0), 0)
         self.ftest('tanh(1)+tanh(-1)', math.tanh(1)+math.tanh(-1), 0,
                    abs_tol=ulp(1))
-        # self.ftest('tanh(inf)', math.tanh(INF), 1)
-        # self.ftest('tanh(-inf)', math.tanh(NINF), -1)
+        self.ftest('tanh(inf)', math.tanh(INF), 1)
+        self.ftest('tanh(-inf)', math.tanh(NINF), -1)
         self.assertTrue(math.isnan(math.tanh(NAN)))
         self.assertAlmostEqual(math.tanh(2), 0.9640275800758169, 15)
         self.assertAlmostEqual(math.tanh(-7.5), -0.9999993881955461, 15)
@@ -1187,7 +1187,7 @@ class MathTests(unittest.TestCase):
         self.assertTrue(math.isinf(float("-inf")))
         self.assertTrue(math.isinf(1E400))
         self.assertTrue(math.isinf(-1E400))
-        # self.assertFalse(math.isinf(float("nan")))
+        self.assertFalse(math.isinf(float("nan")))
         self.assertFalse(math.isinf(0.))
         self.assertFalse(math.isinf(1.))
 
