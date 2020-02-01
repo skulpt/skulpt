@@ -266,7 +266,7 @@ var $builtinmodule = function (name) {
 
     mod.ldexp = new Sk.builtin.func(function (x,i) {
         // return x * (2**i)
-        Sk.builtin.pyCheckArgsLen("pow", arguments.length, 2, 2);
+        Sk.builtin.pyCheckArgsLen("ldexp", arguments.length, 2, 2);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
@@ -368,7 +368,7 @@ var $builtinmodule = function (name) {
 
         const _x = Sk.builtin.asnum$(x)
 
-        if (_x<0){
+        if (_x<=0){
             throw new Sk.builtin.ValueError("math domain error")
         };
         if (base === undefined) {
@@ -393,8 +393,10 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("log1p", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         
-        const _x = Sk.builtin.asnum$(x);
-        if (_x<0){
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x)); 
+        //without failed test log1p(2**90) == log1p(float(2**90)) ???
+        
+        if (_x<= -1.0){
             throw new Sk.builtin.ValueError("math domain error")
         }  
         if (_x==0.){
@@ -409,11 +411,10 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.float_(res);
         }
         else {
-            const res = Math.log(1+Sk.builtin.asnum$(x));
+            const res = Math.log(1+_x);
             return new Sk.builtin.float_(res);
-        }
+        };
     });
-
 
     mod.log2 = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("log2", arguments.length, 1, 1);
@@ -443,7 +444,30 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        return new Sk.builtin.float_(Math.pow(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y)));
+        const _x = Sk.builtin.asnum$(x);
+        const _y = Sk.builtin.asnum$(y);
+
+        if (_x == 0 && _y<0){
+            throw new Sk.builtin.ValueError("math domain error");
+        }
+        else if (_x == 1){
+            return new Sk.builtin.float_(1.0)
+        }
+        else if (Number.isFinite(_x) && Number.isFinite(_y) && _x<0 && !Number.isInteger(_y)){
+            throw new Sk.builtin.ValueError("math domain error");
+        }
+        else if (_x==-1 && (_y == -Infinity || _y == Infinity)){
+            return new Sk.builtin.float_(1.0);
+        };
+        
+        const res = Math.pow(_x, _y);
+        if (!Number.isFinite(_x) || !Number.isFinite(_y)){
+            return new Sk.builtin.float_(res);
+        }
+        else if (res == Infinity || res == -Infinity){
+            throw new Sk.builtin.OverflowError('math range error')
+        }
+        return new Sk.builtin.float_(res);
     });
 
     mod.sqrt = new Sk.builtin.func(function (x) {

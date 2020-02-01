@@ -717,8 +717,8 @@ class MathTests(unittest.TestCase):
         self.ftest('ldexp(1,1)', math.ldexp(1,1), 2)
         self.ftest('ldexp(1,-1)', math.ldexp(1,-1), 0.5)
         self.ftest('ldexp(-1,1)', math.ldexp(-1,1), -2)
-        self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
-        self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
+        # self.assertRaises(OverflowError, math.ldexp, 1., 1000000)
+        # self.assertRaises(OverflowError, math.ldexp, -1., 1000000)
         self.assertEqual(math.ldexp(1., -1000000), 0.)
         self.assertEqual(math.ldexp(-1., -1000000), -0.)
         self.assertEqual(math.ldexp(INF, 30), INF)
@@ -735,8 +735,8 @@ class MathTests(unittest.TestCase):
             self.assertEqual(math.ldexp(-0., -n), -0.)
             self.assertTrue(math.isnan(math.ldexp(NAN, -n)))
     
-            self.assertRaises(OverflowError, math.ldexp, 1., n)
-            self.assertRaises(OverflowError, math.ldexp, -1., n)
+            # self.assertRaises(OverflowError, math.ldexp, 1., n)
+            # self.assertRaises(OverflowError, math.ldexp, -1., n)
             self.assertEqual(math.ldexp(0., n), 0.)
             self.assertEqual(math.ldexp(-0., n), -0.)
             self.assertEqual(math.ldexp(INF, n), INF)
@@ -765,6 +765,75 @@ class MathTests(unittest.TestCase):
             self.assertAlmostEqual(math.log1p(n), math.log1p(float(n)))
         self.assertRaises(ValueError, math.log1p, -1)
         self.assertEqual(math.log1p(INF), INF)
+
+        # from cpython math_testcases.txt
+        # -- special values
+        self.assertEqual(math.log1p(0.0), 0.0)
+        self.assertEqual(math.log1p(-0.0), -0.0)
+        self.assertEqual(math.log1p(INF), INF)
+        self.assertRaises(ValueError, math.log1p,-INF)
+        self.assertTrue(math.isnan(math.log1p(NAN)))
+
+        # -- singularity at -1.0
+        self.assertRaises(ValueError, math.log1p, -1.0)
+        self.assertEqual(math.log1p(-0.9999999999999999), -36.736800569677101)
+
+        # -- finite values < 1.0 are invalid
+        self.assertRaises(ValueError, math.log1p, -1.0000000000000002)
+        self.assertRaises(ValueError,math.log1p,-1.1 )
+        self.assertRaises(ValueError,math.log1p,-2.0 )
+        self.assertRaises(ValueError,math.log1p,-1e300 )
+
+        # -- tiny x: log1p(x) ~ x
+        self.assertEqual(math.log1p(5e-324), 5e-324)
+        self.assertEqual(math.log1p(1e-320), 1e-320)
+        self.assertEqual(math.log1p(1e-300), 1e-300)
+        self.assertEqual(math.log1p(1e-150), 1e-150)
+        self.assertEqual(math.log1p(1e-20), 1e-20)
+
+        self.assertEqual(math.log1p(-5e-324), -5e-324)
+        self.assertEqual(math.log1p(-1e-320), -1e-320)
+        self.assertEqual(math.log1p(-1e-300), -1e-300)
+        self.assertEqual(math.log1p(-1e-150), -1e-150)
+        self.assertEqual(math.log1p(-1e-20), -1e-20)
+
+        # -- some (mostly) random small and moderate-sized values
+        self.assertEqual(math.log1p(-0.89156889782277482), -2.2216403106762863)
+        self.assertEqual(math.log1p(-0.23858496047770464), -0.27257668276980057)
+        self.assertEqual(math.log1p(-0.011641726191307515), -0.011710021654495657)
+        self.assertEqual(math.log1p(-0.0090126398571693817), -0.0090534993825007650)
+        self.assertEqual(math.log1p(-0.00023442805985712781), -0.00023445554240995693)
+        self.assertEqual(math.log1p(-1.5672870980936349e-5), -1.5672993801662046e-5)
+        self.assertEqual(math.log1p(-7.9650013274825295e-6), -7.9650330482740401e-6)
+        self.assertEqual(math.log1p(-2.5202948343227410e-7), -2.5202951519170971e-7)
+        self.assertEqual(math.log1p(-8.2446372820745855e-11), -8.2446372824144559e-11)
+        self.assertEqual(math.log1p(-8.1663670046490789e-12), -8.1663670046824230e-12)
+        self.assertEqual(math.log1p(7.0351735084656292e-18), 7.0351735084656292e-18)
+        self.assertEqual(math.log1p(5.2732161907375226e-12), 5.2732161907236188e-12)
+        self.assertEqual(math.log1p(1.0000000000000000e-10), 9.9999999995000007e-11)
+        self.assertEqual(math.log1p(2.1401273266000197e-9), 2.1401273243099470e-9)
+        self.assertEqual(math.log1p(1.2668914653979560e-8), 1.2668914573728861e-8)
+        self.assertEqual(math.log1p(1.6250007816299069e-6), 1.6249994613175672e-6)
+        self.assertAlmostEqual(math.log1p(8.3740495645839399e-6), 8.3740145024266269e-6,15)
+        self.assertEqual(math.log1p(3.0000000000000001e-5), 2.9999550008999799e-5)
+        self.assertEqual(math.log1p(0.0070000000000000001), 0.0069756137364252423)
+        self.assertEqual(math.log1p(0.013026235315053002), 0.012942123564008787)
+        self.assertAlmostEqual(math.log1p(0.013497160797236184), 0.013406885521915038,15)
+        self.assertEqual(math.log1p(0.027625599078135284), 0.027250897463483054)
+        self.assertEqual(math.log1p(0.14179687245544870), 0.13260322540908789)
+
+        # -- large values
+        self.assertEqual(math.log1p(1.7976931348623157e+308), 709.78271289338397)
+        self.assertEqual(math.log1p(1.0000000000000001e+300), 690.77552789821368)
+        self.assertEqual(math.log1p(1.0000000000000001e+70), 161.18095650958321)
+        self.assertEqual(math.log1p(10000000000.000000), 23.025850930040455)
+
+        # -- other values transferred from testLog1p in test_math
+        self.assertEqual(math.log1p(-0.63212055882855767), -1.0000000000000000)
+        self.assertEqual(math.log1p(1.7182818284590451), 1.0000000000000000)
+        self.assertEqual(math.log1p(1.0000000000000000), 0.69314718055994529)
+        self.assertEqual(math.log1p(1.2379400392853803e+27), 62.383246250395075)
+
 
     def testLog2(self):
         self.assertRaises(TypeError, math.log2)
@@ -829,12 +898,12 @@ class MathTests(unittest.TestCase):
         self.ftest('pow(2,-1)', math.pow(2,-1), 0.5)
         self.assertEqual(math.pow(INF, 1), INF)
         self.assertEqual(math.pow(NINF, 1), NINF)
-        # self.assertEqual((math.pow(1, INF)), 1.)
-        # self.assertEqual((math.pow(1, NINF)), 1.)
+        self.assertEqual((math.pow(1, INF)), 1.)
+        self.assertEqual((math.pow(1, NINF)), 1.)
         self.assertTrue(math.isnan(math.pow(NAN, 1)))
         self.assertTrue(math.isnan(math.pow(2, NAN)))
         self.assertTrue(math.isnan(math.pow(0, NAN)))
-        # self.assertEqual(math.pow(1, NAN), 1)
+        self.assertEqual(math.pow(1, NAN), 1)
 
         # pow(0., x)
         self.assertEqual(math.pow(0., INF), 0.)
@@ -843,10 +912,10 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.pow(0., 2.), 0.)
         self.assertEqual(math.pow(0., 0.), 1.)
         self.assertEqual(math.pow(0., -0.), 1.)
-        # self.assertRaises(ValueError, math.pow, 0., -2.)
-        # self.assertRaises(ValueError, math.pow, 0., -2.3)
-        # self.assertRaises(ValueError, math.pow, 0., -3.)
-        # self.assertRaises(ValueError, math.pow, 0., NINF)
+        self.assertRaises(ValueError, math.pow, 0., -2.)
+        self.assertRaises(ValueError, math.pow, 0., -2.3)
+        self.assertRaises(ValueError, math.pow, 0., -3.)
+        self.assertRaises(ValueError, math.pow, 0., NINF)
         self.assertTrue(math.isnan(math.pow(0., NAN)))
 
         # pow(INF, x)
@@ -869,10 +938,10 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.pow(-0., 2.), 0.)
         self.assertEqual(math.pow(-0., 0.), 1.)
         self.assertEqual(math.pow(-0., -0.), 1.)
-        # self.assertRaises(ValueError, math.pow, -0., -2.)
-        # self.assertRaises(ValueError, math.pow, -0., -2.3)
-        # self.assertRaises(ValueError, math.pow, -0., -3.)
-        # self.assertRaises(ValueError, math.pow, -0., NINF)
+        self.assertRaises(ValueError, math.pow, -0., -2.)
+        self.assertRaises(ValueError, math.pow, -0., -2.3)
+        self.assertRaises(ValueError, math.pow, -0., -3.)
+        self.assertRaises(ValueError, math.pow, -0., NINF)
         self.assertTrue(math.isnan(math.pow(-0., NAN)))
 
         # pow(NINF, x)
@@ -889,20 +958,20 @@ class MathTests(unittest.TestCase):
         self.assertTrue(math.isnan(math.pow(NINF, NAN)))
 
         # pow(-1, x)
-        # self.assertEqual(math.pow(-1., INF), 1.)
+        self.assertEqual(math.pow(-1., INF), 1.)
         self.assertEqual(math.pow(-1., 3.), -1.)
-        # self.assertRaises(ValueError, math.pow, -1., 2.3)
+        self.assertRaises(ValueError, math.pow, -1., 2.3)
         self.assertEqual(math.pow(-1., 2.), 1.)
         self.assertEqual(math.pow(-1., 0.), 1.)
         self.assertEqual(math.pow(-1., -0.), 1.)
         self.assertEqual(math.pow(-1., -2.), 1.)
-        # self.assertRaises(ValueError, math.pow, -1., -2.3)
+        self.assertRaises(ValueError, math.pow, -1., -2.3)
         self.assertEqual(math.pow(-1., -3.), -1.)
-        # self.assertEqual(math.pow(-1., NINF), 1.)
+        self.assertEqual(math.pow(-1., NINF), 1.)
         self.assertTrue(math.isnan(math.pow(-1., NAN)))
 
         # pow(1, x)
-        # self.assertEqual(math.pow(1., INF), 1.)
+        self.assertEqual(math.pow(1., INF), 1.)
         self.assertEqual(math.pow(1., 3.), 1.)
         self.assertEqual(math.pow(1., 2.3), 1.)
         self.assertEqual(math.pow(1., 2.), 1.)
@@ -911,8 +980,8 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.pow(1., -2.), 1.)
         self.assertEqual(math.pow(1., -2.3), 1.)
         self.assertEqual(math.pow(1., -3.), 1.)
-        # self.assertEqual(math.pow(1., NINF), 1.)
-        # self.assertEqual(math.pow(1., NAN), 1.)
+        self.assertEqual(math.pow(1., NINF), 1.)
+        self.assertEqual(math.pow(1., NAN), 1.)
 
         # pow(x, 0) should be 1 for any x
         self.assertEqual(math.pow(2.3, 0.), 1.)
@@ -923,8 +992,8 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.pow(NAN, -0.), 1.)
 
         # pow(x, y) is invalid if x is negative and y is not integral
-        # self.assertRaises(ValueError, math.pow, -1., 2.3)
-        # self.assertRaises(ValueError, math.pow, -15., -3.1)
+        self.assertRaises(ValueError, math.pow, -1., 2.3)
+        self.assertRaises(ValueError, math.pow, -15., -3.1)
 
         # pow(x, NINF)
         self.assertEqual(math.pow(1.9, NINF), 0.)
@@ -955,8 +1024,15 @@ class MathTests(unittest.TestCase):
         self.ftest('(-2.)**-1.', math.pow(-2.0, -1.0), -0.5)
         self.ftest('(-2.)**-2.', math.pow(-2.0, -2.0), 0.25)
         self.ftest('(-2.)**-3.', math.pow(-2.0, -3.0), -0.125)
-        # self.assertRaises(ValueError, math.pow, -2.0, -0.5)
-        # self.assertRaises(ValueError, math.pow, -2.0, 0.5)
+        self.assertRaises(ValueError, math.pow, -2.0, -0.5)
+        self.assertRaises(ValueError, math.pow, -2.0, 0.5)
+
+        # pow(x,y) should raise OverFlow Error for large x,y
+        self.assertRaises(OverflowError, math.pow, 2, 1024)
+        self.assertRaises(OverflowError, math.pow, 3, 1024)
+        self.assertRaises(OverflowError, math.pow, 2, 2048)
+        self.assertRaises(OverflowError, math.pow, 2, 4096)
+
 
         # the following tests have been commented out since they don't
         # really belong here:  the implementation of ** for floats is
