@@ -15,7 +15,7 @@ var $builtinmodule = function (name) {
 
         if (Sk.__future__.ceil_floor_int) {
             return new Sk.builtin.int_(Math.ceil(Sk.builtin.asnum$(x)));
-        }
+        };
 
         return new Sk.builtin.float_(Math.ceil(Sk.builtin.asnum$(x)));
     });
@@ -33,45 +33,32 @@ var $builtinmodule = function (name) {
     });
     
     mod.copysign = new Sk.builtin.func(function (x, y) {
-        // returns y with the sign of x
-        Sk.builtin.pyCheckArgsLen("ceil", arguments.length, 2, 2);
+        // returns abs of x with sign y
+        // does sign x * sign y * x which is equivalent
+        Sk.builtin.pyCheckArgsLen("copysign", arguments.length, 2, 2);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-
-        var _x = Sk.builtin.asnum$(x);
-        var _y = Sk.builtin.asnum$(y);
-        var res;
-
-        var isNeg_x = _x < 0;
-        var isNeg_y = _x < 0;
-
-        // special case for floats with negative zero
-        if(Sk.builtin.checkFloat(x)) {
-            if(_x === 0) {
-                isNeg_x = 1/_x === -Infinity ? true : false;
+        
+        function get_sign(n){
+            //deals with signed zeros
+            // returns -1 or +1 for the sign
+            if (n){
+                n =  n < 0 ? -1 : 1;
             }
-        }
+            else {
+                n =  1/n < 0 ? -1 : 1;
+            };
+            return n
+        };
 
-        if(Sk.builtin.checkFloat(y)) {
-            if(_y === 0) {
-                isNeg_y = 1/_y === -Infinity ? true : false;
-            }
-        }
+        const _y = Sk.builtin.asnum$(y);
+        const _x = Sk.builtin.asnum$(x);
+        const sign_x = get_sign(_x);
+        const sign_y = get_sign(_y);
+        const sign = Sk.builtin.int_(sign_x * sign_y);
 
-        // if both signs are equal, just return _y
-        if((isNeg_x && isNeg_y) || (!isNeg_x && !isNeg_y)) {
-            res = _y;
-        } else if((isNeg_x && !isNeg_y) || (!isNeg_x && isNeg_y)) {
-            // if different, invert sign
-            if(y === 0) {
-                // special case for zero
-                res = isNeg_x ? -0.0 : 0.0;
-            } else {
-                res = _y * -1;
-            }
-        }
+        return new Sk.builtin.float_(Sk.abstr.numberBinOp(x,sign,'Mult'));
 
-        return new Sk.builtin.float_(res);
     });
 
     mod.fabs = new Sk.builtin.func(function (x) {
