@@ -830,26 +830,30 @@ Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
-    var ret, f;
-    var objname = Sk.abstr.typeName(obj);
-    var jsName = pyName.$jsstr();
-
-    if (obj === null) {
+    // TODO is it even valid to pass something this shape in here?
+    // Should this be an assert?
+    if (obj === null || !obj.tp$getattr) {
+        let objname = Sk.abstr.typeName(obj);
+        let jsName = pyName.$jsstr();
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
-    if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(pyName, canSuspend);
+    // This function is so hot that we do our own inline suspension checks
+
+    let ret = obj.tp$getattr(pyName, canSuspend);
+
+    if (ret === undefined) {
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+    } else if (ret.$isSuspension) {
+        return Sk.misceval.chain(ret, function(r) {
+            if (r === undefined) {
+                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+            }
+            return r;
+        });
+    } else {
+        return ret;
     }
-
-    ret = Sk.misceval.chain(ret, function(r) {
-        if (r === undefined) {
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-        }
-        return r;
-    });
-
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
