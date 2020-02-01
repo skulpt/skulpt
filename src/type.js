@@ -289,31 +289,29 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$getattr = function(pyName, canSuspend) {
-            var r, descr, /** @type {(Object|undefined)} */ getf;
             // Find __getattribute__ on this type if we can
-            descr = Sk.builtin.type.typeLookup(klass, Sk.builtin.str.$getattribute);
+            // TODO tp$getattr should be overriden up-front alongside the
+            // other dunder-funcs, to avoid running this typeLookup() every
+            // time
+            let descr = Sk.builtin.type.typeLookup(klass, Sk.builtin.str.$getattribute);
 
             if (descr !== undefined && descr !== null && descr.tp$descr_get !== undefined) {
-                getf = descr.tp$descr_get.call(descr, this, klass);
+                let getf = descr.tp$descr_get.call(descr, this, klass);
+                // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
+                // convention
+                let r = Sk.misceval.tryCatch(function() {
+                    return Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (getf), [pyName]);
+                }, function (e) {
+                    if (e instanceof Sk.builtin.AttributeError) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                });
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            } else {
+                return Sk.builtin.object.prototype.GenericGetAttr.call(this, pyName, canSuspend);
             }
-
-            if (getf === undefined) {
-                getf = Sk.builtin.object.prototype.GenericPythonGetAttr.bind(null, this);
-            }
-
-            // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
-            // convention
-            r = Sk.misceval.tryCatch(function() {
-                return Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (getf), [pyName]);
-            }, function (e) {
-                if (e instanceof Sk.builtin.AttributeError) {
-                    return undefined;
-                } else {
-                    throw e;
-                }
-            });
-
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
         };
 
         klass.prototype.tp$str = function () {
