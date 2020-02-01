@@ -1173,6 +1173,8 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isfinite(float("nan")))
         self.assertFalse(math.isfinite(float("inf")))
         self.assertFalse(math.isfinite(float("-inf")))
+        self.assertTrue(math.isfinite(2**1024))
+        self.assertTrue(math.isfinite(2**2048))
 
     def testIsnan(self):
         self.assertTrue(math.isnan(float("nan")))
@@ -1190,6 +1192,8 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isinf(float("nan")))
         self.assertFalse(math.isinf(0.))
         self.assertFalse(math.isinf(1.))
+        self.assertFalse(math.isinf(2**1024))
+        self.assertFalse(math.isinf(2**2048))
 
     def test_nan_constant(self):
         self.assertTrue(math.isnan(math.nan))

@@ -239,12 +239,16 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("isfinite", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        const _x = Sk.builtin.asnum$(x);
-        if(isFinite(_x)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$
+        let _x = Sk.builtin.asnum$(x);
+        if (Sk.builtin.checkInt(x)){
+            return Sk.builtin.bool.true$;  //deals with big integers returning True
         }
+        else if (isFinite(_x)) {
+            return Sk.builtin.bool.true$;
+        } 
+        else {
+            return Sk.builtin.bool.false$
+        };
     });
     
     mod.isinf = new Sk.builtin.func(function(x) {
@@ -252,11 +256,15 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("isinf", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        const _x = Sk.builtin.asnum$(x);
-        if(isFinite(_x) || isNaN(_x)) {
+        let _x = Sk.builtin.asnum$(x);
+        if (Sk.builtin.checkInt(x)){
+            return Sk.builtin.bool.false$;  //deals with big integers returning True
+        }
+        else if(isFinite(_x) || isNaN(_x)) {
             return Sk.builtin.bool.false$;
-        } else {
-            return Sk.builtin.bool.true$
+        } 
+        else {
+            return Sk.builtin.bool.true$;
         }
     });
 
