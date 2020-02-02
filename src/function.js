@@ -289,7 +289,7 @@ Sk.builtin.func.prototype.tp$getname = function () {
     return (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
 };
 
-Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
+Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
     // The rest of this function is a logical Javascript port of
     // _PyEval_EvalCodeWithName, and follows its logic,
     // plus fast-paths imported from _PyFunction_FastCall* as marked
@@ -306,19 +306,13 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     // Fast path from _PyFunction_FastCallDict
     if (co_kwonlyargcount === 0 && !this.func_code.co_kwargs && (!kw || kw.length === 0) && !this.func_code.co_varargs) {
         if (posargs.length == co_argcount) {
-            if (this.func_closure) {
-                posargs.push(this.func_closure);
-            }
-            return this.func_code.apply(this.func_globals, posargs);
+            return posargs;
         } else if(posargs.length === 0 && this.func_code.$defaults &&
                     this.func_code.$defaults.length === co_argcount) {
             for (let i=0; i!=this.func_code.$defaults.length; i++) {
                 posargs[i] = this.func_code.$defaults[i];
             }
-            if (this.func_closure) {
-                posargs.push(this.func_closure);
-            }
-            return this.func_code.apply(this.func_globals, posargs);
+            return posargs;
         }
     }
     // end fast path from _PyFunction_FastCallDict
@@ -425,19 +419,26 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
                 args.push(undefined);
             }
         }
-
-        args.push(this.func_closure);
     }
 
     if (kwargs) {
         args.unshift(kwargs);
     }
 
+    return args;
+};
+
+
+Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
+    let args = this.$resolveArgs(posargs, kw);
+    if (this.func_closure) {
+        args.push(this.func_closure);
+    }
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
-
 };
+
 
 Sk.builtin.func.prototype["$r"] = function () {
     var name = this.tp$getname();
