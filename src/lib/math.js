@@ -48,7 +48,7 @@ var $builtinmodule = function (name) {
         const sign_y = get_sign(_y);
         const sign = Sk.builtin.int_(sign_x * sign_y);
 
-        return new Sk.builtin.float_(Sk.abstr.numberBinOp(x, sign, 'Mult'));
+        return new Sk.builtin.float_(Sk.abstr.numberBinOp(x, sign, "Mult"));
 
     });
 
@@ -67,15 +67,15 @@ var $builtinmodule = function (name) {
         let _x = Sk.builtin.asnum$(x);
 
         if (!Number.isInteger(_x)) {
-            throw new Sk.builtin.ValueError('factorial() only accepts integral values')
+            throw new Sk.builtin.ValueError("factorial() only accepts integral values")
         };
         if (_x < 0) {
-            throw new Sk.builtin.ValueError('factorial() not defined for negative numbers')
+            throw new Sk.builtin.ValueError("factorial() not defined for negative numbers")
         };
 
         let res = 1;
         if (_x > MAX_SAFE_INTEGER_FACTORIAL) { // correct results for large x!
-            _x = Sk.builtin.str(x).$jsstr().replace('.0', ''); // x could be a float
+            _x = Sk.builtin.str(x).$jsstr().replace(".0", ""); // x could be a float
             _x = BigInt(_x);
             res = BigInt(res);
         }
@@ -218,8 +218,8 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.bool(res)
     };
 
-    _isclose.co_name = new Sk.builtins.str('isclose');
-    _isclose.co_varnames = ['a', 'b', 'rel_tol', 'abs_tol'];
+    _isclose.co_name = new Sk.builtins.str("isclose");
+    _isclose.co_varnames = ["a", "b", "rel_tol", "abs_tol"];
     _isclose.co_argcount = 2;
     _isclose.co_kwonlyargcount = 2;
     _isclose.$kwdefs = [1e-09, 0.0];
@@ -398,7 +398,7 @@ var $builtinmodule = function (name) {
             // log(x)  = 9 * log(10) + log(.123456789)
             _x = Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
-            const decimal = parseFloat('0.' + _x);
+            const decimal = parseFloat("0." + _x);
             res = (digits * Math.log(10) + Math.log(decimal)) / Math.log(_base);
         }
         return new Sk.builtin.float_(res);
@@ -443,7 +443,7 @@ var $builtinmodule = function (name) {
             // log2(x)  = 9 * log2(10) + log2(.123456789)
             _x = Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
-            const decimal = parseFloat('0.' + _x);
+            const decimal = parseFloat("0." + _x);
             res = digits * Math.log2(10) + Math.log2(decimal);
         }
         return new Sk.builtin.float_(res);
@@ -463,7 +463,7 @@ var $builtinmodule = function (name) {
             // log10(x)  = 9 + log10(.123456789)
             _x = Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
-            const decimal = parseFloat('0.' + _x);
+            const decimal = parseFloat("0." + _x);
             res = digits + Math.log10(decimal);
         }
         return new Sk.builtin.float_(res);
@@ -491,7 +491,7 @@ var $builtinmodule = function (name) {
         if (!Number.isFinite(_x) || !Number.isFinite(_y)) {
             return new Sk.builtin.float_(res);
         } else if (res == Infinity || res == -Infinity) {
-            throw new Sk.builtin.OverflowError('math range error')
+            throw new Sk.builtin.OverflowError("math range error")
         }
         return new Sk.builtin.float_(res);
     });
