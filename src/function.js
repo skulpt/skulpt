@@ -468,7 +468,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     
     // Fast path for JS-native functions (which should be implemented
     // in a separate tp$call, really)
-    if (this.co_argcount === undefined && this.co_varnames === undefined && !this.func_closure) {
+    if (this.co_argcount === undefined && this.co_varnames === undefined  && !this.co_kwargs && !this.func_closure) {
         // It's a JS function with no type info, don't hang around
         // resolving anything.
         if (kw && kw.length !== 0) {
