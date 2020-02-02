@@ -1916,7 +1916,17 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.tempsToSave.push("$free");
     }
 
-    this.u.prefixCode += funcArgs.join(",");
+    // Are we using the new fast-call mechanism, where the
+    // function we define implements the tp$call interface?
+    // (Right now we haven't migrated generators because they're
+    // a mess, but if this works we can move everything over)
+    let fastCall = !isGenerator;
+
+    if (fastCall) {
+        this.u.prefixCode += "$posargs,$kwargs";
+    } else {
+        this.u.prefixCode += funcArgs.join(",");
+    }
 
     this.u.prefixCode += "){";
 
@@ -1928,6 +1938,15 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (hasCell) {
         this.u.prefixCode += "\n// has cell\n";
+    }
+
+    if (fastCall) {
+        this.u.prefixCode += "\n// fast call\n";
+        this.u.prefixCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
+        for (let i=0; i < funcArgs.length; i++) {
+            this.u.prefixCode += ","+funcArgs[i]+"=$args["+i+"]";
+        }
+        this.u.prefixCode += ";\n";
     }
 
     //
@@ -1947,7 +1966,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    // (fastcall doesn't need to do this, as 'this' is the func object)
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this.func_globals":"this")+ ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2091,6 +2111,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (vararg) {
         out(scopename, ".co_varargs=1;");
+    }
+    if (!isGenerator) {
+        out(scopename, ".co_fastcall=1;");
     }
 
     //

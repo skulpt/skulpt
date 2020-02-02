@@ -256,6 +256,10 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
     };
     this.func_closure = closure;
     this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
+
+    if (code.co_fastcall) {
+        this.tp$call = code;
+    }
     return this;
 };
 
@@ -430,6 +434,7 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
 
 
 Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
+    console.log("Legacy tp$call for", this.tp$getname(), this.func_code);
     let args = this.$resolveArgs(posargs, kw);
     if (this.func_closure) {
         args.push(this.func_closure);
