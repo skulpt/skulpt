@@ -278,7 +278,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
-        const _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
         const _i = Sk.builtin.asnum$(i);
 
         if (_x == Infinity || _x == -Infinity || _x == 0 || isNaN(_x)) {
@@ -339,7 +339,7 @@ var $builtinmodule = function (name) {
     mod.exp = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("exp", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        const _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
         if (_x == Infinity || _x == -Infinity || isNaN(_x)) {
             return new Sk.builtin.float_(Math.exp(_x));
         }
@@ -411,7 +411,6 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
-        //without failed test log1p(2**90) == log1p(float(2**90)) ???
 
         if (_x <= -1.0) {
             throw new Sk.builtin.ValueError("math domain error")
@@ -475,8 +474,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        const _x = Sk.builtin.asnum$(x);
-        const _y = Sk.builtin.asnum$(y);
+        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
 
         if (_x == 0 && _y < 0) {
             throw new Sk.builtin.ValueError("math domain error");
