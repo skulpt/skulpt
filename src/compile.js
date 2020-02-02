@@ -1942,7 +1942,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     if (fastCall) {
         this.u.prefixCode += "\n// fast call\n";
-        this.u.prefixCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
+        // If we're posargs-only, we can handle the fast path
+        // without even calling out
+        if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
+            this.u.prefixCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
+        } else {
+            this.u.prefixCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
+        }
         for (let i=0; i < funcArgs.length; i++) {
             this.u.prefixCode += ","+funcArgs[i]+"=$args["+i+"]";
         }

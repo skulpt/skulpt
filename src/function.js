@@ -257,22 +257,17 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
     this.func_closure = closure;
     this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
 
-    if (code.co_fastcall) {
-        this.tp$call = code;
-    }
     // Because our external API allows you to set these flags
     // *after* constructing the function (grr), we can only
     // currently rely on this memoisation in fast-call mode.
     // (but we set the values anyway so V8 knows the object's
     // shape)
-    this.co_argcount = this.func_code.co_argcount;
-    this.co_varnames = this.func_code.co_varnames;
-    this.co_kwonlyargcount = this.func_code.co_kwonlyargcount;
-    this.co_varargs = this.func_code.co_varargs;
-    this.co_kwargs = this.func_code.co_kwargs;
-    this.$defaults = this.func_code.$defaults;
-    this.$kwdefs = this.func_code.$kwdefs;
+    this.$memoiseFlags();
     this.memoised = code.co_fastcall;
+
+    if (code.co_fastcall) {
+        this.tp$call = code;
+    }
     return this;
 };
 
@@ -281,6 +276,19 @@ Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
 Sk.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
 Sk.builtin.func.prototype.tp$name = "function";
+
+Sk.builtin.func.prototype.$memoiseFlags = function() {
+    this.co_varnames = this.func_code.co_varnames;
+    this.co_argcount = this.func_code.co_argcount;
+    if (this.co_argcount === undefined && this.co_varnames) {
+        this.co_argcount = this.co_argcount = this.co_varnames.length;
+    }
+    this.co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+    this.co_varargs = this.func_code.co_varargs;
+    this.co_kwargs = this.func_code.co_kwargs;
+    this.$defaults = this.func_code.$defaults || [];
+    this.$kwdefs = this.func_code.$kwdefs || [];
+};
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     Sk.asserts.assert(!(obj === undefined && objtype === undefined));
@@ -445,7 +453,6 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
     return args;
 };
 
-
 Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     //console.log("Legacy tp$call for", this.tp$getname());
 
@@ -455,13 +462,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     // TODO change the external API to require all the co_ vars
     // to be supplied at construction time!
     if (!this.memoised) {
-        this.co_argcount = this.func_code.co_argcount;
-        this.co_varnames = this.func_code.co_varnames;
-        this.co_kwonlyargcount = this.func_code.co_kwonlyargcount;
-        this.co_varargs = this.func_code.co_varargs;
-        this.co_kwargs = this.func_code.co_kwargs;
-        this.$defaults = this.func_code.$defaults;
-        this.$kwdefs = this.func_code.$kwdefs;
+        this.$memoiseFlags();
         this.memoised = true;
     }
     
