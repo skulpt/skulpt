@@ -675,7 +675,7 @@ class MathTests(unittest.TestCase):
             shuffle(vals)
         
             s = msum(vals)
-            self.assertAlmostEqual(msum(vals), math.fsum(vals), 13)
+            self.assertAlmostEqual(msum(vals), math.fsum(vals), 12)
             # self.assertEqual(msum(vals), math.fsum(vals))
             # assertEqual failed - this seemed the best compromise
 
