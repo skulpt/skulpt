@@ -663,7 +663,8 @@ class MathTests(unittest.TestCase):
             # hence using isclose rather than assertEqual 
 
 
-        from random import random, gauss, shuffle
+        from random import random, gauss, shuffle, seed
+        seed(0)
         for j in range(100):
             vals = [7, 1e100, -7, -1e100, -9e-20, 8e-20] * 10
             s = 0
