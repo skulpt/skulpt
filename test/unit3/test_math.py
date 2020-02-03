@@ -1056,6 +1056,272 @@ class MathTests(unittest.TestCase):
         self.assertEqual("%10.5f" % math.radians(180), "   3.14159")
         self.assertEqual("%10.5f" % math.degrees(math.radians(180)), " 180.00000")
 
+    def testRemainder(self):
+        # from fractions import Fraction
+
+        # def validate_spec(x, y, r):
+        #     """
+        #     Check that r matches remainder(x, y) according to the IEEE 754
+        #     specification. Assumes that x, y and r are finite and y is nonzero.
+        #     """
+        #     fx, fy, fr = Fraction(x), Fraction(y), Fraction(r)
+        #     # r should not exceed y/2 in absolute value
+        #     self.assertLessEqual(abs(fr), abs(fy/2))
+        #     # x - r should be an exact integer multiple of y
+        #     n = (fx - fr) / fy
+        #     self.assertEqual(n, int(n))
+        #     if abs(fr) == abs(fy/2):
+        #         # If |r| == |y/2|, n should be even.
+        #         self.assertEqual(n/2, int(n/2))
+
+        # triples (x, y, remainder(x, y)) in hexadecimal form.
+        testcases = [ #taken from cpython test_cases - converted to floats rather than float hex
+            # Remainders modulo 1, showing the ties-to-even behaviour.
+            '-4.0 1.0 -0.0',
+            '-3.5 1.0 0.5',
+            '-3.0 1.0 -0.0',
+            '-2.5 1.0 -0.5',
+            '-2.0 1.0 -0.0',
+            '-1.5 1.0 0.5',
+            '-1.0 1.0 -0.0',
+            '-0.5 1.0 -0.5',
+            '-0.0 1.0 -0.0',
+            '0.0 1.0 0.0',
+            '0.5 1.0 0.5',
+            '1.0 1.0 0.0',
+            '1.5 1.0 -0.5',
+            '2.0 1.0 0.0',
+            '2.5 1.0 0.5',
+            '3.0 1.0 0.0',
+            '3.5 1.0 -0.5',
+            '4.0 1.0 0.0',
+
+            # Reductions modulo 2*pi
+            '0.0 6.283185307179586 0.0',
+            '1.5707963267948966 6.283185307179586 1.5707963267948966',
+            '3.1415926535897927 6.283185307179586 3.1415926535897927',
+            '3.141592653589793 6.283185307179586 3.141592653589793',
+            '3.1415926535897936 6.283185307179586 -3.1415926535897927',
+            '6.283185307179585 6.283185307179586 -8.881784197001252e-16',
+            '6.283185307179586 6.283185307179586 0.0',
+            '6.283185307179587 6.283185307179586 8.881784197001252e-16',
+            '9.424777960769378 6.283185307179586 3.1415926535897913',
+            '9.42477796076938 6.283185307179586 -3.141592653589793',
+            '9.424777960769381 6.283185307179586 -3.1415926535897913',
+            '12.56637061435917 6.283185307179586 -1.7763568394002505e-15',
+            '12.566370614359172 6.283185307179586 0.0',
+            '12.566370614359174 6.283185307179586 1.7763568394002505e-15',
+            '15.707963267948964 6.283185307179586 3.1415926535897913',
+            '15.707963267948966 6.283185307179586 3.141592653589793',
+            '15.707963267948967 6.283185307179586 -3.1415926535897913',
+            '34.55751918948772 6.283185307179586 3.1415926535897896',
+            '34.55751918948773 6.283185307179586 -3.1415926535897896',
+            # Symmetry with respect to signs.
+            '1.0 0.75 0.25',
+            '-1.0 0.75 -0.25',
+            '1.0 -0.75 0.25',
+            '-1.0 -0.75 -0.25',
+            '1.25 0.75 -0.25',
+            '-1.25 0.75 0.25',
+            '1.25 -0.75 -0.25',
+            '-1.25 -0.75 0.25',
+            # Huge modulus, to check that the underlying algorithm doesn't
+            # rely on 2.0 * modulus being representable.
+            '1.6291594034689738e+308 1.1235582092889474e+308 5.056011941800263e+307',
+            '1.6853373139334212e+308 1.1235582092889474e+308 -5.617791046444737e+307',
+            '1.7415152243978685e+308 1.1235582092889474e+308 -5.056011941800263e+307'
+                    ]
+        # testcases = [
+        #     # Remainders modulo 1, showing the ties-to-even behaviour.
+        #     '-4.0 1 -0.0',
+        #     '-3.8 1  0.8',
+        #     '-3.0 1 -0.0',
+        #     '-2.8 1 -0.8',
+        #     '-2.0 1 -0.0',
+        #     '-1.8 1  0.8',
+        #     '-1.0 1 -0.0',
+        #     '-0.8 1 -0.8',
+        #     '-0.0 1 -0.0',
+        #     ' 0.0 1  0.0',
+        #     ' 0.8 1  0.8',
+        #     ' 1.0 1  0.0',
+        #     ' 1.8 1 -0.8',
+        #     ' 2.0 1  0.0',
+        #     ' 2.8 1  0.8',
+        #     ' 3.0 1  0.0',
+        #     ' 3.8 1 -0.8',
+        #     ' 4.0 1  0.0',
+
+        #     # Reductions modulo 2*pi
+        #     '0x0.0p+0 0x1.921fb54442d18p+2 0x0.0p+0',
+        #     '0x1.921fb54442d18p+0 0x1.921fb54442d18p+2  0x1.921fb54442d18p+0',
+        #     '0x1.921fb54442d17p+1 0x1.921fb54442d18p+2  0x1.921fb54442d17p+1',
+        #     '0x1.921fb54442d18p+1 0x1.921fb54442d18p+2  0x1.921fb54442d18p+1',
+        #     '0x1.921fb54442d19p+1 0x1.921fb54442d18p+2 -0x1.921fb54442d17p+1',
+        #     '0x1.921fb54442d17p+2 0x1.921fb54442d18p+2 -0x0.0000000000001p+2',
+        #     '0x1.921fb54442d18p+2 0x1.921fb54442d18p+2  0x0p0',
+        #     '0x1.921fb54442d19p+2 0x1.921fb54442d18p+2  0x0.0000000000001p+2',
+        #     '0x1.2d97c7f3321d1p+3 0x1.921fb54442d18p+2  0x1.921fb54442d14p+1',
+        #     '0x1.2d97c7f3321d2p+3 0x1.921fb54442d18p+2 -0x1.921fb54442d18p+1',
+        #     '0x1.2d97c7f3321d3p+3 0x1.921fb54442d18p+2 -0x1.921fb54442d14p+1',
+        #     '0x1.921fb54442d17p+3 0x1.921fb54442d18p+2 -0x0.0000000000001p+3',
+        #     '0x1.921fb54442d18p+3 0x1.921fb54442d18p+2  0x0p0',
+        #     '0x1.921fb54442d19p+3 0x1.921fb54442d18p+2  0x0.0000000000001p+3',
+        #     '0x1.f6a7a2955385dp+3 0x1.921fb54442d18p+2  0x1.921fb54442d14p+1',
+        #     '0x1.f6a7a2955385ep+3 0x1.921fb54442d18p+2  0x1.921fb54442d18p+1',
+        #     '0x1.f6a7a2955385fp+3 0x1.921fb54442d18p+2 -0x1.921fb54442d14p+1',
+        #     '0x1.1475cc9eedf00p+5 0x1.921fb54442d18p+2  0x1.921fb54442d10p+1',
+        #     '0x1.1475cc9eedf01p+5 0x1.921fb54442d18p+2 -0x1.921fb54442d10p+1',
+
+        #     # Symmetry with respect to signs.
+        #     ' 1  0.c  0.4',
+        #     '-1  0.c -0.4',
+        #     ' 1 -0.c  0.4',
+        #     '-1 -0.c -0.4',
+        #     ' 1.4  0.c -0.4',
+        #     '-1.4  0.c  0.4',
+        #     ' 1.4 -0.c -0.4',
+        #     '-1.4 -0.c  0.4',
+
+        #     # Huge modulus, to check that the underlying algorithm doesn't
+        #     # rely on 2.0 * modulus being representable.
+        #     '0x1.dp+1023 0x1.4p+1023  0x0.9p+1023',
+        #     '0x1.ep+1023 0x1.4p+1023 -0x0.ap+1023',
+        #     '0x1.fp+1023 0x1.4p+1023 -0x0.9p+1023',
+        # ]
+
+        for case in testcases:
+            # with self.subTest(case=case):
+                x, y, expected = case.split()
+                x = float(x)
+                y = float(y)
+                expected = float(expected)
+                # # validate_spec(x, y, expected)
+                actual = math.remainder(x, y)
+                # Cheap way of checking that the floats are
+                # as identical as we need them to be.
+                self.assertEqual(actual, expected)
+
+        # Test tiny subnormal modulus: there's potential for
+        # getting the implementation wrong here (for example,
+        # by assuming that modulus/2 is exactly representable).
+        tiny_testcases = [
+            '0.0 -1.24e-322 0.0',
+            '7.4e-323 -1.24e-322 -5e-323',
+            '1.5e-322 -1.24e-322 2.5e-323',
+            '2.2e-322 -1.24e-322 -2.5e-323',
+            '2.96e-322 -1.24e-322 5e-323',
+            '3.7e-322 -1.24e-322 0.0',
+            '4.45e-322 -1.24e-322 -5e-323',
+            '0.0 -1e-322 0.0',
+            '7.4e-323 -1e-322 -2.5e-323',
+            '1.5e-322 -1e-322 -5e-323',
+            '2.2e-322 -1e-322 2.5e-323',
+            '2.96e-322 -1e-322 0.0',
+            '3.7e-322 -1e-322 -2.5e-323',
+            '4.45e-322 -1e-322 5e-323',
+            '0.0 -7.4e-323 0.0',
+            '7.4e-323 -7.4e-323 0.0',
+            '1.5e-322 -7.4e-323 0.0',
+            '2.2e-322 -7.4e-323 0.0',
+            '2.96e-322 -7.4e-323 0.0',
+            '3.7e-322 -7.4e-323 0.0',
+            '4.45e-322 -7.4e-323 0.0',
+            '0.0 -5e-323 0.0',
+            '7.4e-323 -5e-323 -2.5e-323',
+            '1.5e-322 -5e-323 0.0',
+            '2.2e-322 -5e-323 2.5e-323',
+            '2.96e-322 -5e-323 0.0',
+            '3.7e-322 -5e-323 -2.5e-323',
+            '4.45e-322 -5e-323 0.0',
+            '0.0 -2.5e-323 0.0',
+            '7.4e-323 -2.5e-323 0.0',
+            '1.5e-322 -2.5e-323 0.0',
+            '2.2e-322 -2.5e-323 0.0',
+            '2.96e-322 -2.5e-323 0.0',
+            '3.7e-322 -2.5e-323 0.0',
+            '4.45e-322 -2.5e-323 0.0',
+            '0.0 2.5e-323 0.0',
+            '7.4e-323 2.5e-323 0.0',
+            '1.5e-322 2.5e-323 0.0',
+            '2.2e-322 2.5e-323 0.0',
+            '2.96e-322 2.5e-323 0.0',
+            '3.7e-322 2.5e-323 0.0',
+            '4.45e-322 2.5e-323 0.0',
+            '0.0 5e-323 0.0',
+            '7.4e-323 5e-323 -2.5e-323',
+            '1.5e-322 5e-323 0.0',
+            '2.2e-322 5e-323 2.5e-323',
+            '2.96e-322 5e-323 0.0',
+            '3.7e-322 5e-323 -2.5e-323',
+            '4.45e-322 5e-323 0.0',
+            '0.0 7.4e-323 0.0',
+            '7.4e-323 7.4e-323 0.0',
+            '1.5e-322 7.4e-323 0.0',
+            '2.2e-322 7.4e-323 0.0',
+            '2.96e-322 7.4e-323 0.0',
+            '3.7e-322 7.4e-323 0.0',
+            '4.45e-322 7.4e-323 0.0',
+            '0.0 1e-322 0.0',
+            '7.4e-323 1e-322 -2.5e-323',
+            '1.5e-322 1e-322 -5e-323',
+            '2.2e-322 1e-322 2.5e-323',
+            '2.96e-322 1e-322 0.0',
+            '3.7e-322 1e-322 -2.5e-323',
+            '4.45e-322 1e-322 5e-323']
+        for case in tiny_testcases:
+            # with self.subTest(case=case):
+            x, y, expected = case.split()
+            x = float(x)
+            y = float(y)
+            expected = float(expected)
+            neg_expected = -expected
+            # # validate_spec(x, y, expected)
+            actual = math.remainder(x, y)
+            neg_actual = math.remainder(-x,y)
+            
+            self.assertEqual(actual, expected)
+            self.assertEqual(neg_actual, neg_expected)
+        # tiny = float('5e-324')  # min +ve subnormal
+        # for n in range(-25, 25):
+        #     if n == 0:
+        #         continue
+        #     y = n * tiny
+        #     for m in range(100):
+        #         x = m * tiny
+        #         actual = math.remainder(x, y)
+        #         # validate_spec(x, y, actual)
+        #         actual = math.remainder(-x, y)
+        #         # validate_spec(-x, y, actual)
+
+        # Special values.
+        # NaNs should propagate as usual.
+        for value in [NAN, 0.0, -0.0, 2.0, -2.3, NINF, INF]:
+            self.assertTrue(math.isnan(math.remainder(NAN, value)))
+            self.assertTrue(math.isnan(math.remainder(value, NAN)))
+
+        # remainder(x, inf) is x, for non-nan non-infinite x.
+        for value in [-2.3, -0.0, 0.0, 2.3]:
+            self.assertEqual(math.remainder(value, INF), value)
+            self.assertEqual(math.remainder(value, NINF), value)
+
+        # remainder(x, 0) and remainder(infinity, x) for non-NaN x are invalid
+        # operations according to IEEE 754-2008 7.2(f), and should raise.
+        for value in [NINF, -2.3, -0.0, 0.0, 2.3, INF]:
+            self.assertRaises(ValueError, math.remainder, INF, value)
+            self.assertRaises(ValueError, math.remainder, NINF, value)
+            self.assertRaises(ValueError, math.remainder, value,  0.0)
+            self.assertRaises(ValueError, math.remainder, value, -0.0)
+        #     with self.assertRaises(ValueError):
+        #         math.remainder(INF, value)
+        #     with self.assertRaises(ValueError):
+        #         math.remainder(NINF, value)
+        #     with self.assertRaises(ValueError):
+        #         math.remainder(value, 0.0)
+        #     with self.assertRaises(ValueError):
+        #         math.remainder(value, -0.0)
+
+
     def testSin(self):
         self.assertRaises(TypeError, math.sin)
         self.ftest('sin(0)', math.sin(0), 0)

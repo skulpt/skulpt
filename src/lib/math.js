@@ -56,7 +56,10 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("fabs", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        return new Sk.builtin.float_(Math.abs(Sk.builtin.asnum$(x)));
+        let _x = Sk.builtin.asnum$(Sk.builtin.float_(x));  //should raise OverflowError for large ints to floats
+        _x = Math.abs(_x)
+
+        return new Sk.builtin.float_(_x);
     });
 
     var MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
@@ -104,8 +107,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        const _x = Sk.builtin.asnum$(x);
-        const _y = Sk.builtin.asnum$(y);
+        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y)); //should raise OverFlow for large ints to floats
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)) {
             return new Sk.builtin.float_(_x)
@@ -321,8 +324,50 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("math.prod() is not yet implemented in Skulpt")
     });
 
-    mod.remainder = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.remainder() is not yet implemented in Skulpt")
+    mod.remainder = new Sk.builtin.func(function (x, y) {
+        // as per cpython algorithm see cpython for details
+        Sk.builtin.pyCheckArgsLen("reamainder", arguments.length, 2, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
+
+        // deal with most common cases first
+        if (isFinite(_x) && isFinite(_y)) {
+            let absx, absy, c, m, r;
+            if (_y == 0.0) {
+                throw new Sk.builtin.ValueError("math domain error");
+            }
+            absx = Math.abs(_x);
+            absy = Math.abs(_y);
+            m = absx % absy;
+            c = absy - m;
+            if (m < c) {
+                r = m;
+            } else if (m > c) {
+                r = -c;
+            } else {
+                if (m != c) {
+                    throw new Sk.builtin.AssertionError();
+                }
+                r = m - 2.0 * ((0.5 * (absx - m)) % absy);
+            }
+            return Sk.builtin.float_(get_sign(_x) * r);
+        }
+        /* Special values. */
+        if (isNaN(_x)) {
+            return x;
+        }
+        if (isNaN(_y)) {
+            return y;
+        }
+        if (_x == Infinity || _x == -Infinity) {
+            throw new Sk.builtin.ValueError("math domain error");
+        }
+        if (!(_y == Infinity || _y == -Infinity)) {
+            throw new Sk.builtin.AssertionError();
+        }
+        return Sk.builtin.float_(x);
     });
 
     mod.trunc = new Sk.builtin.func(function (x) {
