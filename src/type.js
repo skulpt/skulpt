@@ -288,33 +288,13 @@ Sk.builtin.type = function (name, bases, dict) {
             return Sk.builtin.object.prototype.GenericSetAttr.call(this, pyName, data, canSuspend);
         };
 
-        klass.prototype.tp$getattr = function(pyName, canSuspend) {
-            var r, descr, /** @type {(Object|undefined)} */ getf;
-            // Find __getattribute__ on this type if we can
-            descr = Sk.builtin.type.typeLookup(klass, Sk.builtin.str.$getattribute);
-
-            if (descr !== undefined && descr !== null && descr.tp$descr_get !== undefined) {
-                getf = descr.tp$descr_get.call(descr, this, klass);
-            }
-
-            if (getf === undefined) {
-                getf = Sk.builtin.object.prototype.GenericPythonGetAttr.bind(null, this);
-            }
-
-            // Convert AttributeErrors back into 'undefined' returns to match the tp$getattr
-            // convention
-            r = Sk.misceval.tryCatch(function() {
-                return Sk.misceval.callsimOrSuspendArray(/** @type {Object} */ (getf), [pyName]);
-            }, function (e) {
-                if (e instanceof Sk.builtin.AttributeError) {
-                    return undefined;
-                } else {
-                    throw e;
-                }
-            });
-
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-        };
+        // We do not define tp$getattr here. We usually inherit it from object,
+        // unless we (or one of our parents) overrode it by defining
+        // __getattribute__. It's handled down with the other dunder-funcs.
+        // We could migrate other tp$/dunder-functions that way, but
+        // tp$getattr() is the performance hot-spot, and doing it this way
+        // allows us to work out *once* whether this class has a
+        // __getattribute__, rather than checking on every tp$getattr() call
 
         klass.prototype.tp$str = function () {
             var strf = this.tp$getattr(Sk.builtin.str.$str);
@@ -441,7 +421,7 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         // Register skulpt shortcuts to magic methods defined by this class.
-        // Dynamically deflined methods (eg those returned by __getattr__())
+        // Dynamically defined methods (eg those returned by __getattr__())
         // cannot be used by these magic functions; this is consistent with
         // how CPython handles "new-style" classes:
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
@@ -459,6 +439,30 @@ Sk.builtin.type = function (name, bases, dict) {
                 // scope workaround
                 shortcutDunder(skulpt_name, dunder, klass[dunder], canSuspendIdx);
             }
+        }
+
+        // tp$getattr is a special case; we need to catch AttributeErrors and
+        // return undefined instead.
+        let getattributeFn = Sk.builtin.type.typeLookup(klass, Sk.builtin.str.$getattribute);
+        if (getattributeFn !== undefined && getattributeFn !== Sk.builtin.object.prototype.__getattribute__) {
+            klass.prototype.tp$getattr = function (pyName, canSuspend) {
+                let r = Sk.misceval.tryCatch(
+                    () => Sk.misceval.callsimOrSuspendArray(getattributeFn, [this, pyName]),
+                    function (e) {
+                        if (e instanceof Sk.builtin.AttributeError) {
+                            return undefined;
+                        } else {
+                            throw e;
+                        }
+                    }
+                );
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            };
+        } else if (!klass.prototype.tp$getattr) {
+            // This is only relevant in Python 2, where
+            // it's possible not to inherit from object
+            // (or perhaps when inheriting from builtins? Unclear)
+            klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         }
 
         return klass;

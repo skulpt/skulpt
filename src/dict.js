@@ -76,6 +76,18 @@ Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {
     var eq;
     var i;
 
+    // Fast path: We spend a *lot* of time looking up strings
+    // in dictionaries. (Every attribute access, for starters.)
+    if (key.ob$type === Sk.builtin.str) {
+        for (i = 0; i < bucket.items.length; i++) {
+            item = bucket.items[i];
+            if (item.lhs.ob$type === Sk.builtin.str && item.lhs.v === key.v) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     for (i = 0; i < bucket.items.length; i++) {
         item = bucket.items[i];
         eq = Sk.misceval.richCompareBool(item.lhs, key, "Eq");
