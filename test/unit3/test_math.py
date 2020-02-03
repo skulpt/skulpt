@@ -600,7 +600,7 @@ class MathTests(unittest.TestCase):
         # mant_dig = float_info.mant_dig
         # etiny = float_info.min_exp - mant_dig
         mant_dig = 53 # sys and float_info don't exist
-        etiny = -1074-mant_dig
+        etiny = -1020-mant_dig
 
         def msum(iterable):
             """Full precision summation.  Compute sum(iterable) without any
@@ -675,6 +675,7 @@ class MathTests(unittest.TestCase):
         
             s = msum(vals)
             self.assertAlmostEqual(msum(vals), math.fsum(vals), 13)
+            # self.assertEqual(msum(vals), math.fsum(vals))
             # assertEqual failed - this seemed the best compromise
 
     def testGcd(self):
