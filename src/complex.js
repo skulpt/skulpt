@@ -161,11 +161,6 @@ Sk.builtin.complex = function (real, imag) {
         ci.real += cr.imag;
     }
 
-    // // adjust for negated imaginary literal
-    // if (cr.real === 0 && (ci.real < 0 || Sk.builtin.complex._isNegativeZero(ci.real))) {
-    //     cr.real = -0;
-    // }
-
     // save them as properties
     this.real = new Sk.builtin.float_(cr.real);
     this.imag = new Sk.builtin.float_(ci.real);
