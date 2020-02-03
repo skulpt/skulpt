@@ -56,7 +56,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("fabs", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        let _x = Sk.builtin.asnum$(Sk.builtin.float_(x));  //should raise OverflowError for large ints to floats
+        let _x = Sk.builtin.asnum$(Sk.builtin.float_(x)); //should raise OverflowError for large ints to floats
         _x = Math.abs(_x)
 
         return new Sk.builtin.float_(_x);
@@ -154,8 +154,43 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.tuple(res)
     });
 
-    mod.fsum = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.fsum() is not yet implemented in Skulpt")
+    mod.fsum = new Sk.builtin.func(function (iter) {
+        // algorithm from https://code.activestate.com/recipes/393090/
+        // as well as https://github.com/brython-dev/brython/blob/master/www/src/libs/math.js
+        Sk.builtin.pyCheckArgsLen("fsum", arguments.length, 1, 1);
+        if (!Sk.builtin.checkIterable(iter)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
+        }
+
+        let partials = [];
+        iter = Sk.abstr.iter(iter);
+        let i, hi, lo;
+        for (let x = iter.tp$iternext(); x !== undefined; x = iter.tp$iternext()) {
+            Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
+            i = 0;
+            x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+            for (let j = 0, len = partials.length; j < len; j++) {
+                let y = partials[j]
+                if (Math.abs(x) < Math.abs(y)) {
+                    let temp = x;
+                    x = y;
+                    y = temp;
+                }
+                hi = x + y;
+                lo = y - (hi - x);
+                if (lo) {
+                    partials[i] = lo;
+                    i++;
+                }
+                x = hi;
+            }
+            partials = partials.slice(0, i).concat([x])
+        }
+        const sum = partials.reduce(function (a, b) {
+            return a + b;
+        }, 0);
+
+        return new Sk.builtin.float_(sum)
     });
 
     mod.gcd = new Sk.builtin.func(function (a, b) {

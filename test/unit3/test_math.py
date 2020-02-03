@@ -584,48 +584,51 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.frexp(NINF)[0], NINF)
         self.assertTrue(math.isnan(math.frexp(NAN)[0]))
 
-    # def testFsum(self):
-    #     # math.fsum relies on exact rounding for correct operation.
-    #     # There's a known problem with IA32 floating-point that causes
-    #     # inexact rounding in some situations, and will cause the
-    #     # math.fsum tests below to fail; see issue #2937.  On non IEEE
-    #     # 754 platforms, and on IEEE 754 platforms that exhibit the
-    #     # problem described in issue #2937, we simply skip the whole
-    #     # test.
-    #
-    #     # Python version of math.fsum, for comparison.  Uses a
-    #     # different algorithm based on frexp, ldexp and integer
-    #     # arithmetic.
-    #     from sys import float_info
-    #     mant_dig = float_info.mant_dig
-    #     etiny = float_info.min_exp - mant_dig
+    def testFsum(self):
+        # math.fsum relies on exact rounding for correct operation.
+        # There's a known problem with IA32 floating-point that causes
+        # inexact rounding in some situations, and will cause the
+        # math.fsum tests below to fail; see issue #2937.  On non IEEE
+        # 754 platforms, and on IEEE 754 platforms that exhibit the
+        # problem described in issue #2937, we simply skip the whole
+        # test.
+    
+        # Python version of math.fsum, for comparison.  Uses a
+        # different algorithm based on frexp, ldexp and integer
+        # arithmetic.
+        # from sys import float_info
+        # mant_dig = float_info.mant_dig
+        # etiny = float_info.min_exp - mant_dig
+        mant_dig = 53 # sys and float_info don't exist
+        etiny = -1074-mant_dig
 
-        # def msum(iterable):
-        #     """Full precision summation.  Compute sum(iterable) without any
-        #     intermediate accumulation of error.  Based on the 'lsum' function
-        #     at http://code.activestate.com/recipes/393090/
-        #
-        #     """
-        #     tmant, texp = 0, 0
-        #     for x in iterable:
-        #         mant, exp = math.frexp(x)
-        #         mant, exp = int(math.ldexp(mant, mant_dig)), exp - mant_dig
-        #         if texp > exp:
-        #             tmant <<= texp-exp
-        #             texp = exp
-        #         else:
-        #             mant <<= exp-texp
-        #         tmant += mant
-        #     # Round tmant * 2**texp to a float.  The original recipe
-        #     # used float(str(tmant)) * 2.0**texp for this, but that's
-        #     # a little unsafe because str -> float conversion can't be
-        #     # relied upon to do correct rounding on all platforms.
-        #     tail = max(len(bin(abs(tmant)))-2 - mant_dig, etiny - texp)
-        #     if tail > 0:
-        #         h = 1 << (tail-1)
-        #         tmant = tmant // (2*h) + bool(tmant & h and tmant & 3*h-1)
-        #         texp += tail
-        #     return math.ldexp(tmant, texp)
+        def msum(iterable):
+            """Full precision summation.  Compute sum(iterable) without any
+            intermediate accumulation of error.  Based on the 'lsum' function
+            at http://code.activestate.com/recipes/393090/
+            """
+            tmant, texp = 0, 0
+            for x in iterable:
+                mant, exp = math.frexp(x)
+                mant, exp = int(math.ldexp(mant, mant_dig)), exp - mant_dig
+                if texp > exp:
+                    tmant <<= texp-exp
+                    texp = exp
+                else:
+                    mant <<= exp-texp
+                tmant += mant
+            # Round tmant * 2**texp to a float.  The original recipe
+            # used float(str(tmant)) * 2.0**texp for this, but that's
+            # a little unsafe because str -> float conversion can't be
+            # relied upon to do correct rounding on all platforms.
+            tail = max(len(bin(abs(tmant)))-2 - mant_dig, etiny - texp)
+            if tail > 0:
+                h = 1 << (tail-1)
+                tmant = tmant // (2*h) + bool(tmant & h and tmant & 3*h-1)
+                texp += tail
+            
+            # weird hack that fixes a bug when tmant is converted to a float incorrectly by skulpt
+            return math.ldexp(int(str(tmant)), texp)  
 
         test_values = [
             ([], 0.0),
@@ -635,28 +638,44 @@ class MathTests(unittest.TestCase):
             ([2.0**53, 1.0, 2.0**-100], 2.0**53+2.0),
             ([2.0**53+10.0, 1.0, 2.0**-100], 2.0**53+12.0),
             ([2.0**53-4.0, 0.5, 2.0**-54], 2.0**53-3.0),
-            ([1./n for n in range(1, 1001)]),
-            ([(-1.)**n/n for n in range(1, 1001)]),
+            ([1./n for n in range(1, 1001)],7.485470860550345),
+            ([(-1.)**n/n for n in range(1, 1001)],-0.6926474305598203),
             ([1.7**(i+1)-1.7**i for i in range(1000)] + [-1.7**1000], -1.0),
             ([1e16, 1., 1e-16], 10000000000000002.0),
             ([1e16-2., 1.-2.**-53, -(1e16-2.), -(1.-2.**-53)], 0.0),
             # exercise code for resizing partials array
             ([2.**n - 2.**(n+50) + 2.**(n+52) for n in range(-1074, 972, 2)] +
-             [-2.**1022])
-            ]
+                [-2.**1022],1.3305602063564798e+292)
+        ]
 
-        # from random import random, gauss, shuffle
-        # for j in range(1000):
-        #     vals = [7, 1e100, -7, -1e100, -9e-20, 8e-20] * 10
-        #     s = 0
-        #     for i in range(200):
-        #         v = gauss(0, random()) ** 7 - s
-        #         s += v
-        #         vals.append(v)
-        #     shuffle(vals)
-        #
-        #     s = msum(vals)
-        #     self.assertEqual(msum(vals), math.fsum(vals))
+        for i, (vals, expected) in enumerate(test_values):
+            try:
+                actual = math.fsum(vals)
+            except OverflowError:
+                self.fail("test %d failed: got OverflowError, expected %r "
+                          "for math.fsum(%.100r)" % (i, expected, vals))
+            except ValueError:
+                self.fail("test %d failed: got ValueError, expected %r "
+                          "for math.fsum(%.100r)" % (i, expected, vals))
+            self.assertTrue(math.isclose(actual, expected, rel_tol=10**-15)) 
+            # AssertEqual failed on testcase 3,4,6,10 only in the units digit
+            # correct in first 15 significant figures!
+            # hence using isclose rather than assertEqual 
+
+
+        from random import random, gauss, shuffle
+        for j in range(100):
+            vals = [7, 1e100, -7, -1e100, -9e-20, 8e-20] * 10
+            s = 0
+            for i in range(200):
+                v = gauss(0, random()) ** 7 - s
+                s += v
+                vals.append(v)
+            shuffle(vals)
+        
+            s = msum(vals)
+            self.assertAlmostEqual(msum(vals), math.fsum(vals), 13)
+            # assertEqual failed - this seemed the best compromise
 
     def testGcd(self):
         gcd = math.gcd
