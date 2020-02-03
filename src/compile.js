@@ -664,13 +664,7 @@ Compiler.prototype.ccall = function (e) {
         out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
         positionalArgs = "[$gbl.__class__,self]";
     }
-    if (keywordArgs !== "undefined") {
-        out("$ret = Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
-    } else if (positionalArgs != "[]") {
-        out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ", ", positionalArgs, ");");
-    } else {
-        out ("$ret = Sk.misceval.callsimOrSuspendArray(", func, ");");
-    }
+    out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
     this._checkSuspension(e);
 
