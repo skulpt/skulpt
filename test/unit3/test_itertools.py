@@ -1,6 +1,6 @@
-# import unittest
+import unittest
 # from test import support
-# from itertools import *
+from itertools import *
 # import weakref
 # from decimal import Decimal
 # from fractions import Fraction
@@ -77,7 +77,8 @@
 # picklecopiers = [lambda s, proto=proto: pickle.loads(pickle.dumps(s, proto))
 #                  for proto in range(pickle.HIGHEST_PROTOCOL + 1)]
 
-# class TestBasicOps(unittest.TestCase):
+class TestBasicOps(unittest.TestCase):
+    pass
 
 #     def pickletest(self, protocol, it, stop=4, take=1, compare=None):
 #         """Test that an iterator is the same after pickling, also when part-consumed"""
@@ -1536,7 +1537,7 @@
 #             self.assertRaises(StopIteration, next, f(lambda x:x, []))
 #             self.assertRaises(StopIteration, next, f(lambda x:x, StopNow()))
 
-# class TestExamples(unittest.TestCase):
+class TestExamples(unittest.TestCase):
 
 #     def test_accumulate(self):
 #         self.assertEqual(list(accumulate([1,2,3,4,5])), [1, 3, 6, 10, 15])
@@ -1585,8 +1586,8 @@
 #     def test_compress(self):
 #         self.assertEqual(list(compress('ABCDEF', [1,0,1,0,1,1])), list('ACEF'))
 
-#     def test_count(self):
-#         self.assertEqual(list(islice(count(10), 5)), [10, 11, 12, 13, 14])
+    def test_count(self):
+        self.assertEqual(list(islice(count(10), 5)), [10, 11, 12, 13, 14])
 
 #     def test_cycle(self):
 #         self.assertEqual(list(islice(cycle('ABCD'), 12)), list('ABCDABCDABCD'))
@@ -1646,7 +1647,8 @@
 #         self.assertEqual(list(takewhile(lambda x: x<5, [1,4,6,4,1])), [1,4])
 
 
-# class TestPurePythonRoughEquivalents(unittest.TestCase):
+class TestPurePythonRoughEquivalents(unittest.TestCase):
+    pass
 
 #     @staticmethod
 #     def islice(iterable, *args):
@@ -1688,12 +1690,12 @@
 #         self.assertEqual(next(c), 3)
 
 
-# class TestGC(unittest.TestCase):
+class TestGC(unittest.TestCase):
 
-#     def makecycle(self, iterator, container):
-#         container.append(iterator)
-#         next(iterator)
-#         del container, iterator
+    def makecycle(self, iterator, container):
+        container.append(iterator)
+        next(iterator)
+        del container, iterator
 
 #     def test_accumulate(self):
 #         a = []
@@ -1719,10 +1721,10 @@
 #         a = []
 #         self.makecycle(compress('ABCDEF', [1,0,1,0,1,0]), a)
 
-#     def test_count(self):
-#         a = []
-#         Int = type('Int', (int,), dict(x=a))
-#         self.makecycle(count(Int(0), Int(1)), a)
+    def test_count(self):
+        a = []
+        Int = type('Int', (int,), dict(x=a))
+        self.makecycle(count(Int(0), Int(1)), a)
 
 #     def test_cycle(self):
 #         a = []
@@ -1866,7 +1868,8 @@
 #     return chain(map(lambda x:x, R(Ig(G(seqn)))))
 
 
-# class TestVariousIteratorArgs(unittest.TestCase):
+class TestVariousIteratorArgs(unittest.TestCase):
+    pass
 
 #     def test_accumulate(self):
 #         s = [1,2,3,4,5]
@@ -2021,7 +2024,8 @@
 #             self.assertRaises(TypeError, tee, N(s))
 #             self.assertRaises(ZeroDivisionError, list, tee(E(s))[0])
 
-# class LengthTransparency(unittest.TestCase):
+class LengthTransparency(unittest.TestCase):
+    pass
 
 #     def test_repeat(self):
 #         self.assertEqual(operator.length_hint(repeat(None, 50)), 50)
@@ -2034,7 +2038,8 @@
 #         self.assertEqual(operator.length_hint(repeat(None, times=-1)), 0)
 #         self.assertEqual(operator.length_hint(repeat(None, times=-2)), 0)
 
-# class RegressionTests(unittest.TestCase):
+class RegressionTests(unittest.TestCase):
+    pass
 
 #     def test_sf_793826(self):
 #         # Fix Armin Rigo's successful efforts to wreak havoc
@@ -2125,7 +2130,8 @@
 #             next(g, None)  # shouldn't crash
 
 
-# class SubclassWithKwargsTest(unittest.TestCase):
+class SubclassWithKwargsTest(unittest.TestCase):
+    pass
 #     def test_keywords_in_subclass(self):
 #         # count is not subclassable...
 #         for cls in (repeat, zip, filter, filterfalse, chain, map,
@@ -2140,7 +2146,8 @@
 #                 self.assertNotIn("keyword arguments", err.args[0])
 
 # @support.cpython_only
-# class SizeofTest(unittest.TestCase):
+class SizeofTest(unittest.TestCase):
+    pass
 #     def setUp(self):
 #         self.ssize_t = struct.calcsize('n')
 
@@ -2434,12 +2441,11 @@
 # __test__ = {'libreftest' : libreftest}
 
 # def test_main(verbose=None):
-#     test_classes = (TestBasicOps, TestVariousIteratorArgs, TestGC,
-#                     RegressionTests, LengthTransparency,
-#                     SubclassWithKwargsTest, TestExamples,
-#                     TestPurePythonRoughEquivalents,
-#                     SizeofTest)
-#     support.run_unittest(*test_classes)
+#     # test_classes = (TestBasicOps, TestVariousIteratorArgs, TestGC,
+#     #                 RegressionTests, LengthTransparency,
+#     #                 SubclassWithKwargsTest, TestExamples,
+#     #                 TestPurePythonRoughEquivalents,
+#     #                 SizeofTest)
 
 #     # verify reference counting
 #     if verbose and hasattr(sys, "gettotalrefcount"):
@@ -2454,5 +2460,6 @@
 #     # doctest the examples in the library reference
 #     support.run_doctest(sys.modules[__name__], verbose)
 
-# if __name__ == "__main__":
-#     test_main(verbose=True)
+if __name__ == "__main__":
+    # test_main(verbose=True)
+     unittest.main()
