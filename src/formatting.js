@@ -189,6 +189,16 @@ let formatNumber = function(num, formatSpec, isFractional) {
                     result += ".0";
                 }
             }
+            // Python's 'e' pads the power with 0 if it is a single digit
+            if (conversionType.toLowerCase()==="e") {
+                let scientificNotation = result.match(/[-+]?[0-9]*\.?[0-9]+[eE][-+]?([0-9]+)?/);
+                if (scientificNotation) {
+                    let powerNumber = scientificNotation[1];
+                    if (powerNumber.length == 1) {
+                        result = result.slice(0, result.length - 1) + "0" + powerNumber;
+                    }
+                }
+            }
             if (m[FMT.COMMA]){
                 var parts = result.toString().split(".");
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");

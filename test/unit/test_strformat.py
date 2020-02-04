@@ -16,7 +16,6 @@ class string_format(unittest.TestCase):
         coord = {'latitude': '37.24N', 'longitude': '-115.81W'}
         self.assertEqual('Coordinates: 37.24N, -115.81W', 'Coordinates: {latitude}, {longitude}'.format(**coord))
     
-    
     def test_arg_attr(self):
         # Skulpt:  Complex Numbers Currently unsupported
         # c = 3-5j
@@ -40,7 +39,6 @@ class string_format(unittest.TestCase):
     def test_width(self):
         self.assertEqual('         2,2',"{0:10},{0}".format(2))
         self.assertEqual('foo bar baz ',"{0:4}{1:4}{2:4}".format("foo","bar","baz")) 
-        
 
     def test_conversion(self):
         self.assertEqual("repr() shows quotes: 'test1'; str() doesn't: test2", "repr() shows quotes: {!r}; str() doesn't: {!s}".format('test1', 'test2'))
@@ -76,6 +74,13 @@ class string_format(unittest.TestCase):
         import datetime
         d = datetime.datetime(2010, 7, 4, 12, 15, 58)
         self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
+
+    def test_scientific_notation(self):
+        self.assertEqual('1.234568e+08', "{:e}".format(123456789))
+        self.assertEqual('1.234568E+08', "{:E}".format(123456789))
+        self.assertEqual('1.234568e+16', "{:e}".format(12345678987654321))
+        self.assertEqual('1e+08', "{:.0e}".format(123456789))
+
 
 if __name__ == '__main__':
     unittest.main()
