@@ -28,7 +28,6 @@ var $builtinmodule = function (name) {
 
 
     var _count_gen = function ($gen) {
-        console.log(arguments)
         const n = $gen.gi$locals.n;
         const step = $gen.gi$locals.step;
         while (true) {
@@ -56,8 +55,6 @@ var $builtinmodule = function (name) {
     mod.count = new Sk.builtin.func(_count);
 
 
-
-
     mod.cycle = new Sk.builtin.func(function () {
         throw new Sk.builtin.NotImplementedError("cycle is not yet implemented in Skulpt");
     })
@@ -79,7 +76,7 @@ var $builtinmodule = function (name) {
 
 
     var _islice_gen = function ($gen) {
-        let iter, nextit, stop, step, initial;
+        let iter, previt, stop, step, initial;
         iter = $gen.gi$locals.iter;
         previt = $gen.gi$locals.previt;
         stop = $gen.gi$locals.stop;
@@ -102,8 +99,8 @@ var $builtinmodule = function (name) {
                     $gen.gi$locals.initial = false;
                     $gen.gi$locals.iter = iter;
                 };
-            }
-        }
+            };
+        };
         if (previt + step >= stop) {
             // consume generator up to stop and return
             for (let i = previt + 1; i < stop; i++) {
@@ -121,7 +118,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.previt = previt + step;
             };
 
-        }
+        };
     };
 
 
@@ -141,30 +138,30 @@ var $builtinmodule = function (name) {
         };
 
         // check stop first
-        if (!(Sk.builtin.checkNone(stop) || Sk.builtin.checkInt(stop))) {
+        if (!(Sk.builtin.checkNone(stop) || Sk.misceval.isIndex(stop))) {
             throw new Sk.builtin.ValueError('Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
         } else {
-            stop = Sk.builtin.checkNone(stop) ? Number.MAX_SAFE_INTEGER : Sk.builtin.asnum$(stop);
+            stop = Sk.builtin.checkNone(stop) ? Number.MAX_SAFE_INTEGER : Sk.misceval.asIndex(stop);
             if (stop < 0 || stop > Number.MAX_SAFE_INTEGER) {
                 throw new Sk.builtin.ValueError('Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
             }
         };
 
         // check start
-        if (!(Sk.builtin.checkNone(start) || Sk.builtin.checkInt(start))) {
+        if (!(Sk.builtin.checkNone(start) || Sk.misceval.isIndex(start))) {
             throw new Sk.builtin.ValueError('Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
         } else {
-            start = Sk.builtin.checkNone(start) ? 0 : Sk.builtin.asnum$(start);
+            start = Sk.builtin.checkNone(start) ? 0 : Sk.misceval.asIndex(start);
             if (start < 0 || start > Number.MAX_SAFE_INTEGER) {
                 throw new Sk.builtin.ValueError('Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
             }
         };
 
         // check step
-        if (!(Sk.builtin.checkNone(step) || Sk.builtin.checkInt(step))) {
+        if (!(Sk.builtin.checkNone(step) || Sk.misceval.isIndex(step))) {
             throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None')
         } else {
-            step = Sk.builtin.checkNone(step) ? 1 : Sk.builtin.asnum$(step);
+            step = Sk.builtin.checkNone(step) ? 1 : Sk.misceval.asIndex(step);
             if (step <= 0 || step > Number.MAX_SAFE_INTEGER) {
                 throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None.')
             }

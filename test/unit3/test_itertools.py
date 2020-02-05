@@ -1274,16 +1274,16 @@ class TestBasicOps(unittest.TestCase):
 
         # Issue #30537: islice can accept integer-like objects as
         # arguments
-        # class IntLike(object):
-        #     def __init__(self, val):
-        #         self.val = val
-        #     def __index__(self):
-        #         return self.val
-        # self.assertEqual(list(islice(range(100), IntLike(10))), list(range(10)))
-        # self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50))),
-        #                  list(range(10, 50)))
-        # self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50), IntLike(5))),
-        #                  list(range(10,50,5)))
+        class IntLike(object):
+            def __init__(self, val):
+                self.val = val
+            def __index__(self):
+                return self.val
+        self.assertEqual(list(islice(range(100), IntLike(10))), list(range(10)))
+        self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50))),
+                         list(range(10, 50)))
+        self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50), IntLike(5))),
+                         list(range(10,50,5)))
 
 #     def test_takewhile(self):
 #         data = [1, 3, 5, 20, 2, 4, 6, 8]
@@ -1793,77 +1793,77 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(takewhile(bool, [1, 0, a, a]), a)
 
-# def R(seqn):
-#     'Regular generator'
-#     for i in seqn:
-#         yield i
+def R(seqn):
+    'Regular generator'
+    for i in seqn:
+        yield i
 
-# class G:
-#     'Sequence using __getitem__'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#     def __getitem__(self, i):
-#         return self.seqn[i]
+class G:
+    'Sequence using __getitem__'
+    def __init__(self, seqn):
+        self.seqn = seqn
+    def __getitem__(self, i):
+        return self.seqn[i]
 
-# class I:
-#     'Sequence using iterator protocol'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#         self.i = 0
-#     def __iter__(self):
-#         return self
-#     def __next__(self):
-#         if self.i >= len(self.seqn): raise StopIteration
-#         v = self.seqn[self.i]
-#         self.i += 1
-#         return v
+class I:
+    'Sequence using iterator protocol'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.i >= len(self.seqn): raise StopIteration
+        v = self.seqn[self.i]
+        self.i += 1
+        return v
 
-# class Ig:
-#     'Sequence using iterator protocol defined with a generator'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#         self.i = 0
-#     def __iter__(self):
-#         for val in self.seqn:
-#             yield val
+class Ig:
+    'Sequence using iterator protocol defined with a generator'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __iter__(self):
+        for val in self.seqn:
+            yield val
 
-# class X:
-#     'Missing __getitem__ and __iter__'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#         self.i = 0
-#     def __next__(self):
-#         if self.i >= len(self.seqn): raise StopIteration
-#         v = self.seqn[self.i]
-#         self.i += 1
-#         return v
+class X:
+    'Missing __getitem__ and __iter__'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __next__(self):
+        if self.i >= len(self.seqn): raise StopIteration
+        v = self.seqn[self.i]
+        self.i += 1
+        return v
 
-# class N:
-#     'Iterator missing __next__()'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#         self.i = 0
-#     def __iter__(self):
-#         return self
+class N:
+    'Iterator missing __next__()'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __iter__(self):
+        return self
 
-# class E:
-#     'Test propagation of exceptions'
-#     def __init__(self, seqn):
-#         self.seqn = seqn
-#         self.i = 0
-#     def __iter__(self):
-#         return self
-#     def __next__(self):
-#         3 // 0
+class E:
+    'Test propagation of exceptions'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __iter__(self):
+        return self
+    def __next__(self):
+        3 // 0
 
-# class S:
-#     'Test immediate stop'
-#     def __init__(self, seqn):
-#         pass
-#     def __iter__(self):
-#         return self
-#     def __next__(self):
-#         raise StopIteration
+class S:
+    'Test immediate stop'
+    def __init__(self, seqn):
+        pass
+    def __iter__(self):
+        return self
+    def __next__(self):
+        raise StopIteration
 
 # def L(seqn):
 #     'Test multiple tiers of iterators'
@@ -1976,10 +1976,11 @@ class TestVariousIteratorArgs(unittest.TestCase):
 
     def test_islice(self):
         for s in ("12345", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-            for g in (G, I, Ig, S, L, R):
+            # for g in (G, I, Ig, S, L, R):
+            for g in (G, I, Ig, S, R):
                 self.assertEqual(list(islice(g(s),1,None,2)), list(g(s))[1::2])
             self.assertRaises(TypeError, islice, X(s), 10)
-            self.assertRaises(TypeError, islice, N(s), 10)
+            # self.assertRaises(TypeError, islice, N(s), 10)
             self.assertRaises(ZeroDivisionError, list, islice(E(s), 10))
 
 #     def test_starmap(self):
