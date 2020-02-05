@@ -126,7 +126,7 @@ var $builtinmodule = function (name) {
 
 
     var _islice = function (iter, start, stop, step) {
-        Sk.builtin.pyCheckArgsLen("islice", arguments.length, 1, 4);
+        Sk.builtin.pyCheckArgsLen("islice", arguments.length, 2, 4);
         if (!Sk.builtin.checkIterable(iter)) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
         };
@@ -165,7 +165,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None')
         } else {
             step = Sk.builtin.checkNone(step) ? 1 : Sk.builtin.asnum$(step);
-            if (step < 0 || step > Number.MAX_SAFE_INTEGER) {
+            if (step <= 0 || step > Number.MAX_SAFE_INTEGER) {
                 throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None.')
             }
         }

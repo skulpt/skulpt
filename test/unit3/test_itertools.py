@@ -6,14 +6,16 @@ from itertools import *
 # from fractions import Fraction
 # import operator
 # import random
-# import copy
+import copy
 # import pickle
 # from functools import reduce
-# import sys
+import sys
 # import struct
 # import threading
 # maxsize = support.MAX_Py_ssize_t
 # minsize = -maxsize-1
+maxsize = sys.maxsize
+minsize = -maxsize-1
 
 # def lzip(*args):
 #     return list(zip(*args))
@@ -53,9 +55,9 @@ from itertools import *
 #     def __next__(self):
 #         raise StopIteration
 
-# def take(n, seq):
-#     'Convenience function for partially consuming a long of infinite iterable'
-#     return list(islice(seq, n))
+def take(n, seq):
+    'Convenience function for partially consuming a long of infinite iterable'
+    return list(islice(seq, n))
 
 # def prod(iterable):
 #     return reduce(operator.mul, iterable, 1)
@@ -1189,61 +1191,61 @@ class TestBasicOps(unittest.TestCase):
 #             c = starmap(operator.pow, zip(range(3), range(1,7)))
 #             self.pickletest(proto, c)
 
-#     def test_islice(self):
-#         for args in [          # islice(args) should agree with range(args)
-#                 (10, 20, 3),
-#                 (10, 3, 20),
-#                 (10, 20),
-#                 (10, 10),
-#                 (10, 3),
-#                 (20,)
-#                 ]:
-#             self.assertEqual(list(islice(range(100), *args)),
-#                              list(range(*args)))
+    def test_islice(self):
+        for args in [          # islice(args) should agree with range(args)
+                (10, 20, 3),
+                (10, 3, 20),
+                (10, 20),
+                (10, 10),
+                (10, 3),
+                (20,)
+                ]:
+            self.assertEqual(list(islice(range(100), *args)),
+                             list(range(*args)))
 
-#         for args, tgtargs in [  # Stop when seqn is exhausted
-#                 ((10, 110, 3), ((10, 100, 3))),
-#                 ((10, 110), ((10, 100))),
-#                 ((110,), (100,))
-#                 ]:
-#             self.assertEqual(list(islice(range(100), *args)),
-#                              list(range(*tgtargs)))
+        for args, tgtargs in [  # Stop when seqn is exhausted
+                ((10, 110, 3), ((10, 100, 3))),
+                ((10, 110), ((10, 100))),
+                ((110,), (100,))
+                ]:
+            self.assertEqual(list(islice(range(100), *args)),
+                             list(range(*tgtargs)))
 
-#         # Test stop=None
-#         self.assertEqual(list(islice(range(10), None)), list(range(10)))
-#         self.assertEqual(list(islice(range(10), None, None)), list(range(10)))
-#         self.assertEqual(list(islice(range(10), None, None, None)), list(range(10)))
-#         self.assertEqual(list(islice(range(10), 2, None)), list(range(2, 10)))
-#         self.assertEqual(list(islice(range(10), 1, None, 2)), list(range(1, 10, 2)))
+        # Test stop=None
+        self.assertEqual(list(islice(range(10), None)), list(range(10)))
+        self.assertEqual(list(islice(range(10), None, None)), list(range(10)))
+        self.assertEqual(list(islice(range(10), None, None, None)), list(range(10)))
+        self.assertEqual(list(islice(range(10), 2, None)), list(range(2, 10)))
+        self.assertEqual(list(islice(range(10), 1, None, 2)), list(range(1, 10, 2)))
 
-#         # Test number of items consumed     SF #1171417
-#         it = iter(range(10))
-#         self.assertEqual(list(islice(it, 3)), list(range(3)))
-#         self.assertEqual(list(it), list(range(3, 10)))
+        # Test number of items consumed     SF #1171417
+        it = iter(range(10))
+        self.assertEqual(list(islice(it, 3)), list(range(3)))
+        self.assertEqual(list(it), list(range(3, 10)))
 
-#         it = iter(range(10))
-#         self.assertEqual(list(islice(it, 3, 3)), [])
-#         self.assertEqual(list(it), list(range(3, 10)))
+        it = iter(range(10))
+        self.assertEqual(list(islice(it, 3, 3)), [])
+        self.assertEqual(list(it), list(range(3, 10)))
 
-#         # Test invalid arguments
-#         ra = range(10)
-#         self.assertRaises(TypeError, islice, ra)
-#         self.assertRaises(TypeError, islice, ra, 1, 2, 3, 4)
-#         self.assertRaises(ValueError, islice, ra, -5, 10, 1)
-#         self.assertRaises(ValueError, islice, ra, 1, -5, -1)
-#         self.assertRaises(ValueError, islice, ra, 1, 10, -1)
-#         self.assertRaises(ValueError, islice, ra, 1, 10, 0)
-#         self.assertRaises(ValueError, islice, ra, 'a')
-#         self.assertRaises(ValueError, islice, ra, 'a', 1)
-#         self.assertRaises(ValueError, islice, ra, 1, 'a')
-#         self.assertRaises(ValueError, islice, ra, 'a', 1, 1)
-#         self.assertRaises(ValueError, islice, ra, 1, 'a', 1)
-#         self.assertEqual(len(list(islice(count(), 1, 10, maxsize))), 1)
+        # # Test invalid arguments
+        ra = range(10)
+        self.assertRaises(TypeError, islice, ra)
+        self.assertRaises(TypeError, islice, ra, 1, 2, 3, 4)
+        self.assertRaises(ValueError, islice, ra, -5, 10, 1)
+        self.assertRaises(ValueError, islice, ra, 1, -5, -1)
+        self.assertRaises(ValueError, islice, ra, 1, 10, -1)
+        self.assertRaises(ValueError, islice, ra, 1, 10, 0)
+        self.assertRaises(ValueError, islice, ra, 'a')
+        self.assertRaises(ValueError, islice, ra, 'a', 1)
+        self.assertRaises(ValueError, islice, ra, 1, 'a')
+        self.assertRaises(ValueError, islice, ra, 'a', 1, 1)
+        self.assertRaises(ValueError, islice, ra, 1, 'a', 1)
+        self.assertEqual(len(list(islice(count(), 1, 10, maxsize))), 1)
 
-#         # Issue #10323:  Less islice in a predictable state
-#         c = count()
-#         self.assertEqual(list(islice(c, 1, 3, 50)), [1])
-#         self.assertEqual(next(c), 3)
+        # Issue #10323:  Less islice in a predictable state
+        c = count()
+        self.assertEqual(list(islice(c, 1, 3, 50)), [1])
+        self.assertEqual(next(c), 3)
 
 #         # check copy, deepcopy, pickle
 #         for args in [          # islice(args) should agree with range(args)
@@ -1270,18 +1272,18 @@ class TestBasicOps(unittest.TestCase):
 #         support.gc_collect()
 #         self.assertIsNone(wr())
 
-#         # Issue #30537: islice can accept integer-like objects as
-#         # arguments
-#         class IntLike(object):
-#             def __init__(self, val):
-#                 self.val = val
-#             def __index__(self):
-#                 return self.val
-#         self.assertEqual(list(islice(range(100), IntLike(10))), list(range(10)))
-#         self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50))),
-#                          list(range(10, 50)))
-#         self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50), IntLike(5))),
-#                          list(range(10,50,5)))
+        # Issue #30537: islice can accept integer-like objects as
+        # arguments
+        # class IntLike(object):
+        #     def __init__(self, val):
+        #         self.val = val
+        #     def __index__(self):
+        #         return self.val
+        # self.assertEqual(list(islice(range(100), IntLike(10))), list(range(10)))
+        # self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50))),
+        #                  list(range(10, 50)))
+        # self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50), IntLike(5))),
+        #                  list(range(10,50,5)))
 
 #     def test_takewhile(self):
 #         data = [1, 3, 5, 20, 2, 4, 6, 8]
@@ -1610,11 +1612,11 @@ class TestExamples(unittest.TestCase):
 #     def test_map(self):
 #         self.assertEqual(list(map(pow, (2,3,10), (5,2,3))), [32, 9, 1000])
 
-#     def test_islice(self):
-#         self.assertEqual(list(islice('ABCDEFG', 2)), list('AB'))
-#         self.assertEqual(list(islice('ABCDEFG', 2, 4)), list('CD'))
-#         self.assertEqual(list(islice('ABCDEFG', 2, None)), list('CDEFG'))
-#         self.assertEqual(list(islice('ABCDEFG', 0, None, 2)), list('ACEG'))
+    def test_islice(self):
+        self.assertEqual(list(islice('ABCDEFG', 2)), list('AB'))
+        self.assertEqual(list(islice('ABCDEFG', 2, 4)), list('CD'))
+        self.assertEqual(list(islice('ABCDEFG', 2, None)), list('CDEFG'))
+        self.assertEqual(list(islice('ABCDEFG', 0, None, 2)), list('ACEG'))
 
 #     def test_zip(self):
 #         self.assertEqual(list(zip('ABCD', 'xy')), [('A', 'x'), ('B', 'y')])
@@ -1767,9 +1769,9 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(map(lambda x:x, [a]*2), a)
 
-#     def test_islice(self):
-#         a = []
-#         self.makecycle(islice([a]*2, None), a)
+    def test_islice(self):
+        a = []
+        self.makecycle(islice([a]*2, None), a)
 
 #     def test_permutations(self):
 #         a = []
@@ -1972,13 +1974,13 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, map, onearg, N(s))
 #             self.assertRaises(ZeroDivisionError, list, map(onearg, E(s)))
 
-#     def test_islice(self):
-#         for s in ("12345", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(islice(g(s),1,None,2)), list(g(s))[1::2])
-#             self.assertRaises(TypeError, islice, X(s), 10)
-#             self.assertRaises(TypeError, islice, N(s), 10)
-#             self.assertRaises(ZeroDivisionError, list, islice(E(s), 10))
+    def test_islice(self):
+        for s in ("12345", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(islice(g(s),1,None,2)), list(g(s))[1::2])
+            self.assertRaises(TypeError, islice, X(s), 10)
+            self.assertRaises(TypeError, islice, N(s), 10)
+            self.assertRaises(ZeroDivisionError, list, islice(E(s), 10))
 
 #     def test_starmap(self):
 #         for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
