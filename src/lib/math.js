@@ -68,27 +68,40 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
+        x = Math.floor(_x);
 
-        if (!Number.isInteger(_x)) {
-            throw new Sk.builtin.ValueError("factorial() only accepts integral values")
-        };
-        if (_x < 0) {
-            throw new Sk.builtin.ValueError("factorial() not defined for negative numbers")
-        };
+        if (x != _x) {
+            throw new Sk.builtin.ValueError("factorial() only accepts integral values");
+        }
+        if (x < 0) {
+            throw new Sk.builtin.ValueError("factorial() not defined for negative numbers");
+        }
 
-        let res = 1;
-        if (_x > MAX_SAFE_INTEGER_FACTORIAL) { // correct results for large x!
-            _x = Sk.builtin.str(x).$jsstr().replace(".0", ""); // x could be a float
-            _x = BigInt(_x);
-            res = BigInt(res);
+        var r = 1;
+        for (var i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
+            r *= i;
         }
-        for (let i = res; i <= _x; i++) {
-            res *= i;
+        if(x<=MAX_SAFE_INTEGER_FACTORIAL){
+            return new Sk.builtin.int_(r);
+        }else{
+            // for big numbers (19 and larger) we first calculate 18! above
+            // and then use bigintegers to continue the process.
+
+            // This is inefficient as hell, but it produces correct answers.
+
+            // promotes an integer to a biginteger
+            function bigup(number){
+              var n = Sk.builtin.asnum$nofloat(number);
+              return new Sk.builtin.biginteger(number);
+            }
+
+            r = bigup(r);
+            for (var i = MAX_SAFE_INTEGER_FACTORIAL+1; i <= x; i++) {
+                var i_bigup = bigup(i);
+                r = r.multiply(i_bigup);
+            }
+            return new Sk.builtin.lng(r);
         }
-        if (_x > MAX_SAFE_INTEGER_FACTORIAL) {
-            return new Sk.builtin.lng(res.toString());
-        }
-        return new Sk.builtin.int_(res);
     });
 
     mod.floor = new Sk.builtin.func(function (x) {
