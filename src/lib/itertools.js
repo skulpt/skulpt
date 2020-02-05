@@ -30,13 +30,11 @@ var $builtinmodule = function (name) {
     var _count_gen = function ($gen) {
         const n = $gen.gi$locals.n;
         const step = $gen.gi$locals.step;
-        while (true) {
-            try {
-                return [ /*resume*/ , /*ret*/ n];
-            } finally {
-                $gen.gi$locals.n = Sk.abstr.numberInplaceBinOp(n, step, "Add");
-            }
-        };
+        try {
+            return [ /*resume*/ , /*ret*/ n];
+        } finally {
+            $gen.gi$locals.n = Sk.abstr.numberInplaceBinOp(n, step, "Add");
+        }
     };
 
     var _count = function (start, step) {
@@ -70,7 +68,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.iter = iter;
             };
         } else if (saved.length) {
-            element = saved.shift()
+            element = saved.shift();
             try {
                 return [ /*resume*/ , /*ret*/ element];
             } finally {
@@ -230,10 +228,45 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("product is not yet implemented in Skulpt");
     });
 
+    var _repeat_gen = function ($gen) {
+        let n, times, object;
+        n = $gen.gi$locals.n;
+        times = $gen.gi$locals.times;
+        object = $gen.gi$locals.object;
 
-    mod.repeat = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("repeat is not yet implemented in Skulpt");
-    });
+        if (times === undefined) {
+            try {
+                return [ /*resume*/ , /*ret*/ object];
+            } finally {};
+        } else if (n < times) {
+            try {
+                return [ /*resume*/ , /*ret*/ object];
+            } finally {
+                $gen.gi$locals.n = n + 1
+            };
+        } else {
+            return []
+        };
+    };
+
+    var _repeat = function (object, times) {
+        Sk.builtin.pyCheckArgsLen("repeat", arguments.length, 1, 2);
+        if (!Sk.builtin.checkNone(times)) {
+            Sk.builtin.pyCheckType("times", "integer", Sk.builtin.checkInt(times));
+            times = Sk.builtin.asnum$(times)
+        } else {
+            times = undefined;
+        }
+        return new Sk.builtin.generator(_repeat_gen, Sk.$gbl, [object, times, 0]);
+    };
+
+    _repeat_gen.co_varnames = ["object", "times", "n"];
+    _repeat_gen.co_name = new Sk.builtins.str("repeat");
+    _repeat.co_varnames = ["object", "times"];
+    _repeat.co_name = new Sk.builtins.str("repeat");
+    _repeat.$defaults = [Sk.builtin.none.none$]
+
+    mod.repeat = new Sk.builtin.func(_repeat);
 
 
     mod.starmap = new Sk.builtin.func(function () {
