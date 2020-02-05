@@ -55,9 +55,52 @@ var $builtinmodule = function (name) {
     mod.count = new Sk.builtin.func(_count);
 
 
-    mod.cycle = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("cycle is not yet implemented in Skulpt");
-    });
+    var _cycle_gen = function ($gen) {
+        let iter, saved;
+        iter = $gen.gi$locals.iter;
+        saved = $gen.gi$locals.saved;
+        element = iter.tp$iternext();
+        if (!(element === undefined)) {
+            // consume iter before cycling through saved
+            try {
+                return [ /*resume*/ , /*ret*/ element];
+            } finally {
+                saved.push(element);
+                $gen.gi$locals.saved = saved;
+                $gen.gi$locals.iter = iter;
+            };
+        } else if (saved.length) {
+            element = saved.shift()
+            try {
+                return [ /*resume*/ , /*ret*/ element];
+            } finally {
+                saved.push(element);
+                $gen.gi$locals.saved = saved;
+            };
+        } else {
+            return []
+        };
+
+    };
+
+
+    var _cycle = function (iter) {
+        Sk.builtin.pyCheckArgsLen("cycle", arguments.length, 1, 1);
+        if (!Sk.builtin.checkIterable(iter)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
+        };
+        iter = Sk.abstr.iter(iter);
+        const saved = [];
+        return new Sk.builtin.generator(_cycle_gen, Sk.$gbl, [iter, saved]);
+    };
+
+
+    _cycle.co_name = new Sk.builtins.str("cycle");
+    _cycle_gen.co_name = new Sk.builtins.str("cycle");
+    _cycle_gen.co_varnames = ["iter", "saved"];
+
+
+    mod.cycle = new Sk.builtin.func(_cycle);
 
 
     mod.dropwhile = new Sk.builtin.func(function () {
@@ -172,7 +215,6 @@ var $builtinmodule = function (name) {
 
     _islice_gen.co_varnames = ["iter", "previt", "stop", "step"];
     _islice_gen.co_name = new Sk.builtins.str("islice");
-    _islice.$defaults = [undefined, undefined];
     _islice.co_name = new Sk.builtins.str("islice");
 
     mod.islice = new Sk.builtin.func(_islice);
