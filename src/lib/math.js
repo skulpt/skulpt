@@ -217,25 +217,30 @@ var $builtinmodule = function (name) {
                 return a;
             };
             return _gcd(b, a % b);
-        };
+        }
 
-        let _a = Math.abs(Sk.builtin.asnum$(a));
-        let _b = Math.abs(Sk.builtin.asnum$(b));
-        let max_safe = false;
+        function _biggcd(a, b) {
+            if (b.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
+                return a;
+            }
+            return _biggcd(b, a.remainder(b));
+        }
 
-        if (_a >= Number.MAX_SAFE_INTEGER || _b >= Number.MAX_SAFE_INTEGER) {
-            _a = BigInt(Sk.builtin.str(a).$jsstr());
-            _b = BigInt(Sk.builtin.str(b).$jsstr());
-            max_safe = true;
-        };
+        if ((a instanceof Sk.builtin.lng) || (b instanceof Sk.builtin.lng)) {
+            let _a = Sk.builtin.lng(a).biginteger;
+            let _b = Sk.builtin.lng(b).biginteger;
+            let res = _biggcd(_a, _b);
+            res = res.abs(); // python only returns positive gcds
 
-        let res = _gcd(_a, _b);
-        res = res < 0 ? -res : res; // python only returns positive gcds
+            return new Sk.builtin.lng(res);
+        } else {
+            let _a = Math.abs(Sk.builtin.asnum$(a));
+            let _b = Math.abs(Sk.builtin.asnum$(b));
+            let res = _gcd(_a, _b);
+            res = res < 0 ? -res : res; // python only returns positive gcds
 
-        if (max_safe) {
-            return new Sk.builtin.lng(res.toString());
-        };
-        return new Sk.builtin.int_(res);
+            return new Sk.builtin.int_(res);
+        }
     });
 
 
