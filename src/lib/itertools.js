@@ -78,9 +78,108 @@ var $builtinmodule = function (name) {
     })
 
 
-    mod.islice = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("islice is not yet implemented in Skulpt");
-    })
+    var _islice_gen = function ($gen) {
+        let iter, nextit, stop, step, initial;
+        iter = $gen.gi$locals.iter;
+        previt = $gen.gi$locals.previt;
+        stop = $gen.gi$locals.stop;
+        step = $gen.gi$locals.step;
+        initial = $gen.gi$locals.initial;
+        if (initial === undefined) {
+            if (previt >= stop) {
+                // consume generator up to stop and return
+                for (let i = 0; i < stop; i++) {
+                    iter.tp$iternext()
+                };
+                return [];
+            } else { //conusme generator up to start and yield
+                for (let i = 0; i < previt; i++) {
+                    iter.tp$iternext()
+                };
+                try {
+                    return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
+                } finally {
+                    $gen.gi$locals.initial = false;
+                    $gen.gi$locals.iter = iter;
+                };
+            }
+        }
+        if (previt + step >= stop) {
+            // consume generator up to stop and return
+            for (let i = previt + 1; i < stop; i++) {
+                iter.tp$iternext()
+            };
+            return [];
+        } else { // consume generator up to previt + step and yield
+            try {
+                for (let i = previt + 1; i < previt + step; i++) {
+                    iter.tp$iternext()
+                };
+                return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
+            } finally {
+                $gen.gi$locals.iter = iter;
+                $gen.gi$locals.previt = previt + step;
+            };
+
+        }
+    };
+
+
+    var _islice = function (iter, start, stop, step) {
+        Sk.builtin.pyCheckArgsLen("islice", arguments.length, 1, 4);
+        if (!Sk.builtin.checkIterable(iter)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
+        };
+        iter = Sk.abstr.iter(iter);
+
+        if (stop === undefined) {
+            stop = start;
+            start = Sk.builtin.none.none$
+            step = Sk.builtin.none.none$
+        } else if (step === undefined) {
+            step = Sk.builtin.none.none$
+        };
+
+        // check stop first
+        if (!(Sk.builtin.checkNone(stop) || Sk.builtin.checkInt(stop))) {
+            throw new Sk.builtin.ValueError('Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
+        } else {
+            stop = Sk.builtin.checkNone(stop) ? Number.MAX_SAFE_INTEGER : Sk.builtin.asnum$(stop);
+            if (stop < 0 || stop > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.ValueError('Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
+            }
+        };
+
+        // check start
+        if (!(Sk.builtin.checkNone(start) || Sk.builtin.checkInt(start))) {
+            throw new Sk.builtin.ValueError('Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
+        } else {
+            start = Sk.builtin.checkNone(start) ? 0 : Sk.builtin.asnum$(start);
+            if (start < 0 || start > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.ValueError('Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.')
+            }
+        };
+
+        // check step
+        if (!(Sk.builtin.checkNone(step) || Sk.builtin.checkInt(step))) {
+            throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None')
+        } else {
+            step = Sk.builtin.checkNone(step) ? 1 : Sk.builtin.asnum$(step);
+            if (step < 0 || step > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.ValueError('Step for islice() must be a positive integer or None.')
+            }
+        }
+        const previt = start;
+        return new Sk.builtin.generator(_islice_gen, Sk.$gbl, [iter, previt, stop, step]);
+    };
+
+    _islice_gen.co_varnames = ['iter', 'previt', 'stop', 'step'];
+    _islice_gen.co_name = new Sk.builtins.str('islice');
+    _islice.$defaults = [Sk.builtin.none.none$, undefined, undefined];
+    _islice.co_name = new Sk.builtins.str('islice');
+
+    mod.islice = new Sk.builtin.func(_islice);
+
 
 
     mod.permutations = new Sk.builtin.func(function () {
