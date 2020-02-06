@@ -4,7 +4,7 @@ Sk.builtin.itertools_gen = function (code, globals, args, closure, closure2) {
 }
 Sk.builtin.itertools_gen.prototype = Object.create(Sk.builtin.generator.prototype)
 Sk.builtin.itertools_gen.prototype["$r"] = function () {
-    return new Sk.builtin.str("<builtin." + this.func_code["co_name"].v + " object>")
+    return new Sk.builtin.str("<itertools." + this.func_code["co_name"].v + " object>")
 };
 
 // repeat has a different repr
