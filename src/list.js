@@ -596,6 +596,11 @@ Sk.builtin.list.prototype.clear$ = function (self) {
     return Sk.builtin.none.none$;
 };
 
+Sk.builtin.list.prototype.copy$ = function (self) {
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);    
+    return new Sk.builtin.list(self.v);
+};
+
 Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, start, stop) {
     var i;
     var obj;
