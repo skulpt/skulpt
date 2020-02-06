@@ -82,7 +82,7 @@ var $builtinmodule = function (name) {
         let iterables = Array.prototype.slice.call(arguments);
         iterables = Sk.abstr.iter(Sk.builtin.list(iterables));
         const current_it = iterables.tp$iternext();
-        return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
+        return new Sk.builtin.itertools_gen(_chain_gen, Sk.$gbl, [iterables, current_it]);
     };
 
     _chain_from_iterable = function (iterables) {
@@ -94,10 +94,10 @@ var $builtinmodule = function (name) {
         }
         iterables = Sk.abstr.iter(iterables);
         current_it = iterables.tp$iternext();
-        return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
+        return new Sk.builtin.itertools_gen(_chain_gen, Sk.$gbl, [iterables, current_it]);
     }
 
-
+    // chain has a bound method from_iterable
     Sk.builtin.chain_func = function (func) {
         Sk.builtin.func.call(this, func);
         this.$d["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
@@ -189,7 +189,7 @@ var $builtinmodule = function (name) {
         };
         iter = Sk.abstr.iter(iter);
         const saved = [];
-        return new Sk.builtin.generator(_cycle_gen, Sk.$gbl, [iter, saved]);
+        return new Sk.builtin.itertools_gen(_cycle_gen, Sk.$gbl, [iter, saved]);
     };
 
 
@@ -388,6 +388,9 @@ var $builtinmodule = function (name) {
     mod.zip_longest = new Sk.builtin.func(function () {
         throw new Sk.builtin.NotImplementedError("zip_longest is not yet implemented in Skulpt");
     });
+
+    mod.__doc__ = new Sk.builtin.str("An implementation of the python itertools module in Skulpt")
+    mod.__package__ = new Sk.builtin.str("")
 
     return mod;
 };
