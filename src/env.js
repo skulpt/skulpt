@@ -44,6 +44,7 @@ Sk.python2 = {
     dunder_next: false,
     dunder_round: false,    
     list_clear: false,
+    list_copy: false,
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false,
@@ -67,6 +68,7 @@ Sk.python3 = {
     dunder_next: true,
     dunder_round: true,
     list_clear: true,
+    list_copy: true,
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true,
@@ -118,6 +120,7 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
     Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
     Sk.bool_check(Sk.__future__.list_clear, "Sk.__future__.list_clear");
+    Sk.bool_check(Sk.__future__.list_copy, "Sk.__future__.list_copy");
     Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
     Sk.bool_check(Sk.__future__.ceil_floor_int, "Sk.__future__.ceil_floor_int");
@@ -205,6 +208,7 @@ Sk.configure = function (options) {
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);
     Sk.switch_version("clear$", Sk.__future__.list_clear);
+    Sk.switch_version("copy$", Sk.__future__.list_copy);
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 
@@ -337,6 +341,11 @@ Sk.setup_method_mappings = function () {
             "classes": [Sk.builtin.list],
             2: null,
             3: "clear"
+        },        
+        "copy$": {
+            "classes": [Sk.builtin.list],
+            2: null,
+            3: "copy"
         },
         "next$": {
             "classes": [Sk.builtin.dict_iter_,
