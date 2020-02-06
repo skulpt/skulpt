@@ -28,13 +28,14 @@ var $builtinmodule = function (name) {
 
             element = current_it.tp$iternext();
             if (element === undefined) {
-                current_it = iterables.shift();
+                current_it = iterables.tp$iternext();
                 checked_iter = false;
             }
         }
         try {
             return [ /*resume*/ , /*ret*/ element];
         } finally {
+            $gen.gi$locals.iterables = iterables;
             $gen.gi$locals.current_it = current_it;
             $gen.gi$locals.checked_iter = checked_iter;
         }
@@ -42,19 +43,20 @@ var $builtinmodule = function (name) {
 
     _chain = function () {
         let iterables = Array.prototype.slice.call(arguments);
-        const current_it = iterables.shift()
+        iterables = Sk.abstr.iter(Sk.builtin.list(iterables));
+        const current_it = iterables.tp$iternext();
         return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
     };
 
-    _chain_from_iterable = function (iterable) {
+    _chain_from_iterable = function (iterables) {
         Sk.builtin.pyCheckArgsLen("from_iterable", arguments.length, 1, 1);
-        if (!Sk.builtin.checkIterable(iterable)) {
+        if (!Sk.builtin.checkIterable(iterables)) {
             throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+                "'" + Sk.abstr.typeName(iterables) + "' object is not iterable"
             );
         }
-        iterables = Sk.abstr.sequenceUnpack(iterable, iterable.v.length);
-        current_it = iterables.shift()
+        iterables = Sk.abstr.iter(iterables);
+        current_it = iterables.tp$iternext();
         return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
     }
 
@@ -63,7 +65,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.func.call(this, func);
         this.$d["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
     };
-    Sk.builtin.chain_func.prototype["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
+    Sk.builtin.chain_func.prototype = Object.create(Sk.builtin.func.prototype)
 
     _chain_from_iterable.co_name = new Sk.builtins.str("from_iterable");
     _chain.co_name = new Sk.builtins.str("chain");
