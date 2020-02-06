@@ -13,7 +13,7 @@ Sk.builtin.itertools_repeat = function (code, globals, args, closure, closure2) 
 }
 Sk.builtin.itertools_repeat.prototype = Object.create(Sk.builtin.generator.prototype)
 Sk.builtin.itertools_repeat.prototype["$r"] = function () {
-    object_repr = this.gi$locals.object["$r"]().$jsstr();
+    object_repr = this.gi$locals.object.$r().$jsstr();
     times = this.gi$locals.times;
     times_repr = times === undefined ? "" : ", " + times;
     return new Sk.builtin.str(this.func_code["co_name"].v +
@@ -26,8 +26,8 @@ Sk.builtin.itertools_count = function (code, globals, args, closure, closure2) {
 }
 Sk.builtin.itertools_count.prototype = Object.create(Sk.builtin.generator.prototype)
 Sk.builtin.itertools_count.prototype["$r"] = function () {
-    start_repr = this.gi$locals.n["$r"]().$jsstr();
-    step_repr = this.gi$locals.step["$r"]().$jsstr();
+    start_repr = this.gi$locals.n.$r().$jsstr();
+    step_repr = this.gi$locals.step.$r().$jsstr();
     step_repr = step_repr === "1" ? "" : ", " + step_repr;
     return new Sk.builtin.str(this.func_code["co_name"].v +
         "(" + start_repr + step_repr + ")")
@@ -93,7 +93,7 @@ var $builtinmodule = function (name) {
             );
         }
         iterables = Sk.abstr.iter(iterables);
-        current_it = iterables.tp$iternext();
+        const current_it = iterables.tp$iternext();
         return new Sk.builtin.itertools_gen(_chain_gen, Sk.$gbl, [iterables, current_it]);
     }
 
