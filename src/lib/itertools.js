@@ -228,9 +228,9 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("product is not yet implemented in Skulpt");
     });
 
+
     var _repeat_gen = function ($gen) {
-        let n, times, object;
-        n = $gen.gi$locals.n;
+        let times, object;
         times = $gen.gi$locals.times;
         object = $gen.gi$locals.object;
 
@@ -238,11 +238,11 @@ var $builtinmodule = function (name) {
             try {
                 return [ /*resume*/ , /*ret*/ object];
             } finally {};
-        } else if (n < times) {
+        } else if (times > 0) {
             try {
                 return [ /*resume*/ , /*ret*/ object];
             } finally {
-                $gen.gi$locals.n = n + 1
+                $gen.gi$locals.times = times - 1
             };
         } else {
             return []
@@ -254,13 +254,26 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNone(times)) {
             Sk.builtin.pyCheckType("times", "integer", Sk.builtin.checkInt(times));
             times = Sk.builtin.asnum$(times)
+            times = times < 0 ? 0 : times; //not important for the algorithm but the repr
         } else {
             times = undefined;
         }
-        return new Sk.builtin.generator(_repeat_gen, Sk.$gbl, [object, times, 0]);
+        return new Sk.builtin.repeat_gen(_repeat_gen, Sk.$gbl, [object, times]);
     };
 
-    _repeat_gen.co_varnames = ["object", "times", "n"];
+    // inherit from generator and change the repr
+    Sk.builtin.repeat_gen = function (code, globals, args, closure, closure2) {
+        Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
+    };
+    Sk.builtin.repeat_gen.prototype = Object.create(Sk.builtin.generator.prototype)
+    Sk.builtin.repeat_gen.prototype["$r"] = function () {
+        object_repr = this.gi$locals.object["$r"]().$jsstr();
+        times = this.gi$locals.times;
+        times_repr = times === undefined ? "" : ", " + times;
+        return new Sk.builtin.str(this.func_code["co_name"].v +
+            "(" + object_repr + times_repr + ")")
+    };
+    _repeat_gen.co_varnames = ["object", "times"];
     _repeat_gen.co_name = new Sk.builtins.str("repeat");
     _repeat.co_varnames = ["object", "times"];
     _repeat.co_name = new Sk.builtins.str("repeat");
