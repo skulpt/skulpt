@@ -1072,7 +1072,7 @@ Sk.builtin.int_.prototype.str$ = function (base, sign) {
  * @param  {function(*, (number|undefined)): number} parser  Function which should take
  *  a string that is a postive number which only contains characters that are
  *  valid in the given base and a base and return a number.
- * @param  {function((number|Sk.builtin.biginteger)): number} negater Function which should take a
+ * @param  {function((number|biginteger)): number} negater Function which should take a
  *  number and return its negation
  * @param  {string} fname   The name of the calling function, to be used in error messages
  * @return {number}         The number equivalent of the string in the given base

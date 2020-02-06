@@ -6,9 +6,10 @@
 
 require("./util.js");
 
-// Global support functions
+// Global support functions for libraries
 Sk.global["strftime"] = require("strftime");
 Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
+Sk.global["biginteger"] = require("big-integer");
 require("setimmediate");
 
 // Skulpt
@@ -30,7 +31,6 @@ require("./formatting.js");
 require("./tuple.js");
 require("./dict.js");
 require("./numtype.js");
-require("./biginteger.js");
 require("./int.js");
 require("./bool.js");
 require("./float.js");
