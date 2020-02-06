@@ -1,3 +1,40 @@
+// Itertools generators have a different repr
+Sk.builtin.itertools_gen = function (code, globals, args, closure, closure2) {
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
+}
+Sk.builtin.itertools_gen.prototype = Object.create(Sk.builtin.generator.prototype)
+Sk.builtin.itertools_gen.prototype["$r"] = function () {
+    return new Sk.builtin.str("<builtin." + this.func_code["co_name"].v + " object>")
+};
+
+// repeat has a different repr
+Sk.builtin.itertools_repeat = function (code, globals, args, closure, closure2) {
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
+}
+Sk.builtin.itertools_repeat.prototype = Object.create(Sk.builtin.generator.prototype)
+Sk.builtin.itertools_repeat.prototype["$r"] = function () {
+    object_repr = this.gi$locals.object["$r"]().$jsstr();
+    times = this.gi$locals.times;
+    times_repr = times === undefined ? "" : ", " + times;
+    return new Sk.builtin.str(this.func_code["co_name"].v +
+        "(" + object_repr + times_repr + ")")
+};
+
+// count has a different repr
+Sk.builtin.itertools_count = function (code, globals, args, closure, closure2) {
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
+}
+Sk.builtin.itertools_count.prototype = Object.create(Sk.builtin.generator.prototype)
+Sk.builtin.itertools_count.prototype["$r"] = function () {
+    start_repr = this.gi$locals.n["$r"]().$jsstr();
+    step_repr = this.gi$locals.step["$r"]().$jsstr();
+    step_repr = step_repr === "1" ? "" : ", " + step_repr;
+    return new Sk.builtin.str(this.func_code["co_name"].v +
+        "(" + start_repr + step_repr + ")")
+};
+
+
+
 var $builtinmodule = function (name) {
     var mod = {};
 
@@ -105,7 +142,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
         Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
         const n = start;
-        return new Sk.builtin.generator(_count_gen, Sk.$gbl, [n, step]);
+        return new Sk.builtin.itertools_count(_count_gen, Sk.$gbl, [n, step]);
     };
     _count.co_name = new Sk.builtins.str("count");
     _count.$defaults = [new Sk.builtin.int_(0), new Sk.builtin.int_(1)];
@@ -271,7 +308,7 @@ var $builtinmodule = function (name) {
             }
         };
         const previt = start;
-        return new Sk.builtin.generator(_islice_gen, Sk.$gbl, [iter, previt, stop, step]);
+        return new Sk.builtin.itertools_gen(_islice_gen, Sk.$gbl, [iter, previt, stop, step]);
     };
 
     _islice_gen.co_varnames = ["iter", "previt", "stop", "step"];
@@ -321,21 +358,9 @@ var $builtinmodule = function (name) {
         } else {
             times = undefined;
         }
-        return new Sk.builtin.repeat_gen(_repeat_gen, Sk.$gbl, [object, times]);
+        return new Sk.builtin.itertools_repeat(_repeat_gen, Sk.$gbl, [object, times]);
     };
 
-    // inherit from generator and change the repr
-    Sk.builtin.repeat_gen = function (code, globals, args, closure, closure2) {
-        Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
-    };
-    Sk.builtin.repeat_gen.prototype = Object.create(Sk.builtin.generator.prototype)
-    Sk.builtin.repeat_gen.prototype["$r"] = function () {
-        object_repr = this.gi$locals.object["$r"]().$jsstr();
-        times = this.gi$locals.times;
-        times_repr = times === undefined ? "" : ", " + times;
-        return new Sk.builtin.str(this.func_code["co_name"].v +
-            "(" + object_repr + times_repr + ")")
-    };
     _repeat_gen.co_varnames = ["object", "times"];
     _repeat_gen.co_name = new Sk.builtins.str("repeat");
     _repeat.co_varnames = ["object", "times"];
