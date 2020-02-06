@@ -7,9 +7,70 @@ var $builtinmodule = function (name) {
     });
 
 
-    mod.chain = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("chain is not yet implemented in Skulpt");
-    });
+    _chain_gen = function ($gen) {
+        let iterables, current_it, element;
+        iterables = $gen.gi$locals.iterables;
+        current_it = $gen.gi$locals.current_it;
+        checked_iter = $gen.gi$locals.checked_iter;
+
+        while (element === undefined) {
+            if (current_it === undefined) {
+                return [];
+            } else if (!checked_iter) {
+                if (!Sk.builtin.checkIterable(current_it)) {
+                    throw new Sk.builtin.TypeError(
+                        "'" + Sk.abstr.typeName(current_it) + "' object is not iterable"
+                    );
+                }
+                current_it = Sk.abstr.iter(current_it);
+                checked_iter = true;
+            }
+
+            element = current_it.tp$iternext();
+            if (element === undefined) {
+                current_it = iterables.shift();
+                checked_iter = false;
+            }
+        }
+        try {
+            return [ /*resume*/ , /*ret*/ element];
+        } finally {
+            $gen.gi$locals.current_it = current_it;
+            $gen.gi$locals.checked_iter = checked_iter;
+        }
+    };
+
+    _chain = function () {
+        let iterables = Array.prototype.slice.call(arguments);
+        const current_it = iterables.shift()
+        return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
+    };
+
+    _chain_from_iterable = function (iterable) {
+        Sk.builtin.pyCheckArgsLen("from_iterable", arguments.length, 1, 1);
+        if (!Sk.builtin.checkIterable(iterable)) {
+            throw new Sk.builtin.TypeError(
+                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+            );
+        }
+        iterables = Sk.abstr.sequenceUnpack(iterable, iterable.v.length);
+        current_it = iterables.shift()
+        return new Sk.builtin.generator(_chain_gen, Sk.$gbl, [iterables, current_it]);
+    }
+
+
+    Sk.builtin.chain_func = function (func) {
+        Sk.builtin.func.call(this, func);
+        this.$d["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
+    };
+    Sk.builtin.chain_func.prototype["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
+
+    _chain_from_iterable.co_name = new Sk.builtins.str("from_iterable");
+    _chain.co_name = new Sk.builtins.str("chain");
+    _chain_gen.co_name = new Sk.builtins.str("chain");
+    _chain_gen.co_varnames = ["iterables", "current_it"];
+
+    mod.chain = new Sk.builtin.chain_func(_chain);
 
 
     mod.combinations = new Sk.builtin.func(function () {
