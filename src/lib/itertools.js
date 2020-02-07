@@ -324,9 +324,73 @@ var $builtinmodule = function (name) {
     });
 
 
-    mod.product = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("product is not yet implemented in Skulpt");
-    });
+    var _product_gen = function ($gen) {
+        args = $gen.gi$locals.args;
+        pools = $gen.gi$locals.pools;
+        len = $gen.gi$locals.len;
+        res = $gen.gi$locals.res;
+        if (res.every(element => element === undefined)) {
+            // then this is the first call to gen
+            for (let i = 0; i < len; i++) {
+                res[i] = pools[i].tp$iternext();
+                if (res[i] === undefined) {
+                    return [];
+                }
+            }
+            try {
+                return [, /*resume*/ /*ret*/ new Sk.builtin.tuple(res)];
+            } finally {}
+        }
+
+        let i = len - 1;
+        while (i >= 0 && i < len) {
+            res[i] = pools[i].tp$iternext();
+            if (res[i] === undefined) {
+                pools[i] = Sk.abstr.iter(args[i]);
+                i--;
+            } else {
+                i++;
+            }
+        }
+        if (res.every(element => element === undefined)) {
+            return [];
+        }
+        try {
+            return [, /*resume*/ /*ret*/ new Sk.builtin.tuple(res)];
+        } finally {}
+    };
+
+    var _product = function (repeat, args) {
+        Sk.builtin.pyCheckArgsLen("product", arguments.length, 0, Infinity, true);
+        Sk.builtin.pyCheckType("repeat", "integer", Sk.builtin.checkInt(repeat));
+        repeat = Sk.builtin.asnum$(repeat);
+        if (repeat < 0) {
+            throw new Sk.builtin.ValueError("repeat argument cannot be negative");
+        }
+        // args is a tuple it's .v property is an array
+        args = args.v;
+        args = [].concat(...Array(repeat).fill(args));
+        pools = args.map(x => Sk.abstr.iter(x)); //also will raise the exception if not iterable
+        len = pools.length;
+        res = Array(len);
+        return new Sk.builtin.itertools_gen(_product_gen, mod, [
+            args,
+            pools,
+            len,
+            res
+        ]);
+    };
+
+    _product_gen.co_name = new Sk.builtins.str("product");
+    _product_gen.co_varnames = ["args", "pools", "len", "res"];
+    _product.co_name = new Sk.builtins.str("product");
+    _product.co_kwonlyargcount = 1;
+    _product.co_argcount = 0;
+    _product.co_varnames = ["repeat"];
+    _product.co_varargs = 1;
+    _product.$kwdefs = [Sk.builtin.int_(1)];
+
+    mod.product = new Sk.builtin.func(_product);
 
 
     var _repeat_gen = function ($gen) {
