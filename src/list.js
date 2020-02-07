@@ -597,8 +597,10 @@ Sk.builtin.list.prototype.clear$ = function (self) {
 };
 
 Sk.builtin.list.prototype.copy$ = function (self) {
-    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);    
-    return new Sk.builtin.list(self.v);
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);   
+    // via array concat() function to simulate shallow copy 
+    var tmpArray = [];
+    return new Sk.builtin.list(self.v.concat(tmpArray));
 };
 
 Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, start, stop) {
