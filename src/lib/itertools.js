@@ -45,56 +45,45 @@ var $builtinmodule = function (name) {
 
 
     _chain_gen = function ($gen) {
-        let iterables, current_it, element;
+        let iterables, current_it, element, made_iter;
         iterables = $gen.gi$locals.iterables;
         current_it = $gen.gi$locals.current_it;
-        checked_iter = $gen.gi$locals.checked_iter;
+        made_iter = $gen.gi$locals.made_iter;
 
         while (element === undefined) {
             if (current_it === undefined) {
                 return [];
-            } else if (!checked_iter) {
-                if (!Sk.builtin.checkIterable(current_it)) {
-                    throw new Sk.builtin.TypeError(
-                        "'" + Sk.abstr.typeName(current_it) + "' object is not iterable"
-                    );
-                }
+            } else if (!made_iter) {
                 current_it = Sk.abstr.iter(current_it);
-                checked_iter = true;
+                made_iter = true;
             }
 
             element = current_it.tp$iternext();
             if (element === undefined) {
                 current_it = iterables.tp$iternext();
-                checked_iter = false;
+                made_iter = false;
             }
         }
         try {
             return [ /*resume*/ , /*ret*/ element];
         } finally {
-            $gen.gi$locals.iterables = iterables;
             $gen.gi$locals.current_it = current_it;
-            $gen.gi$locals.checked_iter = checked_iter;
+            $gen.gi$locals.made_iter = made_iter;
         }
     };
 
     _chain = function () {
-        let iterables = Array.prototype.slice.call(arguments);
+        let iterables = Array.from(arguments);
         iterables = Sk.abstr.iter(Sk.builtin.list(iterables));
         const current_it = iterables.tp$iternext();
-        return new Sk.builtin.itertools_gen(_chain_gen, Sk.$gbl, [iterables, current_it]);
+        return new Sk.builtin.itertools_gen(_chain_gen, mod, [iterables, current_it]);
     };
 
     _chain_from_iterable = function (iterables) {
         Sk.builtin.pyCheckArgsLen("from_iterable", arguments.length, 1, 1);
-        if (!Sk.builtin.checkIterable(iterables)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterables) + "' object is not iterable"
-            );
-        }
         iterables = Sk.abstr.iter(iterables);
         const current_it = iterables.tp$iternext();
-        return new Sk.builtin.itertools_gen(_chain_gen, Sk.$gbl, [iterables, current_it]);
+        return new Sk.builtin.itertools_gen(_chain_gen, mod, [iterables, current_it]);
     }
 
     // chain has a bound method from_iterable
@@ -142,7 +131,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
         Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
         const n = start;
-        return new Sk.builtin.itertools_count(_count_gen, Sk.$gbl, [n, step]);
+        return new Sk.builtin.itertools_count(_count_gen, mod, [n, step]);
     };
     _count.co_name = new Sk.builtins.str("count");
     _count.$defaults = [new Sk.builtin.int_(0), new Sk.builtin.int_(1)];
@@ -164,32 +153,25 @@ var $builtinmodule = function (name) {
                 return [ /*resume*/ , /*ret*/ element];
             } finally {
                 saved.push(element);
-                $gen.gi$locals.saved = saved;
-                $gen.gi$locals.iter = iter;
-            };
+            }
         } else if (saved.length) {
             element = saved.shift();
             try {
                 return [ /*resume*/ , /*ret*/ element];
             } finally {
                 saved.push(element);
-                $gen.gi$locals.saved = saved;
-            };
+            }
         } else {
-            return []
-        };
-
+            return [];
+        }
     };
 
 
     var _cycle = function (iter) {
         Sk.builtin.pyCheckArgsLen("cycle", arguments.length, 1, 1);
-        if (!Sk.builtin.checkIterable(iter)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
-        };
         iter = Sk.abstr.iter(iter);
         const saved = [];
-        return new Sk.builtin.itertools_gen(_cycle_gen, Sk.$gbl, [iter, saved]);
+        return new Sk.builtin.itertools_gen(_cycle_gen, mod, [iter, saved]);
     };
 
 
@@ -228,46 +210,42 @@ var $builtinmodule = function (name) {
                 // consume generator up to stop and return
                 for (let i = 0; i < stop; i++) {
                     iter.tp$iternext();
-                };
+                }
                 return [];
-            } else { //conusme generator up to start and yield
+            } else {
+                //conusme generator up to start and yield
                 for (let i = 0; i < previt; i++) {
                     iter.tp$iternext();
-                };
+                }
                 try {
                     return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
                 } finally {
                     $gen.gi$locals.initial = false;
-                    $gen.gi$locals.iter = iter;
-                };
-            };
-        };
+                }
+            }
+        }
         if (previt + step >= stop) {
             // consume generator up to stop and return
             for (let i = previt + 1; i < stop; i++) {
                 iter.tp$iternext();
-            };
+            }
             return [];
-        } else { // consume generator up to previt + step and yield
+        } else {
+            // consume generator up to previt + step and yield
             try {
                 for (let i = previt + 1; i < previt + step; i++) {
                     iter.tp$iternext();
-                };
+                }
                 return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
             } finally {
-                $gen.gi$locals.iter = iter;
                 $gen.gi$locals.previt = previt + step;
-            };
-
-        };
+            }
+        }
     };
 
 
     var _islice = function (iter, start, stop, step) {
         Sk.builtin.pyCheckArgsLen("islice", arguments.length, 2, 4);
-        if (!Sk.builtin.checkIterable(iter)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not iterable");
-        };
         iter = Sk.abstr.iter(iter);
 
         if (stop === undefined) {
@@ -308,7 +286,7 @@ var $builtinmodule = function (name) {
             }
         };
         const previt = start;
-        return new Sk.builtin.itertools_gen(_islice_gen, Sk.$gbl, [iter, previt, stop, step]);
+        return new Sk.builtin.itertools_gen(_islice_gen, mod, [iter, previt, stop, step]);
     };
 
     _islice_gen.co_varnames = ["iter", "previt", "stop", "step"];
@@ -329,16 +307,16 @@ var $builtinmodule = function (name) {
         pools = $gen.gi$locals.pools;
         len = $gen.gi$locals.len;
         res = $gen.gi$locals.res;
-        if (res.every(element => element === undefined)) {
-            // then this is the first call to gen
-            for (let i = 0; i < len; i++) {
-                res[i] = pools[i].tp$iternext();
-                if (res[i] === undefined) {
-                    return [];
-                }
+        first = $gen.gi$locals.first;
+        if (first === undefined) {
+            $gen.gi$locals.first = false;
+            // then this is the first call to gen so yield the first result
+            // or if any of the args were empty iterables then StopIteration
+            if (res.some(element => element === undefined)) {
+                return []
             }
             try {
-                return [, /*resume*/ /*ret*/ new Sk.builtin.tuple(res)];
+                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
             } finally {}
         }
 
@@ -346,18 +324,23 @@ var $builtinmodule = function (name) {
         while (i >= 0 && i < len) {
             res[i] = pools[i].tp$iternext();
             if (res[i] === undefined) {
-                pools[i] = Sk.abstr.iter(args[i]);
                 i--;
             } else {
                 i++;
+                if (i < len) {
+                    pools[i] = Sk.abstr.iter(args[i]);
+                }
             }
         }
         if (res.every(element => element === undefined)) {
+            $gen.gi$locals.args = pools;
             return [];
-        }
-        try {
-            return [, /*resume*/ /*ret*/ new Sk.builtin.tuple(res)];
-        } finally {}
+        } else {
+            try {
+                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
+            } finally {}
+        };
+
     };
 
     var _product = function (repeat, args) {
@@ -369,16 +352,14 @@ var $builtinmodule = function (name) {
         }
         // args is a tuple it's .v property is an array
         args = args.v;
-        args = [].concat(...Array(repeat).fill(args));
+        args = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
         pools = args.map(x => Sk.abstr.iter(x)); //also will raise the exception if not iterable
         len = pools.length;
         res = Array(len);
-        return new Sk.builtin.itertools_gen(_product_gen, mod, [
-            args,
-            pools,
-            len,
-            res
-        ]);
+        for (let i = 0; i < len; i++) {
+            res[i] = pools[i].tp$iternext(); // tests imply that we should iternext before yielding anything - see devision by zero test
+        }
+        return new Sk.builtin.itertools_gen(_product_gen, mod, [args, pools, len, res]);
     };
 
     _product_gen.co_name = new Sk.builtins.str("product");
@@ -400,17 +381,17 @@ var $builtinmodule = function (name) {
 
         if (times === undefined) {
             try {
-                return [ /*resume*/ , /*ret*/ object];
-            } finally {};
+                return [, /*resume*/ /*ret*/ object];
+            } finally {}
         } else if (times > 0) {
             try {
                 return [ /*resume*/ , /*ret*/ object];
             } finally {
-                $gen.gi$locals.times = times - 1
-            };
+                $gen.gi$locals.times = times - 1;
+            }
         } else {
-            return []
-        };
+            return [];
+        }
     };
 
     var _repeat = function (object, times) {
@@ -422,7 +403,7 @@ var $builtinmodule = function (name) {
         } else {
             times = undefined;
         }
-        return new Sk.builtin.itertools_repeat(_repeat_gen, Sk.$gbl, [object, times]);
+        return new Sk.builtin.itertools_repeat(_repeat_gen, mod, [object, times]);
     };
 
     _repeat_gen.co_varnames = ["object", "times"];

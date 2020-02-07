@@ -325,13 +325,13 @@ class TestBasicOps(unittest.TestCase):
 #                 indices[i:] = [indices[i] + 1] * (r - i)
 #                 yield tuple(pool[i] for i in indices)
 
-#         def cwr2(iterable, r):
-#             'Pure python version shown in the docs'
-#             pool = tuple(iterable)
-#             n = len(pool)
-#             for indices in product(range(n), repeat=r):
-#                 if sorted(indices) == list(indices):
-#                     yield tuple(pool[i] for i in indices)
+        def cwr2(iterable, r):
+            'Pure python version shown in the docs'
+            pool = tuple(iterable)
+            n = len(pool)
+            for indices in product(range(n), repeat=r):
+                if sorted(indices) == list(indices):
+                    yield tuple(pool[i] for i in indices)
 
 #         def numcombs(n, r):
 #             if not n:
@@ -1009,63 +1009,63 @@ class TestBasicOps(unittest.TestCase):
 #         self.assertEqual(next(it), (1, 2))
 #         self.assertRaises(RuntimeError, next, it)
 
-#     def test_product(self):
-#         for args, result in [
-#             ([], [()]),                     # zero iterables
-#             (['ab'], [('a',), ('b',)]),     # one iterable
-#             ([range(2), range(3)], [(0,0), (0,1), (0,2), (1,0), (1,1), (1,2)]),     # two iterables
-#             ([range(0), range(2), range(3)], []),           # first iterable with zero length
-#             ([range(2), range(0), range(3)], []),           # middle iterable with zero length
-#             ([range(2), range(3), range(0)], []),           # last iterable with zero length
-#             ]:
-#             self.assertEqual(list(product(*args)), result)
-#             for r in range(4):
-#                 self.assertEqual(list(product(*(args*r))),
-#                                  list(product(*args, **dict(repeat=r))))
-#         self.assertEqual(len(list(product(*[range(7)]*6))), 7**6)
-#         self.assertRaises(TypeError, product, range(6), None)
+    def test_product(self):
+        for args, result in [
+            ([], [()]),                     # zero iterables
+            (['ab'], [('a',), ('b',)]),     # one iterable
+            ([range(2), range(3)], [(0,0), (0,1), (0,2), (1,0), (1,1), (1,2)]),     # two iterables
+            ([range(0), range(2), range(3)], []),           # first iterable with zero length
+            ([range(2), range(0), range(3)], []),           # middle iterable with zero length
+            ([range(2), range(3), range(0)], []),           # last iterable with zero length
+            ]:
+            self.assertEqual(list(product(*args)), result)
+            for r in range(4):
+                self.assertEqual(list(product(*(args*r))),
+                                 list(product(*args, **dict(repeat=r))))
+        self.assertEqual(len(list(product(*[range(7)]*6))), 7**6)
+        self.assertRaises(TypeError, product, range(6), None)
 
-#         def product1(*args, **kwds):
-#             pools = list(map(tuple, args)) * kwds.get('repeat', 1)
-#             n = len(pools)
-#             if n == 0:
-#                 yield ()
-#                 return
-#             if any(len(pool) == 0 for pool in pools):
-#                 return
-#             indices = [0] * n
-#             yield tuple(pool[i] for pool, i in zip(pools, indices))
-#             while 1:
-#                 for i in reversed(range(n)):  # right to left
-#                     if indices[i] == len(pools[i]) - 1:
-#                         continue
-#                     indices[i] += 1
-#                     for j in range(i+1, n):
-#                         indices[j] = 0
-#                     yield tuple(pool[i] for pool, i in zip(pools, indices))
-#                     break
-#                 else:
-#                     return
+        # def product1(*args, **kwds):
+        #     pools = list(map(tuple, args)) * kwds.get('repeat', 1)
+        #     n = len(pools)
+        #     if n == 0:
+        #         yield ()
+        #         return
+        #     if any(len(pool) == 0 for pool in pools):
+        #         return
+        #     indices = [0] * n
+        #     yield tuple(pool[i] for pool, i in zip(pools, indices))
+        #     while 1:
+        #         for i in reversed(range(n)):  # right to left
+        #             if indices[i] == len(pools[i]) - 1:
+        #                 continue
+        #             indices[i] += 1
+        #             for j in range(i+1, n):
+        #                 indices[j] = 0
+        #             yield tuple(pool[i] for pool, i in zip(pools, indices))
+        #             break
+        #         else:
+        #             return
 
-#         def product2(*args, **kwds):
-#             'Pure python version used in docs'
-#             pools = list(map(tuple, args)) * kwds.get('repeat', 1)
-#             result = [[]]
-#             for pool in pools:
-#                 result = [x+[y] for x in result for y in pool]
-#             for prod in result:
-#                 yield tuple(prod)
+        # def product2(*args, **kwds):
+        #     'Pure python version used in docs'
+        #     pools = list(map(tuple, args)) * kwds.get('repeat', 1)
+        #     result = [[]]
+        #     for pool in pools:
+        #         result = [x+[y] for x in result for y in pool]
+        #     for prod in result:
+        #         yield tuple(prod)
 
-#         argtypes = ['', 'abc', '', range(0), range(4), dict(a=1, b=2, c=3),
-#                     set('abcdefg'), range(11), tuple(range(13))]
-#         for i in range(100):
-#             args = [random.choice(argtypes) for j in range(random.randrange(5))]
-#             expected_len = prod(map(len, args))
-#             self.assertEqual(len(list(product(*args))), expected_len)
-#             self.assertEqual(list(product(*args)), list(product1(*args)))
-#             self.assertEqual(list(product(*args)), list(product2(*args)))
-#             args = map(iter, args)
-#             self.assertEqual(len(list(product(*args))), expected_len)
+        # argtypes = ['', 'abc', '', range(0), range(4), dict(a=1, b=2, c=3),
+        #             set('abcdefg'), range(11), tuple(range(13))]
+        # for i in range(100):
+        #     args = [random.choice(argtypes) for j in range(random.randrange(5))]
+        #     expected_len = prod(map(len, args))
+        #     self.assertEqual(len(list(product(*args))), expected_len)
+        #     self.assertEqual(list(product(*args)), list(product1(*args)))
+        #     self.assertEqual(list(product(*args)), list(product2(*args)))
+        #     args = map(iter, args)
+        #     self.assertEqual(len(list(product(*args))), expected_len)
 
 #     @support.bigaddrspacetest
 #     def test_product_overflow(self):
@@ -1631,12 +1631,12 @@ class TestExamples(unittest.TestCase):
 #         self.assertEqual(list(permutations(range(3))),
 #                          [(0,1,2), (0,2,1), (1,0,2), (1,2,0), (2,0,1), (2,1,0)])
 
-#     def test_product(self):
-#         self.assertEqual(list(product('ABCD', 'xy')),
-#                          list(map(tuple, 'Ax Ay Bx By Cx Cy Dx Dy'.split())))
-#         self.assertEqual(list(product(range(2), repeat=3)),
-#                         [(0,0,0), (0,0,1), (0,1,0), (0,1,1),
-#                          (1,0,0), (1,0,1), (1,1,0), (1,1,1)])
+    def test_product(self):
+        self.assertEqual(list(product('ABCD', 'xy')),
+                         list(map(tuple, 'Ax Ay Bx By Cx Cy Dx Dy'.split())))
+        self.assertEqual(list(product(range(2), repeat=3)),
+                        [(0,0,0), (0,0,1), (0,1,0), (0,1,1),
+                         (1,0,0), (1,0,1), (1,1,0), (1,1,1)])
 
     def test_repeat(self):
         self.assertEqual(list(repeat(10, 3)), [10, 10, 10])
@@ -1776,9 +1776,9 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(permutations([1,2,a,3], 3), a)
 
-#     def test_product(self):
-#         a = []
-#         self.makecycle(product([1,2,a,3], repeat=3), a)
+    def test_product(self):
+        a = []
+        self.makecycle(product([1,2,a,3], repeat=3), a)
 
     def test_repeat(self):
         a = []
@@ -1889,7 +1889,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(chain(g(s))), list(g(s)))
                 self.assertEqual(list(chain(g(s), g(s))), list(g(s))+list(g(s)))
             self.assertRaises(TypeError, list, chain(X(s)))
-            # self.assertRaises(TypeError, list, chain(N(s)))
+            self.assertRaises(TypeError, list, chain(N(s)))
             self.assertRaises(ZeroDivisionError, list, chain(E(s)))
 
 #     def test_compress(self):
@@ -1901,11 +1901,11 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, compress, N(s), repeat(1))
 #             self.assertRaises(ZeroDivisionError, list, compress(E(s), repeat(1)))
 
-#     def test_product(self):
-#         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-#             self.assertRaises(TypeError, product, X(s))
-#             self.assertRaises(TypeError, product, N(s))
-#             self.assertRaises(ZeroDivisionError, product, E(s))
+    def test_product(self):
+        for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            self.assertRaises(TypeError, product, X(s))
+            self.assertRaises(TypeError, product, N(s))
+            self.assertRaises(ZeroDivisionError, product, E(s))
 
     def test_cycle(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
@@ -1975,8 +1975,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
 
     def test_islice(self):
         for s in ("12345", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-            # for g in (G, I, Ig, S, L, R):
-            for g in (G, I, Ig, S, R):
+            for g in (G, I, Ig, S, L, R):
                 self.assertEqual(list(islice(g(s),1,None,2)), list(g(s))[1::2])
             self.assertRaises(TypeError, islice, X(s), 10)
             # self.assertRaises(TypeError, islice, N(s), 10)
