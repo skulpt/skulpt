@@ -39,9 +39,55 @@ var $builtinmodule = function (name) {
     var mod = {};
 
 
-    mod.accumulate = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("accumulate is not yet implemented in Skulpt");
+    var _accumulate_gen = function ($gen) {
+        it = $gen.gi$locals.it;
+        func = $gen.gi$locals.func;
+        total = $gen.gi$locals.total;
+        initial = $gen.gi$locals.initial;
+
+        if (initial) {
+            total = Sk.builtin.checkNone(total) ? it.tp$iternext() : total;
+            try {
+                return [ /*resume*/ , /*ret*/ total];
+            } finally {
+                $gen.gi$locals.total = total;
+                $gen.gi$locals.initial = false;
+            }
+        }
+
+        element = it.tp$iternext();
+        if (element !== undefined) {
+            total = func.tp$call([total, element], undefined);
+            try {
+                return [ /*resume*/ , /*ret*/ total];
+            } finally {
+                $gen.gi$locals.total = total;
+            }
+        } else {
+            return [];
+        }
+    };
+
+    var _accumulate = function (iterable, func, initial) {
+        Sk.builtin.pyCheckArgsLen("accumulate", arguments.length, 1, 3, true);
+        it = Sk.abstr.iter(iterable);
+        total = initial;
+        return new Sk.builtin.itertools_gen(_accumulate_gen, mod, [it, func, total, true])
+    };
+
+    let func = new Sk.builtin.func(function (a, b) {
+        return Sk.abstr.numberBinOp(a, b, 'Add');
     });
+    _accumulate_gen.co_name = new Sk.builtin.str("accumulate");
+    _accumulate_gen.co_varnames = ["it", "func", "total", "initial"];
+    _accumulate.$defaults = [func];
+    _accumulate.co_name = new Sk.builtin.str("accumulate");
+    _accumulate.co_argcount = 2;
+    _accumulate.co_kwonlyargcount = 1;
+    _accumulate.$kwdefs = [Sk.builtin.none.none$];
+    _accumulate.co_varnames = ["iterable", "func", "initial"];
+
+    mod.accumulate = new Sk.builtin.func(_accumulate);
 
 
     _chain_gen = function ($gen) {
@@ -93,9 +139,9 @@ var $builtinmodule = function (name) {
     };
     Sk.builtin.chain_func.prototype = Object.create(Sk.builtin.func.prototype)
 
-    _chain_from_iterable.co_name = new Sk.builtins.str("from_iterable");
-    _chain.co_name = new Sk.builtins.str("chain");
-    _chain_gen.co_name = new Sk.builtins.str("chain");
+    _chain_from_iterable.co_name = new Sk.builtin.str("from_iterable");
+    _chain.co_name = new Sk.builtin.str("chain");
+    _chain_gen.co_name = new Sk.builtin.str("chain");
     _chain_gen.co_varnames = ["iterables", "current_it"];
 
     mod.chain = new Sk.builtin.chain_func(_chain);
@@ -133,10 +179,10 @@ var $builtinmodule = function (name) {
         const n = start;
         return new Sk.builtin.itertools_count(_count_gen, mod, [n, step]);
     };
-    _count.co_name = new Sk.builtins.str("count");
+    _count.co_name = new Sk.builtin.str("count");
     _count.$defaults = [new Sk.builtin.int_(0), new Sk.builtin.int_(1)];
     _count.co_varnames = ["start", "step"];
-    _count_gen.co_name = new Sk.builtins.str("count");
+    _count_gen.co_name = new Sk.builtin.str("count");
     _count_gen.co_varnames = ["n", "step"];
 
     mod.count = new Sk.builtin.func(_count);
@@ -175,8 +221,8 @@ var $builtinmodule = function (name) {
     };
 
 
-    _cycle.co_name = new Sk.builtins.str("cycle");
-    _cycle_gen.co_name = new Sk.builtins.str("cycle");
+    _cycle.co_name = new Sk.builtin.str("cycle");
+    _cycle_gen.co_name = new Sk.builtin.str("cycle");
     _cycle_gen.co_varnames = ["iter", "saved"];
 
 
@@ -290,8 +336,8 @@ var $builtinmodule = function (name) {
     };
 
     _islice_gen.co_varnames = ["iter", "previt", "stop", "step"];
-    _islice_gen.co_name = new Sk.builtins.str("islice");
-    _islice.co_name = new Sk.builtins.str("islice");
+    _islice_gen.co_name = new Sk.builtin.str("islice");
+    _islice.co_name = new Sk.builtin.str("islice");
 
     mod.islice = new Sk.builtin.func(_islice);
 
@@ -362,9 +408,9 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.itertools_gen(_product_gen, mod, [args, pools, len, res]);
     };
 
-    _product_gen.co_name = new Sk.builtins.str("product");
+    _product_gen.co_name = new Sk.builtin.str("product");
     _product_gen.co_varnames = ["args", "pools", "len", "res"];
-    _product.co_name = new Sk.builtins.str("product");
+    _product.co_name = new Sk.builtin.str("product");
     _product.co_kwonlyargcount = 1;
     _product.co_argcount = 0;
     _product.co_varnames = ["repeat"];
@@ -407,9 +453,9 @@ var $builtinmodule = function (name) {
     };
 
     _repeat_gen.co_varnames = ["object", "times"];
-    _repeat_gen.co_name = new Sk.builtins.str("repeat");
+    _repeat_gen.co_name = new Sk.builtin.str("repeat");
     _repeat.co_varnames = ["object", "times"];
-    _repeat.co_name = new Sk.builtins.str("repeat");
+    _repeat.co_name = new Sk.builtin.str("repeat");
     _repeat.$defaults = [Sk.builtin.none.none$]
 
     mod.repeat = new Sk.builtin.func(_repeat);

@@ -4,7 +4,7 @@ from itertools import *
 # import weakref
 # from decimal import Decimal
 # from fractions import Fraction
-# import operator
+import operator
 # import random
 import copy
 # import pickle
@@ -123,30 +123,33 @@ class TestBasicOps(unittest.TestCase):
 #             c = expand(compare[took:])
 #             self.assertEqual(a, c);
 
-#     def test_accumulate(self):
-#         self.assertEqual(list(accumulate(range(10))),               # one positional arg
-#                           [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])
-#         self.assertEqual(list(accumulate(iterable=range(10))),      # kw arg
-#                           [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])
-#         for typ in int, complex, Decimal, Fraction:                 # multiple types
-#             self.assertEqual(
-#                 list(accumulate(map(typ, range(10)))),
-#                 list(map(typ, [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])))
-#         self.assertEqual(list(accumulate('abc')), ['a', 'ab', 'abc'])   # works with non-numeric
-#         self.assertEqual(list(accumulate([])), [])                  # empty iterable
-#         self.assertEqual(list(accumulate([7])), [7])                # iterable of length one
-#         self.assertRaises(TypeError, accumulate, range(10), 5, 6)   # too many args
-#         self.assertRaises(TypeError, accumulate)                    # too few args
-#         self.assertRaises(TypeError, accumulate, x=range(10))       # unexpected kwd arg
-#         self.assertRaises(TypeError, list, accumulate([1, []]))     # args that don't add
+    def test_accumulate(self):
+        self.assertEqual(list(accumulate(range(10))),               # one positional arg
+                          [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])
+        self.assertEqual(list(accumulate(iterable=range(10))),      # kw arg
+                          [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])
+        for typ in int, complex: #, Decimal, Fraction:                 # multiple types
+            self.assertEqual(
+                list(accumulate(map(typ, range(10)))),
+                list(map(typ, [0, 1, 3, 6, 10, 15, 21, 28, 36, 45])))
+        self.assertEqual(list(accumulate('abc')), ['a', 'ab', 'abc'])   # works with non-numeric
+        self.assertEqual(list(accumulate([])), [])                  # empty iterable
+        self.assertEqual(list(accumulate([7])), [7])                # iterable of length one
+        self.assertRaises(TypeError, accumulate, range(10), 5, 6)   # too many args
+        self.assertRaises(TypeError, accumulate)                    # too few args
+        # self.assertRaises(TypeError, accumulate, x=range(10))       # unexpected kwd arg
+        self.assertRaises(TypeError, list, accumulate([1, []]))     # args that don't add
 
-#         s = [2, 8, 9, 5, 7, 0, 3, 4, 1, 6]
-#         self.assertEqual(list(accumulate(s, min)),
-#                          [2, 2, 2, 2, 2, 0, 0, 0, 0, 0])
-#         self.assertEqual(list(accumulate(s, max)),
-#                          [2, 8, 9, 9, 9, 9, 9, 9, 9, 9])
-#         self.assertEqual(list(accumulate(s, operator.mul)),
-#                          [2, 16, 144, 720, 5040, 0, 0, 0, 0, 0])
+        s = [2, 8, 9, 5, 7, 0, 3, 4, 1, 6]
+        self.assertEqual(list(accumulate(s, min)),
+                         [2, 2, 2, 2, 2, 0, 0, 0, 0, 0])
+        self.assertEqual(list(accumulate(s, max)),
+                         [2, 8, 9, 9, 9, 9, 9, 9, 9, 9])
+        self.assertEqual(list(accumulate(s, operator.mul)),
+                         [2, 16, 144, 720, 5040, 0, 0, 0, 0, 0])
+        self.assertEqual(list(accumulate([10, 5, 1], initial=None)), [10, 15, 16])
+        self.assertEqual(list(accumulate([10, 5, 1], initial=100)), [100, 110, 115, 116])
+        self.assertEqual(list(accumulate([], initial=100)), [100])
 #         with self.assertRaises(TypeError):
 #             list(accumulate(s, chr))                                # unary-operation
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
@@ -1541,8 +1544,8 @@ class TestBasicOps(unittest.TestCase):
 
 class TestExamples(unittest.TestCase):
 
-#     def test_accumulate(self):
-#         self.assertEqual(list(accumulate([1,2,3,4,5])), [1, 3, 6, 10, 15])
+    def test_accumulate(self):
+        self.assertEqual(list(accumulate([1,2,3,4,5])), [1, 3, 6, 10, 15])
 
 #     def test_accumulate_reducible(self):
 #         # check copy, deepcopy, pickle
@@ -1559,10 +1562,10 @@ class TestExamples(unittest.TestCase):
 #         self.assertEqual(list(copy.deepcopy(it)), accumulated[1:])
 #         self.assertEqual(list(copy.copy(it)), accumulated[1:])
 
-#     def test_accumulate_reducible_none(self):
-#         # Issue #25718: total is None
-#         it = accumulate([None, None, None], operator.is_)
-#         self.assertEqual(next(it), None)
+    def test_accumulate_reducible_none(self):
+        # Issue #25718: total is None
+        it = accumulate([None, None, None], operator.is_)
+        self.assertEqual(next(it), None)
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             it_copy = pickle.loads(pickle.dumps(it, proto))
 #             self.assertEqual(list(it_copy), [True, False])
@@ -1698,9 +1701,9 @@ class TestGC(unittest.TestCase):
         next(iterator)
         del container, iterator
 
-#     def test_accumulate(self):
-#         a = []
-#         self.makecycle(accumulate([1,2,a,3]), a)
+    def test_accumulate(self):
+        a = []
+        self.makecycle(accumulate([1,2,a,3]), a)
 
     def test_chain(self):
         a = []
@@ -1872,16 +1875,16 @@ def L(seqn):
 class TestVariousIteratorArgs(unittest.TestCase):
     pass
 
-#     def test_accumulate(self):
-#         s = [1,2,3,4,5]
-#         r = [1,3,6,10,15]
-#         n = len(s)
-#         for g in (G, I, Ig, L, R):
-#             self.assertEqual(list(accumulate(g(s))), r)
-#         self.assertEqual(list(accumulate(S(s))), [])
-#         self.assertRaises(TypeError, accumulate, X(s))
-#         self.assertRaises(TypeError, accumulate, N(s))
-#         self.assertRaises(ZeroDivisionError, list, accumulate(E(s)))
+    def test_accumulate(self):
+        s = [1,2,3,4,5]
+        r = [1,3,6,10,15]
+        n = len(s)
+        for g in (G, I, Ig, L, R):
+            self.assertEqual(list(accumulate(g(s))), r)
+        self.assertEqual(list(accumulate(S(s))), [])
+        self.assertRaises(TypeError, accumulate, X(s))
+        # self.assertRaises(TypeError, accumulate, N(s))
+        self.assertRaises(ZeroDivisionError, list, accumulate(E(s)))
 
     def test_chain(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
