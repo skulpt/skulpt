@@ -147,6 +147,10 @@ var $builtinmodule = function (name) {
     mod.chain = new Sk.builtin.chain_func(_chain);
 
 
+    var _combinations_gen = function ($gen) {
+
+    };
+
     mod.combinations = new Sk.builtin.func(function () {
         throw new Sk.builtin.NotImplementedError("combinations is not yet implemented in Skulpt");
     });
@@ -342,10 +346,74 @@ var $builtinmodule = function (name) {
     mod.islice = new Sk.builtin.func(_islice);
 
 
+    var _permutations_gen = function ($gen) {
+        indices = $gen.gi$locals.indices;
+        cycles = $gen.gi$locals.cycles;
+        pool = $gen.gi$locals.pool;
+        n = $gen.gi$locals.n;
+        r = $gen.gi$locals.r;
+        initial = $gen.gi$locals.initial;
 
-    mod.permutations = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("permutations is not yet implemented in Skulpt");
-    });
+        if (r > n) {
+            return [];
+        }
+
+        if (initial === undefined) {
+            try {
+                return [ /* resume */ , Sk.builtin.tuple(pool.slice(0, r))];
+            } finally {
+                $gen.gi$locals.initial = false;
+            }
+        }
+
+        for (let i = r - 1; i >= 0; i--) {
+            cycles[i]--;
+
+            if (cycles[i] == 0) {
+                indices.push(indices.splice(i, 1)[0]); // push ith element to the end
+                cycles[i] = n - i;
+            } else {
+                j = cycles[i];
+                [indices[i], indices[n - j]] = [indices[n - j], indices[i]]; //swap elements;
+                const res = indices.map(i => pool[i]).slice(0, r);
+                try {
+                    return [ /* resume */ , Sk.builtin.tuple(res)];
+                } finally {}
+            }
+        }
+
+        $gen.gi$locals.r = 0;
+        return [];
+    };
+
+    var _permutations = function (iterable, r) {
+        Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 1, 2);
+        if (!Sk.builtin.checkIterable(iterable)) {
+            throw new Sk.builtin.TypeError(
+                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+            );
+        }
+        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        n = pool.length;
+        r = Sk.builtin.checkNone(r) ? Sk.builtin.int_(n) : r;
+        Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
+        r = Sk.builtin.asnum$(r);
+        if (r < 0) {
+            throw new Sk.builtin.ValueError("r must be non-negative");
+        }
+        indices = new Array(n).fill().map((_, i) => i);
+        cycles = new Array(r).fill().map((_, i) => n - i);
+
+        return new Sk.builtin.itertools_gen(_permutations_gen, mod, [indices, cycles, pool, n, r]);
+    };
+
+    _permutations_gen.co_name = new Sk.builtin.str("permutations");
+    _permutations_gen.co_varnames = ["indices", "cycles", "pool", "n", "r"];
+    _permutations.co_name = new Sk.builtin.str("permutations");
+    _permutations.co_varnames = ["iterable", "r"];
+    _permutations.$defaults = [Sk.builtin.none.none$];
+
+    mod.permutations = new Sk.builtin.func(_permutations);
 
 
     var _product_gen = function ($gen) {
