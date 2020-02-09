@@ -47,24 +47,18 @@ var $builtinmodule = function (name) {
 
         if (initial) {
             total = Sk.builtin.checkNone(total) ? it.tp$iternext() : total;
-            try {
-                return [ /*resume*/ , /*ret*/ total];
-            } finally {
-                $gen.gi$locals.total = total;
-                $gen.gi$locals.initial = false;
-            }
+            $gen.gi$locals.total = total;
+            $gen.gi$locals.initial = false;
+            return [ /*resume*/ , /*ret*/ total];
         }
 
         element = it.tp$iternext();
         if (element !== undefined) {
             total = (func.tp$call) ? func.tp$call([total, element], undefined) : Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, [total, element]);
-            try {
-                return [ /*resume*/ , /*ret*/ total];
-            } finally {
-                $gen.gi$locals.total = total;
-            }
+            $gen.gi$locals.total = total;
+            return [ /*resume*/ , /*ret*/ total];
         } else {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
     };
 
@@ -98,7 +92,7 @@ var $builtinmodule = function (name) {
 
         while (element === undefined) {
             if (current_it === undefined) {
-                return [];
+                return [ /*resume*/ , /*ret*/ ];
             } else if (!made_iter) {
                 current_it = Sk.abstr.iter(current_it);
                 made_iter = true;
@@ -110,12 +104,9 @@ var $builtinmodule = function (name) {
                 made_iter = false;
             }
         }
-        try {
-            return [ /*resume*/ , /*ret*/ element];
-        } finally {
-            $gen.gi$locals.current_it = current_it;
-            $gen.gi$locals.made_iter = made_iter;
-        }
+        $gen.gi$locals.current_it = current_it;
+        $gen.gi$locals.made_iter = made_iter;
+        return [ /*resume*/ , /*ret*/ element];
     };
 
     _chain = function () {
@@ -155,15 +146,12 @@ var $builtinmodule = function (name) {
         initial = $gen.gi$locals.initial;
 
         if (r > n) {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
 
         if (initial === undefined) {
-            try {
-                return [, /* resume */ Sk.builtin.tuple(pool.slice(0, r))];
-            } finally {
-                $gen.gi$locals.initial = false;
-            }
+            $gen.gi$locals.initial = false;
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(pool.slice(0, r))];
         }
         let found = false
         let i;
@@ -175,16 +163,14 @@ var $builtinmodule = function (name) {
         }
         if (!found) {
             $gen.gi$locals.r = 0;
-            return []
+            return [ /*resume*/ , /*ret*/ ]
         }
         indices[i]++;
         for (let j = i + 1; j < r; j++) {
             indices[j] = indices[j - 1] + 1;
         }
         const res = indices.map(i => pool[i]);
-        try {
-            return [ /* resume */ , Sk.builtin.tuple(res)];
-        } finally {}
+        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
     };
 
     var _combinations = function (iterable, r) {
@@ -222,16 +208,13 @@ var $builtinmodule = function (name) {
         initial = $gen.gi$locals.initial;
 
         if (r && !n) {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
 
         if (initial === undefined) {
             const res = indices.map(i => pool[i]);
-            try {
-                return [ /* resume */ , Sk.builtin.tuple(res)];
-            } finally {
-                $gen.gi$locals.initial = false;
-            }
+            $gen.gi$locals.initial = false;
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
         }
         let found = false
         let i;
@@ -243,16 +226,14 @@ var $builtinmodule = function (name) {
         }
         if (!found) {
             $gen.gi$locals.r = 0;
-            return []
+            return [ /*resume*/ , /*ret*/ ];
         }
         const val = indices[i] + 1;
         for (let j = i; j < r; j++) {
             indices[j] = val
         }
         const res = indices.map(i => pool[i]);
-        try {
-            return [ /* resume */ , Sk.builtin.tuple(res)];
-        } finally {}
+        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
     };
 
     var _combinations_with_replacement = function (iterable, r) {
@@ -320,20 +301,14 @@ var $builtinmodule = function (name) {
         element = iter.tp$iternext();
         if (!(element === undefined)) {
             // consume iter before cycling through saved
-            try {
-                return [ /*resume*/ , /*ret*/ element];
-            } finally {
-                saved.push(element);
-            }
+            saved.push(element);
+            return [ /*resume*/ , /*ret*/ element];
         } else if (saved.length) {
             element = saved.shift();
-            try {
-                return [ /*resume*/ , /*ret*/ element];
-            } finally {
-                saved.push(element);
-            }
+            saved.push(element);
+            return [ /*resume*/ , /*ret*/ element];
         } else {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
     };
 
@@ -363,17 +338,12 @@ var $builtinmodule = function (name) {
         while (passed === undefined && x !== undefined) {
             const val = (p.tp$call) ? p.tp$call([x], undefined) : Sk.misceval.applyOrSuspend(p, undefined, undefined, undefined, [x]);
             if (!Sk.misceval.isTrue(val)) {
-                try {
-                    return [ /*resume*/ , /*ret*/ x];
-                } finally {
-                    $gen.gi$locals.passed = true;
-                }
+                $gen.gi$locals.passed = true;
+                return [ /*resume*/ , /*ret*/ x];
             }
             x = it.tp$iternext()
         }
-        try {
-            return [ /*resume*/ , /*ret*/ x];
-        } finally {}
+        return [ /*resume*/ , /*ret*/ x];
     };
 
     _dropwhile = function (predicate, iterable) {
@@ -408,40 +378,35 @@ var $builtinmodule = function (name) {
         step = $gen.gi$locals.step;
         initial = $gen.gi$locals.initial;
         if (initial === undefined) {
+            $gen.gi$locals.initial = false;
             if (previt >= stop) {
                 // consume generator up to stop and return
                 for (let i = 0; i < stop; i++) {
                     iter.tp$iternext();
                 }
-                return [];
+                return [ /*resume*/ , /*ret*/ ];
             } else {
                 //conusme generator up to start and yield
                 for (let i = 0; i < previt; i++) {
                     iter.tp$iternext();
                 }
-                try {
-                    return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
-                } finally {
-                    $gen.gi$locals.initial = false;
-                }
+                return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
             }
         }
         if (previt + step >= stop) {
             // consume generator up to stop and return
             for (let i = previt + 1; i < stop; i++) {
+                $gen.gi$locals.previt = previt + step;
                 iter.tp$iternext();
             }
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         } else {
             // consume generator up to previt + step and yield
-            try {
-                for (let i = previt + 1; i < previt + step; i++) {
-                    iter.tp$iternext();
-                }
-                return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
-            } finally {
-                $gen.gi$locals.previt = previt + step;
+            for (let i = previt + 1; i < previt + step; i++) {
+                iter.tp$iternext();
             }
+            $gen.gi$locals.previt = previt + step;
+            return [ /*resume*/ , /*ret*/ iter.tp$iternext()];
         }
     };
 
@@ -507,15 +472,12 @@ var $builtinmodule = function (name) {
         initial = $gen.gi$locals.initial;
 
         if (r > n) {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
 
         if (initial === undefined) {
-            try {
-                return [ /* resume */ , Sk.builtin.tuple(pool.slice(0, r))];
-            } finally {
-                $gen.gi$locals.initial = false;
-            }
+            $gen.gi$locals.initial = false;
+            return [ /*resume*/ , Sk.builtin.tuple(pool.slice(0, r))];
         }
 
         for (let i = r - 1; i >= 0; i--) {
@@ -528,14 +490,12 @@ var $builtinmodule = function (name) {
                 j = cycles[i];
                 [indices[i], indices[n - j]] = [indices[n - j], indices[i]]; //swap elements;
                 const res = indices.map(i => pool[i]).slice(0, r);
-                try {
-                    return [ /* resume */ , Sk.builtin.tuple(res)];
-                } finally {}
+                return [ /*resume*/ ,  /*ret*/ Sk.builtin.tuple(res)];
             }
         }
 
         $gen.gi$locals.r = 0;
-        return [];
+        return [ /*resume*/ , /*ret*/ ];
     };
 
     var _permutations = function (iterable, r) {
@@ -579,11 +539,9 @@ var $builtinmodule = function (name) {
             // then this is the first call to gen so yield the first result
             // or if any of the args were empty iterables then StopIteration
             if (res.some(element => element === undefined)) {
-                return []
+                return [ /*resume*/ , /*ret*/ ];
             }
-            try {
-                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
-            } finally {}
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
         }
 
         let i = len - 1;
@@ -600,11 +558,9 @@ var $builtinmodule = function (name) {
         }
         if (res.every(element => element === undefined)) {
             $gen.gi$locals.args = pools;
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         } else {
-            try {
-                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
-            } finally {}
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
         };
 
     };
@@ -646,17 +602,12 @@ var $builtinmodule = function (name) {
         object = $gen.gi$locals.object;
 
         if (times === undefined) {
-            try {
-                return [, /*resume*/ /*ret*/ object];
-            } finally {}
+            return [ /*resume*/ , /*ret*/ object];
         } else if (times > 0) {
-            try {
-                return [ /*resume*/ , /*ret*/ object];
-            } finally {
-                $gen.gi$locals.times = times - 1;
-            }
+            $gen.gi$locals.times = times - 1;
+            return [ /*resume*/ , /*ret*/ object];
         } else {
-            return [];
+            return [ /*resume*/ , /*ret*/ ];
         }
     };
 
@@ -700,7 +651,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.failed = true;
             }
         }
-        return [/*resume*/ , /*ret*/];
+        return [ /*resume*/ , /*ret*/ ];
     };
 
     _takewhile = function (predicate, iterable) {
