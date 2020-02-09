@@ -41,7 +41,7 @@ var $builtinmodule = function (name) {
 
     var _accumulate_gen = function ($gen) {
         it = $gen.gi$locals.it;
-        func = $gen.gi$locals.func;
+        f = $gen.gi$locals.func;
         total = $gen.gi$locals.total;
         initial = $gen.gi$locals.initial;
 
@@ -54,7 +54,7 @@ var $builtinmodule = function (name) {
 
         element = it.tp$iternext();
         if (element !== undefined) {
-            total = (func.tp$call) ? func.tp$call([total, element], undefined) : Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, [total, element]);
+            total = (f.tp$call) ? f.tp$call([total, element], undefined) : Sk.misceval.applyOrSuspend(f, undefined, undefined, undefined, [total, element]);
             $gen.gi$locals.total = total;
             return [ /*resume*/ , /*ret*/ total];
         } else {
@@ -360,9 +360,51 @@ var $builtinmodule = function (name) {
     mod.dropwhile = new Sk.builtin.func(_dropwhile);
 
 
-    mod.filterfalse = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("filterfalse is not yet implemented in Skulpt");
-    });
+    var _filterfalse_gen = function ($gen) {
+        p = $gen.gi$locals.predicate;
+        it = $gen.gi$locals.it;
+        initial = $gen.gi$locals.initial;
+        if (initial === undefined) {
+            $gen.gi$locals.it = Sk.abstr.iter(it); // unusually only make an iter inside the generator else fail testGC
+            it = $gen.gi$locals.it;
+            $gen.gi$locals.initial = false;
+        }
+        let x = it.tp$iternext();
+
+        if (x === undefined) {
+            return [ /*resume*/ , /*ret*/ ];
+        }
+
+        let val = (p.tp$call) ? p.tp$call([x], undefined) : Sk.misceval.applyOrSuspend(p, undefined, undefined, undefined, [x]);
+        while (Sk.misceval.isTrue(val)) {
+            x = it.tp$iternext();
+            if (x === undefined) {
+                return [ /*resume*/ , /*ret*/ ];
+            }
+            val = (p.tp$call) ? p.tp$call([x], undefined) : Sk.misceval.applyOrSuspend(p, undefined, undefined, undefined, [x]);
+        }
+        return [ /*resume*/ , /*ret*/ x];
+    };
+
+    _filterfalse = function (predicate, iterable) {
+        Sk.builtin.pyCheckArgsLen("filterfalse", arguments.length, 2, 2);
+        if (!Sk.builtin.checkIterable(iterable)) {
+            throw new Sk.builtin.TypeError(
+                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+            );
+        }
+        it = iterable; // unlike many don't convert to an iter until inside the generator 
+        predicate = Sk.builtin.checkNone(predicate) ? Sk.builtin.bool : predicate;
+        return new Sk.builtin.itertools_gen(_filterfalse_gen, mod, [predicate, it])
+    }
+
+    _filterfalse_gen.co_name = new Sk.builtin.str("filterfalse");
+    _filterfalse_gen.co_varnames = ["predicate", "it"];
+    _filterfalse.co_name = new Sk.builtin.str("filterfalse");
+    _filterfalse.co_varnames = ["predicate", "iterable"];
+
+    mod.filterfalse = new Sk.builtin.func(_filterfalse);
+
 
 
     mod.groupby = new Sk.builtin.func(function () {
@@ -490,7 +532,7 @@ var $builtinmodule = function (name) {
                 j = cycles[i];
                 [indices[i], indices[n - j]] = [indices[n - j], indices[i]]; //swap elements;
                 const res = indices.map(i => pool[i]).slice(0, r);
-                return [ /*resume*/ ,  /*ret*/ Sk.builtin.tuple(res)];
+                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
             }
         }
 
@@ -632,9 +674,37 @@ var $builtinmodule = function (name) {
     mod.repeat = new Sk.builtin.func(_repeat);
 
 
-    mod.starmap = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("starmap is not yet implemented in Skulpt");
-    });
+    var _starmap_gen = function ($gen) {
+        const f = $gen.gi$locals.func;
+        const it = $gen.gi$locals.it;
+        const unpack = []
+        const args = it.tp$iternext();
+
+        if (args === undefined) {
+            return [ /*resume*/ , /*ret*/ ];
+        }
+
+        Sk.misceval.iterFor(Sk.abstr.iter(args), function (e) {
+            unpack.push(e);
+        });
+        const val = (f.tp$call) ? f.tp$call(unpack, undefined) : Sk.misceval.applyOrSuspend(f, undefined, undefined, undefined, unpack);
+
+        return [ /*resume*/ , /*ret*/ val];
+    };
+
+    _starmap = function (func, iterable) {
+        Sk.builtin.pyCheckArgsLen("starmap", arguments.length, 2, 2);
+        it = Sk.abstr.iter(iterable);
+        func = Sk.builtin.checkNone(func) ? Sk.builtin.bool : func;
+        return new Sk.builtin.itertools_gen(_starmap_gen, mod, [func, it])
+    }
+
+    _starmap_gen.co_name = new Sk.builtin.str("starmap");
+    _starmap_gen.co_varnames = ["func", "it"];
+    _starmap.co_name = new Sk.builtin.str("starmap");
+    _starmap.co_varnames = ["func", "iterable"];
+
+    mod.starmap = new Sk.builtin.func(_starmap);
 
 
     var _takewhile_gen = function ($gen) {

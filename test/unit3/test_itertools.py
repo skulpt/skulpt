@@ -41,12 +41,12 @@ def isOdd(x):
     'Test predicate'
     return x%2==1
 
-# def tupleize(*args):
-#     return args
+def tupleize(*args):
+    return args
 
-# def irange(n):
-#     for i in range(n):
-#         yield i
+def irange(n):
+    for i in range(n):
+        yield i
 
 class StopNow:
     'Class emulating an empty iterable.'
@@ -150,8 +150,7 @@ class TestBasicOps(unittest.TestCase):
         self.assertEqual(list(accumulate([10, 5, 1], initial=None)), [10, 15, 16])
         self.assertEqual(list(accumulate([10, 5, 1], initial=100)), [100, 110, 115, 116])
         self.assertEqual(list(accumulate([], initial=100)), [100])
-#         with self.assertRaises(TypeError):
-#             list(accumulate(s, chr))                                # unary-operation
+        self.assertRaises(TypeError, list, accumulate(s, chr))                                # unary-operation
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, accumulate(range(10)))           # test pickling
 
@@ -860,16 +859,16 @@ class TestBasicOps(unittest.TestCase):
 #             c = filter(isEven, range(6))
 #             self.pickletest(proto, c)
 
-#     def test_filterfalse(self):
-#         self.assertEqual(list(filterfalse(isEven, range(6))), [1,3,5])
-#         self.assertEqual(list(filterfalse(None, [0,1,0,2,0])), [0,0,0])
-#         self.assertEqual(list(filterfalse(bool, [0,1,0,2,0])), [0,0,0])
-#         self.assertEqual(take(4, filterfalse(isEven, count())), [1,3,5,7])
-#         self.assertRaises(TypeError, filterfalse)
-#         self.assertRaises(TypeError, filterfalse, lambda x:x)
-#         self.assertRaises(TypeError, filterfalse, lambda x:x, range(6), 7)
-#         self.assertRaises(TypeError, filterfalse, isEven, 3)
-#         self.assertRaises(TypeError, next, filterfalse(range(6), range(6)))
+    def test_filterfalse(self):
+        self.assertEqual(list(filterfalse(isEven, range(6))), [1,3,5])
+        self.assertEqual(list(filterfalse(None, [0,1,0,2,0])), [0,0,0])
+        self.assertEqual(list(filterfalse(bool, [0,1,0,2,0])), [0,0,0])
+        self.assertEqual(take(4, filterfalse(isEven, count())), [1,3,5,7])
+        self.assertRaises(TypeError, filterfalse)
+        self.assertRaises(TypeError, filterfalse, lambda x:x)
+        self.assertRaises(TypeError, filterfalse, lambda x:x, range(6), 7)
+        self.assertRaises(TypeError, filterfalse, isEven, 3)
+        self.assertRaises(TypeError, next, filterfalse(range(6), range(6)))
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, filterfalse(isEven, range(6)))
 
@@ -1167,19 +1166,19 @@ class TestBasicOps(unittest.TestCase):
 #             c = map(tupleize, 'abc', count())
 #             self.pickletest(proto, c)
 
-#     def test_starmap(self):
-#         self.assertEqual(list(starmap(operator.pow, zip(range(3), range(1,7)))),
-#                          [0**1, 1**2, 2**3])
-#         self.assertEqual(take(3, starmap(operator.pow, zip(count(), count(1)))),
-#                          [0**1, 1**2, 2**3])
-#         self.assertEqual(list(starmap(operator.pow, [])), [])
-#         self.assertEqual(list(starmap(operator.pow, [iter([4,5])])), [4**5])
-#         self.assertRaises(TypeError, list, starmap(operator.pow, [None]))
-#         self.assertRaises(TypeError, starmap)
-#         self.assertRaises(TypeError, starmap, operator.pow, [(4,5)], 'extra')
-#         self.assertRaises(TypeError, next, starmap(10, [(4,5)]))
-#         self.assertRaises(ValueError, next, starmap(errfunc, [(4,5)]))
-#         self.assertRaises(TypeError, next, starmap(onearg, [(4,5)]))
+    def test_starmap(self):
+        self.assertEqual(list(starmap(operator.pow, zip(range(3), range(1,7)))),
+                         [0**1, 1**2, 2**3])
+        self.assertEqual(take(3, starmap(operator.pow, zip(count(), count(1)))),
+                         [0**1, 1**2, 2**3])
+        self.assertEqual(list(starmap(operator.pow, [])), [])
+        self.assertEqual(list(starmap(operator.pow, [iter([4,5])])), [4**5])
+        self.assertRaises(TypeError, list, starmap(operator.pow, [None]))
+        self.assertRaises(TypeError, starmap)
+        self.assertRaises(TypeError, starmap, operator.pow, [(4,5)], 'extra')
+        self.assertRaises(TypeError, next, starmap(10, [(4,5)]))
+        self.assertRaises(ValueError, next, starmap(errfunc, [(4,5)]))
+        self.assertRaises(TypeError, next, starmap(onearg, [(4,5)]))
 
 #         # check copy, deepcopy, pickle
 #         ans = [0**1, 1**2, 2**3]
@@ -1538,9 +1537,9 @@ class TestBasicOps(unittest.TestCase):
 
         self.assertRaises(StopIteration, next, repeat(None, 0))
 
-#         for f in (filter, filterfalse, map, takewhile, dropwhile, starmap):
-#             self.assertRaises(StopIteration, next, f(lambda x:x, []))
-#             self.assertRaises(StopIteration, next, f(lambda x:x, StopNow()))
+        # for f in (filter, filterfalse, map, takewhile, dropwhile, starmap):
+        #     self.assertRaises(StopIteration, next, f(lambda x:x, []))
+        #     self.assertRaises(StopIteration, next, f(lambda x:x, StopNow()))
 
 class TestExamples(unittest.TestCase):
 
@@ -1609,11 +1608,11 @@ class TestExamples(unittest.TestCase):
 #     def test_filter(self):
 #         self.assertEqual(list(filter(lambda x: x%2, range(10))), [1,3,5,7,9])
 
-#     def test_filterfalse(self):
-#         self.assertEqual(list(filterfalse(lambda x: x%2, range(10))), [0,2,4,6,8])
+    def test_filterfalse(self):
+        self.assertEqual(list(filterfalse(lambda x: x%2, range(10))), [0,2,4,6,8])
 
-#     def test_map(self):
-#         self.assertEqual(list(map(pow, (2,3,10), (5,2,3))), [32, 9, 1000])
+    def test_map(self):
+        self.assertEqual(list(map(pow, (2,3,10), (5,2,3))), [32, 9, 1000])
 
     def test_islice(self):
         self.assertEqual(list(islice('ABCDEFG', 2)), list('AB'))
@@ -1644,9 +1643,9 @@ class TestExamples(unittest.TestCase):
     def test_repeat(self):
         self.assertEqual(list(repeat(10, 3)), [10, 10, 10])
 
-#     def test_stapmap(self):
-#         self.assertEqual(list(starmap(pow, [(2,5), (3,2), (10,3)])),
-#                          [32, 9, 1000])
+    def test_stapmap(self):
+        self.assertEqual(list(starmap(pow, [(2,5), (3,2), (10,3)])),
+                         [32, 9, 1000])
 
     def test_takewhile(self):
         self.assertEqual(list(takewhile(lambda x: x<5, [1,4,6,4,1])), [1,4])
@@ -1753,9 +1752,9 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(filter(lambda x:True, [a]*2), a)
 
-#     def test_filterfalse(self):
-#         a = []
-#         self.makecycle(filterfalse(lambda x:False, a), a)
+    def test_filterfalse(self):
+        a = []
+        self.makecycle(filterfalse(lambda x:False, a), a)
 
 #     def test_zip(self):
 #         a = []
@@ -1787,9 +1786,9 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(repeat(a), a)
 
-#     def test_starmap(self):
-#         a = []
-#         self.makecycle(starmap(lambda *t: t, [(a,a)]*2), a)
+    def test_starmap(self):
+        a = []
+        self.makecycle(starmap(lambda *t: t, [(a,a)]*2), a)
 
     def test_takewhile(self):
         a = []
@@ -1938,14 +1937,14 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, filter, isEven, N(s))
 #             self.assertRaises(ZeroDivisionError, list, filter(isEven, E(s)))
 
-#     def test_filterfalse(self):
-#         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(filterfalse(isEven, g(s))),
-#                                  [x for x in g(s) if isOdd(x)])
-#             self.assertRaises(TypeError, filterfalse, isEven, X(s))
-#             self.assertRaises(TypeError, filterfalse, isEven, N(s))
-#             self.assertRaises(ZeroDivisionError, list, filterfalse(isEven, E(s)))
+    def test_filterfalse(self):
+        for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(filterfalse(isEven, g(s))),
+                                 [x for x in g(s) if isOdd(x)])
+            self.assertRaises(TypeError, filterfalse, isEven, X(s))
+            # self.assertRaises(TypeError, filterfalse, isEven, N(s))
+            self.assertRaises(ZeroDivisionError, list, filterfalse(isEven, E(s)))
 
 #     def test_zip(self):
 #         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
@@ -1984,15 +1983,15 @@ class TestVariousIteratorArgs(unittest.TestCase):
             # self.assertRaises(TypeError, islice, N(s), 10)
             self.assertRaises(ZeroDivisionError, list, islice(E(s), 10))
 
-#     def test_starmap(self):
-#         for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 ss = lzip(s, s)
-#                 self.assertEqual(list(starmap(operator.pow, g(ss))),
-#                                  [x**x for x in g(s)])
-#             self.assertRaises(TypeError, starmap, operator.pow, X(ss))
-#             self.assertRaises(TypeError, starmap, operator.pow, N(ss))
-#             self.assertRaises(ZeroDivisionError, list, starmap(operator.pow, E(ss)))
+    def test_starmap(self):
+        for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
+            for g in (G, I, Ig, S, L, R):
+                ss = lzip(s, s)
+                self.assertEqual(list(starmap(operator.pow, g(ss))),
+                                 [x**x for x in g(s)])
+            self.assertRaises(TypeError, starmap, operator.pow, X(ss))
+            # self.assertRaises(TypeError, starmap, operator.pow, N(ss))
+            self.assertRaises(ZeroDivisionError, list, starmap(operator.pow, E(ss)))
 
     def test_takewhile(self):
         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
