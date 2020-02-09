@@ -355,7 +355,6 @@ var $builtinmodule = function (name) {
 
 
     var _dropwhile_gen = function ($gen) {
-        debugger;
         p = $gen.gi$locals.predicate;
         it = $gen.gi$locals.it;
         passed = $gen.gi$locals.passed;
@@ -687,9 +686,35 @@ var $builtinmodule = function (name) {
     });
 
 
-    mod.takewhile = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("takewhile is not yet implemented in Skulpt");
-    });
+    var _takewhile_gen = function ($gen) {
+        p = $gen.gi$locals.predicate;
+        it = $gen.gi$locals.it;
+        failed = $gen.gi$locals.failed;
+        let x = it.tp$iternext();
+
+        if (failed === undefined && x !== undefined) {
+            const val = (p.tp$call) ? p.tp$call([x], undefined) : Sk.misceval.applyOrSuspend(p, undefined, undefined, undefined, [x]);
+            if (Sk.misceval.isTrue(val)) {
+                return [ /*resume*/ , /*ret*/ x];
+            } else {
+                $gen.gi$locals.failed = true;
+            }
+        }
+        return [/*resume*/ , /*ret*/];
+    };
+
+    _takewhile = function (predicate, iterable) {
+        Sk.builtin.pyCheckArgsLen("takewhile", arguments.length, 2, 2);
+        it = Sk.abstr.iter(iterable);
+        return new Sk.builtin.itertools_gen(_takewhile_gen, mod, [predicate, it])
+    }
+
+    _takewhile_gen.co_name = new Sk.builtin.str("takewhile");
+    _takewhile_gen.co_varnames = ["predicate", "it"];
+    _takewhile.co_name = new Sk.builtin.str("takewhile");
+    _takewhile.co_varnames = ["predicate", "iterable"];
+
+    mod.takewhile = new Sk.builtin.func(_takewhile);
 
 
     mod.tee = new Sk.builtin.func(function () {

@@ -1288,18 +1288,18 @@ class TestBasicOps(unittest.TestCase):
         self.assertEqual(list(islice(range(100), IntLike(10), IntLike(50), IntLike(5))),
                          list(range(10,50,5)))
 
-#     def test_takewhile(self):
-#         data = [1, 3, 5, 20, 2, 4, 6, 8]
-#         self.assertEqual(list(takewhile(underten, data)), [1, 3, 5])
-#         self.assertEqual(list(takewhile(underten, [])), [])
-#         self.assertRaises(TypeError, takewhile)
-#         self.assertRaises(TypeError, takewhile, operator.pow)
-#         self.assertRaises(TypeError, takewhile, operator.pow, [(4,5)], 'extra')
-#         self.assertRaises(TypeError, next, takewhile(10, [(4,5)]))
-#         self.assertRaises(ValueError, next, takewhile(errfunc, [(4,5)]))
-#         t = takewhile(bool, [1, 1, 1, 0, 0, 0])
-#         self.assertEqual(list(t), [1, 1, 1])
-#         self.assertRaises(StopIteration, next, t)
+    def test_takewhile(self):
+        data = [1, 3, 5, 20, 2, 4, 6, 8]
+        self.assertEqual(list(takewhile(underten, data)), [1, 3, 5])
+        self.assertEqual(list(takewhile(underten, [])), [])
+        self.assertRaises(TypeError, takewhile)
+        self.assertRaises(TypeError, takewhile, operator.pow)
+        self.assertRaises(TypeError, takewhile, operator.pow, [(4,5)], 'extra')
+        self.assertRaises(TypeError, next, takewhile(10, [(4,5)]))
+        self.assertRaises(ValueError, next, takewhile(errfunc, [(4,5)]))
+        t = takewhile(bool, [1, 1, 1, 0, 0, 0])
+        self.assertEqual(list(t), [1, 1, 1])
+        self.assertRaises(StopIteration, next, t)
 
 #         # check copy, deepcopy, pickle
 #         self.assertEqual(list(copy.copy(takewhile(underten, data))), [1, 3, 5])
@@ -1648,8 +1648,8 @@ class TestExamples(unittest.TestCase):
 #         self.assertEqual(list(starmap(pow, [(2,5), (3,2), (10,3)])),
 #                          [32, 9, 1000])
 
-#     def test_takewhile(self):
-#         self.assertEqual(list(takewhile(lambda x: x<5, [1,4,6,4,1])), [1,4])
+    def test_takewhile(self):
+        self.assertEqual(list(takewhile(lambda x: x<5, [1,4,6,4,1])), [1,4])
 
 
 # class TestPurePythonRoughEquivalents(unittest.TestCase):
@@ -1791,9 +1791,9 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(starmap(lambda *t: t, [(a,a)]*2), a)
 
-#     def test_takewhile(self):
-#         a = []
-#         self.makecycle(takewhile(bool, [1, 0, a, a]), a)
+    def test_takewhile(self):
+        a = []
+        self.makecycle(takewhile(bool, [1, 0, a, a]), a)
 
 def R(seqn):
     'Regular generator'
@@ -1994,17 +1994,17 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, starmap, operator.pow, N(ss))
 #             self.assertRaises(ZeroDivisionError, list, starmap(operator.pow, E(ss)))
 
-#     def test_takewhile(self):
-#         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 tgt = []
-#                 for elem in g(s):
-#                     if not isEven(elem): break
-#                     tgt.append(elem)
-#                 self.assertEqual(list(takewhile(isEven, g(s))), tgt)
-#             self.assertRaises(TypeError, takewhile, isEven, X(s))
-#             self.assertRaises(TypeError, takewhile, isEven, N(s))
-#             self.assertRaises(ZeroDivisionError, list, takewhile(isEven, E(s)))
+    def test_takewhile(self):
+        for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                tgt = []
+                for elem in g(s):
+                    if not isEven(elem): break
+                    tgt.append(elem)
+                self.assertEqual(list(takewhile(isEven, g(s))), tgt)
+            self.assertRaises(TypeError, takewhile, isEven, X(s))
+            # self.assertRaises(TypeError, takewhile, isEven, N(s))
+            self.assertRaises(ZeroDivisionError, list, takewhile(isEven, E(s)))
 
     def test_dropwhile(self):
         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
