@@ -148,12 +148,70 @@ var $builtinmodule = function (name) {
 
 
     var _combinations_gen = function ($gen) {
+        indices = $gen.gi$locals.indices;
+        pool = $gen.gi$locals.pool;
+        n = $gen.gi$locals.n;
+        r = $gen.gi$locals.r;
+        initial = $gen.gi$locals.initial;
 
+        if (r > n) {
+            return [];
+        }
+
+        if (initial === undefined) {
+            try {
+                return [, /* resume */ Sk.builtin.tuple(pool.slice(0, r))];
+            } finally {
+                $gen.gi$locals.initial = false;
+            }
+        }
+        let found = false
+        let i;
+        for (i = r - 1; i >= 0; i--) {
+            if (indices[i] != i + n - r) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            $gen.gi$locals.r = 0;
+            return []
+        }
+        indices[i]++;
+        for (let j = i + 1; j < r; j++) {
+            indices[j] = indices[j - 1] + 1;
+        }
+        const res = indices.map(i => pool[i]).slice(0, r);
+        try {
+            return [ /* resume */ , Sk.builtin.tuple(res)];
+        } finally {}
     };
 
-    mod.combinations = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("combinations is not yet implemented in Skulpt");
-    });
+    var _combinations = function (iterable, r) {
+        Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 2, 2);
+        if (!Sk.builtin.checkIterable(iterable)) {
+            throw new Sk.builtin.TypeError(
+                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+            );
+        }
+        Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
+
+        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        n = pool.length;
+        r = Sk.builtin.asnum$(r);
+        if (r < 0) {
+            throw new Sk.builtin.ValueError("r must be non-negative");
+        }
+        indices = new Array(r).fill().map((_, i) => i);
+        return new Sk.builtin.itertools_gen(_combinations_gen, mod, [indices, pool, n, r]);
+    };
+
+    _combinations_gen.co_name = new Sk.builtin.str("combinations");
+    _combinations_gen.co_varnames = ["indices", "pool", "n", "r"];
+    _combinations.co_name = new Sk.builtin.str("combinations");
+    _combinations.co_varnames = ["iterable", "r"];
+
+    mod.combinations = new Sk.builtin.func(_combinations);
 
 
     mod.combinations_with_replacement = new Sk.builtin.func(function () {

@@ -203,11 +203,11 @@ class TestBasicOps(unittest.TestCase):
 #         it.__setstate__((iter(['abc', 'def']), iter(['ghi'])))
 #         self.assertEqual(list(it), ['ghi', 'a', 'b', 'c', 'd', 'e', 'f'])
 
-#     def test_combinations(self):
-#         self.assertRaises(TypeError, combinations, 'abc')       # missing r argument
-#         self.assertRaises(TypeError, combinations, 'abc', 2, 1) # too many arguments
-#         self.assertRaises(TypeError, combinations, None)        # pool is not iterable
-#         self.assertRaises(ValueError, combinations, 'abc', -2)  # r is negative
+    def test_combinations(self):
+        self.assertRaises(TypeError, combinations, 'abc')       # missing r argument
+        self.assertRaises(TypeError, combinations, 'abc', 2, 1) # too many arguments
+        self.assertRaises(TypeError, combinations, None)        # pool is not iterable
+        self.assertRaises(ValueError, combinations, 'abc', -2)  # r is negative
 
 #         for op in [lambda a:a] + picklecopiers:
 #             self.assertEqual(list(op(combinations('abc', 32))), [])     # r > n
@@ -262,20 +262,20 @@ class TestBasicOps(unittest.TestCase):
 #                 if len(set(indices)) == r:
 #                     yield tuple(pool[i] for i in indices)
 
-#         for n in range(7):
-#             values = [5*x-12 for x in range(n)]
-#             for r in range(n+2):
-#                 result = list(combinations(values, r))
-#                 self.assertEqual(len(result), 0 if r>n else fact(n) / fact(r) / fact(n-r)) # right number of combs
-#                 self.assertEqual(len(result), len(set(result)))         # no repeats
-#                 self.assertEqual(result, sorted(result))                # lexicographic order
-#                 for c in result:
-#                     self.assertEqual(len(c), r)                         # r-length combinations
-#                     self.assertEqual(len(set(c)), r)                    # no duplicate elements
-#                     self.assertEqual(list(c), sorted(c))                # keep original ordering
-#                     self.assertTrue(all(e in values for e in c))           # elements taken from input iterable
-#                     self.assertEqual(list(c),
-#                                      [e for e in values if e in c])      # comb is a subsequence of the input iterable
+        for n in range(7):
+            values = [5*x-12 for x in range(n)]
+            for r in range(n+2):
+                result = list(combinations(values, r))
+                self.assertEqual(len(result), 0 if r>n else fact(n) / fact(r) / fact(n-r)) # right number of combs
+                self.assertEqual(len(result), len(set(result)))         # no repeats
+                self.assertEqual(result, sorted(result))                # lexicographic order
+                for c in result:
+                    self.assertEqual(len(c), r)                         # r-length combinations
+                    self.assertEqual(len(set(c)), r)                    # no duplicate elements
+                    self.assertEqual(list(c), sorted(c))                # keep original ordering
+                    self.assertTrue(all(e in values for e in c))           # elements taken from input iterable
+                    self.assertEqual(list(c),
+                                     [e for e in values if e in c])      # comb is a subsequence of the input iterable
 #                 self.assertEqual(result, list(combinations1(values, r))) # matches first pure python version
 #                 self.assertEqual(result, list(combinations2(values, r))) # matches second pure python version
 #                 self.assertEqual(result, list(combinations3(values, r))) # matches second pure python version
@@ -1578,11 +1578,11 @@ class TestExamples(unittest.TestCase):
     def test_chain_from_iterable(self):
         self.assertEqual(''.join(chain.from_iterable(['ABC', 'DEF'])), 'ABCDEF')
 
-#     def test_combinations(self):
-#         self.assertEqual(list(combinations('ABCD', 2)),
-#                          [('A','B'), ('A','C'), ('A','D'), ('B','C'), ('B','D'), ('C','D')])
-#         self.assertEqual(list(combinations(range(4), 3)),
-#                          [(0,1,2), (0,1,3), (0,2,3), (1,2,3)])
+    def test_combinations(self):
+        self.assertEqual(list(combinations('ABCD', 2)),
+                         [('A','B'), ('A','C'), ('A','D'), ('B','C'), ('B','D'), ('C','D')])
+        self.assertEqual(list(combinations(range(4), 3)),
+                         [(0,1,2), (0,1,3), (0,2,3), (1,2,3)])
 
 #     def test_combinations_with_replacement(self):
 #         self.assertEqual(list(combinations_with_replacement('ABC', 2)),
@@ -1713,9 +1713,9 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(chain.from_iterable([a]), a)
 
-#     def test_combinations(self):
-#         a = []
-#         self.makecycle(combinations([1,2,a,3], 3), a)
+    def test_combinations(self):
+        a = []
+        self.makecycle(combinations([1,2,a,3], 3), a)
 
 #     def test_combinations_with_replacement(self):
 #         a = []
