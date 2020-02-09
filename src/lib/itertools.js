@@ -181,7 +181,7 @@ var $builtinmodule = function (name) {
         for (let j = i + 1; j < r; j++) {
             indices[j] = indices[j - 1] + 1;
         }
-        const res = indices.map(i => pool[i]).slice(0, r);
+        const res = indices.map(i => pool[i]);
         try {
             return [ /* resume */ , Sk.builtin.tuple(res)];
         } finally {}
@@ -214,9 +214,72 @@ var $builtinmodule = function (name) {
     mod.combinations = new Sk.builtin.func(_combinations);
 
 
-    mod.combinations_with_replacement = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("combinations_with_replacement is not yet implemented in Skulpt");
-    });
+    var _combinations_with_replacement_gen = function ($gen) {
+        indices = $gen.gi$locals.indices;
+        pool = $gen.gi$locals.pool;
+        n = $gen.gi$locals.n;
+        r = $gen.gi$locals.r;
+        initial = $gen.gi$locals.initial;
+
+        if (r && !n) {
+            return [];
+        }
+
+        if (initial === undefined) {
+            const res = indices.map(i => pool[i]);
+            try {
+                return [ /* resume */ , Sk.builtin.tuple(res)];
+            } finally {
+                $gen.gi$locals.initial = false;
+            }
+        }
+        let found = false
+        let i;
+        for (i = r - 1; i >= 0; i--) {
+            if (indices[i] != n - 1) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            $gen.gi$locals.r = 0;
+            return []
+        }
+        const val = indices[i] + 1;
+        for (let j = i; j < r; j++) {
+            indices[j] = val
+        }
+        const res = indices.map(i => pool[i]);
+        try {
+            return [ /* resume */ , Sk.builtin.tuple(res)];
+        } finally {}
+    };
+
+    var _combinations_with_replacement = function (iterable, r) {
+        Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 2, 2);
+        if (!Sk.builtin.checkIterable(iterable)) {
+            throw new Sk.builtin.TypeError(
+                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
+            );
+        }
+        Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
+
+        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        n = pool.length;
+        r = Sk.builtin.asnum$(r);
+        if (r < 0) {
+            throw new Sk.builtin.ValueError("r must be non-negative");
+        }
+        indices = new Array(r).fill(0);
+        return new Sk.builtin.itertools_gen(_combinations_with_replacement_gen, mod, [indices, pool, n, r]);
+    };
+
+    _combinations_with_replacement_gen.co_name = new Sk.builtin.str("combinations_with_replacement");
+    _combinations_with_replacement_gen.co_varnames = ["indices", "pool", "n", "r"];
+    _combinations_with_replacement.co_name = new Sk.builtin.str("combinations_with_replacement");
+    _combinations_with_replacement.co_varnames = ["iterable", "r"];
+
+    mod.combinations_with_replacement = new Sk.builtin.func(_combinations_with_replacement);
 
 
     mod.compress = new Sk.builtin.func(function () {
