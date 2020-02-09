@@ -57,7 +57,7 @@ var $builtinmodule = function (name) {
 
         element = it.tp$iternext();
         if (element !== undefined) {
-            total = func.tp$call([total, element], undefined);
+            total = (func.tp$call) ? func.tp$call([total, element], undefined) : Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, [total, element]);
             try {
                 return [ /*resume*/ , /*ret*/ total];
             } finally {
@@ -354,9 +354,41 @@ var $builtinmodule = function (name) {
     mod.cycle = new Sk.builtin.func(_cycle);
 
 
-    mod.dropwhile = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("dropwhile is not yet implemented in Skulpt");
-    });
+    var _dropwhile_gen = function ($gen) {
+        debugger;
+        p = $gen.gi$locals.predicate;
+        it = $gen.gi$locals.it;
+        passed = $gen.gi$locals.passed;
+        let x = it.tp$iternext();
+
+        while (passed === undefined && x !== undefined) {
+            const val = (p.tp$call) ? p.tp$call([x], undefined) : Sk.misceval.applyOrSuspend(p, undefined, undefined, undefined, [x]);
+            if (!Sk.misceval.isTrue(val)) {
+                try {
+                    return [ /*resume*/ , /*ret*/ x];
+                } finally {
+                    $gen.gi$locals.passed = true;
+                }
+            }
+            x = it.tp$iternext()
+        }
+        try {
+            return [ /*resume*/ , /*ret*/ x];
+        } finally {}
+    };
+
+    _dropwhile = function (predicate, iterable) {
+        Sk.builtin.pyCheckArgsLen("dropwhile", arguments.length, 2, 2);
+        it = Sk.abstr.iter(iterable);
+        return new Sk.builtin.itertools_gen(_dropwhile_gen, mod, [predicate, it])
+    }
+
+    _dropwhile_gen.co_name = new Sk.builtin.str("dropwhile");
+    _dropwhile_gen.co_varnames = ["predicate", "it"];
+    _dropwhile.co_name = new Sk.builtin.str("dropwhile");
+    _dropwhile.co_varnames = ["predicate", "iterable"];
+
+    mod.dropwhile = new Sk.builtin.func(_dropwhile);
 
 
     mod.filterfalse = new Sk.builtin.func(function () {

@@ -17,29 +17,29 @@ import sys
 maxsize = sys.maxsize
 minsize = -maxsize-1
 
-# def lzip(*args):
-#     return list(zip(*args))
+def lzip(*args):
+    return list(zip(*args))
 
-# def onearg(x):
-#     'Test function of one argument'
-#     return 2*x
+def onearg(x):
+    'Test function of one argument'
+    return 2*x
 
-# def errfunc(*args):
-#     'Test function that raises an error'
-#     raise ValueError
+def errfunc(*args):
+    'Test function that raises an error'
+    raise ValueError
 
 def gen3():
     'Non-restartable source sequence'
     for i in (0, 1, 2):
         yield i
 
-# def isEven(x):
-#     'Test predicate'
-#     return x%2==0
+def isEven(x):
+    'Test predicate'
+    return x%2==0
 
-# def isOdd(x):
-#     'Test predicate'
-#     return x%2==1
+def isOdd(x):
+    'Test predicate'
+    return x%2==1
 
 # def tupleize(*args):
 #     return args
@@ -73,8 +73,8 @@ def fact(n):
 # def testR2(r):
 #     return r[2]
 
-# def underten(x):
-#     return x<10
+def underten(x):
+    return x<10
 
 # picklecopiers = [lambda s, proto=proto: pickle.loads(pickle.dumps(s, proto))
 #                  for proto in range(pickle.HIGHEST_PROTOCOL + 1)]
@@ -1308,15 +1308,15 @@ class TestBasicOps(unittest.TestCase):
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, takewhile(underten, data))
 
-#     def test_dropwhile(self):
-#         data = [1, 3, 5, 20, 2, 4, 6, 8]
-#         self.assertEqual(list(dropwhile(underten, data)), [20, 2, 4, 6, 8])
-#         self.assertEqual(list(dropwhile(underten, [])), [])
-#         self.assertRaises(TypeError, dropwhile)
-#         self.assertRaises(TypeError, dropwhile, operator.pow)
-#         self.assertRaises(TypeError, dropwhile, operator.pow, [(4,5)], 'extra')
-#         self.assertRaises(TypeError, next, dropwhile(10, [(4,5)]))
-#         self.assertRaises(ValueError, next, dropwhile(errfunc, [(4,5)]))
+    def test_dropwhile(self):
+        data = [1, 3, 5, 20, 2, 4, 6, 8]
+        self.assertEqual(list(dropwhile(underten, data)), [20, 2, 4, 6, 8])
+        self.assertEqual(list(dropwhile(underten, [])), [])
+        self.assertRaises(TypeError, dropwhile)
+        self.assertRaises(TypeError, dropwhile, operator.pow)
+        self.assertRaises(TypeError, dropwhile, operator.pow, [(4,5)], 'extra')
+        self.assertRaises(TypeError, next, dropwhile(10, [(4,5)]))
+        self.assertRaises(ValueError, next, dropwhile(errfunc, [(4,5)]))
 
 #         # check copy, deepcopy, pickle
 #         self.assertEqual(list(copy.copy(dropwhile(underten, data))), [20, 2, 4, 6, 8])
@@ -1597,8 +1597,8 @@ class TestExamples(unittest.TestCase):
     def test_cycle(self):
         self.assertEqual(list(islice(cycle('ABCD'), 12)), list('ABCDABCDABCD'))
 
-#     def test_dropwhile(self):
-#         self.assertEqual(list(dropwhile(lambda x: x<5, [1,4,6,4,1])), [6,4,1])
+    def test_dropwhile(self):
+        self.assertEqual(list(dropwhile(lambda x: x<5, [1,4,6,4,1])), [6,4,1])
 
 #     def test_groupby(self):
 #         self.assertEqual([k for k, g in groupby('AAAABBBCCDAABBB')],
@@ -1734,9 +1734,9 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(cycle([a]*2), a)
 
-#     def test_dropwhile(self):
-#         a = []
-#         self.makecycle(dropwhile(bool, [0, a, a]), a)
+    def test_dropwhile(self):
+        a = []
+        self.makecycle(dropwhile(bool, [0, a, a]), a)
 
 #     def test_groupby(self):
 #         a = []
@@ -2006,17 +2006,17 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, takewhile, isEven, N(s))
 #             self.assertRaises(ZeroDivisionError, list, takewhile(isEven, E(s)))
 
-#     def test_dropwhile(self):
-#         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 tgt = []
-#                 for elem in g(s):
-#                     if not tgt and isOdd(elem): continue
-#                     tgt.append(elem)
-#                 self.assertEqual(list(dropwhile(isOdd, g(s))), tgt)
-#             self.assertRaises(TypeError, dropwhile, isOdd, X(s))
-#             self.assertRaises(TypeError, dropwhile, isOdd, N(s))
-#             self.assertRaises(ZeroDivisionError, list, dropwhile(isOdd, E(s)))
+    def test_dropwhile(self):
+        for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                tgt = []
+                for elem in g(s):
+                    if not tgt and isOdd(elem): continue
+                    tgt.append(elem)
+                self.assertEqual(list(dropwhile(isOdd, g(s))), tgt)
+            self.assertRaises(TypeError, dropwhile, isOdd, X(s))
+            # self.assertRaises(TypeError, dropwhile, isOdd, N(s))
+            self.assertRaises(ZeroDivisionError, list, dropwhile(isOdd, E(s)))
 
 #     def test_tee(self):
 #         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
