@@ -174,7 +174,7 @@ var $builtinmodule = function (name) {
     };
 
     var _combinations = function (iterable, r) {
-        Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 2, 2);
+        Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
         if (!Sk.builtin.checkIterable(iterable)) {
             throw new Sk.builtin.TypeError(
                 "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
@@ -237,7 +237,7 @@ var $builtinmodule = function (name) {
     };
 
     var _combinations_with_replacement = function (iterable, r) {
-        Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 2, 2);
+        Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
         if (!Sk.builtin.checkIterable(iterable)) {
             throw new Sk.builtin.TypeError(
                 "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
@@ -281,7 +281,7 @@ var $builtinmodule = function (name) {
     };
 
     _compress = function (data, selectors) {
-        Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
+        Sk.builtin.pyCheckArgsLen("compress", arguments.length, 2, 2);
         data = Sk.abstr.iter(data);
         selectors = Sk.abstr.iter(selectors);
 
@@ -671,38 +671,36 @@ var $builtinmodule = function (name) {
 
 
     var _product_gen = function ($gen) {
-        const args = $gen.gi$locals.args;
         const pools = $gen.gi$locals.pools;
-        const len = $gen.gi$locals.len;
-        let res = $gen.gi$locals.res;
-        const first = $gen.gi$locals.first;
-        if (first === undefined) {
-            $gen.gi$locals.first = false;
-            // then this is the first call to gen so yield the first result
-            // or if any of the args were empty iterables then StopIteration
+        const pool_sizes = $gen.gi$locals.pool_sizes;
+        const n = $gen.gi$locals.n;
+        const indices = $gen.gi$locals.indices;
+        const initial = $gen.gi$locals.initial;
+        if (initial === undefined) {
+            $gen.gi$locals.initial = false;
+            const res = indices.map((_, i) => pools[i][indices[i]]);
             if (res.some(element => element === undefined)) {
                 return [ /*resume*/ , /*ret*/ ];
             }
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
         }
 
-        let i = len - 1;
-        while (i >= 0 && i < len) {
-            res[i] = pools[i].tp$iternext();
-            if (res[i] === undefined) {
+        let i = n - 1;
+        while (i >= 0 && i < n) {
+            indices[i]++
+            if (indices[i] >= pool_sizes[i]) {
+                indices[i] = -1
                 i--;
             } else {
                 i++;
-                if (i < len) {
-                    pools[i] = Sk.abstr.iter(args[i]);
-                }
             }
         }
-        if (res.every(element => element === undefined)) {
-            $gen.gi$locals.args = pools;
+        if (!n || indices.every(index => index === -1)) {
+            $gen.gi$locals.n = 0; // we've done all the iterations
             return [ /*resume*/ , /*ret*/ ];
         } else {
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([...res])];
+            const res = indices.map((_, i) => pools[i][indices[i]]);
+            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
         };
 
     };
@@ -716,18 +714,23 @@ var $builtinmodule = function (name) {
         }
         // args is a tuple it's .v property is an array
         args = args.v;
-        args = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
-        pools = args.map(x => Sk.abstr.iter(x)); //also will raise the exception if not iterable
-        len = pools.length;
-        res = Array(len);
-        for (let i = 0; i < len; i++) {
-            res[i] = pools[i].tp$iternext(); // tests imply that we should iternext before yielding anything - see devision by zero test
+        for (let i = 0; i < args.length; i++) {
+            if (!Sk.builtin.checkIterable(args[i])) {
+                throw new Sk.builtin.TypeError(
+                    "'" + Sk.abstr.typeName(args[i]) + "' object is not iterable"
+                );
+            }
+            args[i] = Sk.builtin.tuple(args[i]).v; // want each arg as an array
         }
-        return new Sk.builtin.itertools_gen(_product_gen, mod, [args, pools, len, res]);
+        const pools = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
+        const n = pools.length;
+        const pool_sizes = pools.map(x => x.length)
+        const indices = Array(n).fill(0)
+        return new Sk.builtin.itertools_gen(_product_gen, mod, [pools, pool_sizes, n, indices]);
     };
 
     _product_gen.co_name = new Sk.builtin.str("product");
-    _product_gen.co_varnames = ["args", "pools", "len", "res"];
+    _product_gen.co_varnames = ["pools", "pool_sizes", "n", "indices"];
     _product.co_name = new Sk.builtin.str("product");
     _product.co_kwonlyargcount = 1;
     _product.co_argcount = 0;
