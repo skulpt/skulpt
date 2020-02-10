@@ -487,21 +487,21 @@ class TestBasicOps(unittest.TestCase):
                 # self.assertEqual(comb, list(filter(set(perm).__contains__, cwr)))     # comb: cwr that is a perm
                 self.assertEqual(comb, sorted(set(cwr) & set(perm)))            # comb: both a cwr and a perm
 
-#     def test_compress(self):
-#         self.assertEqual(list(compress(data='ABCDEF', selectors=[1,0,1,0,1,1])), list('ACEF'))
-#         self.assertEqual(list(compress('ABCDEF', [1,0,1,0,1,1])), list('ACEF'))
-#         self.assertEqual(list(compress('ABCDEF', [0,0,0,0,0,0])), list(''))
-#         self.assertEqual(list(compress('ABCDEF', [1,1,1,1,1,1])), list('ABCDEF'))
-#         self.assertEqual(list(compress('ABCDEF', [1,0,1])), list('AC'))
-#         self.assertEqual(list(compress('ABC', [0,1,1,1,1,1])), list('BC'))
-#         n = 10000
-#         data = chain.from_iterable(repeat(range(6), n))
-#         selectors = chain.from_iterable(repeat((0, 1)))
-#         self.assertEqual(list(compress(data, selectors)), [1,3,5] * n)
-#         self.assertRaises(TypeError, compress, None, range(6))      # 1st arg not iterable
-#         self.assertRaises(TypeError, compress, range(6), None)      # 2nd arg not iterable
-#         self.assertRaises(TypeError, compress, range(6))            # too few args
-#         self.assertRaises(TypeError, compress, range(6), None)      # too many args
+    def test_compress(self):
+        self.assertEqual(list(compress(data='ABCDEF', selectors=[1,0,1,0,1,1])), list('ACEF'))
+        self.assertEqual(list(compress('ABCDEF', [1,0,1,0,1,1])), list('ACEF'))
+        self.assertEqual(list(compress('ABCDEF', [0,0,0,0,0,0])), list(''))
+        self.assertEqual(list(compress('ABCDEF', [1,1,1,1,1,1])), list('ABCDEF'))
+        self.assertEqual(list(compress('ABCDEF', [1,0,1])), list('AC'))
+        self.assertEqual(list(compress('ABC', [0,1,1,1,1,1])), list('BC'))
+        n = 10000
+        data = chain.from_iterable(repeat(range(6), n))
+        selectors = chain.from_iterable(repeat((0, 1)))
+        self.assertEqual(list(compress(data, selectors)), [1,3,5] * n)
+        self.assertRaises(TypeError, compress, None, range(6))      # 1st arg not iterable
+        self.assertRaises(TypeError, compress, range(6), None)      # 2nd arg not iterable
+        self.assertRaises(TypeError, compress, range(6))            # too few args
+        self.assertRaises(TypeError, compress, range(6), None)      # too many args
 
 #         # check copy, deepcopy, pickle
 #         for op in [lambda a:copy.copy(a), lambda a:copy.deepcopy(a)] + picklecopiers:
@@ -1587,8 +1587,8 @@ class TestExamples(unittest.TestCase):
         self.assertEqual(list(combinations_with_replacement('ABC', 2)),
                          [('A','A'), ('A','B'), ('A','C'), ('B','B'), ('B','C'), ('C','C')])
 
-#     def test_compress(self):
-#         self.assertEqual(list(compress('ABCDEF', [1,0,1,0,1,1])), list('ACEF'))
+    def test_compress(self):
+        self.assertEqual(list(compress('ABCDEF', [1,0,1,0,1,1])), list('ACEF'))
 
     def test_count(self):
         self.assertEqual(list(islice(count(10), 5)), [10, 11, 12, 13, 14])
@@ -1720,9 +1720,9 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(combinations_with_replacement([1,2,a,3], 3), a)
 
-#     def test_compress(self):
-#         a = []
-#         self.makecycle(compress('ABCDEF', [1,0,1,0,1,0]), a)
+    def test_compress(self):
+        a = []
+        self.makecycle(compress('ABCDEF', [1,0,1,0,1,0]), a)
 
     def test_count(self):
         a = []
@@ -1894,14 +1894,14 @@ class TestVariousIteratorArgs(unittest.TestCase):
             self.assertRaises(TypeError, list, chain(N(s)))
             self.assertRaises(ZeroDivisionError, list, chain(E(s)))
 
-#     def test_compress(self):
-#         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-#             n = len(s)
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(compress(g(s), repeat(1))), list(g(s)))
-#             self.assertRaises(TypeError, compress, X(s), repeat(1))
-#             self.assertRaises(TypeError, compress, N(s), repeat(1))
-#             self.assertRaises(ZeroDivisionError, list, compress(E(s), repeat(1)))
+    def test_compress(self):
+        for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            n = len(s)
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(compress(g(s), repeat(1))), list(g(s)))
+            self.assertRaises(TypeError, compress, X(s), repeat(1))
+            # self.assertRaises(TypeError, compress, N(s), repeat(1))
+            self.assertRaises(ZeroDivisionError, list, compress(E(s), repeat(1)))
 
     def test_product(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):

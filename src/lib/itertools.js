@@ -263,9 +263,37 @@ var $builtinmodule = function (name) {
     mod.combinations_with_replacement = new Sk.builtin.func(_combinations_with_replacement);
 
 
-    mod.compress = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("compress is not yet implemented in Skulpt");
-    });
+    _compress_gen = function ($gen) {
+        const data = $gen.gi$locals.data;
+        const selectors = $gen.gi$locals.selectors;
+        let d = data.tp$iternext();
+        let s = selectors.tp$iternext();
+
+        while (d !== undefined && s !== undefined) {
+            if (Sk.misceval.isTrue(s)) {
+                return [ /*resume*/ , /*ret*/ d];
+            }
+            d = data.tp$iternext();
+            s = selectors.tp$iternext();
+        }
+        return [ /*resume*/ , /*ret*/ ];
+
+    };
+
+    _compress = function (data, selectors) {
+        Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
+        data = Sk.abstr.iter(data);
+        selectors = Sk.abstr.iter(selectors);
+
+        return new Sk.builtin.itertools_gen(_compress_gen, mod, [data, selectors])
+    };
+
+    _compress_gen.co_name = new Sk.builtin.str("compress");
+    _compress_gen.co_varnames = ["data", "selectors"];
+    _compress.co_name = new Sk.builtin.str("compress");
+    _compress.co_varnames = ["data", "selectors"];
+
+    mod.compress = new Sk.builtin.func(_compress);
 
 
     var _count_gen = function ($gen) {
