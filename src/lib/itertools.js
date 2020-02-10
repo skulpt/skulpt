@@ -439,7 +439,6 @@ var $builtinmodule = function (name) {
 
 
     _grouper = function ($gen) {
-        debugger;
         const groupby_gen = $gen.gi$locals.groupby_gen;
         const tgtkey = $gen.gi$locals.tgtkey;
         const id = $gen.gi$locals.id;
@@ -467,7 +466,6 @@ var $builtinmodule = function (name) {
     };
 
     _groupby_gen = function ($gen) {
-        debugger;
         const tgtkey = $gen.gi$locals.tgtkey;
         let currval = $gen.gi$locals.currval;
         let currkey = $gen.gi$locals.currkey;
