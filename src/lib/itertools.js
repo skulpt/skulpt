@@ -40,10 +40,10 @@ var $builtinmodule = function (name) {
 
 
     var _accumulate_gen = function ($gen) {
-        it = $gen.gi$locals.it;
-        f = $gen.gi$locals.func;
-        total = $gen.gi$locals.total;
-        initial = $gen.gi$locals.initial;
+        const it = $gen.gi$locals.it;
+        const f = $gen.gi$locals.func;
+        let total = $gen.gi$locals.total;
+        const initial = $gen.gi$locals.initial;
 
         if (initial) {
             total = Sk.builtin.checkNone(total) ? it.tp$iternext() : total;
@@ -64,12 +64,12 @@ var $builtinmodule = function (name) {
 
     var _accumulate = function (iterable, func, initial) {
         Sk.builtin.pyCheckArgsLen("accumulate", arguments.length, 1, 3, true);
-        it = Sk.abstr.iter(iterable);
-        total = initial;
+        const it = Sk.abstr.iter(iterable);
+        const total = initial;
         return new Sk.builtin.itertools_gen(_accumulate_gen, mod, [it, func, total, true])
     };
 
-    let func = new Sk.builtin.func(function (a, b) {
+    const func = new Sk.builtin.func(function (a, b) {
         return Sk.abstr.numberBinOp(a, b, 'Add');
     });
     _accumulate_gen.co_name = new Sk.builtin.str("accumulate");
@@ -85,10 +85,10 @@ var $builtinmodule = function (name) {
 
 
     _chain_gen = function ($gen) {
-        let iterables, current_it, element, made_iter;
-        iterables = $gen.gi$locals.iterables;
-        current_it = $gen.gi$locals.current_it;
-        made_iter = $gen.gi$locals.made_iter;
+        const iterables = $gen.gi$locals.iterables;
+        let current_it = $gen.gi$locals.current_it;
+        let made_iter = $gen.gi$locals.made_iter;
+        let element;
 
         while (element === undefined) {
             if (current_it === undefined) {
@@ -139,11 +139,11 @@ var $builtinmodule = function (name) {
 
 
     var _combinations_gen = function ($gen) {
-        indices = $gen.gi$locals.indices;
-        pool = $gen.gi$locals.pool;
-        n = $gen.gi$locals.n;
-        r = $gen.gi$locals.r;
-        initial = $gen.gi$locals.initial;
+        const indices = $gen.gi$locals.indices;
+        const pool = $gen.gi$locals.pool;
+        const n = $gen.gi$locals.n;
+        const r = $gen.gi$locals.r;
+        const initial = $gen.gi$locals.initial;
 
         if (r > n) {
             return [ /*resume*/ , /*ret*/ ];
@@ -201,11 +201,11 @@ var $builtinmodule = function (name) {
 
 
     var _combinations_with_replacement_gen = function ($gen) {
-        indices = $gen.gi$locals.indices;
-        pool = $gen.gi$locals.pool;
-        n = $gen.gi$locals.n;
-        r = $gen.gi$locals.r;
-        initial = $gen.gi$locals.initial;
+        const indices = $gen.gi$locals.indices;
+        const pool = $gen.gi$locals.pool;
+        const n = $gen.gi$locals.n;
+        const r = $gen.gi$locals.r;
+        const initial = $gen.gi$locals.initial;
 
         if (r && !n) {
             return [ /*resume*/ , /*ret*/ ];
@@ -245,13 +245,13 @@ var $builtinmodule = function (name) {
         }
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
-        n = pool.length;
+        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        const n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
             throw new Sk.builtin.ValueError("r must be non-negative");
         }
-        indices = new Array(r).fill(0);
+        const indices = new Array(r).fill(0);
         return new Sk.builtin.itertools_gen(_combinations_with_replacement_gen, mod, [indices, pool, n, r]);
     };
 
@@ -323,7 +323,7 @@ var $builtinmodule = function (name) {
 
 
     var _cycle_gen = function ($gen) {
-        let iter, saved;
+        let iter, saved, element;
         iter = $gen.gi$locals.iter;
         saved = $gen.gi$locals.saved;
         element = iter.tp$iternext();
@@ -358,9 +358,9 @@ var $builtinmodule = function (name) {
 
 
     var _dropwhile_gen = function ($gen) {
-        p = $gen.gi$locals.predicate;
-        it = $gen.gi$locals.it;
-        passed = $gen.gi$locals.passed;
+        const p = $gen.gi$locals.predicate;
+        const it = $gen.gi$locals.it;
+        const passed = $gen.gi$locals.passed;
         let x = it.tp$iternext();
 
         while (passed === undefined && x !== undefined) {
@@ -376,7 +376,7 @@ var $builtinmodule = function (name) {
 
     _dropwhile = function (predicate, iterable) {
         Sk.builtin.pyCheckArgsLen("dropwhile", arguments.length, 2, 2);
-        it = Sk.abstr.iter(iterable);
+        const it = Sk.abstr.iter(iterable);
         return new Sk.builtin.itertools_gen(_dropwhile_gen, mod, [predicate, it])
     }
 
@@ -389,9 +389,9 @@ var $builtinmodule = function (name) {
 
 
     var _filterfalse_gen = function ($gen) {
-        p = $gen.gi$locals.predicate;
-        it = $gen.gi$locals.it;
-        initial = $gen.gi$locals.initial;
+        const p = $gen.gi$locals.predicate;
+        let it = $gen.gi$locals.it;
+        const initial = $gen.gi$locals.initial;
         if (initial === undefined) {
             $gen.gi$locals.it = Sk.abstr.iter(it); // unusually only make an iter inside the generator else fail testGC
             it = $gen.gi$locals.it;
@@ -421,7 +421,7 @@ var $builtinmodule = function (name) {
                 "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
             );
         }
-        it = iterable; // unlike many don't convert to an iter until inside the generator 
+        const it = iterable; // unlike many don't convert to an iter until inside the generator 
         predicate = Sk.builtin.checkNone(predicate) ? Sk.builtin.bool : predicate;
         return new Sk.builtin.itertools_gen(_filterfalse_gen, mod, [predicate, it])
     }
@@ -534,12 +534,12 @@ var $builtinmodule = function (name) {
 
 
     var _permutations_gen = function ($gen) {
-        indices = $gen.gi$locals.indices;
-        cycles = $gen.gi$locals.cycles;
-        pool = $gen.gi$locals.pool;
-        n = $gen.gi$locals.n;
-        r = $gen.gi$locals.r;
-        initial = $gen.gi$locals.initial;
+        const indices = $gen.gi$locals.indices;
+        const cycles = $gen.gi$locals.cycles;
+        const pool = $gen.gi$locals.pool;
+        const n = $gen.gi$locals.n;
+        const r = $gen.gi$locals.r;
+        const initial = $gen.gi$locals.initial;
 
         if (r > n) {
             return [ /*resume*/ , /*ret*/ ];
@@ -575,16 +575,16 @@ var $builtinmodule = function (name) {
                 "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
             );
         }
-        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
-        n = pool.length;
+        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        const n = pool.length;
         r = Sk.builtin.checkNone(r) ? Sk.builtin.int_(n) : r;
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
             throw new Sk.builtin.ValueError("r must be non-negative");
         }
-        indices = new Array(n).fill().map((_, i) => i);
-        cycles = new Array(r).fill().map((_, i) => n - i);
+        const indices = new Array(n).fill().map((_, i) => i);
+        const cycles = new Array(r).fill().map((_, i) => n - i);
 
         return new Sk.builtin.itertools_gen(_permutations_gen, mod, [indices, cycles, pool, n, r]);
     };
@@ -599,11 +599,11 @@ var $builtinmodule = function (name) {
 
 
     var _product_gen = function ($gen) {
-        args = $gen.gi$locals.args;
-        pools = $gen.gi$locals.pools;
-        len = $gen.gi$locals.len;
-        res = $gen.gi$locals.res;
-        first = $gen.gi$locals.first;
+        const args = $gen.gi$locals.args;
+        const pools = $gen.gi$locals.pools;
+        const len = $gen.gi$locals.len;
+        let res = $gen.gi$locals.res;
+        const first = $gen.gi$locals.first;
         if (first === undefined) {
             $gen.gi$locals.first = false;
             // then this is the first call to gen so yield the first result
@@ -667,9 +667,8 @@ var $builtinmodule = function (name) {
 
 
     var _repeat_gen = function ($gen) {
-        let times, object;
-        times = $gen.gi$locals.times;
-        object = $gen.gi$locals.object;
+        const times = $gen.gi$locals.times;
+        const object = $gen.gi$locals.object;
 
         if (times === undefined) {
             return [ /*resume*/ , /*ret*/ object];
@@ -736,9 +735,9 @@ var $builtinmodule = function (name) {
 
 
     var _takewhile_gen = function ($gen) {
-        p = $gen.gi$locals.predicate;
-        it = $gen.gi$locals.it;
-        failed = $gen.gi$locals.failed;
+        const p = $gen.gi$locals.predicate;
+        const it = $gen.gi$locals.it;
+        const failed = $gen.gi$locals.failed;
         let x = it.tp$iternext();
 
         if (failed === undefined && x !== undefined) {
@@ -772,9 +771,9 @@ var $builtinmodule = function (name) {
 
 
     _zip_longest_gen = function ($gen) {
-        its = $gen.gi$locals.its;
-        active = $gen.gi$locals.active;
-        fillvalue = $gen.gi$locals.fillvalue;
+        const its = $gen.gi$locals.its;
+        let active = $gen.gi$locals.active;
+        const fillvalue = $gen.gi$locals.fillvalue;
 
         if (!active) {
             return [ /*resume*/ , /*ret*/ ];
