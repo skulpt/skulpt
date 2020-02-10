@@ -215,9 +215,14 @@ let formatNumber = function(num, formatSpec, isFractional) {
             if (isNaN(convValue)) {
                 return handleWidth(m, "nan%", "", true);
             }
+            let neg = false;
+            if (convValue < 0) {
+                convValue = -convValue;
+                neg = true;
+            }
             let precision = m[FMT.PRECISION] ? parseInt(m[FMT.PRECISION], 10) : 6;
             let result = (convValue*100.0).toFixed(precision) + "%";
-            return handleWidth(m, result, signForNeg(m, convValue < 0), true);
+            return handleWidth(m, result, signForNeg(m, neg), true);
         };
 
         default:
