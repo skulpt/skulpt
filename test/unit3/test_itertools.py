@@ -14,7 +14,7 @@ import sys
 # import threading
 # maxsize = support.MAX_Py_ssize_t
 # minsize = -maxsize-1
-maxsize = 2**25
+maxsize = int(sys.maxsize**.5) # maxsize is too large to handle!
 minsize = -maxsize-1
 
 def lzip(*args):
@@ -391,29 +391,29 @@ class TestBasicOps(unittest.TestCase):
         self.assertEqual(list(permutations(range(3), 2)),
                                            [(0,1), (0,2), (1,0), (1,2), (2,0), (2,1)])
 
-        def permutations1(iterable, r=None):
-            'Pure python version shown in the docs'
-            pool = tuple(iterable)
-            n = len(pool)
-            r = n if r is None else r
-            if r > n:
-                return
-            indices = list(range(n))
-            cycles = list(range(n-r+1, n+1))[::-1]
-            yield tuple(pool[i] for i in indices[:r])
-            while n:
-                for i in reversed(range(r)):
-                    cycles[i] -= 1
-                    if cycles[i] == 0:
-                        indices[i:] = indices[i+1:] + indices[i:i+1]
-                        cycles[i] = n - i
-                    else:
-                        j = cycles[i]
-                        indices[i], indices[-j] = indices[-j], indices[i]
-                        yield tuple(pool[i] for i in indices[:r])
-                        break
-                else:
-                    return
+#        def permutations1(iterable, r=None):
+#             'Pure python version shown in the docs'
+#             pool = tuple(iterable)
+#             n = len(pool)
+#             r = n if r is None else r
+#             if r > n:
+#                 return
+#             indices = list(range(n))
+#             cycles = list(range(n-r+1, n+1))[::-1]
+#             yield tuple(pool[i] for i in indices[:r])
+#             while n:
+#                 for i in reversed(range(r)):
+#                     cycles[i] -= 1
+#                     if cycles[i] == 0:
+#                         indices[i:] = indices[i+1:] + indices[i:i+1]
+#                         cycles[i] = n - i
+#                     else:
+#                         j = cycles[i]
+#                         indices[i], indices[-j] = indices[-j], indices[i]
+#                         yield tuple(pool[i] for i in indices[:r])
+#                         break
+#                 else:
+#                     return
 
 #        def permutations2(iterable, r=None):
 #            'Pure python version shown in the docs'
@@ -458,9 +458,9 @@ class TestBasicOps(unittest.TestCase):
         # Test relationships between product(), permutations(),
         # combinations() and combinations_with_replacement().
 
-        for n in range(6):
+        for n in range(5):
             s = 'ABCDEFG'[:n]
-            for r in range(8):
+            for r in range(7):
                 prod = list(product(s, repeat=r))
                 cwr = list(combinations_with_replacement(s, r))
                 perm = list(permutations(s, r))
