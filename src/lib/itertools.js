@@ -743,9 +743,57 @@ var $builtinmodule = function (name) {
     });
 
 
-    mod.zip_longest = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("zip_longest is not yet implemented in Skulpt");
-    });
+    _zip_longest_gen = function ($gen) {
+        its = $gen.gi$locals.its;
+        active = $gen.gi$locals.active;
+        fillvalue = $gen.gi$locals.fillvalue;
+
+        if (!active) {
+            return [ /*resume*/ , /*ret*/ ];
+        }
+
+        values = [];
+        for (let i = 0; i < its.length; i++) {
+            val = its[i].tp$iternext();
+            if (val === undefined) {
+                active--;
+                $gen.gi$locals.active = active;
+                if (!active) {
+                    return [ /*resume*/ , /*ret*/ ];
+                }
+                its[i] = _repeat(fillvalue, Sk.builtin.none.none$);
+                val = fillvalue;
+            }
+            values.push(val);
+        }
+        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(values)];
+    };
+
+    _zip_longest = function (fillvalue, args) {
+        Sk.builtin.pyCheckArgsLen("zip_longest", arguments.length, 0, Infinity);
+        // args is a tuple it's .v property is an array
+        args = args.v;
+        for (let i = 0; i < args.length; i++) {
+            const iterable = args[i];
+            if (!Sk.builtin.checkIterable(iterable)) {
+                throw new Sk.builtin.TypeError("zip_longest argument #" + i + " must support iteration");
+            }
+            args[i] = Sk.abstr.iter(iterable);
+        }
+        const active = args.length;
+        return new Sk.builtin.itertools_gen(_zip_longest_gen, mod, [args, active, fillvalue])
+    };
+
+    _zip_longest_gen.co_name = new Sk.builtin.str("zip_longest");
+    _zip_longest_gen.co_varnames = ["its", "active", "fillvalue"];
+    _zip_longest.co_name = new Sk.builtin.str("zip_longest");
+    _zip_longest.co_argcount = 0;
+    _zip_longest.co_kwonlyargcount = 1;
+    _zip_longest.$kwdefs = [Sk.builtin.none.none$];
+    _zip_longest.co_varnames = ['fillvalue'];
+    _zip_longest.co_varargs = 1;
+
+    mod.zip_longest = new Sk.builtin.func(_zip_longest);
 
     mod.__doc__ = new Sk.builtin.str("An implementation of the python itertools module in Skulpt")
     mod.__package__ = new Sk.builtin.str("")

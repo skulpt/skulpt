@@ -915,31 +915,31 @@ class TestBasicOps(unittest.TestCase):
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, zip('abc', count()))
 
-#     def test_ziplongest(self):
-#         for args in [
-#                 ['abc', range(6)],
-#                 [range(6), 'abc'],
-#                 [range(1000), range(2000,2100), range(3000,3050)],
-#                 [range(1000), range(0), range(3000,3050), range(1200), range(1500)],
-#                 [range(1000), range(0), range(3000,3050), range(1200), range(1500), range(0)],
-#             ]:
-#             target = [tuple([arg[i] if i < len(arg) else None for arg in args])
-#                       for i in range(max(map(len, args)))]
-#             self.assertEqual(list(zip_longest(*args)), target)
-#             self.assertEqual(list(zip_longest(*args, **{})), target)
-#             target = [tuple((e is None and 'X' or e) for e in t) for t in target]   # Replace None fills with 'X'
-#             self.assertEqual(list(zip_longest(*args, **dict(fillvalue='X'))), target)
+    def test_ziplongest(self):
+        for args in [
+                ['abc', range(6)],
+                [range(6), 'abc'],
+                [range(1000), range(2000,2100), range(3000,3050)],
+                [range(1000), range(0), range(3000,3050), range(1200), range(1500)],
+                [range(1000), range(0), range(3000,3050), range(1200), range(1500), range(0)],
+            ]:
+            target = [tuple([arg[i] if i < len(arg) else None for arg in args])
+                      for i in range(max(map(len, args)))]
+            self.assertEqual(list(zip_longest(*args)), target)
+            self.assertEqual(list(zip_longest(*args, **{})), target)
+            target = [tuple((e is None and 'X' or e) for e in t) for t in target]   # Replace None fills with 'X'
+            self.assertEqual(list(zip_longest(*args, **dict(fillvalue='X'))), target)
 
-#         self.assertEqual(take(3,zip_longest('abcdef', count())), list(zip('abcdef', range(3)))) # take 3 from infinite input
+        self.assertEqual(take(3,zip_longest('abcdef', count())), list(zip('abcdef', range(3)))) # take 3 from infinite input
 
-#         self.assertEqual(list(zip_longest()), list(zip()))
-#         self.assertEqual(list(zip_longest([])), list(zip([])))
-#         self.assertEqual(list(zip_longest('abcdef')), list(zip('abcdef')))
+        self.assertEqual(list(zip_longest()), list(zip()))
+        self.assertEqual(list(zip_longest([])), list(zip([])))
+        self.assertEqual(list(zip_longest('abcdef')), list(zip('abcdef')))
 
-#         self.assertEqual(list(zip_longest('abc', 'defg', **{})),
-#                          list(zip(list('abc')+[None], 'defg'))) # empty keyword dict
-#         self.assertRaises(TypeError, zip_longest, 3)
-#         self.assertRaises(TypeError, zip_longest, range(3), 3)
+        self.assertEqual(list(zip_longest('abc', 'defg', **{})),
+                         list(zip(list('abc')+[None], 'defg'))) # empty keyword dict
+        self.assertRaises(TypeError, zip_longest, 3)
+        self.assertRaises(TypeError, zip_longest, range(3), 3)
 
 #         for stmt in [
 #             "zip_longest('abc', fv=1)",
@@ -952,10 +952,10 @@ class TestBasicOps(unittest.TestCase):
 #             else:
 #                 self.fail('Did not raise Type in:  ' + stmt)
 
-#         self.assertEqual([tuple(list(pair)) for pair in zip_longest('abc', 'def')],
-#                          list(zip('abc', 'def')))
-#         self.assertEqual([pair for pair in zip_longest('abc', 'def')],
-#                          list(zip('abc', 'def')))
+        self.assertEqual([tuple(list(pair)) for pair in zip_longest('abc', 'def')],
+                         list(zip('abc', 'def')))
+        self.assertEqual([pair for pair in zip_longest('abc', 'def')],
+                         list(zip('abc', 'def')))
 
 #     @support.impl_detail("tuple reuse is specific to CPython")
 #     def test_zip_longest_tuple_reuse(self):
@@ -971,45 +971,45 @@ class TestBasicOps(unittest.TestCase):
 #             self.pickletest(proto, zip_longest("abc", "defgh", fillvalue=1))
 #             self.pickletest(proto, zip_longest("", "defgh"))
 
-#     def test_bug_7244(self):
+    def test_bug_7244(self):
 
-#         class Repeater:
-#             # this class is similar to itertools.repeat
-#             def __init__(self, o, t, e):
-#                 self.o = o
-#                 self.t = int(t)
-#                 self.e = e
-#             def __iter__(self): # its iterator is itself
-#                 return self
-#             def __next__(self):
-#                 if self.t > 0:
-#                     self.t -= 1
-#                     return self.o
-#                 else:
-#                     raise self.e
+        class Repeater:
+            # this class is similar to itertools.repeat
+            def __init__(self, o, t, e):
+                self.o = o
+                self.t = int(t)
+                self.e = e
+            def __iter__(self): # its iterator is itself
+                return self
+            def __next__(self):
+                if self.t > 0:
+                    self.t -= 1
+                    return self.o
+                else:
+                    raise self.e
 
-#         # Formerly this code in would fail in debug mode
-#         # with Undetected Error and Stop Iteration
-#         r1 = Repeater(1, 3, StopIteration)
-#         r2 = Repeater(2, 4, StopIteration)
-#         def run(r1, r2):
-#             result = []
-#             for i, j in zip_longest(r1, r2, fillvalue=0):
-#                 with support.captured_output('stdout'):
-#                     print((i, j))
-#                 result.append((i, j))
-#             return result
-#         self.assertEqual(run(r1, r2), [(1,2), (1,2), (1,2), (0,2)])
+        # Formerly this code in would fail in debug mode
+        # with Undetected Error and Stop Iteration
+        r1 = Repeater(1, 3, StopIteration)
+        r2 = Repeater(2, 4, StopIteration)
+        def run(r1, r2):
+            result = []
+            for i, j in zip_longest(r1, r2, fillvalue=0):
+                # with support.captured_output('stdout'):
+                #     print((i, j))
+                result.append((i, j))
+            return result
+        self.assertEqual(run(r1, r2), [(1,2), (1,2), (1,2), (0,2)])
 
-#         # Formerly, the RuntimeError would be lost
-#         # and StopIteration would stop as expected
-#         r1 = Repeater(1, 3, RuntimeError)
-#         r2 = Repeater(2, 4, StopIteration)
-#         it = zip_longest(r1, r2, fillvalue=0)
-#         self.assertEqual(next(it), (1, 2))
-#         self.assertEqual(next(it), (1, 2))
-#         self.assertEqual(next(it), (1, 2))
-#         self.assertRaises(RuntimeError, next, it)
+        # Formerly, the RuntimeError would be lost
+        # and StopIteration would stop as expected
+        r1 = Repeater(1, 3, RuntimeError)
+        r2 = Repeater(2, 4, StopIteration)
+        it = zip_longest(r1, r2, fillvalue=0)
+        self.assertEqual(next(it), (1, 2))
+        self.assertEqual(next(it), (1, 2))
+        self.assertEqual(next(it), (1, 2))
+        self.assertRaises(RuntimeError, next, it)
 
     def test_product(self):
         for args, result in [
@@ -1521,9 +1521,9 @@ class TestBasicOps(unittest.TestCase):
     def test_StopIteration(self):
         self.assertRaises(StopIteration, next, zip())
 
-#         for f in (chain, cycle, zip, groupby):
-#             self.assertRaises(StopIteration, next, f([]))
-#             self.assertRaises(StopIteration, next, f(StopNow()))
+        for f in (chain, cycle, zip):#, groupby):
+            self.assertRaises(StopIteration, next, f([]))
+            self.assertRaises(StopIteration, next, f(StopNow()))
 
         self.assertRaises(StopIteration, next, islice([], None))
         self.assertRaises(StopIteration, next, islice(StopNow(), None))
@@ -1537,9 +1537,9 @@ class TestBasicOps(unittest.TestCase):
 
         self.assertRaises(StopIteration, next, repeat(None, 0))
 
-        # for f in (filter, filterfalse, map, takewhile, dropwhile, starmap):
-        #     self.assertRaises(StopIteration, next, f(lambda x:x, []))
-        #     self.assertRaises(StopIteration, next, f(lambda x:x, StopNow()))
+        for f in (filter, filterfalse, map, takewhile, dropwhile, starmap):
+            self.assertRaises(StopIteration, next, f(lambda x:x, []))
+            self.assertRaises(StopIteration, next, f(lambda x:x, StopNow()))
 
 class TestExamples(unittest.TestCase):
 
@@ -1623,9 +1623,9 @@ class TestExamples(unittest.TestCase):
 #     def test_zip(self):
 #         self.assertEqual(list(zip('ABCD', 'xy')), [('A', 'x'), ('B', 'y')])
 
-#     def test_zip_longest(self):
-#         self.assertEqual(list(zip_longest('ABCD', 'xy', fillvalue='-')),
-#                          [('A', 'x'), ('B', 'y'), ('C', '-'), ('D', '-')])
+    def test_zip_longest(self):
+        self.assertEqual(list(zip_longest('ABCD', 'xy', fillvalue='-')),
+                         [('A', 'x'), ('B', 'y'), ('C', '-'), ('D', '-')])
 
     def test_permutations(self):
         self.assertEqual(list(permutations('ABCD', 2)),
@@ -1760,11 +1760,11 @@ class TestGC(unittest.TestCase):
 #         a = []
 #         self.makecycle(zip([a]*2, [a]*3), a)
 
-#     def test_zip_longest(self):
-#         a = []
-#         self.makecycle(zip_longest([a]*2, [a]*3), a)
-#         b = [a, None]
-#         self.makecycle(zip_longest([a]*2, [a]*3, fillvalue=b), a)
+    def test_zip_longest(self):
+        a = []
+        self.makecycle(zip_longest([a]*2, [a]*3), a)
+        b = [a, None]
+        self.makecycle(zip_longest([a]*2, [a]*3, fillvalue=b), a)
 
 #     def test_map(self):
 #         a = []
@@ -1955,14 +1955,14 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, zip, N(s))
 #             self.assertRaises(ZeroDivisionError, list, zip(E(s)))
 
-#     def test_ziplongest(self):
-#         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(zip_longest(g(s))), list(zip(g(s))))
-#                 self.assertEqual(list(zip_longest(g(s), g(s))), list(zip(g(s), g(s))))
-#             self.assertRaises(TypeError, zip_longest, X(s))
-#             self.assertRaises(TypeError, zip_longest, N(s))
-#             self.assertRaises(ZeroDivisionError, list, zip_longest(E(s)))
+    def test_ziplongest(self):
+        for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(zip_longest(g(s))), list(zip(g(s))))
+                self.assertEqual(list(zip_longest(g(s), g(s))), list(zip(g(s), g(s))))
+            self.assertRaises(TypeError, zip_longest, X(s))
+            # self.assertRaises(TypeError, zip_longest, N(s))
+            self.assertRaises(ZeroDivisionError, list, zip_longest(E(s)))
 
 #     def test_map(self):
 #         for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
