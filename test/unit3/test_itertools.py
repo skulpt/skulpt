@@ -14,7 +14,7 @@ import sys
 # import threading
 # maxsize = support.MAX_Py_ssize_t
 # minsize = -maxsize-1
-maxsize = sys.maxsize
+maxsize = 2**25
 minsize = -maxsize-1
 
 def lzip(*args):
@@ -66,12 +66,12 @@ def fact(n):
     'Factorial'
     return prod(range(1, n+1))
 
-# # root level methods for pickling ability
-# def testR(r):
-#     return r[0]
+# root level methods for pickling ability
+def testR(r):
+    return r[0]
 
-# def testR2(r):
-#     return r[2]
+def testR2(r):
+    return r[2]
 
 def underten(x):
     return x<10
@@ -355,14 +355,14 @@ class TestBasicOps(unittest.TestCase):
                 else:
                     self.assertTrue(set(result) >= set(regular_combs))     # rest should be supersets of regular combs
 
-#                 for c in result:
-#                     self.assertEqual(len(c), r)                         # r-length combinations
-#                     noruns = [k for k,v in groupby(c)]                  # combo without consecutive repeats
-#                     self.assertEqual(len(noruns), len(set(noruns)))     # no repeats other than consecutive
-#                     self.assertEqual(list(c), sorted(c))                # keep original ordering
-#                     self.assertTrue(all(e in values for e in c))           # elements taken from input iterable
-#                     self.assertEqual(noruns,
-#                                      [e for e in values if e in c])     # comb is a subsequence of the input iterable
+                for c in result:
+                    self.assertEqual(len(c), r)                         # r-length combinations
+                    noruns = [k for k,v in groupby(c)]                  # combo without consecutive repeats
+                    self.assertEqual(len(noruns), len(set(noruns)))     # no repeats other than consecutive
+                    self.assertEqual(list(c), sorted(c))                # keep original ordering
+                    self.assertTrue(all(e in values for e in c))           # elements taken from input iterable
+                    self.assertEqual(noruns,
+                                     [e for e in values if e in c])     # comb is a subsequence of the input iterable
 #                 self.assertEqual(result, list(cwr1(values, r)))         # matches first pure python version
 #                 self.assertEqual(result, list(cwr2(values, r)))         # matches second pure python version
 
@@ -415,14 +415,14 @@ class TestBasicOps(unittest.TestCase):
                 else:
                     return
 
-        def permutations2(iterable, r=None):
-            'Pure python version shown in the docs'
-            pool = tuple(iterable)
-            n = len(pool)
-            r = n if r is None else r
-            for indices in product(range(n), repeat=r):
-                if len(set(indices)) == r:
-                    yield tuple(pool[i] for i in indices)
+#        def permutations2(iterable, r=None):
+#            'Pure python version shown in the docs'
+#            pool = tuple(iterable)
+#            n = len(pool)
+#            r = n if r is None else r
+#            for indices in product(range(n), repeat=r):
+#                if len(set(indices)) == r:
+#                    yield tuple(pool[i] for i in indices)
 
         for n in range(7):
             values = [5*x-12 for x in range(n)]
@@ -435,11 +435,11 @@ class TestBasicOps(unittest.TestCase):
                     self.assertEqual(len(p), r)                         # r-length permutations
                     self.assertEqual(len(set(p)), r)                    # no duplicate elements
                     self.assertTrue(all(e in values for e in p))           # elements taken from input iterable
-                self.assertEqual(result, list(permutations1(values, r))) # matches first pure python version
-                self.assertEqual(result, list(permutations2(values, r))) # matches second pure python version
-                if r == n:
-                    self.assertEqual(result, list(permutations(values, None))) # test r as None
-                    self.assertEqual(result, list(permutations(values)))       # test default r
+#                self.assertEqual(result, list(permutations1(values, r))) # matches first pure python version
+#                self.assertEqual(result, list(permutations2(values, r))) # matches second pure python version
+#                if r == n:
+#                    self.assertEqual(result, list(permutations(values, None))) # test r as None
+#                    self.assertEqual(result, list(permutations(values)))       # test default r
 
 #                 for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #                     self.pickletest(proto, permutations(values, r))     # test pickling
@@ -521,42 +521,42 @@ class TestBasicOps(unittest.TestCase):
 #                     self.assertEqual(list(op(testIntermediate)), list(result2))
 
 
-#     def test_count(self):
-#         self.assertEqual(lzip('abc',count()), [('a', 0), ('b', 1), ('c', 2)])
-#         self.assertEqual(lzip('abc',count(3)), [('a', 3), ('b', 4), ('c', 5)])
-#         self.assertEqual(take(2, lzip('abc',count(3))), [('a', 3), ('b', 4)])
-#         self.assertEqual(take(2, zip('abc',count(-1))), [('a', -1), ('b', 0)])
-#         self.assertEqual(take(2, zip('abc',count(-3))), [('a', -3), ('b', -2)])
-#         self.assertRaises(TypeError, count, 2, 3, 4)
-#         self.assertRaises(TypeError, count, 'a')
-#         self.assertEqual(take(10, count(maxsize-5)),
-#                          list(range(maxsize-5, maxsize+5)))
-#         self.assertEqual(take(10, count(-maxsize-5)),
-#                          list(range(-maxsize-5, -maxsize+5)))
-#         self.assertEqual(take(3, count(3.25)), [3.25, 4.25, 5.25])
-#         self.assertEqual(take(3, count(3.25-4j)), [3.25-4j, 4.25-4j, 5.25-4j])
+    def test_count(self):
+        self.assertEqual(lzip('abc',count()), [('a', 0), ('b', 1), ('c', 2)])
+        self.assertEqual(lzip('abc',count(3)), [('a', 3), ('b', 4), ('c', 5)])
+        self.assertEqual(take(2, lzip('abc',count(3))), [('a', 3), ('b', 4)])
+        self.assertEqual(take(2, zip('abc',count(-1))), [('a', -1), ('b', 0)])
+        self.assertEqual(take(2, zip('abc',count(-3))), [('a', -3), ('b', -2)])
+        self.assertRaises(TypeError, count, 2, 3, 4)
+        self.assertRaises(TypeError, count, 'a')
+        self.assertEqual(take(10, count(maxsize-5)),
+                         list(range(maxsize-5, maxsize+5)))
+        self.assertEqual(take(10, count(-maxsize-5)),
+                         list(range(-maxsize-5, -maxsize+5)))
+        self.assertEqual(take(3, count(3.25)), [3.25, 4.25, 5.25])
+        self.assertEqual(take(3, count(3.25-4j)), [3.25-4j, 4.25-4j, 5.25-4j])
 #         self.assertEqual(take(3, count(Decimal('1.1'))),
 #                          [Decimal('1.1'), Decimal('2.1'), Decimal('3.1')])
 #         self.assertEqual(take(3, count(Fraction(2, 3))),
 #                          [Fraction(2, 3), Fraction(5, 3), Fraction(8, 3)])
-#         BIGINT = 1<<1000
-#         self.assertEqual(take(3, count(BIGINT)), [BIGINT, BIGINT+1, BIGINT+2])
-#         c = count(3)
-#         self.assertEqual(repr(c), 'count(3)')
-#         next(c)
-#         self.assertEqual(repr(c), 'count(4)')
-#         c = count(-9)
-#         self.assertEqual(repr(c), 'count(-9)')
-#         next(c)
-#         self.assertEqual(next(c), -8)
-#         self.assertEqual(repr(count(10.25)), 'count(10.25)')
-#         self.assertEqual(repr(count(10.0)), 'count(10.0)')
-#         self.assertEqual(type(next(count(10.0))), float)
-#         for i in (-sys.maxsize-5, -sys.maxsize+5 ,-10, -1, 0, 10, sys.maxsize-5, sys.maxsize+5):
-#             # Test repr
-#             r1 = repr(count(i))
-#             r2 = 'count(%r)'.__mod__(i)
-#             self.assertEqual(r1, r2)
+        BIGINT = 1<<100
+        self.assertEqual(take(3, count(BIGINT)), [BIGINT, BIGINT+1, BIGINT+2])
+        c = count(3)
+        self.assertEqual(repr(c), 'count(3)')
+        next(c)
+        self.assertEqual(repr(c), 'count(4)')
+        c = count(-9)
+        self.assertEqual(repr(c), 'count(-9)')
+        next(c)
+        self.assertEqual(next(c), -8)
+        self.assertEqual(repr(count(10.25)), 'count(10.25)')
+        self.assertEqual(repr(count(10.0)), 'count(10.0)')
+        self.assertEqual(type(next(count(10.0))), float)
+        for i in (maxsize-5, maxsize+5 ,-10, -1, 0, 10, maxsize-5, maxsize+5):
+            # Test repr
+            r1 = repr(count(i))
+            r2 = ('count(%r)' % i)
+            self.assertEqual(r1, r2)
 
 #         # check copy, deepcopy, pickle
 #         for value in -3, 3, maxsize-5, maxsize+5:
@@ -569,58 +569,58 @@ class TestBasicOps(unittest.TestCase):
 #         #check proper internal error handling for large "step' sizes
 #         count(1, maxsize+5); sys.exc_info()
 
-#     def test_count_with_stride(self):
-#         self.assertEqual(lzip('abc',count(2,3)), [('a', 2), ('b', 5), ('c', 8)])
-#         self.assertEqual(lzip('abc',count(start=2,step=3)),
-#                          [('a', 2), ('b', 5), ('c', 8)])
-#         self.assertEqual(lzip('abc',count(step=-1)),
-#                          [('a', 0), ('b', -1), ('c', -2)])
-#         self.assertRaises(TypeError, count, 'a', 'b')
-#         self.assertEqual(lzip('abc',count(2,0)), [('a', 2), ('b', 2), ('c', 2)])
-#         self.assertEqual(lzip('abc',count(2,1)), [('a', 2), ('b', 3), ('c', 4)])
-#         self.assertEqual(lzip('abc',count(2,3)), [('a', 2), ('b', 5), ('c', 8)])
-#         self.assertEqual(take(20, count(maxsize-15, 3)), take(20, range(maxsize-15, maxsize+100, 3)))
-#         self.assertEqual(take(20, count(-maxsize-15, 3)), take(20, range(-maxsize-15,-maxsize+100, 3)))
-#         self.assertEqual(take(3, count(10, maxsize+5)),
-#                          list(range(10, 10+3*(maxsize+5), maxsize+5)))
-#         self.assertEqual(take(3, count(2, 1.25)), [2, 3.25, 4.5])
-#         self.assertEqual(take(3, count(2, 3.25-4j)), [2, 5.25-4j, 8.5-8j])
+    def test_count_with_stride(self):
+        self.assertEqual(lzip('abc',count(2,3)), [('a', 2), ('b', 5), ('c', 8)])
+        self.assertEqual(lzip('abc',count(start=2,step=3)),
+                         [('a', 2), ('b', 5), ('c', 8)])
+        self.assertEqual(lzip('abc',count(step=-1)),
+                         [('a', 0), ('b', -1), ('c', -2)])
+        self.assertRaises(TypeError, count, 'a', 'b')
+        self.assertEqual(lzip('abc',count(2,0)), [('a', 2), ('b', 2), ('c', 2)])
+        self.assertEqual(lzip('abc',count(2,1)), [('a', 2), ('b', 3), ('c', 4)])
+        self.assertEqual(lzip('abc',count(2,3)), [('a', 2), ('b', 5), ('c', 8)])
+        self.assertEqual(take(20, count(maxsize-15, 3)), take(20, range(maxsize-15, maxsize+100, 3)))
+        self.assertEqual(take(20, count(-maxsize-15, 3)), take(20, range(-maxsize-15,-maxsize+100, 3)))
+        self.assertEqual(take(3, count(10, maxsize+5)),
+                         list(range(10, 10+3*(maxsize+5), maxsize+5)))
+        self.assertEqual(take(3, count(2, 1.25)), [2, 3.25, 4.5])
+        self.assertEqual(take(3, count(2, 3.25-4j)), [2, 5.25-4j, 8.5-8j])
 #         self.assertEqual(take(3, count(Decimal('1.1'), Decimal('.1'))),
 #                          [Decimal('1.1'), Decimal('1.2'), Decimal('1.3')])
 #         self.assertEqual(take(3, count(Fraction(2,3), Fraction(1,7))),
 #                          [Fraction(2,3), Fraction(17,21), Fraction(20,21)])
-#         BIGINT = 1<<1000
-#         self.assertEqual(take(3, count(step=BIGINT)), [0, BIGINT, 2*BIGINT])
-#         self.assertEqual(repr(take(3, count(10, 2.5))), repr([10, 12.5, 15.0]))
-#         c = count(3, 5)
-#         self.assertEqual(repr(c), 'count(3, 5)')
-#         next(c)
-#         self.assertEqual(repr(c), 'count(8, 5)')
-#         c = count(-9, 0)
-#         self.assertEqual(repr(c), 'count(-9, 0)')
-#         next(c)
-#         self.assertEqual(repr(c), 'count(-9, 0)')
-#         c = count(-9, -3)
-#         self.assertEqual(repr(c), 'count(-9, -3)')
-#         next(c)
-#         self.assertEqual(repr(c), 'count(-12, -3)')
-#         self.assertEqual(repr(c), 'count(-12, -3)')
-#         self.assertEqual(repr(count(10.5, 1.25)), 'count(10.5, 1.25)')
-#         self.assertEqual(repr(count(10.5, 1)), 'count(10.5)')           # suppress step=1 when it's an int
-#         self.assertEqual(repr(count(10.5, 1.00)), 'count(10.5, 1.0)')   # do show float values lilke 1.0
-#         self.assertEqual(repr(count(10, 1.00)), 'count(10, 1.0)')
-#         c = count(10, 1.0)
-#         self.assertEqual(type(next(c)), int)
-#         self.assertEqual(type(next(c)), float)
-#         for i in (-sys.maxsize-5, -sys.maxsize+5 ,-10, -1, 0, 10, sys.maxsize-5, sys.maxsize+5):
-#             for j in  (-sys.maxsize-5, -sys.maxsize+5 ,-10, -1, 0, 1, 10, sys.maxsize-5, sys.maxsize+5):
-#                 # Test repr
-#                 r1 = repr(count(i, j))
-#                 if j == 1:
-#                     r2 = ('count(%r)' % i)
-#                 else:
-#                     r2 = ('count(%r, %r)' % (i, j))
-#                 self.assertEqual(r1, r2)
+        BIGINT = 1<<100
+        self.assertEqual(take(3, count(step=BIGINT)), [0, BIGINT, 2*BIGINT])
+        self.assertEqual(repr(take(3, count(10, 2.5))), repr([10, 12.5, 15.0]))
+        c = count(3, 5)
+        self.assertEqual(repr(c), 'count(3, 5)')
+        next(c)
+        self.assertEqual(repr(c), 'count(8, 5)')
+        c = count(-9, 0)
+        self.assertEqual(repr(c), 'count(-9, 0)')
+        next(c)
+        self.assertEqual(repr(c), 'count(-9, 0)')
+        c = count(-9, -3)
+        self.assertEqual(repr(c), 'count(-9, -3)')
+        next(c)
+        self.assertEqual(repr(c), 'count(-12, -3)')
+        self.assertEqual(repr(c), 'count(-12, -3)')
+        self.assertEqual(repr(count(10.5, 1.25)), 'count(10.5, 1.25)')
+        self.assertEqual(repr(count(10.5, 1)), 'count(10.5)')           # suppress step=1 when it's an int
+        self.assertEqual(repr(count(10.5, 1.00)), 'count(10.5, 1.0)')   # do show float values lilke 1.0
+        self.assertEqual(repr(count(10, 1.00)), 'count(10, 1.0)')
+        c = count(10, 1.0)
+        self.assertEqual(type(next(c)), int)
+        self.assertEqual(type(next(c)), float)
+        for i in (maxsize-5, maxsize+5 ,-10, -1, 0, 10, maxsize-5, sys.maxsize+5):
+            for j in  (maxsize-5, maxsize+5 ,-10, -1, 0, 1, 10, maxsize-5, maxsize+5):
+                # Test repr
+                r1 = repr(count(i, j))
+                if j == 1:
+                    r2 = ('count(%r)' % i)
+                else:
+                    r2 = ('count(%r, %r)' % (i, j))
+                self.assertEqual(r1, r2)
 #                 for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #                     self.pickletest(proto, count(i, j))
 
@@ -702,23 +702,23 @@ class TestBasicOps(unittest.TestCase):
 #         self.assertRaises(TypeError, cycle('').__setstate__, ())
 #         self.assertRaises(TypeError, cycle('').__setstate__, ([],))
 
-#     def test_groupby(self):
-#         # Check whether it accepts arguments correctly
-#         self.assertEqual([], list(groupby([])))
-#         self.assertEqual([], list(groupby([], key=id)))
-#         self.assertRaises(TypeError, list, groupby('abc', []))
-#         self.assertRaises(TypeError, groupby, None)
-#         self.assertRaises(TypeError, groupby, 'abc', lambda x:x, 10)
+    def test_groupby(self):
+        # Check whether it accepts arguments correctly
+        self.assertEqual([], list(groupby([])))
+        self.assertEqual([], list(groupby([], key=id)))
+        self.assertRaises(TypeError, list, groupby('abc', []))
+        self.assertRaises(TypeError, groupby, None)
+        self.assertRaises(TypeError, groupby, 'abc', lambda x:x, 10)
 
-#         # Check normal input
-#         s = [(0, 10, 20), (0, 11,21), (0,12,21), (1,13,21), (1,14,22),
-#              (2,15,22), (3,16,23), (3,17,23)]
-#         dup = []
-#         for k, g in groupby(s, lambda r:r[0]):
-#             for elem in g:
-#                 self.assertEqual(k, elem[0])
-#                 dup.append(elem)
-#         self.assertEqual(s, dup)
+        # Check normal input
+        s = [(0, 10, 20), (0, 11,21), (0,12,21), (1,13,21), (1,14,22),
+             (2,15,22), (3,16,23), (3,17,23)]
+        dup = []
+        for k, g in groupby(s, lambda r:r[0]):
+            for elem in g:
+                self.assertEqual(k, elem[0])
+                dup.append(elem)
+        self.assertEqual(s, dup)
 
 #         # Check normal pickled
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
@@ -730,14 +730,14 @@ class TestBasicOps(unittest.TestCase):
 #             self.assertEqual(s, dup)
 
 #         # Check nested case
-#         dup = []
-#         for k, g in groupby(s, testR):
-#             for ik, ig in groupby(g, testR2):
-#                 for elem in ig:
-#                     self.assertEqual(k, elem[0])
-#                     self.assertEqual(ik, elem[2])
-#                     dup.append(elem)
-#         self.assertEqual(s, dup)
+        dup = []
+        for k, g in groupby(s, testR):
+            for ik, ig in groupby(g, testR2):
+                for elem in ig:
+                    self.assertEqual(k, elem[0])
+                    self.assertEqual(ik, elem[2])
+                    dup.append(elem)
+        self.assertEqual(s, dup)
 
 #         # Check nested and pickled
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
@@ -752,23 +752,23 @@ class TestBasicOps(unittest.TestCase):
 
 
 #         # Check case where inner iterator is not used
-#         keys = [k for k, g in groupby(s, testR)]
-#         expectedkeys = set([r[0] for r in s])
-#         self.assertEqual(set(keys), expectedkeys)
-#         self.assertEqual(len(keys), len(expectedkeys))
+        keys = [k for k, g in groupby(s, testR)]
+        expectedkeys = set([r[0] for r in s])
+        self.assertEqual(set(keys), expectedkeys)
+        self.assertEqual(len(keys), len(expectedkeys))
 
 #         # Check case where inner iterator is used after advancing the groupby
 #         # iterator
-#         s = list(zip('AABBBAAAA', range(9)))
-#         it = groupby(s, testR)
-#         _, g1 = next(it)
-#         _, g2 = next(it)
-#         _, g3 = next(it)
-#         self.assertEqual(list(g1), [])
-#         self.assertEqual(list(g2), [])
-#         self.assertEqual(next(g3), ('A', 5))
-#         list(it)  # exhaust the groupby iterator
-#         self.assertEqual(list(g3), [])
+        s = list(zip('AABBBAAAA', range(9)))
+        it = groupby(s, testR)
+        _, g1 = next(it)
+        _, g2 = next(it)
+        _, g3 = next(it)
+        self.assertEqual(list(g1), [])
+        self.assertEqual(list(g2), [])
+        self.assertEqual(next(g3), ('A', 5))
+        list(it)  # exhaust the groupby iterator
+        self.assertEqual(list(g3), [])
 
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             it = groupby(s, testR)
@@ -777,71 +777,71 @@ class TestBasicOps(unittest.TestCase):
 #             next(it)
 #             self.assertEqual(list(pickle.loads(pickle.dumps(g, proto))), [])
 
-#         # Exercise pipes and filters style
-#         s = 'abracadabra'
-#         # sort s | uniq
-#         r = [k for k, g in groupby(sorted(s))]
-#         self.assertEqual(r, ['a', 'b', 'c', 'd', 'r'])
-#         # sort s | uniq -d
-#         r = [k for k, g in groupby(sorted(s)) if list(islice(g,1,2))]
-#         self.assertEqual(r, ['a', 'b', 'r'])
-#         # sort s | uniq -c
-#         r = [(len(list(g)), k) for k, g in groupby(sorted(s))]
-#         self.assertEqual(r, [(5, 'a'), (2, 'b'), (1, 'c'), (1, 'd'), (2, 'r')])
-#         # sort s | uniq -c | sort -rn | head -3
-#         r = sorted([(len(list(g)) , k) for k, g in groupby(sorted(s))], reverse=True)[:3]
-#         self.assertEqual(r, [(5, 'a'), (2, 'r'), (2, 'b')])
+        # Exercise pipes and filters style
+        s = 'abracadabra'
+        # sort s | uniq
+        r = [k for k, g in groupby(sorted(s))]
+        self.assertEqual(r, ['a', 'b', 'c', 'd', 'r'])
+        # sort s | uniq -d
+        r = [k for k, g in groupby(sorted(s)) if list(islice(g,1,2))]
+        self.assertEqual(r, ['a', 'b', 'r'])
+        # sort s | uniq -c
+        r = [(len(list(g)), k) for k, g in groupby(sorted(s))]
+        self.assertEqual(r, [(5, 'a'), (2, 'b'), (1, 'c'), (1, 'd'), (2, 'r')])
+        # sort s | uniq -c | sort -rn | head -3
+        r = sorted([(len(list(g)) , k) for k, g in groupby(sorted(s))], reverse=True)[:3]
+        self.assertEqual(r, [(5, 'a'), (2, 'r'), (2, 'b')])
 
-#         # iter.__next__ failure
-#         class ExpectedError(Exception):
-#             pass
-#         def delayed_raise(n=0):
-#             for i in range(n):
-#                 yield 'yo'
-#             raise ExpectedError
-#         def gulp(iterable, keyp=None, func=list):
-#             return [func(g) for k, g in groupby(iterable, keyp)]
+        # iter.__next__ failure
+        class ExpectedError(Exception):
+            pass
+        def delayed_raise(n=0):
+            for i in range(n):
+                yield 'yo'
+            raise ExpectedError
+        def gulp(iterable, keyp=None, func=list):
+            return [func(g) for k, g in groupby(iterable, keyp)]
 
-#         # iter.__next__ failure on outer object
-#         self.assertRaises(ExpectedError, gulp, delayed_raise(0))
-#         # iter.__next__ failure on inner object
-#         self.assertRaises(ExpectedError, gulp, delayed_raise(1))
+        # iter.__next__ failure on outer object
+        self.assertRaises(ExpectedError, gulp, delayed_raise(0))
+        # iter.__next__ failure on inner object
+        self.assertRaises(ExpectedError, gulp, delayed_raise(1))
 
-#         # __eq__ failure
-#         class DummyCmp:
-#             def __eq__(self, dst):
-#                 raise ExpectedError
-#         s = [DummyCmp(), DummyCmp(), None]
+        # __eq__ failure
+        class DummyCmp:
+            def __eq__(self, dst):
+                raise ExpectedError
+        s = [DummyCmp(), DummyCmp(), None]
 
-#         # __eq__ failure on outer object
-#         self.assertRaises(ExpectedError, gulp, s, func=id)
-#         # __eq__ failure on inner object
-#         self.assertRaises(ExpectedError, gulp, s)
+        # __eq__ failure on outer object
+        # self.assertRaises(ExpectedError, gulp, s, func=id)
+        # __eq__ failure on inner object
+        self.assertRaises(ExpectedError, gulp, s)
 
-#         # keyfunc failure
-#         def keyfunc(obj):
-#             if keyfunc.skip > 0:
-#                 keyfunc.skip -= 1
-#                 return obj
-#             else:
-#                 raise ExpectedError
+        # keyfunc failure
+        def keyfunc(obj):
+            if keyfunc.skip > 0:
+                keyfunc.skip -= 1
+                return obj
+            else:
+                raise ExpectedError
 
-#         # keyfunc failure on outer object
-#         keyfunc.skip = 0
-#         self.assertRaises(ExpectedError, gulp, [None], keyfunc)
-#         keyfunc.skip = 1
-#         self.assertRaises(ExpectedError, gulp, [None, None], keyfunc)
+        # keyfunc failure on outer object
+        keyfunc.skip = 0
+        self.assertRaises(ExpectedError, gulp, [None], keyfunc)
+        keyfunc.skip = 1
+        self.assertRaises(ExpectedError, gulp, [None, None], keyfunc)
 
-#     def test_filter(self):
-#         self.assertEqual(list(filter(isEven, range(6))), [0,2,4])
-#         self.assertEqual(list(filter(None, [0,1,0,2,0])), [1,2])
-#         self.assertEqual(list(filter(bool, [0,1,0,2,0])), [1,2])
-#         self.assertEqual(take(4, filter(isEven, count())), [0,2,4,6])
-#         self.assertRaises(TypeError, filter)
-#         self.assertRaises(TypeError, filter, lambda x:x)
-#         self.assertRaises(TypeError, filter, lambda x:x, range(6), 7)
-#         self.assertRaises(TypeError, filter, isEven, 3)
-#         self.assertRaises(TypeError, next, filter(range(6), range(6)))
+    def test_filter(self):
+        self.assertEqual(list(filter(isEven, range(6))), [0,2,4])
+        self.assertEqual(list(filter(None, [0,1,0,2,0])), [1,2])
+        self.assertEqual(list(filter(bool, [0,1,0,2,0])), [1,2])
+        self.assertEqual(take(4, filter(isEven, count())), [0,2,4,6])
+        self.assertRaises(TypeError, filter)
+        self.assertRaises(TypeError, filter, lambda x:x)
+        self.assertRaises(TypeError, filter, lambda x:x, range(6), 7)
+        self.assertRaises(TypeError, filter, isEven, 3)
+        self.assertRaises(TypeError, next, filter(range(6), range(6)))
 
 #         # check copy, deepcopy, pickle
 #         ans = [0,2,4]
@@ -872,21 +872,21 @@ class TestBasicOps(unittest.TestCase):
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, filterfalse(isEven, range(6)))
 
-#     def test_zip(self):
-#         # XXX This is rather silly now that builtin zip() calls zip()...
-#         ans = [(x,y) for x, y in zip('abc',count())]
-#         self.assertEqual(ans, [('a', 0), ('b', 1), ('c', 2)])
-#         self.assertEqual(list(zip('abc', range(6))), lzip('abc', range(6)))
-#         self.assertEqual(list(zip('abcdef', range(3))), lzip('abcdef', range(3)))
-#         self.assertEqual(take(3,zip('abcdef', count())), lzip('abcdef', range(3)))
-#         self.assertEqual(list(zip('abcdef')), lzip('abcdef'))
-#         self.assertEqual(list(zip()), lzip())
-#         self.assertRaises(TypeError, zip, 3)
-#         self.assertRaises(TypeError, zip, range(3), 3)
-#         self.assertEqual([tuple(list(pair)) for pair in zip('abc', 'def')],
-#                          lzip('abc', 'def'))
-#         self.assertEqual([pair for pair in zip('abc', 'def')],
-#                          lzip('abc', 'def'))
+    def test_zip(self):
+        # XXX This is rather silly now that builtin zip() calls zip()...
+        ans = [(x,y) for x, y in zip('abc',count())]
+        self.assertEqual(ans, [('a', 0), ('b', 1), ('c', 2)])
+        self.assertEqual(list(zip('abc', range(6))), lzip('abc', range(6)))
+        self.assertEqual(list(zip('abcdef', range(3))), lzip('abcdef', range(3)))
+        self.assertEqual(take(3,zip('abcdef', count())), lzip('abcdef', range(3)))
+        self.assertEqual(list(zip('abcdef')), lzip('abcdef'))
+        self.assertEqual(list(zip()), lzip())
+        self.assertRaises(TypeError, zip, 3)
+        self.assertRaises(TypeError, zip, range(3), 3)
+        self.assertEqual([tuple(list(pair)) for pair in zip('abc', 'def')],
+                         lzip('abc', 'def'))
+        self.assertEqual([pair for pair in zip('abc', 'def')],
+                         lzip('abc', 'def'))
 
 #     @support.impl_detail("tuple reuse is specific to CPython")
 #     def test_zip_tuple_reuse(self):
@@ -1136,22 +1136,22 @@ class TestBasicOps(unittest.TestCase):
         self.assertEqual(repr(repeat('a', times=-1)), "repeat('a', 0)")
         self.assertEqual(repr(repeat('a', times=-2)), "repeat('a', 0)")
 
-#     def test_map(self):
-#         self.assertEqual(list(map(operator.pow, range(3), range(1,7))),
-#                          [0**1, 1**2, 2**3])
-#         self.assertEqual(list(map(tupleize, 'abc', range(5))),
-#                          [('a',0),('b',1),('c',2)])
-#         self.assertEqual(list(map(tupleize, 'abc', count())),
-#                          [('a',0),('b',1),('c',2)])
-#         self.assertEqual(take(2,map(tupleize, 'abc', count())),
-#                          [('a',0),('b',1)])
-#         self.assertEqual(list(map(operator.pow, [])), [])
-#         self.assertRaises(TypeError, map)
-#         self.assertRaises(TypeError, list, map(None, range(3), range(3)))
-#         self.assertRaises(TypeError, map, operator.neg)
-#         self.assertRaises(TypeError, next, map(10, range(5)))
-#         self.assertRaises(ValueError, next, map(errfunc, [4], [5]))
-#         self.assertRaises(TypeError, next, map(onearg, [4], [5]))
+    def test_map(self):
+        self.assertEqual(list(map(operator.pow, range(3), range(1,7))),
+                         [0**1, 1**2, 2**3])
+        self.assertEqual(list(map(tupleize, 'abc', range(5))),
+                         [('a',0),('b',1),('c',2)])
+        self.assertEqual(list(map(tupleize, 'abc', count())),
+                         [('a',0),('b',1),('c',2)])
+        self.assertEqual(take(2,map(tupleize, 'abc', count())),
+                         [('a',0),('b',1)])
+        self.assertEqual(list(map(operator.pow, [])), [])
+        self.assertRaises(TypeError, map)
+        # self.assertRaises(TypeError, list, map(None, range(3), range(3)))
+        self.assertRaises(TypeError, map, operator.neg)
+        self.assertRaises(TypeError, next, map(10, range(5)))
+        self.assertRaises(ValueError, next, map(errfunc, [4], [5]))
+        self.assertRaises(TypeError, next, map(onearg, [4], [5]))
 
 #         # check copy, deepcopy, pickle
 #         ans = [('a',0),('b',1),('c',2)]
@@ -1521,7 +1521,7 @@ class TestBasicOps(unittest.TestCase):
     def test_StopIteration(self):
         self.assertRaises(StopIteration, next, zip())
 
-        for f in (chain, cycle, zip):#, groupby):
+        for f in (chain, cycle, zip, groupby):
             self.assertRaises(StopIteration, next, f([]))
             self.assertRaises(StopIteration, next, f(StopNow()))
 
@@ -1599,11 +1599,11 @@ class TestExamples(unittest.TestCase):
     def test_dropwhile(self):
         self.assertEqual(list(dropwhile(lambda x: x<5, [1,4,6,4,1])), [6,4,1])
 
-#     def test_groupby(self):
-#         self.assertEqual([k for k, g in groupby('AAAABBBCCDAABBB')],
-#                          list('ABCDAB'))
-#         self.assertEqual([(list(g)) for k, g in groupby('AAAABBBCCD')],
-#                          [list('AAAA'), list('BBB'), list('CC'), list('D')])
+    def test_groupby(self):
+        self.assertEqual([k for k, g in groupby('AAAABBBCCDAABBB')],
+                         list('ABCDAB'))
+        self.assertEqual([(list(g)) for k, g in groupby('AAAABBBCCD')],
+                         [list('AAAA'), list('BBB'), list('CC'), list('D')])
 
 #     def test_filter(self):
 #         self.assertEqual(list(filter(lambda x: x%2, range(10))), [1,3,5,7,9])
@@ -1620,8 +1620,8 @@ class TestExamples(unittest.TestCase):
         self.assertEqual(list(islice('ABCDEFG', 2, None)), list('CDEFG'))
         self.assertEqual(list(islice('ABCDEFG', 0, None, 2)), list('ACEG'))
 
-#     def test_zip(self):
-#         self.assertEqual(list(zip('ABCD', 'xy')), [('A', 'x'), ('B', 'y')])
+    def test_zip(self):
+        self.assertEqual(list(zip('ABCD', 'xy')), [('A', 'x'), ('B', 'y')])
 
     def test_zip_longest(self):
         self.assertEqual(list(zip_longest('ABCD', 'xy', fillvalue='-')),
@@ -1737,28 +1737,28 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(dropwhile(bool, [0, a, a]), a)
 
-#     def test_groupby(self):
-#         a = []
-#         self.makecycle(groupby([a]*2, lambda x:x), a)
+    def test_groupby(self):
+        a = []
+        self.makecycle(groupby([a]*2, lambda x:x), a)
 
-#     def test_issue2246(self):
-#         # Issue 2246 -- the _grouper iterator was not included in GC
-#         n = 10
-#         keyfunc = lambda x: x
-#         for i, j in groupby(range(n), key=keyfunc):
-#             keyfunc.__dict__.setdefault('x',[]).append(j)
+#    def test_issue2246(self):
+#        # Issue 2246 -- the _grouper iterator was not included in GC
+#        n = 10
+#        keyfunc = lambda x: x
+#        for i, j in groupby(range(n), key=keyfunc):
+#            keyfunc.__dict__.setdefault('x',[]).append(j)
 
-#     def test_filter(self):
-#         a = []
-#         self.makecycle(filter(lambda x:True, [a]*2), a)
+    def test_filter(self):
+        a = []
+        self.makecycle(filter(lambda x:True, [a]*2), a)
 
     def test_filterfalse(self):
         a = []
         self.makecycle(filterfalse(lambda x:False, a), a)
 
-#     def test_zip(self):
-#         a = []
-#         self.makecycle(zip([a]*2, [a]*3), a)
+    def test_zip(self):
+        a = []
+        self.makecycle(zip([a]*2, [a]*3), a)
 
     def test_zip_longest(self):
         a = []
@@ -1766,9 +1766,9 @@ class TestGC(unittest.TestCase):
         b = [a, None]
         self.makecycle(zip_longest([a]*2, [a]*3, fillvalue=b), a)
 
-#     def test_map(self):
-#         a = []
-#         self.makecycle(map(lambda x:x, [a]*2), a)
+    def test_map(self):
+        a = []
+        self.makecycle(map(lambda x:x, [a]*2), a)
 
     def test_islice(self):
         a = []
@@ -1920,22 +1920,22 @@ class TestVariousIteratorArgs(unittest.TestCase):
             # self.assertRaises(TypeError, cycle, N(s))
             self.assertRaises(ZeroDivisionError, list, cycle(E(s)))
 
-#     def test_groupby(self):
-#         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual([k for k, sb in groupby(g(s))], list(g(s)))
-#             self.assertRaises(TypeError, groupby, X(s))
-#             self.assertRaises(TypeError, groupby, N(s))
-#             self.assertRaises(ZeroDivisionError, list, groupby(E(s)))
+    def test_groupby(self):
+        for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual([k for k, sb in groupby(g(s))], list(g(s)))
+            self.assertRaises(TypeError, groupby, X(s))
+            # self.assertRaises(TypeError, groupby, N(s))
+            self.assertRaises(ZeroDivisionError, list, groupby(E(s)))
 
-#     def test_filter(self):
-#         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(filter(isEven, g(s))),
-#                                  [x for x in g(s) if isEven(x)])
-#             self.assertRaises(TypeError, filter, isEven, X(s))
-#             self.assertRaises(TypeError, filter, isEven, N(s))
-#             self.assertRaises(ZeroDivisionError, list, filter(isEven, E(s)))
+    def test_filter(self):
+        for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(filter(isEven, g(s))),
+                                 [x for x in g(s) if isEven(x)])
+            self.assertRaises(TypeError, filter, isEven, X(s))
+            # self.assertRaises(TypeError, filter, isEven, N(s))
+            self.assertRaises(ZeroDivisionError, list, filter(isEven, E(s)))
 
     def test_filterfalse(self):
         for s in (range(10), range(0), range(1000), (7,11), range(2000,2200,5)):
@@ -1946,14 +1946,14 @@ class TestVariousIteratorArgs(unittest.TestCase):
             # self.assertRaises(TypeError, filterfalse, isEven, N(s))
             self.assertRaises(ZeroDivisionError, list, filterfalse(isEven, E(s)))
 
-#     def test_zip(self):
-#         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(zip(g(s))), lzip(g(s)))
-#                 self.assertEqual(list(zip(g(s), g(s))), lzip(g(s), g(s)))
-#             self.assertRaises(TypeError, zip, X(s))
-#             self.assertRaises(TypeError, zip, N(s))
-#             self.assertRaises(ZeroDivisionError, list, zip(E(s)))
+    def test_zip(self):
+        for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(zip(g(s))), lzip(g(s)))
+                self.assertEqual(list(zip(g(s), g(s))), lzip(g(s), g(s)))
+            self.assertRaises(TypeError, zip, X(s))
+            # self.assertRaises(TypeError, zip, N(s))
+            self.assertRaises(ZeroDivisionError, list, zip(E(s)))
 
     def test_ziplongest(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
@@ -1964,16 +1964,16 @@ class TestVariousIteratorArgs(unittest.TestCase):
             # self.assertRaises(TypeError, zip_longest, N(s))
             self.assertRaises(ZeroDivisionError, list, zip_longest(E(s)))
 
-#     def test_map(self):
-#         for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
-#             for g in (G, I, Ig, S, L, R):
-#                 self.assertEqual(list(map(onearg, g(s))),
-#                                  [onearg(x) for x in g(s)])
-#                 self.assertEqual(list(map(operator.pow, g(s), g(s))),
-#                                  [x**x for x in g(s)])
-#             self.assertRaises(TypeError, map, onearg, X(s))
-#             self.assertRaises(TypeError, map, onearg, N(s))
-#             self.assertRaises(ZeroDivisionError, list, map(onearg, E(s)))
+    def test_map(self):
+        for s in (range(10), range(0), range(100), (7,11), range(20,50,5)):
+            for g in (G, I, Ig, S, L, R):
+                self.assertEqual(list(map(onearg, g(s))),
+                                 [onearg(x) for x in g(s)])
+                self.assertEqual(list(map(operator.pow, g(s), g(s))),
+                                 [x**x for x in g(s)])
+            self.assertRaises(TypeError, map, onearg, X(s))
+            # self.assertRaises(TypeError, map, onearg, N(s))
+            self.assertRaises(ZeroDivisionError, list, map(onearg, E(s)))
 
     def test_islice(self):
         for s in ("12345", "", range(1000), ('do', 1.2), range(2000,2200,5)):
@@ -2042,7 +2042,6 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #         self.assertEqual(operator.length_hint(repeat(None, times=-2)), 0)
 
 class RegressionTests(unittest.TestCase):
-    pass
 
 #     def test_sf_793826(self):
 #         # Fix Armin Rigo's successful efforts to wreak havoc

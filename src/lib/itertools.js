@@ -70,7 +70,7 @@ var $builtinmodule = function (name) {
     };
 
     const func = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.numberBinOp(a, b, 'Add');
+        return Sk.abstr.numberBinOp(a, b, "Add");
     });
     _accumulate_gen.co_name = new Sk.builtin.str("accumulate");
     _accumulate_gen.co_varnames = ["it", "func", "total", "initial"];
@@ -308,8 +308,12 @@ var $builtinmodule = function (name) {
 
     var _count = function (start, step) {
         Sk.builtin.pyCheckArgsLen("count", arguments.length, 0, 2);
-        Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
-        Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
+        if (!Sk.builtin.checkNumber(start) && !Sk.builtin.checkComplex(start)) {
+            throw new Sk.builtin.TypeError("a number is required")
+        }
+        if (!Sk.builtin.checkNumber(step) && !Sk.builtin.checkComplex(step)) {
+            throw new Sk.builtin.TypeError("a number is required")
+        }
         const n = start;
         return new Sk.builtin.itertools_count(_count_gen, mod, [n, step]);
     };
@@ -434,10 +438,80 @@ var $builtinmodule = function (name) {
     mod.filterfalse = new Sk.builtin.func(_filterfalse);
 
 
+    _grouper = function ($gen) {
+        debugger;
+        const groupby_gen = $gen.gi$locals.groupby_gen;
+        const tgtkey = $gen.gi$locals.tgtkey;
+        const id = $gen.gi$locals.id;
+        let currval = groupby_gen.gi$locals.currval;
+        let currkey = groupby_gen.gi$locals.currkey;
+        const keyf = groupby_gen.gi$locals.keyfunc;
+        const it = groupby_gen.gi$locals.it;
+        const groupby_id = groupby_gen.gi$locals.id;
 
-    mod.groupby = new Sk.builtin.func(function () {
-        throw new Sk.builtin.NotImplementedError("groupby is not yet implemented in Skulpt");
-    });
+        const compare = Sk.misceval.richCompareBool(currkey, tgtkey, "Eq", true);
+
+        if (groupby_id === id && compare) {
+            try {
+                return [ /*resume*/ , /*ret*/ currval];
+            } finally {
+                currval = it.tp$iternext();
+                if (currval !== undefined) {
+                    currkey = (keyf.tp$call) ? keyf.tp$call([currval], undefined) : Sk.misceval.applyOrSuspend(keyf, undefined, undefined, undefined, [currval]);
+                }
+                groupby_gen.gi$locals.currkey = currkey;
+                groupby_gen.gi$locals.currval = currval;
+            }
+        }
+        return [ /*resume*/ , /*ret*/ ];
+    };
+
+    _groupby_gen = function ($gen) {
+        debugger;
+        const tgtkey = $gen.gi$locals.tgtkey;
+        let currval = $gen.gi$locals.currval;
+        let currkey = $gen.gi$locals.currkey;
+        const keyf = $gen.gi$locals.keyfunc;
+        const it = $gen.gi$locals.it;
+        $gen.gi$locals.id = Object();
+        let compare = Sk.misceval.richCompareBool(currkey, tgtkey, "Eq", true);
+        while (compare) {
+            currval = it.tp$iternext()
+            if (currval === undefined) {
+                return [ /*resume*/ , /*ret*/ ]
+            }
+            currkey = (keyf.tp$call) ? keyf.tp$call([currval], undefined) : Sk.misceval.applyOrSuspend(keyf, undefined, undefined, undefined, [currval]);
+            compare = Sk.misceval.richCompareBool(currkey, tgtkey, "Eq", true);
+        }
+        $gen.gi$locals.tgtkey = $gen.gi$locals.currkey = currkey;
+        $gen.gi$locals.currval = currval;
+
+        const grouper = new Sk.builtin.itertools_gen(_grouper, mod, [$gen, $gen.gi$locals.tgtkey, $gen.gi$locals.id])
+        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([currkey, grouper])];
+    };
+
+    _groupby = function (iterable, key) {
+        Sk.builtin.pyCheckArgsLen("groupby", arguments.length, 1, 2);
+        iterable = Sk.abstr.iter(iterable);
+        if (Sk.builtin.checkNone(key)) {
+            key = new Sk.builtin.func(function (x) {
+                return x
+            });
+        }
+        const currval = currkey = tgtkey = Sk.builtin.object();
+        return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey])
+    };
+
+    _groupby_gen.co_name = new Sk.builtins.str("groupby");
+    _groupby_gen.co_varnames = ["it", "keyfunc", "currval", "currkey", "tgtkey"];
+    _groupby.co_name = new Sk.builtins.str("groupby");
+    _groupby.$defaults = [Sk.builtin.none.none$];
+    _groupby.co_varnames = ["iterable", "key"];
+
+    _grouper.co_name = new Sk.builtins.str("_grouper");
+    _grouper.co_varnames = ["groupby_gen", "tgtkey", "id"];
+
+    mod.groupby = new Sk.builtin.func(_groupby);
 
 
     var _islice_gen = function ($gen) {
@@ -817,7 +891,7 @@ var $builtinmodule = function (name) {
     _zip_longest.co_argcount = 0;
     _zip_longest.co_kwonlyargcount = 1;
     _zip_longest.$kwdefs = [Sk.builtin.none.none$];
-    _zip_longest.co_varnames = ['fillvalue'];
+    _zip_longest.co_varnames = ["fillvalue"];
     _zip_longest.co_varargs = 1;
 
     mod.zip_longest = new Sk.builtin.func(_zip_longest);
