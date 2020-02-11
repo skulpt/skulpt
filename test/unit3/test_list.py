@@ -294,6 +294,30 @@ class IterInheritsTestCase(unittest.TestCase):
         self.assertEqual(b,a)
         self.assertEqual(a, [])
         
+    def test_copy(self):
+        u = self.type2test([1, 2, 3])
+        v = u.copy()
+        self.assertEqual(v, [1, 2, 3])
+
+        u = self.type2test([])
+        v = u.copy()
+        self.assertEqual(v, [])
+
+        # test that it's indeed a copy and not a reference
+        u = self.type2test(['a', 'b'])
+        v = u.copy()
+        v.append('i')
+        self.assertEqual(u, ['a', 'b'])
+        self.assertEqual(v, u + ['i'])
+
+        # test that it's a shallow, not a deep copy
+        u = self.type2test([1, 2, [3, 4], 5])
+        v = u.copy()
+        self.assertEqual(u, v)
+        self.assertIs(v[3], u[3])
+
+        self.assertRaises(TypeError, u.copy, None)
+        
     def test_index(self):
         u = self.type2test([0, 1])
         self.assertEqual(u.index(0), 0)
