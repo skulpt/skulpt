@@ -117,7 +117,6 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.python_version, "Sk.__future__.python_version");
     Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
     Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
-    Sk.bool_check(Sk.__future__.list_clear, "Sk.__future__.list_clear");
     Sk.bool_check(Sk.__future__.list_copy, "Sk.__future__.list_copy");
     Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
