@@ -680,6 +680,7 @@ var $builtinmodule = function (name) {
             $gen.gi$locals.initial = false;
             const res = indices.map((_, i) => pools[i][indices[i]]);
             if (res.some(element => element === undefined)) {
+                $gen.gi$locals.n = 0; // at least one pool arguments is an empty iterator
                 return [ /*resume*/ , /*ret*/ ];
             }
             return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
