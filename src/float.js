@@ -53,7 +53,7 @@ Sk.builtin.float_ = function (x) {
 
     if (typeof x === "string") {
         this.v = parseFloat(x);
-        if ((this.v === Infinity && !x.v.match(/^[+]?inf$/i)) || (this.v === -Infinity && !x.v.match(/^[+]?inf$/i))){
+        if (this.v == Infinity || this.v == -Infinity){ //trying to convert a large js string to a float
             throw new Sk.builtin.OverflowError("int too large to convert to float")
         }
         return this;
