@@ -67,7 +67,6 @@ Sk.python3 = {
     python_version: true,
     dunder_next: true,
     dunder_round: true,
-    list_copy: true,
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true,
