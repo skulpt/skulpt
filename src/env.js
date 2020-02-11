@@ -208,7 +208,7 @@ Sk.configure = function (options) {
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);
     Sk.switch_version("clear$", Sk.__future__.list_clear);
-    Sk.switch_version("copy$", Sk.__future__.list_copy);
+    Sk.switch_version("copy$", Sk.__future__.python3);
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 
@@ -395,4 +395,3 @@ Sk.switch_version = function (method_to_map, python3) {
 
 Sk.exportSymbol("Sk.__future__", Sk.__future__);
 Sk.exportSymbol("Sk.inputfun", Sk.inputfun);
-
