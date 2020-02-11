@@ -54,7 +54,7 @@ Sk.builtin.float_ = function (x) {
     if (typeof x === "string") {
         this.v = parseFloat(x);
         if (this.v == Infinity || this.v == -Infinity){ //trying to convert a large js string to a float
-            throw new Sk.builtin.OverflowError("int too large to convert to float")
+            throw new Sk.builtin.OverflowError("int too large to convert to float");
         }
         return this;
     }
@@ -83,7 +83,7 @@ Sk.builtin._str_to_float = function (str) {
     } else if (!isNaN(str)) {
         tmp = parseFloat(str);
         if (tmp === Infinity || tmp === -Infinity) {
-            throw new Sk.builtin.OverflowError("int too large to convert to float")
+            throw new Sk.builtin.OverflowError("int too large to convert to float");
         }
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
