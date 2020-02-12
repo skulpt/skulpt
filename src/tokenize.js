@@ -57,9 +57,9 @@ function regexEscape(string) {
 
 /**
  * Iterable contains
- * @template T
- * @param {Iterable<T>} a
- * @param {T} obj
+ * @param {*} a
+ * @param {*} obj
+ * @returns {boolean}
  */
 function contains (a, obj) {
     var i = a.length;
@@ -111,7 +111,7 @@ const IS_IDENTIFIER_REGEX = (function() {
 /**
  * test if string is an identifier
  *
- * @param {str} string
+ * @param {string} str
  * @returns {boolean}
  */
 function isidentifier(str) {
@@ -372,10 +372,10 @@ function _tokenize(filename, readline, encoding, yield_) {
             pseudomatch = PseudoTokenRegexp.exec(line.substring(pos))
             if (pseudomatch) {                                // scan for tokens
                 var start = pos;
-                var end = start + pseudomatch[1].length;
+                end = start + pseudomatch[1].length;
                 var spos = [lnum, start];
                 var epos = [lnum, end];
-                var pos = end;
+                pos = end;
                 if (start == end) {
                     continue;
                 }
