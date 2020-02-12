@@ -16,28 +16,28 @@ const token = require("./token.js");
  *
  * can throw SyntaxError
  */
-function Parser (filename, grammar) {
+Sk.Parser = function (filename, grammar) {
     this.filename = filename;
     this.grammar = grammar;
     this.p_flags = 0;
     return this;
-}
+};
 
 // all possible parser flags
-Parser.FUTURE_PRINT_FUNCTION = "print_function";
-Parser.FUTURE_UNICODE_LITERALS = "unicode_literals";
-Parser.FUTURE_DIVISION = "division";
-Parser.FUTURE_ABSOLUTE_IMPORT = "absolute_import";
-Parser.FUTURE_WITH_STATEMENT = "with_statement";
-Parser.FUTURE_NESTED_SCOPES = "nested_scopes";
-Parser.FUTURE_GENERATORS = "generators";
-Parser.CO_FUTURE_PRINT_FUNCTION = 0x10000;
-Parser.CO_FUTURE_UNICODE_LITERALS = 0x20000;
-Parser.CO_FUTURE_DIVISON = 0x2000;
-Parser.CO_FUTURE_ABSOLUTE_IMPORT = 0x4000;
-Parser.CO_FUTURE_WITH_STATEMENT = 0x8000;
+Sk.Parser.FUTURE_PRINT_FUNCTION = "print_function";
+Sk.Parser.FUTURE_UNICODE_LITERALS = "unicode_literals";
+Sk.Parser.FUTURE_DIVISION = "division";
+Sk.Parser.FUTURE_ABSOLUTE_IMPORT = "absolute_import";
+Sk.Parser.FUTURE_WITH_STATEMENT = "with_statement";
+Sk.Parser.FUTURE_NESTED_SCOPES = "nested_scopes";
+Sk.Parser.FUTURE_GENERATORS = "generators";
+Sk.Parser.CO_FUTURE_PRINT_FUNCTION = 0x10000;
+Sk.Parser.CO_FUTURE_UNICODE_LITERALS = 0x20000;
+Sk.Parser.CO_FUTURE_DIVISON = 0x2000;
+Sk.Parser.CO_FUTURE_ABSOLUTE_IMPORT = 0x4000;
+Sk.Parser.CO_FUTURE_WITH_STATEMENT = 0x8000;
 
-Parser.prototype.setup = function (start) {
+Sk.Parser.prototype.setup = function (start) {
     var stackentry;
     var newnode;
     start = start || this.grammar.start;
@@ -72,7 +72,7 @@ function findInDfa (a, obj) {
 
 
 // Add a token; return true if we're done
-Parser.prototype.addtoken = function (type, value, context) {
+Sk.Parser.prototype.addtoken = function (type, value, context) {
     var errline;
     var itsfirst;
     var itsdfa;
@@ -160,14 +160,14 @@ Parser.prototype.addtoken = function (type, value, context) {
 };
 
 // turn a token into a label
-Parser.prototype.classify = function (type, value, context) {
+Sk.Parser.prototype.classify = function (type, value, context) {
     var ilabel;
     if (type === token.tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
         /* Check for handling print as an builtin function */
-        if(value === "print" && (this.p_flags & Parser.CO_FUTURE_PRINT_FUNCTION || Sk.__future__.print_function === true)) {
+        if(value === "print" && (this.p_flags & Sk.Parser.CO_FUTURE_PRINT_FUNCTION || Sk.__future__.print_function === true)) {
             ilabel = false; // ilabel determines if the value is a keyword
         }
 
@@ -195,7 +195,7 @@ Parser.prototype.classify = function (type, value, context) {
 };
 
 // shift a token
-Parser.prototype.shift = function (type, value, newstate, context) {
+Sk.Parser.prototype.shift = function (type, value, newstate, context) {
     var dfa = this.stack[this.stack.length - 1].dfa;
     var state = this.stack[this.stack.length - 1].state;
     var node = this.stack[this.stack.length - 1].node;
@@ -219,7 +219,7 @@ Parser.prototype.shift = function (type, value, newstate, context) {
 };
 
 // push a nonterminal
-Parser.prototype.push = function (type, newdfa, newstate, context) {
+Sk.Parser.prototype.push = function (type, newdfa, newstate, context) {
     var dfa = this.stack[this.stack.length - 1].dfa;
     var node = this.stack[this.stack.length - 1].node;
     var newnode = {
@@ -247,7 +247,7 @@ Parser.prototype.push = function (type, newdfa, newstate, context) {
 //var bc = 0;
 
 // pop a nonterminal
-Parser.prototype.pop = function () {
+Sk.Parser.prototype.pop = function () {
     var node;
     var pop = this.stack.pop();
     var newnode = pop.node;
@@ -279,7 +279,7 @@ function makeParser (filename, style) {
     if (style === undefined) {
         style = "file_input";
     }
-    var p = new Parser(filename, Sk.ParseTables);
+    var p = new Sk.Parser(filename, Sk.ParseTables);
     // for closure's benefit
     if (style === "file_input") {
         p.setup(Sk.ParseTables.sym.file_input);
@@ -379,6 +379,6 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
 };
 
 
-Sk.exportSymbol("Sk.Parser", Parser);
+Sk.exportSymbol("Sk.Parser", Sk.Parser);
 Sk.exportSymbol("Sk.parse", Sk.parse);
 Sk.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);

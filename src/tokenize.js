@@ -10,9 +10,9 @@ const IndentationError = Sk.builtin.SyntaxError;
  * @constructor
  * @param {number} type
  * @param {string} string
- * @param {Array<number>} start
- * @param {Array<number>} end
- * @param {string} line
+ * @param {Array|undefined} start  (make closure happy, should never be undefined)
+ * @param {Array} end
+ * @param {?string} line
  */
 function TokenInfo(type, string, start, end, line) {
     this.type = type;

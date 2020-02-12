@@ -267,12 +267,12 @@ function getOperator (n) {
     return operatorMap[n.type];
 }
 
-function new_identifier(n, c) {
+function new_identifier(n) {
     if (n.value) {
-        return Sk.builtin.str(n.value);
+        return new Sk.builtin.str(n.value);
     }
 
-    return Sk.builtin.str(n);
+    return new Sk.builtin.str(n);
 }
 
 function astForCompOp (c, n) {
@@ -499,10 +499,10 @@ function astForDecorator (c, n) {
     }
     else if (NCH(n) === 5) // call with no args
     {
-        return new Sk.astnodes.Call(nameExpr, [], [], null, null, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset);
+        return new Sk.astnodes.Call(nameExpr, [], [], n.lineno, n.col_offset, n.end_lineno, n.end_col_offset);
     }
     else {
-        return ast_for_call(c, CHILD(n, 3), nameExpr);
+        return ast_for_call(c, CHILD(n, 3), nameExpr, false);
     }
 }
 
@@ -1269,7 +1269,7 @@ function astForArg(c, n)
         annotation = ast_for_expr(c, CHILD(n, 2));
     }
 
-    return new Sk.astnodes.arg(name, annotation, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset);
+    return new Sk.astnodes.arg(name, annotation);
 }
 
 /* returns -1 if failed to handle keyword only arguments
@@ -1314,7 +1314,7 @@ function handleKeywordonlyArgs(c, n, start, kwonlyargs, kwdefaults)
                 ch = CHILD(ch, 0);
                 forbiddenCheck(c, ch, ch.value, ch.lineno);
                 argname = strobj(ch.value);
-                kwonlyargs[j++] = new Sk.astnodes.arg(argname, annotation, ch.lineno, ch.col_offset, ch.end_lineno, ch.end_col_offset);
+                kwonlyargs[j++] = new Sk.astnodes.arg(argname, annotation);
                 i += 2; /* the name and the comma */
                 break;
             case TOK.T_DOUBLESTAR:
@@ -1581,7 +1581,7 @@ function astForLambdef (c, n) {
     var args;
     var expression;
     if (NCH(n) === 3) {
-        args = new Sk.astnodes.arguments_([], null, null, []);
+        args = new Sk.astnodes.arguments_([], null, null, [], null, null);
         expression = ast_for_expr(c, CHILD(n, 2));
     }
     else {
@@ -1665,9 +1665,9 @@ function astForComprehension(c, n) {
         t = ast_for_exprlist(c, forch, Sk.astnodes.Store);
         expression = ast_for_expr(c, CHILD(n, 3));
         if (NCH(forch) === 1) {
-            comp = new Sk.astnodes.comprehension(t[0], expression, []);
+            comp = new Sk.astnodes.comprehension(t[0], expression, [], false);
         } else {
-            comp = new Sk.astnodes.comprehension(new Sk.astnodes.Tuple(t, Sk.astnodes.Store, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset), expression, []);
+            comp = new Sk.astnodes.comprehension(new Sk.astnodes.Tuple(t, Sk.astnodes.Store, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset), expression, [], false);
         }
         if (NCH(n) === 5) {
             n = CHILD(n, 4);
@@ -2764,7 +2764,7 @@ function astForSlice (c, n) {
     upper = null;
     step = null;
     if (ch.type === TOK.T_DOT) {
-        return new Sk.astnodes.Ellipsis();
+        return new Sk.astnodes.Ellipsis(ch.lineno, ch.col_offset, ch.end_lineno, ch.end_col_offset);
     }
     if (NCH(n) === 1 && ch.type === SYM.test) {
         return new Sk.astnodes.Index(ast_for_expr(c, ch));
@@ -2791,7 +2791,7 @@ function astForSlice (c, n) {
     if (ch.type === SYM.sliceop) {
         if (NCH(ch) === 1) {
             ch = CHILD(ch, 0);
-            step = new Sk.astnodes.NameConstant(Sk.builtin.none.none$, Sk.astnodes.Load, ch.lineno, ch.col_offset, ch.end_lineno, ch.end_col_offset);
+            step = new Sk.astnodes.NameConstant(Sk.builtin.none.none$, ch.lineno, ch.col_offset, ch.end_lineno, ch.end_col_offset);
         }
         else {
             ch = CHILD(ch, 1);
@@ -2828,7 +2828,7 @@ function ast_for_atom(c, n)
                     return new Sk.astnodes.NameConstant(Sk.builtin.bool.false$, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset);
                 }
             }
-            name = new_identifier(s, c);
+            name = new_identifier(s);
             /* All names start in Load context, but may later be changed. */
             return new Sk.astnodes.Name(name, Sk.astnodes.Load, LINENO(n), n.col_offset,
                         n.end_lineno, n.end_col_offset);
@@ -3245,7 +3245,7 @@ function astForStmt (c, n) {
             case SYM.try_stmt:
                 return astForTryStmt(c, ch);
             case SYM.with_stmt:
-                return ast_for_with_stmt(c, ch);
+                return ast_for_with_stmt(c, ch, false);
             case SYM.funcdef:
                 return ast_for_funcdef(c, ch, []);
             case SYM.classdef:
@@ -3268,6 +3268,7 @@ Sk.astFromParse = function (n, filename, c_flags) {
     var c = new Compiling("utf-8", filename, c_flags);
     var stmts = [];
     var k = 0;
+    var docstring = new Sk.builtin.str(""); // TODO
     switch (n.type) {
         case SYM.file_input:
             for (i = 0; i < NCH(n) - 1; ++i) {
@@ -3288,7 +3289,7 @@ Sk.astFromParse = function (n, filename, c_flags) {
                     }
                 }
             }
-            return new Sk.astnodes.Module(stmts);
+            return new Sk.astnodes.Module(stmts, docstring);
         case SYM.eval_input:
             Sk.asserts.fail("todo;");
         case SYM.single_input:
