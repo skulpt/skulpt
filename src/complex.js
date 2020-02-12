@@ -865,7 +865,7 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
 };
 
 Sk.builtin.complex.prototype["$r"] = function () {
-    return Sk.builtin.complex.complex_format(this, 0, "r");
+    return Sk.builtin.complex.complex_format(this, null, "g");
 };
 
 Sk.builtin.complex.prototype.tp$str = function () {
