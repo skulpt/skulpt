@@ -1,6 +1,7 @@
 /**
  * @constructor
- * @param {Object} iterable
+ * @param {Object} fun
+ * @param {Object} seq
  * @extends Sk.builtin.object
  */
 Sk.builtin.map_ = function map_ (fun, seq) {
@@ -11,7 +12,7 @@ Sk.builtin.map_ = function map_ (fun, seq) {
     var item;
     var iterables;
     var combined;
-    var args;
+
     Sk.builtin.pyCheckArgsLen("map_", arguments.length, 2);
 
     if (!(this instanceof Sk.builtin.map_)) {

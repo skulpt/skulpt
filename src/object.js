@@ -186,8 +186,8 @@ Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetA
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
 // overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
-Sk.builtin.object.prototype["__getattribute__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
-Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
+Sk.builtin.object.prototype.__getattribute__ = Sk.builtin.object.prototype.GenericPythonGetAttr;
+Sk.builtin.object.prototype.__setattr__ = Sk.builtin.object.prototype.GenericPythonSetAttr;
 
 /**
  * The name of this class.
