@@ -57,7 +57,6 @@ require("../gen/parse_tables.js");
 require("./parser.js");
 require("../gen/astnodes.js");
 require("./ast.js");
-require("./symtable.js");
 require("./compile.js");
 require("./import.js");
 require("./timsort.js");
