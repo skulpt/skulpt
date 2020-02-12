@@ -298,7 +298,7 @@ Sk.parse = function parse (filename, input) {
 
     /**
      * takes a string splits it on '\n' and returns a function that returns
-     * @param {Array<string>} input
+     * @param {string} input
      * @returns {function(): string}
      */
     function readline(input) {

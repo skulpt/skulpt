@@ -853,6 +853,7 @@ Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 /**
  * @param {Object} func the thing to call
  * @param {Array=} args an array of arguments to pass to the func
+ * @param {Array=} kws an array of keyword arguments to pass to the func
  *
  * Does the same thing as callsim without expensive call to Array.slice.
  * Requires args to be a Javascript array.
@@ -887,7 +888,7 @@ Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
 
 /**
  * @param {Object} func the thing to call
- * @param {Array} args an array of arguments to pass to the func
+ * @param {Array=} args an array of arguments to pass to the func
  * @param {Array=} kws an array of keyword arguments to pass to the func
  *
  * Does the same thing as callsimOrSuspend without expensive call to
