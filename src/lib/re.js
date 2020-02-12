@@ -17,7 +17,7 @@ var $builtinmodule = function (name) {
     // mod.X = 64;
     // mod.VERBOSE = 64;
 
-    validGroups = ["(?:", "(?=", "(?!"];
+    validGroups = ["(?:", "(?=", "(?!", "(?<"];
 
     convert = function (pattern) {
         var newpattern;

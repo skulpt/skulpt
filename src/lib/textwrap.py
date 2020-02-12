@@ -90,6 +90,7 @@ class TextWrapper:
                                  r'[\.\!\?]'          # sentence-ending punct.
                                  r'[\"\']?'           # optional end-of-quote
                                  r'\Z')               # end of chunk
+    sentence_end_re = '[a-z][\\.\\!\\?][\\"\\\']?'
 
     def __init__(self,
                  width=70,
@@ -113,7 +114,7 @@ class TextWrapper:
         self.fix_sentence_endings = fix_sentence_endings
         self.break_long_words = break_long_words
         self.drop_whitespace = drop_whitespace
-        self.break_on_hyphens = False
+        self.break_on_hyphens = break_on_hyphens
         self.tabsize = tabsize
         self.max_lines = max_lines
         self.placeholder = placeholder
@@ -166,9 +167,9 @@ class TextWrapper:
         space to two.
         """
         i = 0
-        patsearch = self.sentence_end_re.search
+        # patsearch = self.sentence_end_re.search
         while i < len(chunks)-1:
-            if chunks[i+1] == " " and patsearch(chunks[i]):
+            if chunks[i+1] == " " and re.search(self.sentence_end_re, chunks[i]) and chunks[i][-1] in ".!?\"\'":
                 chunks[i+1] = "  "
                 i += 2
             else:
@@ -377,8 +378,8 @@ def shorten(text, width, **kwargs):
 
 # -- Loosely related functionality -------------------------------------
 
-_whitespace_only_re = re.compile('^[ \t]+$', re.MULTILINE)
-_leading_whitespace_re = re.compile('(^[ \t]*)(?:[^ \t\n])', re.MULTILINE)
+# _whitespace_only_re = re.compile('^[ \t]+$', re.MULTILINE)
+# _leading_whitespace_re = re.compile('(^[ \t]*)(?:[^ \t\n])', re.MULTILINE)
 
 def dedent(text):
     """Remove any common leading whitespace from every line in `text`.
@@ -393,12 +394,7 @@ def dedent(text):
     # Look for the longest leading string of spaces and tabs common to
     # all lines.
     margin = None
-    ma = re.match(r'^[ \t]+$', text)
-    if ma:
-        print(ma.groups())
-        for i in range(len(ma.groups())):
-            text = text.replace(ma.group(i), '')
-    # text = text.replace(_whitespace_only_re, '')
+
     indents = re.findall(r'(^[ \t]*)(?:[^ \t\n])',text, re.MULTILINE)
     for indent in indents:
         if margin is None:
@@ -421,7 +417,6 @@ def dedent(text):
                 if x != y:
                     margin = margin[:i]
                     break
-
     # sanity check (testing/debugging only)
     if 0 and margin:
         for line in text.split("\n"):
@@ -429,7 +424,11 @@ def dedent(text):
                    "line = %r, margin = %r" % (line, margin)
 
     if margin:
-        text.replace(margin, '')
+        lines = [line[len(margin):] 
+                    if line.startswith(margin) 
+                            else line.strip() 
+                                for line in text.split("\n")]
+        text = "\n".join(lines)
     return text
 
 
