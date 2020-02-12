@@ -1,4 +1,6 @@
-var tokens = Sk.token.tokens
+const token = require("./token.js");
+
+var tokens = token.tokens
 
 const TokenError = Sk.builtin.SyntaxError;
 const IndentationError = Sk.builtin.SyntaxError;
@@ -21,8 +23,8 @@ function TokenInfo(type, string, start, end, line) {
 }
 
 TokenInfo.prototype.exact_type = function() {
-    if (this.type == tokens.T_OP && this.string in Sk.token.EXACT_TOKEN_TYPES) {
-    return Sk.token.EXACT_TOKEN_TYPES[this.string]
+    if (this.type == tokens.T_OP && this.string in token.EXACT_TOKEN_TYPES) {
+    return token.EXACT_TOKEN_TYPES[this.string]
     } else {
         return this.type
     }
@@ -169,7 +171,7 @@ var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
 // Sorting in reverse order puts the long operators before their prefixes.
 // Otherwise if = came before ==, == would get recognized as two instances
 // of =.
-var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
+var EXACT_TOKENS_SORTED = Object.keys(token.EXACT_TOKEN_TYPES).sort();
 var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
 var Funny = group('\\r?\\n', Special);
 

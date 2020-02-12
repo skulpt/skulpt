@@ -9,8 +9,10 @@
 // code and know that we're the same up to ast level, at least.
 //
 
+const token = require("./token.js");
+
 var SYM = Sk.ParseTables.sym;
-var TOK = Sk.token.tokens;
+var TOK = token.tokens;
 var COMP_GENEXP = 0;
 var COMP_LISTCOMP = 1;
 var COMP_SETCOMP = 2;

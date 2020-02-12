@@ -1,4 +1,4 @@
-const symtab = require('./symtable.js');
+const symtab = require("./symtable.js");
 
 /** @param {...*} x */
 var out;

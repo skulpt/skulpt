@@ -1,5 +1,7 @@
 // low level parser to a concrete syntax tree, derived from cpython's lib2to3
 
+const token = require("./token.js");
+
 /**
  *
  * @constructor
@@ -160,7 +162,7 @@ Parser.prototype.addtoken = function (type, value, context) {
 // turn a token into a label
 Parser.prototype.classify = function (type, value, context) {
     var ilabel;
-    if (type === Sk.token.tokens.T_NAME) {
+    if (type === token.tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
@@ -180,8 +182,8 @@ Parser.prototype.classify = function (type, value, context) {
         // Questionable modification to put line number in position 2
         // like everywhere else and filename in position 1.
         let descr = "#"+type;
-        for (let i in Sk.token.tokens) {
-            if (Sk.token.tokens[i] == type) {
+        for (let i in token.tokens) {
+            if (token.tokens[i] == type) {
                 descr = i;
                 break;
             }
@@ -285,11 +287,11 @@ function makeParser (filename, style) {
 }
 
 Sk.parse = function parse (filename, input) {
-    var T_COMMENT = Sk.token.tokens.T_COMMENT;
-    var T_NL = Sk.token.tokens.T_NL;
-    var T_OP = Sk.token.tokens.T_OP;
-    var T_ENDMARKER = Sk.token.tokens.T_ENDMARKER;
-    var T_ENCODING = Sk.token.tokens.T_ENCODING;
+    var T_COMMENT = token.tokens.T_COMMENT;
+    var T_NL = token.tokens.T_NL;
+    var T_OP = token.tokens.T_OP;
+    var T_ENDMARKER = token.tokens.T_ENDMARKER;
+    var T_ENCODING = token.tokens.T_ENCODING;
 
     var endmarker_seen = false;
     var parser = makeParser(filename);
@@ -368,7 +370,7 @@ Sk.parseTreeDump = function parseTreeDump (n, indent) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
     } else {
-        ret += Sk.token.tok_name[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
+        ret += token.tok_name[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
     }
     return ret;
 };

@@ -81,53 +81,52 @@ var tokens = {
 // #--end constants--
 
 var EXACT_TOKEN_TYPES = {
-    "!=": tokens.NOTEQUAL,
-    "%": tokens.PERCENT,
-    "%=": tokens.PERCENTEQUAL,
-    "&": tokens.AMPER,
-    "&=": tokens.AMPEREQUAL,
-    "(": tokens.LPAR,
-    ")": tokens.RPAR,
-    "*": tokens.STAR,
-    "**": tokens.DOUBLESTAR,
-    "**=": tokens.DOUBLESTAREQUAL,
-    "*=": tokens.STAREQUAL,
-    "+": tokens.PLUS,
-    "+=": tokens.PLUSEQUAL,
-    ",": tokens.COMMA,
-    "-": tokens.MINUS,
-    "-=": tokens.MINEQUAL,
-    "->": tokens.RARROW,
-    ".": tokens.DOT,
-    "...": tokens.ELLIPSIS,
-    "/": tokens.SLASH,
-    "//": tokens.DOUBLESLASH,
-    "//=": tokens.DOUBLESLASHEQUAL,
-    "/=": tokens.SLASHEQUAL,
-    ":": tokens.COLON,
-    ":=": tokens.COLONEQUAL,
-    ";": tokens.SEMI,
-    "<": tokens.LESS,
-    "<<": tokens.LEFTSHIFT,
-    "<<=": tokens.LEFTSHIFTEQUAL,
-    "<=": tokens.LESSEQUAL,
-    "=": tokens.EQUAL,
-    "==": tokens.EQEQUAL,
-    ">": tokens.GREATER,
-    ">=": tokens.GREATEREQUAL,
-    ">>": tokens.RIGHTSHIFT,
-    ">>=": tokens.RIGHTSHIFTEQUAL,
-    "@": tokens.AT,
-    "@=": tokens.ATEQUAL,
-    "[": tokens.LSQB,
-    "]": tokens.RSQB,
-    "^": tokens.CIRCUMFLEX,
-    "^=": tokens.CIRCUMFLEXEQUAL,
-    "{": tokens.LBRACE,
-    "|": tokens.VBAR,
-    "|=": tokens.VBAREQUAL,
-    "}": tokens.RBRACE,
-    "~": tokens.TILDE,
+    "!=": tokens.T_NOTEQUAL,
+    "%": tokens.T_PERCENT,
+    "%=": tokens.T_PERCENTEQUAL,
+    "&": tokens.T_AMPER,
+    "&=": tokens.T_AMPEREQUAL,
+    "(": tokens.T_LPAR,
+    ")": tokens.T_RPAR,
+    "*": tokens.T_STAR,
+    "**": tokens.T_DOUBLESTAR,
+    "**=": tokens.T_DOUBLESTAREQUAL,
+    "*=": tokens.T_STAREQUAL,
+    "+": tokens.T_PLUS,
+    "+=": tokens.T_PLUSEQUAL,
+    ",": tokens.T_COMMA,
+    "-": tokens.T_MINUS,
+    "-=": tokens.T_MINEQUAL,
+    "->": tokens.T_RARROW,
+    ".": tokens.T_DOT,
+    "...": tokens.T_ELLIPSIS,
+    "/": tokens.T_SLASH,
+    "//": tokens.T_DOUBLESLASH,
+    "//=": tokens.T_DOUBLESLASHEQUAL,
+    "/=": tokens.T_SLASHEQUAL,
+    ":": tokens.T_COLON,
+    ";": tokens.T_SEMI,
+    "<": tokens.T_LESS,
+    "<<": tokens.T_LEFTSHIFT,
+    "<<=": tokens.T_LEFTSHIFTEQUAL,
+    "<=": tokens.T_LESSEQUAL,
+    "=": tokens.T_EQUAL,
+    "==": tokens.T_EQEQUAL,
+    ">": tokens.T_GREATER,
+    ">=": tokens.T_GREATEREQUAL,
+    ">>": tokens.T_RIGHTSHIFT,
+    ">>=": tokens.T_RIGHTSHIFTEQUAL,
+    "@": tokens.T_AT,
+    "@=": tokens.T_ATEQUAL,
+    "[": tokens.T_LSQB,
+    "]": tokens.T_RSQB,
+    "^": tokens.T_CIRCUMFLEX,
+    "^=": tokens.T_CIRCUMFLEXEQUAL,
+    "{": tokens.T_LBRACE,
+    "|": tokens.T_VBAR,
+    "|=": tokens.T_VBAREQUAL,
+    "}": tokens.T_RBRACE,
+    "~": tokens.T_TILDE,
 };
 
 var tok_name = {};
@@ -139,30 +138,12 @@ var tok_name = {};
 
 __all__.concat(Object.keys(tok_name).map(function (k) { return tok_name[k]; }));
 
-function ISTERMINAL(x) {
-    return x < tokens.T_NT_OFFSET;
-}
+module.exports = {
+    tokens: tokens,
+    tok_name: tok_name,
+    EXACT_TOKEN_TYPES: EXACT_TOKEN_TYPES,
+    ISTERMINAL: x => (x < tokens.T_NT_OFFSET),
+    ISNONTERMINAL: x => (x >= tokens.T_NT_OFFSET),
+    ISEOF: x => (x === tokens.T_ENDMARKER)
+};
 
-function ISNONTERMINAL(x) {
-    return x >= tokens.T_NT_OFFSET;
-}
-
-function ISEOF(x) {
-    return x == tokens.T_ENDMARKER;
-}
-
-Sk.token = {};
-Sk.token.tokens = tokens;
-Sk.token.tok_name = tok_name;
-Sk.token.EXACT_TOKEN_TYPES = EXACT_TOKEN_TYPES;
-Sk.token.ISTERMINAL = ISTERMINAL;
-Sk.token.ISNONTERMINAL = ISNONTERMINAL;
-Sk.token.ISEOF = ISEOF;
-
-Sk.exportSymbol("Sk.token", Sk.token);
-Sk.exportSymbol("Sk.token.tokens", Sk.token.tokens);
-Sk.exportSymbol("Sk.token.tok_name", Sk.token.tok_name);
-Sk.exportSymbol("Sk.token.EXACT_TOKEN_TYPES");
-Sk.exportSymbol("Sk.token.ISTERMINAL", Sk.token.ISTERMINAL);
-Sk.exportSymbol("Sk.token.ISNONTERMINAL", Sk.token.ISNONTERMINAL);
-Sk.exportSymbol("Sk.token.ISEOF", Sk.token.ISEOF);
