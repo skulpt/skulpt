@@ -215,9 +215,9 @@ function setContext (c, e, ctx, n) {
         case Sk.astnodes.Compare:
             exprName = "comparison";
             break;
-        case Sk.astnodes.Repr:
-            exprName = "repr";
-            break;
+        // case Sk.astnodes.Repr:
+        //     exprName = "repr";
+        //     break;
         case Sk.astnodes.IfExp:
             exprName = "conditional expression";
             break;
@@ -579,23 +579,6 @@ function ast_for_with_stmt(c, n0, is_async) {
     } else {
         return new Sk.astnodes.With(items, body, LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset);
     }
-}
-
-function astForExecStmt (c, n) {
-    var expr1, globals = null, locals = null;
-    var nchildren = NCH(n);
-    Sk.asserts.assert(nchildren === 2 || nchildren === 4 || nchildren === 6);
-
-    /* exec_stmt: 'exec' expr ['in' test [',' test]] */
-    REQ(n, SYM.exec_stmt);
-    expr1 = ast_for_expr(c, CHILD(n, 1));
-    if (nchildren >= 4) {
-        globals = ast_for_expr(c, CHILD(n, 3));
-    }
-    if (nchildren === 6) {
-        locals = ast_for_expr(c, CHILD(n, 5));
-    }
-    return new Sk.astnodes.Exec(expr1, globals, locals, n.lineno, n.col_offset, n.end_lineno, n.end_col_offset);
 }
 
 function astForIfStmt (c, n) {
