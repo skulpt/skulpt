@@ -17,9 +17,9 @@ var COMP_GENEXP = 0;
 var COMP_LISTCOMP = 1;
 var COMP_SETCOMP = 2;
 var NULL = null;
-var _slice_kind = { 
+var _slice_kind = {
     Slice_kind: 1,
-    ExtSlice_kind: 2, 
+    ExtSlice_kind: 2,
     Index_kind: 3
 };
 
@@ -37,6 +37,7 @@ var _expr_kind = {
 function Compiling (encoding, filename, c_flags) {
     this.c_encoding = encoding;
     this.c_filename = filename;
+    this.c_feature_version = 3;
     this.c_flags = c_flags || 0;
 }
 
@@ -614,7 +615,7 @@ function astForIfStmt (c, n) {
             ast_for_expr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             [], n.lineno, n.col_offset,
-	    n.end_lineno, n.end_col_offset);
+            n.end_lineno, n.end_col_offset);
     }
 
     s = CHILD(n, 4).value;
@@ -625,7 +626,7 @@ function astForIfStmt (c, n) {
             astForSuite(c, CHILD(n, 3)),
             astForSuite(c, CHILD(n, 6)),
             n.lineno, n.col_offset,
-	    n.end_lineno, n.end_col_offset);
+            n.end_lineno, n.end_col_offset);
     }
     else if (decider === "i") {
         nElif = NCH(n) - 4;
@@ -670,7 +671,7 @@ function astForIfStmt (c, n) {
             ast_for_expr(c, CHILD(n, 1)),
             astForSuite(c, CHILD(n, 3)),
             orelse, n.lineno, n.col_offset,
-	    n.end_lineno, n.end_col_offset);
+            n.end_lineno, n.end_col_offset);
     }
 
     Sk.asserts.fail("unexpected token in 'if' statement");
@@ -946,7 +947,7 @@ function astForForStmt (c, n) {
         ast_for_testlist(c, CHILD(n, 3)),
         astForSuite(c, CHILD(n, 5)),
         seq, n.lineno, n.col_offset,
-	n.end_lineno, n.end_col_offset);
+        n.end_lineno, n.end_col_offset);
 }
 
 function ast_for_call(c, n, func, allowgen)
@@ -1461,7 +1462,7 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
     var name_i = 1;
     var end_lineno, end_col_offset;
     var tc;
-    var type_comment = NULL;
+    var type_comment = new Sk.builtin.str("");
 
     if (is_async && c.c_feature_version < 5) {
         ast_error(c, n,
@@ -1489,7 +1490,8 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
     }
 
     if (TYPE(CHILD(n, name_i + 3)) == TOK.T_TYPE_COMMENT) {
-        type_comment = TOK.T_NEW_TYPE_COMMENT(CHILD(n, name_i + 3));
+        tc = CHILD(n, name_i + 3);
+        type_comment = new Sk.builtin.str(tc.value);
         if (!type_comment)
             return NULL;
         name_i += 1;
@@ -1510,7 +1512,7 @@ function ast_for_funcdef_impl(c, n0, decorator_seq, is_async) {
                 ast_error(c, n, "Cannot have two type comments on def");
                 return NULL;
             }
-            type_comment = TOK.T_NEW_TYPE_COMMENT(tc);
+            type_comment = new Sk.builtin.str(tc.value);
             if (!type_comment)
                 return NULL;
         }
@@ -2078,7 +2080,7 @@ function astForBinop (c, n) {
         getOperator(CHILD(n, 1)),
         ast_for_expr(c, CHILD(n, 2)),
         n.lineno, n.col_offset,
-	n.end_lineno, n.end_col_offset);
+        n.end_lineno, n.end_col_offset);
     var nops = (NCH(n) - 1) / 2;
     for (i = 1; i < nops; ++i) {
         nextOper = CHILD(n, i * 2 + 1);
@@ -2203,11 +2205,11 @@ function ast_for_exprStmt (c, n) {
             default:
                 throw new Sk.builtin.SyntaxError("illegal target for annotation", c.c_filename, n.lineno);
         }
-        
+
         if (expr1.constructor != Sk.astnodes.Name) {
             simple = 0;
         }
-        
+
         ch = CHILD(ann, 1);
         expr2 = ast_for_expr(c, ch);
         if (NCH(ann) == 2) {
@@ -2250,7 +2252,7 @@ function astForIfexpr (c, n) {
         ast_for_expr(c, CHILD(n, 0)),
         ast_for_expr(c, CHILD(n, 4)),
         n.lineno, n.col_offset,
-	n.end_lineno, n.end_col_offset);
+        n.end_lineno, n.end_col_offset);
 }
 
 /**
@@ -2534,7 +2536,7 @@ function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
        related to the expression before errors related to the
        conversion or format_spec. */
     let simple_expression = fstring_compile_expr(str, expr_start, expr_end, c, n);
- 
+
     /* Check for a conversion char, if present. */
     if (str.charAt(i) == '!') {
         i++;
@@ -2573,7 +2575,7 @@ function fstring_find_expr(str, start, end, raw, recurse_lvl, c, n) {
        entire expression with the conversion and format spec. */
     let expr = new Sk.astnodes.FormattedValue(simple_expression, conversion,
                                               format_spec, LINENO(n), n.col_offset,
-					      n.end_lineno, n.end_col_offset);
+                                              n.end_lineno, n.end_col_offset);
 
     return [expr, i];
 }
@@ -2594,7 +2596,7 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
         values.push(new Sk.astnodes.Str(new Sk.builtin.str(literal), LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset));
     };
 
-    
+
     while (idx < end) {
         let bidx = str.indexOf("{", idx);
         if (recurse_lvl !== 0) {
