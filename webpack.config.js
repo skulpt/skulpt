@@ -31,6 +31,7 @@ module.exports = (env, argv) => {
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
     var mod = {};
+    var externals = {};
 
     if (argv.mode === 'production') {
         opt = {
@@ -43,12 +44,22 @@ module.exports = (env, argv) => {
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['fileoverviewTags', 'deprecated'],
                     languageOut: (env && env.languageOut) ? env.languageOut : 'ECMASCRIPT_2015',
-                    externs: 'support/externs/sk.js'
+                    externs: ['support/externs/sk.js',
+                              'support/externs/strptime-extern.js',
+                              'support/externs/strftime-extern.js',
+                              'support/externs/biginteger-extern.js']
                 })
             ]
         };
         outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
+
+        // Libraries
+        externals['big-integer'] = 'bigInt';
+        externals['strftime'] = 'strftime';
+        externals['strptime'] = 'strptime';
+        externals['setimmediate'] = 'setImmediate';
+
         mod = {
             rules: [
                 {
@@ -84,6 +95,7 @@ module.exports = (env, argv) => {
                 algorithm: 'gzip'
             })
         ],
+        externals: externals,
         optimization: opt,
         resolve: {
             alias: {
