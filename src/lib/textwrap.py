@@ -63,9 +63,11 @@ class TextWrapper:
     """
 
     unicode_whitespace_trans = {}
-    uspace = ord(' ')
+    # uspace = ord(' ')
+    uspace = ' '
     for x in _whitespace:
-        unicode_whitespace_trans[ord(x)] = uspace
+        # unicode_whitespace_trans[ord(x)] = uspace
+        unicode_whitespace_trans[x] = uspace
 
     # This funky little regex is just the trick for splitting
     # text up into word-wrappable chunks.  E.g.
@@ -75,8 +77,12 @@ class TextWrapper:
     # (after stripping out empty strings).
     wordsep_re = re.compile(
         r'(\s+|'                                  # any whitespace
-        r'[^\s\w]*\w+[^0-9\W]-(?=\w+[^0-9\W])|'   # hyphenated words
-        r'(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')   # em-dash
+        r'[^\s\w]*\w+[^0-9\W]-(?=\w+[^0-9\W]))')  # hyphenated words
+    em_dash = re.compile(r'(\s+|'                                  # any whitespace
+                         r'[^\s\w]*\w+[^0-9\W]-(?=\w+[^0-9\W])|'   # hyphenated words
+                         r'(?!^)-{2,}(?=\w))')                     # em-dash
+
+                         
     # This less funky little regex just split on recognized spaces. E.g.
     #   "Hello there -- you goof-ball, use the -b option!"
     # splits into
@@ -90,7 +96,7 @@ class TextWrapper:
                                  r'[\.\!\?]'          # sentence-ending punct.
                                  r'[\"\']?'           # optional end-of-quote
                                  r'\Z')               # end of chunk
-    sentence_end_re = '[a-z][\\.\\!\\?][\\"\\\']?'
+    sentence_end_re = r'[a-z][\.\!\?][\"\']?'
 
     def __init__(self,
                  width=70,
@@ -103,7 +109,6 @@ class TextWrapper:
                  drop_whitespace=True,
                  break_on_hyphens=True,
                  tabsize=8,
-                 *,
                  max_lines=None,
                  placeholder=' [...]'):
         self.width = width
@@ -133,7 +138,7 @@ class TextWrapper:
             text = text.expandtabs(self.tabsize)
         if self.replace_whitespace:
             for key, val in self.unicode_whitespace_trans.items():
-                text = text.replace(chr(key), chr(val))
+                text = text.replace(key, val)
         return text
 
 
@@ -153,6 +158,10 @@ class TextWrapper:
         """
         if self.break_on_hyphens is True:
             chunks = self.wordsep_re.split(text)
+            if "--" in text:
+                chunks = [item 
+                            for sublist in [self.em_dash.split(chunk) for chunk in chunks] 
+                                for item in sublist]
         else:
             chunks = self.wordsep_simple_re.split(text)
         chunks = [c for c in chunks if c]
