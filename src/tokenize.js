@@ -99,7 +99,7 @@ const IS_IDENTIFIER_REGEX = (function() {
     var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
 
     // Fall back if we don't support unicode
-    if (RegExp().unicode === false) {
+    if (RegExp()["unicode"] === false) {
         return new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
     } else {
         id_start = group(Lu, Ll, the_underscore);
