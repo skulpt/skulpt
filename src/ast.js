@@ -337,12 +337,9 @@ function seq_for_testlist (c, n) {
     var seq = [];
     Sk.asserts.assert(n.type === SYM.testlist ||
         n.type === SYM.testlist_star_expr ||
-        n.type === SYM.listmaker ||
-        n.type === SYM.testlist_comp ||
-        n.type === SYM.testlist_safe ||
-        n.type === SYM.testlist1, "node type must be listlike");
+        n.type === SYM.testlist_comp, "node type must be listlike");
     for (i = 0; i < NCH(n); i += 2) {
-        Sk.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test || CHILD(n, i).type === SYM.star_expr);
+        Sk.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.star_expr);
         seq[i / 2] = ast_for_expr(c, CHILD(n, i));
     }
     return seq;
