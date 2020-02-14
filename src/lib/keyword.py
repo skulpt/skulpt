@@ -37,6 +37,5 @@ kwlist = [
 #--end keywords--
         ]
 
-def iskeyword(wd):
-    return wd in kwlist
+iskeyword = frozenset(kwlist).__contains__
 
