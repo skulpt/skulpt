@@ -39,6 +39,7 @@ require("./long.js");
 require("./complex.js");
 require("./slice.js");
 require("./set.js");
+require("./frozenset.js");
 require("./print.js");
 require("./module.js");
 require("./structseq.js");
