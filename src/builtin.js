@@ -1379,10 +1379,6 @@ Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
 
-Sk.builtin.frozenset = function frozenset () {
-    throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
-};
-
 Sk.builtin.help = function help () {
     throw new Sk.builtin.NotImplementedError("help is not yet implemented");
 };
