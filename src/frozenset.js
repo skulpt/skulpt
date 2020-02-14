@@ -19,7 +19,6 @@ Sk.builtin.frozenset = function (S) {
     S_list = new Sk.builtin.list(S);
     
     for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        // Sk.builtin.frozenset.prototype["$add"].func_code(this, i);
         this.v.mp$ass_subscript(i, true);
     }
 
