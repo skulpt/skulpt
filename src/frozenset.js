@@ -17,9 +17,7 @@ Sk.builtin.frozenset = function (S) {
 
     this.set_reset_();
     S_list = new Sk.builtin.list(S);
-    // python sorts sets on init, but not thereafter.
-    // Skulpt seems to init a new set each time you add/remove something
-    //Sk.builtin.list.prototype['sort'].func_code(S);
+    
     for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         // Sk.builtin.frozenset.prototype["$add"].func_code(this, i);
         this.v.mp$ass_subscript(i, true);
@@ -150,22 +148,6 @@ Sk.builtin.frozenset.prototype.ob$ge = function (other) {
 
     return this["issuperset"].func_code(this, other);
 };
-
-// Sk.builtin.set.prototype.nb$and = function(other){
-//     return this["intersection"].func_code(this, other);
-// };
-
-// Sk.builtin.set.prototype.nb$or = function(other){
-//     return this["union"].func_code(this, other);
-// };
-
-// Sk.builtin.set.prototype.nb$xor = function(other){
-//     return this["symmetric_difference"].func_code(this, other);
-// };
-
-// Sk.builtin.set.prototype.nb$subtract = function(other){
-//     return this["difference"].func_code(this, other);
-// };
 
 Sk.builtin.frozenset.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
