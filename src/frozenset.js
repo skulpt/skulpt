@@ -394,19 +394,6 @@ Sk.builtin.frozenset_iter_ = function (obj) {
     return this;
 };
 
-Sk.builtin.frozenset.prototype["frozenset_discard_"] = new Sk.builtin.func(function (self, item) {
-    // Sk.builtin.pyCheckArgsLen("discard", arguments.length, 2, 2);
-
-    Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
-                                               Sk.builtin.none.none$);
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.frozenset.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
-    return new Sk.builtin.bool(self.sq$contains(item));
-});
-
 Sk.abstr.setUpInheritance("frozensetiterator", Sk.builtin.frozenset_iter_, Sk.builtin.object);
 
 Sk.builtin.frozenset_iter_.prototype.__class__ = Sk.builtin.frozenset_iter_;
@@ -423,3 +410,16 @@ Sk.builtin.frozenset_iter_.prototype.next$ = function (self) {
     }
     return ret;
 };
+
+Sk.builtin.frozenset.prototype["frozenset_discard_"] = new Sk.builtin.func(function (self, item) {
+    // Sk.builtin.pyCheckArgsLen("discard", arguments.length, 2, 2);
+
+    Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
+                                               Sk.builtin.none.none$);
+    return Sk.builtin.none.none$;
+});
+
+Sk.builtin.frozenset.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
+});
