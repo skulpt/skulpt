@@ -434,9 +434,9 @@ def dedent(text):
 
     if margin:
         lines = [line[len(margin):] 
-                    if line.startswith(margin) 
-                            else line.strip() 
-                                for line in text.split("\n")]
+                    if line.strip()
+                        else line.strip() 
+                            for line in text.split("\n")]
         text = "\n".join(lines)
     return text
 

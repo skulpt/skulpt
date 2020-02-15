@@ -733,6 +733,11 @@ class DedentTestCase(unittest.TestCase):
         expect = "Hello there.\n\nHow are ya?\nOh good.\n"
         self.assertEqual(expect, dedent(text))
 
+        # Same, with long blank lines.
+        text = "  Hello there.\n         \n  How are ya?\n  Oh good.\n"
+        expect = "Hello there.\n\nHow are ya?\nOh good.\n"
+        self.assertEqual(expect, dedent(text))
+
     def test_dedent_uneven(self):
         # Lines indented unevenly.
         text = '''\
@@ -754,6 +759,11 @@ def foo():
 
         # Uneven indentation with a whitespace-only line.
         text = "  Foo\n    Bar\n \n   Baz\n"
+        expect = "Foo\n  Bar\n\n Baz\n"
+        self.assertEqual(expect, dedent(text))
+        
+        # Uneven indentation with a long whitespace-only line.
+        text = "  Foo\n    Bar\n        \n   Baz\n"
         expect = "Foo\n  Bar\n\n Baz\n"
         self.assertEqual(expect, dedent(text))
 
