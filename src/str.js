@@ -628,17 +628,61 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
     return idx;
 });
 
-Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
+Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length -1 , 1, 3);
+    Sk.builtin.pyCheckType("prefix", "string", Sk.builtin.checkString(prefix));
+    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined) {
+        start = 0;
+    } else {
+        start = Sk.builtin.asnum$(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined) {
+        end = self.v.length;
+    } else {
+        end = Sk.builtin.asnum$(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+    var substr = self.v.substring(start, end);
+    return new Sk.builtin.bool( substr.indexOf(prefix.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
-Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
+    Sk.builtin.pyCheckType("suffix", "string", Sk.builtin.checkString(suffix));
+    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined) {
+        start = 0;
+    } else {
+        start = Sk.builtin.asnum$(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined) {
+        end = self.v.length;
+    } else {
+        end = Sk.builtin.asnum$(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+
+    //take out the substring
+    var substr = self.v.substring(start, end);
+    return new Sk.builtin.bool( substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
