@@ -179,6 +179,22 @@ class string_functions(unittest.TestCase):
                          "fOrMaT,thIs-aS*titLe;String".title())
         self.assertEqual("Getint", "getInt".title())
         # self.assertRaises(TypeError, "hello".title, 42)
+        
+    def test_startswith_endswith(self):
+        x = "Please make startswith and endswith work"
+        self.assertTrue(x.startswith("Please"))
+        self.assertTrue(x.endswith("work"))
+        self.assertFalse(x.startswith("please"))
+        self.assertFalse(x.endswith("please"))
+
+        self.assertTrue(x.startswith("and", 23))
+        self.assertTrue(x.startswith("and", 23, 27))
+        self.assertFalse(x.startswith("and", 24));
+        self.assertFalse(x.startswith("and", 0, 23))
+
+        self.assertTrue(x.endswith("make", 1, 11))
+        self.assertFalse(x.endswith("make", 0, 12))
+        self.assertFalse(x.endswith("make", 0, 10))
 
     def test_splitlines(self):
         self.assertEqual(["abc", "def", "", "ghi"],
