@@ -500,6 +500,15 @@ class string_functions(unittest.TestCase):
         self.assertTrue(x.endswith("work"))
         self.assertFalse(x.startswith("please"))
         self.assertFalse(x.endswith("please"))
+        
+        self.assertTrue(x.startswith("and", 23))
+        self.assertTrue(x.startswith("and", 23, 27))
+        self.assertFalse(x.startswith("and", 24));
+        self.assertFalse(x.startswith("and", 0, 23))
+
+        self.assertTrue(x.endswith("make", 1, 11))
+        self.assertFalse(x.endswith("make", 0, 12))
+        self.assertFalse(x.endswith("make", 0, 10))
 
     def test_isnumeric(self):
         def helper(got,expect):
