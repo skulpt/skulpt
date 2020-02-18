@@ -8,7 +8,7 @@ require("./util.js");
 
 // Global support functions for libraries
 Sk.global["strftime"] = require("strftime");
-Sk.global["strptime"] = require("strptime");
+Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
 Sk.global["biginteger"] = require("big-integer");
 require("setimmediate");
 
