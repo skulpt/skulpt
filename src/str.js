@@ -916,6 +916,8 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         var leftAdjust;
         var zeroPad;
         var i;
+        let throwFormatError;
+
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
 
@@ -1032,6 +1034,10 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = r + " ";
                     }
+                    if (Sk.__future__.python3) {
+                        r += prefix;
+                        prefix = "";
+                    }
                 } else {
                     for (j = totLen; j < fieldWidth; ++j) {
                         prefix = " " + prefix;
@@ -1040,7 +1046,11 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             return prefix + r;
         };
-
+        throwFormatError = function (res, formatType, baseData) {
+            if (res === undefined){
+                throw new Sk.builtin.TypeError("%"+ formatType+" format: a number is required, not "+ Sk.abstr.typeName(baseData));
+            }
+        };
         //print("Rhs:",rhs, "ctor", rhs.constructor);
         if (rhs.constructor === Sk.builtin.tuple) {
             value = rhs.v[i];
@@ -1056,7 +1066,11 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         }
         base = 10;
         if (conversionType === "d" || conversionType === "i") {
-            return handleWidth(formatNumber(value, 10));
+            let tmpData = formatNumber(value, base);
+            throwFormatError(tmpData[1], conversionType, value);
+            const tmpArray = tmpData[1].split(".");
+            tmpData[1] = tmpArray.slice(0, tmpArray.length !== 1 ? tmpArray.length - 1 : tmpArray.length).join("");
+            return handleWidth(tmpData);
         } else if (conversionType === "o") {
             return handleWidth(formatNumber(value, 8));
         } else if (conversionType === "x") {
@@ -1079,7 +1093,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
             if (precision === undefined || precision === "") {
-                
+
                 if (conversionType === "e" || conversionType === "E") {
                     precision = 6;
                 } else if (conversionType === "f" || conversionType === "F") {
@@ -1102,7 +1116,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 if ((result.length >= 7) && (result.slice(0, 6) == "0.0000")) {
 
                     val = parseFloat(result);
-                    result = val.toExponential(); 
+                    result = val.toExponential();
                 }
                 if (result.charAt(result.length -2) == "-") {
                     result = result.slice(0, result.length - 1) + "0" + result.charAt(result.length - 1);
