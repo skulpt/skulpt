@@ -628,17 +628,44 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
     return idx;
 });
 
-Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
+Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, tgt, start, end) {
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 4);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
+    if (start !== undefined) {
+        Sk.builtin.pyCheckType("start", "int", Sk.builtin.checkInt(start));
+        start = start.v;
+    } else {
+        start = 0;
+    }
+
+    if (end !== undefined){
+        Sk.builtin.pyCheckType("end", "int", Sk.builtin.checkInt(end));
+        end = end.v;
+    } else {
+        end = self.v.length;
+    }
+    return new Sk.builtin.bool( self.v.slice(start, end).indexOf(tgt.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
-Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
+Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt, start, end) {
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 4);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+    if (start !== undefined) {
+        Sk.builtin.pyCheckType("start", "int", Sk.builtin.checkInt(start));
+        start = start.v;
+    } else {
+        start = 0;
+    }
+
+    if (end !== undefined){
+        Sk.builtin.pyCheckType("end", "int", Sk.builtin.checkInt(end));
+        end = end.v;
+    } else {
+        end = self.v.length;
+    }
+    const tmp_v = self.v.slice(start, end);
+    return new Sk.builtin.bool( tmp_v.indexOf(tgt.v, tmp_v.length - tgt.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
@@ -1079,7 +1106,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
             if (precision === undefined || precision === "") {
-                
+
                 if (conversionType === "e" || conversionType === "E") {
                     precision = 6;
                 } else if (conversionType === "f" || conversionType === "F") {
@@ -1102,7 +1129,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 if ((result.length >= 7) && (result.slice(0, 6) == "0.0000")) {
 
                     val = parseFloat(result);
-                    result = val.toExponential(); 
+                    result = val.toExponential();
                 }
                 if (result.charAt(result.length -2) == "-") {
                     result = result.slice(0, result.length - 1) + "0" + result.charAt(result.length - 1);

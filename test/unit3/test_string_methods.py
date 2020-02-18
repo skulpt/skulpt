@@ -72,7 +72,7 @@ class StringMethodsTests(unittest.TestCase):
 
     def test_percent_operator(self):
         self.assertEqual("formatting with just %d argument" % 1, "formatting with just 1 argument")
-        
+
         self.assertEqual("%r is a repr and %s is a string" % ("this","this"), "'this' is a repr and this is a string")
         self.assertEqual("I can also use a %(structure)s to format." % {'structure':'dictionary'}, "I can also use a dictionary to format.")
         self.assertEqual("+%s+" % "hello","+hello+")
@@ -96,6 +96,32 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual("%g" % (.00012), "0.00012")
         self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
         self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+
+    def test_startswith(self):
+        self.assertEqual("asdfg".startswith("d", 0, 2), False)
+        self.assertEqual("asdfg".startswith("a", 0, 3), True)
+        self.assertEqual("asdfg".startswith("a", 1), False)
+        self.assertEqual("asdfg".startswith("a", 0), True)
+        self.assertEqual("asdfg".startswith("a"), True)
+        self.assertEqual("asdfg".startswith("d"), False)
+        self.assertEqual("asdfg".startswith(""), True)
+        self.assertEqual("asdfg".startswith("a", 3, 2), False)
+        self.assertEqual("asdfg".startswith("a", -1, -2), False)
+        self.assertEqual("asdfg".startswith("f", -2, -1), True)
+
+    def test_endswith(self):
+        self.assertEqual("asdfg".endswith("d", 0, 2), False)
+        self.assertEqual("asdfg".endswith("d", 0, 3), True)
+        self.assertEqual("asdfg".endswith("a", 1), False)
+        self.assertEqual("asdfg".endswith("g", 0), True)
+        self.assertEqual("asdfg".endswith("g"), True)
+        self.assertEqual("asdfg".endswith("d"), False)
+        self.assertEqual("asdfg".endswith(""), True)
+        self.assertEqual("asdfg".endswith("a", 3, 2), False)
+        self.assertEqual("asdfg".endswith("a", -1, -2), False)
+        self.assertEqual("asdfg".endswith("f", -2, -1), True)
+
+
 if __name__ == '__main__':
     unittest.main()
-            
+
