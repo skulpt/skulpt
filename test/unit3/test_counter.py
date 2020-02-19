@@ -3,6 +3,39 @@ import unittest
 import collections
 
 class CounterTests(unittest.TestCase):
+    def _mc_compare(self, result, expected):
+        """
+        Compare results of most_common where elements with same count
+        can be in arbitrary order.
+        """
+        if len(result) != len(expected):
+            return False
+
+        def split(elements):
+            result = {}
+            count = None
+            curr = set()
+            for item in elements:
+                if (count == item[1]) or (count == None):
+                    count = item[1]
+                    if item[0] in curr:
+                        return False
+                    curr.add(item[0])
+                else:
+                    if count >= item[1]:
+                        return False
+                    result[count] = curr
+                    count = item[1]
+                    curr = set()
+                    curr.add(item[0])
+            if count != None:
+                result[count] = curr
+
+        ritems = split(result)
+        eitems = split(expected)
+
+        return ritems == eitems
+
     def test_basic(self):
         a = collections.Counter()
         self.assertEqual(str(a), "Counter()")
@@ -24,7 +57,7 @@ class CounterTests(unittest.TestCase):
     def test_most_common(self):
         x = collections.Counter({'l': 5, 'e': 4, 'o': 3, 'h': 2, ' ': 2, 'r': 2, '!': 2, 'w': 1, 'd': 1, 'u': 1, 'n': 1, 'i': 1, 'v': 1, 's': 1})
         self.assertEqual(x.most_common(2), [('l', 5), ('e', 4)])
-        self.assertEqual(x.most_common(), [('l', 5), ('e', 4), ('o', 3), ('h', 2), (' ', 2), ('r', 2), ('!', 2), ('w', 1), ('d', 1), ('u', 1), ('n', 1), ('i', 1), ('v', 1), ('s', 1)])
+        self.assertTrue(self._mc_compare(x.most_common(), [('l', 5), ('e', 4), ('o', 3), ('h', 2), (' ', 2), ('r', 2), ('!', 2), ('w', 1), ('d', 1), ('u', 1), ('n', 1), ('i', 1), ('v', 1), ('s', 1)]))
 
     def test_subtract(self):
         a = collections.Counter({1:6, 2:4, 3:3})
@@ -61,7 +94,7 @@ class CounterTests(unittest.TestCase):
         self.assertRaises(TypeError, c.most_common, 2, 5)
         self.assertRaises(TypeError, c.most_common, "hello")
         self.assertEqual(c.most_common(-5), [])
-        self.assertEqual(c.most_common(200), [('l', 2), ('h', 1), ('e', 1), ('o', 1)])
+        self.assertTrue(self._mc_compare(c.most_common(200), [('l', 2), ('h', 1), ('e', 1), ('o', 1)]))
         self.assertRaises(TypeError, c.update, 1, 3)
         self.assertRaises(TypeError, c.update, 13)
         self.assertRaises(TypeError, c.subtract, 4, 5)
