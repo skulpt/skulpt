@@ -651,7 +651,7 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
     }
-    var substr = self.v.substring(start, end);
+    var substr = self.v.slice(start, end);
     return new Sk.builtin.bool( substr.indexOf(prefix.v) === 0);
 });
 
@@ -681,7 +681,7 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
     }
 
     //take out the substring
-    var substr = self.v.substring(start, end);
+    var substr = self.v.slice(start, end);
     return new Sk.builtin.bool( substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 });
 
