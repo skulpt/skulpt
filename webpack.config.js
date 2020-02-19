@@ -82,13 +82,21 @@ module.exports = (env, argv) => {
         assertfile = './assert-prod.js';
 
         plugins.push({
-            // Inlined plugin to fix up webpack code for the closure compiler
-
             apply: (compiler) => {
-                compiler.hooks.compilation.tap('CompilationPlugin', (compilation, compilationParams) => {
+                // Not sure why this is needed
+                compiler.hooks.emit.tap('RemoveEmptyAssetPlugin', compilation => {
+                    for (asset in compilation.assets) {
+                        if (compilation.assets[asset].size() === 0) {
+                            delete compilation.assets[asset];
+                        }
+                    }
+                });
+
+                // Inlined plugin to fix up webpack code for the closure compiler
+		compiler.hooks.compilation.tap('CompilationPlugin', (compilation, compilationParams) => {
                     compilation.hooks.optimizeChunkAssets.tap('ReplacePlugin', chunks => {
                         // Skulpt code which will run through closure compiler
-                        let skulptCode = compilation.assets['internal.min.js']['_source']['children'];
+                        let skulptCode = compilation.assets[outfile]['_source']['children'];
                         for (line in skulptCode) {
                             if ((skulptCode[line]['_source']) && (skulptCode[line]['_source']['_name'] === 'webpack/bootstrap')) {
                                 let bootstrap= skulptCode[line]['_source']['_value'];
@@ -142,7 +150,7 @@ module.exports = (env, argv) => {
             path: path.resolve(__dirname, 'dist'),
             filename: outfile
         },
-        devtool: 'source-map',
+        // devtool: 'source-map',
         plugins: plugins,
         externals: externals,
         optimization: opt,
