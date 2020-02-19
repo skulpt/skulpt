@@ -16,7 +16,7 @@
     "repl": "node repl/repl.js",
     "prebuild": "node support/build/wrapmodules.js internal",
     "build": "webpack --mode production",
-    "postbuild": "node support/build/wrapmodules.js builtin",
+    "postbuild": "node support/build/bundle.js && node support/build/wrapmodules.js builtin",
     "build-es3": "npm run build -- --env.languageOut=ECMASCRIPT3",
     "build-es5": "npm run build -- --env.languageOut=ECMASCRIPT5",
     "build-es19": "npm run build -- --env.languageOut=ECMASCRIPT_2019",

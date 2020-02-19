@@ -58,7 +58,7 @@ module.exports = (env, argv) => {
                         test: /[\\/]node_modules[\\/]|[\\/]support[\\/]/,
                         name: 'vendor',
                         chunks: 'initial',
-                        filename: 'vendor.min.js'
+                        filename: 'vendor.js'
                     }
                 }
             },
@@ -78,7 +78,7 @@ module.exports = (env, argv) => {
                 })
             ]
         };
-        outfile = 'skulpt.min.js';
+        outfile = 'internal.min.js';
         assertfile = './assert-prod.js';
 
         plugins.push({
@@ -88,7 +88,7 @@ module.exports = (env, argv) => {
                 compiler.hooks.compilation.tap('CompilationPlugin', (compilation, compilationParams) => {
                     compilation.hooks.optimizeChunkAssets.tap('ReplacePlugin', chunks => {
                         // Skulpt code which will run through closure compiler
-                        let skulptCode = compilation.assets['skulpt.min.js']['_source']['children'];
+                        let skulptCode = compilation.assets['internal.min.js']['_source']['children'];
                         for (line in skulptCode) {
                             if ((skulptCode[line]['_source']) && (skulptCode[line]['_source']['_name'] === 'webpack/bootstrap')) {
                                 let bootstrap= skulptCode[line]['_source']['_value'];
@@ -109,7 +109,7 @@ module.exports = (env, argv) => {
                         }
 
                         // Vendor code which will not run through closure compiler
-                        let vendorCode = compilation.assets['vendor.min.js']['_source']['children'];
+                        let vendorCode = compilation.assets['vendor.js']['_source']['children'];
                         for (line in vendorCode) {
                             // Declare global with "var" instead of referencing window
                             let newLine = vendorCode[line].replace('(window["webpackJsonp"] = window["webpackJsonp"] || [])',
