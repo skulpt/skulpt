@@ -82,6 +82,8 @@ class string_format(unittest.TestCase):
         points = 19.5
         total = 22
         self.assertEqual('Correct answers: 88.64%', 'Correct answers: {:.2%}'.format(points/total))
+        self.assertEqual("-5.00%", "{:.2%}".format(-.05))
+
 
     def test_datetime(self):
        import datetime

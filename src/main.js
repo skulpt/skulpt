@@ -46,6 +46,7 @@ require("./generator.js");
 require("./file.js");
 require("./ffi.js");
 require("./iterator.js");
+require("./range.js");
 require("./enumerate.js");
 require("./filter.js");
 require("./zip.js");

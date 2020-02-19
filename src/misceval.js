@@ -93,7 +93,10 @@ Sk.misceval.asIndex = function (o) {
         return o.v;
     }
     if (o.constructor === Sk.builtin.lng) {
-        return o.tp$index();
+        if (o.cantBeInt()) {
+            return o.str$(10, true);
+        }
+        return o.toInt$();
     }
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);

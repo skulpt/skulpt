@@ -248,6 +248,9 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     }
 
     n = Sk.misceval.asIndex(n);
+    if (typeof n !== "number") {
+        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
+    }
     ret = [];
     for (i = 0; i < n; ++i) {
         for (j = 0; j < this.v.length; ++j) {
@@ -267,6 +270,9 @@ Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
 
     // works on list itself --> inplace
     n = Sk.misceval.asIndex(n);
+    if (typeof n !== "number") {
+        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
+    }
     len = this.v.length;
     for (i = 1; i < n; ++i) {
         for (j = 0; j < len; ++j) {
@@ -312,6 +318,9 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
     var i;
     if (Sk.misceval.isIndex(index)) {
         i = Sk.misceval.asIndex(index);
+        if (typeof i !== "number") {
+            throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
+        }
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
@@ -339,6 +348,9 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
     var indices;
     if (Sk.misceval.isIndex(index)) {
         i = Sk.misceval.asIndex(index);
+        if (typeof i !== "number") {
+            throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
+        }
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
@@ -594,6 +606,13 @@ Sk.builtin.list.prototype.clear$ = function (self) {
     Sk.builtin.pyCheckArgsLen("clear", arguments.length, 1, 1);
     self.v = [];
     return Sk.builtin.none.none$;
+};
+
+Sk.builtin.list.prototype.copy$ = function (self) {
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);   
+    // via array concat() function to simulate shallow copy 
+    var tmpArray = [];
+    return new Sk.builtin.list(self.v.concat(tmpArray));
 };
 
 Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, start, stop) {
