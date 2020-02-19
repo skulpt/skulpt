@@ -50,7 +50,7 @@
     "closure-webpack-plugin": "^2.0.1",
     "commander": "^2.20.0",
     "compression-webpack-plugin": "^2.0.0",
-    "copy-webpack-plugin": "^5.0.3",
+    "copy-webpack-plugin": "^5.1.1",
     "ejs": "^2.6.1",
     "eslint": "^5.16.0",
     "eslint-loader": "^2.1.2",
@@ -58,7 +58,7 @@
     "git-revision-webpack-plugin": "^3.0.3",
     "google-closure-compiler": "^20190415.0.0",
     "js-beautify": "^1.10.0",
-    "jsdoc": "~3.5.5",
+    "jsdoc": "^3.6.3",
     "micro-strptime": "^0.2.3",
     "open": "^6.3.0",
     "readline-sync": "^1.4.9",
@@ -69,7 +69,7 @@
     "webpack-cli": "^3.3.2"
   },
   "engines": {
-    "node": ">=8.10"
+    "node": ">=10.4"
   },
   "dependencies": {}
 }
