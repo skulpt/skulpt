@@ -5,6 +5,66 @@ the unittest module from cpython.
 
 '''
 
+
+class _AssertRaisesBaseContext:
+
+    def __init__(self, expected, test_case):
+        self.test_case = test_case
+        self.expected = expected
+
+    def handle(self, args, kwargs):
+        """
+        If args is empty, assertRaises is being used as a
+        context manager, so return self.
+        If args is not empty, call a callable passing positional and keyword
+        arguments.
+        """
+        try:
+            if not args:
+                return self
+
+            callable_obj = args[0]
+            args = args[1:]
+            with self:
+                callable_obj(*args, **kwargs) 
+
+        finally:
+            # bpo-23890: manually break a reference cycle
+            self = None
+
+
+class _AssertRaisesContext(_AssertRaisesBaseContext):
+    """A context manager used to implement TestCase.assertRaises* methods."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        res = True
+        feedback = ""
+
+        # this is a workaround since exceptions don't have a .__name__ attribute
+        try:
+            act_exc = exc_type.__name__
+            exp_exc = self.expected.__name__
+
+        except AttributeError:
+            act_exc = str(exc_type)
+            exp_exc = str(self.expected)
+            act_exc = act_exc.split("'")[1] if 'class' in act_exc else act_exc
+            exp_exc = exp_exc.split("'")[1] if 'class' in exp_exc else exp_exc     
+
+        if exc_type is None:
+            res = False
+            feedback = "{} not raised".format(exp_exc)
+        if not issubclass(exc_type, self.expected):
+            res = False
+            feedback = "Expected {} but got {}".format(exp_exc, act_exc)
+
+        self.test_case.appendResult(res, act_exc, exp_exc, feedback)
+        return True
+
+
 class TestCase:
     def __init__(self):
         self.numPassed = 0
@@ -186,26 +246,14 @@ class TestCase:
             print(msg)
             self.assertFailed += 1
 
-    def assertRaises(self, exception, callable=None, *args, **kwds):
+    def assertRaises(self, expected_exception, *args, **kwargs):
         # with is currently not supported hence we just try and catch
-        if callable is None:
-            raise NotImplementedError("assertRaises does currently not support assert contexts")
-        if kwds:
-            raise NotImplementedError("assertRaises does currently not support **kwds")
-
-        res = False
-        actualerror = str(exception())
+        context = _AssertRaisesContext(expected_exception, self)
         try:
-            callable(*args)
-        except exception as ex:
-            res = True
-        except Exception as inst:
-            actualerror = str(inst)
-            print("ACT = ", actualerror, str(exception()))
-        else:
-            actualerror = "No Error"
-
-        self.appendResult(res, str(exception()), actualerror, "")
+            return context.handle(args, kwargs)
+        finally:
+            # bpo-23890: manually break a reference cycle
+            context = None
 
     def fail(self, msg=None):
         if msg is None:
