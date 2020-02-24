@@ -86,7 +86,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         }
         child["$d"] = new Sk.builtin.dict([]);
         child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child].concat(bases)));
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
     };
 
