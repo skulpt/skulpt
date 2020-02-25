@@ -41,7 +41,7 @@ Sk.builtin.frozenset.prototype["$r"] = function () {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
-    if(Sk.__future__.frozenset_repr) {
+    if(Sk.__future__.python3){
         if (ret.length === 0) {
             return new Sk.builtin.str("frozenset()");
         } else {
@@ -226,28 +226,19 @@ Sk.builtin.frozenset.prototype["union"] = new Sk.builtin.func(function (self) {
         new_args.push(arguments[i]);
     }
 
-    Sk.builtin.frozenset.prototype["frozenset$update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["frozenset$update"] = new Sk.builtin.func(function (self, other) {
-// Sk.builtin.frozenset["frozenset$update"] = function (self, other) {
     var i, it, item, arg;
-
-    for (i = 1; i < arguments.length; i++) {
-        arg = arguments[i];
+    for (i = 0; i < new_args.length; i++) {
+        arg = new_args[i];
         if (!Sk.builtin.checkIterable(arg)) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
         }
         for (it = Sk.abstr.iter(arg), item = it.tp$iternext();
             item !== undefined;
             item = it.tp$iternext()) {
-            // Sk.builtin.frozenset.prototype["frozenset_add_"].func_code(self, item);
-            self.v.mp$ass_subscript(item, true);
+            S.v.mp$ass_subscript(item, true);
         }
     }
-
-    return Sk.builtin.none.none$;
+    return S;
 });
 
 Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (self) {
@@ -261,11 +252,6 @@ Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (s
         new_args.push(arguments[i]);
     }
 
-    Sk.builtin.frozenset.prototype["frozenset$intersection_update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["frozenset$intersection_update"] = new Sk.builtin.func(function (self, other) {
     var i, it, item;
     
     for (i = 1; i < arguments.length; i++) {
@@ -278,13 +264,18 @@ Sk.builtin.frozenset.prototype["frozenset$intersection_update"] = new Sk.builtin
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (!Sk.abstr.sequenceContains(arguments[i], item)) {
-                Sk.builtin.frozenset.prototype["frozenset$discard"].func_code(self, item);
+                Sk.builtin.frozenset.discard(S, item);
                 break;
             }
         }
     }
-    return Sk.builtin.none.none$;
+    return S;
 });
+
+Sk.builtin.frozenset.discard = function(fs, item){
+    Sk.builtin.dict.prototype["pop"].func_code(fs.v, item,
+                                               Sk.builtin.none.none$);
+};
 
 Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (self, other) {
     var S, i, new_args;
@@ -297,14 +288,8 @@ Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (sel
         new_args.push(arguments[i]);
     }
 
-    Sk.builtin.frozenset.prototype["frozenset$difference_update"].func_code.apply(null, new_args);
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["frozenset$difference_update"] = new Sk.builtin.func(function (self, other) {
     var i, it, item;
 
-    // Sk.builtin.pyCheckArgsLen("frozenset$difference$update", arguments.length, 2);
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
@@ -315,21 +300,15 @@ Sk.builtin.frozenset.prototype["frozenset$difference_update"] = new Sk.builtin.f
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (Sk.abstr.sequenceContains(arguments[i], item)) {
-                Sk.builtin.frozenset.prototype["frozenset$discard"].func_code(self, item);
+                Sk.builtin.frozenset.discard(S, item);
                 break;
             }
         }
     }
-    return Sk.builtin.none.none$;
+
+    return S;
 });
 
-Sk.builtin.frozenset.prototype["frozenset$discard"] = new Sk.builtin.func(function (self, item) {
-    // Sk.builtin.pyCheckArgsLen("discard", arguments.length, 2, 2);
-
-    Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
-                                               Sk.builtin.none.none$);
-    return Sk.builtin.none.none$;
-});
 
 Sk.builtin.frozenset.prototype["symmetric_difference"] = new Sk.builtin.func(function (self, other) {
     var it, item, S;
@@ -339,7 +318,7 @@ Sk.builtin.frozenset.prototype["symmetric_difference"] = new Sk.builtin.func(fun
     S = Sk.builtin.frozenset.prototype["union"].func_code(self, other);
     for (it = Sk.abstr.iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {
-            Sk.builtin.frozenset.prototype["frozenset$discard"].func_code(S, item);
+            Sk.builtin.frozenset.discard(S, item);
         }
     }
     return S;
