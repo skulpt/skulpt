@@ -35,7 +35,6 @@ Sk.python2 = {
     // skulpt specific
     python3: false,
     set_repr: false,
-    frozenset_repr: false,
     class_repr: false,
     inherit_from_object: false,
     super_args: false,
@@ -58,7 +57,6 @@ Sk.python3 = {
     // skulpt specific
     python3: true,
     set_repr: true,
-    frozenset_repr: true,
     class_repr: true,
     inherit_from_object: true,
     super_args: true,
@@ -109,7 +107,6 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
     Sk.bool_check(Sk.__future__.unicode_literals, "Sk.__future__.unicode_literals");
     Sk.bool_check(Sk.__future__.set_repr, "Sk.__future__.set_repr");
-    Sk.bool_check(Sk.__future__.frozenset_repr, "Sk.__future__.frozenset_repr");
     Sk.bool_check(Sk.__future__.class_repr, "Sk.__future__.class_repr");
     Sk.bool_check(Sk.__future__.inherit_from_object, "Sk.__future__.inherit_from_object");
     Sk.bool_check(Sk.__future__.super_args, "Sk.__future__.super_args");
