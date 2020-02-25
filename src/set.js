@@ -43,7 +43,7 @@ Sk.builtin.set.prototype["$r"] = function () {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
-    if(Sk.__future__.set_repr) {
+    if(Sk.__future__.python3) {
         if (ret.length === 0) {
             return new Sk.builtin.str("set()");
         } else {
