@@ -264,7 +264,7 @@ Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (s
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (!Sk.abstr.sequenceContains(arguments[i], item)) {
-                Sk.builtin.frozenset.discard(S, item);
+                Sk.builtin.frozenset["frozenset$discard"](S, item);
                 break;
             }
         }
@@ -272,7 +272,7 @@ Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (s
     return S;
 });
 
-Sk.builtin.frozenset.discard = function(fs, item){
+Sk.builtin.frozenset["frozenset$discard"] = function(fs, item){
     Sk.builtin.dict.prototype["pop"].func_code(fs.v, item,
                                                Sk.builtin.none.none$);
 };
@@ -300,7 +300,7 @@ Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (sel
     for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         for (i = 1; i < arguments.length; i++) {
             if (Sk.abstr.sequenceContains(arguments[i], item)) {
-                Sk.builtin.frozenset.discard(S, item);
+                Sk.builtin.frozenset["frozenset$discard"](S, item);
                 break;
             }
         }
@@ -318,7 +318,7 @@ Sk.builtin.frozenset.prototype["symmetric_difference"] = new Sk.builtin.func(fun
     S = Sk.builtin.frozenset.prototype["union"].func_code(self, other);
     for (it = Sk.abstr.iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
         if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {
-            Sk.builtin.frozenset.discard(S, item);
+            Sk.builtin.frozenset["frozenset$discard"](S, item);
         }
     }
     return S;
