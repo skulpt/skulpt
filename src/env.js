@@ -27,6 +27,11 @@ Sk.bool_check = function(variable, name) {
     }
 };
 
+/**
+ * Please use python3 flag to control new behavior that is different
+ * between Python 2/3, rather than adding new flags.
+ */
+
 Sk.python2 = {
     print_function: false,
     division: false,
@@ -42,7 +47,7 @@ Sk.python2 = {
     bankers_rounding: false,
     python_version: false,
     dunder_next: false,
-    dunder_round: false,   
+    dunder_round: false,
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false,
@@ -201,6 +206,7 @@ Sk.configure = function (options) {
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
     Sk.switch_version("next$", Sk.__future__.dunder_next);
+    Sk.switch_version("haskey$", Sk.__future__.python3);
     Sk.switch_version("clear$", Sk.__future__.python3);
     Sk.switch_version("copy$", Sk.__future__.python3);
 
@@ -208,6 +214,7 @@ Sk.configure = function (options) {
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
+    Sk.setupDictIterators(Sk.__future__.python3);
     Sk.setupObjects(Sk.__future__.python3);
 };
 
@@ -335,7 +342,7 @@ Sk.setup_method_mappings = function () {
             "classes": [Sk.builtin.list],
             2: null,
             3: "clear"
-        },        
+        },
         "copy$": {
             "classes": [Sk.builtin.list],
             2: null,
@@ -355,7 +362,12 @@ Sk.setup_method_mappings = function () {
                         Sk.builtin.iterator],
             2: "next",
             3: "__next__"
-        }
+        },
+        "haskey$": {
+            "classes": [Sk.builtin.dict],
+            2: "has_key",
+            3: null
+        },
     };
 };
 
