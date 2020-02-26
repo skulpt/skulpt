@@ -147,6 +147,21 @@ Sk.builtin.frozenset.prototype.ob$ge = function (other) {
     return this["issuperset"].func_code(this, other);
 };
 
+Sk.builtin.frozenset.prototype.nb$and = function(other){
+    return this["intersection"].func_code(this, other);
+};
+
+Sk.builtin.frozenset.prototype.nb$or = function(other){
+    return this["union"].func_code(this, other);
+};
+
+Sk.builtin.frozenset.prototype.nb$xor = function(other){
+    return this["symmetric_difference"].func_code(this, other);
+};
+
+Sk.builtin.frozenset.prototype.nb$subtract = function(other){
+    return this["difference"].func_code(this, other);
+};
 Sk.builtin.frozenset.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
     return new Sk.builtin.frozenset_iter_(self);
@@ -251,8 +266,7 @@ Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (s
         new_args.push(arguments[i]);
     }
 
-    var i, it, item;
-    
+    var i, it, item;    
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
@@ -280,7 +294,6 @@ Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (sel
     var S, i, new_args;
 
     Sk.builtin.pyCheckArgsLen("difference", arguments.length, 2);
-
     S = Sk.builtin.frozenset.prototype["copy"].func_code(self);
     new_args = [S];
     for (i = 1; i < arguments.length; i++) {
@@ -288,7 +301,6 @@ Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (sel
     }
 
     var i, it, item;
-
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
