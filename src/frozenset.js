@@ -28,7 +28,6 @@ Sk.builtin.frozenset = function (S) {
     return this;
 };
 Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
-Sk.abstr.markUnhashable(Sk.builtin.frozenset);
 
 Sk.builtin.frozenset.prototype.frozenset_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
