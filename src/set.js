@@ -4,33 +4,37 @@
  */
 Sk.builtin.set = function (S) {
     var it, i;
-    var S_list;
+    var len;
+    
     if (!(this instanceof Sk.builtin.set)) {
+        // Called directly from Python
         Sk.builtin.pyCheckArgsLen("set", arguments.length, 0, 1);
         return new Sk.builtin.set(S);
     }
 
-
-    if (typeof(S) === "undefined") {
-        S = [];
-    }
-
     this.set_reset_();
-    S_list = new Sk.builtin.list(S);
-    // python sorts sets on init, but not thereafter.
-    // Skulpt seems to init a new set each time you add/remove something
-    //Sk.builtin.list.prototype['sort'].func_code(S);
-    for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        Sk.builtin.set.prototype["add"].func_code(this, i);
+
+    if (S !== undefined) {
+        if (Sk.builtin.checkIterable(S)) {
+            for (it = Sk.abstr.iter(S), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                Sk.builtin.set.prototype["add"].func_code(this, i);
+            }
+        } else if (Object.prototype.toString.apply(S) === "[object Array]") {
+            len = S.length;
+            for (i = 0; i < len; i++) {
+                Sk.builtin.set.prototype["add"].func_code(this, S[i]);
+            }
+        } else {
+            throw new Sk.builtin.TypeError("expecting Array or iterable");
+        }
     }
 
-    this.__class__ = Sk.builtin.set;
-
-    this["v"] = this.v;
     return this;
 };
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
+
+Sk.builtin.set.prototype.__class__ = Sk.builtin.set;
 
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
@@ -43,7 +47,7 @@ Sk.builtin.set.prototype["$r"] = function () {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
-    if(Sk.__future__.set_repr) {
+    if(Sk.__future__.python3) {
         if (ret.length === 0) {
             return new Sk.builtin.str("set()");
         } else {
@@ -151,18 +155,34 @@ Sk.builtin.set.prototype.ob$ge = function (other) {
 };
 
 Sk.builtin.set.prototype.nb$and = function(other){
+    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'set' and '" + Sk.abstr.typeName(other) + "'");
+    }
+
     return this["intersection"].func_code(this, other);
 };
 
 Sk.builtin.set.prototype.nb$or = function(other){
+    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for |: 'set' and '" + Sk.abstr.typeName(other) + "'");
+    }
+
     return this["union"].func_code(this, other);
 };
 
 Sk.builtin.set.prototype.nb$xor = function(other){
+    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for ^: 'set' and '" + Sk.abstr.typeName(other) + "'");
+    }
+
     return this["symmetric_difference"].func_code(this, other);
 };
 
 Sk.builtin.set.prototype.nb$subtract = function(other){
+    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for -: 'set' and '" + Sk.abstr.typeName(other) + "'");
+    }
+
     return this["difference"].func_code(this, other);
 };
 
@@ -415,37 +435,20 @@ Sk.exportSymbol("Sk.builtin.set", Sk.builtin.set);
  * @param {Object} obj
  */
 Sk.builtin.set_iter_ = function (obj) {
-    var allkeys, k, i, bucket, buckets;
+    var iterobj;
     if (!(this instanceof Sk.builtin.set_iter_)) {
         return new Sk.builtin.set_iter_(obj);
     }
-    this.$obj = obj;
-    this.tp$iter = this;
-    allkeys = [];
-    buckets = obj.v.buckets;
-    for (k in buckets) {
-        if (buckets.hasOwnProperty(k)) {
-            bucket = buckets[k];
-            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
-                // skip internal stuff. todo; merge pyobj and this
-                for (i = 0; i < bucket.items.length; i++) {
-                    allkeys.push(bucket.items[i].lhs);
-                }
-            }
-        }
-    }
-    this.$index = 0;
-    this.$keys = allkeys;
-    this.tp$iternext = function () {
-        if (this.$index >= this.$keys.length) {
-            return undefined;
-        }
-        return this.$keys[this.$index++];
+
+    iterobj = Sk.builtin.create_dict_iter_(obj.v);
+
+    // Add set-specific attributes
+    iterobj.$obj = obj;
+    iterobj.$r = function () {
+        return new Sk.builtin.str("<setiterator>");
     };
-    this.$r = function () {
-        return new Sk.builtin.str("setiterator");
-    };
-    return this;
+
+    return iterobj;
 };
 
 Sk.abstr.setUpInheritance("setiterator", Sk.builtin.set_iter_, Sk.builtin.object);
