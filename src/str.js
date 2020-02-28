@@ -651,8 +651,13 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
     }
+    
+    if(prefix.v == "" && start > end){
+        return Sk.builtin.bool.false$;
+    }
+    
     var substr = self.v.slice(start, end);
-    return new Sk.builtin.bool( substr.indexOf(prefix.v) === 0);
+    return new Sk.builtin.bool(substr.indexOf(prefix.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
@@ -679,10 +684,13 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
     }
-
+    
+    if(suffix.v == "" && start > end){
+        return Sk.builtin.bool.false$;
+    }
     //take out the substring
     var substr = self.v.slice(start, end);
-    return new Sk.builtin.bool( substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
+    return new Sk.builtin.bool(substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
