@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Sk.builtin.module = function module () {
+Sk.builtin.module = function module_ () {
 };
 Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);
 

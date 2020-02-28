@@ -828,7 +828,11 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
-
+/**
+ * @param {Object} obj
+ * @param {Sk.builtin.str} pyName
+ * @param {boolean=} canSuspend
+ */
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // TODO is it even valid to pass something this shape in here?
     // Should this be an assert?

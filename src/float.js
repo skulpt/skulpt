@@ -2,6 +2,8 @@
  * @namespace Sk.builtin
  */
 
+const biginteger = require("big-integer");
+
 /**
  * @constructor
  * Sk.builtin.float_
@@ -317,7 +319,7 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+        if (other.longCompare(biginteger.zero) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -388,7 +390,7 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+        if (other.longCompare(biginteger.zero) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -466,7 +468,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
+        if (other.longCompare(biginteger.zero) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -571,7 +573,7 @@ Sk.builtin.float_.prototype.nb$power = function (other, mod) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (this.v === 0 && other.longCompare(Sk.builtin.biginteger.ZERO) < 0) {
+        if (this.v === 0 && other.longCompare(biginteger.zero) < 0) {
             throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
         }
 
@@ -684,7 +686,7 @@ Sk.builtin.float_.prototype.numberCompare = function (other) {
         if (diff instanceof Sk.builtin.float_) {
             return diff.v;
         } else if (diff instanceof Sk.builtin.lng) {
-            return diff.longCompare(Sk.builtin.biginteger.ZERO);
+            return diff.longCompare(biginteger.zero);
         }
     }
 

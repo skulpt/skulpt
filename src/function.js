@@ -304,7 +304,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     let totalArgs = co_argcount + co_kwonlyargcount;
 
     // Fast path from _PyFunction_FastCallDict
-    if (co_kwonlyargcount === 0 && !this.func_code.co_kwargs && (!kw || kw.length === 0) && !this.func_code.co_varargs) {
+    if (co_kwonlyargcount === 0 && !this.func_code["co_kwargs"] && (!kw || kw.length === 0) && !this.func_code["co_varargs"]) {
         if (posargs.length == co_argcount) {
             if (this.func_closure) {
                 posargs.push(this.func_closure);
@@ -401,7 +401,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
 
     if (co_kwonlyargcount > 0) {
         let missing = [];
-        let kwdefs = this.func_code.$kwdefs;
+        let kwdefs = this.func_code["$kwdefs"];
 
         for (let i = co_argcount; i < totalArgs; i++) {
             if (args[i] === undefined) {

@@ -87,8 +87,6 @@ var SYMTAB_CONSTS = {
     ClassBlock: ClassBlock
 };
 
-Sk.exportSymbol("Sk.SYMTAB_CONSTS", SYMTAB_CONSTS);
-
 /**
  * @constructor
  * @param {string} name
@@ -1029,7 +1027,7 @@ SymbolTable.prototype.analyze = function () {
  * @param {Object} ast
  * @param {string} filename
  */
-Sk.symboltable = function (ast, filename) {
+function symboltable (ast, filename) {
     var i;
     var ret = new SymbolTable(filename);
 
@@ -1048,7 +1046,7 @@ Sk.symboltable = function (ast, filename) {
     return ret;
 };
 
-Sk.dumpSymtab = function (st) {
+function dumpSymtab (st) {
     var pyBoolStr = function (b) {
         return b ? "True" : "False";
     }
@@ -1120,5 +1118,9 @@ Sk.dumpSymtab = function (st) {
     return getIdents(st.top, "");
 };
 
-Sk.exportSymbol("Sk.symboltable", Sk.symboltable);
-Sk.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
+module.exports = {
+    SymbolTable: SymbolTable,
+    SYMTAB_CONSTS: SYMTAB_CONSTS,
+    symboltable: symboltable,
+    dumpSymtab: dumpSymtab
+};

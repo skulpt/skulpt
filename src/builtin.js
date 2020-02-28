@@ -1,3 +1,5 @@
+const biginteger = require("big-integer");
+
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
@@ -110,9 +112,9 @@ Sk.builtin.asnum$ = function (a) {
         }
         return a.toInt$();
     }
-    if (a.constructor === Sk.builtin.biginteger) {
-        if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.int_.threshold$)) > 0) ||
-            (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.int_.threshold$)) < 0)) {
+    if (a.constructor === biginteger) {
+        if ((a.trueCompare(new biginteger(Sk.builtin.int_.threshold$)) > 0) ||
+            (a.trueCompare(new biginteger(-Sk.builtin.int_.threshold$)) < 0)) {
             return a.toString();
         }
         return a.intValue();
@@ -171,7 +173,7 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (a.constructor === Sk.builtin.lng) {
         a = a.str$(10, true);
     }
-    if (a.constructor === Sk.builtin.biginteger) {
+    if (a.constructor === biginteger) {
         a = a.toString();
     }
 

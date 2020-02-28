@@ -232,7 +232,13 @@ class FunctionVisitor(PrototypeVisitor):
             self.emit(s, depth, reflow)
         argstr = ", ".join(["/* {%s} */ %s" % (atype, aname)
                             for atype, aname, opt in args + attrs])
-        emit("/** @constructor */")
+        if (argstr):
+            emit("/**")
+            emit("* @constructor")
+            emit("* @suppress {checkTypes}")
+            emit("*/")
+        else:
+            emit("/** @constructor */")
         emit("Sk.astnodes.%s = function %s(%s)" % (name, name, argstr))
         emit("{")
         for argtype, argname, opt in attrs:

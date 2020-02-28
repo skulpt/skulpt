@@ -62,7 +62,7 @@ module Python
 
           -- XXX Jython will be different
           -- col_offset is the byte offset in the utf8 string the parser uses
-          attributes (int lineno, int col_offset)
+          attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
           -- BoolOp() can use left & right?
     expr = BoolOp(boolop op, expr* values)
@@ -102,7 +102,7 @@ module Python
          | Tuple(expr* elts, expr_context ctx)
 
           -- col_offset is the byte offset in the utf8 string the parser uses
-          attributes (int lineno, int col_offset)
+          attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
     expr_context = Load | Store | Del | AugLoad | AugStore | Param
 
@@ -122,7 +122,7 @@ module Python
     comprehension = (expr target, expr iter, expr* ifs, int is_async)
 
     excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)
-                    attributes (int lineno, int col_offset)
+                    attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
     -- Skulpt: added the underscore because aguments is a reserved word in
     -- javascript
@@ -130,7 +130,7 @@ module Python
                  arg? kwarg, expr* defaults)
 
     arg = (identifier arg, expr? annotation)
-           attributes (int lineno, int col_offset)
+           attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
     -- keyword arguments supplied to call (NULL identifier for **kwargs)
     keyword = (identifier? arg, expr value)

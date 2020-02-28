@@ -1,4 +1,6 @@
-var tokens = Sk.token.tokens
+const token = require("./token.js");
+
+var tokens = token.tokens
 
 const TokenError = Sk.builtin.SyntaxError;
 const IndentationError = Sk.builtin.SyntaxError;
@@ -8,9 +10,9 @@ const IndentationError = Sk.builtin.SyntaxError;
  * @constructor
  * @param {number} type
  * @param {string} string
- * @param {Array<number>} start
- * @param {Array<number>} end
- * @param {string} line
+ * @param {Array|undefined} start  (make closure happy, should never be undefined)
+ * @param {Array} end
+ * @param {?string} line
  */
 function TokenInfo(type, string, start, end, line) {
     this.type = type;
@@ -21,8 +23,8 @@ function TokenInfo(type, string, start, end, line) {
 }
 
 TokenInfo.prototype.exact_type = function() {
-    if (this.type == tokens.T_OP && this.string in Sk.token.EXACT_TOKEN_TYPES) {
-    return Sk.token.EXACT_TOKEN_TYPES[this.string]
+    if (this.type == tokens.T_OP && this.string in token.EXACT_TOKEN_TYPES) {
+    return token.EXACT_TOKEN_TYPES[this.string]
     } else {
         return this.type
     }
@@ -55,9 +57,9 @@ function regexEscape(string) {
 
 /**
  * Iterable contains
- * @template T
- * @param {Iterable<T>} a
- * @param {T} obj
+ * @param {*} a
+ * @param {*} obj
+ * @returns {boolean}
  */
 function contains (a, obj) {
     var i = a.length;
@@ -97,7 +99,7 @@ const IS_IDENTIFIER_REGEX = (function() {
     var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
 
     // Fall back if we don't support unicode
-    if (RegExp().unicode === false) {
+    if (RegExp()["unicode"] === false) {
         return new RegExp('^' + id_start + '+' + id_continue + '*$', 'u');
     } else {
         id_start = group(Lu, Ll, the_underscore);
@@ -109,7 +111,7 @@ const IS_IDENTIFIER_REGEX = (function() {
 /**
  * test if string is an identifier
  *
- * @param {str} string
+ * @param {string} str
  * @returns {boolean}
  */
 function isidentifier(str) {
@@ -169,7 +171,7 @@ var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
 // Sorting in reverse order puts the long operators before their prefixes.
 // Otherwise if = came before ==, == would get recognized as two instances
 // of =.
-var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
+var EXACT_TOKENS_SORTED = Object.keys(token.EXACT_TOKEN_TYPES).sort();
 var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
 var Funny = group('\\r?\\n', Special);
 
@@ -370,10 +372,10 @@ function _tokenize(filename, readline, encoding, yield_) {
             pseudomatch = PseudoTokenRegexp.exec(line.substring(pos))
             if (pseudomatch) {                                // scan for tokens
                 var start = pos;
-                var end = start + pseudomatch[1].length;
+                end = start + pseudomatch[1].length;
                 var spos = [lnum, start];
                 var epos = [lnum, end];
-                var pos = end;
+                pos = end;
                 if (start == end) {
                     continue;
                 }

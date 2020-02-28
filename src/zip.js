@@ -1,9 +1,9 @@
 /**
  * @constructor
- * @param {Object} iterable
+ * @param {...Object} args
  * @extends Sk.builtin.object
  */
-Sk.builtin.zip_ = function zip_ () {
+Sk.builtin.zip_ = function zip_ (args) {
     var i;
     var iters;
     var next;

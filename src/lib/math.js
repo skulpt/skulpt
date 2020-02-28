@@ -92,7 +92,7 @@ var $builtinmodule = function (name) {
             // promotes an integer to a biginteger
             function bigup(number){
               var n = Sk.builtin.asnum$nofloat(number);
-              return new Sk.builtin.biginteger(number);
+              return biginteger(number);
             }
 
             r = bigup(r);
@@ -219,17 +219,10 @@ var $builtinmodule = function (name) {
             return _gcd(b, a % b);
         }
 
-        function _biggcd(a, b) {
-            if (b.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
-                return a;
-            }
-            return _biggcd(b, a.remainder(b));
-        }
-
         if ((a instanceof Sk.builtin.lng) || (b instanceof Sk.builtin.lng)) {
             let _a = Sk.builtin.lng(a).biginteger;
             let _b = Sk.builtin.lng(b).biginteger;
-            let res = _biggcd(_a, _b);
+            let res = biginteger.gcd(_a, _b);
             res = res.abs(); // python only returns positive gcds
 
             return new Sk.builtin.lng(res);
