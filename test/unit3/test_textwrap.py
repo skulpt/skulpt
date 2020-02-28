@@ -541,12 +541,12 @@ class MaxLinesTestCase(BaseTestCase):
                         max_lines=2,
                         placeholder='...')
         # long placeholder and indentation
-        # with self.assertRaises(ValueError):
-        #     wrap(self.text, 16, initial_indent='    ',
-        #          max_lines=1, placeholder=' [truncated]...')
-        # with self.assertRaises(ValueError):
-        #     wrap(self.text, 16, subsequent_indent='    ',
-        #          max_lines=2, placeholder=' [truncated]...')
+        with self.assertRaises(ValueError):
+            wrap(self.text, 16, initial_indent='    ',
+                 max_lines=1, placeholder=' [truncated]...')
+        with self.assertRaises(ValueError):
+            wrap(self.text, 16, subsequent_indent='    ',
+                 max_lines=2, placeholder=' [truncated]...')
         self.check_wrap(self.text, 16,
                         ["    Hello there,",
                          "  [truncated]..."],
@@ -1008,10 +1008,10 @@ class ShortenTestCase(BaseTestCase):
         # (it would be ugly otherwise).
         self.check_shorten("hello      world!  ", 10, "[...]")
 
-    # def test_width_too_small_for_placeholder(self):
-    #     shorten("x" * 20, width=8, placeholder="(......)")
-    #     with self.assertRaises(ValueError):
-    #         shorten("x" * 20, width=8, placeholder="(.......)")
+    def test_width_too_small_for_placeholder(self):
+        shorten("x" * 20, width=8, placeholder="(......)")
+        with self.assertRaises(ValueError):
+            shorten("x" * 20, width=8, placeholder="(.......)")
 
     def test_first_word_too_long_but_placeholder_fits(self):
         self.check_shorten("Helloo", 5, "[...]")
