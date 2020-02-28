@@ -168,8 +168,21 @@ class FrozenSetTests(unittest.TestCase):
         self.assertTrue(s1.issubset(s))
         self.assertFalse(s1.issubset(s2))
 
-    
+    # Copy from set unit test
+    def test_ops(self):
+        a = frozenset(range(5))
+        b = frozenset(range(3, 8))
+        c = list(b)
+        self.assertEqual(a & b, frozenset(range(3, 5)))
+        self.assertEqual(a | b, frozenset(range(8)))
+        self.assertEqual(a ^ b, frozenset([0, 1, 2, 5, 6, 7]))
+        self.assertEqual(a - b, frozenset([0, 1, 2]))
+        self.assertRaises(TypeError, lambda: a & c)
+        self.assertRaises(TypeError, lambda: a | c)
+        self.assertRaises(TypeError, lambda: a ^ c)
+        self.assertRaises(TypeError, lambda: a - c)
+   
 
 if __name__ == '__main__':
     unittest.main()
-            
+   
