@@ -199,7 +199,15 @@ class string_functions(unittest.TestCase):
         self.assertTrue(x.startswith("endswith", -13, -5))
         self.assertFalse(x.startswith("endswith", -5, -13))
         self.assertFalse(x.endswith("endswith", -5, -14))
-        self.assertTrue(x.endswith("endswith", -14, -5))
+        self.assertTrue(x.endswith("endswith", -14, -5))        
+        
+        self.assertTrue(x.startswith("", -13, -5))
+        self.assertTrue(x.startswith("", -13, -13))
+        self.assertFalse(x.startswith("", -5, -13))
+
+        self.assertTrue(x.endswith("", -13, -5))
+        self.assertTrue(x.endswith("", -13, -13))
+        self.assertFalse(x.endswith("", -5, -13))
 
     def test_splitlines(self):
         self.assertEqual(["abc", "def", "", "ghi"],
