@@ -3,37 +3,39 @@
  * @param {Array.<Object>|Object} L
  */
 Sk.builtin.tuple = function (L) {
-    var it, i;
+    var v, it, i;
     if (!(this instanceof Sk.builtin.tuple)) {
         Sk.builtin.pyCheckArgsLen("tuple", arguments.length, 0, 1);
         return new Sk.builtin.tuple(L);
     }
 
-
     if (L === undefined) {
-        L = [];
-    }
-
-    if (Object.prototype.toString.apply(L) === "[object Array]") {
-        this.v = L;
-    } else {
-        if (Sk.builtin.checkIterable(L)) {
-            this.v = [];
-            for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                this.v.push(i);
-            }
-        } else {
-            throw new Sk.builtin.TypeError("expecting Array or iterable");
+        v = [];
+    } else if (Object.prototype.toString.apply(L) === "[object Array]") {
+        v = L;
+    } else if (L.sq$asarray) {
+        v = L.sq$asarray();
+    } else if (Sk.builtin.checkIterable(L)) {
+        v = [];
+        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            v.push(i);
         }
+    } else {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L) + "' " + "object is not iterable");
     }
 
-    this.__class__ = Sk.builtin.tuple;
-
-    this["v"] = this.v;
+    this.v = v;
     return this;
 };
 
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
+
+Sk.builtin.tuple.prototype.__class__ = Sk.builtin.tuple;
+
+/* Return copy of internal array */
+Sk.builtin.tuple.prototype.sq$asarray = function () {
+    return this.v.slice(0);
+};
 
 Sk.builtin.tuple.prototype["$r"] = function () {
     var ret;
@@ -107,19 +109,19 @@ Sk.builtin.tuple.prototype.tp$hash = function () {
 };
 
 Sk.builtin.tuple.prototype.sq$repeat = function (n) {
-    var j;
-    var i;
+    var i, cnt;
     var ret;
+    if (!Sk.misceval.isIndex(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
 
-    n = Sk.misceval.asIndex(n);
-    if (typeof n !== "number") {
+    cnt = Sk.misceval.asIndex(n);
+    if (typeof cnt !== "number") {
         throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
     }
     ret = [];
-    for (i = 0; i < n; ++i) {
-        for (j = 0; j < this.v.length; ++j) {
-            ret.push(this.v[j]);
-        }
+    for (i = 0; i < cnt; ++i) {
+        ret.push.apply(ret, this.v);
     }
     return new Sk.builtin.tuple(ret);
 };
@@ -219,15 +221,15 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
 
-Sk.builtin.tuple.prototype.sq$contains = function (ob) {
-    var it, i;
+Sk.builtin.tuple.prototype.sq$contains = function (item) {
+    var i;
+    var obj = this.v;
 
-    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+    for (i = 0; i < obj.length; i++) {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
             return true;
         }
     }
-
     return false;
 };
 

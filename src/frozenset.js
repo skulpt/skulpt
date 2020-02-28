@@ -4,30 +4,40 @@
  */
 Sk.builtin.frozenset = function (S) {
     var it, i;
-    var S_list;
+    var obj, len;
+
     if (!(this instanceof Sk.builtin.frozenset)) {
         Sk.builtin.pyCheckArgsLen("frozenset", arguments.length, 0, 1);
         return new Sk.builtin.frozenset(S);
     }
 
-
-    if (typeof(S) === "undefined") {
-        S = [];
-    }
-
     this.frozenset_reset_();
-    S_list = new Sk.builtin.list(S);
 
-    for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        this.v.mp$ass_subscript(i, true);
+    if (S !== undefined) {
+        obj = S;
+        if (obj.sq$asarray) {
+            obj = obj.sq$asarray();
+        }
+
+        if (Object.prototype.toString.apply(obj) === "[object Array]") {
+            len = obj.length;
+            for (i = 0; i < len; i++) {
+                this.v.mp$ass_subscript(obj[i], true);
+            }
+        } else if (Sk.builtin.checkIterable(obj)) {
+            for (it = Sk.abstr.iter(obj), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                this.v.mp$ass_subscript(i, true);
+            }
+        } else {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(S) + "' " + "object is not iterable");
+        }
     }
 
-    this.__class__ = Sk.builtin.frozenset;
-
-    this["v"] = this.v;
     return this;
 };
 Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
+
+Sk.builtin.frozenset.prototype.__class__ = Sk.builtin.frozenset;
 
 Sk.builtin.frozenset.prototype.frozenset_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
