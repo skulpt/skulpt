@@ -93,6 +93,16 @@ class InheritanceTesting(unittest.TestCase):
         self.assertTrue(issubclass(Foo,object))
         self.assertTrue(issubclass(Frob,XXX))
 
+    def test_builtins(self):
+        for _cls in (int, dict, set, list, object, tuple):
+            self.assertTrue(issubclass(_cls, object))
+        
+        for error in (Exception, TypeError, ValueError, AttributeError):
+            self.assertTrue(issubclass(error, Exception))
+
+        self.assertEqual(int.__mro__, (int, object))
+        self.assertEqual(Exception.__mro__, (Exception, BaseException, object))
+
 if __name__ == '__main__':
     unittest.main()
             

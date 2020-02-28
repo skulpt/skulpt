@@ -29,6 +29,7 @@ Sk.builtins = {
     "any"       : new Sk.builtin.func(Sk.builtin.any),
     "all"       : new Sk.builtin.func(Sk.builtin.all),
 
+    "BaseException"      : Sk.builtin.BaseException, 
     "AttributeError"     : Sk.builtin.AttributeError,
     "ValueError"         : Sk.builtin.ValueError,
     "Exception"          : Sk.builtin.Exception,
