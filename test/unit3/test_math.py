@@ -1329,18 +1329,14 @@ class MathTests(unittest.TestCase):
         # remainder(x, 0) and remainder(infinity, x) for non-NaN x are invalid
         # operations according to IEEE 754-2008 7.2(f), and should raise.
         for value in [NINF, -2.3, -0.0, 0.0, 2.3, INF]:
-            self.assertRaises(ValueError, math.remainder, INF, value)
-            self.assertRaises(ValueError, math.remainder, NINF, value)
-            self.assertRaises(ValueError, math.remainder, value,  0.0)
-            self.assertRaises(ValueError, math.remainder, value, -0.0)
-        #     with self.assertRaises(ValueError):
-        #         math.remainder(INF, value)
-        #     with self.assertRaises(ValueError):
-        #         math.remainder(NINF, value)
-        #     with self.assertRaises(ValueError):
-        #         math.remainder(value, 0.0)
-        #     with self.assertRaises(ValueError):
-        #         math.remainder(value, -0.0)
+            with self.assertRaises(ValueError):
+                math.remainder(INF, value)
+            with self.assertRaises(ValueError):
+                math.remainder(NINF, value)
+            with self.assertRaises(ValueError):
+                math.remainder(value, 0.0)
+            with self.assertRaises(ValueError):
+                math.remainder(value, -0.0)
 
 
     def testSin(self):
