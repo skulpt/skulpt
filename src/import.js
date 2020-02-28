@@ -75,7 +75,8 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         var base;
 
         for (base = parent; base !== undefined; base = base.prototype.tp$base) {
-            if (!base.sk$abstract) {
+            if (!base.sk$abstract && Sk.builtins[base.tp$name]) {
+                // check the base is not an abstract class and that it is in the builtins dict
                 bases.push(base);
             }
         }
