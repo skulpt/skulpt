@@ -157,7 +157,7 @@ Sk.builtin.frozenset.prototype.nb$and = function(other){
 
 Sk.builtin.frozenset.prototype.nb$or = function(other){
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for |: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
 
     return this["union"].func_code(this, other);
@@ -165,7 +165,7 @@ Sk.builtin.frozenset.prototype.nb$or = function(other){
 
 Sk.builtin.frozenset.prototype.nb$xor = function(other){
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for ^: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
 
     return this["symmetric_difference"].func_code(this, other);
@@ -173,7 +173,7 @@ Sk.builtin.frozenset.prototype.nb$xor = function(other){
 
 Sk.builtin.frozenset.prototype.nb$subtract = function(other){
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for -: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
 
     return this["difference"].func_code(this, other);
