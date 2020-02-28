@@ -428,6 +428,11 @@ Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     return Sk.builtin.none.none$;
 });
 
+Sk.builtin.set.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
+    return new Sk.builtin.bool(self.sq$contains(item));
+});
+
 Sk.exportSymbol("Sk.builtin.set", Sk.builtin.set);
 
 /**
