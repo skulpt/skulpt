@@ -652,6 +652,10 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         end = end >= 0 ? end : self.v.length + end;
     }
     
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
+    }
+    
     if(prefix.v == "" && start > end){
         return Sk.builtin.bool.false$;
     }
@@ -683,6 +687,10 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
     } else {
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
+    }
+    
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
     }
     
     if(suffix.v == "" && start > end){
