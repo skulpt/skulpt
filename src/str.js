@@ -146,6 +146,11 @@ Sk.builtin.str.prototype.sq$contains = function (ob) {
     return this.v.indexOf(ob.v) != -1;
 };
 
+Sk.builtin.str.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length - 1, 1, 1);
+    return new Sk.builtin.bool(self.v.indexOf(item.v) != -1);
+});
+
 Sk.builtin.str.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str_iter_(self);
 });
