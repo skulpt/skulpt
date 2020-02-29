@@ -649,6 +649,43 @@ class string_functions(unittest.TestCase):
         self.assertTrue('asdf'.__contains__('asdf'))
         self.assertFalse('asd'.__contains__('asdf'))
         self.assertFalse(''.__contains__('asdf'))
+    # Copy from CPython test   
+    def test_none_arguments(self):
+        s = 'hello'
+        self.assertEqual(2, s.find('l', None))
+        self.assertEqual(3, s.find('l', -2, None))
+        self.assertEqual(2, s.find('l', None, -2))
+        self.assertEqual(0, s.find('h', None, None))
+
+        self.assertEqual(3, s.rfind('l', None))
+        self.assertEqual(3, s.rfind('l', -2, None))
+        self.assertEqual(2, s.rfind('l', None, -2))
+        self.assertEqual(0, s.rfind('h', None, None))
+
+        self.assertEqual(2, s.index('l', None))
+        self.assertEqual(3, s.index('l', -2, None))
+        self.assertEqual(2, s.index('l', None, -2))
+        self.assertEqual(0, s.index('h', None, None))
+
+        self.assertEqual(3, s.rindex('l', None))
+        self.assertEqual(3, s.rindex('l', -2, None))
+        self.assertEqual(2, s.rindex('l', None, -2))
+        self.assertEqual(0, s.rindex('h', None, None))
+
+        self.assertEqual(2, s.count('l', None))
+        self.assertEqual(1, s.count('l', -2, None))
+        self.assertEqual(1, s.count('l', None, -2))
+        self.assertEqual(0, s.count('x', None, None))
+
+        self.assertEqual(True, s.count('o', None))
+        self.assertEqual(True, s.count('lo', -2, None))
+        self.assertEqual(True, s.count('l', None, -2))
+        self.assertEqual(False, s.count('x', None, None))
+
+        self.assertEqual(True, s.count('h', None))
+        self.assertEqual(True, s.count('l', -2, None))
+        self.assertEqual(True, s.count('h', None, -2))
+        self.assertEqual(False, s.count('x', None, None))
         
 if __name__ == "__main__":
     unittest.main()
