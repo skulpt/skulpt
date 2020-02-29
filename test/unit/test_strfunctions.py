@@ -180,7 +180,7 @@ class string_functions(unittest.TestCase):
         self.assertEqual("Getint", "getInt".title())
         # self.assertRaises(TypeError, "hello".title, 42)
         
-        def test_startswith_endswith(self):
+    def test_startswith_endswith(self):
         x = "Please make startswith and endswith work"
         self.assertTrue(x.startswith("Please"))
         self.assertTrue(x.endswith("work"))
