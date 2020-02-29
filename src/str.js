@@ -668,13 +668,20 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
     var substr = self.v.slice(start, end);
 
     if(Sk.abstr.typeName(prefix) == "tuple"){
+        var tmpBool = false, resultBool = false;
         var it, i;
         for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if(substr.indexOf(i.v) === 0){
-                return Sk.builtin.bool.true$;                
+            if(start > end){
+                tmpBool = start <= 0;
+            }else{     
+                tmpBool = substr.indexOf(i.v) === 0;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
             }
         }
-        return Sk.builtin.bool.false$;
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
 
     if(prefix.v == "" && start > end && end >= 0){
@@ -721,13 +728,20 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
     var substr = self.v.slice(start, end);
 
     if(Sk.abstr.typeName(suffix) == "tuple"){
+        var tmpBool = false, resultBool = false;
         var it, i;
         for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (substr.indexOf(i.v, substr.length - i.v.length) !== -1){
-                return Sk.builtin.bool.true$;                
+            if(start > end){
+                tmpBool = start <= 0;
+            }else{     
+                tmpBool = substr.indexOf(i.v, substr.length - i.v.length) !== -1;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
             }
         }
-        return Sk.builtin.bool.false$;
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
 
     if(suffix.v == "" && start > end && end >= 0){
