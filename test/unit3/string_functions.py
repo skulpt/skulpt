@@ -538,6 +538,97 @@ class string_functions(unittest.TestCase):
         self.assertTrue(x.endswith("", -len(x) - 1, -len(x) - 5))
         self.assertFalse(x.endswith("", 4, 0))
 
+    # Take from https://github.com/python/cpython/blob/master/Lib/test/string_tests.py
+    def test_startswith(self):
+        self.assertTrue('hello'.startswith('he'))
+        self.assertTrue('hello'.startswith('hello'))
+        self.assertFalse('hello'.startswith('hello world'))
+        self.assertTrue('hello'.startswith(''))
+        self.assertFalse('hello'.startswith('ello'))
+        self.assertTrue('hello'.startswith('ello', 1))
+        self.assertTrue('hello'.startswith('o', 4))
+        self.assertFalse('hello'.startswith('o', 5))
+        self.assertTrue('hello'.startswith('', 5))
+        self.assertFalse('hello'.startswith('lo', 6))
+        self.assertTrue('helloworld'.startswith('lowo', 3))
+        self.assertTrue('helloworld'.startswith('lowo', 3, 7))
+        self.assertFalse('helloworld'.startswith('lowo', 3, 6))
+        self.assertTrue(''.startswith('', 0, 1))
+        self.assertTrue(''.startswith('', 0, 0))
+        self.assertFalse(''.startswith('', 1, 0))
+
+        # test negative indices
+        self.assertTrue('hello'.startswith('he', 0, -1))
+        self.assertTrue('hello'.startswith('he', -53, -1))
+        self.assertFalse('hello'.startswith('hello', 0, -1))
+        self.assertFalse('hello'.startswith('hello world', -1, -10))
+        self.assertFalse('hello'.startswith('ello', -5))
+        self.assertTrue('hello'.startswith('ello', -4))
+        self.assertFalse('hello'.startswith('o', -2))
+        self.assertTrue('hello'.startswith('o', -1))
+        self.assertTrue('hello'.startswith('', -3, -3))
+        self.assertFalse('hello'.startswith('lo', -9))
+
+        # test tuple arguments
+        self.assertTrue('hello'.startswith(('he', 'ha')))
+        self.assertFalse('hello'.startswith(('lo', 'llo')))
+        self.assertTrue('hello'.startswith(('hellox', 'hello')))
+        self.assertFalse('hello'.startswith(()))
+        self.assertTrue('helloworld'.startswith(('hellowo','rld', 'lowo'), 3))
+        self.assertFalse('helloworld'.startswith(('hellowo', 'ello',
+                                                            'rld'), 3))
+        self.assertTrue('hello'.startswith(('lo', 'he'), 0, -1))
+        self.assertFalse('hello'.startswith(('he', 'hel'), 0, 1))
+        self.assertTrue('hello'.startswith(('he', 'hel'), 0, 2))
+
+
+    def test_endswith(self):
+        self.assertTrue('hello'.endswith('lo'))
+        self.assertFalse('hello'.endswith('he'))
+        self.assertTrue('hello'.endswith(''))
+        self.assertFalse('hello'.endswith('hello world'))
+        self.assertFalse('helloworld'.endswith('worl'))
+        self.assertTrue('helloworld'.endswith('worl', 3, 9))
+        self.assertTrue('helloworld'.endswith('world', 3, 12))
+        self.assertTrue('helloworld'.endswith('lowo', 1, 7))
+        self.assertTrue('helloworld'.endswith('lowo', 2, 7))
+        self.assertTrue('helloworld'.endswith('lowo', 3, 7))
+        self.assertFalse('helloworld'.endswith('lowo', 4, 7))
+        self.assertFalse('helloworld'.endswith('lowo', 3, 8))
+        self.assertFalse('ab'.endswith('ab', 0, 1))
+        self.assertFalse('ab'.endswith('ab', 0, 0))
+        self.assertTrue(''.endswith('', 0, 1))
+        self.assertTrue(''.endswith('', 0, 0))
+        self.assertFalse(''.endswith('', 1, 0))
+
+        # test negative indices
+        self.assertTrue('hello'.endswith('lo', -2))
+        self.assertFalse('hello'.endswith('he', -2))
+        self.assertTrue('hello'.endswith('', -3, -3))
+        self.assertFalse('hello'.endswith('hello world', -10, -2))
+        self.assertFalse('helloworld'.endswith('worl', -6))
+        self.assertTrue('helloworld'.endswith('worl', -5, -1))
+        self.assertTrue('helloworld'.endswith('worl', -5, 9))
+        self.assertTrue('helloworld'.endswith('world', -7, 12))
+        self.assertTrue('helloworld'.endswith('lowo', -99, -3))
+        self.assertTrue('helloworld'.endswith('lowo', -8, -3))
+        self.assertTrue('helloworld'.endswith('lowo', -7, -3))
+        self.assertFalse('helloworld'.endswith('lowo', 3, -4))
+        self.assertFalse('helloworld'.endswith('lowo', -8, -2))
+        
+
+        # test tuple arguments
+        self.assertFalse('hello'.endswith(('he', 'ha')))
+        self.assertTrue('hello'.endswith(('lo', 'llo', 'wllo')))  
+        self.assertTrue('hello'.endswith(('hellox', 'hello')))
+        self.assertFalse('hello'.endswith(()))
+        self.assertTrue('helloworld'.endswith(('hellowo', 'rld', 'lowo'), 3))
+        self.assertFalse('helloworld'.endswith(('hellowo', 'ello',
+                                                          'rld'), 3, -1))
+        self.assertTrue('hello'.endswith(('hell', 'ell'), 0, -1))
+        self.assertFalse('hello'.endswith(('he', 'hel'), 0, 1))
+        self.assertTrue('hello'.endswith(('he', 'hell'), 0, 4))
+    
     def test_isnumeric(self):
         def helper(got,expect):
             if got == expect: return True
