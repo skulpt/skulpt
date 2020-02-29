@@ -632,7 +632,7 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
     Sk.builtin.pyCheckArgsLen("startswith", arguments.length -1 , 1, 3);
 
     if(Sk.abstr.typeName(prefix) != "str" && Sk.abstr.typeName(prefix) != "tuple"){
-        throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
+        throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
     }
 
     if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
