@@ -180,7 +180,7 @@ class string_functions(unittest.TestCase):
         self.assertEqual("Getint", "getInt".title())
         # self.assertRaises(TypeError, "hello".title, 42)
         
-    def test_startswith_endswith(self):
+        def test_startswith_endswith(self):
         x = "Please make startswith and endswith work"
         self.assertTrue(x.startswith("Please"))
         self.assertTrue(x.endswith("work"))
@@ -189,18 +189,26 @@ class string_functions(unittest.TestCase):
 
         self.assertTrue(x.startswith("and", 23))
         self.assertTrue(x.startswith("and", 23, 27))
-        self.assertFalse(x.startswith("and", 24));
+        self.assertFalse(x.startswith("and", 24))
         self.assertFalse(x.startswith("and", 0, 23))
 
         self.assertTrue(x.endswith("make", 1, 11))
         self.assertFalse(x.endswith("make", 0, 12))
         self.assertFalse(x.endswith("make", 0, 10))
-        
+
         self.assertTrue(x.startswith("endswith", -13, -5))
         self.assertFalse(x.startswith("endswith", -5, -13))
         self.assertFalse(x.endswith("endswith", -5, -14))
-        self.assertTrue(x.endswith("endswith", -14, -5))        
-        
+        self.assertTrue(x.endswith("endswith", -14, -5))
+
+        # tuple
+        self.assertTrue(x.startswith(("a", "nd"), 23))
+
+        self.assertTrue(x.startswith(("ends", "with"), -13, -5))
+        self.assertFalse(x.startswith(("ends", "with"), -5, -13))
+        self.assertFalse(x.endswith(("ends", "with"), -5, -14))
+        self.assertTrue(x.endswith(("ends", "with"), -14, -5))
+
         self.assertTrue(x.startswith("", -13, -5))
         self.assertTrue(x.startswith("", -13, -13))
         self.assertFalse(x.startswith("", -5, -13))
@@ -208,6 +216,13 @@ class string_functions(unittest.TestCase):
         self.assertTrue(x.endswith("", -13, -5))
         self.assertTrue(x.endswith("", -13, -13))
         self.assertFalse(x.endswith("", -5, -13))
+
+        self.assertTrue(x.startswith("", len(x), len(x) + 5))
+        self.assertTrue(x.startswith("", -len(x) - 1, -len(x) - 5))
+        self.assertFalse(x.startswith("", 4, 0))
+        self.assertTrue(x.endswith("", len(x), len(x) + 5))
+        self.assertTrue(x.endswith("", -len(x) - 1, -len(x) - 5))
+        self.assertFalse(x.endswith("", 4, 0))
 
     def test_splitlines(self):
         self.assertEqual(["abc", "def", "", "ghi"],
