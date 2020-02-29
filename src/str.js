@@ -437,21 +437,21 @@ Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, sta
     if (!Sk.builtin.checkString(pat)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)&& !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -552,21 +552,21 @@ Sk.builtin.str.prototype["find"] = new Sk.builtin.func(function (self, tgt, star
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -595,21 +595,21 @@ Sk.builtin.str.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, sta
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -640,21 +640,21 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
     }
 
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -692,21 +692,21 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
         throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
     }
 
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
