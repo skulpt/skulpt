@@ -338,6 +338,17 @@ class string_functions(unittest.TestCase):
         #                  "\nabc\ndef\r\nghi\n\r".splitlines(keepends=True))
 
         # self.assertRaises(TypeError, "abc".splitlines, 42, 42)
+        
+    def test___contains__(self):
+        self.assertTrue(''.__contains__(''))
+        self.assertTrue('abc'.__contains__(''))
+        self.checkequal(False, 'abc'.__contains__('\0'))
+        self.assertTrue('\0abc'.__contains__('\0'))
+        self.assertTrue('abc\0'.__contains__('\0'))
+        self.assertTrue('\0abc'.__contains__('a'))
+        self.assertTrue('asdf'.__contains__('asdf'))
+        self.checkequal(False, 'asd'.__contains__('asdf'))
+        self.checkequal(False, ''.__contains__('asdf'))
 
 if __name__ == "__main__":
     unittest.main()
