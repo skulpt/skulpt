@@ -656,7 +656,7 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         return Sk.builtin.bool.false$;
     }
     
-    if(prefix.v == "" && start > end){
+    if(suffix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
     
@@ -693,7 +693,7 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
         return Sk.builtin.bool.false$;
     }
     
-    if(suffix.v == "" && start > end){
+    if(suffix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
     //take out the substring
