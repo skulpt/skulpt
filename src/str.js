@@ -630,7 +630,19 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
 
 Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
     Sk.builtin.pyCheckArgsLen("startswith", arguments.length -1 , 1, 3);
-    Sk.builtin.pyCheckType("prefix", "string", Sk.builtin.checkString(prefix));
+
+    if(Sk.abstr.typeName(prefix) != "str" && Sk.abstr.typeName(prefix) != "tuple"){
+        throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
+    }
+    if(Sk.abstr.typeName(prefix) == "tuple"){
+        var it, i;
+        var tmpstr = "";
+        for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            tmpstr += i.v;
+        }
+        prefix = Sk.builtin.str(tmpstr);
+    }
+
     if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
@@ -651,15 +663,15 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
     }
-    
+
     if(start > self.v.length){
         return Sk.builtin.bool.false$;
     }
-    
-    if(suffix.v == "" && start > end && end >= 0){
+
+    if(prefix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
-    
+
     var substr = self.v.slice(start, end);
     return new Sk.builtin.bool(substr.indexOf(prefix.v) === 0);
 });
@@ -667,7 +679,19 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
 Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
     Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
-    Sk.builtin.pyCheckType("suffix", "string", Sk.builtin.checkString(suffix));
+
+    if(Sk.abstr.typeName(suffix) != "str" && Sk.abstr.typeName(suffix) != "tuple"){
+        throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
+    }
+    if(Sk.abstr.typeName(suffix) == "tuple"){
+        var it, i;
+        var tmpstr = "";
+        for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            tmpstr += i.v;
+        }
+        suffix = Sk.builtin.str(tmpstr);
+    }
+
     if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
@@ -688,11 +712,11 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
         end = Sk.builtin.asnum$(end);
         end = end >= 0 ? end : self.v.length + end;
     }
-    
+
     if(start > self.v.length){
         return Sk.builtin.bool.false$;
     }
-    
+
     if(suffix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
