@@ -305,7 +305,7 @@ class string_functions(unittest.TestCase):
 
         # test tuple arguments
         self.assertFalse('hello'.endswith(('he', 'ha')))
-        self.assertTrue('hello'.endswith(('lo', 'llo', 'wllo')))  #这样
+        self.assertTrue('hello'.endswith(('lo', 'llo', 'wllo'))) 
         self.assertTrue('hello'.endswith(('hellox', 'hello')))
         self.assertFalse('hello'.endswith(()))
         self.assertTrue('helloworld'.endswith(('hellowo', 'rld', 'lowo'), 3))
