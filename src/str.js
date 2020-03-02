@@ -916,7 +916,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         var leftAdjust;
         var zeroPad;
         var i;
-        let throwFormatError;
 
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
@@ -1046,11 +1045,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             return prefix + r;
         };
-        throwFormatError = function (res, formatType, baseData) {
-            if (res === undefined){
-                throw new Sk.builtin.TypeError("%"+ formatType+" format: a number is required, not "+ Sk.abstr.typeName(baseData));
-            }
-        };
         //print("Rhs:",rhs, "ctor", rhs.constructor);
         if (rhs.constructor === Sk.builtin.tuple) {
             value = rhs.v[i];
@@ -1067,7 +1061,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         base = 10;
         if (conversionType === "d" || conversionType === "i") {
             let tmpData = formatNumber(value, base);
-            throwFormatError(tmpData[1], conversionType, value);
+            if (tmpData[1] === undefined){
+                throw new Sk.builtin.TypeError("%"+ conversionType+" format: a number is required, not "+ Sk.abstr.typeName(value));
+            }
             const tmpArray = tmpData[1].split(".");
             tmpData[1] = tmpArray.slice(0, tmpArray.length !== 1 ? tmpArray.length - 1 : tmpArray.length).join("");
             return handleWidth(tmpData);
