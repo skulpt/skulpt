@@ -333,6 +333,8 @@ function seq_for_testlist (c, n) {
     /* testlist: test (',' test)* [',']
        testlist_star_expr: test|star_expr (',' test|star_expr)* [',']
     */
+
+    /* TODO: confirm this correctly aligns with CPython 3 */
     var i;
     var seq = [];
     Sk.asserts.assert(n.type === SYM.testlist ||
