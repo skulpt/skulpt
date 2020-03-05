@@ -7,20 +7,20 @@
 
 Sk.builtin.range = function range (start, stop, step) {
     var ret = [];
+    var lst;
     var i;
 
     Sk.builtin.pyCheckArgsLen("range", arguments.length, 1, 3);
-    Sk.builtin.pyCheckType("start", "integer", Sk.builtin.checkInt(start));
+    Sk.builtin.pyCheckType("start", "integer", Sk.misceval.isIndex(start));
+    start = Sk.misceval.asIndex(start);
     if (stop !== undefined) {
-        Sk.builtin.pyCheckType("stop", "integer", Sk.builtin.checkInt(stop));
+        Sk.builtin.pyCheckType("stop", "integer", Sk.misceval.isIndex(stop));
+        stop = Sk.misceval.asIndex(stop);
     }
     if (step !== undefined) {
-        Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
+        Sk.builtin.pyCheckType("step", "integer", Sk.misceval.isIndex(step));
+        step = Sk.misceval.asIndex(step);
     }
-
-    start = Sk.builtin.asnum$(start);
-    stop = Sk.builtin.asnum$(stop);
-    step = Sk.builtin.asnum$(step);
 
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
@@ -34,17 +34,46 @@ Sk.builtin.range = function range (start, stop, step) {
         throw new Sk.builtin.ValueError("range() step argument must not be zero");
     }
 
-    if (step > 0) {
-        for (i = start; i < stop; i += step) {
-            ret.push(new Sk.builtin.int_(i));
+    if ((typeof start === "number")
+	&& (typeof stop === "number")
+	&& (typeof step === "number")) {
+        if (step > 0) {
+            for (i = start; i < stop; i += step) {
+                ret.push(new Sk.builtin.int_(i));
+            }
+        } else {
+            for (i = start; i > stop; i += step) {
+                ret.push(new Sk.builtin.int_(i));
+            }
         }
     } else {
-        for (i = start; i > stop; i += step) {
-            ret.push(new Sk.builtin.int_(i));
+        // This is going to be slow, really needs to be a generator!
+        var startlng = new Sk.builtin.lng(start);
+        var stoplng = new Sk.builtin.lng(stop);
+        var steplng = new Sk.builtin.lng(step);
+
+        if (steplng.nb$ispositive()) {
+            i = startlng;
+            while (Sk.misceval.isTrue(i.ob$lt(stoplng))) {
+                ret.push(i);
+                i = i.nb$add(steplng);
+            }
+        } else {
+            i = startlng;
+            while (Sk.misceval.isTrue(i.ob$gt(stoplng))) {
+                ret.push(i);
+                i = i.nb$add(steplng);
+            }
         }
     }
 
-    return new Sk.builtin.list(ret);
+    lst = new Sk.builtin.list(ret);
+
+    if (Sk.__future__.python3) {
+        return new Sk.builtin.range_(start, stop, step, lst);
+    }
+
+    return lst;
 };
 
 Sk.builtin.asnum$ = function (a) {
@@ -1348,10 +1377,6 @@ Sk.builtin.delattr = function delattr (obj, attr) {
 
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
-};
-
-Sk.builtin.frozenset = function frozenset () {
-    throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };
 
 Sk.builtin.help = function help () {

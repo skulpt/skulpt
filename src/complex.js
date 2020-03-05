@@ -161,11 +161,6 @@ Sk.builtin.complex = function (real, imag) {
         ci.real += cr.imag;
     }
 
-    // adjust for negated imaginary literal
-    if (cr.real === 0 && (ci.real < 0 || Sk.builtin.complex._isNegativeZero(ci.real))) {
-        cr.real = -0;
-    }
-
     // save them as properties
     this.real = new Sk.builtin.float_(cr.real);
     this.imag = new Sk.builtin.float_(ci.real);
@@ -823,8 +818,14 @@ Sk.builtin.complex.prototype.tp$setattr = function (name, value) {
  * This functions assumes, that v is always instance of Sk.builtin.complex
  */
 Sk.builtin.complex.complex_format = function (v, precision, format_code){
-    function copysign (a, b) {
-        return b < 0 ? -Math.abs(a) : Math.abs(a);
+    function copysign(a, b) {
+        let sign;
+        if (b) {
+            sign = b < 0 ? -1 : 1;
+        } else {
+            sign = 1 / b < 0 ? -1 : 1;
+        };
+        return sign * Math.abs(a);
     }
 
     if (v == null || !Sk.builtin.complex._complex_check(v)) {
@@ -864,7 +865,7 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
 };
 
 Sk.builtin.complex.prototype["$r"] = function () {
-    return Sk.builtin.complex.complex_format(this, 0, "r");
+    return Sk.builtin.complex.complex_format(this, null, "g");
 };
 
 Sk.builtin.complex.prototype.tp$str = function () {

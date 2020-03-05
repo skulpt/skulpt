@@ -144,7 +144,6 @@ Sk.builtin.type = function (name, bases, dict) {
             }
 
             this["$d"] = new Sk.builtin.dict([]);
-            this["$d"].mp$ass_subscript(new Sk.builtin.str("__dict__"), this["$d"]);
         };
 
         var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
