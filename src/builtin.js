@@ -333,10 +333,9 @@ Sk.builtin.min = function min($default, key, args) {
 
     if (args.sq$length() == 1) {
         args = args.v[0];
-    }
-
-    if (!Sk.builtin.checkIterable(args)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
+        }
     }
     let iter = Sk.abstr.iter(args);
 
@@ -391,10 +390,9 @@ Sk.builtin.max = function max($default, key, args) {
 
     if (args.sq$length() == 1) {
         args = args.v[0];
-    }
-
-    if (!Sk.builtin.checkIterable(args)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
+        }
     }
     let iter = Sk.abstr.iter(args);
 
