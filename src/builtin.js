@@ -360,9 +360,9 @@ Sk.builtin.min = function min($default, key, args) {
             }
         }
     } else {
-        let lowest_compare = (key.tp$call) ? key.tp$call([lowest], undefined) : Sk.misceval.applyOrSuspend(key, undefined, undefined, undefined, [lowest]);
+        let lowest_compare = Sk.misceval.callsimOrSuspendArray(key, [lowest]);
         for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = (key.tp$call) ? key.tp$call([i], undefined) : Sk.misceval.applyOrSuspend(key, undefined, undefined, undefined, [i]);
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
             if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
                 lowest = i;
                 lowest_compare = i_compare;
@@ -416,9 +416,9 @@ Sk.builtin.max = function max($default, key, args) {
             }
         }
     } else {
-        let highest_compare = (key.tp$call) ? key.tp$call([highest], undefined) : Sk.misceval.applyOrSuspend(key, undefined, undefined, undefined, [highest]);
+        let highest_compare = Sk.misceval.callsimOrSuspendArray(key, [highest]);
         for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = (key.tp$call) ? key.tp$call([i], undefined) : Sk.misceval.applyOrSuspend(key, undefined, undefined, undefined, [i]);
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
             if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
                 highest = i;
                 highest_compare = i_compare;
