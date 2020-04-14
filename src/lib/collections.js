@@ -467,10 +467,517 @@ var $builtinmodule = function (name) {
             return Sk.builtin.tuple([key, val]);
         });
 
-        // deque
-        mod.deque = function deque(iterable, maxlen) {
-            throw new Sk.builtin.NotImplementedError("deque is not implemented")
+        // deque - Special thanks to:https://github.com/blakeembrey/deque
+        mod.deque = function deque(iterable, maxlen){
+            if (!(this instanceof mod.deque)) {
+                return new mod.deque(iterable, maxlen);
+            }
+            this.head = 0;
+            this.tail = 0;
+            this.mask = 1;
+
+            if(maxlen && !Sk.builtin.checkNone(maxlen)){
+                maxlen = Sk.builtin.asnum$(maxlen);
+                if(!Number.isInteger(maxlen)){
+                    throw new Sk.builtin.TypeError("an integer is required");
+                }else{
+                    this.maxlen = maxlen;
+                }
+            }
+
+            if(iterable === undefined){
+                this.v = new Array(2);
+            }else if (Sk.builtin.checkIterable(iterable)) {
+                this.v = new Array(2);
+                mod.deque.prototype['extend'].func_code(this, iterable);
+            }else{
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+            }
+            if (this['$d']) 
+                this['$d']['maxlen'] = maxlen?maxlen:Sk.builtin.none.none$;
+            else
+                this['$d'] = {'maxlen': maxlen?maxlen:Sk.builtin.none.none$};
+
+            this.__class__ = mod.deque;
+
+            return this;
         };
+        mod.deque.minArgs = 1;
+        mod.deque.maxArgs = 2;
+        mod.deque.co_varnames = ["iterable", "maxlen"];
+        mod.deque.co_name = Sk.builtin.str("mod.deque");
+        mod.deque.co_argcount = 2;
+        mod.deque.$defaults = [Sk.builtin.tuple([]), Sk.builtin.none.none$];
+
+        Sk.abstr.setUpInheritance("collections.deque", mod.deque, Sk.builtin.seqtype);
+
+        mod.deque.prototype._resize = function(size, length) {
+            var head = this.head;
+            var mask = this.mask;
+            this.head = 0;
+            this.tail = size;
+            this.mask = length - 1;
+            // Optimize resize when list is already sorted.
+            if (head === 0) {
+                this.v.length = length;
+                return;
+            }
+            const sorted = new Array(length);
+            for (let i = 0; i < size; i++)
+                sorted[i] = this.v[(head + i) & mask];
+            this.v = sorted;
+        }
+        mod.deque.prototype.$push = function (value) {
+            var size = (this.tail - this.head) & this.mask;
+
+            if(this.maxlen && size >= this.maxlen)
+                 mod.deque.prototype['popleft'].func_code(this);
+
+            this.v[this.tail] = value;
+            this.tail = (this.tail + 1) & this.mask;
+            if (this.head === this.tail)
+                this._resize(this.v.length, this.v.length << 1);
+            return this;
+        };
+        mod.deque.prototype.$pushLeft = function(value) {
+            var size = (this.tail - this.head) & this.mask;
+            if(this.maxlen && size >= this.maxlen)
+                 mod.deque.prototype['pop'].func_code(this);
+            
+            this.head = (this.head - 1) & this.mask;
+            this.v[this.head] = value;
+            if (this.head === this.tail)
+                this._resize(this.v.length, this.v.length << 1);
+            return this;
+        }
+
+        mod.deque.prototype['append'] = new Sk.builtin.func(function (self, value) {
+            Sk.builtin.pyCheckArgsLen("append", arguments.length, 1, 1, true, false);
+            self.$push(value);
+            return Sk.builtin.none.none$;
+        });
+
+        mod.deque.prototype['appendleft'] = new Sk.builtin.func(function (self, value) {
+            Sk.builtin.pyCheckArgsLen("appendleft", arguments.length, 1, 1, true, false);
+            self.$pushLeft(value);
+            return Sk.builtin.none.none$;
+        });
+
+        
+        mod.deque.prototype['extend'] = new Sk.builtin.func(function (self, iterable) {
+            Sk.builtin.pyCheckArgsLen("extend", arguments.length, 1, 1, true, false);
+            if(!Sk.builtin.checkIterable(iterable))
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+
+            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext()) {
+                self.$push(k);
+            }
+            return Sk.builtin.none.none$;
+        });
+        
+        mod.deque.prototype['extendleft'] = new Sk.builtin.func(function (self, iterable) {
+            Sk.builtin.pyCheckArgsLen("extendleft", arguments.length, 1, 1, true, false);
+            if(!Sk.builtin.checkIterable(iterable))
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+            
+            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext()) {
+                self.$pushLeft(k);
+            }
+            return Sk.builtin.none.none$;
+        });
+        
+        mod.deque.prototype['clear'] = new Sk.builtin.func(function (self) { 
+            Sk.builtin.pyCheckArgsLen("clear", arguments.length, 0, 0, true, false);
+            self.head = 0;
+            self.tail = 0;
+            self.mask = 1;
+            self.v = new Array(2);
+        });
+        
+        mod.deque.prototype['insert'] = new Sk.builtin.func(function (self, idx, value) { 
+            Sk.builtin.pyCheckArgsLen("insert", arguments.length, 2, 2, true, false);
+
+            index = Sk.builtin.asnum$(idx);
+            if(!Number.isInteger(index)){
+                throw new Sk.builtin.TypeError("integer argument expected, got "+Sk.abstr.typeName(idx));
+            }
+            var size = (self.tail - self.head) & self.mask;
+            if(self.maxlen && size >= self.maxlen)
+                throw new Sk.builtin.IndexError("deque already at its maximum size");
+            if(index > size)
+                index = size;
+            var pos;
+            if(index >= 0)
+                pos = (self.head + index) & self.mask;
+            else if(index > -size)
+                pos = (self.tail + index) & self.mask;
+            else
+                pos = 0;
+
+            var cur = self.tail;
+
+            self.tail = (self.tail + 1) & self.mask;
+            while (cur !== pos) {
+                const prev = (cur - 1) & self.mask;
+                self.v[cur] = self.v[prev];
+                cur = prev;
+            }
+            self.v[pos] = value;
+            if (self.head === self.tail)
+                self._resize(self.v.length, self.v.length << 1);
+            return Sk.builtin.none.none$;
+        });
+        
+        mod.deque.prototype['index'] = new Sk.builtin.func(function (self, x, start, stop) { 
+            Sk.builtin.pyCheckArgsLen("index", arguments.length, 1, 3, true, false);
+
+            var size = (self.tail - self.head) & self.mask;
+            if(start){
+                start = Sk.builtin.asnum$(start);
+                if(!Number.isInteger(start)){
+                    throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
+                }
+            }else{
+                var start = 0;
+            }
+            if(stop){
+                stop = Sk.builtin.asnum$(stop);
+                if(!Number.isInteger(stop)){
+                    throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
+                }
+            }else{
+                var stop = size;
+            }
+
+            var head = self.head;
+            var mask = self.mask;
+            var list = self.v;
+
+            const offset = start >= 0 ? start : start < -size ? 0 : size + start;
+            stop = stop >= 0 ? stop : stop < -size ? 0 : size + stop;
+            for (var i = offset; i < stop; i++) {
+                if (list[(head + i) & mask] === x)
+                    return i;
+            }
+            throw new Sk.builtin.ValueError(Sk.ffi.remapToJs(x) + " is not in deque");
+        });
+        
+        mod.deque.prototype['count'] = new Sk.builtin.func(function (self, x) { 
+            Sk.builtin.pyCheckArgsLen("count", arguments.length, 1, 1, true, false);
+            var head = self.head;
+            var size = (self.tail - self.head) & self.mask;
+            var mask = self.mask;
+            var list = self.v;
+            var count = 0;
+            const offset = 0;
+            for (var i = 0; i < size; i++) {
+                if (list[(head + i) & mask] === x)
+                    count++;
+            }
+            return new Sk.builtin.int_(count);
+        });
+        
+        mod.deque.prototype['pop'] = new Sk.builtin.func(function (self) { 
+            Sk.builtin.pyCheckArgsLen("pop", arguments.length, 0, 0, true, false);
+            if (self.head === self.tail)
+                throw new Sk.builtin.IndexError('pop from an empty deque');
+            self.tail = (self.tail - 1) & self.mask;
+            const value = self.v[self.tail];
+            self.v[self.tail] = undefined;
+            var size = (self.tail - self.head) & self.mask;
+            if (size < self.mask >>> 1)
+                self._resize(size, self.v.length >>> 1);
+            return value;
+        });
+        
+        mod.deque.prototype['popleft'] = new Sk.builtin.func(function (self) { 
+            Sk.builtin.pyCheckArgsLen("popleft", arguments.length, 0, 0, true, false);
+            if (self.head === self.tail)
+                throw new Sk.builtin.IndexError('pop from an empty deque');
+            const value = self.v[self.head];
+            self.v[self.head] = undefined;
+            self.head = (self.head + 1) & self.mask;
+            var size = (self.tail - self.head) & self.mask;
+            if (size < self.mask >>> 1)
+                self._resize(size, self.v.length >>> 1);
+            return value;
+        });
+        
+        mod.deque.prototype.__iter__ = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
+            return new mod.deque.deque_iter_(self);
+        });
+         get value via deque[index]
+        mod.deque.prototype['mp$subscript'] = function (idx) { 
+            index = Sk.builtin.asnum$(idx);
+            if(!Number.isInteger(index)){
+                throw new Sk.builtin.TypeError("sequence index must be integer, not '"+Sk.abstr.typeName(idx)+"'");
+            }
+
+            var size = (this.tail - this.head) & this.mask;
+            if ((index | 0) !== index || index >= size || index < -size) {
+                throw new Sk.builtin.IndexError('deque index out of range');
+            }
+            const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
+            return this.v[pos];
+        };
+         set value via deque[index] = val
+        mod.deque.prototype['mp$ass_subscript'] = function (idx, val) {
+            index = Sk.builtin.asnum$(idx);
+            if(!Number.isInteger(index)){
+                throw new Sk.builtin.TypeError("sequence index must be integer, not '"+Sk.abstr.typeName(idx)+"'");
+            }
+
+            var size = (this.tail - this.head) & this.mask;
+            if ((index | 0) !== index || index >= size || index < -size) {
+                throw new Sk.builtin.IndexError('deque index out of range');
+            }
+            const pos = (this.head + index) & this.mask;
+            this.v[pos] = val;
+        };
+        
+        mod.deque.prototype['__reversed__'] = new Sk.builtin.func(function (self) { 
+            var dq = new mod.deque(self);
+            mod.deque.prototype['reverse'].func_code(dq);
+            return new mod._deque_reverse_iterator(dq);
+        });
+
+        mod.deque.prototype.__class__ = mod.deque;
+
+        mod.deque.deque_iter_ = function (dq) {
+            if (!(this instanceof mod.deque.deque_iter_)) {
+                return new mod.deque.deque_iter_(dq);
+            }
+            this.$index = 0;
+            this.dq = dq.v;
+            this.sq$length = this.dq.length;
+            this.tp$iter = this;
+            var pos;
+            this.tp$iternext = function () {
+                if (this.$index >= this.sq$length) {
+                    return undefined;
+                }
+                pos = ((this.$index >= 0 ? dq.head : dq.tail) + this.$index) & dq.mask;
+                this.$index++;
+                return this.dq[pos];
+            };
+            this.$r = function () {
+                return new Sk.builtin.str("dequeiterator");
+            };
+            return this;
+        };
+        Sk.abstr.setUpInheritance("dequeiterator", mod.deque.deque_iter_, Sk.builtin.object);
+
+        mod.deque.deque_iter_.prototype.__class__ = mod.deque.deque__iter_;
+
+        mod.deque.deque_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+            return self;
+        });
+
+        mod.deque.deque_iter_.prototype.next$ = function (self) {
+            var ret = self.tp$iternext();
+            if (ret === undefined) {
+                throw new Sk.builtin.StopIteration();
+            }
+            return ret;
+        };
+
+        mod.deque.prototype.tp$iter = function () {
+            return new mod.deque.deque_iter_(this);
+        };
+
+        mod.deque.prototype['remove'] = new Sk.builtin.func(function (self, value) { 
+            Sk.builtin.pyCheckArgsLen("remove", arguments.length, 1, 1, true, false);
+            // Remove the first occurrence of value. If not found, raises a ValueError.
+            var index = mod.deque.prototype['index'].func_code(self, value);
+            const pos = (self.head + index) & self.mask;
+            var cur = pos;
+
+            while (cur !== self.tail) {
+                const next = (cur + 1) & self.mask;
+                self.v[cur] = self.v[next];
+                cur = next;
+            }
+
+            self.tail = (self.tail - 1) & self.mask;
+            var size = (self.tail - self.head) & self.mask;
+            if (size < self.mask >>> 1)
+                self._resize(size, self.v.length >>> 1);
+        });
+
+        mod.deque.prototype['__add__'] = new Sk.builtin.func(function (self, dqe) { 
+            // check type
+            if(Sk.abstr.typeName(dqe) != 'collections.deque'){
+                throw new Sk.builtin.TypeError('can only concatenate deque (not "'+Sk.abstr.typeName(dqe)+'") to deque');
+            }
+            for (var iter = dqe.tp$iter(), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext()) {
+                self.$push(k);
+            }
+            return self;
+        });
+        // n * deque and deque * n for seqtype object
+        mod.deque.prototype['sq$repeat'] = function (num) { 
+            var ret;
+            n = Sk.builtin.asnum$(num);
+            if(!Number.isInteger(n)){
+                throw new Sk.builtin.OverflowError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(num) + "'");
+            }
+            ret = [];
+            var size = (this.tail - this.head) & this.mask;            
+
+            var pos;
+            for (i = 0; i < n; ++i) {
+                for (j = 0; j < size; ++j) {
+                    pos = (this.head + j) & this.mask;
+                    ret.push(this.v[pos]);
+                }
+            }
+
+            if(this.maxlen)
+                return new mod.deque(Sk.builtin.list(ret), Sk.builtin.int_(this.maxlen)); 
+
+            return new mod.deque(Sk.builtin.list(ret));
+        };
+
+        
+        mod.deque.prototype['reverse'] = new Sk.builtin.func(function (self) { 
+            Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 0, 0, true, false);
+            var head = self.head,tail = self.tail,mask = self.mask;
+            var size = (self.tail - self.head) & self.mask;
+            for (var i = 0; i < ~~(size / 2); i++) {
+                const a = (tail - i - 1) & mask;
+                const b = (head + i) & mask;
+                const temp = self.v[a];
+                self.v[a] = self.v[b];
+                self.v[b] = temp;
+            }
+            return Sk.builtin.none.none$;
+        });
+        
+        mod.deque.prototype['rotate'] = new Sk.builtin.func(function (self, num=Sk.builtin.int_(1)) { 
+            Sk.builtin.pyCheckArgsLen("rotate", arguments.length, 0, 1, true, false);
+            n = Sk.builtin.asnum$(num);
+            if(!Number.isInteger(n)){
+                throw new Sk.builtin.OverflowError("'" + Sk.abstr.typeName(num) + "' object cannot be interpreted as an integer");
+            }
+
+            var head = self.head;
+            var tail = self.tail;
+
+            if (n === 0 || head === tail)
+                return self;
+            self.head = (head - n) & self.mask;
+            self.tail = (tail - n) & self.mask;
+            if (n > 0) {
+                for (var i = 1; i <= n; i++) {
+                    const a = (head - i) & self.mask;
+                    const b = (tail - i) & self.mask;
+                    self.v[a] = self.v[b];
+                    self.v[b] = undefined;
+                }
+            }
+            else {
+                for (let i = 0; i > n; i--) {
+                    const a = (tail - i) & self.mask;
+                    const b = (head - i) & self.mask;
+                    self.v[a] = self.v[b];
+                    self.v[b] = undefined;
+                }
+            }
+            return Sk.builtin.none.none$;
+        });
+
+        // for len(deque) function        
+        mod.deque.prototype.sq$length = function () {
+            return (this.tail - this.head) & this.mask;
+        };
+        
+        mod.deque.prototype.sq$contains = function (item) {
+            var it, i;
+
+            for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                if (Sk.misceval.richCompareBool(i, item, "Eq")) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        mod.deque.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+            Sk.builtin.pyCheckArgsLen("__contains__", arguments.length-1, 1, 1);
+            return new Sk.builtin.bool(self.sq$contains(item));
+        });
+
+        mod.deque.prototype["$r"] = function () {
+            // represetation: deque(['a','b','c'][,maxlen=n])
+            var ret = [];
+            var size = (this.tail - this.head) & this.mask;
+            for(var i = 0;i < size; i++){
+                if(this.v[(this.head + i) & this.mask])
+                    ret.push(Sk.misceval.objectRepr(this.v[(this.head + i) & this.mask]).v)
+            }
+            if(this.maxlen)
+                return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "], maxlen="+this.maxlen+")");
+            return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "])");
+        };
+
+        mod._deque_reverse_iterator = function(value){
+            this.v = value;
+        };
+        Sk.abstr.setUpInheritance("_deque_reverse_iterator", mod._deque_reverse_iterator, Sk.builtin.seqtype);
+
+        mod._deque_reverse_iterator._deque_reverse_iterator_iter_ = function (dq) {
+            if (!(this instanceof mod._deque_reverse_iterator._deque_reverse_iterator_iter_)) {
+                return new mod._deque_reverse_iterator._deque_reverse_iterator_iter_(dq);
+            }
+            this.$index = 0;
+            this.dq = dq.v.v;
+            this.sq$length = this.dq.length;
+            this.tp$iter = this;
+            var pos;
+            this.tp$iternext = function () {
+                if (this.$index >= this.sq$length) {
+                    return undefined;
+                }
+                pos = ((this.$index >= 0 ? dq.v.head : dq.v.tail) + this.$index) & dq.v.mask;
+                this.$index++;
+                return this.dq[pos];
+            };
+            this.$r = function () {
+                return new Sk.builtin.str("_deque_reverse_iterator_iter_");
+            };
+            return this;
+        };
+        mod._deque_reverse_iterator.prototype['tp$iter'] = function(){
+            return new mod._deque_reverse_iterator._deque_reverse_iterator_iter_(this);
+        }
+
+        Sk.abstr.setUpInheritance("_deque_reverse_iterator_iterator", mod._deque_reverse_iterator._deque_reverse_iterator_iter_, Sk.builtin.object);
+
+        mod._deque_reverse_iterator._deque_reverse_iterator_iter_.prototype.__class__ = mod._deque_reverse_iterator._deque_reverse_iterator_iter_;
+
+        mod._deque_reverse_iterator._deque_reverse_iterator_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
+            return self;
+        });
+
+        mod._deque_reverse_iterator._deque_reverse_iterator_iter_.prototype.next$ = function (self) {
+            var ret = self.tp$iternext();
+            if (ret === undefined) {
+                throw new Sk.builtin.StopIteration();
+            }
+            return ret;
+        };
+
+        mod._deque_reverse_iterator.prototype['$r'] = function(){
+            return Sk.builtin.str('<collections._deque_reverse_iterator object>');
+        }
+        // deque end
 
         // namedtuple
         mod.namedtuples = {};
