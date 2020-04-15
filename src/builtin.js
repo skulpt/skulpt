@@ -697,6 +697,7 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
+        k = Sk.unfixReserved(k);
         var internal = [
             "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
@@ -925,7 +926,7 @@ Sk.builtin.getattr = function getattr (obj, pyName, default_) {
     }
 
     jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReservedWords(jsName));
+    mangledName = new Sk.builtin.str(Sk.fixReserved(jsName));
     ret = obj.tp$getattr(mangledName);
     if (ret === undefined) {
         if (default_ !== undefined) {
@@ -946,7 +947,7 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     }
     jsName = pyName.$jsstr();
     if (obj.tp$setattr) {
-        obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
+        obj.tp$setattr(new Sk.builtin.str(Sk.fixReserved(jsName)), value);
     } else {
         throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
     }

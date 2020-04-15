@@ -233,6 +233,11 @@ function fixReservedNames (name) {
     return name;
 }
 
+function fixReserved (name) {
+    name = fixReservedNames(fixReservedWords(name));
+    return name;
+}
+
 function unfixReserved(name) {
     return name.replace(/_\$r[wn]\$$/, "");
 }
@@ -2839,6 +2844,9 @@ Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
 Sk.fixReservedNames = fixReservedNames;
 Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+
+Sk.fixReserved = fixReserved;
+Sk.exportSymbol("Sk.fixReserved", Sk.fixReserved);
 
 Sk.unfixReserved = unfixReserved;
 Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
