@@ -711,7 +711,7 @@ var $builtinmodule = function (name) {
             Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
             return new mod.deque.deque_iter_(self);
         });
-         get value via deque[index]
+        // get value via deque[index]
         mod.deque.prototype['mp$subscript'] = function (idx) { 
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
