@@ -725,7 +725,7 @@ var $builtinmodule = function (name) {
             const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
             return this.v[pos];
         };
-         set value via deque[index] = val
+        // set value via deque[index] = val
         mod.deque.prototype['mp$ass_subscript'] = function (idx, val) {
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
