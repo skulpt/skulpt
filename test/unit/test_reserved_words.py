@@ -37,9 +37,14 @@ class Test_ReservedWords(unittest.TestCase):
     def test_error_message(self):
         f = True
         try:
-          setattr(f, "continue", True)
+            setattr(f, "continue", True)
         except AttributeError as e:
-          self.assertTrue("_$rw$" not in str(e))
+            self.assertTrue("_$rw$" not in str(e))
+
+        try:
+            setattr(f, 'name', True)
+        except AttributeError as e:
+            self.assertTrue('_$rn$' not in str(e))
 
     def test_dir(self):
         self.assertTrue('name' in dir(a))
