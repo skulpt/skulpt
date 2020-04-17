@@ -210,6 +210,7 @@ var reservedNames_ = {
     "apply": true,
     "arguments": true,
     "call": true,
+    "caller": true, 
     "eval": true,
     "hasOwnProperty": true,
     "isPrototypeOf": true,
