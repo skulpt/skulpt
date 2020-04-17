@@ -42,13 +42,19 @@ class Test_ReservedWords(unittest.TestCase):
             self.assertTrue("_$rw$" not in str(e))
 
         try:
-            setattr(f, 'name', True)
+            f.name
         except AttributeError as e:
             self.assertTrue('_$rn$' not in str(e))
 
     def test_dir(self):
         self.assertTrue('name' in dir(a))
         self.assertTrue('length' in dir(a))
+
+    def test_arguments_prototype(self):
+        with self.assertRaises(AttributeError):
+            A.prototype
+        with self.assertRaises(AttributeError):
+            A.arguments 
 
 if __name__ == '__main__':
     unittest.main()
