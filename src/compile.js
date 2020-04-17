@@ -907,8 +907,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            mangled = fixReservedWords(mangled);
-            mangled = fixReservedNames(mangled);
+            mangled = fixReserved(mangled);
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
@@ -2680,8 +2679,7 @@ Compiler.prototype.exitScope = function () {
     if (prev.name.v !== "<module>") {// todo; hacky
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
-        mangled = fixReservedWords(mangled);
-        mangled = fixReservedNames(mangled);
+        mangled = fixReserved(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
     for (var constant in prev.consts) {
