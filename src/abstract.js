@@ -834,22 +834,21 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // Should this be an assert?
     if (obj === null || !obj.tp$getattr) {
         let objname = Sk.abstr.typeName(obj);
-        let jsName = pyName.$jsstr();
-        jsName = Sk.unfixReserved(jsName);
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     // This function is so hot that we do our own inline suspension checks
 
     let ret = obj.tp$getattr(pyName, canSuspend);
-    let jsName = pyName.$jsstr();
-    jsName = Sk.unfixReserved(jsName);
 
     if (ret === undefined) {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function(r) {
             if (r === undefined) {
+                let jsName = Sk.unfixReserved(pyName.$jsstr());
                 throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
             }
             return r;
@@ -863,16 +862,16 @@ Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
-    var jsName = pyName.$jsstr();
-    jsName = Sk.unfixReserved(jsName);
 
     if (obj === null) {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
         return obj.tp$setattr(pyName, data, canSuspend);
     } else {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 };
