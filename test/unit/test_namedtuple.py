@@ -116,6 +116,28 @@ class TestNamedTuple(unittest.TestCase):
             [('abc', '', 'x'), ('abc', '_1', 'x')],                         # fieldname is a space
         ]:
             self.assertEqual(namedtuple('NT', spec, rename=True)._fields, renamed)
+    
+    
+    def test_skulpt_names(self):
+        # added test for skulpt names that should work.
+        reserved_names = ['apply', 'call', 'eval', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toSource', 'toLocaleString', 'toString', 'unwatch', 'valueOf', 'watch', 'length', 'name']
+        NT = namedtuple('NT', reserved_names)
+        nt = NT(*(None for _ in reserved_names))
+
+        self.assertEqual(nt.apply,None)
+        self.assertEqual(nt.call,None)
+        self.assertEqual(nt.eval,None)
+        self.assertEqual(nt.hasOwnProperty,None)
+        self.assertEqual(nt.isPrototypeOf,None)
+        self.assertEqual(nt.propertyIsEnumerable,None)
+        self.assertEqual(nt.toSource,None)
+        self.assertEqual(nt.toLocaleString,None)
+        self.assertEqual(nt.toString,None)
+        self.assertEqual(nt.unwatch,None)
+        self.assertEqual(nt.valueOf,None)
+        self.assertEqual(nt.watch,None)
+        self.assertEqual(nt.length,None)
+        self.assertEqual(nt.name,None)
 
     def test_module_parameter(self):
         NT = namedtuple('NT', ['x', 'y'], module=collections)

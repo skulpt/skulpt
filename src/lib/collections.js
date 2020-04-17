@@ -618,14 +618,15 @@ var $builtinmodule = function (name) {
 
             // create the field properties
             for (let i = 0; i < flds.length; i++) {
-                cons[flds[i]] = {};
-                cons[flds[i]].tp$descr_set = function () {
+                fld = Sk.fixReservedNames(flds[i]);
+                cons[fld] = {};
+                cons[fld].tp$descr_set = function () {
                     throw new Sk.builtin.AttributeError("can't set attribute");
                 };
-                cons[flds[i]].tp$descr_get = function (self) {
+                cons[fld].tp$descr_get = function (self) {
                     return self.v[i];
                 };
-                cons[flds[i]]["$r"] = function () {
+                cons[fld]["$r"] = function () {
                     return new Sk.builtin.str("<property object>");
                 };
             }
