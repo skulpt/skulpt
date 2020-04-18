@@ -468,10 +468,16 @@ var $builtinmodule = function (name) {
         });
 
         // deque - Special thanks to:https://github.com/blakeembrey/deque
-        mod.deque = function deque(iterable, maxlen){
+        // deque
+        mod.deque = function(iterable, maxlen){
             if (!(this instanceof mod.deque)) {
                 return new mod.deque(iterable, maxlen);
             }
+            if (this['$d']) 
+                this['$d']['maxlen'] = maxlen?maxlen:Sk.builtin.none.none$;
+            else
+                this['$d'] = {'maxlen': maxlen?maxlen:Sk.builtin.none.none$};
+
             this.head = 0;
             this.tail = 0;
             this.mask = 1;
@@ -480,6 +486,8 @@ var $builtinmodule = function (name) {
                 maxlen = Sk.builtin.asnum$(maxlen);
                 if(!Number.isInteger(maxlen)){
                     throw new Sk.builtin.TypeError("an integer is required");
+                }else if (maxlen < 0){
+                    throw new Sk.builtin.ValueError("maxlen must be non-negative");
                 }else{
                     this.maxlen = maxlen;
                 }
@@ -493,10 +501,6 @@ var $builtinmodule = function (name) {
             }else{
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
             }
-            if (this['$d']) 
-                this['$d']['maxlen'] = maxlen?maxlen:Sk.builtin.none.none$;
-            else
-                this['$d'] = {'maxlen': maxlen?maxlen:Sk.builtin.none.none$};
 
             this.__class__ = mod.deque;
 
@@ -510,6 +514,13 @@ var $builtinmodule = function (name) {
         mod.deque.$defaults = [Sk.builtin.tuple([]), Sk.builtin.none.none$];
 
         Sk.abstr.setUpInheritance("collections.deque", mod.deque, Sk.builtin.seqtype);
+        Sk.abstr.markUnhashable(mod.deque);
+
+        mod.deque.prototype.$init$ = mod.deque;
+
+        mod.deque.prototype.__init__ = new Sk.builtin.func(function(self, iterable, maxlen){
+            self.$init$(iterable, maxlen);
+        });
 
         mod.deque.prototype._resize = function(size, length) {
             var head = this.head;
@@ -551,12 +562,13 @@ var $builtinmodule = function (name) {
             return this;
         }
 
+        
         mod.deque.prototype['append'] = new Sk.builtin.func(function (self, value) {
             Sk.builtin.pyCheckArgsLen("append", arguments.length, 1, 1, true, false);
             self.$push(value);
             return Sk.builtin.none.none$;
         });
-
+        
         mod.deque.prototype['appendleft'] = new Sk.builtin.func(function (self, value) {
             Sk.builtin.pyCheckArgsLen("appendleft", arguments.length, 1, 1, true, false);
             self.$pushLeft(value);
@@ -572,6 +584,8 @@ var $builtinmodule = function (name) {
             for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
+                // console.log(iter);
+                // console.log(k);
                 self.$push(k);
             }
             return Sk.builtin.none.none$;
@@ -585,6 +599,7 @@ var $builtinmodule = function (name) {
             for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
+                console.log(k);
                 self.$pushLeft(k);
             }
             return Sk.builtin.none.none$;
@@ -595,6 +610,7 @@ var $builtinmodule = function (name) {
             self.head = 0;
             self.tail = 0;
             self.mask = 1;
+            self.maxlen = undefined; 
             self.v = new Array(2);
         });
         
@@ -610,17 +626,15 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.IndexError("deque already at its maximum size");
             if(index > size)
                 index = size;
-            var pos;
-            if(index >= 0)
-                pos = (self.head + index) & self.mask;
-            else if(index > -size)
-                pos = (self.tail + index) & self.mask;
-            else
-                pos = 0;
+            if(index <= -size)
+                index = 0;
+            
+            const pos = ((index >= 0 ? self.head : self.tail) + index) & self.mask;
 
             var cur = self.tail;
 
             self.tail = (self.tail + 1) & self.mask;
+
             while (cur !== pos) {
                 const prev = (cur - 1) & self.mask;
                 self.v[cur] = self.v[prev];
@@ -665,6 +679,36 @@ var $builtinmodule = function (name) {
             }
             throw new Sk.builtin.ValueError(Sk.ffi.remapToJs(x) + " is not in deque");
         });
+
+        mod.deque.prototype['__delitem__'] = new Sk.builtin.func(function (self, idx) {
+            var size = (self.tail - self.head) & self.mask;
+            index = Sk.builtin.asnum$(idx);
+            if(!Number.isInteger(index)){
+                throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(idx)+"' object cannot be interpreted as an integer");
+            }
+
+            if ((index | 0) !== index || index >= size || index < -size) {
+                throw new Sk.builtin.IndexError('deque index out of range');
+            }
+
+            const pos = ((index >= 0 ? self.head : self.tail) + index) & self.mask;
+            var cur = pos;
+            // Shift items backward 1 to erase position.
+            while (cur !== self.tail) {
+                const next = (cur + 1) & self.mask;
+                self.v[cur] = self.v[next];
+                cur = next;
+            }
+            // Decrease tail position by 1.
+            self.tail = (self.tail - 1) & self.mask;
+            if (size < self.mask >>> 1)
+                self._resize(size, self.v.length >>> 1);
+            return Sk.builtin.none.none$;
+        });    
+        // del deque[index]
+        mod.deque.prototype.mp$del_subscript = function(idx){
+            mod.deque.prototype['__delitem__'].func_code(this, idx);
+        }
         
         mod.deque.prototype['count'] = new Sk.builtin.func(function (self, x) { 
             Sk.builtin.pyCheckArgsLen("count", arguments.length, 1, 1, true, false);
@@ -675,7 +719,7 @@ var $builtinmodule = function (name) {
             var count = 0;
             const offset = 0;
             for (var i = 0; i < size; i++) {
-                if (list[(head + i) & mask] === x)
+                if (list[(head + i) & mask] == x)
                     count++;
             }
             return new Sk.builtin.int_(count);
@@ -711,7 +755,7 @@ var $builtinmodule = function (name) {
             Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
             return new mod.deque.deque_iter_(self);
         });
-        // get value via deque[index]
+         // get value via deque[index]
         mod.deque.prototype['mp$subscript'] = function (idx) { 
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
@@ -725,7 +769,7 @@ var $builtinmodule = function (name) {
             const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
             return this.v[pos];
         };
-        // set value via deque[index] = val
+         // set value via deque[index] = val
         mod.deque.prototype['mp$ass_subscript'] = function (idx, val) {
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
@@ -736,7 +780,7 @@ var $builtinmodule = function (name) {
             if ((index | 0) !== index || index >= size || index < -size) {
                 throw new Sk.builtin.IndexError('deque index out of range');
             }
-            const pos = (this.head + index) & this.mask;
+            const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
             this.v[pos] = val;
         };
         
@@ -746,7 +790,14 @@ var $builtinmodule = function (name) {
             return new mod._deque_reverse_iterator(dq);
         });
 
-        mod.deque.prototype.__class__ = mod.deque;
+        mod.deque.prototype.tp$setattr = function (pyName, value) {
+            if(!(Sk.ffi.remapToJs(pyName) in this['$d'])){
+                throw new Sk.builtin.AttributeError("'collections.deque' object has no attribute '"+Sk.ffi.remapToJs(pyName)+"'");
+            }
+            throw new Sk.builtin.AttributeError("attribute '"+Sk.ffi.remapToJs(pyName)+"' of 'collections.deque' objects is not writable");
+        };
+
+        mod.deque.__class__ = mod.deque;
 
         mod.deque.deque_iter_ = function (dq) {
             if (!(this instanceof mod.deque.deque_iter_)) {
@@ -754,23 +805,30 @@ var $builtinmodule = function (name) {
             }
             this.$index = 0;
             this.dq = dq.v;
-            this.sq$length = this.dq.length;
+            this.sq$length = (dq.tail - dq.head) & dq.mask;
             this.tp$iter = this;
+
+            this.$head = dq.head;
+            this.$tail = dq.tail;
+            this.$mask = dq.mask;
+
             var pos;
             this.tp$iternext = function () {
                 if (this.$index >= this.sq$length) {
                     return undefined;
                 }
-                pos = ((this.$index >= 0 ? dq.head : dq.tail) + this.$index) & dq.mask;
+
+                pos = ((this.$index >= 0 ? this.$head : this.$tail) + this.$index) & this.$mask;
                 this.$index++;
                 return this.dq[pos];
             };
             this.$r = function () {
-                return new Sk.builtin.str("dequeiterator");
+                return new Sk.builtin.str("_collections._deque_iterator");
             };
             return this;
         };
-        Sk.abstr.setUpInheritance("dequeiterator", mod.deque.deque_iter_, Sk.builtin.object);
+
+        Sk.abstr.setUpInheritance("_collections._deque_iterator", mod.deque.deque_iter_, Sk.builtin.object);
 
         mod.deque.deque_iter_.prototype.__class__ = mod.deque.deque__iter_;
 
@@ -814,7 +872,22 @@ var $builtinmodule = function (name) {
             if(Sk.abstr.typeName(dqe) != 'collections.deque'){
                 throw new Sk.builtin.TypeError('can only concatenate deque (not "'+Sk.abstr.typeName(dqe)+'") to deque');
             }
+            var new_deque = mod.deque(self, self.maxlen);
             for (var iter = dqe.tp$iter(), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext()) {
+                new_deque.$push(k);
+            }
+            return new_deque;
+        });
+        // deque += iterable
+        mod.deque.prototype['__iadd__'] = new Sk.builtin.func(function (self, iterable) { 
+            // check type
+            if(!Sk.builtin.checkIterable(iterable)){
+                throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(iterable)+"' object is not iterable");
+            }
+
+            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
                 self.$push(k);
@@ -893,7 +966,8 @@ var $builtinmodule = function (name) {
             return Sk.builtin.none.none$;
         });
 
-        // for len(deque) function        
+        // for len(deque) function
+        
         mod.deque.prototype.sq$length = function () {
             return (this.tail - this.head) & this.mask;
         };
@@ -920,17 +994,96 @@ var $builtinmodule = function (name) {
             var size = (this.tail - this.head) & this.mask;
             for(var i = 0;i < size; i++){
                 if(this.v[(this.head + i) & this.mask])
-                    ret.push(Sk.misceval.objectRepr(this.v[(this.head + i) & this.mask]).v)
+                    if(this.v[(this.head + i) & this.mask] == this)
+                        ret.push('[...]');
+                    else
+                        ret.push(Sk.misceval.objectRepr(this.v[(this.head + i) & this.mask]).v)
             }
             if(this.maxlen)
                 return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "], maxlen="+this.maxlen+")");
             return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "])");
         };
+        // for repr(deque)
+        mod.deque.prototype.__repr__ = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, false, true);
+            return mod.deque.prototype["$r"].call(self);
+        });
+
+        mod.deque.prototype.tp$richcompare = function (w, op) {
+
+            var k;
+            var i;
+            var wl;
+            var vl;
+            var v;
+            if (this === w && Sk.misceval.opAllowsEquality(op)) {
+                return true;
+            }
+
+            // w not a deque
+            if (!w.__class__ || w.__class__ != mod.deque) {
+                // shortcuts for eq/not
+                if (op === "Eq") {
+                    return false;
+                }
+                if (op === "NotEq") {
+                    return true;
+                }
+
+                return false;
+            }
+            var wd = w;
+            v = this.v;
+            w = w.v;
+            vl = (this.tail - this.head) & this.mask;
+            wl = (wd.tail - wd.head) & wd.mask;
+
+            for (i = 0; i < vl && i < wl; ++i) {
+                k = Sk.misceval.richCompareBool(v[(this.head + i) & this.mask], w[(wd.head + i) & wd.mask], "Eq");
+                if (!k) {
+                    break;
+                }
+            }
+
+            if (i >= vl || i >= wl) {
+                // no more items to compare, compare sizes
+                switch (op) {
+                    case "Lt":
+                        return vl < wl;
+                    case "LtE":
+                        return vl <= wl;
+                    case "Eq":
+                        return vl === wl;
+                    case "NotEq":
+                        return vl !== wl;
+                    case "Gt":
+                        return vl > wl;
+                    case "GtE":
+                        return vl >= wl;
+                    default:
+                        Sk.asserts.fail();
+                }
+            }
+
+            // we have an item that's different
+
+            // shortcuts for eq/not
+            if (op === "Eq") {
+                return false;
+            }
+            if (op === "NotEq") {
+                return true;
+            }
+
+            // or, compare the differing element using the proper operator
+            return Sk.misceval.richCompareBool(v[(this.head + i) & this.mask], w[(wd.head + i) & wd.mask], op);
+        };
 
         mod._deque_reverse_iterator = function(value){
             this.v = value;
         };
-        Sk.abstr.setUpInheritance("_deque_reverse_iterator", mod._deque_reverse_iterator, Sk.builtin.seqtype);
+
+        Sk.abstr.setUpInheritance("_collections._deque_reverse_iterator", mod._deque_reverse_iterator, Sk.builtin.seqtype);
 
         mod._deque_reverse_iterator._deque_reverse_iterator_iter_ = function (dq) {
             if (!(this instanceof mod._deque_reverse_iterator._deque_reverse_iterator_iter_)) {
@@ -950,7 +1103,7 @@ var $builtinmodule = function (name) {
                 return this.dq[pos];
             };
             this.$r = function () {
-                return new Sk.builtin.str("_deque_reverse_iterator_iter_");
+                return new Sk.builtin.str("_collections._deque_reverse_iterator_iter_");
             };
             return this;
         };
@@ -975,9 +1128,9 @@ var $builtinmodule = function (name) {
         };
 
         mod._deque_reverse_iterator.prototype['$r'] = function(){
-            return Sk.builtin.str('<collections._deque_reverse_iterator object>');
+            return Sk.builtin.str('<_collections._deque_reverse_iterator object>');
         }
-        // deque end
+        // deque end        
 
         // namedtuple
         mod.namedtuples = {};
