@@ -584,8 +584,6 @@ var $builtinmodule = function (name) {
             for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
-                // console.log(iter);
-                // console.log(k);
                 self.$push(k);
             }
             return Sk.builtin.none.none$;
@@ -599,7 +597,6 @@ var $builtinmodule = function (name) {
             for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
-                console.log(k);
                 self.$pushLeft(k);
             }
             return Sk.builtin.none.none$;
