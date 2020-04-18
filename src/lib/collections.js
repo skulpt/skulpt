@@ -468,7 +468,6 @@ var $builtinmodule = function (name) {
         });
 
         // deque - Special thanks to:https://github.com/blakeembrey/deque
-        // deque
         mod.deque = function(iterable, maxlen){
             if (!(this instanceof mod.deque)) {
                 return new mod.deque(iterable, maxlen);
@@ -581,11 +580,6 @@ var $builtinmodule = function (name) {
             if(!Sk.builtin.checkIterable(iterable))
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
 
-            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-            //     k !== undefined;
-            //     k = iter.tp$iternext()) {
-            //     self.$push(k);
-            // }
             for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 self.$push(i);
             }
@@ -597,11 +591,6 @@ var $builtinmodule = function (name) {
             if(!Sk.builtin.checkIterable(iterable))
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
             
-            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-            //     k !== undefined;
-            //     k = iter.tp$iternext()) {
-            //     self.$pushLeft(k);
-            // }
             for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 self.$pushLeft(i);
             }
@@ -890,11 +879,6 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(iterable)+"' object is not iterable");
             }
 
-            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-            //     k !== undefined;
-            //     k = iter.tp$iternext()) {
-            //     self.$push(k);
-            // }
             for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 self.$push(i);
             }
