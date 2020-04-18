@@ -544,7 +544,7 @@ var $builtinmodule = function (name) {
                 this._resize(this.v.length, this.v.length << 1);
 
             var size = (this.tail - this.head) & this.mask;
-            if(this.maxlen !== undefined && size >= this.maxlen)
+            if(this.maxlen !== undefined && size > this.maxlen)
                  mod.deque.prototype['popleft'].func_code(this);
             return this;
         };
@@ -555,7 +555,7 @@ var $builtinmodule = function (name) {
                 this._resize(this.v.length, this.v.length << 1);
 
             var size = (this.tail - this.head) & this.mask;
-            if(this.maxlen !== undefined && size >= this.maxlen)
+            if(this.maxlen !== undefined && size > this.maxlen)
                  mod.deque.prototype['pop'].func_code(this);
             return this;
         }
