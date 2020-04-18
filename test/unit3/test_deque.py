@@ -107,7 +107,6 @@ class TestBasic(unittest.TestCase):
                 
     def test_contains(self):
         n = 200
-
         d = deque(range(n))
         for i in range(n):
             self.assertTrue(i in d)
