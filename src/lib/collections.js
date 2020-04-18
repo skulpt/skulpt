@@ -538,29 +538,27 @@ var $builtinmodule = function (name) {
             this.v = sorted;
         }
         mod.deque.prototype.$push = function (value) {
-            var size = (this.tail - this.head) & this.mask;
-
-            if(this.maxlen && size >= this.maxlen)
-                 mod.deque.prototype['popleft'].func_code(this);
-
             this.v[this.tail] = value;
             this.tail = (this.tail + 1) & this.mask;
             if (this.head === this.tail)
                 this._resize(this.v.length, this.v.length << 1);
+
+            var size = (this.tail - this.head) & this.mask;
+            if(this.maxlen !== undefined && size >= this.maxlen)
+                 mod.deque.prototype['popleft'].func_code(this);
             return this;
         };
         mod.deque.prototype.$pushLeft = function(value) {
-            var size = (this.tail - this.head) & this.mask;
-            if(this.maxlen && size >= this.maxlen)
-                 mod.deque.prototype['pop'].func_code(this);
-            
             this.head = (this.head - 1) & this.mask;
             this.v[this.head] = value;
             if (this.head === this.tail)
                 this._resize(this.v.length, this.v.length << 1);
+
+            var size = (this.tail - this.head) & this.mask;
+            if(this.maxlen !== undefined && size >= this.maxlen)
+                 mod.deque.prototype['pop'].func_code(this);
             return this;
         }
-
         
         mod.deque.prototype['append'] = new Sk.builtin.func(function (self, value) {
             Sk.builtin.pyCheckArgsLen("append", arguments.length, 1, 1, true, false);
@@ -573,7 +571,6 @@ var $builtinmodule = function (name) {
             self.$pushLeft(value);
             return Sk.builtin.none.none$;
         });
-
         
         mod.deque.prototype['extend'] = new Sk.builtin.func(function (self, iterable) {
             Sk.builtin.pyCheckArgsLen("extend", arguments.length, 1, 1, true, false);
@@ -907,7 +904,6 @@ var $builtinmodule = function (name) {
 
             return new mod.deque(Sk.builtin.list(ret));
         };
-
         
         mod.deque.prototype['reverse'] = new Sk.builtin.func(function (self) { 
             Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 0, 0, true, false);
@@ -956,8 +952,7 @@ var $builtinmodule = function (name) {
             return Sk.builtin.none.none$;
         });
 
-        // for len(deque) function
-        
+        // for len(deque) function        
         mod.deque.prototype.sq$length = function () {
             return (this.tail - this.head) & this.mask;
         };
@@ -1097,6 +1092,7 @@ var $builtinmodule = function (name) {
             };
             return this;
         };
+        
         mod._deque_reverse_iterator.prototype['tp$iter'] = function(){
             return new mod._deque_reverse_iterator._deque_reverse_iterator_iter_(this);
         }
