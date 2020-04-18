@@ -571,13 +571,15 @@ var $builtinmodule = function (name) {
             self.$pushLeft(value);
             return Sk.builtin.none.none$;
         });
+
         
         mod.deque.prototype['extend'] = new Sk.builtin.func(function (self, iterable) {
             Sk.builtin.pyCheckArgsLen("extend", arguments.length, 1, 1, true, false);
             if(!Sk.builtin.checkIterable(iterable))
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
 
-            for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); 
+                i !== undefined; i = it.tp$iternext()) {
                 self.$push(i);
             }
             return Sk.builtin.none.none$;
@@ -611,7 +613,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("integer argument expected, got "+Sk.abstr.typeName(idx));
             }
             var size = (self.tail - self.head) & self.mask;
-            if(self.maxlen && size >= self.maxlen)
+            if(self.maxlen !==undefined && size >= self.maxlen)
                 throw new Sk.builtin.IndexError("deque already at its maximum size");
             if(index > size)
                 index = size;
@@ -694,6 +696,7 @@ var $builtinmodule = function (name) {
                 self._resize(size, self.v.length >>> 1);
             return Sk.builtin.none.none$;
         });    
+        
         // del deque[index]
         mod.deque.prototype.mp$del_subscript = function(idx){
             mod.deque.prototype['__delitem__'].func_code(this, idx);
@@ -758,6 +761,7 @@ var $builtinmodule = function (name) {
             const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
             return this.v[pos];
         };
+        
          // set value via deque[index] = val
         mod.deque.prototype['mp$ass_subscript'] = function (idx, val) {
             index = Sk.builtin.asnum$(idx);
@@ -869,18 +873,19 @@ var $builtinmodule = function (name) {
             }
             return new_deque;
         });
+        
         // deque += iterable
         mod.deque.prototype['__iadd__'] = new Sk.builtin.func(function (self, iterable) { 
             // check type
             if(!Sk.builtin.checkIterable(iterable)){
                 throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(iterable)+"' object is not iterable");
             }
-
             for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 self.$push(i);
             }
             return self;
         });
+        
         // n * deque and deque * n for seqtype object
         mod.deque.prototype['sq$repeat'] = function (num) { 
             var ret;
@@ -899,11 +904,12 @@ var $builtinmodule = function (name) {
                 }
             }
 
-            if(this.maxlen)
+            if(this.maxlen !==undefined)
                 return new mod.deque(Sk.builtin.list(ret), Sk.builtin.int_(this.maxlen)); 
 
             return new mod.deque(Sk.builtin.list(ret));
         };
+
         
         mod.deque.prototype['reverse'] = new Sk.builtin.func(function (self) { 
             Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 0, 0, true, false);
@@ -984,10 +990,11 @@ var $builtinmodule = function (name) {
                     else
                         ret.push(Sk.misceval.objectRepr(this.v[(this.head + i) & this.mask]).v)
             }
-            if(this.maxlen)
+            if(this.maxlen !== undefined)
                 return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "], maxlen="+this.maxlen+")");
             return new Sk.builtin.str("deque([" + ret.filter(Boolean).join(", ") + "])");
         };
+        
         // for repr(deque)
         mod.deque.prototype.__repr__ = new Sk.builtin.func(function (self) {
             Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, false, true);
@@ -1051,7 +1058,6 @@ var $builtinmodule = function (name) {
             }
 
             // we have an item that's different
-
             // shortcuts for eq/not
             if (op === "Eq") {
                 return false;
@@ -1116,7 +1122,7 @@ var $builtinmodule = function (name) {
         mod._deque_reverse_iterator.prototype['$r'] = function(){
             return Sk.builtin.str('<_collections._deque_reverse_iterator object>');
         }
-        // deque end        
+        // deque end     
 
         // namedtuple
         mod.namedtuples = {};
