@@ -581,10 +581,13 @@ var $builtinmodule = function (name) {
             if(!Sk.builtin.checkIterable(iterable))
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
 
-            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
-                self.$push(k);
+            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
+            //     k !== undefined;
+            //     k = iter.tp$iternext()) {
+            //     self.$push(k);
+            // }
+            for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                self.$push(i);
             }
             return Sk.builtin.none.none$;
         });
@@ -594,10 +597,13 @@ var $builtinmodule = function (name) {
             if(!Sk.builtin.checkIterable(iterable))
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
             
-            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
-                self.$pushLeft(k);
+            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
+            //     k !== undefined;
+            //     k = iter.tp$iternext()) {
+            //     self.$pushLeft(k);
+            // }
+            for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                self.$pushLeft(i);
             }
             return Sk.builtin.none.none$;
         });
@@ -884,10 +890,13 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(iterable)+"' object is not iterable");
             }
 
-            for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
-                self.$push(k);
+            // for (var iter = iterable.tp$iter(), k = iter.tp$iternext();
+            //     k !== undefined;
+            //     k = iter.tp$iternext()) {
+            //     self.$push(k);
+            // }
+            for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                self.$push(i);
             }
             return self;
         });
