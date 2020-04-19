@@ -521,7 +521,7 @@ var $builtinmodule = function (name) {
             self.$init$(iterable, maxlen);
         });
 
-        mod.deque.prototype._resize = function(size, length) {
+        mod.deque.prototype.$resize = function(size, length) {
             var head = this.head;
             var mask = this.mask;
             this.head = 0;
@@ -541,7 +541,7 @@ var $builtinmodule = function (name) {
             this.v[this.tail] = value;
             this.tail = (this.tail + 1) & this.mask;
             if (this.head === this.tail)
-                this._resize(this.v.length, this.v.length << 1);
+                this.$resize(this.v.length, this.v.length << 1);
 
             var size = (this.tail - this.head) & this.mask;
             if(this.maxlen !== undefined && size > this.maxlen)
@@ -552,7 +552,7 @@ var $builtinmodule = function (name) {
             this.head = (this.head - 1) & this.mask;
             this.v[this.head] = value;
             if (this.head === this.tail)
-                this._resize(this.v.length, this.v.length << 1);
+                this.$resize(this.v.length, this.v.length << 1);
 
             var size = (this.tail - this.head) & this.mask;
             if(this.maxlen !== undefined && size > this.maxlen)
@@ -633,7 +633,7 @@ var $builtinmodule = function (name) {
             }
             self.v[pos] = value;
             if (self.head === self.tail)
-                self._resize(self.v.length, self.v.length << 1);
+                self.$resize(self.v.length, self.v.length << 1);
             return Sk.builtin.none.none$;
         });
         
@@ -693,7 +693,7 @@ var $builtinmodule = function (name) {
             // Decrease tail position by 1.
             self.tail = (self.tail - 1) & self.mask;
             if (size < self.mask >>> 1)
-                self._resize(size, self.v.length >>> 1);
+                self.$resize(size, self.v.length >>> 1);
             return Sk.builtin.none.none$;
         });    
         
@@ -726,7 +726,7 @@ var $builtinmodule = function (name) {
             self.v[self.tail] = undefined;
             var size = (self.tail - self.head) & self.mask;
             if (size < self.mask >>> 1)
-                self._resize(size, self.v.length >>> 1);
+                self.$resize(size, self.v.length >>> 1);
             return value;
         });
         
@@ -739,7 +739,7 @@ var $builtinmodule = function (name) {
             self.head = (self.head + 1) & self.mask;
             var size = (self.tail - self.head) & self.mask;
             if (size < self.mask >>> 1)
-                self._resize(size, self.v.length >>> 1);
+                self.$resize(size, self.v.length >>> 1);
             return value;
         });
         
@@ -857,7 +857,7 @@ var $builtinmodule = function (name) {
             self.tail = (self.tail - 1) & self.mask;
             var size = (self.tail - self.head) & self.mask;
             if (size < self.mask >>> 1)
-                self._resize(size, self.v.length >>> 1);
+                self.$resize(size, self.v.length >>> 1);
         });
 
         mod.deque.prototype['__add__'] = new Sk.builtin.func(function (self, dqe) { 
@@ -1002,7 +1002,6 @@ var $builtinmodule = function (name) {
         });
 
         mod.deque.prototype.tp$richcompare = function (w, op) {
-
             var k;
             var i;
             var wl;
