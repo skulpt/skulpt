@@ -1109,6 +1109,14 @@ Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self){
 Sk.builtin.complex.prototype.int$nonzero.co_name = new Sk.builtin.str("__nonzero__");
 Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$nonzero);
 
+Sk.builtin.complex.prototype.nb$bool = function () {
+    return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
+};
+
+Sk.builtin.complex.prototype.nb$nonzero = function () {
+    return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
+};
+
 
 // ToDo: think about inplace methods too
 Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
