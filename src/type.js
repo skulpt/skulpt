@@ -45,6 +45,7 @@ Sk.dunderToSkulpt = {
     "__rdiv__": "nb$reflected_divide",
     "__floordiv__": "nb$floor_divide",
     "__rfloordiv__": "nb$reflected_floor_divide",
+    "__invert__": "nb$invert",
     "__mod__": "nb$remainder",
     "__rmod__": "nb$reflected_remainder",
     "__divmod__": "nb$divmod",
@@ -52,6 +53,8 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
+    "__bool__": ["nb$bool", 1],
+    "__nonzero__": ["nb$nonzero", 1],
     "__len__": ["sq$length", 1],
     "__get__": ["tp$descr_get", 3],
     "__set__": ["tp$descr_set", 3]
