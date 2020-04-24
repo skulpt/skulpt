@@ -468,7 +468,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(t !== undefined);
     t.ob$type = Sk.builtin.type;
-    t.tp$name = name;
+    t.tp$name = "type";
     t["$r"] = function () {
         var ctype;
         var mod = t.__module__;
@@ -480,7 +480,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
         if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
             ctype = "type";
         }
-        return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
+        return new Sk.builtin.str("<" + ctype + " '" + cname + t.prototype.tp$name + "'>");
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
@@ -507,7 +507,7 @@ Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
-//Sk.builtin.type.prototype.tp$name = "type";
+Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
