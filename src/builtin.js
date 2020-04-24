@@ -883,7 +883,7 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
         return Sk.builtin.none.none$;
     }
 
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
 };
 
 Sk.builtin.raw_input = function (prompt) {
@@ -1372,7 +1372,7 @@ Sk.builtin.delattr = function delattr (obj, attr) {
         }
         throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
     }
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
 };
 
 Sk.builtin.execfile = function execfile () {

@@ -129,9 +129,9 @@ Sk.builtin.method.prototype["$r"] = function () {
     }
 
     if (this.im_self === Sk.builtin.none.none$) {
-        return new Sk.builtin.str("<unbound method " + Sk.abstr.typeName(this.im_class) + "." + this.tp$name + ">");
+        return new Sk.builtin.str("<unbound method " + this.im_class.prototype.tp$name + "." + this.tp$name + ">");
     }
 
-    var owner = this.im_class !== Sk.builtin.none.none$ ? Sk.abstr.typeName(this.im_class) : "?";
+    var owner = this.im_class !== Sk.builtin.none.none$ ? this.im_class.prototype.tp$name : "?";
     return new Sk.builtin.str("<bound method " + owner  + "." + this.tp$name + " of " + Sk.ffi.remapToJs(Sk.misceval.objectRepr(this.im_self)) + ">");
 };
