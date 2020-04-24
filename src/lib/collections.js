@@ -263,7 +263,6 @@ var $builtinmodule = function (name) {
         // OrderedDict
         mod.OrderedDict = function OrderedDict(items)
         {
-            debugger;
             if (!(this instanceof mod.OrderedDict))
             {
                 return new mod.OrderedDict(items);
@@ -275,7 +274,7 @@ var $builtinmodule = function (name) {
 
             return this;
         }
-        
+ 
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
 
         mod.OrderedDict.prototype['$r'] = function()

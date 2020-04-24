@@ -492,7 +492,7 @@ Sk.builtin.type["$r"] = function () {
     }
 };
 Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
 };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };

@@ -93,12 +93,13 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     // state.
     if (this.im_self === Sk.builtin.none.none$) {
         var getMessage = (function (reason) {
-            return "unbound method " + this.tp$name + "() must be called with " + Sk.abstr.typeName(this.im_class) + " instance as first argument (got " + reason + " instead)";
+            const name_bound = this.tp$name.split(".");
+            return "unbound method " + name_bound.pop() + "() must be called with " + name_bound.pop() + " instance as first argument (got " + reason + " instead)";
         }).bind(this);
 
         if (args.length > 0) {
             if (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin) {
-                throw new Sk.builtin.TypeError(getMessage(Sk.abstr.typeName(args[0].ob$type) + " instance"));
+                throw new Sk.builtin.TypeError(getMessage(Sk.abstr.typeName(args[0]) + " instance"));
             }
         } else {
             throw new Sk.builtin.TypeError(getMessage("nothing"));
