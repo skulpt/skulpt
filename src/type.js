@@ -517,6 +517,9 @@ Sk.builtin.type["$r"] = function () {
         return new Sk.builtin.str("<type 'type'>");
     }
 };
+Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
+    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+};
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
