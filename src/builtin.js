@@ -870,20 +870,17 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
-    if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
-        if (!Sk.builtin.checkString(pyName)) {
-            throw new Sk.builtin.TypeError("attribute name must be string");
-        }
-        jsName = pyName.$jsstr();
-        if (obj.tp$setattr) {
-            obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
-        } else {
-            throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
-        }
-        return Sk.builtin.none.none$;
+    if (!Sk.builtin.checkString(pyName)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
     }
 
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
+    jsName = pyName.$jsstr();
+    if (obj.tp$setattr) {
+        obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
+    } else {
+        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
+    }
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtin.raw_input = function (prompt) {
