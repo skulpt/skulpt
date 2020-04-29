@@ -274,7 +274,7 @@ var $builtinmodule = function (name) {
 
             return this;
         }
- 
+
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
 
         mod.OrderedDict.prototype['$r'] = function()
