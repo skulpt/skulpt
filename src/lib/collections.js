@@ -263,7 +263,6 @@ var $builtinmodule = function (name) {
         // OrderedDict
         mod.OrderedDict = function OrderedDict(items)
         {
-            debugger;
             if (!(this instanceof mod.OrderedDict))
             {
                 return new mod.OrderedDict(items);
