@@ -19,7 +19,7 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
         self.assertTrue(str(test).startswith('<function test'))
 
         bound_no_type = test.__get__(4)
-        self.assertEqual(str(bound_no_type), '<bound method ?.test of 4>')
+        self.assertEqual(str(bound_no_type), '<bound method test of 4>')
 
         unbound = test.__get__(None, int)
         self.assertEqual(str(unbound), '<unbound method int.test>')
@@ -64,7 +64,7 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
 
         bound_no_type = Test.test.__get__(4)
         # Type information disappears when __get__ is called without a type
-        self.assertEqual(str(bound_no_type), '<bound method ?.test of 4>')
+        self.assertEqual(str(bound_no_type), '<bound method Test.test of 4>')
 
         # Calling __get__ with a non sensical type results in a no-op
         self.assertEqual(unbound.__get__(None, int), unbound)
