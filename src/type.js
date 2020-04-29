@@ -252,14 +252,16 @@ Sk.builtin.type = function (name, bases, dict) {
             }
         }
 
-        klass.prototype.tp$name = _name;
         klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
-        var module_lk = new Sk.builtin.str("__module__");
-        if(dict.mp$lookup(module_lk) === undefined) {
-            dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
+        const module_lk = new Sk.builtin.str("__module__");
+        let _module = dict.mp$lookup(module_lk);
+        if(_module === undefined) {
+            _module = Sk.globals["__name__"];
+            dict.mp$ass_subscript(module_lk, _module);
         }
+        klass.prototype.tp$name = _module.$jsstr() + "." + _name;
 
         // copy properties into our klass object
         // uses python iter methods
@@ -277,8 +279,6 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__name__"] = name;
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
-            var cname;
-            var mod;
             var reprf = this.tp$getattr(Sk.builtin.str.$repr);
             if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
@@ -291,12 +291,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
                 // Else, use default repr for a user-defined class instance
-                mod = dict.mp$subscript(module_lk); // lookup __module__
-                cname = "";
-                if (mod) {
-                    cname = mod.v + ".";
-                }
-                return new Sk.builtin.str("<" + cname + _name + " object>");
+                return new Sk.builtin.str("<" + this.tp$name + " object>");
             }
         };
 
@@ -471,16 +466,11 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     t.tp$name = "type";
     t["$r"] = function () {
         var ctype;
-        var mod = t.__module__;
-        var cname = "";
-        if (mod) {
-            cname = mod.v + ".";
-        }
         ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
+        if (!Sk.__future__.class_repr && this.prototype.tp$name.indexOf(".") === -1) {
             ctype = "type";
         }
-        return new Sk.builtin.str("<" + ctype + " '" + cname + t.prototype.tp$name + "'>");
+        return new Sk.builtin.str("<" + ctype + " '" + t.prototype.tp$name + "'>");
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;

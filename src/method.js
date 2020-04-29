@@ -19,10 +19,24 @@ Sk.builtin.method = function (func, self, klass, builtin) {
         }
         return new Sk.builtin.method(func, self, klass);
     }
-    this.tp$name = func.tp$name;
+    klass = klass || Sk.builtin.none.none$;
     this.im_func = func;
     this.im_self = self || Sk.builtin.none.none$;
-    this.im_class = klass || Sk.builtin.none.none$;
+    this.im_class = klass;
+    if (klass.prototype && builtin !== true) {
+        if (func instanceof Sk.builtin.method) {
+            if (!Sk.__future__.python3) {
+                // in python 2 we replace the name the method is bound to
+                this.tp$name = klass.prototype.tp$name.split(".").pop() + "." + func.tp$name.split(".").pop();
+            } else {
+                this.tp$name = func.tp$name; 
+            }
+        } else {
+            this.tp$name = klass.prototype.tp$name.split(".").pop() + "." + func.tp$name;
+        }
+    } else {
+        this.tp$name = func.tp$name;
+    }
     this.im_builtin = builtin;
     this["$d"] = {
         im_func: func,
@@ -127,11 +141,12 @@ Sk.builtin.method.prototype["$r"] = function () {
     if (this.im_builtin) {
         return new Sk.builtin.str("<built-in method " + this.tp$name + " of type object>");
     }
-
-    if (this.im_self === Sk.builtin.none.none$) {
-        return new Sk.builtin.str("<unbound method " + this.im_class.prototype.tp$name + "." + this.tp$name + ">");
+    if (this.im_self !== Sk.builtin.none.none$) {
+        return new Sk.builtin.str("<bound method " + this.tp$name + " of " + Sk.misceval.objectRepr(this.im_self).$jsstr() + ">");
+    } 
+    if (!Sk.__future__.python3) {
+        return new Sk.builtin.str("<unbound method " + this.tp$name + ">");
+    } else {
+        return new Sk.builtin.str("<function " +  this.tp$name + ">");
     }
-
-    var owner = this.im_class !== Sk.builtin.none.none$ ? this.im_class.prototype.tp$name : "?";
-    return new Sk.builtin.str("<bound method " + owner  + "." + this.tp$name + " of " + Sk.ffi.remapToJs(Sk.misceval.objectRepr(this.im_self)) + ">");
 };
