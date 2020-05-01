@@ -9,15 +9,9 @@ Sk.abstr = {};
 //
 
 Sk.abstr.typeName = function (v) {
-    // returns the tp$name without the module if one exists
-    // or returns invalid type
     var vtypename;
     if (v.tp$name !== undefined) {
-        if (v.tp$name.indexOf(".") !== -1) {
-            vtypename = v.tp$name.split(".").pop();
-        } else {
-            vtypename = v.tp$name;
-        }
+        vtypename = v.tp$name;
     } else {
         vtypename = "<invalid type>";
     }

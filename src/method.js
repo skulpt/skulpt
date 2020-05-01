@@ -25,14 +25,10 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     this.im_class = klass;
     if (klass.prototype && builtin !== true) {
         if (func instanceof Sk.builtin.method) {
-            if (!Sk.__future__.python3) {
-                // in python 2 we replace the name the method is bound to
-                this.tp$name = klass.prototype.tp$name.split(".").pop() + "." + func.tp$name.split(".").pop();
-            } else {
-                this.tp$name = func.tp$name; 
-            }
+            // in python 2 we replace the name the method is bound to
+            this.tp$name = klass.prototype.tp$name + "." + func.tp$name.split(".").pop();
         } else {
-            this.tp$name = klass.prototype.tp$name.split(".").pop() + "." + func.tp$name;
+            this.tp$name = klass.prototype.tp$name + "." + func.tp$name;
         }
     } else {
         this.tp$name = func.tp$name;
@@ -145,9 +141,5 @@ Sk.builtin.method.prototype["$r"] = function () {
     if (this.im_self !== Sk.builtin.none.none$) {
         return new Sk.builtin.str("<bound method " + this.tp$name + " of " + Sk.misceval.objectRepr(this.im_self).$jsstr() + ">");
     } 
-    if (!Sk.__future__.python3) {
-        return new Sk.builtin.str("<unbound method " + this.tp$name + ">");
-    } else {
-        return new Sk.builtin.str("<function " +  this.tp$name + ">");
-    }
+    return new Sk.builtin.str("<unbound method " + this.tp$name + ">");
 };
