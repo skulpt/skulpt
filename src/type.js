@@ -564,7 +564,6 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
 
     // todo; probably should fix this, used for builtin types to get stuff
     // from prototype
-    debugger;
     if (this.sk$prototypical) {
         if (this.prototype) {
             return this.prototype[jsName];
@@ -682,7 +681,7 @@ Sk.builtin.type.prototype.$buildMRO_ = function () {
 
     var kbases = this["$d"].mp$subscript(Sk.builtin.type.basesStr_);
     for (i = 0; i < kbases.v.length; ++i) {
-        all.push(kbases.v[i].$buildMRO_());
+        all.push([...kbases.v[i].tp$mro.v]);
     }
 
     bases = [];
@@ -691,6 +690,7 @@ Sk.builtin.type.prototype.$buildMRO_ = function () {
     }
     all.push(bases);
 
+    debugger;
     return this.$mroMerge_(all);
 };
 
