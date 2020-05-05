@@ -796,6 +796,9 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         if (klass === base) {
             return Sk.builtin.bool.true$;
         }
+        if (klass.prototype && klass.prototype instanceof base) {
+            return Sk.builtin.bool.true$;
+        }
         if (klass["$d"] === undefined) {
             return Sk.builtin.bool.false$;
         }
@@ -1197,6 +1200,10 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         if (klass === base) {
             return true;
         }
+        if (klass.prototype instanceof base) {
+            return true;
+        }
+
         if (klass["$d"] === undefined) {
             return false;
         }

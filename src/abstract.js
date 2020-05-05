@@ -189,7 +189,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     if (w_is_subclass) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
-            if (wop.call) {
+            if (wop.call && !(wop instanceof Sk.builtin.func)) {
                 ret = wop.call(w, v);
             } else {
                 ret = Sk.misceval.callsimArray(wop, [w, v]);
@@ -202,7 +202,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
 
     vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
+        if (vop.call && !(vop instanceof Sk.builtin.func)) {
             ret = vop.call(v, w);
         } else {
             ret = Sk.misceval.callsimArray(vop, [v, w]);
@@ -215,7 +215,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     if (!w_is_subclass) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
-            if (wop.call) {
+            if (wop.call  && !(wop instanceof Sk.builtin.func)) {
                 ret = wop.call(w, v);
             } else {
                 ret = Sk.misceval.callsimArray(wop, [w, v]);
@@ -233,7 +233,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
     var ret;
     var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
+        if (vop.call  && !(vop instanceof Sk.builtin.func)) {
             ret = vop.call(v, w);
         } else {  // assume that vop is an __xxx__ type method
             ret = Sk.misceval.callsimArray(vop, [v, w]);
@@ -249,7 +249,7 @@ Sk.abstr.unary_op_ = function (v, opname) {
     var ret;
     var vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
+        if (vop.call  && !(vop instanceof Sk.builtin.func)) {
             ret = vop.call(v);
         } else {  // assume that vop is an __xxx__ type method
             ret = Sk.misceval.callsimArray(vop, [v]); //  added to be like not-in-place... is this okay?

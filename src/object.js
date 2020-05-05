@@ -17,9 +17,6 @@ Sk.builtin.object = function () {
 };
 
 Sk.builtin.object.prototype = Object.create(Function.prototype);
-Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
-Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
-Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
 
 
 Sk.builtin.object.prototype.__init__ = function __init__() {

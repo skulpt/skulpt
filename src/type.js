@@ -536,9 +536,7 @@ Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
-    if (!this.sk$klass) {
-        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
-    }
+
 
     var res;
     var tp = this;
@@ -575,6 +573,9 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
     // class attributes are direct properties of the object
+    if (!this.sk$klass) {
+        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+    }
     var jsName = pyName.$jsstr();
     this[jsName] = value;
     this.prototype[jsName] = value;
