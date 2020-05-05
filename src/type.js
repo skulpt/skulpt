@@ -3,6 +3,27 @@ if(Sk.builtin === undefined) {
 }
 
 /**
+ * Create getters and setters for builtins
+ * @constructor
+ * @param {String} _name
+ * @param {Function} get
+ * @param {Function} set 
+ * @param {String} doc
+ * @param {closure} 
+ */
+
+Sk.GetSetDef = function (_name, get, set, doc, closure) {
+    this._name = _name;
+    this.get = get;
+    this.set = set;
+    this.doc = doc;
+    this.closure = closure;
+};
+
+Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
+
+
+/**
  * Maps Python dunder names to the Skulpt Javascript function names that
  * implement them.
  *
