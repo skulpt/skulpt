@@ -71,7 +71,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
         }
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, pyName);
+    descr = tp.$typeLookup(pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
@@ -90,7 +90,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
 
     // OK, try __getattr__
 
-    descr = Sk.builtin.type.typeLookup(tp, Sk.builtin.str.$getattr);
+    descr = tp.$typeLookup(Sk.builtin.str.$getattr);
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
         if (f) {
@@ -152,7 +152,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         return;
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, pyName);
+    descr = tp.$typeLookup(pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {

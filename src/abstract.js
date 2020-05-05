@@ -968,7 +968,7 @@ Sk.abstr.lookupSpecial = function(op, pyName) {
         return null;
     }
 
-    return Sk.builtin.type.typeLookup(obtp, pyName);
+    return obtp.$typeLookup(pyName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 

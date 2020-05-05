@@ -102,7 +102,7 @@ Sk.builtin.super_.prototype.tp$getattr = function (pyName, canSuspend) {
         }
     }
 
-    descr = Sk.builtin.type.typeLookup(tp, pyName);
+    descr = tp.$typeLookup(pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {

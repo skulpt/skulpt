@@ -67,8 +67,9 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
     Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
-    Sk.builtin.type.tp$bases = new Sk.builtin.tuple([Sk.builtin.object]);
-    Sk.builtin.type.tp$mro = new Sk.builtin.tuple([Sk.builtin.type, Sk.builtin.object]);
+    Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
+    // Sk.builtin.type.tp$bases = new Sk.builtin.tuple([Sk.builtin.object]);
+    // Sk.builtin.type.tp$mro = new Sk.builtin.tuple([Sk.builtin.type, Sk.builtin.object]);
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
@@ -83,20 +84,21 @@ Sk.doOneTimeInitialization = function (canSuspend) {
             }
         }
 
-        child.tp$mro = new Sk.builtin.tuple([child]);
+        // child.tp$mro = new Sk.builtin.tuple([child]);
         if (!child.tp$base){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
-        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child].concat(bases)));
+        child.tp$bases = new Sk.builtin.tuple(bases)
+        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, child.tp$bases);
+        child.tp$mro = new Sk.builtin.tuple([child].concat(bases))
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
     };
 
     for (x in Sk.builtin) {
         func = Sk.builtin[x];
-        if ((func.prototype instanceof Sk.builtin.object ||
-             func === Sk.builtin.object) && !func.sk$abstract) {
+        if (func instanceof Sk.builtin.type && !func.sk$abstract) {
             setUpClass(func);
         }
     }

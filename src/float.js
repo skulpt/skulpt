@@ -170,7 +170,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // check if special method exists (nb_float is not implemented in skulpt, hence we use __float__)
-    f = Sk.builtin.type.typeLookup(op.ob$type, Sk.builtin.str.$float_);
+    f = op.ob$type.$typeLookup(Sk.builtin.str.$float_);
     if (f == null) {
         throw new Sk.builtin.TypeError("a float is required");
     }

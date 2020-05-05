@@ -90,7 +90,7 @@ Sk.builtin.complex = function (real, imag) {
             return true;
         }
 
-        if(Sk.builtin.type.typeLookup(op.ob$type, Sk.builtin.str.$float_) !== undefined) {
+        if(op.ob$type.$typeLookup(Sk.builtin.str.$float_) !== undefined) {
             return true;
         }
     };
