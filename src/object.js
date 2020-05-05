@@ -16,7 +16,11 @@ Sk.builtin.object = function () {
     return this;
 };
 
-Sk.builtin.object.prototype = Object.create(Function.prototype);
+// Sk.builtin.object.prototype = Object.create(Function.prototype);
+Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
+// Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+// Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
 
 
 Sk.builtin.object.prototype.__init__ = function __init__() {
@@ -311,6 +315,7 @@ Sk.builtin.object.prototype["__ne__"] = function (self, other) {
 Sk.builtin.object.prototype["__lt__"] = function (self, other) {
     Sk.builtin.pyCheckArgsLen("__lt__", arguments.length, 1, 1, false, true);
 
+    debugger;
     return self.ob$lt(other);
 };
 

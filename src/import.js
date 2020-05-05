@@ -67,9 +67,9 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
 
-    Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
-    Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
-    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    // Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+    // Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+    // Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {

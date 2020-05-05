@@ -492,6 +492,11 @@ Sk.builtin.type.prototype["$r"] = function () {
 Sk.builtin.type.prototype.tp$name = "type";
 Sk.builtin.type.prototype.sk$type = true;
 
+Sk.builtin.type.prototype.call = Function.prototype.call;
+Sk.builtin.type.prototype.apply = Function.prototype.apply;
+
+Sk.builtin.type.makeIntoTypeObj("type", Sk.builtin.type);
+
 // Sk.builtin.type.makeIntoTypeObj = function (name, t) {
 //     t.ob$type = Sk.builtin.type;
 //     t.tp$name = name;
@@ -752,9 +757,6 @@ Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
     return new Sk.builtin.str(self);
 };
-
-
-
 
 Sk.builtin.type.pythonFunctions = ["__format__"];
 
