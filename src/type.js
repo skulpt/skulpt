@@ -459,51 +459,68 @@ Sk.builtin.type = function (name, bases, dict) {
 /**
  *
  */
-Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
-    Sk.builtin.type.makeIntoTypeObj(name, newedInstanceOfType);
+Sk.builtin.type.makeIntoTypeObj = function (name, newedInstanceOfType) {
+    Sk.asserts.assert(name !== undefined);
+    Sk.asserts.assert(newedInstanceOfType !== undefined);
+    Object.setPrototypeOf(newedInstanceOfType, Sk.builtin.type.prototype); 
     return newedInstanceOfType;
 };
 
-Sk.builtin.type.makeIntoTypeObj = function (name, t) {
-    Sk.asserts.assert(name !== undefined);
-    Sk.asserts.assert(t !== undefined);
-    t.ob$type = Sk.builtin.type;
-    t.tp$name = "type";
-    t["$r"] = function () {
-        var ctype;
-        var mod = t.__module__;
-        var cname = "";
-        if (mod) {
-            cname = mod.v + ".";
-        }
-        ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
-            ctype = "type";
-        }
-        return new Sk.builtin.str("<" + ctype + " '" + cname + t.prototype.tp$name + "'>");
-    };
-    t.tp$str = undefined;
-    t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-    t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-    t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
-    t.sk$type = true;
-
-    return t;
-};
-
-Sk.builtin.type.ob$type = Sk.builtin.type;
-Sk.builtin.type.tp$name = "type";
-Sk.builtin.type.sk$type = true;
-Sk.builtin.type["$r"] = function () {
-    if(Sk.__future__.class_repr) {
-        return new Sk.builtin.str("<class 'type'>");
-    } else {
-        return new Sk.builtin.str("<type 'type'>");
+Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
+Sk.builtin.type.prototype["$r"] = function () {
+    var ctype;
+    var mod = t.__module__;
+    var cname = "";
+    if (mod) {
+        cname = mod.v + ".";
     }
+    ctype = "class";
+    if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
+        ctype = "type";
+    }
+    return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
 };
-Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
-};
+
+Sk.builtin.type.prototype.tp$name = "type";
+Sk.builtin.type.prototype.sk$type = true;
+
+// Sk.builtin.type.makeIntoTypeObj = function (name, t) {
+//     t.ob$type = Sk.builtin.type;
+//     t.tp$name = name;
+//     t["$r"] = function () {
+//         var ctype;
+//         var mod = t.__module__;
+//         var cname = "";
+//         if (mod) {
+//             cname = mod.v + ".";
+//         }
+//         ctype = "class";
+//         if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
+//             ctype = "type";
+//         }
+//         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
+//     };
+//     t.tp$str = undefined;
+//     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
+//     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+//     t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
+//     t.sk$type = true;
+
+//     return t;
+// };
+
+// Sk.builtin.type.ob$type = Sk.builtin.type;
+// Sk.builtin.type.tp$name = "type";
+// Sk.builtin.type.sk$type = true;
+// Sk.builtin.type["$r"] = function () {
+//     if(Sk.__future__.class_repr) {
+//         return new Sk.builtin.str("<class 'type'>");
+//     } else {
+//         return new Sk.builtin.str("<type 'type'>");
+//     }
+// };
+// Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
+// };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
@@ -511,6 +528,10 @@ Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
+    if (!this.sk$klass) {
+        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+    }
+
     var res;
     var tp = this;
     var descr;
