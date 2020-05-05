@@ -220,10 +220,12 @@ Sk.builtin.type = function (name, bases, dict) {
             bases.v.push(Sk.builtin.object);
             Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
         }
-
         var parent, it, firstAncestor, builtin_bases = [];
         // Set up inheritance from any builtins
         for (it = bases.tp$iter(), parent = it.tp$iternext(); parent !== undefined; parent = it.tp$iternext()) {
+            if (!parent.prototype || !parent.sk$type) {
+                throw new Sk.builtin.TypeError("bases must be 'type' objects");
+            }
             if (firstAncestor === undefined) {
                 firstAncestor = parent;
             }
@@ -232,12 +234,11 @@ Sk.builtin.type = function (name, bases, dict) {
                 parent = parent.prototype.tp$base;
             }
 
-            if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0) {
+            if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0 && parent !== Sk.builtin.object) {
                 builtin_bases.push(parent);
                 inheritsBuiltin = true;
             }
         }
-
         if (builtin_bases.length > 1) {
             throw new Sk.builtin.TypeError("Multiple inheritance with more than one builtin type is unsupported");
         }
@@ -690,7 +691,6 @@ Sk.builtin.type.prototype.$buildMRO_ = function () {
     }
     all.push(bases);
 
-    debugger;
     return this.$mroMerge_(all);
 };
 
