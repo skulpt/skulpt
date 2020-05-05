@@ -276,6 +276,9 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__class__"] = klass;
         klass.prototype["__class__"] = klass;
         klass["__name__"] = name;
+        klass.prototype["__name__"] = name;
+        klass.prototype["__module__"] = dict.mp$lookup(module_lk);
+        
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
             var cname;
@@ -425,7 +428,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
         var dunder;
         for (dunder in Sk.dunderToSkulpt) {
-            if (klass.prototype(dunder)) {
+            if (klass.hasOwnProperty(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             }
         }
