@@ -12,7 +12,6 @@ Sk.builtin.file = function (_name, mode, buffering) {
         return new Sk.builtin.file(_name, mode, buffering);
     }
 
-    debugger;
     this.mode = mode;
     this._name = Sk.ffi.remapToJs(_name);
     this.closed = false;
@@ -26,7 +25,6 @@ Sk.builtin.file = function (_name, mode, buffering) {
         this.fileno = 2;
     } else {
         if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
-            debugger;
             this.fileno = 10;
             elem = document.getElementById(_name.v);
             if (elem == null) {

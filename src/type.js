@@ -119,6 +119,7 @@ Sk.builtin.type = function (name, bases, dict) {
     var obj;
     var klass;
     var v;
+    debugger;
     if (bases === undefined && dict === undefined) {
         // 1 arg version of type()
         // the argument is an object, not a name and returns a type object
@@ -422,7 +423,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
         var dunder;
         for (dunder in Sk.dunderToSkulpt) {
-            if (klass[dunder]) {
+            if (klass.prototype(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             }
         }
@@ -456,10 +457,8 @@ Sk.builtin.type = function (name, bases, dict) {
 
 };
 
-
-Sk.builtin.type.prototype = Object.create(Function.prototype);
-
-
+Sk.builtin.type.prototype.call = Function.prototype.call;
+Sk.builtin.type.prototype.apply = Function.prototype.apply;
 /**
  *
  */
@@ -492,48 +491,10 @@ Sk.builtin.type.prototype["$r"] = function () {
 Sk.builtin.type.prototype.tp$name = "type";
 Sk.builtin.type.prototype.sk$type = true;
 
-Sk.builtin.type.prototype.call = Function.prototype.call;
-Sk.builtin.type.prototype.apply = Function.prototype.apply;
 
-Sk.builtin.type.makeIntoTypeObj("type", Sk.builtin.type);
 
-// Sk.builtin.type.makeIntoTypeObj = function (name, t) {
-//     t.ob$type = Sk.builtin.type;
-//     t.tp$name = name;
-//     t["$r"] = function () {
-//         var ctype;
-//         var mod = t.__module__;
-//         var cname = "";
-//         if (mod) {
-//             cname = mod.v + ".";
-//         }
-//         ctype = "class";
-//         if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
-//             ctype = "type";
-//         }
-//         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
-//     };
-//     t.tp$str = undefined;
-//     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-//     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-//     t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
-//     t.sk$type = true;
 
-//     return t;
-// };
 
-// Sk.builtin.type.ob$type = Sk.builtin.type;
-// Sk.builtin.type.tp$name = "type";
-// Sk.builtin.type.sk$type = true;
-// Sk.builtin.type["$r"] = function () {
-//     if(Sk.__future__.class_repr) {
-//         return new Sk.builtin.str("<class 'type'>");
-//     } else {
-//         return new Sk.builtin.str("<type 'type'>");
-//     }
-// };
-// Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
-// };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 

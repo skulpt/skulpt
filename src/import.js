@@ -66,10 +66,9 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
-
-    // Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
-    // Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
-    // Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    Sk.builtin.type.tp$bases = new Sk.builtin.tuple([Sk.builtin.object]);
+    Sk.builtin.type.tp$mro = new Sk.builtin.tuple([Sk.builtin.type, Sk.builtin.object]);
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
@@ -123,13 +122,13 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     }
 
 
-    // for (var file in Sk.internalPy.files) {
-    //     var fileWithoutExtension = file.split(".")[0].split("/")[1];
-    //     var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-    //     mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-    //     Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
-    //     Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
-    // }
+    for (var file in Sk.internalPy.files) {
+        var fileWithoutExtension = file.split(".")[0].split("/")[1];
+        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
+        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+        Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+    }
 };
 
 /**

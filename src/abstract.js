@@ -992,10 +992,8 @@ Sk.abstr.markUnhashable = function (thisClass) {
  */
 Sk.abstr.inherits = function (childCtor, parentCtor) {
     /** @constructor */
-    function tempCtor() {}
-    tempCtor.prototype = parentCtor.prototype;
     childCtor.superClass_ = parentCtor.prototype;
-    childCtor.prototype = new tempCtor();
+    childCtor.prototype = Object.create(parentCtor.prototype);
     /** @override */
     childCtor.prototype.constructor = childCtor;
 };
