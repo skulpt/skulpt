@@ -16,6 +16,12 @@ Sk.builtin.object = function () {
     return this;
 };
 
+Sk.builtin.object.prototype = Object.create(Function.prototype);
+Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+
+
 Sk.builtin.object.prototype.__init__ = function __init__() {
     return Sk.builtin.none.none$;
 };
@@ -529,3 +535,9 @@ Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
+
+
+// Sk.abstr.setUpInheritance("type", Sk.builtin.type, Sk.builtin.object);
+// Object.setPrototypeOf(Sk.builtin.object.prototype, Function.prototype);
+
+Object.setPrototypeOf(Sk.builtin.type, Function.prototype);

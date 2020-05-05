@@ -456,9 +456,14 @@ Sk.builtin.type = function (name, bases, dict) {
 
 };
 
+
+Sk.builtin.type.prototype = Object.create(Function.prototype);
+
+
 /**
  *
  */
+
 Sk.builtin.type.makeIntoTypeObj = function (name, newedInstanceOfType) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(newedInstanceOfType !== undefined);
@@ -469,17 +474,20 @@ Sk.builtin.type.makeIntoTypeObj = function (name, newedInstanceOfType) {
 Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
 Sk.builtin.type.prototype["$r"] = function () {
     var ctype;
-    var mod = t.__module__;
+    var mod = this.__module__;
     var cname = "";
     if (mod) {
         cname = mod.v + ".";
     }
     ctype = "class";
-    if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
+    if (!mod && !this.sk$klass && !Sk.__future__.class_repr) {
         ctype = "type";
     }
-    return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
+    return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
+
+
+
 
 Sk.builtin.type.prototype.tp$name = "type";
 Sk.builtin.type.prototype.sk$type = true;
@@ -743,6 +751,9 @@ Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
     return new Sk.builtin.str(self);
 };
+
+
+
 
 Sk.builtin.type.pythonFunctions = ["__format__"];
 

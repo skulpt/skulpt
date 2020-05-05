@@ -372,7 +372,6 @@ Sk.setup_method_mappings = function () {
 Sk.switch_version = function (method_to_map, python3) {
     var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
-    debugger;
     mappings = Sk.setup_method_mappings();
 
     mapping = mappings[method_to_map];

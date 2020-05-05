@@ -25,6 +25,7 @@ Sk.builtin.file = function (name, mode, buffering) {
         this.fileno = 2;
     } else {
         if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
+            debugger;
             this.fileno = 10;
             elem = document.getElementById(name.v);
             if (elem == null) {
