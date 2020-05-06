@@ -753,20 +753,20 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
+const issubclass_multiple_inheritance = function (klass, base) {
+    mro = klass.prototype.tp$mro;
+    for (let i = 0; i < mro.v.length; i++) {
+        if (base === mro.v[i]) {
+            return true;
+        }
+    }
+    return false;
+};
+
 Sk.builtin.isinstance = function isinstance (obj, type) {
-    var issubclass;
-    var i;
     Sk.builtin.pyCheckArgsLen("isinstance", arguments.length, 2, 2);
     if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
-    }
-
-    if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj instanceof Sk.builtin.none) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
     }
 
     // Normal case
@@ -789,29 +789,13 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         return Sk.builtin.bool.true$;
     }
 
+    // at this point either it's not an instance or we've got multiple inheritance
 
-    issubclass = function (klass, base) {
-        var i;
-        var bases;
-        if (klass === base) {
-            return Sk.builtin.bool.true$;
-        }
-        if (klass.prototype && klass.prototype instanceof base) {
-            return Sk.builtin.bool.true$;
-        }
-        if (klass["$d"] === undefined) {
-            return Sk.builtin.bool.false$;
-        }
-        bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
-        for (i = 0; i < bases.v.length; ++i) {
-            if (Sk.misceval.isTrue(issubclass(bases.v[i], base))) {
-                return Sk.builtin.bool.true$;
-            }
-        }
+    if (obj.sk$prototypical) {
         return Sk.builtin.bool.false$;
-    };
+    }
 
-    return issubclass(obj.ob$type, type);
+    return issubclass_multiple_inheritance(obj.ob$type, type) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
 };
 
 Sk.builtin.hash = function hash (value) {
@@ -1183,8 +1167,6 @@ Sk.builtin.quit = function quit (msg) {
 
 
 Sk.builtin.issubclass = function issubclass (c1, c2) {
-    var i;
-    var issubclass_internal;
     Sk.builtin.pyCheckArgsLen("issubclass", arguments.length, 2, 2);
     if (!Sk.builtin.checkClass(c1)) {
         throw new Sk.builtin.TypeError("issubclass() arg 1 must be a class");
@@ -1194,36 +1176,6 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
 
-    issubclass_internal = function (klass, base) {
-        var i;
-        var bases;
-        if (klass === base) {
-            return true;
-        }
-        if (klass.prototype instanceof base) {
-            return true;
-        }
-
-        if (klass["$d"] === undefined) {
-            return false;
-        }
-        if (klass["$d"].mp$subscript) {
-            // old style classes don't have bases
-            if (klass["$d"].sq$contains(Sk.builtin.type.basesStr_)) {
-                bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        for (i = 0; i < bases.v.length; ++i) {
-            if (issubclass_internal(bases.v[i], base)) {
-                return true;
-            }
-        }
-        return false;
-    };
 
     if (Sk.builtin.checkClass(c2)) {
         /* Quick test for an exact match */
@@ -1231,7 +1183,11 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
             return true;
         }
 
-        return issubclass_internal(c1, c2);
+        if (c1.prototype.sk$prototypical) {
+            return c1.prototype instanceof c2;
+        }
+
+        return issubclass_multiple_inheritance(c1, c2);
     }
 
     // Handle tuple type argument

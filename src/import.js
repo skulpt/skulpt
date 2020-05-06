@@ -64,12 +64,8 @@ Sk.doOneTimeInitialization = function (canSuspend) {
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
-    Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
-    Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
     Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
     Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
-    // Sk.builtin.type.tp$bases = new Sk.builtin.tuple([Sk.builtin.object]);
-    // Sk.builtin.type.tp$mro = new Sk.builtin.tuple([Sk.builtin.type, Sk.builtin.object]);
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
@@ -85,15 +81,12 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         }
 
         // child.tp$mro = new Sk.builtin.tuple([child]);
-        if (!child.tp$base){
-            child.tp$base = bases[0];
+        if (!child.prototype.tp$base){
+            child.prototype.tp$base = bases[0];
         }
-        child["$d"] = new Sk.builtin.dict([]);
-        child.tp$bases = new Sk.builtin.tuple(bases)
-        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, child.tp$bases);
-        child.tp$mro = new Sk.builtin.tuple([child].concat(bases))
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
-        child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
+        child.prototype.tp$bases = new Sk.builtin.tuple(bases);
+        child.prototype.tp$mro = new Sk.builtin.tuple([child].concat(bases));
+        child.prototype.sk$prototypical = true;
 
         const gsd = child.prototype.tp$getsets ? child.prototype.tp$getsets : [];
         for (let i = 0; i < gsd.length; i++) {

@@ -257,8 +257,8 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
-        var module_lk = new Sk.builtin.str("__module__");
-        if(dict.mp$lookup(module_lk) === undefined) {
+        const module_lk = new Sk.builtin.str("__module__");
+        if (dict.mp$lookup(module_lk) === undefined) {
             dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
         }
 
@@ -271,14 +271,12 @@ Sk.builtin.type = function (name, bases, dict) {
                 v = null;
             }
             klass.prototype[k.v] = v;
-            klass[k.v] = v;
         }
 
         klass["__class__"] = klass;
         klass.prototype["__class__"] = klass;
         klass["__name__"] = name;
         klass.prototype["__name__"] = name;
-        klass.prototype["__module__"] = dict.mp$lookup(module_lk);
         
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
@@ -296,7 +294,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
                 // Else, use default repr for a user-defined class instance
-                mod = dict.mp$subscript(module_lk); // lookup __module__
+                mod = klass.$typeLookup("__module__"); // lookup __module__
                 cname = "";
                 if (mod) {
                     cname = mod.v + ".";
@@ -403,18 +401,15 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
         };
 
-        klass.sk$prototypical = true;
+        klass.prototype.sk$prototypical = true;
 
         if (bases) {
             //print("building mro for", name);
             //for (var i = 0; i < bases.length; ++i)
             //print("base[" + i + "]=" + bases[i].tp$name);
-            klass["$d"] = new Sk.builtin.dict([]);
-            klass["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, bases);
+            klass.prototype.tp$bases = bases;
             mro = klass.$buildMRO();
-            klass["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
-            klass.tp$mro = mro;
-            //print("mro result", Sk.builtin.repr(mro).v);
+            klass.prototype.tp$mro = mro;
         }
 
         // fix for class attributes
@@ -429,7 +424,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
         var dunder;
         for (dunder in Sk.dunderToSkulpt) {
-            if (klass.hasOwnProperty(dunder)) {
+            if (klass.prototype.hasOwnProperty(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             }
         }
@@ -479,7 +474,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, newedInstanceOfType) {
 Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
 Sk.builtin.type.prototype["$r"] = function () {
     var ctype;
-    var mod = this.__module__;
+    var mod = this.prototype.__module__;
     var cname = "";
     if (mod && Sk.builtin.checkString(mod)) {
         cname = mod.v + ".";
@@ -531,8 +526,9 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     const meta_attribute = this[jsName];
 
 
+    let meta_get;
     if (meta_attribute !== undefined) {
-        const meta_get = meta_attribute.tp$descr_get;
+        meta_get = meta_attribute.tp$descr_get;
         if (meta_get !== undefined && Sk.builtin.checkDataDescr(meta_attribute)) {
             res = meta_get.call(meta_attribute, this, metatype);
             return res;
@@ -609,22 +605,19 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
 };
 
 Sk.builtin.type.prototype.$typeLookup = function (pyName) {
-    var mro = this.tp$mro;
+    var mro = this.prototype.tp$mro;
     var base;
     var res;
     var i;
     var jsName = pyName.$jsstr ? pyName.$jsstr() : pyName;
 
-    if (this.sk$prototypical) {
-        if (this.prototype) {
-            return this.prototype[jsName];
-        }
-        return undefined;
+    if (this.prototype.sk$prototypical) {
+        return this.prototype[jsName];
     }
 
     for (i = 0; i < mro.v.length; ++i) {
         base = mro.v[i];
-        if (base.prototype && base.prototype[jsName] !== undefined) {
+        if (base.prototype.hasOwnProperty(jsName)) {
             return base.prototype[jsName];
         }
     }
@@ -694,8 +687,8 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
         }
 
         next = cands[0];
-        if (res.length && this.sk$prototypical) {
-            this.sk$prototypical = Object.getPrototypeOf(res[res.length-1].prototype) === next.prototype;
+        if (res.length && this.prototype.sk$prototypical) {
+            this.prototype.sk$prototypical = Object.getPrototypeOf(res[res.length-1].prototype) === next.prototype;
         }
 
         // append next to result and remove from sequences
@@ -723,9 +716,10 @@ Sk.builtin.type.prototype.$buildMRO_ = function () {
 
     //Sk.debugout("buildMRO for", klass.tp$name);
 
-    var kbases = this["$d"].mp$subscript(Sk.builtin.type.basesStr_);
+    const kbases = this.prototype.tp$bases;
+
     for (i = 0; i < kbases.v.length; ++i) {
-        all.push([...kbases.v[i].tp$mro.v]);
+        all.push([...kbases.v[i].prototype.tp$mro.v]);
     }
 
     bases = [];
@@ -782,7 +776,7 @@ Sk.builtin.type.pythonFunctions = ["__format__"];
 
 Sk.builtin.type.$allocateSlot = function (klass, dunder) {
     // allocate a dunder method to a skulpt slot
-    const magic_func = klass[dunder];
+    const magic_func = klass.prototype[dunder];
     let skulpt_name = Sk.dunderToSkulpt[dunder];
 
     if (typeof (skulpt_name) === "string") {
@@ -831,11 +825,11 @@ Sk.builtin.type.$allocateSlot = function (klass, dunder) {
 
 
 Sk.builtin.type.prototype.tp$getsets = [
-    new Sk.GetSetDef("__bases__", function () {return this.tp$bases;}),
-    new Sk.GetSetDef("__base__", function () {return this.tp$base ? this.tp$base : Sk.builtin.none.none$;}),
-    new Sk.GetSetDef("__mro__", function () {return this.tp$mro;}),
+    new Sk.GetSetDef("__bases__", function () {return this.prototype.tp$bases;}),
+    new Sk.GetSetDef("__base__", function () {return this.prototype.tp$base ? this.prototype.tp$base : Sk.builtin.none.none$;}),
+    new Sk.GetSetDef("__mro__", function () {return this.prototype.tp$mro;}),
     new Sk.GetSetDef("__dict__", function () {return new Sk.builtin.mappingproxy(this.prototype);}),
-    new Sk.GetSetDef("__doc__", function () {return this.tp$doc ? this.tp$doc : Sk.builtin.none.none$;}),
+    new Sk.GetSetDef("__doc__", function () {return this.prototype.tp$doc ? this.prototype.tp$doc : Sk.builtin.none.none$;}),
     new Sk.GetSetDef("__name__", function () {return this.prototype.tp$name;}),
     new Sk.GetSetDef("__module__", function () {
         if (this.prototype.__module__ && this !== Sk.builtin.type) {
@@ -846,8 +840,7 @@ Sk.builtin.type.prototype.tp$getsets = [
         if (mod) {
             return new Sk.builtin.str(mod);
         } else {
-            return new Sk.builtin.str("builtns");
+            return new Sk.builtin.str("builtins");
         }
-        return Sk.builtin.none.none$;
     }),
 ]

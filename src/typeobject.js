@@ -3,14 +3,14 @@ Sk.builtin.type_is_subtype_base_chain = function type_is_subtype_base_chain(a, b
         if (a == b) {
             return true;
         }
-        a = a.tp$base;
+        a = a.prototype.tp$base;
     } while (a !== undefined);
 
     return (b == Sk.builtin.object);
 };
 
 Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
-    var mro = a.tp$mro;
+    var mro = a.prototype.tp$mro;
     if (mro) {
         /* Deal with multiple inheritance without recursion
            by walking the MRO tuple */
@@ -47,11 +47,11 @@ Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_se
     self.obj = other_self;
     self.type = a_type;
 
-    if (!a_type.tp$mro) {
+    if (!Sk.builtin.isinstance(a_type, Sk.builtin.type)) {
         throw new Sk.builtin.TypeError("must be type, not " + Sk.abstr.typeName(a_type));
     }
 
-    self.obj_type = a_type.tp$mro.v[1];
+    self.obj_type = a_type.prototype.tp$mro.v[1];
 
     if (!other_self) {
         throw new Sk.builtin.NotImplementedError("unbound super not supported because " +

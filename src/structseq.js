@@ -50,11 +50,9 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     }
     cons.prototype.tp$name = nm;
     cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
-    cons.prototype.ob$type["$d"] = new Sk.builtin.dict([]);
-    cons.prototype.ob$type["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.tuple]));
-    //var mro = Sk.builtin.type.buildMRO(cons.prototype.ob$type);
-    //cons.prototype.ob$type["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
-    //cons.prototype.ob$type.tp$mro = mro;
+    cons.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.tuple]);
+    cons.prototype.tp$base = Sk.builtin.tuple;
+    cons.prototype.tp$mro = new Sk.builtin.tuple([cons, Sk.builtin.tuple, Sk.builtin.object]);
     cons.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
         return Sk.builtin.tuple.prototype.mp$subscript.call(self, index);
     });
