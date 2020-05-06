@@ -612,6 +612,7 @@ Sk.builtin.bin = function bin (x) {
 };
 
 Sk.builtin.dir = function dir (x) {
+    
     var last;
     var it;
     var prop;
@@ -627,9 +628,9 @@ Sk.builtin.dir = function dir (x) {
     getName = function (k) {
         var s = null;
         var internal = [
-            "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
+            "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
-            "pythonFunctions", "HashNotImplemented", "constructor", "__dict__"
+            "pythonFunctions", "HashNotImplemented", "constructor",
         ];
         if (internal.indexOf(k) !== -1) {
             return null;
