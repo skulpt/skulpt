@@ -46,7 +46,6 @@ Sk.builtin.filter_ = function filter_ (fun, iterable) {
         }
         return item;
     };
-    this.__class__ = Sk.builtin.filter_;
     return this;
 };
 

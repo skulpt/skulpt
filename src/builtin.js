@@ -1033,7 +1033,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
         return new Sk.builtin.list(iter);
     };
 
-    if (iterable.__class__ === Sk.builtin.str) {
+    if (iterable.ob$type === Sk.builtin.str) {
         ctor = function () {
             return new Sk.builtin.str("");
         };
@@ -1043,7 +1043,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
         ret = function (iter) {
             return iter;
         };
-    } else if (iterable.__class__ === Sk.builtin.tuple) {
+    } else if (iterable.ob$type === Sk.builtin.tuple) {
         ret = function (iter) {
             return new Sk.builtin.tuple(iter);
         };

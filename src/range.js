@@ -29,7 +29,6 @@ Sk.builtin.range_ = function (start, stop, step, lst) {
 
 Sk.abstr.setUpInheritance("range", Sk.builtin.range_, Sk.builtin.object);
 
-Sk.builtin.range_.prototype.__class__ = Sk.builtin.range_;
 
 Sk.builtin.range_.prototype.mp$subscript = function (index) {
     var sub, start, stop, step;
@@ -80,7 +79,7 @@ Sk.builtin.range_.prototype.sq$length = function () {
 };
 
 Sk.builtin.range_.prototype.tp$richcompare = function (w, op) {
-    if (w.__class__ == Sk.builtin.range_) {
+    if (w.ob$type == Sk.builtin.range_) {
         w = w.v;
     }
     return this.v.tp$richcompare(w, op);

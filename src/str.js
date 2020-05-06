@@ -58,7 +58,6 @@ Sk.builtin.str = function (x) {
         return Sk.builtin.interned["1" + ret];
     }
 
-    this.__class__ = Sk.builtin.str;
     this.v = ret;
     this["v"] = this.v;
     Sk.builtin.interned["1" + ret] = this;
@@ -1176,7 +1175,6 @@ Sk.builtin.str_iter_ = function (obj) {
 
 Sk.abstr.setUpInheritance("iterator", Sk.builtin.str_iter_, Sk.builtin.object);
 
-Sk.builtin.str_iter_.prototype.__class__ = Sk.builtin.str_iter_;
 
 Sk.builtin.str_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);

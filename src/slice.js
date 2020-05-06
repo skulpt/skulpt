@@ -30,7 +30,6 @@ Sk.builtin.slice = function slice (start, stop, step) {
     this.stop = stop;
     this.step = step;
 
-    this.__class__ = Sk.builtin.slice;
 
     this["$d"] = new Sk.builtin.dict([Sk.builtin.slice$start, this.start,
                                       Sk.builtin.slice$stop, this.stop,
@@ -51,7 +50,7 @@ Sk.builtin.slice.prototype["$r"] = function () {
 Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
     // w not a slice
     var t1, t2;
-    if (!w.__class__ || w.__class__ != Sk.builtin.slice) {
+    if (!w.ob$type || w.ob$type != Sk.builtin.slice) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;

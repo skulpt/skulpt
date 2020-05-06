@@ -42,7 +42,6 @@ Sk.builtin.enumerate = function (iterable, start) {
         return new Sk.builtin.tuple([idx, next]);
     };
 
-    this.__class__ = Sk.builtin.enumerate;
 
     return this;
 };

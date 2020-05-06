@@ -171,7 +171,6 @@ Sk.builtin.complex = function (real, imag) {
 Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
-Sk.builtin.complex.prototype.__class__ = Sk.builtin.complex;
 
 Sk.builtin.complex.prototype.nb$int_ = function () {
     throw new Sk.builtin.TypeError("can't convert complex to int");

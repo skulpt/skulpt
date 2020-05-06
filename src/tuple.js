@@ -27,7 +27,6 @@ Sk.builtin.tuple = function (L) {
         }
     }
 
-    this.__class__ = Sk.builtin.tuple;
 
     this["v"] = this.v;
     return this;
@@ -144,7 +143,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     var wl;
     var vl;
     var v;
-    if (!w.__class__ ||
+    if (!w.ob$type ||
         !Sk.misceval.isTrue(Sk.builtin.isinstance(w, Sk.builtin.tuple))) {
         // shortcuts for eq/not
         if (op === "Eq") {
@@ -210,7 +209,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
 
 Sk.builtin.tuple.prototype.sq$concat = function (other) {
     var msg;
-    if (other.__class__ != Sk.builtin.tuple) {
+    if (other.ob$type != Sk.builtin.tuple) {
         msg = "can only concatenate tuple (not \"";
         msg += Sk.abstr.typeName(other) + "\") to tuple";
         throw new Sk.builtin.TypeError(msg);
@@ -292,7 +291,6 @@ Sk.builtin.tuple_iter_ = function (obj) {
 
 Sk.abstr.setUpInheritance("tupleiterator", Sk.builtin.tuple_iter_, Sk.builtin.object);
 
-Sk.builtin.tuple_iter_.prototype.__class__ = Sk.builtin.tuple_iter_;
 
 Sk.builtin.tuple_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;

@@ -40,7 +40,6 @@ Sk.builtin.iterator = function (obj, sentinel) {
 
 Sk.abstr.setUpInheritance("iterator", Sk.builtin.iterator, Sk.builtin.object);
 
-Sk.builtin.iterator.prototype.__class__ = Sk.builtin.iterator;
 
 Sk.builtin.iterator.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self.tp$iter();

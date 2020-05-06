@@ -215,10 +215,14 @@ Sk.builtin.type = function (name, bases, dict) {
             });
         };
 
-        if (bases.v.length === 0 && Sk.__future__.inherit_from_object) {
+        if (bases.v.length === 0) {
             // new style class, inherits from object by default
-            bases.v.push(Sk.builtin.object);
-            Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
+            if (Sk.__future__.inherit_from_object) {
+                bases.v.push(Sk.builtin.object);
+                Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
+            } else {
+                klass.prototype.__class__ = klass;
+            }
         }
         var parent, it, firstAncestor, builtin_bases = [];
         // Set up inheritance from any builtins
@@ -273,11 +277,6 @@ Sk.builtin.type = function (name, bases, dict) {
             klass.prototype[k.v] = v;
         }
 
-        klass["__class__"] = klass;
-        klass.prototype["__class__"] = klass;
-        klass["__name__"] = name;
-        klass.prototype["__name__"] = name;
-        
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
             var cname;
@@ -830,7 +829,7 @@ Sk.builtin.type.prototype.tp$getsets = [
     new Sk.GetSetDef("__mro__", function () {return this.prototype.tp$mro;}),
     new Sk.GetSetDef("__dict__", function () {return new Sk.builtin.mappingproxy(this.prototype);}),
     new Sk.GetSetDef("__doc__", function () {return this.prototype.tp$doc ? this.prototype.tp$doc : Sk.builtin.none.none$;}),
-    new Sk.GetSetDef("__name__", function () {return this.prototype.tp$name;}),
+    new Sk.GetSetDef("__name__", function () {return new Sk.builtin.str(this.prototype.tp$name);}),
     new Sk.GetSetDef("__module__", function () {
         if (this.prototype.__module__ && this !== Sk.builtin.type) {
             return this.prototype.__module__;

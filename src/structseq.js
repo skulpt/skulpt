@@ -39,7 +39,6 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
         Sk.builtin.tuple.call(this, v);
 
-        this.__class__ = Sk.builtin.structseq_types[nm];
     };
 
     Sk.builtin.structseq_types[nm] = cons;

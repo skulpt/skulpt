@@ -34,7 +34,6 @@ Sk.builtin.set = function (S) {
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
-Sk.builtin.set.prototype.__class__ = Sk.builtin.set;
 
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
@@ -458,7 +457,6 @@ Sk.builtin.set_iter_ = function (obj) {
 
 Sk.abstr.setUpInheritance("setiterator", Sk.builtin.set_iter_, Sk.builtin.object);
 
-Sk.builtin.set_iter_.prototype.__class__ = Sk.builtin.set_iter_;
 
 Sk.builtin.set_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);

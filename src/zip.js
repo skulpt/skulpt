@@ -41,7 +41,6 @@ Sk.builtin.zip_ = function zip_ () {
         }
         return new Sk.builtin.tuple(tup);
     };
-    this.__class__ = Sk.builtin.zip_;
 
     return this;
 };

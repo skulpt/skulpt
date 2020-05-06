@@ -55,7 +55,6 @@ Sk.builtin.file = function (_name, mode, buffering) {
     }
     this.pos$ = 0;
 
-    this.__class__ = Sk.builtin.file;
 
     if (Sk.fileopen && this.fileno >= 10) {
         Sk.fileopen(this);

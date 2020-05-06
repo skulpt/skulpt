@@ -48,9 +48,6 @@ Sk.builtin.dict = function dict (L) {
         throw new Sk.builtin.TypeError("object is not iterable");
     }
 
-    this.__class__ = Sk.builtin.dict;
-    this.tp$call = undefined; // Not callable, even though constructor is
-
     return this;
 };
 
@@ -290,7 +287,6 @@ Sk.builtin.dictview = function (type, dict) {
 };
 
 Sk.abstr.setUpInheritance("dictview", Sk.builtin.dictview, Sk.builtin.object);
-Sk.builtin.dictview.prototype.__class__ = Sk.builtin.dictview;
 
 Sk.builtin.dictview.prototype.$r = function () {
     var rep = "dict_" + this.type + "([";
@@ -813,7 +809,6 @@ Sk.builtin.dict_iter_ = function (obj) {
 
 Sk.abstr.setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
 
-Sk.builtin.dict_iter_.prototype.__class__ = Sk.builtin.dict_iter_;
 
 Sk.builtin.dict_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;

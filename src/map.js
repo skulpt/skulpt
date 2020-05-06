@@ -64,7 +64,6 @@ Sk.builtin.map_ = function map_ (fun, seq) {
     this.tp$iter = function () {
         return this;
     };
-    this.__class__ = Sk.builtin.map_;
     return this;
 };
 

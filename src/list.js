@@ -14,7 +14,6 @@ Sk.builtin.list = function (L, canSuspend) {
         return new Sk.builtin.list(L, canSuspend || true);
     }
 
-    this.__class__ = Sk.builtin.list;
 
     if (L === undefined) {
         v = [];
@@ -55,7 +54,7 @@ Sk.builtin.list.prototype.list_concat_ = function (other) {
     // other not a list
     var i;
     var ret;
-    if (!other.__class__ || other.__class__ != Sk.builtin.list) {
+    if (!other.ob$type || other.ob$type != Sk.builtin.list) {
         throw new Sk.builtin.TypeError("can only concatenate list to list");
     }
 
@@ -162,7 +161,7 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     }
 
     // w not a list
-    if (!w.__class__ || w.__class__ != Sk.builtin.list) {
+    if (!w.ob$type || w.ob$type != Sk.builtin.list) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;
@@ -714,7 +713,6 @@ Sk.builtin.list_iter_ = function (lst) {
 
 Sk.abstr.setUpInheritance("listiterator", Sk.builtin.list_iter_, Sk.builtin.object);
 
-Sk.builtin.list_iter_.prototype.__class__ = Sk.builtin.list_iter_;
 
 Sk.builtin.list_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self;
