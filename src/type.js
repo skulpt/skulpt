@@ -509,40 +509,90 @@ Sk.builtin.type.prototype.sk$type = true;
 Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
+Sk.builtin.type.prototype.tp$getattr = function (pyName) {
+
+
+    throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + jsName + "'");
+};
+
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
+    // first check that the pyName is indeed a string
+    debugger;
+    let res
+    const jsName = Sk.fixReservedWords(pyName.$jsstr());
+
+    const metatype = this.ob$type;
+
+    // now check whether there is a descriptor down the prototypical chain
+    // since we don't support metatypes yet this function will only ever be called by type objects
+    // there is always a fast path for type objects
+    // examples that would live down this path __dict__, __module__, __mro__, __name__
+    // __class__ which is on the object.prototype is also here since type is an instance of object
+    const meta_attribute = this[jsName];
 
 
-    var res;
-    var tp = this;
-    var descr;
-    var f;
-
-    if (this["$d"]) {
-        res = this["$d"].mp$lookup(pyName);
-        if (res !== undefined) {
+    if (meta_attribute !== undefined) {
+        const meta_get = meta_attribute.tp$descr_get;
+        if (meta_get !== undefined && Sk.builtin.checkDataDescr(meta_attribute)) {
+            res = meta_get.call(meta_attribute, this, metatype);
             return res;
         }
     }
 
-    descr = tp.$typeLookup(pyName);
+    const attribute = this.$typeLookup(jsName);
 
-    //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
-    if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
-        f = descr.tp$descr_get;
-        // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-        // return f.call(descr, this, this.ob$type);
+    if (attribute !== undefined) {
+        const local_get = attribute.tp$descr_get;
+        if (local_get !== undefined) {
+            res = local_get.call(attribute, Sk.builtin.none.none$, this);
+            return res;
+        }
+        return attribute;
     }
 
-    if (f) {
-        // non-data descriptor
-        return f.call(descr, Sk.builtin.none.none$, tp, canSuspend);
+    // attribute was not found so use the meta_get if any
+    if (meta_get !== undefined) {
+        res = meta_get.call(meta_attribute, this, metatype);
+        return res;
     }
 
-    if (descr !== undefined) {
-        return descr;
+    if (meta_attribute !== undefined) {
+        return meta_attribute;
     }
 
     return undefined;
+
+    // var res;
+    // var tp = this;
+    // var descr;
+    // var f;
+
+    // if (this["$d"]) {
+    //     res = this["$d"].mp$lookup(pyName);
+    //     if (res !== undefined) {
+    //         return res;
+    //     }
+    // }
+
+    // descr = tp.$typeLookup(pyName);
+
+    // //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
+    // if (descr !== undefined && descr !== null && descr.ob$type !== undefined) {
+    //     f = descr.tp$descr_get;
+    //     // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+    //     // return f.call(descr, this, this.ob$type);
+    // }
+
+    // if (f) {
+    //     // non-data descriptor
+    //     return f.call(descr, Sk.builtin.none.none$, tp, canSuspend);
+    // }
+
+    // if (descr !== undefined) {
+    //     return descr;
+    // }
+
+    // return undefined;
 };
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
@@ -563,10 +613,8 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     var base;
     var res;
     var i;
-    var jsName = pyName.$jsstr();
+    var jsName = pyName.$jsstr ? pyName.$jsstr() : pyName;
 
-    // todo; probably should fix this, used for builtin types to get stuff
-    // from prototype
     if (this.sk$prototypical) {
         if (this.prototype) {
             return this.prototype[jsName];
@@ -576,13 +624,6 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
 
     for (i = 0; i < mro.v.length; ++i) {
         base = mro.v[i];
-        if (base.hasOwnProperty(jsName)) {
-            return base[jsName];
-        }
-        res = base["$d"].mp$lookup(pyName);
-        if (res !== undefined) {
-            return res;
-        }
         if (base.prototype && base.prototype[jsName] !== undefined) {
             return base.prototype[jsName];
         }
