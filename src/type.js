@@ -604,17 +604,15 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
 };
 
 Sk.builtin.type.prototype.$typeLookup = function (pyName) {
-    var mro = this.prototype.tp$mro;
-    var base;
-    var res;
-    var i;
-    var jsName = pyName.$jsstr ? pyName.$jsstr() : pyName;
+    const mro = this.prototype.tp$mro;
+    let base;
+    const jsName = pyName.$jsstr ? pyName.$jsstr() : pyName;
 
     if (this.prototype.sk$prototypical) {
         return this.prototype[jsName];
     }
 
-    for (i = 0; i < mro.v.length; ++i) {
+    for (let i = 0; i < mro.v.length; ++i) {
         base = mro.v[i];
         if (base.prototype.hasOwnProperty(jsName)) {
             return base.prototype[jsName];
@@ -831,7 +829,7 @@ Sk.builtin.type.prototype.tp$getsets = [
     new Sk.GetSetDef("__doc__", function () {return this.prototype.tp$doc ? this.prototype.tp$doc : Sk.builtin.none.none$;}),
     new Sk.GetSetDef("__name__", function () {return new Sk.builtin.str(this.prototype.tp$name);}),
     new Sk.GetSetDef("__module__", function () {
-        if (this.prototype.__module__ && this !== Sk.builtin.type) {
+        if (this.sk$klass) {
             return this.prototype.__module__;
         } 
         let mod = this.prototype.tp$name.split(".");

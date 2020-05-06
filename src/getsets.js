@@ -18,7 +18,7 @@ Sk.abstr.setUpInheritance("getset_descriptor", Sk.builtin.getset_descriptor, Sk.
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     if (Sk.builtin.checkNone(obj)) {
         return this;
-    } else if (!(obj.ob$type instanceof this.d_type)) {
+    } else if (!(Sk.builtin.issubclass(obj.ob$type, this.d_type))) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d_name + "' for '"+ this.d_type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } 
 
@@ -31,7 +31,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
 
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
-    if (obj.ob$type !== this.d_type) {
+    if (!(Sk.builtin.issubclass(obj.ob$type, this.d_type))) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d_name + "' for '"+ this.d_type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } else if (this.d_getset.set !== undefined){
         return descr.d_getset.set.call(obj, value, descr.d_getset.closure);
@@ -51,6 +51,6 @@ Sk.builtin.getset_descriptor.prototype.tp$getsets = [
         return this.d_type;
     }),
     new Sk.GetSetDef("__name__", function () {
-        return this.d_name;
+        return new Sk.builtin.str(this.d_name);
     })
 ]
