@@ -34,7 +34,21 @@ Sk.builtin._tryGetSubscript = function(dict, pyName) {
 Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 Sk.builtin.object.prototype.tp$getsets = [
-    new Sk.GetSetDef("__class__", function () {return this.ob$type})
+    new Sk.GetSetDef("__class__", 
+                     function () {
+                         return this.ob$type
+                        }, 
+                     function (value) {
+                         if (!Sk.builtin.checkClass(value)) {
+                            throw new Sk.builtin.TypeError("__class__ must be set to a class, not '"+Sk.abstr.typeName(value)+"' object")
+                         }
+                         if (!this.hp$type || !value.sk$klass) {
+                             throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
+                         } 
+                         Object.setPrototypeOf(this, value.prototype);
+                     },
+                     "the object's class"
+    )
 ]
 
 
@@ -148,16 +162,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
 
     Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
-    dict = this["$d"] || this.constructor["$d"];
-
-    if (jsName == "__class__") {
-        if (value.tp$mro === undefined || value.sk$klass === undefined) {
-            throw new Sk.builtin.TypeError(
-                "attempted to assign non-class to __class__");
-        }
-        this.ob$type = value;
-        return;
-    }
+    dict = this["$d"];
 
     descr = tp.$typeLookup(pyName);
 
@@ -170,16 +175,16 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         }
     }
 
-    if (dict.mp$ass_subscript) {
-        if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
-            dict.mp$lookup(pyName) === undefined) {
-            // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+    if (dict) {
+        if (dict.mp$ass_subscript) {
+            dict.mp$ass_subscript(pyName, value);
+        } else if (typeof dict === "object") {
+            dict[jsName] = value;
         }
-        dict.mp$ass_subscript(pyName, value);
-    } else if (typeof dict === "object") {
-        dict[jsName] = value;
     }
+    
+    throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 

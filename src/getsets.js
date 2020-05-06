@@ -34,7 +34,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
     if (!(Sk.builtin.issubclass(obj.ob$type, this.d_type))) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d_name + "' for '"+ this.d_type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } else if (this.d_getset.set !== undefined){
-        return descr.d_getset.set.call(obj, value, descr.d_getset.closure);
+        return this.d_getset.set.call(obj, value, this.d_getset.closure);
     }
     throw new Sk.builtin.AttributeError("getset_descriptor '"+ this.d_name +"' of '" + this.d_type.prototype.tp$name + "' objects is not writeable");
 };

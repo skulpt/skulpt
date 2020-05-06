@@ -278,6 +278,7 @@ Sk.builtin.type = function (name, bases, dict) {
             klass.prototype[k.v] = v;
         }
 
+        klass.prototype.hp$type = true;
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
             var cname;
