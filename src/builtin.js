@@ -630,7 +630,7 @@ Sk.builtin.dir = function dir (x) {
         var internal = [
             "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
-            "pythonFunctions", "HashNotImplemented", "constructor",
+            "pythonFunctions", "HashNotImplemented", "constructor", "call", "apply"
         ];
         if (internal.indexOf(k) !== -1) {
             return null;

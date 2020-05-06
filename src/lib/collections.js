@@ -549,7 +549,7 @@ var $builtinmodule = function (name) {
 
             Skinherits(cons, Sk.builtin.tuple);
             cons.prototype.tp$name = nm;
-            cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, mod.namedtuples[nm]);
+            cons.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj(nm, mod.namedtuples[nm]);
             cons.prototype["$r"] = function () {
                 var ret;
                 var i;

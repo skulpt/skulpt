@@ -16,7 +16,7 @@ Sk.builtin.object = function () {
     return this;
 };
 
-Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
+Sk.builtin.type.$makeIntoTypeObj("object", Sk.builtin.object);
 Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
 
 Sk.builtin.object.prototype.__init__ = function __init__() {
@@ -215,7 +215,7 @@ Sk.builtin.object.prototype.tp$name = "object";
  * The type object of this class.
  * @type {Sk.builtin.type|Object}
  */
-Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
+Sk.builtin.object.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
 Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 

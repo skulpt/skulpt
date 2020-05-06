@@ -259,7 +259,7 @@ Sk.builtin.type = function (name, bases, dict) {
         }
 
         klass.prototype.tp$name = _name;
-        klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
+        klass.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj(_name, klass);
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
         const module_lk = new Sk.builtin.str("__module__");
@@ -479,7 +479,7 @@ Sk.builtin.type.prototype.apply = Function.prototype.apply;
  *
  */
 
-Sk.builtin.type.makeIntoTypeObj = function (name, newedInstanceOfType) {
+Sk.builtin.type.$makeIntoTypeObj = function (name, newedInstanceOfType) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(newedInstanceOfType !== undefined);
     Object.setPrototypeOf(newedInstanceOfType, Sk.builtin.type.prototype);

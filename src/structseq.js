@@ -48,7 +48,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         cons.prototype.__doc__ = doc;
     }
     cons.prototype.tp$name = nm;
-    cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
+    cons.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.tuple]);
     cons.prototype.tp$base = Sk.builtin.tuple;
     cons.prototype.tp$mro = new Sk.builtin.tuple([cons, Sk.builtin.tuple, Sk.builtin.object]);
