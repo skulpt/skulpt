@@ -46,6 +46,7 @@ Sk.builtin.object.prototype.tp$getsets = [
                              throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
                          } 
                          Object.setPrototypeOf(this, value.prototype);
+                         return;
                      },
                      "the object's class"
     )
@@ -96,9 +97,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
         }
         if (res !== undefined) {
             return res;
-        } else if (jsName == "__dict__" && dict instanceof Sk.builtin.dict) {
-            return dict;
-        }
+        } 
     }
 
     if (f) {
@@ -181,9 +180,10 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         } else if (typeof dict === "object") {
             dict[jsName] = value;
         }
+    } else {
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
     }
     
-    throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
 
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);

@@ -280,6 +280,23 @@ Sk.builtin.type = function (name, bases, dict) {
 
         klass.prototype.hp$type = true;
         klass.sk$klass = true;
+
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, 
+            new Sk.GetSetDef("__dict__", 
+                          function () {return this["$d"];},
+                          function (value) {
+                              const tp_name = Sk.abstr.typeName(value);
+                              if (tp_name !== "dict") {
+                                  throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '"+tp_name+"'")
+                              }
+                              this["$d"] = value;
+                              return;
+                          },
+                          "dictionary for instance variables (if defined)"
+                         )
+            )
+
+
         klass.prototype["$r"] = function () {
             var cname;
             var mod;
