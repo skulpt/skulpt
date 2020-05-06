@@ -481,8 +481,10 @@ Sk.builtin.type.prototype["$r"] = function () {
     var ctype;
     var mod = this.__module__;
     var cname = "";
-    if (mod) {
+    if (mod && Sk.builtin.checkString(mod)) {
         cname = mod.v + ".";
+    } else {
+        mod = null;
     }
     ctype = "class";
     if (!mod && !this.sk$klass && !Sk.__future__.class_repr) {
@@ -785,3 +787,26 @@ Sk.builtin.type.$allocateSlot = function (klass, dunder) {
         };
     }
 };
+
+
+Sk.builtin.type.prototype.tp$getsets = [
+    new Sk.GetSetDef("__bases__", function () {return this.tp$bases;}),
+    new Sk.GetSetDef("__base__", function () {return this.tp$base ? this.tp$base : Sk.builtin.none.none$;}),
+    new Sk.GetSetDef("__mro__", function () {return this.tp$mro;}),
+    new Sk.GetSetDef("__dict__", function () {return new Sk.builtin.mappingproxy(this.prototype);}),
+    new Sk.GetSetDef("__doc__", function () {return this.tp$doc ? this.tp$doc : Sk.builtin.none.none$;}),
+    new Sk.GetSetDef("__name__", function () {return this.prototype.tp$name;}),
+    new Sk.GetSetDef("__module__", function () {
+        if (this.prototype.__module__ && this !== Sk.builtin.type) {
+            return this.prototype.__module__;
+        } 
+        let mod = this.prototype.tp$name.split(".");
+        mod = mod.slice(0, mod.length - 1).join(".");
+        if (mod) {
+            return new Sk.builtin.str(mod);
+        } else {
+            return new Sk.builtin.str("builtns");
+        }
+        return Sk.builtin.none.none$;
+    }),
+]

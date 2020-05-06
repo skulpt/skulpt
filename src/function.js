@@ -182,7 +182,7 @@ Sk.builtin.checkFloat = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
-    return (arg !== null && arg.__class__ == Sk.builtin.str);
+    return (arg !== null && arg.ob$type == Sk.builtin.str);
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 

@@ -17,6 +17,7 @@ require("./env.js");
 require("./type.js");
 require("./abstract.js");
 require("./object.js");
+require("./getsets.js")
 require("./function.js");
 require("./builtin.js");
 require("./fromcodepoint.js");

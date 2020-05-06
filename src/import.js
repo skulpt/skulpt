@@ -94,6 +94,11 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         child.tp$mro = new Sk.builtin.tuple([child].concat(bases))
         child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
+
+        const gsd = child.prototype.tp$getsets ? child.prototype.tp$getsets : [];
+        for (let i = 0; i < gsd.length; i++) {
+            child.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(child, gsd[i]);
+        }
     };
 
     for (x in Sk.builtin) {

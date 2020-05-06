@@ -33,6 +33,10 @@ Sk.builtin._tryGetSubscript = function(dict, pyName) {
 };
 Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
+Sk.builtin.object.prototype.tp$getsets = [
+    new Sk.GetSetDef("__class__", function () {return this.ob$type})
+]
+
 
 /**
  * Get an attribute
@@ -534,7 +538,4 @@ Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
 
 
-// Sk.abstr.setUpInheritance("type", Sk.builtin.type, Sk.builtin.object);
-// Object.setPrototypeOf(Sk.builtin.object.prototype, Function.prototype);
 
-Object.setPrototypeOf(Sk.builtin.type, Function.prototype);
