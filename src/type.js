@@ -222,7 +222,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 bases.v.push(Sk.builtin.object);
                 Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
             } else {
-                klass.prototype.__class__ = klass;
+                klass.prototype.__class__ = new Sk.builtin.getset_descriptor(klass, Sk.builtin.object.prototype.__class__.d$getset);
             }
         }
         var parent, it, firstAncestor, builtin_bases = [];
@@ -432,10 +432,6 @@ Sk.builtin.type = function (name, bases, dict) {
             klass.prototype.tp$mro = mro;
         }
 
-        // fix for class attributes
-        klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
-
-
 
         // Register skulpt shortcuts to magic methods defined by this class.
         // Dynamically defined methods (eg those returned by __getattr__())
@@ -469,7 +465,6 @@ Sk.builtin.type = function (name, bases, dict) {
         } else if (!klass.prototype.tp$getattr) {
             // This is only relevant in Python 2, where
             // it's possible not to inherit from object
-            // (or perhaps when inheriting from builtins? Unclear)
             klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         }
 
@@ -578,13 +573,28 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     return undefined;
 };
 
-Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
+Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     // class attributes are direct properties of the object
     if (!this.sk$klass) {
         throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
     }
-    var jsName = pyName.$jsstr();
+
+    const jsName = pyName.$jsstr();
+
+    // meta types not supported so this will be a prototypical lookup for a data descriptor
+    const descr = this[jsName];
+
+    // otherwise, look in the type for a descr
+    if (descr !== undefined && descr !== null) {
+        const f = descr.tp$descr_set;
+        // todo; is this the right lookup priority for data descriptors?
+        if (f) {
+            return f.call(descr, this, value, canSuspend);
+        }
+    }
+
     this.prototype[jsName] = value;
+
     if (jsName in Sk.dunderToSkulpt) {
         Sk.builtin.type.$allocateSlot(this, jsName);
     }
@@ -838,7 +848,14 @@ Sk.builtin.type.prototype.tp$getsets = [
     new Sk.GetSetDef("__name__", 
                      function () {
                          return new Sk.builtin.str(this.prototype.tp$name);
-                        }
+                        },
+                     function (value) {
+                         if (!Sk.builtin.checkString(value)){
+                             throw new Sk.builtin.TypeError("can only assign string to "+this.prototype.tp$name+".__name__, not '"+Sk.abstr.typeName(value)+"'")
+                         }
+                         this.prototype.tp$name = value.$jsstr();
+                         return;
+                     }
                      ),
     new Sk.GetSetDef("__module__", 
                      function () {
@@ -852,6 +869,10 @@ Sk.builtin.type.prototype.tp$getsets = [
                             } else {
                                 return new Sk.builtin.str("builtins");
                             }
-                        }
+                        },
+                     function (value) {
+                         // they can set the module to whatever they like
+                         this.prototype.__module__ = value;
+                     }
                     ),
 ]
