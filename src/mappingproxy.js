@@ -102,7 +102,7 @@ Sk.builtin.mappingproxy.prototype.mp$length = function () {
 
 
 Sk.builtin.mappingproxy.prototype.$allkeys = function () {
-    return Object.keys(this.v).map(x  => new Sk.builtin.str(Sk.unfixReserved(x)));
+    return Object.keys(this.v).map(x  => new Sk.builtin.str(x));
 };
 
 Sk.builtin.mappingproxy.prototype.tp$iter = function () {

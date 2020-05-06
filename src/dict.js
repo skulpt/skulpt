@@ -724,6 +724,23 @@ Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
     return res;
 };
 
+Sk.builtin.dict.prototype.$allkeys = function () {
+    let bucket;
+    let buckets = this.buckets;
+    const allkeys = [];
+    for (let k in buckets) {
+        if (buckets.hasOwnProperty(k)) {
+            bucket = buckets[k];
+            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
+                // skip internal stuff. todo; merge pyobj and this
+                for (let i = 0; i < bucket.items.length; i++) {
+                    allkeys.push(bucket.items[i].lhs);
+                }
+            }
+        }
+    }
+    return allkeys;
+};
 
 Sk.builtin.dict.prototype["iteritems"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
@@ -757,24 +774,10 @@ Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 Sk.builtin.create_dict_iter_ = function (obj) {
     var iterobj = {};
-    var k, i, bucket, allkeys, buckets;
 
     iterobj.$index = 0;
     iterobj.$obj = obj;
-    allkeys = [];
-    buckets = obj.buckets;
-    for (k in buckets) {
-        if (buckets.hasOwnProperty(k)) {
-            bucket = buckets[k];
-            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
-                // skip internal stuff. todo; merge pyobj and this
-                for (i = 0; i < bucket.items.length; i++) {
-                    allkeys.push(bucket.items[i].lhs);
-                }
-            }
-        }
-    }
-    iterobj.$keys = allkeys;
+    iterobj.$keys = obj.$allkeys();;
     iterobj.tp$iter = function () {
         return iterobj;
     };
