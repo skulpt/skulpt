@@ -56,8 +56,20 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     tp = this.ob$type;
     Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
-    dict = this["$d"] || this.constructor["$d"];
+    dict = this["$d"];
     //print("getattr", tp.tp$name, name);
+
+
+    descr = tp.$typeLookup(pyName);
+
+    // look in the type for a getset_descriptor
+    if (descr !== undefined && descr !== null) {
+        f = descr.tp$descr_get;
+        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
+        if (f && Sk.builtin.checkDataDescr(descr)){
+            return f.call(descr, this, this.ob$type, canSuspend);
+        }
+    }
 
     // todo; assert? force?
     if (dict) {
@@ -75,17 +87,8 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
         }
     }
 
-    descr = tp.$typeLookup(pyName);
-
-    // otherwise, look in the type for a descr
-    if (descr !== undefined && descr !== null) {
-        f = descr.tp$descr_get;
-        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
-
-        if (f) {
-            // non-data descriptor
-            return f.call(descr, this, this.ob$type, canSuspend);
-        }
+    if (f) {
+        return f.call(descr, this, this.ob$type, canSuspend);
     }
 
     if (descr !== undefined) {
