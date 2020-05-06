@@ -598,9 +598,6 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     }
 
     const mro = this.prototype.tp$mro;
-    if (f && Sk.builtin.checkDataDescr(f)) {
-        return f.call(descr, this, this.ob$type, canSuspend);
-    }
 
     for (let i = 0; i < mro.v.length; ++i) {
         base = mro.v[i];
