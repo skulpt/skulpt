@@ -9,7 +9,7 @@ if (Sk.builtin === undefined) {
  * @param {Function} get
  * @param {Function} set 
  * @param {String} doc
- * @param {closure} 
+ * @param {Object} closure
  */
 
 Sk.GetSetDef = function (_name, get, set, doc, closure) {
@@ -17,6 +17,7 @@ Sk.GetSetDef = function (_name, get, set, doc, closure) {
     this.get = get;
     this.set = set;
     this.doc = doc;
+    // this was from Cpython not sure what it should do in skulpt
     this.closure = closure;
 };
 
@@ -280,21 +281,23 @@ Sk.builtin.type = function (name, bases, dict) {
 
         klass.prototype.hp$type = true;
         klass.sk$klass = true;
-
-        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, 
-            new Sk.GetSetDef("__dict__", 
-                          function () {return this["$d"];},
-                          function (value) {
-                              const tp_name = Sk.abstr.typeName(value);
-                              if (tp_name !== "dict") {
-                                  throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '"+tp_name+"'")
-                              }
-                              this["$d"] = value;
-                              return;
-                          },
-                          "dictionary for instance variables (if defined)"
-                         )
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(
+            klass,
+            new Sk.GetSetDef("__dict__",
+                             function () {
+                                 return this["$d"];
+                             },
+                             function (value) {
+                                 const tp_name = Sk.abstr.typeName(value);
+                                 if (tp_name !== "dict") {
+                                     throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + tp_name + "'");
+                                 }
+                                 this["$d"] = value;
+                                 return;
+                             },
+                             "dictionary for instance variables (if defined)"
             )
+        );
 
 
         klass.prototype["$r"] = function () {
@@ -519,15 +522,9 @@ Sk.builtin.type.prototype.sk$type = true;
 Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
-Sk.builtin.type.prototype.tp$getattr = function (pyName) {
-
-
-    throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + jsName + "'");
-};
-
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // first check that the pyName is indeed a string
-    let res
+    let res;
     const jsName = pyName.$jsstr();
 
     const metatype = this.ob$type;
@@ -625,7 +622,7 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     const mro = this.prototype.tp$mro;
 
     for (let i = 0; i < mro.v.length; ++i) {
-        base = mro.v[i];
+        let base = mro.v[i];
         if (base.prototype.hasOwnProperty(jsName)) {
             return base.prototype[jsName];
         }
@@ -835,59 +832,59 @@ Sk.builtin.type.$allocateSlot = function (klass, dunder) {
 
 
 Sk.builtin.type.prototype.tp$getsets = [
-    new Sk.GetSetDef("__bases__", 
+    new Sk.GetSetDef("__bases__",
                      function () {
                          return this.prototype.tp$bases;
-                        }
-                     ),
-    new Sk.GetSetDef("__base__", 
+                     }
+    ),
+    new Sk.GetSetDef("__base__",
                      function () {
                          return this.prototype.tp$base ? this.prototype.tp$base : Sk.builtin.none.none$;
-                        }
-                     ),
-    new Sk.GetSetDef("__mro__", 
+                     }
+    ),
+    new Sk.GetSetDef("__mro__",
                      function () {
                          return this.prototype.tp$mro;
-                        }
-                     ),
-    new Sk.GetSetDef("__dict__", 
+                     }
+    ),
+    new Sk.GetSetDef("__dict__",
                      function () {
                          return new Sk.builtin.mappingproxy(this.prototype);
-                        }
-                     ),
-    new Sk.GetSetDef("__doc__", 
+                     }
+    ),
+    new Sk.GetSetDef("__doc__",
                      function () {
                          return this.prototype.tp$doc ? this.prototype.tp$doc : Sk.builtin.none.none$;
-                        }
-                    ),
-    new Sk.GetSetDef("__name__", 
+                     }
+    ),
+    new Sk.GetSetDef("__name__",
                      function () {
                          return new Sk.builtin.str(this.prototype.tp$name);
-                        },
+                     },
                      function (value) {
-                         if (!Sk.builtin.checkString(value)){
-                             throw new Sk.builtin.TypeError("can only assign string to "+this.prototype.tp$name+".__name__, not '"+Sk.abstr.typeName(value)+"'")
+                         if (!Sk.builtin.checkString(value)) {
+                             throw new Sk.builtin.TypeError("can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'");
                          }
                          this.prototype.tp$name = value.$jsstr();
                          return;
                      }
-                     ),
-    new Sk.GetSetDef("__module__", 
+    ),
+    new Sk.GetSetDef("__module__",
                      function () {
                          if (this.sk$klass) {
                              return this.prototype.__module__;
-                            }
-                            let mod = this.prototype.tp$name.split(".");
-                            mod = mod.slice(0, mod.length - 1).join(".");
-                            if (mod) {
-                                return new Sk.builtin.str(mod);
-                            } else {
-                                return new Sk.builtin.str("builtins");
-                            }
-                        },
+                         }
+                         let mod = this.prototype.tp$name.split(".");
+                         mod = mod.slice(0, mod.length - 1).join(".");
+                         if (mod) {
+                             return new Sk.builtin.str(mod);
+                         } else {
+                             return new Sk.builtin.str("builtins");
+                         }
+                     },
                      function (value) {
                          // they can set the module to whatever they like
                          this.prototype.__module__ = value;
                      }
-                    ),
-]
+    ),
+];

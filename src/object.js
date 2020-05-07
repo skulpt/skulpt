@@ -34,23 +34,23 @@ Sk.builtin._tryGetSubscript = function(dict, pyName) {
 Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
 Sk.builtin.object.prototype.tp$getsets = [
-    new Sk.GetSetDef("__class__", 
+    new Sk.GetSetDef("__class__",
                      function () {
-                         return this.ob$type
-                        }, 
+                         return this.ob$type;
+                     },
                      function (value) {
                          if (!Sk.builtin.checkClass(value)) {
-                            throw new Sk.builtin.TypeError("__class__ must be set to a class, not '"+Sk.abstr.typeName(value)+"' object")
+                             throw new Sk.builtin.TypeError("__class__ must be set to a class, not '" + Sk.abstr.typeName(value) + "' object");
                          }
                          if (!this.hp$type || !value.sk$klass) {
                              throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
-                         } 
+                         }
                          Object.setPrototypeOf(this, value.prototype);
                          return;
                      },
                      "the object's class"
     )
-]
+];
 
 
 /**

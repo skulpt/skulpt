@@ -1,10 +1,7 @@
 /**
  * @constructor
- * @param {String} _name
- * @param {Function} get
- * @param {Function} set 
- * @param {String} doc
- * @param {closure} 
+ * @param {Sk.builtin.type} type_obj
+ * @param {Sk.GetSetDef} gsd
  */
 
 Sk.builtin.getset_descriptor = function (type_obj, gsd) {
@@ -40,7 +37,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
 };
 
 Sk.builtin.getset_descriptor.prototype.$r = function () {
-    return new Sk.builtin.str("<getset_descriptor '"+ this.d$name +"' of '"+ this.d$type.prototype.tp$name+"' objects>")
+    return new Sk.builtin.str("<getset_descriptor '"+ this.d$name +"' of '"+ this.d$type.prototype.tp$name+"' objects>");
 };
 
 Sk.builtin.getset_descriptor.prototype.tp$getsets = [
@@ -53,4 +50,4 @@ Sk.builtin.getset_descriptor.prototype.tp$getsets = [
     new Sk.GetSetDef("__name__", function () {
         return new Sk.builtin.str(this.d$name);
     })
-]
+];

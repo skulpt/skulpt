@@ -208,7 +208,7 @@ Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 Sk.builtin.checkDataDescr = function (arg) {
     return (arg && arg.tp$descr_set !== undefined);
-}
+};
 Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
 /**
  * @constructor

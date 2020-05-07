@@ -751,7 +751,7 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
 };
 
 const issubclass_multiple_inheritance = function (klass, base) {
-    mro = klass.prototype.tp$mro;
+    const mro = klass.prototype.tp$mro;
     for (let i = 0; i < mro.v.length; i++) {
         if (base === mro.v[i]) {
             return true;
@@ -773,7 +773,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
 
     // Handle tuple type argument
     if (type instanceof Sk.builtin.tuple) {
-        for (i = 0; i < type.v.length; ++i) {
+        for (let i = 0; i < type.v.length; ++i) {
             if (Sk.misceval.isTrue(Sk.builtin.isinstance(obj, type.v[i]))) {
                 return Sk.builtin.bool.true$;
             }
@@ -1189,7 +1189,7 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
 
     // Handle tuple type argument
     if (c2 instanceof Sk.builtin.tuple) {
-        for (i = 0; i < c2.v.length; ++i) {
+        for (let i = 0; i < c2.v.length; ++i) {
             if (Sk.builtin.issubclass(c1, c2.v[i])) {
                 return true;
             }
@@ -1303,46 +1303,7 @@ Sk.builtin.callable = function callable (obj) {
 
 Sk.builtin.delattr = function delattr (obj, attr) {
     Sk.builtin.pyCheckArgsLen("delattr", arguments.length, 2, 2);
-    // cannot set or del attr from builtin type
-    if (!Sk.builtin.checkString(attr)) {
-        throw new Sk.builtin.TypeError("attribute name must be string");
-    }
-    const jsName = attr.$jsstr();
-    // if (!obj.sk$type) {
-    //     if (obj.$d && obj.$d.ob$type === "dict") {
-
-    //     }
-    // }
-
     return Sk.builtin.setattr(obj, attr, undefined);
-    // if (obj["$d"][attr.v] !== undefined) {
-        var ret = Sk.misceval.tryCatch(function() {
-            var try1 = Sk.builtin.setattr(obj, attr, undefined);
-            return try1;
-        }, function(e) {
-            // Sk.misceval.tryCatch(function() {
-                // var try2 = Sk.builtin.setattr(obj["$d"], attr, undefined);
-
-            //     return try2;
-            // }, function(e) {
-                if (e instanceof Sk.builtin.AttributeError) {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ jsName + "'");
-                } else {
-                    throw e;
-                }
-            });
-        // });
-        debugger;
-        return ret;
-    // } // cannot set or del attr from builtin type
-    // if (obj["$r"]().v.slice(1,5) !== "type") {
-    //     if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
-    //         obj[attr.v] = undefined;
-    //         return Sk.builtin.none.none$;
-    //     }
-    //     throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
-    // }
-    // throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
 };
 
 Sk.builtin.execfile = function execfile () {
