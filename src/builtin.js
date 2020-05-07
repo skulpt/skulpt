@@ -697,7 +697,6 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
-        k = Sk.unfixReserved(k);
         var internal = [
             "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
@@ -706,6 +705,7 @@ Sk.builtin.dir = function dir (x) {
         if (internal.indexOf(k) !== -1) {
             return null;
         }
+        k = Sk.unfixReserved(k);
         if (k.indexOf("$") !== -1) {
             s = Sk.builtin.dir.slotNameToRichName(k);
         } else if (k.charAt(k.length - 1) !== "_") {
