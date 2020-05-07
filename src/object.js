@@ -137,6 +137,9 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
 Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, pyName) {
+    if (!Sk.builtin.checkString(pyName)) {
+        throw new Sk.builtin.TypeError("attribute name must be string, not '"+Sk.abstr.typeName(pyName)+"'");
+    }
     var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, pyName, true);
     if (r === undefined) {
         throw new Sk.builtin.AttributeError(pyName);
@@ -176,7 +179,15 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
 
     if (dict) {
         if (dict.mp$ass_subscript) {
-            dict.mp$ass_subscript(pyName, value);
+            try {
+                dict.mp$ass_subscript(pyName, value);
+            } catch (e) {
+                if (e instanceof Sk.builtin.AttributeError) {
+                    throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+                } else {
+                    throw e;
+                }
+            }
         } else if (typeof dict === "object") {
             dict[jsName] = value;
         }
@@ -189,6 +200,9 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
 Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, pyName, value) {
+    if (!Sk.builtin.checkString(pyName)) {
+        throw new Sk.builtin.TypeError("attribute name must be string, not '"+Sk.abstr.typeName(pyName)+"'");
+    }
     return Sk.builtin.object.prototype.GenericSetAttr.call(self, pyName, value, true);
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);

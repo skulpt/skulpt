@@ -576,7 +576,11 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     // class attributes are direct properties of the object
     if (!this.sk$klass) {
-        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+        if (value !== undefined) {
+            throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
+        } else {
+            throw new Sk.builtin.TypeError("can't delete attributes on type object '" + this.prototype.tp$name + "'");
+        }
     }
 
     const jsName = pyName.$jsstr();
@@ -590,6 +594,17 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
         // todo; is this the right lookup priority for data descriptors?
         if (f) {
             return f.call(descr, this, value, canSuspend);
+        }
+    }
+
+    // for delattr
+    if (value === undefined) {
+        if (!this.prototype.hasOwnProperty(jsName)) {
+            throw new Sk.builtin.AttributeError("type objet '"+this.prototype.tp$name+"' has no attribute '"+ jsName+"'");
+        } else {
+            delete this.prototype[jsName];
+            // TODO: should also delete the slot function. 
+            return;
         }
     }
 

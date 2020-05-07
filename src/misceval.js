@@ -1309,7 +1309,10 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     // new Syntax would be different
 
     // file's __name__ is class's __module__
-    locals.__module__ = globals["__name__"];
+    if (globals["__name__"]) {
+        // some js modules haven't set their module name and we shouldn't set a dictionary value to be undefined that should be equivalent to deleting a value;
+        locals.__module__ = globals["__name__"];
+    }
     var _name = new Sk.builtin.str(name);
     var _bases = new Sk.builtin.tuple(bases);
     var _locals = [];

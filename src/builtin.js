@@ -611,8 +611,7 @@ Sk.builtin.bin = function bin (x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
-Sk.builtin.dir = function dir (x) {
-    
+Sk.builtin.dir = function dir (x) { 
     var last;
     var it;
     var prop;
@@ -627,6 +626,7 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
+        // perhaps we should make this private methods to prevent them feature in dict apart from call/apply/constructor
         var internal = [
             "GenericGetAttr",
             "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
@@ -635,21 +635,20 @@ Sk.builtin.dir = function dir (x) {
         if (internal.indexOf(k) !== -1) {
             return null;
         }
+        s = Sk.unfixReserved(k);
+        // should make all private methods have a $ rather than ending in _
         if (k.indexOf("$") !== -1) {
-            s = Sk.builtin.dir.slotNameToRichName(k);
-        } else if (k.charAt(k.length - 1) !== "_") {
-            s = k;
-        } else if (k.charAt(0) === "_") {
-            s = k;
+            // these should all be properties on the klass!
+            return null;
         }
         return s;
     };
-
     names = [];
 
     var _seq;
 
     // try calling magic method
+    // really all python objects should get the __dir__ from object or type
     var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$dir);
     if(special != null) {
         // method on builtin, provide this arg
@@ -666,44 +665,41 @@ Sk.builtin.dir = function dir (x) {
             names.push(new Sk.builtin.str(_seq[i]));
         }
     } else {
-        // Add all object properties
-        for (k in x.constructor.prototype) {
-            s = getName(k);
-            if (s) {
-                names.push(new Sk.builtin.str(s));
-            }
-        }
-
         // Add all attributes
         if (x["$d"]) {
             if (x["$d"].tp$iter) {
                 // Dictionary
                 it = x["$d"].tp$iter();
-                for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                    s = new Sk.builtin.str(i);
+                for (let k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
+                    names.push(k);
+                }
+            } else {
+                // Object
+                for (s in x["$d"]) {
+                    // have to rename object $ds incase they were mangled...
                     s = getName(s.v);
                     if (s) {
                         names.push(new Sk.builtin.str(s));
                     }
                 }
-            } else {
-                // Object
-                for (s in x["$d"]) {
-                    names.push(new Sk.builtin.str(s));
-                }
             }
         }
 
         // Add all class attributes
-        mro = x.tp$mro;
-        if(!mro && x.ob$type) {
-            mro = x.ob$type.tp$mro;
+        if (x.sk$type) {
+            mro = x.prototype.tp$mro;
+        } else {
+            mro = x.tp$mro;
         }
+        // mro = x.tp$mro;
+        // if(!mro && x.ob$type) {
+        //     mro = x.ob$type.tp$mro;
+        // }
         if (mro) {
             for (i = 0; i < mro.v.length; ++i) {
                 base = mro.v[i];
-                for (prop in base) {
-                    if (base.hasOwnProperty(prop)) {
+                for (prop in base.prototype) {
+                    if (base.prototype.hasOwnProperty(prop)) {
                         s = getName(prop);
                         if (s) {
                             names.push(new Sk.builtin.str(s));
@@ -1307,33 +1303,46 @@ Sk.builtin.callable = function callable (obj) {
 
 Sk.builtin.delattr = function delattr (obj, attr) {
     Sk.builtin.pyCheckArgsLen("delattr", arguments.length, 2, 2);
-    if (obj["$d"][attr.v] !== undefined) {
+    // cannot set or del attr from builtin type
+    if (!Sk.builtin.checkString(attr)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
+    }
+    const jsName = attr.$jsstr();
+    // if (!obj.sk$type) {
+    //     if (obj.$d && obj.$d.ob$type === "dict") {
+
+    //     }
+    // }
+
+    return Sk.builtin.setattr(obj, attr, undefined);
+    // if (obj["$d"][attr.v] !== undefined) {
         var ret = Sk.misceval.tryCatch(function() {
             var try1 = Sk.builtin.setattr(obj, attr, undefined);
             return try1;
         }, function(e) {
-            Sk.misceval.tryCatch(function() {
-                var try2 = Sk.builtin.setattr(obj["$d"], attr, undefined);
+            // Sk.misceval.tryCatch(function() {
+                // var try2 = Sk.builtin.setattr(obj["$d"], attr, undefined);
 
-                return try2;
-            }, function(e) {
+            //     return try2;
+            // }, function(e) {
                 if (e instanceof Sk.builtin.AttributeError) {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ jsName + "'");
                 } else {
                     throw e;
                 }
             });
-        });
+        // });
+        debugger;
         return ret;
-    } // cannot set or del attr from builtin type
-    if (obj["$r"]().v.slice(1,5) !== "type") {
-        if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
-            obj[attr.v] = undefined;
-            return Sk.builtin.none.none$;
-        }
-        throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
-    }
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
+    // } // cannot set or del attr from builtin type
+    // if (obj["$r"]().v.slice(1,5) !== "type") {
+    //     if (obj.ob$type === Sk.builtin.type && obj[attr.v] !== undefined) {
+    //         obj[attr.v] = undefined;
+    //         return Sk.builtin.none.none$;
+    //     }
+    //     throw new Sk.builtin.AttributeError(Sk.abstr.typeName(obj) + " instance has no attribute '"+ attr.v+ "'");
+    // }
+    // throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.prototype.tp$name + "'");
 };
 
 Sk.builtin.execfile = function execfile () {

@@ -159,6 +159,10 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     var item;
 
     if (bucket === undefined) {
+        // first check if value w is undefined which would indicate deleting an object
+        if (w === undefined) {
+            throw new Sk.builtin.AttributeError("dict object has no attribute " + Sk.misceval.objectRepr(key));
+        }
         // New bucket
         bucket = {$hash: k, items: [
             {lhs: key, rhs: w}
@@ -172,6 +176,8 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     if (item) {
         item.rhs = w;
         return;
+    } else if (w === undefined) {
+        throw new Sk.builtin.AttributeError("dict object has no attribute " + Sk.misceval.objectRepr(key).$jsstr());
     }
 
     // Not found in dictionary
