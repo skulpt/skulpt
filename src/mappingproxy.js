@@ -30,20 +30,22 @@ Sk.builtin.mappingproxy = function (d) {
             this.v[k.$jsstr()] = v;
         }
     } else {
-        d = {...d};
-        delete d["constructor"];
+        let d_copy = {...d};
+        delete d_copy["constructor"];
 
-        for (let key in d) {
+        if (d === Sk.builtin.type.prototype) {
+            delete d_copy["call"];
+            delete d_copy["apply"];
+        }
+
+        for (let key in d_copy) {
             let k = Sk.unfixReserved(key);
             if (!(k.includes("$"))) {
-                this.v[k] = d[key];
+                this.v[k] = d_copy[key];
             }
         };
 
-        if (this === Sk.builtin.type.prototype) {
-            delete this.v["call"];
-            delete this.v["apply"];
-        }
+        
 
         return this;
     }
