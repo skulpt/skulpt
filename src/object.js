@@ -246,6 +246,10 @@ Sk.builtin.object.prototype["__new__"] = function (cls) {
     return new cls([], []);
 };
 
+Sk.builtin.object.prototype.tp$new = function () {
+    return new this([], []);
+};
+
 /**
  * Python wrapper for `__repr__` method.
  * @name  __repr__
@@ -388,7 +392,16 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
  * @return {Sk.builtin.str} The Python string representation of this instance.
  */
 Sk.builtin.object.prototype["$r"] = function () {
-    return new Sk.builtin.str("<object>");
+    let mod, cname;
+    if (this.ob$type.sk$type) {
+        mod = this.ob$type.$typeLookup("__module__");
+        cname = "";
+        if (mod && Sk.builtin.checkString(mod)) {
+            cname = mod.$jsstr() + ".";
+        }
+        return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + " object>");
+    }
+    return new Sk.builtin.str("<" + Sk.abstr.typeName(this) + " object>");
 };
 
 Sk.builtin.hashCount = 1;

@@ -300,30 +300,6 @@ Sk.builtin.type = function (name, bases, dict) {
         );
 
 
-        klass.prototype["$r"] = function () {
-            var cname;
-            var mod;
-            var reprf = this.tp$getattr(Sk.builtin.str.$repr);
-            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
-                return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
-            }
-
-            if ((klass.prototype.tp$base !== undefined) &&
-                (klass.prototype.tp$base !== Sk.builtin.object) &&
-                (klass.prototype.tp$base.prototype["$r"] !== undefined)) {
-                // If subclass of a builtin which is not object, use that class' repr
-                return klass.prototype.tp$base.prototype["$r"].call(this);
-            } else {
-                // Else, use default repr for a user-defined class instance
-                mod = klass.$typeLookup("__module__"); // lookup __module__
-                cname = "";
-                if (mod) {
-                    cname = mod.v + ".";
-                }
-                return new Sk.builtin.str("<" + cname + _name + " object>");
-            }
-        };
-
         klass.prototype.tp$setattr = function (pyName, data, canSuspend) {
             var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$setattr);
             if (setf !== undefined) {
@@ -490,6 +466,7 @@ Sk.builtin.type.$makeIntoTypeObj = function (name, newedInstanceOfType) {
 };
 
 Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
+
 Sk.builtin.type.prototype["$r"] = function () {
     var ctype;
     var mod = this.prototype.__module__;
@@ -513,11 +490,15 @@ Sk.builtin.type.prototype.tp$name = "type";
 Sk.builtin.type.prototype.sk$type = true;
 
 
+Sk.builtin.type.prototype.tp$new = function(args, kwargs) {
+    return Sk.builtin.type(args[0], args[1], args[2]);
+};
 
+Sk.builtin.type.prototype.tp$call = function(args, kwargs) {
+    debugger;
+    return this.prototype.tp$new.call(this, args, kwargs);
+}
 
-
-
-//Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
 Sk.builtin.type.prototype.tp$name = "type";
 
@@ -588,7 +569,6 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
         const f = descr.tp$descr_set;
-        // todo; is this the right lookup priority for data descriptors?
         if (f) {
             return f.call(descr, this, value, canSuspend);
         }
