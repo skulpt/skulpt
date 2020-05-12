@@ -178,6 +178,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // Invoking the class object calls __new__() to generate a new instance,
         // then __init__() to initialise it
         klass.tp$call = function (args, kws) {
+            debugger;
             var newf = klass.$typeLookup(Sk.builtin.str.$new),
                 newargs;
             var self;
@@ -496,7 +497,7 @@ Sk.builtin.type.prototype.tp$new = function(args, kwargs) {
 
 Sk.builtin.type.prototype.tp$call = function(args, kwargs) {
     debugger;
-    return this.prototype.tp$new.call(this, args, kwargs);
+    return this.prototype.tp$new(args, kwargs);
 }
 
 

@@ -5,50 +5,66 @@
  * @extends Sk.builtin.object
  */
 Sk.builtin.list = function (L, canSuspend) {
-    var v, it, thisList;
-
-    if (this instanceof Sk.builtin.list) {
-        canSuspend = canSuspend || false;
-    } else {
-        // Default to true in this case, because 'list' gets called directly from Python
-        return new Sk.builtin.list(L, canSuspend || true);
+    // this is an internal function and should be called with an array object
+    if (!(this instanceof Sk.builtin.list)) {
+        return new Sk.builtin.list(L);
     }
-
 
     if (L === undefined) {
-        v = [];
-    } else if (Object.prototype.toString.apply(L) === "[object Array]") {
-        v = L;
-    } else if (Sk.builtin.checkIterable(L)) {
-        v = [];
-        it = Sk.abstr.iter(L);
-
-        thisList = this;
-
-        return (function next(i) {
-            while(true) {
-                if (i instanceof Sk.misceval.Suspension) {
-                    return new Sk.misceval.Suspension(next, i);
-                } else if (i === undefined) {
-                    // done!
-                    thisList.v = v;
-                    return thisList;
-                } else {
-                    v.push(i);
-                    i = it.tp$iternext(canSuspend);
-                }
-            }
-        })(it.tp$iternext(canSuspend));
-    } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L)+ "' " +"object is not iterable");
+        L = [];
     }
 
-    this["v"] = this.v = v;
-    return this;
+    this.v = L;
+
+    return this
+
 };
 
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
 Sk.abstr.markUnhashable(Sk.builtin.list);
+
+Sk.builtin.list.prototype.tp$new = function (args, kwargs) {
+    if (this !== Sk.builtin.list.prototype) {
+        return Sk.builtin.list.$subtype_new(this, args, kwargs);
+    }
+
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("list() takes no keyword arguments")
+    } else if (args && args.length > 1) {
+        throw new Sk.builtin.TypeError("list expected at most 1 argument, got " + args.length)
+    }
+    const L = [];
+    const arg = args ? args[0] : undefined;
+
+    if (arg === undefined) {
+        return new Sk.builtin.list(L);
+    }
+
+    if (Sk.builtin.checkIterable(arg)) {
+        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            L.push(i);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' is not iterable");
+    } 
+
+    return new Sk.builtin.list(L);
+
+};
+
+// temporary for testing
+Sk.builtin.list.prototype.__new__ = new Sk.builtin.func(function (cls, arg) {
+    debugger;
+    return cls.prototype.tp$new([arg]);
+}
+);
+
+Sk.builtin.list.$subtype_new = function (cls_prototype, args, kwargs) {
+    // should we check that this is indeed a subtype of list?
+    const list_instance = Sk.builtin.list.prototype.tp$new(args, kwargs);
+    Object.setPrototypeOf(list_instance, cls_prototype);
+    return list_instance;
+};
 
 Sk.builtin.list.prototype.list_concat_ = function (other) {
     // other not a list

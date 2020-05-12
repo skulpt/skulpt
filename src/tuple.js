@@ -18,8 +18,9 @@ Sk.builtin.tuple = function (L) {
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
 
 Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
-    if (this !== Sk.builtin.tuple) {
-        return Sk.builtin.tuple.$subtype_new.call(this, args, kwargs);
+    // this will be Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
+    if (this !== Sk.builtin.tuple.prototype) {
+        return Sk.builtin.tuple.$subtype_new(this, args, kwargs);
     }
 
     if (kwargs && kwargs.length) {
@@ -53,14 +54,16 @@ Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argum
 
 
 // temporary for testing
-Sk.builtin.tuple.prototype.__new__ = function (cls, args, kwargs) {
-    return Sk.builtin.tuple.prototype.tp$new.call(cls, args, kwargs);
-};
+Sk.builtin.tuple.prototype.__new__ = new Sk.builtin.func(function (cls, arg) {
+    debugger;
+    return cls.prototype.tp$new([arg]);
+}
+);
 
-Sk.builtin.tuple.$subtype_new = function (args, kwargs) {
+Sk.builtin.tuple.$subtype_new = function (cls_prototype, args, kwargs) {
     // should we check that this is indeed a subtype of tuple?
-    const tuple_instance = Sk.builtin.tuple.prototype.tp$new.call(Sk.builtin.tuple, args, kwargs);
-    Object.setPrototypeOf(tuple_instance, this.prototype);
+    const tuple_instance = Sk.builtin.tuple.prototype.tp$new(args, kwargs);
+    Object.setPrototypeOf(tuple_instance, cls_prototype);
     return tuple_instance;
 };
 

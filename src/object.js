@@ -247,7 +247,8 @@ Sk.builtin.object.prototype["__new__"] = function (cls) {
 };
 
 Sk.builtin.object.prototype.tp$new = function () {
-    return new this([], []);
+    // this is the protoype of an sk$type object
+    return new this.constructor([], []);
 };
 
 /**
