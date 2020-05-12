@@ -15,6 +15,7 @@ require("setimmediate");
 require("assert");
 require("./env.js");
 require("./type.js");
+require("./generic.js");
 require("./abstract.js");
 require("./object.js");
 require("./getsets.js");

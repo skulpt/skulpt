@@ -78,9 +78,7 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
 Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
 
 
-Sk.builtin.property.prototype.tp$new = function() {
-  return new Sk.builtin.property;
-};
+Sk.builtin.property.prototype.tp$new = Sk.builtin.genericNew;
 
 Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
     args.unshift(this);
