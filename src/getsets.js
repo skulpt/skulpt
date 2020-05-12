@@ -66,7 +66,7 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
     this.prop$get = fget || Sk.builtin.none.none$;
     this.prop$set = fset || Sk.builtin.none.none$;
     this.prop$del = fdel || Sk.builtin.none.none$;
-    if (doc === undefined) {
+    if (doc !== undefined) {
         this.prop$doc = doc;
     } else if (fget && fget.f$doc) {
         this.prop$doc = fget.f$doc;
@@ -78,16 +78,25 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
 Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
 
 
-Sk.builtin.property.prototype.tp$new = function(args, kwargs) {
-  return new Sk.builtin.property(args[0], args[1], args[2], args[3]);
+Sk.builtin.property.prototype.tp$new = function() {
+  return new Sk.builtin.property;
 };
 
-Sk.builtin.property.prototype.tp$init = function (fget, fset, fdel, doc) {
-    this.prop$get = fget;
-    this.prop$set = fset;
-    this.prop$del = fdel;
-    this.prop$doc = doc;
+Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
+    args.unshift(this);
+    return Sk.builtin.property.prototype.__init__.tp$call(args, kwargs);
 };
+
+Sk.builtin.property.prototype.__init__ = function (self, fget, fset, fdel, doc) {
+    self.prop$get = fget;
+    self.prop$set = fset;
+    self.prop$del = fdel;
+    self.prop$doc = doc;
+    return Sk.builtin.none.none$;
+};
+
+Sk.builtin.property.prototype.__init__.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.none.none$];
+Sk.builtin.property.prototype.__init__.co_varnames = ['self', 'fget', 'fset', 'fdel', 'doc'];
 
 
 Sk.builtin.property.prototype.tp$doc = "Property attribute.\n\n  fget\n    function to be used for getting an attribute value\n  fset\n    function to be used for setting an attribute value\n  fdel\n    function to be used for del\'ing an attribute\n  doc\n    docstring\n\nTypical use is to define a managed attribute x:\n\nclass C(object):\n    def getx(self): return self._x\n    def setx(self, value): self._x = value\n    def delx(self): del self._x\n    x = property(getx, setx, delx, 'I\'m the \'x\' property.')\n\nDecorators make defining new properties or modifying existing ones easy:\n\nclass C(object):\n    @property\n    def x(self):\n        'I am the \'x\' property.'\n        return self._x\n    @x.setter\n    def x(self, value):\n        self._x = value\n    @x.deleter\n    def x(self):\n        del self._x"
@@ -143,5 +152,5 @@ Sk.builtin.property.prototype.tp$getsets = [
 ];
 
 Sk.builtin.property.pythonFunctions = [
-    "getter", "setter", "deleter"
+    "getter", "setter", "deleter", "__init__"
 ];

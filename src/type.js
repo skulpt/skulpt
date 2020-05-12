@@ -496,8 +496,11 @@ Sk.builtin.type.prototype.tp$new = function(args, kwargs) {
 };
 
 Sk.builtin.type.prototype.tp$call = function(args, kwargs) {
-    debugger;
-    return this.prototype.tp$new(args, kwargs);
+    let obj =  this.prototype.tp$new(args, kwargs);
+    if (obj.tp$init) {
+        obj.tp$init(args, kwargs);
+    }
+    return obj;
 }
 
 
