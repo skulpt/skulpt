@@ -153,20 +153,20 @@ Sk.builtin.type = function (name, bases, dict) {
          * @constructor
          */
         klass = function (args, kws) {
-            var args_copy;
+            // var args_copy;
 
-            // Call up through the chain in case there's a built-in object
-            // whose constructor we need to initialise
-            if (klass.prototype.tp$base !== undefined) {
-                if (klass.prototype.tp$base.sk$klass) {
-                    klass.prototype.tp$base.call(this, args, kws);
-                } else {
-                    // Call super constructor if subclass of a builtin
-                    args_copy = args.slice();
-                    args_copy.unshift(klass, this);
-                    Sk.abstr.superConstructor.apply(undefined, args_copy);
-                }
-            }
+            // // Call up through the chain in case there's a built-in object
+            // // whose constructor we need to initialise
+            // if (klass.prototype.tp$base !== undefined) {
+            //     if (klass.prototype.tp$base.sk$klass) {
+            //         klass.prototype.tp$base.call(this, args, kws);
+            //     } else {
+            //         // Call super constructor if subclass of a builtin
+            //         args_copy = args.slice();
+            //         args_copy.unshift(klass, this);
+            //         Sk.abstr.superConstructor.apply(undefined, args_copy);
+            //     }
+            // }
 
             this["$d"] = new Sk.builtin.dict([]);
         };
