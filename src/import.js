@@ -88,9 +88,11 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         child.prototype.tp$mro = new Sk.builtin.tuple([child].concat(bases));
         child.prototype.sk$prototypical = true;
 
-        const gsd = child.prototype.tp$getsets ? child.prototype.tp$getsets : [];
-        for (let i = 0; i < gsd.length; i++) {
-            child.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(child, gsd[i]);
+        if (child.prototype.hasOwnProperty('tp$getsets')) {
+            const gsd = child.prototype.tp$getsets; 
+            for (let i = 0; i < gsd.length; i++) {
+                child.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(child, gsd[i]);
+            }
         }
     };
 
