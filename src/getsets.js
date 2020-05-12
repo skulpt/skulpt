@@ -78,7 +78,11 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
 Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
 
 
-Sk.builtin.property.prototype.tp$new = Sk.builtin.genericNew;
+Sk.builtin.property.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.property);
+
+Sk.builtin.property.prototype.__new__ = function (cls) {
+    return cls.prototype.tp$new();
+}
 
 Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
     args.unshift(this);
@@ -150,5 +154,5 @@ Sk.builtin.property.prototype.tp$getsets = [
 ];
 
 Sk.builtin.property.pythonFunctions = [
-    "getter", "setter", "deleter", "__init__"
+    "getter", "setter", "deleter", "__init__", "__new__"
 ];
