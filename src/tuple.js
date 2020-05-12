@@ -3,36 +3,66 @@
  * @param {Array.<Object>|Object} L
  */
 Sk.builtin.tuple = function (L) {
-    var it, i;
+    // this is used internally and L must be an Array or undefined. 
     if (!(this instanceof Sk.builtin.tuple)) {
-        Sk.builtin.pyCheckArgsLen("tuple", arguments.length, 0, 1);
         return new Sk.builtin.tuple(L);
     }
-
-
     if (L === undefined) {
         L = [];
     }
-
-    if (Object.prototype.toString.apply(L) === "[object Array]") {
-        this.v = L;
-    } else {
-        if (Sk.builtin.checkIterable(L)) {
-            this.v = [];
-            for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                this.v.push(i);
-            }
-        } else {
-            throw new Sk.builtin.TypeError("expecting Array or iterable");
-        }
-    }
-
-
-    this["v"] = this.v;
+    this.v = L;
+    
     return this;
 };
 
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
+
+Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
+    if (this !== Sk.builtin.tuple) {
+        return Sk.builtin.tuple.$subtype_new.call(this, args, kwargs);
+    }
+
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("tuple() takes no keyword arguments")
+    } else if (args && args.length > 1) {
+        throw new Sk.builtin.TypeError("tuple expected at most 1 argument, got " + args.length)
+    }
+    const L = [];
+    const arg = args ? args[0] : undefined;
+
+    if (arg === undefined) {
+        return new Sk.builtin.tuple(L);
+    }
+
+    if (arg instanceof Sk.builtin.tuple) {
+        return arg;
+    }
+
+    if (Sk.builtin.checkIterable(arg)) {
+        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            L.push(i);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' is not iterable");
+    } 
+
+    return new Sk.builtin.tuple(L);
+};
+
+Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object."
+
+
+// temporary for testing
+Sk.builtin.tuple.prototype.__new__ = function (cls, args, kwargs) {
+    return Sk.builtin.tuple.prototype.tp$new.call(cls, args, kwargs);
+};
+
+Sk.builtin.tuple.$subtype_new = function (args, kwargs) {
+    // should we check that this is indeed a subtype of tuple?
+    const tuple_instance = Sk.builtin.tuple.prototype.tp$new.call(Sk.builtin.tuple, args, kwargs);
+    Object.setPrototypeOf(tuple_instance, this.prototype);
+    return tuple_instance;
+};
 
 Sk.builtin.tuple.prototype["$r"] = function () {
     var ret;
