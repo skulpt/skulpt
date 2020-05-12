@@ -105,7 +105,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
 
     // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
     // Sk.builtin.func, as that class was undefined when these functions were declared
-    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
+    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method, Sk.builtin.property];
 
     for (i = 0; i < typesWithFunctionsToWrap.length; i++) {
         builtin_type = typesWithFunctionsToWrap[i];
@@ -124,13 +124,13 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     }
 
 
-    for (var file in Sk.internalPy.files) {
-        var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
-        Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
-    }
+    // for (var file in Sk.internalPy.files) {
+    //     var fileWithoutExtension = file.split(".")[0].split("/")[1];
+    //     var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
+    //     mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
+    //     Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+    //     Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+    // }
 };
 
 /**
