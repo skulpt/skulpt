@@ -124,18 +124,15 @@ Sk.builtin.property.prototype.tp$descr_set = function (obj, value) {
 };
 
 Sk.builtin.property.prototype.getter = function (self, fget) {
-    self.prop$get = fget;
-    return self;
+    return new Sk.builtin.property(fget, self.prop$set, self.prop$del, self.prop$doc);
 };
 
 Sk.builtin.property.prototype.setter = function (self, fset) {
-    self.prop$set = fset;
-    return self;
+    return new Sk.builtin.property(self.prop$get, fset, self.prop$del, self.prop$doc);
 };
 
 Sk.builtin.property.prototype.deleter = function (self, fdel) {
-    self.prop$del = fdel;
-    return self;
+    return new Sk.builtin.property(self.prop$get, self.prop$set, fdel, self.prop$doc);
 };
 
 Sk.builtin.property.prototype.tp$getsets = [
