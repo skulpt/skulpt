@@ -4,7 +4,7 @@
  * @param {boolean=} canSuspend (defaults to true in this case, as list() is used directly from Python)
  * @extends Sk.builtin.object
  */
-Sk.builtin.list = function (L, canSuspend) {
+Sk.builtin.list = function (L) {
     // this is an internal function and should be called with an array object
     if (!(this instanceof Sk.builtin.list)) {
         return new Sk.builtin.list(L);
@@ -23,7 +23,11 @@ Sk.builtin.list = function (L, canSuspend) {
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
+Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified."
+
+
 Sk.builtin.list.prototype.tp$new = function (args, kwargs) {
+    // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
     if (this !== Sk.builtin.list.prototype) {
         return Sk.builtin.list.$subtype_new(this, args, kwargs);
     }
