@@ -26,33 +26,31 @@ Sk.abstr.markUnhashable(Sk.builtin.list);
 Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified."
 
 
-Sk.builtin.list.prototype.tp$new = function (args, kwargs) {
-    // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
-    if (this !== Sk.builtin.list.prototype) {
-        return Sk.builtin.list.$subtype_new(this, args, kwargs);
-    }
+Sk.builtin.list.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.list);
 
+Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
+    // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
     if (kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("list() takes no keyword arguments")
     } else if (args && args.length > 1) {
         throw new Sk.builtin.TypeError("list expected at most 1 argument, got " + args.length)
     }
-    const L = [];
+
     const arg = args ? args[0] : undefined;
 
     if (arg === undefined) {
-        return new Sk.builtin.list(L);
+        return Sk.builtin.none.none$;
     }
 
     if (Sk.builtin.checkIterable(arg)) {
         for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            L.push(i);
+            this.v.push(i);
         }
     } else {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' is not iterable");
     } 
 
-    return new Sk.builtin.list(L);
+    return Sk.builtin.none.none$;
 
 };
 
@@ -63,12 +61,6 @@ Sk.builtin.list.prototype.__new__ = new Sk.builtin.func(function (cls, arg) {
 }
 );
 
-Sk.builtin.list.$subtype_new = function (cls_prototype, args, kwargs) {
-    // should we check that this is indeed a subtype of list?
-    const list_instance = Sk.builtin.list.prototype.tp$new(args, kwargs);
-    Object.setPrototypeOf(list_instance, cls_prototype);
-    return list_instance;
-};
 
 Sk.builtin.list.prototype.list_concat_ = function (other) {
     // other not a list

@@ -3,13 +3,11 @@
  * @param {Array.<Object>} L
  */
 Sk.builtin.dict = function dict (L) {
-    var v;
-    var it, k;
-    var i;
+    // calling new Sk.builtin.dict is an internal method that requires an array of key value pairs
+
     if (!(this instanceof Sk.builtin.dict)) {
         return new Sk.builtin.dict(L);
     }
-
 
     if (L === undefined) {
         L = [];
@@ -18,55 +16,47 @@ Sk.builtin.dict = function dict (L) {
     this.size = 0;
     this.buckets = {};
 
-    if (Object.prototype.toString.apply(L) === "[object Array]") {
-        // Handle dictionary literals
-        for (i = 0; i < L.length; i += 2) {
-            this.mp$ass_subscript(L[i], L[i + 1]);
-        }
-    } else if (L instanceof Sk.builtin.dict) {
-        // Handle calls of type "dict(mapping)" from Python code
-        for (it = Sk.abstr.iter(L), k = it.tp$iternext();
-            k !== undefined;
-            k = it.tp$iternext()) {
-            v = L.mp$subscript(k);
-            if (v === undefined) {
-                //print(k, "had undefined v");
-                v = null;
-            }
-            this.mp$ass_subscript(k, v);
-        }
-    } else if (Sk.builtin.checkIterable(L)) {
-        // Handle calls of type "dict(iterable)" from Python code
-        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (i.mp$subscript) {
-                this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
-            } else {
-                throw new Sk.builtin.TypeError("element " + this.size + " is not a sequence");
-            }
-        }
-    } else {
-        throw new Sk.builtin.TypeError("object is not iterable");
+    for (let i = 0; i < L.length; i += 2) {
+        this.mp$ass_subscript(L[i], L[i + 1]);
     }
-
     return this;
-};
-
-Sk.builtin.dict.tp$call = function(args, kw) {
-    var d, i;
-    Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
-    d = new Sk.builtin.dict(args[0]);
-    if (kw) {
-        for (i = 0; i < kw.length; i += 2) {
-            d.mp$ass_subscript(new Sk.builtin.str(kw[i]), kw[i+1]);
-        }
-    }
-    return d;
 };
 
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
+
+Sk.builtin.dict.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.dict);
+
+Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
+    Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
+    const arg = args[0]
+    if (arg !== undefined) {
+        if (Sk.builtin.checkIterable(arg)) {
+            // Handle calls of type "dict(iterable)" from Python code
+            for (it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                if (i.mp$subscript) {
+                    this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
+                } else {
+                    throw new Sk.builtin.TypeError("element " + this.size + " is not a sequence");
+                }
+            }
+        } else {
+            throw new Sk.builtin.TypeError(Sk.abstr.typeName(arg) + " object is not iterable");
+        }
+    }
+    
+    if (kwargs) {
+        for (i = 0; i < kwargs.length; i += 2) {
+            this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i+1]);
+        }
+    }
+
+    return Sk.builtin.none.none$;
+
+};
+
 
 Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {
     var item;
