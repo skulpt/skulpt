@@ -137,6 +137,32 @@ Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
 /* NOTE: See constants used for kwargs in constants.js */
 
+Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4"
+
+Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
+    if (kwargs) {
+        for (let i = 1; i < kwargs.length ; i = i + 2) {
+            args.push(kwargs[i]);
+        }
+        if (kwargs.length && kwargs[0] !== "base") {
+                throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for int()")
+            }
+    }
+    args = args === undefined ? [] : args;
+    if (args.length > 2) {
+        throw new Sk.builtin.TypeError("int() takes at most 2 arguments (3 given)")
+    }
+    const x = args[0];
+    const base = args[1];
+    if (this === Sk.builtin.int_.prototype) {
+        return new Sk.builtin.int_(x, base);
+    } else {
+        const int_instance = new this.constructor;
+        Sk.builtin.int_.call(int_instance, x, base);
+        return int_instance;
+    };
+};
+
 Sk.builtin.int_.prototype.nb$int_ = function () {
     return this;
 };
