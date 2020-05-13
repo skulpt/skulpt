@@ -478,7 +478,7 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
     
     const obj = this.prototype.tp$new(args, kwargs);
 
-    if (!Sk.builtin.issubclass(obj.ob$type, this)) {
+    if (!Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this)) {
         // don't initialize an obj if it's type is not a subtype of this!
         return obj;
     }
@@ -524,15 +524,14 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         // }
     };
 
-
+    // todo: imrpove best_base algorithm to reflect layout conflicts as per python
     const best_base = Sk.builtin.type.$best_base(bases);
-    debugger;
+
     if (best_base !== undefined) {
         Sk.abstr.setUpInheritance($name, klass, best_base)
     } else {
         // hacks for klass that don't inherit from object in py2
-        klass.prototype.ob$type = Sk.type.$makeIntoTypeObj($name, klass);
-        klass.prototype.tp$name = $name;
+        Sk.type.$makeIntoTypeObj($name, klass);
         klass.prototype.__class__ = new Sk.builtin.getset_descriptor(klass, Sk.builtin.object.prototype.__class__.d$getset);
         klass.prototype.tp$base = Sk.builtin.none.none$; 
     }
@@ -540,9 +539,12 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
 
     klass.prototype.tp$bases = bases;
     klass.prototype.tp$mro = klass.$buildMRO(bases);
-    // for now this will just be the first base but latter we can make it the best base
 
-    // we do this here but probably should check if we need to... because actually you only get this if you don't already inherit one form your bases...
+    // some properties of klass objects and instances
+    klass.prototype.hp$type = true;
+    klass.sk$klass = true;
+
+    // todo: __dict__ getset descriptors are not alway set... it depends on whether we inherit from a base that has it or not...
     klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(
         klass,
         new Sk.GetSetDef("__dict__",
@@ -561,16 +563,15 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         )
     );
 
-     // set __module__ if not present (required by direct type(name, bases, dict) calls)
+     // set __module__ 
      const module_lk = new Sk.builtin.str("__module__");
      if (dict.mp$lookup(module_lk) === undefined) {
          dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
      }
 
-     // copy properties into our klass object
+     // copy properties into klass.prototype 
      // uses python iter methods
-     var k;
-     for (it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
+     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
          v = dict.mp$subscript(k);
          if (v === undefined) {
              v = null;
@@ -578,32 +579,51 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
          klass.prototype[k.v] = v;
      }
 
-     // some properties of klass objects and instances
-     klass.prototype.hp$type = true;
-     klass.sk$klass = true;
-
     // assign __doc__
     if (klass.prototype.__doc__ === undefined) {
         klass.prototype.__doc__ = Sk.builtin.none.none$;
     }
     klass.prototype.tp$doc = klass.prototype.__doc__;
 
-    for (let dunder in Sk.dunderToSkulpt) {
-        if (klass.prototype.hasOwnProperty(dunder)) {
-            Sk.builtin.type.$allocateSlot(klass, dunder);
+
+    if (!klass.prototype.sk$prototypical) {
+        for (let dunder in Sk.dunderToSkulpt) {
+            if (klass.prototype.hasOwnProperty(dunder)) {
+                Sk.builtin.type.$allocateSlot(klass, dunder);
+            } else {
+                //add a slot wrapper for the slot which says go find this method somwhere if it exists...
+            }
         }
-    } 
+    } else {
+        for (let dunder in Sk.dunderToSkulpt) {
+            if (klass.prototype.hasOwnProperty(dunder)) {
+                Sk.builtin.type.$allocateSlot(klass, dunder);
+            }
+        }
+    }
 
     return klass;
 };
 
+Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
+    if (args && args.length == 1 && kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("type.__init__() takes no keyword arguments");
+    } else if ((args && args.length != 3 && args.length != 1) || args === undefined) {
+        throw new Sk.builtin.TypeError("type.__init__() takes 1 or 3 arguments");
+    }
+    // according to Cpython we just call the object init method here
+    res = Sk.builtin.object.prototype.tp$init.call(this, []);
+    return res;
+};
 
 
-
-Sk.builtin.type.$makeIntoTypeObj = function (name, newedInstanceOfType) {
-    Sk.asserts.assert(name !== undefined);
+Sk.builtin.type.$makeIntoTypeObj = function (_name, newedInstanceOfType) {
+    Sk.asserts.assert(_name !== undefined);
     Sk.asserts.assert(newedInstanceOfType !== undefined);
+
     Object.setPrototypeOf(newedInstanceOfType, Sk.builtin.type.prototype);
+    newedInstanceOfType.prototype.tp$name = _name;
+    newedInstanceOfType.prototype.ob$type = newedInstanceOfType; 
     return newedInstanceOfType;
 };
 
@@ -627,13 +647,9 @@ Sk.builtin.type.prototype["$r"] = function () {
 
 
 
-
 Sk.builtin.type.prototype.tp$name = "type";
 Sk.builtin.type.prototype.sk$type = true;
 
-
-
-Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
@@ -1038,3 +1054,16 @@ Sk.builtin.type.$best_base = function (bases) {
     return firstAncestor;
 
 }
+
+
+Sk.builtin.type.$isSubTypeInternal = function(c1, c2) {
+    if (c1 === c2) {
+        return true;
+    } else if (c1.prototype && c1.prototype.sk$prototypical) {
+        return c1.prototype instanceof c2;
+    } else if (c1.prototype && c1.prototype.tp$mro) {
+        return c1.prototype.tp$mro.includes(c2);
+    } else {
+        return false;
+    }
+};

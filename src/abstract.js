@@ -1024,8 +1024,7 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
 Sk.abstr.setUpInheritance = function (childName, child, parent) {
     Sk.abstr.inherits(child, parent);
     child.prototype.tp$base = parent;
-    child.prototype.tp$name = childName;
-    child.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj(childName, child);
+    Sk.builtin.type.$makeIntoTypeObj(childName, child);
 };
 
 /**
