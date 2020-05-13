@@ -229,7 +229,6 @@ Sk.builtin.object.prototype.tp$name = "object";
  * The type object of this class.
  * @type {Sk.builtin.type|Object}
  */
-Sk.builtin.object.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj("object", Sk.builtin.object);
 Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
 Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 
@@ -240,15 +239,39 @@ Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure 
  * @memberOf Sk.builtin.object.prototype
  * @instance
  */
+
 Sk.builtin.object.prototype["__new__"] = function (cls) {
     Sk.builtin.pyCheckArgsLen("__new__", arguments.length, 1, 1, false, false);
 
     return new cls([], []);
 };
 
-Sk.builtin.object.prototype.tp$new = function () {
-    // this is the protoype of an sk$type object
-    return new this.constructor([], []);
+Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
+    // see cypthon object_new for reasoning behind errors  
+    const type_obj = this.ob$type;
+    if ((args && args.length) || (kwargs && kwargs.length)) {
+        if (type_obj.prototype.tp$new !== Sk.builtin.object.prototype.tp$new) {
+            throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
+        }
+        if (type_obj.prototype.tp$init === Sk.builtin.object.prototype.tp$init) {
+            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
+        }
+    }
+    return new this.constructor;
+};
+
+Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
+    // see cypthon object_init for reasoning behind errors
+    const type_obj = this.ob$type;
+    if ((args && args.length) || (kwargs && kwargs.length)) {
+        if (type_obj.prototype.tp$init !== Sk.builtin.object.prototype.tp$init) {
+            throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
+        }
+        if (type_obj.prototype.tp$new === Sk.builtin.object.prototype.tp$new) {
+            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
+        }
+    }
+    return Sk.builtin.none.none$;
 };
 
 /**
