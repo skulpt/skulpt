@@ -12,25 +12,20 @@
  * @constructor
  * @param {...Object|null} args
  */
-Sk.builtin.BaseException = function (args) {
-    var i, o;
-
+Sk.builtin.BaseException = function () {
     if (!(this instanceof Sk.builtin.BaseException)) {
-        o = Object.create(Sk.builtin.BaseException.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.BaseException(...arguments);
     }
 
-    args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     // hackage to allow shorter throws
-    for (i = 0; i < args.length; ++i) {
+    for (let i = 0; i < args.length; ++i) {
         if (typeof args[i] === "string") {
             args[i] = new Sk.builtin.str(args[i]);
         }
     }
     this.args = new Sk.builtin.tuple(args);
     this.traceback = [];
-
     // For errors occurring during normal execution, the line/col/etc
     // of the error are populated by each stack frame of the runtime code,
     // but we can seed it with the supplied parameters.
@@ -45,6 +40,35 @@ Sk.builtin.BaseException = function (args) {
     }
 };
 Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
+
+Sk.builtin.BaseException.prototype.tp$doc = "Common base class for all exceptions";
+Sk.builtin.BaseException.prototype.tp$new = function (args, kwargs) {
+    const instance = new this.constructor;
+    Sk.builtin.BaseException.call(instance, ...args);
+    return instance;
+};
+
+Sk.builtin.BaseException.prototype.tp$init = function (args, kwargs) {
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no keyword arguments");
+    }
+    if (this.hasOwnProperty("args")) {
+        if (this.args.v !== args) {
+            this.args.v = args;
+        }
+    } else {
+        this.args = new Sk.builtin.tuple(args);
+    }
+    return Sk.builtin.none.none$;
+};
+
+Sk.builtin.BaseException.prototype.tp$getsets = [
+    new Sk.GetSetDef("args",
+                     function () {
+                         return this.args;
+                     }
+                    ),
+];
 
 Sk.builtin.BaseException.prototype.tp$str = function () {
     var i;
@@ -82,14 +106,6 @@ Sk.builtin.BaseException.prototype.toString = function () {
     return this.tp$str().v;
 };
 
-// Create a descriptor to return the 'args' of an exception.
-// This is a hack to get around a weird mismatch between builtin
-// objects and proper types
-Sk.builtin.BaseException.prototype.args = {
-    "tp$descr_get": function(self, clstype) {
-        return self.args;
-    }
-};
 
 Sk.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
@@ -98,12 +114,10 @@ Sk.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
  * @extends Sk.builtin.BaseException
  * @param {...*} args
  */
-Sk.builtin.Exception = function (args) {
+Sk.builtin.Exception = function () {
     var o;
     if (!(this instanceof Sk.builtin.Exception)) {
-        o = Object.create(Sk.builtin.Exception.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.Exception(...arguments);
     }
     Sk.builtin.BaseException.apply(this, arguments);
 };
@@ -115,12 +129,9 @@ Sk.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.StandardError = function (args) {
-    var o;
+Sk.builtin.StandardError = function () {
     if (!(this instanceof Sk.builtin.StandardError)) {
-        o = Object.create(Sk.builtin.StandardError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.StandardError(...arguments);
     }
     Sk.builtin.Exception.apply(this, arguments);
 };
@@ -132,12 +143,9 @@ Sk.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.AssertionError = function (args) {
-    var o;
+Sk.builtin.AssertionError = function () {
     if (!(this instanceof Sk.builtin.AssertionError)) {
-        o = Object.create(Sk.builtin.AssertionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.AssertionError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -149,12 +157,9 @@ Sk.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.AttributeError = function (args) {
-    var o;
+Sk.builtin.AttributeError = function () {
     if (!(this instanceof Sk.builtin.AttributeError)) {
-        o = Object.create(Sk.builtin.AttributeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return Sk.builtin.AttributeError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -165,12 +170,9 @@ Sk.abstr.setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builti
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.ImportError = function (args) {
-    var o;
+Sk.builtin.ImportError = function () {
     if (!(this instanceof Sk.builtin.ImportError)) {
-        o = Object.create(Sk.builtin.ImportError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.ImportError(...arguments); 
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -181,12 +183,9 @@ Sk.abstr.setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.Stan
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.IndentationError = function (args) {
-    var o;
+Sk.builtin.IndentationError = function () {
     if (!(this instanceof Sk.builtin.IndentationError)) {
-        o = Object.create(Sk.builtin.IndentationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.IndentationError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -197,12 +196,9 @@ Sk.abstr.setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.bu
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.IndexError = function (args) {
-    var o;
+Sk.builtin.IndexError = function () {
     if (!(this instanceof Sk.builtin.IndexError)) {
-        o = Object.create(Sk.builtin.IndexError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.IndexError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -213,12 +209,9 @@ Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Standa
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.KeyError = function (args) {
-    var o;
+Sk.builtin.KeyError = function () {
     if (!(this instanceof Sk.builtin.KeyError)) {
-        o = Object.create(Sk.builtin.KeyError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.KeyError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -229,12 +222,9 @@ Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.StandardEr
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.NameError = function (args) {
-    var o;
+Sk.builtin.NameError = function () {
     if (!(this instanceof Sk.builtin.NameError)) {
-        o = Object.create(Sk.builtin.NameError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.NameError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -245,12 +235,9 @@ Sk.abstr.setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.Standard
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.UnboundLocalError = function (args) {
-    var o;
+Sk.builtin.UnboundLocalError = function () {
     if (!(this instanceof Sk.builtin.UnboundLocalError)) {
-        o = Object.create(Sk.builtin.UnboundLocalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.UnboundLocalError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -261,12 +248,9 @@ Sk.abstr.setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.OverflowError = function (args) {
-    var o;
+Sk.builtin.OverflowError = function () {
     if (!(this instanceof Sk.builtin.OverflowError)) {
-        o = Object.create(Sk.builtin.OverflowError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.OverflowError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -278,12 +262,9 @@ Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.SyntaxError = function (args) {
-    var o;
+Sk.builtin.SyntaxError = function () {
     if (!(this instanceof Sk.builtin.SyntaxError)) {
-        o = Object.create(Sk.builtin.SyntaxError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.SyntaxError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -294,12 +275,9 @@ Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.Stan
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.RuntimeError = function (args) {
-    var o;
+Sk.builtin.RuntimeError = function () {
     if (!(this instanceof Sk.builtin.RuntimeError)) {
-        o = Object.create(Sk.builtin.RuntimeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.RuntimeError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -312,12 +290,9 @@ Sk.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.SuspensionError = function (args) {
-    var o;
+Sk.builtin.SuspensionError = function () {
     if (!(this instanceof Sk.builtin.SuspensionError)) {
-        o = Object.create(Sk.builtin.SuspensionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.SuspensionError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -330,12 +305,9 @@ Sk.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
  * @extends Sk.builtin.BaseException
  * @param {...*} args
  */
-Sk.builtin.SystemExit = function (args) {
-    var o;
+Sk.builtin.SystemExit = function () {
     if (!(this instanceof Sk.builtin.SystemExit)) {
-        o = Object.create(Sk.builtin.SystemExit.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.SystemExit(...arguments);
     }
     Sk.builtin.BaseException.apply(this, arguments);
 };
@@ -348,12 +320,9 @@ Sk.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.TypeError = function (args) {
-    var o;
+Sk.builtin.TypeError = function () {
     if (!(this instanceof Sk.builtin.TypeError)) {
-        o = Object.create(Sk.builtin.TypeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.TypeError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -364,12 +333,9 @@ Sk.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.ValueError = function (args) {
-    var o;
+Sk.builtin.ValueError = function () {
     if (!(this instanceof Sk.builtin.ValueError)) {
-        o = Object.create(Sk.builtin.ValueError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.ValueError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -381,12 +347,9 @@ Sk.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.ZeroDivisionError = function (args) {
-    var o;
+Sk.builtin.ZeroDivisionError = function () {
     if (!(this instanceof Sk.builtin.ZeroDivisionError)) {
-        o = Object.create(Sk.builtin.ZeroDivisionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.ZeroDivisionError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -397,12 +360,9 @@ Sk.abstr.setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.TimeLimitError = function (args) {
-    var o;
+Sk.builtin.TimeLimitError = function () {
     if (!(this instanceof Sk.builtin.TimeLimitError)) {
-        o = Object.create(Sk.builtin.TimeLimitError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.TimeLimitError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -414,12 +374,9 @@ Sk.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.IOError = function (args) {
-    var o;
+Sk.builtin.IOError = function () {
     if (!(this instanceof Sk.builtin.IOError)) {
-        o = Object.create(Sk.builtin.IOError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.IOError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -432,12 +389,9 @@ Sk.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.NotImplementedError = function (args) {
-    var o;
+Sk.builtin.NotImplementedError = function () {
     if (!(this instanceof Sk.builtin.NotImplementedError)) {
-        o = Object.create(Sk.builtin.NotImplementedError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.NotImplementedError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -449,12 +403,9 @@ Sk.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.NegativePowerError = function (args) {
-    var o;
+Sk.builtin.NegativePowerError = function () {
     if (!(this instanceof Sk.builtin.NegativePowerError)) {
-        o = Object.create(Sk.builtin.NegativePowerError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.NegativePowerError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -468,11 +419,8 @@ Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
  * @param {...*} args
  */
 Sk.builtin.ExternalError = function (nativeError, args) {
-    var o;
     if (!(this instanceof Sk.builtin.ExternalError)) {
-        o = Object.create(Sk.builtin.ExternalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.ExternalError(nativeError, arg);
     }
     // Make the first argument a string, so it can be printed in Python without errors,
     // but save a reference to the real thing for Javascript consumption
@@ -491,12 +439,9 @@ Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.OperationError = function (args) {
-    var o;
+Sk.builtin.OperationError = function () {
     if (!(this instanceof Sk.builtin.OperationError)) {
-        o = Object.create(Sk.builtin.OperationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.OperationError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -508,12 +453,10 @@ Sk.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
  * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
-Sk.builtin.SystemError = function (args) {
+Sk.builtin.SystemError = function () {
     var o;
     if (!(this instanceof Sk.builtin.SystemError)) {
-        o = Object.create(Sk.builtin.SystemError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.SystemError(...arguments);
     }
     Sk.builtin.StandardError.apply(this, arguments);
 };
@@ -525,12 +468,9 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.StopIteration = function (args) {
-    var o;
+Sk.builtin.StopIteration = function () {
     if (!(this instanceof Sk.builtin.StopIteration)) {
-        o = Object.create(Sk.builtin.StopIteration.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
+        return new Sk.builtin.StopIteration(...arguments);
     }
     Sk.builtin.Exception.apply(this, arguments);
 };
