@@ -122,6 +122,7 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
+        Sk.builtin.StandardError.sk$abstract = true;
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);

@@ -771,15 +771,8 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
      }
      print(Sk.builtin.repr(new Sk.builtin.list(tmp)).v);
      */
-    var seq;
-    var i;
-    var next;
-    var k;
-    var sseq;
-    var j;
-    var cand;
-    var cands;
-    var res = [];
+    this.prototype.sk$prototypical = true; // assume true to start with
+    let seq, i, next, k, sseq, j, cand, cands, res = [];
     for (;;) {
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
@@ -825,7 +818,20 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
 
         // check prototypical mro
         if (res.length && this.prototype.sk$prototypical) {
-            this.prototype.sk$prototypical = Object.getPrototypeOf(res[res.length - 1].prototype) === next.prototype;
+            let prevs_prototype = Object.getPrototypeOf(res[res.length - 1].prototype)
+            if (prevs_prototype === next.prototype) {
+                // pass
+            } else if (prevs_prototype.constructor.sk$abstract) {
+                // account for abstract classes
+                while (prevs_prototype.constructor.sk$abstract) {
+                    prevs_prototype = Object.getPrototypeOf(prevs_prototype);
+                }
+                if (prevs_prototype !== next.prototype) {
+                    this.prototype.sk$prototypical = false;
+                }
+            } else {
+                this.prototype.sk$prototypical = false;
+            }
         }
 
         // append next to result and remove from sequences
