@@ -625,6 +625,9 @@ Sk.misceval.isTrue = function (x) {
     if (x === null) {
         return false;
     }
+    if (x === undefined) {
+        return false;
+    }
     if (x.constructor === Sk.builtin.none) {
         return false;
     }
