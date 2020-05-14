@@ -8,8 +8,6 @@ Sk.builtin.interned = {};
 Sk.builtin.str = function (x) {
     var ret;
 
-    Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, 1);
-
     if (x === undefined) {
         x = "";
     }
@@ -59,7 +57,6 @@ Sk.builtin.str = function (x) {
     }
 
     this.v = ret;
-    this["v"] = this.v;
     Sk.builtin.interned["1" + ret] = this;
     return this;
 
@@ -67,6 +64,37 @@ Sk.builtin.str = function (x) {
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
+
+Sk.builtin.str.prototype.tp$doc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'."
+
+Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
+    if (this !== Sk.builtin.str.prototype) {
+        return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
+    }
+
+    // currently only supports str(object='')
+    if (kwargs) {
+        for (let i=1; i<kwargs.length; i+=2) {
+            args.push(kwargs[i]);
+        }
+        if (kwargs.length && kwargs[0] != "object") {
+            throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for str()")
+        }
+    }
+    if (args.length > 1) {
+        throw new Sk.builtin.TypeError("str() takes at most 1 argument ("+args.length+" given)");
+    }
+    x = args[0];
+    return new Sk.builtin.str(x);
+};
+
+Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
+    const instance = new this.constructor;
+    // we call str new method with all the args and kwargs
+    const str_instance = Sk.builtin.str.prototype.tp$new(args, kwargs);
+    instance.v = str_instance.v;
+    return instance;
+};
 
 Sk.builtin.str.prototype.$jsstr = function () {
     return this.v;
