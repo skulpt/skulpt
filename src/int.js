@@ -156,10 +156,10 @@ Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
     if (this === Sk.builtin.int_.prototype) {
         return new Sk.builtin.int_(x, base);
     } else {
-        const int_instance = new this.constructor;
-        Sk.builtin.int_.call(int_instance, x, base);
-        return int_instance;
-    };
+        const instance = new this.constructor;
+        Sk.builtin.int_.call(instance, x, base);
+        return instance;
+    }
 };
 
 Sk.builtin.int_.prototype.nb$int_ = function () {

@@ -11,7 +11,6 @@ Sk.builtin.enumerate = function (iterable, start) {
     }
 
 
-    Sk.builtin.pyCheckArgsLen("enumerate", arguments.length, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
@@ -47,6 +46,33 @@ Sk.builtin.enumerate = function (iterable, start) {
 };
 
 Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
+
+Sk.builtin.enumerate.prototype.tp$doc = "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ..."
+
+Sk.builtin.enumerate.prototype.tp$new = function (args, kwargs) {
+    if (kwargs) {
+        for (let i = 1; i < kwargs.length ; i += 2) {
+            args.push(kwargs[i]);
+        }
+        if (kwargs.length && kwargs[0] !== "start") {
+                throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for enumerate()")
+            }
+    }
+    if (args.length > 2) {
+        throw new Sk.builtin.TypeError("enumerate() takes at most 2 arguments ("+args.length+" given)")
+    }
+    const iterable = args[0];
+    const start = args[1];
+    if (this === Sk.builtin.enumerate.prototype) {
+        return new Sk.builtin.enumerate(iterable, start);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.enumerate.call(instance, iterable, start);
+        return instance;
+    }    
+};
+
+
 
 Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     return self.tp$iter();
