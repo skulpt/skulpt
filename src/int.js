@@ -141,16 +141,15 @@ Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> inte
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
     if (kwargs) {
-        for (let i = 1; i < kwargs.length ; i = i + 2) {
+        for (let i = 1; i < kwargs.length ; i += 2) {
             args.push(kwargs[i]);
         }
         if (kwargs.length && kwargs[0] !== "base") {
                 throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for int()")
             }
     }
-    args = args === undefined ? [] : args;
     if (args.length > 2) {
-        throw new Sk.builtin.TypeError("int() takes at most 2 arguments (3 given)")
+        throw new Sk.builtin.TypeError("int() takes at most 2 arguments ("+args.length+" given)")
     }
     const x = args[0];
     const base = args[1];
