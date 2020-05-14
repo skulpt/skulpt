@@ -26,7 +26,7 @@ Sk.builtin.float_ = function (x) {
 
 
     if (x instanceof Sk.builtin.str) {
-        return Sk.builtin._str_to_float(x.v);
+        return Sk.builtin._str_to_float.call(this, x.v);
     }
 
     // Floats are just numbers
@@ -71,6 +71,25 @@ Sk.builtin.float_ = function (x) {
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
+Sk.builtin.float_.prototype.tp$doc =  "Convert a string or number to a floating point number, if possible."
+
+Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("float() takes no keyword arguments");
+    } else if (args && args.length > 1) {
+        throw new Sk.builtin.TypeError("float expected at most 1 arguments, got "+ args.length);
+    }
+    // is args always an empty list?
+    if (this === Sk.builtin.float_.prototype) {
+        return new Sk.builtin.float_(args[0]);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.float_.call(instance, args[0]);
+        return instance;
+    };
+}
+
+
 Sk.builtin._str_to_float = function (str) {
     var tmp;
 
@@ -88,7 +107,7 @@ Sk.builtin._str_to_float = function (str) {
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
     }
-    return new Sk.builtin.float_(tmp);
+    return Sk.builtin.float_.call(this, tmp);
 };
 
 Sk.builtin.float_.prototype.nb$int_ = function () {
