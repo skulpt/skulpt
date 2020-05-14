@@ -43,9 +43,14 @@ Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.
 
 Sk.builtin.BaseException.prototype.tp$doc = "Common base class for all exceptions";
 Sk.builtin.BaseException.prototype.tp$new = function (args, kwargs) {
-    const instance = new this.constructor;
-    Sk.builtin.BaseException.call(instance, ...args);
-    return instance;
+    if (!this.hp$type) {
+        // then we have a builtin constructor so just return it as new this
+        return new this.constructor(...args);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.BaseException.call(instance, ...args);
+        return instance;
+    }
 };
 
 Sk.builtin.BaseException.prototype.tp$init = function (args, kwargs) {
