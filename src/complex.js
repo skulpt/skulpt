@@ -27,8 +27,6 @@ Math.hypot = Math.hypot || function() {
  *
  */
 Sk.builtin.complex = function (real, imag) {
-    Sk.builtin.pyCheckArgsLen("complex", arguments.length, 0, 2);
-
     var r, i, tmp; // PyObject
     var nbr, nbi; // real, imag as numbers
     var own_r = false;
@@ -171,6 +169,40 @@ Sk.builtin.complex = function (real, imag) {
 Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
+
+Sk.builtin.complex.prototype.tp$doc = "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0."
+
+Sk.builtin.complex.prototype.tp$new = function (args, kwargs) {
+    let real, imag;
+    const nargs = args.length + (kwargs ? kwargs.length/2 : 0);
+    if (nargs > 2) {
+        throw new Sk.builtin.TypeError("complex() takes at most 2 arguments ("+nargs+" given)")
+    } 
+    if (kwargs) {
+        real_index = kwargs.indexOf("real");
+        if (real_index !== -1) {
+            if (args.length) {
+                throw new Sk.builtin.TypeError("argument for complex() given by name ('real') and position (1)")
+            } else {
+                args.push(kwargs[real_index+1])
+            }
+        } 
+        imag_index = kwargs.indexOf("imag");
+        if (imag_index !== -1) {
+            args.push(kwargs[imag_index+1]) 
+        }
+    }
+    real = args[0];
+    imag = args[1];
+
+    if (this === Sk.builtin.complex.prototype) {
+        return new Sk.builtin.complex(real, imag);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.complex.call(instance, real, imag);
+        return instance;
+    }
+};
 
 Sk.builtin.complex.prototype.nb$int_ = function () {
     throw new Sk.builtin.TypeError("can't convert complex to int");
@@ -664,7 +696,7 @@ Sk.builtin.complex._complex_check = function (op) {
     }
 
     // check if type of ob is a subclass
-    if (Sk.builtin.issubclass(new Sk.builtin.type(op), Sk.builtin.complex)) {
+    if (Sk.builtin.issubclass(op.ob$type, Sk.builtin.complex)) {
         return true;
     }
 
@@ -766,49 +798,20 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 
 Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
 
-/**
- * Custom getattr impl. to get the c.real and c.imag to work. Though we should
- * consider to implement tp$members that always are attributs on the class and
- * will be used in the genericgetattr method.
- * Would be super easy to implement the readonly stuff too.
- *
- */
-Sk.builtin.complex.prototype.tp$getattr = function (name) {
-    if (name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
-        var _name = name;
+Sk.builtin.complex.prototype.tp$getsets = [
+    new Sk.GetSetDef("real", 
+                     function () {
+                         return this.real;
+                     }
+                    ),
+    new Sk.GetSetDef("imag", 
+                     function () {
+                         return this.imag;
+                     }
+                   ),
 
-        // get javascript string
-        if (Sk.builtin.checkString(name)) {
-            _name = Sk.ffi.remapToJs(name);
-        }
+];
 
-        if (_name === "real" || _name === "imag") {
-            return this[_name];
-        }
-    }
-
-    // if we have not returned yet, try the genericgetattr
-    return this._internalGenericGetAttr(name);
-};
-
-
-Sk.builtin.complex.prototype.tp$setattr = function (name, value) {
-    if (name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
-        var _name = name;
-
-        // get javascript string
-        if (Sk.builtin.checkString(name)) {
-            _name = Sk.ffi.remapToJs(name);
-        }
-
-        if (_name === "real" || _name === "imag") {
-            throw new Sk.builtin.AttributeError("readonly attribute");
-        }
-    }
-
-    // builtin: --> all is readonly (I am not happy with this)
-    throw new Sk.builtin.AttributeError("'complex' object attribute '" + name + "' is readonly");
-};
 
 /**
  * Internal format function for repr and str
