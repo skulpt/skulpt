@@ -110,7 +110,9 @@ Sk.builtins = {
     "intern"    : Sk.builtin.intern,
 
 
-    "property" : Sk.builtin.property,
+    "property"     : Sk.builtin.property,
+    "classmethod"  : Sk.builtin.classmethod,
+    "staticmethod" : Sk.builtin.staticmethod,
 };
 
 Sk.setupObjects = function (py3) {

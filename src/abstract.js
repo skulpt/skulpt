@@ -700,6 +700,45 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObje
     });
 };
 
+
+// A helper function for simple cases (mostly internal functions) 
+// When a function uses named arguments that might passed as posargs or keyword args
+// this function returns a copy of the args as positional args or raises an exception if this is not possible
+// similar to the code in func_code tp$call
+// see property.prototype.tp$init for a use case
+
+Sk.abstr.copyKeywordsToNamedArgs = function (varnames, args, kwargs, func_name) {
+    // args is an array, kwargs is an array or undefined
+    kwargs = kwargs || [];
+    
+    const nargs = args.length + kwargs.length/2;
+    if (nargs > varnames.length) {
+        throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + "arguments (" + nargs + "given)");
+    }
+    if (!kwargs.length) {
+        return args;
+    }
+    args = [...args]; // make a shallow copy of args
+
+    for (let i = 0; i < kwargs.length; i += 2) {
+        let name = kwargs[i]; // JS string
+        let value = kwargs[i+1]; // Python value
+        let idx = varnames.indexOf(name);
+
+        if (idx >= 0) {
+            if (args[idx] !== undefined) {
+                throw new Sk.builtin.TypeError(func_name + "() got multiple values for argument '" + name + "'");
+            }
+            args[idx] = value;
+        }  else {
+            throw new Sk.builtin.TypeError(func_name + "() got an unexpected keyword argument '" + name + "'");
+        }
+    }
+    return args;
+}
+
+
+
 //
 // Object
 //
