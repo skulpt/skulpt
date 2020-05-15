@@ -86,7 +86,7 @@ var $builtinmodule = function (name) {
 
         })
 
-        $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+        $loc.tp$getattr = Sk.builtin.GenericGetAttr;
 
         $loc.__setattr__ = new Sk.builtin.func(function (self, key, value) {
             key = Sk.ffi.remapToJs(key);

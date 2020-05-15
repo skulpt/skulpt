@@ -796,8 +796,6 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 };
 
 
-Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
-
 Sk.builtin.complex.prototype.tp$getsets = [
     new Sk.GetSetDef("real", 
                      function () {
