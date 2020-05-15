@@ -93,6 +93,7 @@ Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
     // we call str new method with all the args and kwargs
     const str_instance = Sk.builtin.str.prototype.tp$new(args, kwargs);
     instance.v = str_instance.v;
+    delete str_instance;
     return instance;
 };
 

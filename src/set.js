@@ -3,37 +3,42 @@
  * @param {Array.<Object>} S
  */
 Sk.builtin.set = function (S) {
-    var it, i;
-    var len;
-    
     if (!(this instanceof Sk.builtin.set)) {
-        // Called directly from Python
-        Sk.builtin.pyCheckArgsLen("set", arguments.length, 0, 1);
         return new Sk.builtin.set(S);
     }
-
+    // this.v is a dict
     this.set_reset_();
-
-    if (S !== undefined) {
-        if (Sk.builtin.checkIterable(S)) {
-            for (it = Sk.abstr.iter(S), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                Sk.builtin.set.prototype["add"].func_code(this, i);
-            }
-        } else if (Object.prototype.toString.apply(S) === "[object Array]") {
-            len = S.length;
-            for (i = 0; i < len; i++) {
-                Sk.builtin.set.prototype["add"].func_code(this, S[i]);
-            }
-        } else {
-            throw new Sk.builtin.TypeError("expecting Array or iterable");
-        }
-    }
-
     return this;
 };
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
+
+Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.";
+
+Sk.builtin.set.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.set);
+Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("set() takes no keyword arguments")
+    } else if (args.length > 1) {
+        throw new Sk.builtin.TypeError("set expected at most 1 arguments, got " + args.length)
+    }
+    const S = args[0];
+    if (S !== undefined) {
+        // first check if we have an empty set or not
+        if (!Sk.builtin.checkIterable(S)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(S) + "' object is not iterable");
+        }
+        if (!this.v.size) {
+            // if we already have a elements in the set then we clear them first
+            this.set_reset_();
+        }
+        for (let it = Sk.abstr.iter(S), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            this.v.mp$ass_subscript(i, true);
+        }
+    }
+    return Sk.builtin.none.none$
+};
 
 Sk.builtin.set.prototype.set_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
@@ -48,12 +53,15 @@ Sk.builtin.set.prototype["$r"] = function () {
 
     if(Sk.__future__.python3) {
         if (ret.length === 0) {
-            return new Sk.builtin.str("set()");
+            return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
+        } else if (this.hp$type) {
+            // then we are a subclass of set
+            return new Sk.builtin.str(Sk.abstr.typeName(this) +"({" + ret.join(", ") + "})");
         } else {
             return new Sk.builtin.str("{" + ret.join(", ") + "}");
         }
     } else {
-        return new Sk.builtin.str("set([" + ret.join(", ") + "])");
+        return new Sk.builtin.str(Sk.abstr.typeName(this) +"([" + ret.join(", ") + "])");
     }
 };
 

@@ -3,30 +3,59 @@
  * @param {Array.<Object>} S
  */
 Sk.builtin.frozenset = function (S) {
-    var it, i;
-    var S_list;
+    // internal function S is an Array or undefined
     if (!(this instanceof Sk.builtin.frozenset)) {
-        Sk.builtin.pyCheckArgsLen("frozenset", arguments.length, 0, 1);
         return new Sk.builtin.frozenset(S);
     }
 
-
-    if (typeof(S) === "undefined") {
+    if (S === undefined) {
         S = [];
     }
 
-    this.frozenset_reset_();
-    S_list = new Sk.builtin.list(S);
+    this.v = new Sk.builtin.dict(S);
 
-    for (it = Sk.abstr.iter(S_list), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        this.v.mp$ass_subscript(i, true);
-    }
-
-
-    this["v"] = this.v;
     return this;
 };
+
+
 Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
+
+Sk.builtin.frozenset.prototype.tp$doc = "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements."
+
+Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
+    if (this !== Sk.builtin.frozenset.prototype) {
+        return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
+    }
+
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("frozenset() takes no keyword arguments")
+    } else if (args.length > 1) {
+        throw new Sk.builtin.TypeError("frozenset expected at most 1 arguments, got " + args.length)
+    }
+    const arg = args[0];
+    const S = [];
+    if (arg !== undefined) {
+        // first check if we have an empty set or not
+        if (!Sk.builtin.checkIterable(arg)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
+        }
+        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            S.push(i);
+            S.push(true);
+        }
+    }
+    return new Sk.builtin.frozenset(S);
+};
+
+Sk.builtin.frozenset.prototype.$subtype_new = function (args, kwargs) {
+    debugger;
+    const instance = new this.constructor;
+    // pass the args but ignore the kwargs for subtyping
+    const frozenset = Sk.builtin.frozenset.prototype.tp$new(args);
+    instance.v = frozenset.v;
+    delete frozenset;
+    return instance;
+};
 
 Sk.builtin.frozenset.prototype.frozenset_reset_ = function () {
     this.v = new Sk.builtin.dict([]);
@@ -41,12 +70,12 @@ Sk.builtin.frozenset.prototype["$r"] = function () {
 
     if(Sk.__future__.python3){
         if (ret.length === 0) {
-            return new Sk.builtin.str("frozenset()");
+            return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
         } else {
-            return new Sk.builtin.str("frozenset({" + ret.join(", ") + "})");
+            return new Sk.builtin.str(Sk.abstr.typeName(this) + "({" + ret.join(", ") + "})");
         }
     } else {
-        return new Sk.builtin.str("frozenset([" + ret.join(", ") + "])");
+        return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
     }
 };
 

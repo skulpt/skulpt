@@ -142,8 +142,8 @@ Sk.builtin.genericNew = function (builtin) {
         if (this === builtin.prototype) {
             return new this.constructor;
         } else {
-            let instance = new this.constructor;
-            // now we want to apply instance to the builtin basically...
+            const instance = new this.constructor;
+            // now we want to apply instance to the builtin
             builtin.call(instance); 
             return instance;
         }
