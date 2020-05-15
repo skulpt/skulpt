@@ -15,40 +15,38 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
      * @extends Sk.builtin.tuple
      * @param {!Array<Object>|Object} arg
      */
-    var cons = function structseq_constructor(arg) {
-        Sk.builtin.pyCheckArgsLen(nm, arguments.length, 1, 1);
-        var o;
-        var it, i, /** @type {!Array<Object>} */v;
-        if (!(this instanceof Sk.builtin.structseq_types[nm])) {
-            o = Object.create(Sk.builtin.structseq_types[nm].prototype);
-            o.constructor.apply(o, arguments);
-            return o;
-        }
-
-        if (Array.isArray(arg)) {
-            v = arg;
-        } else {
-            v = [];
-            for (it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                v.push(i);
-            }
-            if (v.length != flds.length) {
-                throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
-            }
-        }
-
+    var cons = function structseq_constructor(v) {
         Sk.builtin.tuple.call(this, v);
-
     };
 
     Sk.builtin.structseq_types[nm] = cons;
 
-    Sk.abstr.inherits(cons, Sk.builtin.tuple);
+    Sk.abstr.setUpInheritance(nm, cons, Sk.builtin.tuple);
+
+    cons.prototype.tp$new = function (args, kwargs) {
+        if (kwargs && kwargs.length) {
+            throw new Sk.builtin.TypeError(nm + "() takes no keyword arguments"); 
+        } else if (args.length !== 1) {
+            throw new Sk.builtin.TypeError(nm + "() takes at most 1 argument (" + args.length + " given)");
+        }
+        const v = [];
+        const arg = args[0];
+
+        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                v.push(i);
+            }
+        if (v.length != flds.length) {
+            throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
+        }
+
+        return new cons(v);
+    };
+
+
     if (doc) {
         cons.prototype.__doc__ = doc;
+        cons.prototype.tp$doc = doc;
     }
-    cons.prototype.tp$name = nm;
-    cons.prototype.ob$type = Sk.builtin.type.$makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.tuple]);
     cons.prototype.tp$base = Sk.builtin.tuple;
     cons.prototype.tp$mro = new Sk.builtin.tuple([cons, Sk.builtin.tuple, Sk.builtin.object]);
@@ -76,19 +74,19 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         }
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
-    cons.prototype.tp$setattr = function (pyName, value) {
-        throw new Sk.builtin.AttributeError("readonly property");
-    };
+    
+    for (i=0; i<flds.length; i++) {
+        const gsd = new Sk.GetSetDef(flds[i], 
+                                     function () {
+                                         return this.v[i];
+                                     },
+                                     undefined,
+                                     docs[i]
+                                    )
 
-    cons.prototype.tp$getattr = function (pyName) {
-        var jsName = pyName.$jsstr();
-        var i = flds.indexOf(jsName);
-        if (i >= 0) {
-            return this.v[i];
-        } else {
-            return  Sk.builtin.object.prototype.GenericGetAttr(pyName);
-        }
-    };
+        cons.prototype[flds[i]] = new Sk.builtin.getset_descriptor(cons, gsd);
+    }
+    cons.prototype.num_sequence_fields = new Sk.builtin.int_(flds.length);
 
     return cons;
 };

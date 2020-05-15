@@ -965,6 +965,16 @@ Sk.abstr.iter = function(obj) {
         };
     };
 
+    if (obj.tp$iter) {
+        try {  // catch and ignore not iterable error here.
+            ret = obj.tp$iter();
+            if (ret.tp$iternext) {
+                return ret;
+            }
+        } catch (e) { }
+    }
+
+    // I think this should go since we should already have assigned the magic method if __iter__ was set on the klass.
     if (obj.tp$getattr) {
         iter =  Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
         if (iter) {
@@ -974,14 +984,7 @@ Sk.abstr.iter = function(obj) {
             }
         }
     }
-    if (obj.tp$iter) {
-        try {  // catch and ignore not iterable error here.
-            ret = obj.tp$iter();
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        } catch (e) { }
-    }
+
     getit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
     if (getit) {
         // create internal iterobject if __getitem__
