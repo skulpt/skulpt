@@ -10,9 +10,8 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    mod.__file__ = "/src/lib/time/__init__.js";
 
-    mod.__package__ = Sk.builtin.none.none$;
+    mod.__package__ = new Sk.builtin.str("");
 
     var struct_time_fields = {
         "tm_year": "year, for example, 1993",
