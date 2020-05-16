@@ -8,7 +8,6 @@ Sk.builtin.interned = {};
 Sk.builtin.str = function (x) {
     // new Sk.builtin.str is an internal function called with a JS value x
     let ret;
-    debugger;
     // if (x instanceof Sk.builtin.str) {
     //     return x;
     // }

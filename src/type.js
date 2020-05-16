@@ -544,24 +544,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.prototype.hp$type = true;
     klass.sk$klass = true;
 
-    // todo: __dict__ getset descriptors are not alway set... it depends on whether we inherit from a base that has it or not...
-    klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(
-        klass,
-        new Sk.GetSetDef("__dict__",
-                         function () {
-                             return this["$d"];
-                         },
-                         function (value) {
-                             const tp_name = Sk.abstr.typeName(value);
-                             if (tp_name !== "dict") {
-                                 throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + tp_name + "'");
-                             }
-                             this["$d"] = value;
-                             return;
-                         },
-                         "dictionary for instance variables (if defined)"
-        )
-    );
+
 
      // set __module__ 
      const module_lk = new Sk.builtin.str("__module__");
@@ -585,7 +568,46 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
     klass.prototype.tp$doc = klass.prototype.__doc__;
 
+    if (klass.prototype.__dict__ === undefined) {
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(
+            klass,
+            new Sk.GetSetDef("__dict__",
+                             function () {
+                                 return this["$d"];
+                             },
+                             function (value) {
+                                 const tp_name = Sk.abstr.typeName(value);
+                                 if (tp_name !== "dict") {
+                                     throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + tp_name + "'");
+                                 }
+                                 this["$d"] = value;
+                                 return;
+                             },
+                             "dictionary for instance variables (if defined)"
+            )
+        );
+    }
 
+    if (klass.prototype.hasOwnProperty("__init__")) {
+        klass.prototype.tp$init = function (args, kwargs) {
+            debugger;
+            return Sk.misceval.chain(this, function (self) {
+                                    debugger;
+                                    args.unshift(self);
+                                    let ret = Sk.misceval.callsimOrSuspendArray(self.__init__, args, kwargs);
+                                    debugger;
+                                    return ret;
+                            }, function (ret) {
+                                debugger;
+                                if (!Sk.builtin.checkNone(ret) && ret !== undefined) {
+                                    throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(ret));
+                                } else {
+                                    return ret;
+                                }
+                            });
+        };
+    }
+    
     if (!klass.prototype.sk$prototypical) {
         for (let dunder in Sk.dunderToSkulpt) {
             if (klass.prototype.hasOwnProperty(dunder)) {
