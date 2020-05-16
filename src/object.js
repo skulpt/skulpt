@@ -175,6 +175,9 @@ Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
     return new Sk.builtin.str(self);
 };
 
+Sk.builtin.object.prototype.tp$str = function () {
+    return this.$r();
+}
 
 /**
  * Python wrapper for `__str__` method.

@@ -422,7 +422,7 @@ SymbolTable.prototype.newTmpname = function (lineno) {
 SymbolTable.prototype.addDef = function (name, flag, lineno) {
     var fromGlobal;
     var val;
-    var mangled = Sk.mangleName(this.curClass, new Sk.builtin.str(name)).v;
+    var mangled = Sk.mangleName(this.curClass, name).v;
     mangled = Sk.fixReservedNames(mangled);
     val = this.cur.symFlags[mangled];
     if (val !== undefined) {

@@ -6,32 +6,26 @@ Sk.builtin.interned = {};
  * @extends Sk.builtin.object
  */
 Sk.builtin.str = function (x) {
-    var ret;
-
-    if (x === undefined) {
-        x = "";
-    }
-    if (x instanceof Sk.builtin.str) {
-        return x;
-    }
-    if (!(this instanceof Sk.builtin.str)) {
-        return new Sk.builtin.str(x);
-    }
-
-
+    // new Sk.builtin.str is an internal function called with a JS value x
+    let ret;
+    debugger;
+    // if (x instanceof Sk.builtin.str) {
+    //     return x;
+    // }
+    // if (!(this instanceof Sk.builtin.str)) {
+    //     return new Sk.builtin.str(x);
+    // }
     // convert to js string
-    if (x === true) {
+    if (typeof x === "string") {
+        ret = x;
+    } else if (x === undefined) {
+        ret = "";
+    } else if (x === true) {
         ret = "True";
     } else if (x === false) {
         ret = "False";
     } else if ((x === null) || (x instanceof Sk.builtin.none)) {
         ret = "None";
-    } else if (x instanceof Sk.builtin.bool) {
-        if (x.v) {
-            ret = "True";
-        } else {
-            ret = "False";
-        }
     } else if (typeof x === "number") {
         ret = x.toString();
         if (ret === "Infinity") {
@@ -39,18 +33,7 @@ Sk.builtin.str = function (x) {
         } else if (ret === "-Infinity") {
             ret = "-inf";
         }
-    } else if (typeof x === "string") {
-        ret = x;
-    } else if (x.tp$str !== undefined) {
-        ret = x.tp$str();
-        if (!(ret instanceof Sk.builtin.str)) {
-            throw new Sk.builtin.ValueError("__str__ didn't return a str");
-        }
-        return ret;
-    } else {
-        return Sk.misceval.objectRepr(x);
-    }
-
+    } 
     // interning required for strings in py
     if (Sk.builtin.interned["1" + ret]) {
         return Sk.builtin.interned["1" + ret];
@@ -85,7 +68,8 @@ Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
         throw new Sk.builtin.TypeError("str() takes at most 1 argument ("+args.length+" given)");
     }
     x = args[0];
-    return new Sk.builtin.str(x);
+    // x is a python object and all python objects have tp$str which may be inherited from object
+    return x.tp$str();
 };
 
 Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
@@ -242,6 +226,14 @@ Sk.builtin.str.prototype["$r"] = function () {
     }
     ret += quote;
     return new Sk.builtin.str(ret);
+};
+
+Sk.builtin.str.prototype.tp$str = function () {
+    if (this.constructor === Sk.builtin.str) {
+        return this;
+    } else {
+        return new Sk.builtin.str(this.v);
+    } 
 };
 
 
