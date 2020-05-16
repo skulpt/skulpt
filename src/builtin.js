@@ -1228,53 +1228,7 @@ Sk.builtin.format = function format (value, format_spec) {
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
-Sk.builtin.reversed = function reversed (seq) {
-    Sk.builtin.pyCheckArgsLen("reversed", arguments.length, 1, 1);
 
-    var special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
-    if (special != null) {
-        return Sk.misceval.callsimArray(special, [seq]);
-    } else {
-        if (!Sk.builtin.checkSequence(seq)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
-        }
-
-        /**
-         * Builds an iterator that outputs the items form last to first.
-         *
-         * @constructor
-         */
-        var reverseIter = function (obj) {
-            this.idx = obj.sq$length() - 1;
-            this.myobj = obj;
-            this.getitem = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
-            this.tp$iter = function() {
-                return this;
-            },
-            this.tp$iternext = function () {
-                var ret;
-
-                if (this.idx < 0) {
-                    return undefined;
-                }
-
-                try {
-                    ret = Sk.misceval.callsimArray(this.getitem, [this.myobj, Sk.ffi.remapToPy(this.idx)]);
-                } catch (e) {
-                    if (e instanceof Sk.builtin.IndexError) {
-                        return undefined;
-                    } else {
-                        throw e;
-                    }
-                }
-                this.idx--;
-                return ret;
-            };
-        };
-
-        return new reverseIter(seq);
-    }
-};
 
 Sk.builtin.id = function (obj) {
     Sk.builtin.pyCheckArgsLen("id", arguments.length, 1, 1);

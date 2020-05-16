@@ -6,29 +6,34 @@
  * @param {Object} lst
  */
 Sk.builtin.range_ = function (start, stop, step, lst) {
-    if (!(this instanceof Sk.builtin.range_)) {
-        return new Sk.builtin.range_(start, stop, step, lst);
-    }
-
     this.v = lst;
     this.$start = start;
     this.$stop = stop;
     this.$step = step;
 
-    this.$r = function () {
-        var name = "range(" + this.$start + ", " + this.$stop;
-        if (this.$step != 1) {
-            name += ", " + this.$step;
-        }
-        name += ")";
-        return new Sk.builtin.str(name);
-    };
-
     return this;
 };
 
 Sk.abstr.setUpInheritance("range", Sk.builtin.range_, Sk.builtin.object);
+Sk.builtin.range_.prototype.sk$acceptable_as_base_class = false;
 
+Sk.builtin.range_.prototype.tp$doc = "range(stop) -> range object\nrange(start, stop[, step]) -> range object\n\nReturn an object that produces a sequence of integers from start (inclusive)\nto stop (exclusive) by step.  range(i, j) produces i, i+1, i+2, ..., j-1.\nstart defaults to 0, and stop is omitted!  range(4) produces 0, 1, 2, 3.\nThese are exactly the valid indices for a list of 4 elements.\nWhen step is given, it specifies the increment (or decrement)."
+
+Sk.builtin.range_.prototype.tp$new = function (args, kwargs) {
+    if (kwargs && kwargs.length) {
+        throw new Sk.builtin.TypeError("range() takes no keyword arguments")
+    }
+    return Sk.builtin.range(...args);
+};
+
+Sk.builtin.range_.prototype.$r = function () {
+    let name = "range(" + this.$start + ", " + this.$stop;
+    if (this.$step != 1) {
+        name += ", " + this.$step;
+    }
+    name += ")";
+    return new Sk.builtin.str(name);
+};
 
 Sk.builtin.range_.prototype.mp$subscript = function (index) {
     var sub, start, stop, step;
@@ -66,9 +71,9 @@ Sk.builtin.range_.prototype.mp$subscript = function (index) {
     return sub;
 };
 
-Sk.builtin.range_.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.range_.prototype.mp$subscript.call(self, index);
-});
+// Sk.builtin.range_.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
+//     return Sk.builtin.range_.prototype.mp$subscript.call(self, index);
+// });
 
 Sk.builtin.range_.prototype.sq$contains = function (item) {
     return this.v.sq$contains(item);
@@ -87,7 +92,7 @@ Sk.builtin.range_.prototype.tp$richcompare = function (w, op) {
 
 Sk.builtin.range_.prototype.tp$iter = function () {
     // Hijack the list iterator
-    var iter = this.v.tp$iter();
+    const iter = this.v.tp$iter();
     iter.$r = function () {
         return new Sk.builtin.str("<rangeiterator>");
     };
@@ -113,3 +118,9 @@ Sk.builtin.range_.prototype["count"] = new Sk.builtin.func(function (self, item)
     Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
     return Sk.misceval.callsimArray(self.v.count, [self.v, item]);
 });
+
+Sk.builtin.range_.prototype.tp$getsets = [
+    new Sk.GetSetDef("start", function () {return this.$start;}),
+    new Sk.GetSetDef("step", function () {return this.$step;}),
+    new Sk.GetSetDef("stop", function () {return this.$stop;}),
+]

@@ -56,6 +56,8 @@ Sk.builtin.enumerate.prototype.tp$iternext = function () {
     return new Sk.builtin.tuple([idx, next]);
 };
 
+
+
 /**
  * @constructor
  * @param {Object} iterable
@@ -109,3 +111,201 @@ Sk.builtin.filter_.prototype.tp$iternext = function () {
 };
 
 
+
+/**
+ * @constructor
+ * @param {Object} seq
+ * @extends Sk.builtin.object
+ */
+
+
+Sk.builtin.reversed = function reversed (seq) {
+    this.idx = seq.sq$length() - 1;
+    this.seq = seq;
+    return this;
+};
+
+Sk.exportSymbol("Sk.builtin.reversed", Sk.builtin.reversed);
+Sk.abstr.setUpInheritance("reversed", Sk.builtin.reversed, Sk.builtin.object);
+
+Sk.builtin.reversed.prototype.tp$doc = "Return a reverse iterator over the values of the given sequence."
+
+Sk.builtin.reversed.prototype.tp$new = function (args, kwargs) {
+    if (kwargs && kwargs.length && this === Sk.builtin.reversed.prototype) {
+        throw new Sk.builtin.TypeError("reversed() takes no keyword arguments");
+    } else if (args.length !== 1) {
+        throw new Sk.builtin.TypeError("reversed expected 1 arguments, got " + args.length);
+    }
+    let seq = args[0];
+    const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
+    if (special !== undefined) {
+        return Sk.misceval.callsimArray(special, [seq]);
+    } else if (!Sk.builtin.checkSequence(seq)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
+    }
+    if (this === Sk.builtin.reversed.prototype) {
+        return new Sk.builtin.reversed(seq);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.reversed.call(instance, seq);
+        return instance;
+    }
+};
+
+Sk.builtin.reversed.prototype.tp$iter = function () {
+    return this;
+};
+
+Sk.builtin.reversed.prototype.tp$iternext = function () {
+    if (this.idx < 0) {
+        return undefined;
+    }
+    try {
+        const i = Sk.misceval.asIndex(this.idx);
+        const next = Sk.abstr.sequenceGetItem(this.seq, i);
+        this.idx--;
+        return next;
+    } catch (e) {
+        if (e instanceof Sk.builtin.IndexError) {
+            this.idx = -1;
+            return undefined;
+        } else {
+            throw e;
+        }
+    }
+};
+
+// will need to turn this into a method wrapper
+Sk.builtin.reversed.prototype.__length_hint__ = function () {
+    return this.idx >= 0 ? Sk.builtin.int_(this.idx) : Sk.builtin.int_(0);
+};
+
+
+
+/**
+ * @constructor
+ * @param {Array} JS Array of iterator objects
+ * @extends Sk.builtin.object
+ */
+Sk.builtin.zip_ = function zip_ (iters) {
+    this.iters = iters;
+    return this;
+}
+
+Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);
+
+Sk.abstr.setUpInheritance("zip", Sk.builtin.zip_, Sk.builtin.object);
+
+
+Sk.builtin.zip_.prototype.tp$doc = "zip(iter1 [,iter2 [...]]) --> zip object\n\nReturn a zip object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the shortest iterable in the argument sequence\nis exhausted and then it raises StopIteration."
+
+
+Sk.builtin.zip_.prototype.tp$new = function (args, kwargs) {
+    if (kwargs && kwargs.length && this === Sk.builtin.zip_.prototype) {
+        throw new Sk.builtin.TypeError("zip() takes no keyword arguments");
+    } 
+    const iters = [];
+    for (let i = 0; i < args.length; i++) {
+        try {
+            iters.push(Sk.abstr.iter(args[i]));
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                throw new Sk.builtin.TypeError("zip argument #" + (i + 1) + " must support iteration");         
+            } else {
+                throw e;
+            }
+        }
+    }
+    if (this === Sk.builtin.zip_.prototype) {
+        return new Sk.builtin.zip_(iters);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.zip_.call(instance, iters);
+        return instance;
+    }
+};
+
+
+Sk.builtin.zip_.prototype.tp$iter = function () {
+    return this;
+};
+
+Sk.builtin.zip_.prototype.tp$iternext = function () {
+    if (this.iters.length === 0) {
+        return undefined;
+    }
+    const tup = [];
+    for (i = 0; i < this.iters.length; i++) {
+        next = this.iters[i].tp$iternext();
+        if (next === undefined) {
+            return undefined;
+        }
+        tup.push(next);
+    }
+    return new Sk.builtin.tuple(tup);
+};
+
+
+/**
+ * @constructor
+ * @param {Sk.builtin.func} func
+ * @param {Array} array of iterators
+ * @extends Sk.builtin.object
+ */
+Sk.builtin.map_ = function map_ (func, iters) {
+    this.func = func;
+    this.iters = iters;
+    return this;
+};
+
+Sk.exportSymbol("Sk.builtin.map_", Sk.builtin.map_);
+
+Sk.abstr.setUpInheritance("map", Sk.builtin.map_, Sk.builtin.object);
+
+Sk.builtin.map_.prototype.tp$doc = "map(func, *iterables) --> map object\n\nMake an iterator that computes the function using arguments from\neach of the iterables.  Stops when the shortest iterable is exhausted."
+
+Sk.builtin.map_.prototype.tp$new = function (args, kwargs) {
+    if (kwargs && kwargs.length && this === Sk.builtin.map_.prototype) {
+        throw new Sk.builtin.TypeError("map() takes no keyword arguments");
+    } else if (args.length < 2) {
+        throw new Sk.builtin.TypeError("map() must have at least two arguments.")
+    }
+    const func = args[0];
+    const iters = [];
+    for (let i=1; i < args.length; i++) {
+        iters.push(Sk.abstr.iter(args[i]));
+    }
+    if (this === Sk.builtin.map_.prototype) {
+        return new Sk.builtin.map_(func, iters);
+    } else {
+        const instance = new this.constructor;
+        Sk.builtin.map_.call(instance, func, iters);
+        return instance;
+    } 
+};
+
+Sk.builtin.map_.prototype.tp$iter = function () {
+    return this;
+};
+
+Sk.builtin.map_.prototype.tp$iternext = function () {
+    const args = [];
+    let next;
+    for (let i = 0; i < this.iters.length; i++) {
+        next = this.iters[i].tp$iternext();
+        if (next === undefined) {
+            return undefined;
+        }
+        args.push(next);
+    }
+    return Sk.misceval.callsimArray(this.func, args);
+};
+
+
+
+Sk.builtin.enumerate.prototype.next$ = 
+Sk.builtin.filter_.prototype.next$ = 
+Sk.builtin.reversed.prototype.next$ = 
+Sk.builtin.zip_.prototype.next$ =
+Sk.builtin.map_.prototype.next$ =
+function () {};
