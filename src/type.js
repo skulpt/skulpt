@@ -9,16 +9,13 @@ if (Sk.builtin === undefined) {
  * @param {Function} get
  * @param {Function} set 
  * @param {String} doc
- * @param {Object} closure
  */
 
-Sk.GetSetDef = function (_name, get, set, doc, closure) {
+Sk.GetSetDef = function (_name, get, set, doc) {
     this._name = _name;
     this.get = get;
     this.set = set;
     this.doc = doc;
-    // this was from Cpython not sure what it should do in skulpt
-    this.closure = closure;
 };
 
 Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
@@ -177,7 +174,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         this.$d = new Sk.builtin.dict();
     };
 
-    // todo: imrpove best_base algorithm to reflect layout conflicts as per python
+    // todo: improve best_base algorithm to reflect layout conflicts as per python
     const best_base = Sk.builtin.type.$best_base(bases);
 
     if (best_base !== undefined) {
@@ -240,6 +237,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         );
     }
 
+    // todo: move this and other similiar dunders to the assignDunders algorithm;
     if (klass.prototype.hasOwnProperty("__init__")) {
         klass.prototype.tp$init = function (args, kwargs) {
             args.unshift(this);
@@ -260,7 +258,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
             if (klass.prototype.hasOwnProperty(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             } else {
-                //add a slot wrapper for the slot which says go find this method somwhere if it exists...
+                //add a slot wrapper for the slot which says go find this method somewhere if it exists...
             }
         }
     } else {
@@ -399,6 +397,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
         } else {
             delete this.prototype[jsName];
             // TODO: should also delete the slot function. 
+            // or adapt if not sk$prototypical;
             return;
         }
     }

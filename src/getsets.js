@@ -22,7 +22,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     } 
 
     if (this.d$getset && this.d$getset.get !== undefined) {
-        return this.d$getset.get.call(obj, this.d$getset.closure);
+        return this.d$getset.get.call(obj);
     }
 
     throw new Sk.builtin.AttributeError("getset_descriptor '"+ this.d$name +"' of '" + this.d$type.prototype.tp$name + "' objects is not readable");
@@ -33,7 +33,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
     if (!(Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this.d$type))) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } else if (this.d$getset.set !== undefined){
-        return this.d$getset.set.call(obj, value, this.d$getset.closure);
+        return this.d$getset.set.call(obj, value);
     }
     throw new Sk.builtin.AttributeError("getset_descriptor '"+ this.d$name +"' of '" + this.d$type.prototype.tp$name + "' objects is not writeable");
 };
