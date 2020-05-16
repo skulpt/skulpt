@@ -24,110 +24,15 @@
  * @param  {!(Object|number|Sk.builtin.none)=} base Optional base, can only be used when x is Sk.builtin.str
  * @return {(Sk.builtin.int_|Sk.builtin.lng)}      Python int (or long, if overflow)
  */
-Sk.builtin.int_ = function (x, base) {
-    var val;
-    var func;
-    var ret; // return value
-    var magicName; // name of magic method
-
-    if (!(this instanceof Sk.builtin.int_)) {
-        return new Sk.builtin.int_(x, base);
-    }
-
-
-    if (this instanceof Sk.builtin.bool) {
-        return this;
-    }
-
-    if (x instanceof Sk.builtin.int_ && base === undefined) {
-        this.v = x.v;
-        return this;
-    }
-
-    // if base is not of type int, try calling .__index__
-    if(base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
-        if (Sk.builtin.checkFloat(base)) {
-            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
-        } else if (base.__index__) {
-            base = Sk.misceval.callsimArray(base.__index__, [base]);
-        } else if(base.__int__) {
-            base = Sk.misceval.callsimArray(base.__int__, [base]);
-        } else {
-            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
-        }
-    }
-
-    if (x instanceof Sk.builtin.str) {
-        base = Sk.builtin.asnum$(base);
-        if (base === Sk.builtin.none.none$) {
-            base = 10;
-        }
-
-        val = Sk.str2number(x.v, base, parseInt, function (x) {
-            return -x;
-        }, "int");
-
-        if ((val > Sk.builtin.int_.threshold$) || (val < -Sk.builtin.int_.threshold$)) {
-            // Too big for int, convert to long
-            return new Sk.builtin.lng(x, base);
-        }
-
-        this.v = val;
-        return this;
-    }
-
-    if (base !== undefined && base !== Sk.builtin.none.none$) {
-        throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
-    }
-
-    if (x === undefined || x === Sk.builtin.none) {
-        x = 0;
-    }
-
-    /**
-     * try calling special methods:
-     *  1. __int__
-     *  2. __trunc__
-     */
-    if(x !== undefined && (x.tp$getattr && (func = x.tp$getattr(Sk.builtin.str.$int_)))) {
-        // calling a method which contains im_self and im_func
-        // causes skulpt to automatically map the im_self as first argument
-        ret = Sk.misceval.callsimArray(func);
-        magicName = "__int__";
-    } else if(x !== undefined && x.__int__) {
-        // required for internal types
-        // __int__ method is on prototype
-        ret = Sk.misceval.callsimArray(x.__int__, [x]);
-        magicName = "__int__";
-    } else if(x !== undefined && (x.tp$getattr && (func = x.tp$getattr(Sk.builtin.str.$trunc)))) {
-        ret = Sk.misceval.callsimArray(func);
-        magicName = "__trunc__";
-    } else if(x !== undefined && x.__trunc__) {
-        ret = Sk.misceval.callsimArray(x.__trunc__, [x]);
-        magicName = "__trunc__";
-    }
-
-    // check return type of magic methods
-    if(ret !== undefined && !Sk.builtin.checkInt(ret)) {
-        throw new Sk.builtin.TypeError(magicName + " returned non-Integral (type " + Sk.abstr.typeName(ret)+")");
-    } else if(ret !== undefined){
-        x = ret; // valid return value, proceed in function
-    }
-
-    // check type even without magic numbers
-    if(!Sk.builtin.checkNumber(x)) {
-        throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
-    }
-
-    x = Sk.builtin.asnum$(x);
+Sk.builtin.int_ = function (x) {
+    // internal function called with a javascript int/float/str
     if (x > Sk.builtin.int_.threshold$ || x < -Sk.builtin.int_.threshold$) {
         return new Sk.builtin.lng(x);
     }
     if ((x > -1) && (x < 1)) {
         x = 0;
     }
-
-    this.v = parseInt(x, base);
+    this.v = parseInt(x);
     return this;
 };
 
@@ -140,6 +45,10 @@ Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4"
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
+    const nargs = args.length + kwargs ? kwargs.length /2 : 0;
+    if (args.length > 2) {
+        throw new Sk.builtin.TypeError("int() takes at most 2 arguments ("+nargs+" given)")
+    }
     if (kwargs) {
         for (let i = 1; i < kwargs.length ; i += 2) {
             args.push(kwargs[i]);
@@ -148,19 +57,69 @@ Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
                 throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for int()")
             }
     }
-    if (args.length > 2) {
-        throw new Sk.builtin.TypeError("int() takes at most 2 arguments ("+args.length+" given)")
-    }
-    const x = args[0];
+
+    let x = args[0];
     const base = args[1];
+
+    x = Sk.builtin.int_.$getJsInt(x, base);
+
     if (this === Sk.builtin.int_.prototype) {
-        return new Sk.builtin.int_(x, base);
+        return new Sk.builtin.int_(x);
     } else {
         const instance = new this.constructor;
-        Sk.builtin.int_.call(instance, x, base);
+        Sk.builtin.int_.call(instance, x);
         return instance;
     }
 };
+
+Sk.builtin.int_.$getJsInt = function (x, base) {
+    let func;
+
+    // if base is not of type int, try calling .__index__
+    if (base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
+        if (Sk.builtin.checkFloat(base)) {
+            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
+        } else if (base.__index__) {
+            base = Sk.misceval.callsimArray(base.__index__, [base]);
+        } else if (base.__int__) {
+            base = Sk.misceval.callsimArray(base.__int__, [base]);
+        } else {
+            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
+        }
+    }
+
+    if (x instanceof Sk.builtin.str) {
+        base = Sk.builtin.asnum$(base);
+        if (base === Sk.builtin.none.none$) {
+            base = 10;
+        }
+
+        x = Sk.str2number(x.v, base, parseInt, function (x) {
+            return -x;
+        }, "int");
+    } else if (base !== undefined && base !== Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
+    } else if (x instanceof Sk.builtin.int_) {
+        x = x.v;
+    } else if (x === undefined) {
+        x = 0;
+    } else if (x.nb$int_) {
+        // nb$int slot_wrapper takes care of checking int is an int
+        x = x.nb$int_();
+    } else if (x.hp$type && (func = x.tp$getattr(Sk.builtin.str.$trunc))) {
+        x = Sk.misceval.callsimArray(func);
+        // check return type of magic methods
+        if(!Sk.builtin.checkInt(x)) {
+            throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x)+")");
+        }
+    } else {
+        throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '"+Sk.abstr.typeName(x)+"'")
+    }
+
+    x = Sk.builtin.asnum$(x);
+
+    return x;
+}
 
 Sk.builtin.int_.prototype.nb$int_ = function () {
     return this;
@@ -228,7 +187,7 @@ Sk.builtin.int_.prototype.tp$hash = function () {
  *
  * @type {number}
  */
-Sk.builtin.int_.threshold$ = Math.pow(2, 53) - 1;
+Sk.builtin.int_.threshold$ = Number.MAX_SAFE_INTEGER;
 
 /**
  * Returns a copy of this instance.
