@@ -17,25 +17,26 @@ Sk.abstr.markUnhashable(Sk.builtin.set);
 Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.";
 
 Sk.builtin.set.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.set);
+
 Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
     if (kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("set() takes no keyword arguments")
     } else if (args.length > 1) {
         throw new Sk.builtin.TypeError("set expected at most 1 arguments, got " + args.length)
     }
-    const S = args[0];
+    let S = args[0];
+    let self = this;
+
     if (S !== undefined) {
         // first check if we have an empty set or not
-        if (!Sk.builtin.checkIterable(S)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(S) + "' object is not iterable");
-        }
+        S = Sk.abstr.iter(S);
         if (!this.v.size) {
             // if we already have a elements in the set then we clear them first
             this.set_reset_();
         }
-        for (let it = Sk.abstr.iter(S), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            this.v.mp$ass_subscript(i, true);
-        }
+        Sk.misceval.iterFor(S, function (i) {
+            self.v.mp$ass_subscript(i, true);
+        });
     }
     return Sk.builtin.none.none$
 };

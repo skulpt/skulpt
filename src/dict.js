@@ -34,22 +34,24 @@ Sk.builtin.dict.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
-    const arg = args[0]
+    const arg = args[0];
     if (arg !== undefined) {
-        if (Sk.builtin.checkIterable(arg)) {
-            // Handle calls of type "dict(iterable)" from Python code
-            for (it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                if (i.mp$subscript) {
-                    this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
-                } else {
-                    throw new Sk.builtin.TypeError("element " + this.size + " is not a sequence");
+        let self = this;
+        let idx = 0;
+        Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
+            if (Sk.builtin.checkSequence(i)) {
+                // should also check that the sq length is not longer than 2.
+                const len = Sk.abstr.sequenceLength(i);
+                if (len !== 2) {
+                    throw new Sk.builtin.ValueError("dictionary update sequence element #"+ idx +" has length "+len+"; 2 is required")
                 }
+                self.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
+                idx++;
+            } else {
+                throw new Sk.builtin.TypeError("element " + idx + " is not a sequence");
             }
-        } else {
-            throw new Sk.builtin.TypeError(Sk.abstr.typeName(arg) + " object is not iterable");
-        }
+        })
     }
-    
     if (kwargs) {
         for (i = 0; i < kwargs.length; i += 2) {
             this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i+1]);

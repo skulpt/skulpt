@@ -35,14 +35,10 @@ Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
     const arg = args[0];
     const S = [];
     if (arg !== undefined) {
-        // first check if we have an empty set or not
-        if (!Sk.builtin.checkIterable(arg)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
-        }
-        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
             S.push(i);
             S.push(true);
-        }
+        });
     }
     return new Sk.builtin.frozenset(S);
 };

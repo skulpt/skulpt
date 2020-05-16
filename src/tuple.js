@@ -31,7 +31,7 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
         throw new Sk.builtin.TypeError("tuple expected at most 1 argument, got " + args.length)
     }
     const L = [];
-    const arg = args ? args[0] : undefined;
+    const arg = args[0];
 
     if (arg === undefined) {
         return new Sk.builtin.tuple(L);
@@ -41,13 +41,9 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
         return arg;
     }
 
-    if (Sk.builtin.checkIterable(arg)) {
-        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            L.push(i);
-        }
-    } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' is not iterable");
-    } 
+    Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
+        L.push(i);
+    })
 
     return new Sk.builtin.tuple(L);
 };

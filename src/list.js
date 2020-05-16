@@ -41,14 +41,11 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     if (arg === undefined) {
         return Sk.builtin.none.none$;
     }
-
-    if (Sk.builtin.checkIterable(arg)) {
-        for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            this.v.push(i);
-        }
-    } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' is not iterable");
-    } 
+    
+    let self = this;
+    Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
+        self.v.push(i);
+    })
 
     return Sk.builtin.none.none$;
 

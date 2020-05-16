@@ -32,7 +32,13 @@ Sk.builtin.str = function (x) {
         } else if (ret === "-Infinity") {
             ret = "-inf";
         }
-    } 
+    } else if (x.constructor === Sk.builtin.str) {
+        // probably shouldn't have this but might be useful if someone calls new str on a str object
+        return x;
+    }
+    if (ret === undefined) {
+        throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName + "' to str");
+    }
     // interning required for strings in py
     if (Sk.builtin.interned["1" + ret]) {
         return Sk.builtin.interned["1" + ret];
@@ -111,6 +117,7 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
 Sk.builtin.str.prototype.sq$length = function () {
     return this.v.length;
 };
+
 Sk.builtin.str.prototype.sq$concat = function (other) {
     var otypename;
     if (!other || !Sk.builtin.checkString(other)) {
