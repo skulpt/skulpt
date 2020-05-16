@@ -120,7 +120,7 @@ Sk.builtin.range_.prototype["count"] = new Sk.builtin.func(function (self, item)
 });
 
 Sk.builtin.range_.prototype.tp$getsets = [
-    new Sk.GetSetDef("start", function () {return this.$start;}),
-    new Sk.GetSetDef("step", function () {return this.$step;}),
-    new Sk.GetSetDef("stop", function () {return this.$stop;}),
+    new Sk.GetSetDef("start", function () {return new Sk.builtin.int_(this.$start);}),
+    new Sk.GetSetDef("step", function () {return new Sk.builtin.int_(this.$step);}),
+    new Sk.GetSetDef("stop", function () {return new Sk.builtin.int_(this.$stop);}),
 ]
