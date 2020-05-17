@@ -1,5 +1,5 @@
 var $builtinmodule = function (name) {
-        return Sk.misceval.chain(Sk.importModule("keyword", false, true), function (keywds) {
+    return Sk.misceval.chain(Sk.importModule("keyword", false, true), function (keywds) {
         var mod = {};
 
         // defaultdict object
@@ -40,7 +40,7 @@ var $builtinmodule = function (name) {
                 L.push(v);
             }
             return new mod.defaultdict(self.default_factory, L);
-        }
+        };
         _copy.co_name = new Sk.builtin.str("__copy__");
         _copy.co_varnames = ["self"];
 
@@ -96,73 +96,68 @@ var $builtinmodule = function (name) {
             let self = this;
             if (args[0] !== undefined) {
                 Sk.misceval.iterFor(Sk.abstr.iter(args[0]), function (k) {
-                    let count = self.mp$subscript(k); 
+                    let count = self.mp$subscript(k);
                     count = count.nb$add(one);
                     self.mp$ass_subscript(k, count);
                 })
             }
-            for (let i=0; i<kwargs.length; i+=2) {
+            for (let i = 0; i < kwargs.length; i += 2) {
                 const k = new Sk.builtin.str(kwargs[i]);
-                let count = this.mp$subscript(k); 
-                count = count.nb$add(kwargs[i+1]);
+                let count = this.mp$subscript(k);
+                count = count.nb$add(kwargs[i + 1]);
                 if (count === Sk.builtin.NotImplemented.NotImplemented$) {
                     throw new Sk.builtin.NotImplementedError("can't add " + Sk.abstr.typeName(k) + " with int")
                 }
-                this.mp$ass_subscript(k, count); 
+                this.mp$ass_subscript(k, count);
             }
             return Sk.builtin.none.none$;
         }
 
         mod.Counter.prototype.$r = function () {
             var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : '';
-            return new Sk.builtin.str('Counter(' + dict_str + ')');
+            return new Sk.builtin.str("Counter(" + dict_str + ")");
         };
 
         mod.Counter.prototype.mp$subscript = function (key) {
             try {
                 return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
-            }
-            catch (e) {
+            } catch (e) {
                 return new Sk.builtin.int_(0);
             }
         };
 
-        mod.Counter.prototype['elements'] = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgsLen('elements', arguments.length, 1, 1);
+        mod.Counter.prototype["elements"] = new Sk.builtin.func(function (self) {
+            Sk.builtin.pyCheckArgsLen("elements", arguments.length, 1, 1);
             var all_elements = [];
-            for (var iter = self.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
+            for (var iter = self.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 for (var i = 0; i < self.mp$subscript(k).v; i++) {
                     all_elements.push(k);
                 }
             }
             if (mod._chain === undefined) {
-                let itertools = Sk.builtin.__import__('itertools', mod, undefined, ['chain'], -1);
-                return  Sk.misceval.chain(itertools, function (i) {
+                let itertools = Sk.builtin.__import__("itertools", mod, undefined, ["chain"], -1);
+                return Sk.misceval.chain(itertools, function (i) {
                     mod._chain = i.$d.chain;
                     return Sk.misceval.callsimArray(mod._chain, all_elements);
                 });
             } else {
-                return Sk.misceval.callsimArray(mod._chain, all_elements); 
+                return Sk.misceval.callsimArray(mod._chain, all_elements);
             }
-            
-            
+
+
         });
 
-        mod.Counter.prototype['most_common'] = new Sk.builtin.func(function (self, n) {
-            Sk.builtin.pyCheckArgsLen('most_common', arguments.length, 1, 2);
+        mod.Counter.prototype["most_common"] = new Sk.builtin.func(function (self, n) {
+            Sk.builtin.pyCheckArgsLen("most_common", arguments.length, 1, 2);
             var length = self.mp$length();
 
             if (n === undefined) {
                 n = length;
-            }
-            else {
+            } else {
                 if (!Sk.builtin.checkInt(n)) {
                     if (n instanceof Sk.builtin.float_) {
                         throw new Sk.builtin.TypeError("integer argument expected, got float");
-                    }
-                    else {
+                    } else {
                         throw new Sk.builtin.TypeError("an integer is required");
                     }
                 }
@@ -173,9 +168,7 @@ var $builtinmodule = function (name) {
             }
 
             var most_common_elem = [];
-            for (var iter = self.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
+            for (var iter = self.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 most_common_elem.push([k, self.mp$subscript(k)]);
             }
 
@@ -198,52 +191,42 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.list(ret);
         });
 
-        mod.Counter.prototype['update'] = new Sk.builtin.func(function (self, other) {
-            Sk.builtin.pyCheckArgsLen('update', arguments.length, 1, 2);
+        mod.Counter.prototype["update"] = new Sk.builtin.func(function (self, other) {
+            Sk.builtin.pyCheckArgsLen("update", arguments.length, 1, 2);
 
             if (other instanceof Sk.builtin.dict) {
-                for (var iter = other.tp$iter(), k = iter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext()) {
+                for (var iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                     var count = self.mp$subscript(k);
                     self.mp$ass_subscript(k, count.nb$add(other.mp$subscript(k)));
                 }
-            }
-            else if (other !== undefined) {
+            } else if (other !== undefined) {
                 if (!Sk.builtin.checkIterable(other)) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
                 }
 
                 var one = new Sk.builtin.int_(1);
-                for (var iter = other.tp$iter(), k = iter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext()) {
+                for (var iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                     var count = self.mp$subscript(k);
                     self.mp$ass_subscript(k, count.nb$add(one));
                 }
             }
         });
 
-        mod.Counter.prototype['subtract'] = new Sk.builtin.func(function (self, other) {
-            Sk.builtin.pyCheckArgsLen('subtract', arguments.length, 1, 2);
+        mod.Counter.prototype["subtract"] = new Sk.builtin.func(function (self, other) {
+            Sk.builtin.pyCheckArgsLen("subtract", arguments.length, 1, 2);
 
             if (other instanceof Sk.builtin.dict) {
-                for (var iter = other.tp$iter(), k = iter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext()) {
+                for (var iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                     var count = self.mp$subscript(k);
                     self.mp$ass_subscript(k, count.nb$subtract(other.mp$subscript(k)));
                 }
-            }
-            else if (other !== undefined) {
+            } else if (other !== undefined) {
                 if (!Sk.builtin.checkIterable(other)) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
                 }
 
                 var one = new Sk.builtin.int_(1);
-                for (var iter = other.tp$iter(), k = iter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext()) {
+                for (var iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                     var count = self.mp$subscript(k);
                     self.mp$ass_subscript(k, count.nb$subtract(one));
                 }
@@ -256,7 +239,7 @@ var $builtinmodule = function (name) {
             this.orderedkeys = [];
             Sk.builtin.dict.call(this);
             return this;
-        }
+        };
 
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
         mod.OrderedDict.prototype.__module__ = new Sk.builtin.str("collections");
@@ -268,13 +251,10 @@ var $builtinmodule = function (name) {
             Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
         };
 
-        mod.OrderedDict.prototype.$r = function()
-        {
+        mod.OrderedDict.prototype.$r = function () {
             let v, pairstr;
             const ret = [];
-            for (let iter = this.tp$iter(), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
+            for (let iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 v = this.mp$subscript(k);
                 if (v === undefined) {
                     //print(k, "had undefined v");
@@ -287,29 +267,25 @@ var $builtinmodule = function (name) {
                 pairstr = "[" + pairstr + "]";
             }
             return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
-        }
+        };
 
-        mod.OrderedDict.prototype.mp$ass_subscript = function(key, w)
-        {
+        mod.OrderedDict.prototype.mp$ass_subscript = function (key, w) {
             var idx = this.orderedkeys.indexOf(key);
-            if (idx == -1)
-            {
+            if (idx == -1) {
                 this.orderedkeys.push(key);
             }
 
             return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
-        }
+        };
 
-        mod.OrderedDict.prototype.mp$del_subscript = function(key)
-        {
+        mod.OrderedDict.prototype.mp$del_subscript = function (key) {
             var idx = this.orderedkeys.indexOf(key);
-            if (idx != -1)
-            {
+            if (idx != -1) {
                 this.orderedkeys.splice(idx, 1);
             }
 
             return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
-        }
+        };
 
 
         mod.OrderedDict.prototype.ob$eq = function (other) {
@@ -319,8 +295,7 @@ var $builtinmodule = function (name) {
             var k;
             var v;
 
-            if (!(other instanceof mod.OrderedDict))
-            {
+            if (!(other instanceof mod.OrderedDict)) {
                 return Sk.builtin.dict.prototype.ob$eq.call(this, other);
             }
 
@@ -332,12 +307,8 @@ var $builtinmodule = function (name) {
             }
 
             for (iter = this.tp$iter(), otheriter = other.tp$iter(),
-                k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext(), otherk = otheriter.tp$iternext())
-            {
-                if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq")))
-                {
+                k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
+                if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
                     return Sk.builtin.bool.false$;
                 }
                 v = this.mp$subscript(k);
@@ -358,8 +329,7 @@ var $builtinmodule = function (name) {
             var k;
             var v;
 
-            if (!(other instanceof mod.OrderedDict))
-            {
+            if (!(other instanceof mod.OrderedDict)) {
                 return Sk.builtin.dict.prototype.ob$ne.call(this, other);
             }
 
@@ -371,12 +341,8 @@ var $builtinmodule = function (name) {
             }
 
             for (iter = this.tp$iter(), otheriter = other.tp$iter(),
-                k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext(), otherk = otheriter.tp$iternext())
-            {
-                if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq")))
-                {
+                k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
+                if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
                     return Sk.builtin.bool.true$;
                 }
                 v = this.mp$subscript(k);
@@ -394,11 +360,10 @@ var $builtinmodule = function (name) {
             var s;
             var idx;
 
-            Sk.builtin.pyCheckArgsLen('pop', arguments.length, 2, 3);
+            Sk.builtin.pyCheckArgsLen("pop", arguments.length, 2, 3);
 
             idx = self.orderedkeys.indexOf(key);
-            if (idx != -1)
-            {
+            if (idx != -1) {
                 self.orderedkeys.splice(idx, 1);
             }
 
@@ -409,18 +374,16 @@ var $builtinmodule = function (name) {
             var key, val;
             var s;
 
-            Sk.builtin.pyCheckArgsLen('popitem', arguments.length, 1, 2);
+            Sk.builtin.pyCheckArgsLen("popitem", arguments.length, 1, 2);
 
             // Empty dictionary
-            if (self.orderedkeys.length == 0)
-            {
-                s = new Sk.builtin.str('dictionary is empty');
+            if (self.orderedkeys.length == 0) {
+                s = new Sk.builtin.str("dictionary is empty");
                 throw new Sk.builtin.KeyError(s.v);
             }
 
             key = self.orderedkeys[0];
-            if (last === undefined || Sk.misceval.isTrue(last))
-            {
+            if (last === undefined || Sk.misceval.isTrue(last)) {
                 key = self.orderedkeys[self.orderedkeys.length - 1];
             }
 
@@ -524,7 +487,7 @@ var $builtinmodule = function (name) {
             nt_cons.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.tuple]);
 
             mod.namedtuples[$name] = nt_cons;
-            
+
             nt_cons.prototype.tp$doc = $name + "(" + flds.join(", ") + ")";
 
             nt_cons.prototype.tp$new = function (args, kwargs) {
@@ -547,34 +510,34 @@ var $builtinmodule = function (name) {
             // allocate __new__ and __repr__ slots here
             const _new = function (kwargs, _cls, args) {
                 try {
-                    if (!Sk.builtin.issubclass(cls, Sk.builtin.tuple)){
-                        throw new Sk.builtin.TypeError(Sk.abstr.typeName(cls)+" object '" + cls.prototype.tp$name + "' is not a subtype of tuple")
+                    if (!Sk.builtin.issubclass(cls, Sk.builtin.tuple)) {
+                        throw new Sk.builtin.TypeError(Sk.abstr.typeName(cls) + " object '" + cls.prototype.tp$name + "' is not a subtype of tuple")
                     }
                 } catch (e) {
                     if (e instanceof Sk.builtin.TypeError) {
-                        throw new Sk.builtin.TypeError("tuple.__new__(X): X is not a type object ("+Sk.abstr.typeName(cls)+")") 
+                        throw new Sk.builtin.TypeError("tuple.__new__(X): X is not a type object (" + Sk.abstr.typeName(cls) + ")")
                     }
                 }
-                for (let i = 0; i < kwargs.length; i+=2) {
-                    kwargs[i] = kwargs[i].$jsstr(); 
+                for (let i = 0; i < kwargs.length; i += 2) {
+                    kwargs[i] = kwargs[i].$jsstr();
                 }
 
                 return nt_cons.prototype.tp$new.call(cls.prototype, args.v, kwargs);
             };
-            _new.co_name = new Sk.builtins['str']('__new__');
-            _new.co_varnames = ['_cls'];
+            _new.co_name = new Sk.builtins["str"]("__new__");
+            _new.co_varnames = ["_cls"];
             _new.co_kwargs = 1;
             _new.co_varargs = 1;
             nt_cons.prototype.__new__ = new Sk.builtin.staticmethod(new Sk.builtin.func(_new));
 
             const _repr = function (self) {
-                if (!Sk.builtin.isinstance(self, nt_cons)){
-                    throw new Sk.builtin.TypeError("expected an instance of "+$name+" (got "+Sk.abstr.typeName(cls)+")")
+                if (!Sk.builtin.isinstance(self, nt_cons)) {
+                    throw new Sk.builtin.TypeError("expected an instance of " + $name + " (got " + Sk.abstr.typeName(cls) + ")")
                 }
                 return self.$r();
             };
-            _repr.co_name = new Sk.builtins['str']('__repr__');
-            _repr.co_varnames = ['self'];
+            _repr.co_name = new Sk.builtins["str"]("__repr__");
+            _repr.co_varnames = ["self"];
             nt_cons.prototype.__repr__ = new Sk.builtin.func(_repr);
 
 
@@ -601,7 +564,7 @@ var $builtinmodule = function (name) {
                 fget.co_name = flds[i];
                 fget.co_varnames = ["self"];
                 const fld = Sk.fixReservedNames(flds[i]);
-                nt_cons.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number "+ i));
+                nt_cons.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number " + i));
             };
 
             // _fields
@@ -669,7 +632,7 @@ var $builtinmodule = function (name) {
             _replace.co_varnames = ["_self"];
             nt_cons.prototype._replace = new Sk.builtin.func(_replace);
 
-            
+
             return nt_cons;
         };
 
@@ -680,7 +643,7 @@ var $builtinmodule = function (name) {
         _namedtuple.co_varnames = ["typename", "field_names", "rename", "defaults", "module"];
 
         mod.namedtuple = new Sk.builtin.func(_namedtuple);
-        
+
         return mod;
     });
 };
