@@ -5,17 +5,6 @@
  * @param {Object=} step
  */
 Sk.builtin.slice = function slice (start, stop, step) {
-    Sk.builtin.pyCheckArgsLen("slice", arguments.length, 1, 3, false, false);
-
-    if ((step !== undefined) && Sk.misceval.isIndex(step) && (Sk.misceval.asIndex(step) === 0)) {
-        throw new Sk.builtin.ValueError("slice step cannot be zero");
-    }
-
-    if (!(this instanceof Sk.builtin.slice)) {
-        return new Sk.builtin.slice(start, stop, step);
-    }
-
-
     if (stop === undefined && step === undefined) {
         stop = start;
         start = Sk.builtin.none.none$;
@@ -30,20 +19,26 @@ Sk.builtin.slice = function slice (start, stop, step) {
     this.stop = stop;
     this.step = step;
 
-
-    this["$d"] = new Sk.builtin.dict([Sk.builtin.slice$start, this.start,
-                                      Sk.builtin.slice$stop, this.stop,
-                                      Sk.builtin.slice$step, this.step]);
-
     return this;
 };
 
 Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
 
-Sk.builtin.slice.prototype["$r"] = function () {
-    var a = Sk.builtin.repr(this.start).v;
-    var b = Sk.builtin.repr(this.stop).v;
-    var c = Sk.builtin.repr(this.step).v;
+Sk.builtin.slice.sk$acceptable_as_base_class = false;
+
+Sk.builtin.slice.prototype.tp$doc = "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2])."
+
+Sk.builtin.slice.prototype.tp$new = function (args, kwargs) {
+    Sk.abstr.noKwargs("slice", kwargs);
+    Sk.abstr.checkArgsLen("slice", args, 1, 3);
+    return new Sk.builtin.slice(...args);
+};
+
+
+Sk.builtin.slice.prototype.$r = function () {
+    const a = Sk.builtin.repr(this.start).v;
+    const b = Sk.builtin.repr(this.stop).v;
+    const c = Sk.builtin.repr(this.step).v;
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
 
@@ -74,8 +69,13 @@ Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
 };
 
 /* Internal indices function */
-Sk.builtin.slice.prototype.slice_indices_ = function (length) {
+Sk.builtin.slice.prototype.$slice_indices = function (length) {
     var start, stop, step;
+
+    if (Sk.misceval.isIndex(this.step) && (Sk.misceval.asIndex(this.step) === 0)) {
+        // technically a pure slice object can have a zero step...
+        throw new Sk.builtin.ValueError("slice step cannot be zero");
+    }
 
     if (Sk.builtin.checkNone(this.start)) {
         start = null;
@@ -151,7 +151,7 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     Sk.builtin.pyCheckArgsLen("indices", arguments.length, 2, 2, false, false);
 
     length = Sk.builtin.asnum$(length);
-    var sss = self.slice_indices_(length);
+    var sss = self.$slice_indices(length);
 
     return new Sk.builtin.tuple([
         new Sk.builtin.int_(sss[0]), 
@@ -163,7 +163,7 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
 Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
     var i;
     var wrtv = Sk.builtin.asnum$(wrt);
-    var sss = this.slice_indices_(typeof wrtv === "number" ? wrtv : wrt.v.length);
+    var sss = this.$slice_indices(typeof wrtv === "number" ? wrtv : wrt.v.length);
     if (sss[2] > 0) {
         for (i = sss[0]; i < sss[1]; i += sss[2]) {
             if (f(i, wrtv) === false) {
@@ -180,6 +180,8 @@ Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
     }
 };
 
-Sk.builtin.slice$start = new Sk.builtin.str("start");
-Sk.builtin.slice$stop = new Sk.builtin.str("stop");
-Sk.builtin.slice$step = new Sk.builtin.str("step");
+Sk.builtin.slice.prototype.tp$getsets = [
+    new Sk.GetSetDef("start", function () {return this.start}),
+    new Sk.GetSetDef("step", function () {return this.step}),
+    new Sk.GetSetDef("stop", function () {return this.stop})
+];
