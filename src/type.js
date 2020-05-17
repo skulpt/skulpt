@@ -174,7 +174,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         this.$d = new Sk.builtin.dict();
     };
 
-    // todo: improve best_base algorithm to reflect layout conflicts as per python
+    // todo: improve best_base algorithm to reflect layout conflicts as per python and check sk$acceptable_as_base_class
     const best_base = Sk.builtin.type.$best_base(bases);
 
     if (best_base !== undefined) {
@@ -275,7 +275,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
 Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
     if (args && args.length == 1 && kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("type.__init__() takes no keyword arguments");
-    } else if ((args && args.length != 3 && args.length != 1) || args === undefined) {
+    } else if (args.length != 3 && args.length != 1) {
         throw new Sk.builtin.TypeError("type.__init__() takes 1 or 3 arguments");
     }
     // according to Cpython we just call the object init method here
