@@ -711,7 +711,7 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObje
 // similar to the code in func_code tp$call
 // see property.prototype.tp$init for a use case
 
-Sk.abstr.copyKeywordsToNamedArgs = function (varnames, args, kwargs, func_name) {
+Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs) {
     // args is an array, kwargs is an array or undefined
     kwargs = kwargs || [];
     
@@ -725,9 +725,12 @@ Sk.abstr.copyKeywordsToNamedArgs = function (varnames, args, kwargs, func_name) 
     args = [...args]; // make a shallow copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
-        let name = kwargs[i]; // JS string
-        let value = kwargs[i+1]; // Python value
-        let idx = varnames.indexOf(name);
+        const name = kwargs[i]; // JS string
+        if (name === null) {
+            continue;
+        }
+        const value = kwargs[i+1]; // Python value
+        const idx = varnames.indexOf(name);
 
         if (idx >= 0) {
             if (args[idx] !== undefined) {
@@ -741,6 +744,34 @@ Sk.abstr.copyKeywordsToNamedArgs = function (varnames, args, kwargs, func_name) 
     return args;
 }
 
+Sk.exportSymbol("Sk.abstr.copyKeywordsToNamedArgs", Sk.abstr.copyKeywordsToNamedArgs);
+
+Sk.abstr.noKwargs = function (func_name, kwargs) {
+    if (kwargs && kwargs.length) {
+        throw new Sk.builting.TypeError(func_name + "() takes no keyword arguments");
+    }
+}
+Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
+
+Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
+    const nargs = args.length;
+    let msg;
+    if (maxargs === undefined) {
+        maxargs = Infinity;
+    }
+    if ((nargs < minargs) || (nargs > maxargs)) {
+        if (minargs === maxargs) {
+            msg = func_name + "() takes exactly " + minargs + " arguments";
+        } else if (nargs < minargs) {
+            msg = func_name + "() takes at least " + minargs + " arguments";
+        } else {
+            msg = func_name + "() takes at most " + maxargs + " arguments";
+        }
+        msg += " (" + nargs + " given)";
+        throw new Sk.builtin.TypeError(msg);
+    }
+};
+Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
 
 //

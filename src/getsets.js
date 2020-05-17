@@ -91,7 +91,7 @@ Sk.builtin.property.prototype.__new__ = function (cls) {
 
 
 Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs(["fget", "fset", "fdel", "doc"], args, kwargs, "property");
+    args = Sk.abstr.copyKeywordsToNamedArgs("property", ["fget", "fset", "fdel", "doc"], args, kwargs);
 
     const fget = args[0];
     const fset = args[1];
@@ -198,14 +198,9 @@ Sk.builtin.classmethod.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.class
 
 
 Sk.builtin.classmethod.prototype.tp$init = function (args, kwargs) {
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("classmethod() takes no keyword arguments");
-    } else if (args.length !== 1) {
-        throw new Sk.builtin.TypeError("classmethod expected 1 arguments, got " + args.length);
-    }
-
+    Sk.abstr.noKwargs("classmethod", kwargs);
+    Sk.abstr.checkArgsLen("classmethod", args, 1, 1);
     this.cm$callable = args[0];
-
     return Sk.builtin.none.none$;
 };
 
@@ -252,14 +247,9 @@ Sk.abstr.setUpInheritance("staticmethod", Sk.builtin.staticmethod, Sk.builtin.ob
 Sk.builtin.staticmethod.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.staticmethod);
 
 Sk.builtin.staticmethod.prototype.tp$init = function (args, kwargs) {
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("staticmethod() takes no keyword arguments");
-    } else if (args.length !== 1) {
-        throw new Sk.builtin.TypeError("staticmethod expected 1 arguments, got " + args.length);
-    }
-
+    Sk.abstr.noKwargs("staticmethod", kwargs);
+    Sk.abstr.checkArgsLen("staticmethod", args, 1, 1);
     this.sm$callable = args[0];
-
     return Sk.builtin.none.none$;
 };
 

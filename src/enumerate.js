@@ -19,7 +19,7 @@ Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
 Sk.builtin.enumerate.prototype.tp$doc = "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ..."
 
 Sk.builtin.enumerate.prototype.tp$new = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs(["iterable", "start"], args, kwargs, "enumerate");
+    args = Sk.abstr.copyKeywordsToNamedArgs("enumerate",["iterable", "start"], args, kwargs);
     if (args[0] === undefined) {
         throw new Sk.builtin.TypeError("__new__() missing 1 required positional argument: 'iterable'");
     }
@@ -75,7 +75,7 @@ Sk.abstr.setUpInheritance("filter", Sk.builtin.filter_, Sk.builtin.object);
 Sk.builtin.filter_.prototype.tp$doc = "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true."
 
 Sk.builtin.filter_.prototype.tp$new = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs(["predicate", "iterable"], args, kwargs, "filter");
+    args = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs);
     if (args[0] === undefined) {
         throw new Sk.builtin.TypeError("__new__() missing 2 required positional arguments: 'predicate' and 'iterable'");
     } else if (args[1] === undefined) {
@@ -131,11 +131,10 @@ Sk.abstr.setUpInheritance("reversed", Sk.builtin.reversed, Sk.builtin.object);
 Sk.builtin.reversed.prototype.tp$doc = "Return a reverse iterator over the values of the given sequence."
 
 Sk.builtin.reversed.prototype.tp$new = function (args, kwargs) {
-    if (kwargs && kwargs.length && this === Sk.builtin.reversed.prototype) {
-        throw new Sk.builtin.TypeError("reversed() takes no keyword arguments");
-    } else if (args.length !== 1) {
-        throw new Sk.builtin.TypeError("reversed expected 1 arguments, got " + args.length);
+    if (this === Sk.builtin.reversed.prototype) {
+        Sk.abstr.noKwargs("reversed", kwargs);
     }
+    Sk.abstr.checkArgsLen("reversed", args, 1, 1);
     let seq = args[0];
     const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
     if (special !== undefined) {
@@ -201,8 +200,8 @@ Sk.builtin.zip_.prototype.tp$doc = "zip(iter1 [,iter2 [...]]) --> zip object\n\n
 
 
 Sk.builtin.zip_.prototype.tp$new = function (args, kwargs) {
-    if (kwargs && kwargs.length && this === Sk.builtin.zip_.prototype) {
-        throw new Sk.builtin.TypeError("zip() takes no keyword arguments");
+    if (this === Sk.builtin.zip_.prototype) {
+        Sk.abstr.noKwargs("zip", kwargs);
     } 
     const iters = [];
     for (let i = 0; i < args.length; i++) {
@@ -265,11 +264,10 @@ Sk.abstr.setUpInheritance("map", Sk.builtin.map_, Sk.builtin.object);
 Sk.builtin.map_.prototype.tp$doc = "map(func, *iterables) --> map object\n\nMake an iterator that computes the function using arguments from\neach of the iterables.  Stops when the shortest iterable is exhausted."
 
 Sk.builtin.map_.prototype.tp$new = function (args, kwargs) {
-    if (kwargs && kwargs.length && this === Sk.builtin.map_.prototype) {
-        throw new Sk.builtin.TypeError("map() takes no keyword arguments");
-    } else if (args.length < 2) {
-        throw new Sk.builtin.TypeError("map() must have at least two arguments.")
+    if (this === Sk.builtin.map_.prototype) {
+        Sk.abstr.noKwargs("map", kwargs);
     }
+    Sk.abstr.checkArgsLen("map", args, 2);
     const func = args[0];
     const iters = [];
     for (let i=1; i < args.length; i++) {
