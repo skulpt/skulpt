@@ -10,12 +10,14 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
+        mod.defaultdict.prototype.tp$mro = new Sk.builtin.tuple([mod.defaultdict, Sk.builtin.dict, Sk.builtin.object]);
+        mod.defaultdict.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.dict]);
         mod.defaultdict.prototype.__module__ = new Sk.builtin.str("collections");
         mod.defaultdict.prototype.tp$doc = "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n";
         mod.defaultdict.prototype.__doc__ = new Sk.builtin.str(mod.defaultdict.prototype.tp$doc);
 
         mod.defaultdict.prototype.tp$init = function (args, kwargs) {
-            let default_ = args.shift();
+            const default_ = args.shift();
             if (default_ === undefined) {
                 this.default_factory = Sk.builtin.none.none$;
             } else if (!Sk.builtin.checkCallable(default_) && !(Sk.builtin.checkNone(default_))) {
@@ -85,6 +87,8 @@ var $builtinmodule = function (name) {
 
         Sk.abstr.setUpInheritance("Counter", mod.Counter, Sk.builtin.dict);
 
+        mod.Counter.prototype.tp$mro = new Sk.builtin.tuple([mod.Counter, Sk.builtin.dict, Sk.builtin.object]);
+        mod.Counter.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.dict]);
         mod.Counter.prototype.__module__ = new Sk.builtin.str("collections");
         mod.Counter.prototype.tp$doc = "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n"
         mod.Counter.prototype.__doc__ = new Sk.builtin.str(mod.Counter.prototype.tp$doc);
@@ -135,7 +139,7 @@ var $builtinmodule = function (name) {
                 }
             }
             if (mod._chain === undefined) {
-                let itertools = Sk.builtin.__import__("itertools", mod, undefined, ["chain"], -1);
+                let itertools = Sk.importModule("itertools", false, true);
                 return Sk.misceval.chain(itertools, function (i) {
                     mod._chain = i.$d.chain;
                     return Sk.misceval.callsimArray(mod._chain, all_elements);
@@ -143,8 +147,6 @@ var $builtinmodule = function (name) {
             } else {
                 return Sk.misceval.callsimArray(mod._chain, all_elements);
             }
-
-
         });
 
         mod.Counter.prototype["most_common"] = new Sk.builtin.func(function (self, n) {
@@ -242,6 +244,8 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
+        mod.OrderedDict.prototype.tp$mro = new Sk.builtin.tuple([mod.OrderedDict, Sk.builtin.dict, Sk.builtin.object]);
+        mod.OrderedDict.prototype.tp$bases = new Sk.builtin.tuple([Sk.builtin.dict]);
         mod.OrderedDict.prototype.__module__ = new Sk.builtin.str("collections");
         mod.OrderedDict.prototype.tp$doc = "Dictionary that remembers insertion order";
         mod.OrderedDict.prototype.__doc__ = new Sk.builtin.str(mod.OrderedDict.prototype.tp$doc);

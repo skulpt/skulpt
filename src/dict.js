@@ -802,3 +802,4 @@ Sk.builtin.dict_iter_.prototype.tp$iternext = function () {
     return this.$keys[this.$index++];
 };
 
+Sk.builtin.dict_iter_.prototype.next$ = function () {};
