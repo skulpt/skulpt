@@ -40,6 +40,10 @@ Sk.builtin.bool.prototype["$r"] = function () {
     return new Sk.builtin.str("False");
 };
 
+Sk.builtin.bool.prototype.tp$str = function () {
+    return this.$r();
+}
+
 Sk.builtin.bool.prototype.tp$hash = function () {
     return new Sk.builtin.int_(this.v);
 };
