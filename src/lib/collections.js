@@ -1,84 +1,81 @@
 var $builtinmodule = function (name) {
-    return Sk.misceval.chain(Sk.importModule("keyword", false, true), function(keywds) {
+        return Sk.misceval.chain(Sk.importModule("keyword", false, true), function (keywds) {
         var mod = {};
 
         // defaultdict object
 
-        mod.defaultdict = function defaultdict(default_, args) {
-            if (!(this instanceof mod.defaultdict)) {
-                return new mod.defaultdict(default_, args);
-            }
-
-            Sk.abstr.superConstructor(mod.defaultdict, this, args);
-
-            if (default_ === undefined) {
-                this.default_factory = Sk.builtin.none.none$;
-            }
-            else {
-                if (!Sk.builtin.checkCallable(default_) && !(default_ instanceof Sk.builtin.none)) {
-                    throw new Sk.builtin.TypeError("first argument must be callable");
-                }
-                this.default_factory = default_;
-            }
-
-            if (this['$d']) {
-                this['$d']['default_factory'] = this.default_factory;
-            }
-            else {
-                this['$d'] = {'default_factory': this.default_factory};
-            }
-
-            return this;
+        mod.defaultdict = function (default_factory, L) {
+            this.default_factory = default_factory;
+            Sk.builtin.dict.call(this, L);
         };
 
         Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
+        mod.defaultdict.prototype.tp$doc = "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n"
 
-        mod.defaultdict.prototype['$r'] = function () {
-            var def_str = Sk.misceval.objectRepr(this.default_factory).v;
-            var dict_str = Sk.builtin.dict.prototype['$r'].call(this).v;
+        mod.defaultdict.prototype.tp$init = function (args, kwargs) {
+            let default_ = args.shift();
+            if (default_ === undefined) {
+                this.default_factory = Sk.builtin.none.none$;
+            } else if (!Sk.builtin.checkCallable(default_) && !(Sk.builtin.checkNone(default_))) {
+                throw new Sk.builtin.TypeError("first argument must be callable");
+            } else {
+                this.default_factory = default_;
+            }
+            Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
+        };
+
+        mod.defaultdict.prototype.$r = function () {
+            const def_str = Sk.misceval.objectRepr(this.default_factory).v;
+            const dict_str = Sk.builtin.dict.prototype.$r.call(this).v;
             return new Sk.builtin.str("defaultdict(" + def_str + ", " + dict_str + ")");
         };
 
-        mod.defaultdict.prototype['__copy__'] = function (self) {
-            var v;
-            var iter, k;
-            var ret = [];
-
-            for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-                k !== undefined;
-                k = iter.tp$iternext()) {
+        const _copy = function (self) {
+            const L = [];
+            for (let iter = Sk.abstr.iter(self), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 v = self.mp$subscript(k);
-                ret.push(k);
-                ret.push(v);
+                L.push(k);
+                L.push(v);
             }
-            return new mod.defaultdict(self['$d']['default_factory'], ret);
-        };
+            return new mod.defaultdict(self.default_factory, L);
+        }
+        _copy.co_name = new Sk.builtin.str("__copy__");
+        _copy.co_varnames = ["self"];
 
-        mod.defaultdict.prototype['__missing__'] = function (key) {
-            Sk.builtin.pyCheckArgsLen('__missing__', arguments.length, 0, 1);
-            if (key) {
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
-            }
-            else {
-                return Sk.misceval.callsimArray(this.default_factory);
+        mod.defaultdict.prototype.__copy__ = new Sk.builtin.func(_copy);
+        mod.defaultdict.prototype.copy = new Sk.builtin.func(_copy);
+
+        const _missing = function (self, key) {
+            if (Sk.builtin.checkNone(self.default_factory)) {
+                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).v);
+            } else {
+                const ret = Sk.misceval.callsimArray(self.default_factory, []);
+                self.mp$ass_subscript(key, ret);
+                return ret;
             }
         };
+        _missing.co_name = new Sk.builtin.str("__missing__");
+        _missing.co_varnames = ["self", "key"];
+
+        mod.defaultdict.prototype.__missing__ = new Sk.builtin.func(_missing);
 
         mod.defaultdict.prototype.mp$subscript = function (key) {
             try {
                 return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
-            }
-            catch (e) {
-                if (this.default_factory instanceof Sk.builtin.none) {
-                    return this.__missing__(key);
-                }
-                else {
-                    ret = this.__missing__();
-                    this.mp$ass_subscript(key, ret);
-                    return ret;
-                }
+            } catch (e) {
+                return Sk.misceval.callsimArray(this.__missing__, [this, key]);
             }
         };
+        mod.defaultdict.prototype.default_factory = new Sk.builtin.getset_descriptor(mod.defaultdict,
+            new Sk.GetSetDef("default_factory",
+                function () {
+                    return this.default_factory
+                },
+                function (value) {
+                    this.default_factory = value;
+                }
+            )
+        );
 
         // Counter object
 
