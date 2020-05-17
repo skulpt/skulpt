@@ -10,7 +10,8 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
-        mod.defaultdict.prototype.tp$doc = "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n"
+        mod.defaultdict.prototype.__module__ = new Sk.builtin.str("collections");
+        mod.defaultdict.prototype.tp$doc = "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n";
 
         mod.defaultdict.prototype.tp$init = function (args, kwargs) {
             let default_ = args.shift();
@@ -79,40 +80,39 @@ var $builtinmodule = function (name) {
 
         // Counter object
 
-        mod.Counter = function Counter(iter_or_map) {
-            if (!(this instanceof mod.Counter)) {
-                return new mod.Counter(iter_or_map);
-            }
-
-
-            if (iter_or_map instanceof Sk.builtin.dict || iter_or_map === undefined) {
-                Sk.abstr.superConstructor(mod.Counter, this, iter_or_map);
-
-            }
-            else {
-                if (!(Sk.builtin.checkIterable(iter_or_map))) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter_or_map) + "' object is not iterable");
-                }
-
-                Sk.abstr.superConstructor(mod.Counter, this);
-                var one = new Sk.builtin.int_(1);
-
-                for (var iter = iter_or_map.tp$iter(), k = iter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext()) {
-                    var count = this.mp$subscript(k);
-                    count = count.nb$add(one);
-                    this.mp$ass_subscript(k, count);
-                }
-            }
-
-            return this;
-        };
+        mod.Counter = function () {};
 
         Sk.abstr.setUpInheritance("Counter", mod.Counter, Sk.builtin.dict);
 
-        mod.Counter.prototype['$r'] = function () {
-            var dict_str = this.size > 0 ? Sk.builtin.dict.prototype['$r'].call(this).v : '';
+        mod.Counter.prototype.__module__ = new Sk.builtin.str("collections");
+        mod.Counter.prototype.tp$doc = "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n"
+
+        mod.Counter.prototype.tp$init = function (args, kwargs) {
+            Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
+            const one = new Sk.builtin.int_(1);
+            kwargs = kwargs || [];
+            let self = this;
+            if (args[0] !== undefined) {
+                Sk.misceval.iterFor(Sk.abstr.iter(args[0]), function (k) {
+                    let count = self.mp$subscript(k); 
+                    count = count.nb$add(one);
+                    self.mp$ass_subscript(k, count);
+                })
+            }
+            for (let i=0; i<kwargs.length; i+=2) {
+                const k = new Sk.builtin.str(kwargs[i]);
+                let count = this.mp$subscript(k); 
+                count = count.nb$add(kwargs[i+1]);
+                if (count === Sk.builtin.NotImplemented.NotImplemented$) {
+                    throw new Sk.builtin.NotImplementedError("can't add " + Sk.abstr.typeName(k) + " with int")
+                }
+                this.mp$ass_subscript(k, count); 
+            }
+            return Sk.builtin.none.none$;
+        }
+
+        mod.Counter.prototype.$r = function () {
+            var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : '';
             return new Sk.builtin.str('Counter(' + dict_str + ')');
         };
 
@@ -135,25 +135,17 @@ var $builtinmodule = function (name) {
                     all_elements.push(k);
                 }
             }
-
-            var ret =
-            {
-                tp$iter: function () {
-                    return ret;
-                },
-                $obj: this,
-                $index: 0,
-                $elem: all_elements,
-                tp$iternext: function () {
-                    if (ret.$index >= ret.$elem.length) {
-                        return undefined;
-                    }
-                    return ret.$elem[ret.$index++];
-                }
-            };
-
-            return ret;
-
+            if (mod._chain === undefined) {
+                let itertools = Sk.builtin.__import__('itertools', mod, undefined, ['chain'], -1);
+                return  Sk.misceval.chain(itertools, function (i) {
+                    mod._chain = i.$d.chain;
+                    return Sk.misceval.callsimArray(mod._chain, all_elements);
+                });
+            } else {
+                return Sk.misceval.callsimArray(mod._chain, all_elements); 
+            }
+            
+            
         });
 
         mod.Counter.prototype['most_common'] = new Sk.builtin.func(function (self, n) {
