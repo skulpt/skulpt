@@ -567,7 +567,6 @@ var $builtinmodule = function (name) {
             nt_cons.prototype.tp$doc = $name + "(" + flds.join(", ") + ")";
 
             nt_cons.prototype.tp$new = function (args, kwargs) {
-                debugger;
                 args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
                 const named_tuple_instance = new this.constructor;
                 Sk.builtin.tuple.call(named_tuple_instance, args);
@@ -575,35 +574,63 @@ var $builtinmodule = function (name) {
             };
 
             nt_cons.prototype.$r = function () {
-                let ret;
-                let i;
-                let bits;
-                if (this.v.length === 0) {
-                    return new Sk.builtin.str($name + "()");
-                }
-                bits = [];
-                for (i = 0; i < this.v.length; ++i) {
+                const bits = [];
+                for (let i = 0; i < this.v.length; ++i) {
                     bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]).v;
                 }
-                ret = bits.join(", ");
+                const pairs = bits.join(", ");
                 cls = Sk.abstr.typeName(this);
-                return new Sk.builtin.str(cls + "(" + ret + ")");
+                return new Sk.builtin.str(cls + "(" + pairs + ")");
             };
 
-            // allocate slots here
+            // allocate __new__ and __repr__ slots here
+            const _new = function (kwargs, _cls, args) {
+                try {
+                    if (!Sk.builtin.issubclass(cls, Sk.builtin.tuple)){
+                        throw new Sk.builtin.TypeError(Sk.abstr.typeName(cls)+" object '" + cls.prototype.tp$name + "' is not a subtype of tuple")
+                    }
+                } catch (e) {
+                    if (e instanceof Sk.builtin.TypeError) {
+                        throw new Sk.builtin.TypeError("tuple.__new__(X): X is not a type object ("+Sk.abstr.typeName(cls)+")") 
+                    }
+                }
+                for (let i = 0; i < kwargs.length; i+=2) {
+                    kwargs[i] = kwargs[i].$jsstr(); 
+                }
+
+                return nt_cons.prototype.tp$new.call(cls.prototype, args.v, kwargs);
+            };
+            _new.co_name = new Sk.builtins['str']('__new__');
+            _new.co_varnames = ['_cls'];
+            _new.co_kwargs = 1;
+            _new.co_varargs = 1;
+            nt_cons.prototype.__new__ = new Sk.builtin.staticmethod(new Sk.builtin.func(_new));
+
+            const _repr = function (self) {
+                if (!Sk.builtin.isinstance(self, nt_cons)){
+                    throw new Sk.builtin.TypeError("expected an instance of "+$name+" (got "+Sk.abstr.typeName(cls)+")")
+                }
+                return self.$r();
+            };
+            _repr.co_name = new Sk.builtins['str']('__repr__');
+            _repr.co_varnames = ['self'];
+            nt_cons.prototype.__repr__ = new Sk.builtin.func(_repr);
 
 
-            // allocate not slot attributes (functions, classmethods properties etc)
+
+            // allocate non slot attributes (functions, classmethods properties etc)
             if (Sk.builtin.checkNone(module)) {
                 module = Sk.globals["__name__"];
             }
             nt_cons.prototype.__module__ = module;
-            nt_cons.prototype.__doc__ = new Sk.builtin.str($name + "(" + flds.join(", ") + ")");
+            nt_cons.prototype.__doc__ = new Sk.builtin.str(nt_cons.prototype.tp$doc);
             nt_cons.prototype.__slots__ = new Sk.builtin.tuple([]);
-
-            nt_cons.prototype.__getnewargs__ = new Sk.builtin.func(function (self) {
+            const _get_new_args = function (self) {
                 return new Sk.builtin.tuple(self.v);
-            });
+            }
+            _get_new_args.co_name = new Sk.builtin.str("__getnewargs__");
+            _get_new_args.co_varnames = ["self"];
+            nt_cons.prototype.__getnewargs__ = new Sk.builtin.func(_get_new_args);
 
             // create the field properties
             for (let i = 0; i < flds.length; i++) {
