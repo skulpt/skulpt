@@ -773,55 +773,32 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
-Sk.builtin.create_dict_iter_ = function (obj) {
-    var iterobj = {};
-
-    iterobj.$index = 0;
-    iterobj.$obj = obj;
-    iterobj.$keys = obj.$allkeys();;
-    iterobj.tp$iter = function () {
-        return iterobj;
-    };
-    iterobj.tp$iternext = function () {
-        if (this.$index >= this.$keys.length) {
-            return undefined;
-        }
-        return this.$keys[this.$index++];
-    };
-
-    return iterobj;
-};
 
 /**
  * @constructor
  * @param {Object} obj
  */
 Sk.builtin.dict_iter_ = function (obj) {
-    var iterobj;
     if (!(this instanceof Sk.builtin.dict_iter_)) {
         return new Sk.builtin.dict_iter_(obj);
     }
+    this.$obj = obj;
+    this.$index = 0;
+    this.$keys = obj.$allkeys();
+    return this;
 
-    iterobj = Sk.builtin.create_dict_iter_(obj);
-
-    iterobj.$r = function () {
-        return new Sk.builtin.str("<dictionary-keyiterator>");
-    };
-
-    return iterobj;
 };
 
-Sk.abstr.setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
+Sk.abstr.setUpInheritance("dict_keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);
 
+Sk.builtin.dict_iter_.prototype.tp$iter = function () {
+    return this;
+};
 
-Sk.builtin.dict_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    return self;
-});
-
-Sk.builtin.dict_iter_.prototype.next$ = function (self) {
-    var ret = self.tp$iternext();
-    if (ret === undefined) {
-        throw new Sk.builtin.StopIteration();
+Sk.builtin.dict_iter_.prototype.tp$iternext = function () {
+    if (this.$index >= this.$keys.length) {
+        return undefined;
     }
-    return ret;
+    return this.$keys[this.$index++];
 };
+

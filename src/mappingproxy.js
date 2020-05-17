@@ -111,10 +111,6 @@ Sk.builtin.mappingproxy.prototype.tp$iter = function () {
     return new Sk.builtin.dict_iter_(this);
 };
 
-Sk.builtin.mappingproxy.prototype.tp$iter = function () {
-    return new Sk.builtin.dict_iter_(this);
-};
-
 Sk.builtin.mappingproxy.prototype.keys = Sk.builtin.dict.prototype.keys;
 Sk.builtin.mappingproxy.prototype.values = Sk.builtin.dict.prototype.values;
 Sk.builtin.mappingproxy.prototype.items = Sk.builtin.dict.prototype.items;

@@ -12,6 +12,7 @@ var $builtinmodule = function (name) {
         Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
         mod.defaultdict.prototype.__module__ = new Sk.builtin.str("collections");
         mod.defaultdict.prototype.tp$doc = "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n";
+        mod.defaultdict.prototype.__doc__ = new Sk.builtin.str(mod.defaultdict.prototype.tp$doc);
 
         mod.defaultdict.prototype.tp$init = function (args, kwargs) {
             let default_ = args.shift();
@@ -86,6 +87,7 @@ var $builtinmodule = function (name) {
 
         mod.Counter.prototype.__module__ = new Sk.builtin.str("collections");
         mod.Counter.prototype.tp$doc = "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n"
+        mod.Counter.prototype.__doc__ = new Sk.builtin.str(mod.Counter.prototype.tp$doc);
 
         mod.Counter.prototype.tp$init = function (args, kwargs) {
             Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
@@ -250,29 +252,27 @@ var $builtinmodule = function (name) {
 
 
         // OrderedDict
-        mod.OrderedDict = function OrderedDict(items)
-        {
-            if (!(this instanceof mod.OrderedDict))
-            {
-                return new mod.OrderedDict(items);
-            }
-
+        mod.OrderedDict = function () {
             this.orderedkeys = [];
-
-            Sk.abstr.superConstructor(mod.OrderedDict, this, items);
-
+            Sk.builtin.dict.call(this);
             return this;
         }
 
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
+        mod.OrderedDict.prototype.__module__ = new Sk.builtin.str("collections");
+        mod.OrderedDict.prototype.tp$doc = "Dictionary that remembers insertion order";
+        mod.OrderedDict.prototype.__doc__ = new Sk.builtin.str(mod.OrderedDict.prototype.tp$doc);
+        mod.OrderedDict.prototype.tp$init = function (args, kwargs) {
+            // we take an alternative approach and instead override get and set item
+            // we still override __init__ just because...
+            Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
+        };
 
-        mod.OrderedDict.prototype['$r'] = function()
+        mod.OrderedDict.prototype.$r = function()
         {
-            var v;
-            var iter, k;
-            var ret = [];
-            var pairstr;
-            for (iter = this.tp$iter(), k = iter.tp$iternext();
+            let v, pairstr;
+            const ret = [];
+            for (let iter = this.tp$iter(), k = iter.tp$iternext();
                 k !== undefined;
                 k = iter.tp$iternext()) {
                 v = this.mp$subscript(k);
@@ -283,8 +283,7 @@ var $builtinmodule = function (name) {
                 ret.push("(" + Sk.misceval.objectRepr(k).v + ", " + Sk.misceval.objectRepr(v).v + ")");
             }
             pairstr = ret.join(", ");
-            if (ret.length > 0)
-            {
+            if (ret.length > 0) {
                 pairstr = "[" + pairstr + "]";
             }
             return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
@@ -312,33 +311,6 @@ var $builtinmodule = function (name) {
             return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
         }
 
-        mod.OrderedDict.prototype.__iter__ = new Sk.builtin.func(function (self) {
-            Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
-
-            return mod.OrderedDict.prototype.tp$iter.call(self);
-        });
-
-        mod.OrderedDict.prototype.tp$iter = function()
-        {
-            var ret;
-            ret =
-            {
-                tp$iter    : function () {
-                    return ret;
-                },
-                $obj       : this,
-                $index     : 0,
-                $keys      : this.orderedkeys.slice(0),
-                tp$iternext: function () {
-                    // todo; StopIteration
-                    if (ret.$index >= ret.$keys.length) {
-                        return undefined;
-                    }
-                    return ret.$keys[ret.$index++];
-                }
-            };
-            return ret;
-        }
 
         mod.OrderedDict.prototype.ob$eq = function (other) {
             var l;
