@@ -711,7 +711,7 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObje
 // similar to the code in func_code tp$call
 // see property.prototype.tp$init for a use case
 
-Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs) {
+Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, defaults) {
     // args is an array, kwargs is an array or undefined
     kwargs = kwargs || [];
     
@@ -719,7 +719,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs) 
     if (nargs > varnames.length) {
         throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + "arguments (" + nargs + "given)");
     }
-    if (!kwargs.length) {
+    if (!kwargs.length && defaults === undefined) {
         return args;
     }
     args = [...args]; // make a shallow copy of args
@@ -741,6 +741,19 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs) 
             throw new Sk.builtin.TypeError(func_name + "() got an unexpected keyword argument '" + name + "'");
         }
     }
+    if (defaults) {
+        const nargs = varnames.length;
+        for (let i = nargs - 1; i >= 0; i--) {
+            if (args[i] === undefined) {
+                args[i] = defaults[defaults.length - 1 - (nargs - 1 - i)];
+            }
+        } 
+        const num_missing = args.filter(x => x===undefined).length;
+        if (num_missing) {
+            throw new Sk.builtin.TypeError(func_name + "() missing " + num_missing + " positional arguments");
+        }
+    }
+
     return args;
 }
 
@@ -752,6 +765,19 @@ Sk.abstr.noKwargs = function (func_name, kwargs) {
     }
 }
 Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
+
+Sk.abstr.applyDefaultsToArgs = function (defaults, args) {
+    const nargs = args.length;
+    for (let i = args.length - 1; i >= 0; i--) {
+        if (args[i] === undefined) {
+            args[i] = defaults[nargs - defaults.length - 1];
+        }
+    }
+    return args;
+}
+
+Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
+
 
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
     const nargs = args.length;
