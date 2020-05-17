@@ -98,7 +98,7 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
 Sk.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
-    return (arg !== null && arg.mp$subscript !== undefined);
+    return (arg !== undefined && arg.mp$subscript !== undefined);
 };
 Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
@@ -112,7 +112,7 @@ Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
  */
 Sk.builtin.checkIterable = function (arg) {
     var ret = false;
-    if (arg !== null ) {
+    if (arg !== undefined) {
         try {
             ret = Sk.abstr.iter(arg);
             if (ret) {
@@ -153,7 +153,7 @@ Sk.builtin.checkCallable = function (obj) {
 };
 
 Sk.builtin.checkNumber = function (arg) {
-    return (arg !== null && (typeof arg === "number" ||
+    return (arg !== undefined && (typeof arg === "number" ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.float_ ||
         arg instanceof Sk.builtin.lng));
@@ -170,24 +170,24 @@ Sk.builtin.checkComplex = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
+    return (arg !== undefined) && ((typeof arg === "number" && arg === (arg | 0)) ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.lng);
 };
 Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg !== null) && (arg instanceof Sk.builtin.float_);
+    return (arg !== undefined) && (arg instanceof Sk.builtin.float_);
 };
 Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
-    return (arg !== null && arg.ob$type == Sk.builtin.str);
+    return (arg !== undefined && arg.ob$type == Sk.builtin.str);
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkClass = function (arg) {
-    return (arg !== null && arg.sk$type);
+    return (arg !== undefined && arg.sk$type);
 };
 Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
@@ -202,7 +202,7 @@ Sk.builtin.checkNone = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
-    return (arg !== null && arg.tp$call !== undefined);
+    return (arg !== undefined && arg.tp$call !== undefined);
 };
 Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
