@@ -58,7 +58,7 @@ var print_f = function function_print(kwa) {
     var s = "";
     var i;
     for(i = 0; i < args.length; i++) {
-        s += (args[i].tp$str()).v; // get str repr
+        s += new Sk.builtin.str(args[i]).v; // get str repr
         s += kw_list.sep;
     }
 

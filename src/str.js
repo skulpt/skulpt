@@ -7,24 +7,22 @@ Sk.builtin.interned = {};
  */
 Sk.builtin.str = function (x) {
     // new Sk.builtin.str is an internal function called with a JS value x
+    // occasionally called with a python object and returns tp$str() or $r();
     let ret;
-    // if (x instanceof Sk.builtin.str) {
-    //     return x;
-    // }
-    // if (!(this instanceof Sk.builtin.str)) {
-    //     return new Sk.builtin.str(x);
-    // }
-    // convert to js string
     if (typeof x === "string") {
+        // the common case
         ret = x;
     } else if (x === undefined) {
         ret = "";
+    } else if (x === null){
+        ret = "None";
+    } else if (x.tp$str !== undefined) {
+        // then we're a python object - all objects inherit from object which has tp$str
+        ret = x.tp$str().v;
     } else if (x === true) {
         ret = "True";
     } else if (x === false) {
         ret = "False";
-    } else if ((x === null) || (x instanceof Sk.builtin.none)) {
-        ret = "None";
     } else if (typeof x === "number") {
         ret = x.toString();
         if (ret === "Infinity") {
@@ -32,12 +30,12 @@ Sk.builtin.str = function (x) {
         } else if (ret === "-Infinity") {
             ret = "-inf";
         }
-    } else if (x.constructor === Sk.builtin.str) {
-        // probably shouldn't have this but might be useful if someone calls new str on a str object
-        return x;
+    } else if (x.$r !== undefined) {
+        // last resort;
+        return x.$r().v;
     }
     if (ret === undefined) {
-        throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName + "' to str");
+        throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
     }
     // interning required for strings in py
     if (Sk.builtin.interned["1" + ret]) {

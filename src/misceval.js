@@ -570,35 +570,19 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
-    if ((v === null) || (v instanceof Sk.builtin.none)) {
-        return new Sk.builtin.str("None");
-    } else if (v === true) {
-        // todo; these should be consts
-        return new Sk.builtin.str("True");
-    } else if (v === false) {
-        return new Sk.builtin.str("False");
-    } else if (typeof v === "number") {
-        return new Sk.builtin.str("" + v);
-    } else if (typeof v === "string") {
-        return new Sk.builtin.str(v);
-    } else if (!v["$r"]) {
-        if (v.tp$name) {
-            return new Sk.builtin.str("<" + v.tp$name + " object>");
-        } else {
-            return new Sk.builtin.str("<unknown>");
-        }
-    } else if (v.constructor === Sk.builtin.float_) {
-        if (v.v === Infinity) {
-            return new Sk.builtin.str("inf");
-        } else if (v.v === -Infinity) {
-            return new Sk.builtin.str("-inf");
-        } else {
-            return v["$r"]();
-        }
-    } else if (v.constructor === Sk.builtin.int_) {
-        return v["$r"]();
+    if (v !== null && v.$r) {
+        return v.$r();
     } else {
-        return v["$r"]();
+        try {
+            // str goes through the common javascript cases or throws a TypeError;
+            return new Sk.builtin.str(x);
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                return new Sk.builtin.str("<unknown>");
+            } else {
+                throw e;
+            }
+        }
     }
 };
 Sk.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
