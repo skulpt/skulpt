@@ -1130,6 +1130,34 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
     Sk.builtin.type.$makeIntoTypeObj(childName, child);
 };
 
+
+Sk.abstr.setUpBuiltinMro = function (child) {
+    // expects a typeObject with a base;
+    // builtins only have one typeobject in their bases
+    // this was assigned in setUpInheritance
+    let parent = child.prototype.tp$base;
+    const bases = parent === undefined ? [] : [parent];
+    const mro = [child];
+    for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
+        if (!base.sk$abstract) {
+            // check the base is not an abstract class and that it is in the builtins dict
+            mro.push(base);
+        }
+    }
+    child.prototype.tp$bases = new Sk.builtin.tuple([bases[0]]);
+    child.prototype.tp$mro = new Sk.builtin.tuple(mro);
+    child.prototype.sk$prototypical = true;
+};
+
+Sk.abstr.setUpGetSets = function (builtin) {
+    if (builtin.prototype.hasOwnProperty('tp$getsets')) {
+        const gsd = builtin.prototype.tp$getsets; 
+        for (let i = 0; i < gsd.length; i++) {
+            builtin.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(builtin, gsd[i]);
+        }
+    }
+};
+
 /**
  * Call the super constructor of the provided class, with the object `self` as
  * the `this` value of that constructor. Any arguments passed to this function

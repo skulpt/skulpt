@@ -153,3 +153,28 @@ Sk.builtin.GenericSelfIter = function __iter__ () {
     return this;
 }
 
+Sk.builtin.GenericIterNext = function (checkSizeDuringIteration) {
+    if (checkSizeDuringIteration) {
+        return function __next__ () {
+            if (this.$index >= this.$seq.length) {
+                return undefined;
+            } else if (this.$seq.length !== this.$orig.sq$length()) {
+                const error_name = name.split("_")[0];
+                throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
+            }
+            return this.$seq[this.$index++];
+        };
+    } else {
+        return function __next__ () {
+            if (this.$index >= this.$seq.length) {
+                return undefined;
+            }
+            return this.$seq[this.$index++];
+        };
+    }
+};
+
+Sk.builtin.GenericIterLengthHint = function __length_hint__(self) {
+    Sk.builtin.pyCheckArgs("__length_hint__", arguments, 0, 0, false, true);
+    return self.$seq.length - self.$index;
+};

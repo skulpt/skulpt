@@ -69,31 +69,10 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
-        var parent = child.prototype.tp$base;
-        var bases = [];
-        var base;
-
-        for (base = parent; base !== undefined; base = base.prototype.tp$base) {
-            if (!base.sk$abstract && Sk.builtins[base.prototype.tp$name]) {
-                // check the base is not an abstract class and that it is in the builtins dict
-                bases.push(base);
-            }
+        if (child.prototype.tp$mro === undefined) {
+            Sk.abstr.setUpBuiltinMro(child);
         }
-
-        // child.tp$mro = new Sk.builtin.tuple([child]);
-        if (!child.prototype.tp$base){
-            child.prototype.tp$base = bases[0];
-        }
-        child.prototype.tp$bases = new Sk.builtin.tuple(bases);
-        child.prototype.tp$mro = new Sk.builtin.tuple([child].concat(bases));
-        child.prototype.sk$prototypical = true;
-
-        if (child.prototype.hasOwnProperty('tp$getsets')) {
-            const gsd = child.prototype.tp$getsets; 
-            for (let i = 0; i < gsd.length; i++) {
-                child.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(child, gsd[i]);
-            }
-        }
+        Sk.abstr.setUpGetSets(child); 
     };
 
     for (x in Sk.builtin) {
