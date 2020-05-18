@@ -465,10 +465,6 @@ Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 // Sequence
 //
 
-Sk.abstr.sequenceLength = function (seq) {
-    return Sk.misceval.chain(seq.sq$length(true));
-};
-
 Sk.abstr.fixSeqIndex_ = function (seq, i) {
     i = Sk.builtin.asnum$(i);
     if (i < 0 && seq.sq$length) {

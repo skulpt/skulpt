@@ -41,7 +41,7 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
         Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
             if (Sk.builtin.checkSequence(i)) {
                 // should also check that the sq length is not longer than 2.
-                const len = Sk.abstr.sequenceLength(i);
+                const len = i.sq$length(); //this can't currently suspend
                 if (len !== 2) {
                     throw new Sk.builtin.ValueError("dictionary update sequence element #"+ idx +" has length "+len+"; 2 is required")
                 }

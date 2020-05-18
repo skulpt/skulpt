@@ -283,6 +283,9 @@ Sk.builtin.len = function len (item) {
     var int_ = function(i) { return new Sk.builtin.int_(i); };
     intcheck = function(j) {
         if (Sk.builtin.checkInt(j)) {
+            if (j instanceof Sk.builtin.int_ || j instanceof Sk.builtin.long) {
+                return j;
+            }
             return int_(j);
         } else {
             if (Sk.__future__.exceptions) {
