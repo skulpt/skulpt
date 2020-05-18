@@ -209,7 +209,7 @@ Sk.builtin.frozenset.prototype["__iter__"] = new Sk.builtin.func(function (self)
 });
 
 Sk.builtin.frozenset.prototype.tp$iter = function () {
-    return new Sk.builtin.frozenset_iter_(this);
+    return new Sk.builtin.set_iter_(this);
 };
 
 Sk.builtin.frozenset.prototype.sq$length = function () {
@@ -383,62 +383,3 @@ Sk.builtin.frozenset.prototype["copy"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.exportSymbol("Sk.builtin.frozenset", Sk.builtin.frozenset);
-
-/**
- * @constructor
- * @param {Object} obj
- */
-Sk.builtin.frozenset_iter_ = function (obj) {
-    var allkeys, k, i, bucket, buckets;
-    if (!(this instanceof Sk.builtin.frozenset_iter_)) {
-        return new Sk.builtin.frozenset_iter_(obj);
-    }
-    this.$obj = obj;
-    this.tp$iter = this;
-    allkeys = [];
-    buckets = obj.v.buckets;
-    for (k in buckets) {
-        if (buckets.hasOwnProperty(k)) {
-            bucket = buckets[k];
-            if (bucket && bucket.$hash !== undefined && bucket.items !== undefined) {
-                // skip internal stuff. todo; merge pyobj and this
-                for (i = 0; i < bucket.items.length; i++) {
-                    allkeys.push(bucket.items[i].lhs);
-                }
-            }
-        }
-    }
-    this.$index = 0;
-    this.$keys = allkeys;
-    this.tp$iternext = function () {
-        if (this.$index >= this.$keys.length) {
-            return undefined;
-        }
-        return this.$keys[this.$index++];
-    };
-    this.$r = function () {
-        return new Sk.builtin.str("frozensetiterator");
-    };
-    return this;
-};
-
-Sk.abstr.setUpInheritance("frozensetiterator", Sk.builtin.frozenset_iter_, Sk.builtin.object);
-
-
-Sk.builtin.frozenset_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
-    return self;
-});
-
-Sk.builtin.frozenset_iter_.prototype.next$ = function (self) {
-    var ret = self.tp$iternext();
-    if (ret === undefined) {
-        throw new Sk.builtin.StopIteration();
-    }
-    return ret;
-};
-
-Sk.builtin.frozenset.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
-    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
-    return new Sk.builtin.bool(self.sq$contains(item));
-});

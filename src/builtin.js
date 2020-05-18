@@ -1271,18 +1271,9 @@ Sk.builtin.help = function help () {
 Sk.builtin.iter = function iter (obj, sentinel) {
     Sk.builtin.pyCheckArgsLen("iter", arguments.length, 1, 2);
     if (arguments.length === 1) {
-        if (!Sk.builtin.checkIterable(obj)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) +
-                "' object is not iterable");
-        } else {
-            return new Sk.builtin.iterator(obj);
-        }
+       return Sk.abstr.iter(obj);
     } else {
-        if (Sk.builtin.checkCallable(obj)) {
-            return new Sk.builtin.iterator(obj, sentinel);
-        } else {
-            throw new TypeError("iter(v, w): v must be callable");
-        }
+        return Sk.abstr.iter(new Sk.builtin.callable_iteraotr(obj, sentinel));
     }
 };
 
