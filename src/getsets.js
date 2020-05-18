@@ -82,7 +82,7 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
 Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
 
 
-Sk.builtin.property.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.property);
+Sk.builtin.property.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.property);
 
 Sk.builtin.property.prototype.__new__ = function (cls) {
     return cls.prototype.tp$new();
@@ -194,7 +194,7 @@ Sk.builtin.classmethod = function (callable) {
 
 Sk.abstr.setUpInheritance("classmethod", Sk.builtin.classmethod, Sk.builtin.object);
 
-Sk.builtin.classmethod.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.classmethod);
+Sk.builtin.classmethod.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.classmethod);
 
 
 Sk.builtin.classmethod.prototype.tp$init = function (args, kwargs) {
@@ -244,7 +244,7 @@ Sk.builtin.staticmethod = function (callable) {
 
 Sk.abstr.setUpInheritance("staticmethod", Sk.builtin.staticmethod, Sk.builtin.object);
 
-Sk.builtin.staticmethod.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.staticmethod);
+Sk.builtin.staticmethod.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.staticmethod);
 
 Sk.builtin.staticmethod.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.noKwargs("staticmethod", kwargs);

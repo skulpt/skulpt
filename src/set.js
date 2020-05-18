@@ -16,7 +16,7 @@ Sk.abstr.markUnhashable(Sk.builtin.set);
 
 Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.";
 
-Sk.builtin.set.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.set);
+Sk.builtin.set.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.set);
 
 Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
     if (kwargs && kwargs.length) {

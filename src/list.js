@@ -26,7 +26,7 @@ Sk.abstr.markUnhashable(Sk.builtin.list);
 Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified."
 
 
-Sk.builtin.list.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.list);
+Sk.builtin.list.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.list);
 
 Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype

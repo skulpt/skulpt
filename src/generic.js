@@ -4,7 +4,7 @@
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.builtin.GenericGetAttr = function (pyName, canSuspend) {
+Sk.builtin.GenericGetAttr = function __getattr__ (pyName, canSuspend) {
     var res;
     var f;
     var descr;
@@ -88,7 +88,7 @@ Sk.exportSymbol("Sk.builtin.GenericGetAttr", Sk.builtin.GenericGetAttr);
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
-Sk.builtin.GenericSetAttr = function (pyName, value, canSuspend) {
+Sk.builtin.GenericSetAttr = function __setattr__ (pyName, value, canSuspend) {
     var objname = Sk.abstr.typeName(this);
     var jsName = pyName.$jsstr();
     var dict;
@@ -134,10 +134,8 @@ Sk.builtin.GenericSetAttr = function (pyName, value, canSuspend) {
 Sk.exportSymbol("Sk.builtin.GenericSetAttr", Sk.builtin.GenericSetAttr);
 
 
-
-
-Sk.builtin.genericNew = function (builtin) {
-    const genericNew = function (args, kwargs) {
+Sk.builtin.GenericNew = function (builtin) {
+    const GenericNew = function __new__ (args, kwargs) {
         // this is a prototype of an sk$type object.
         if (this === builtin.prototype) {
             return new this.constructor;
@@ -148,5 +146,10 @@ Sk.builtin.genericNew = function (builtin) {
             return instance;
         }
     };
-    return genericNew;
+    return GenericNew;
 };
+
+Sk.builtin.GenericSelfIter = function __iter__ () {
+    return this;
+}
+
