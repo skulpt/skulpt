@@ -35,8 +35,10 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
             msg = name + "() takes exactly " + minargs + " arguments";
         } else if (nargs < minargs) {
             msg = name + "() takes at least " + minargs + " arguments";
-        } else {
+        } else if (minargs > 0) {
             msg = name + "() takes at most " + maxargs + " arguments";
+        } else {
+            msg = name + "() takes no arguments";
         }
         msg += " (" + nargs + " given)";
         throw new Sk.builtin.TypeError(msg);
