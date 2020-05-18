@@ -139,9 +139,9 @@ var $builtinmodule = function (name) {
         var jan = new Date(2002, 0, 1);
         var jul = new Date(2002, 6, 1);
         if (dst(jan)) {
-            return [Sk.builtin.str(timeZoneName(jul)), Sk.builtin.str(timeZoneName(jan))];
+            return [new Sk.builtin.str(timeZoneName(jul)), new Sk.builtin.str(timeZoneName(jan))];
         } else {
-            return [Sk.builtin.str(timeZoneName(jan)), Sk.builtin.str(timeZoneName(jul))];
+            return [new Sk.builtin.str(timeZoneName(jan)), new Sk.builtin.str(timeZoneName(jul))];
         }
     }
 
@@ -211,7 +211,7 @@ var $builtinmodule = function (name) {
             );
             parts.push(padLeft(Sk.builtin.asnum$(time.v[0]).toString(), 4, '0'));
 
-            return Sk.builtin.str(parts.join(" "));
+            return new Sk.builtin.str(parts.join(" "));
         }
     }
 

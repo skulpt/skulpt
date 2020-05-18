@@ -572,7 +572,7 @@ var $builtinmodule = function (name) {
             };
 
             // _fields
-            nt_cons.prototype._fields = new Sk.builtin.tuple(flds.map(x => Sk.builtin.str(x)));
+            nt_cons.prototype._fields = new Sk.builtin.tuple(flds.map(x => new Sk.builtin.str(x)));
 
             // _make
             const _make = function (_cls, iterable) {

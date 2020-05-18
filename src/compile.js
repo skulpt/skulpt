@@ -803,7 +803,7 @@ Compiler.prototype.cformattedvalue = function(e) {
     let value = this.vexpr(e.value);
     switch (e.conversion) {
         case 's':
-            value = this._gr("value", "Sk.builtin.str(",value,")");
+            value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
         case 'a':
             // TODO when repr() becomes more unicode-aware,

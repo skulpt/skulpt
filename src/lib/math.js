@@ -494,7 +494,7 @@ var $builtinmodule = function (name) {
         } else { //int that is larger than max safe integer
             // use idea x = 123456789 = .123456789 * 10**9
             // log(x)  = 9 * log(10) + log(.123456789)
-            _x = Sk.builtin.str(x).$jsstr();
+            _x = new Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
             const decimal = parseFloat("0." + _x);
             res = (digits * Math.log(10) + Math.log(decimal)) / Math.log(_base);
@@ -539,7 +539,7 @@ var $builtinmodule = function (name) {
         } else { //int that is larger than max safe integer
             // use idea x = 123456789 = .123456789 * 10**9
             // log2(x)  = 9 * log2(10) + log2(.123456789)
-            _x = Sk.builtin.str(x).$jsstr();
+            _x = new Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
             const decimal = parseFloat("0." + _x);
             res = digits * Math.log2(10) + Math.log2(decimal);
@@ -559,7 +559,7 @@ var $builtinmodule = function (name) {
         } else { //int that is larger than max safe integer
             // use idea x = 123456789 = .123456789 * 10**9
             // log10(x)  = 9 + log10(.123456789)
-            _x = Sk.builtin.str(x).$jsstr();
+            _x = new Sk.builtin.str(x).$jsstr();
             const digits = _x.length;
             const decimal = parseFloat("0." + _x);
             res = digits + Math.log10(decimal);

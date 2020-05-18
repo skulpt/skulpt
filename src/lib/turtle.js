@@ -2272,9 +2272,9 @@ function generateTurtleModule(_target) {
         self.instance.skInstance = self;
     }
     initTurtle.co_varnames = ["self", "shape"];
-    initTurtle.co_name = Sk.builtin.str("Turtle");
+    initTurtle.co_name = new Sk.builtin.str("Turtle");
     initTurtle.co_argcount = 2;
-    initTurtle.$defaults = [Sk.builtin.none.none$, Sk.builtin.str("classic")];
+    initTurtle.$defaults = [Sk.builtin.none.none$, new Sk.builtin.str("classic")];
 
     function TurtleWrapper($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(initTurtle);
