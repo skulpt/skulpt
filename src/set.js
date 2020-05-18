@@ -204,7 +204,7 @@ Sk.builtin.set.prototype.tp$iter = function () {
 };
 
 Sk.builtin.set.prototype.sq$length = function () {
-    return this["v"].mp$length();
+    return this["v"].sq$length();
 };
 
 Sk.builtin.set.prototype.sq$contains = function(ob) {

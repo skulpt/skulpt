@@ -213,7 +213,7 @@ Sk.builtin.frozenset.prototype.tp$iter = function () {
 };
 
 Sk.builtin.frozenset.prototype.sq$length = function () {
-    return this["v"].mp$length();
+    return this["v"].sq$length();
 };
 
 Sk.builtin.frozenset.prototype.sq$contains = function(ob) {

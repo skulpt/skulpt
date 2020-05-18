@@ -151,7 +151,7 @@ var $builtinmodule = function (name) {
 
         mod.Counter.prototype["most_common"] = new Sk.builtin.func(function (self, n) {
             Sk.builtin.pyCheckArgsLen("most_common", arguments.length, 1, 2);
-            var length = self.mp$length();
+            var length = self.sq$length();
 
             if (n === undefined) {
                 n = length;
@@ -303,8 +303,8 @@ var $builtinmodule = function (name) {
                 return Sk.builtin.dict.prototype.ob$eq.call(this, other);
             }
 
-            l = this.mp$length();
-            otherl = other.mp$length();
+            l = this.sq$length();
+            otherl = other.sq$length();
 
             if (l !== otherl) {
                 return Sk.builtin.bool.false$;

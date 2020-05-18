@@ -30,7 +30,7 @@ var kf = Sk.builtin.hash;
 Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)"
 
 
-Sk.builtin.dict.prototype.tp$new = Sk.builtin.genericNew(Sk.builtin.dict);
+Sk.builtin.dict.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
@@ -225,7 +225,7 @@ Sk.builtin.dict.prototype["$r"] = function () {
     return new Sk.builtin.str("{" + ret.join(", ") + "}");
 };
 
-Sk.builtin.dict.prototype.mp$length = function () {
+Sk.builtin.dict.prototype.sq$length = function () {
     return this.size;
 };
 
@@ -319,7 +319,7 @@ Sk.builtin.dictview.prototype.$r = function () {
 };
 
 Sk.builtin.dictview.prototype.sq$length = function () {
-    return this.dict.mp$length();
+    return this.dict.sq$length();
 };
 
 Sk.builtin.dictview.prototype.sq$contains = function (item) {
@@ -599,7 +599,7 @@ Sk.builtin.dict.prototype.__hash__ = new Sk.builtin.func(function (self) {
 
 Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("__len__", arguments.length, 0, 0, false, true);
-    return Sk.builtin.dict.prototype.mp$length.call(self);
+    return Sk.builtin.dict.prototype.sq$length.call(self);
 });
 
 Sk.builtin.dict.prototype.__getattribute__ = new Sk.builtin.func(function (self, attr) {

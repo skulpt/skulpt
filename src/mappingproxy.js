@@ -98,7 +98,7 @@ Sk.builtin.mappingproxy.prototype.sq$contains = function (key) {
 };
 
 
-Sk.builtin.mappingproxy.prototype.mp$length = function () {
+Sk.builtin.mappingproxy.prototype.sq$length = function () {
     return Object.keys(this.v).length;
 };
 
