@@ -25,9 +25,9 @@ Sk.builtin.module.prototype.$r = function() {
 
 Sk.builtin.module.prototype.tp$getsets = [
     new Sk.GetSetDef("__dict__", 
-                     function () {
-                         // modules in skulpt have a $d as a js object so just return it as a mapping proxy;
-                         return new Sk.builtin.mappingproxy(this.$d);
-                     }
-                    )
+    function () {
+        // modules in skulpt have a $d as a js object so just return it as a mapping proxy;
+        return new Sk.builtin.mappingproxy(this.$d);
+    }
+)
 ];

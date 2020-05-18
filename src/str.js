@@ -51,7 +51,7 @@ Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
-Sk.builtin.str.prototype.tp$doc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'."
+Sk.builtin.str.prototype.tp$doc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.";
 
 Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.str.prototype) {
@@ -64,7 +64,7 @@ Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
             args.push(kwargs[i]);
         }
         if (kwargs.length && kwargs[0] != "object") {
-            throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for str()")
+            throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for str()");
         }
     }
     if (args.length > 1) {
