@@ -54,20 +54,9 @@ Sk.builtin.dict_iter_ = Sk.builtin.setUpGenericIterator("dict_keyiterator", func
 }
 );
 Sk.builtin.dict_iter_.prototype.tp$iternext = Sk.builtin.GenericIterNext(true);
-Sk.builtin.dict_iter_.prototype.__length_hint__ = new Sk.builtin.func(Sk.builtin.GenericIterLengthHint);
-
-
-/**
- * @constructor
- * @param {Sk.builtin.tuple} tuple
- */
-Sk.builtin.tuple_iter_ = Sk.builtin.setUpGenericIterator("tuple_iterator", function (tuple) {
-    this.$index = 0;
-    this.$seq = tuple.v;
-});
-Sk.builtin.tuple_iter_.prototype.tp$iternext = Sk.builtin.GenericIterNext(false);
-Sk.builtin.tuple_iter_.prototype.__length_hint__ = new Sk.builtin.func(Sk.builtin.GenericIterLengthHint);
-
+Sk.builtin.dict_iter_.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", Sk.builtin.GenericIterLengthHint, {NoArgs: true})
+];
 
 /**
  * @constructor
@@ -86,7 +75,9 @@ Sk.builtin.list_iter_.prototype.tp$iternext = function __next__ () {
     } 
     return this.$seq[this.$index++];
 };
-Sk.builtin.list_iter_.prototype.__length_hint__ = new Sk.builtin.func(Sk.builtin.GenericIterLengthHint);
+Sk.builtin.list_iter_.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", Sk.builtin.GenericIterLengthHint, {NoArgs: true})
+];
 
 /**
  * @constructor
@@ -100,13 +91,41 @@ Sk.builtin.set_iter_ = Sk.builtin.setUpGenericIterator("set_iterator", function 
 );
 
 Sk.builtin.set_iter_.prototype.tp$iternext = Sk.builtin.GenericIterNext(true);
-Sk.builtin.set_iter_.prototype.__length_hint__ = new Sk.builtin.func(Sk.builtin.GenericIterLengthHint);
+Sk.builtin.set_iter_.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", Sk.builtin.GenericIterLengthHint, {NoArgs: true})
+];
 
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.str_iter_ = Sk.builtin.setUpGenericIterator("str_iterator", function (str) {
+    this.$index = 0;
+    this.$seq = str.v.slice();
+});
+Sk.builtin.str_iter_.prototype.tp$iternext = Sk.builtin.GenericIterNext(false);
+Sk.builtin.str_iter_.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", Sk.builtin.GenericIterLengthHint, {NoArgs: true})
+];
+
+/**
+ * @constructor
+ * @param {Sk.builtin.tuple} tuple
+ */
+Sk.builtin.tuple_iter_ = Sk.builtin.setUpGenericIterator("tuple_iterator", function (tuple) {
+    this.$index = 0;
+    this.$seq = tuple.v;
+});
+Sk.builtin.tuple_iter_.prototype.tp$iternext = Sk.builtin.GenericIterNext(false);
+Sk.builtin.tuple_iter_.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", Sk.builtin.GenericIterLengthHint, {NoArgs: true})
+];
 
 Sk.builtin.callable_iter_.prototype.sk$acceptable_as_base_class = 
 Sk.builtin.dict_iter_.prototype.sk$acceptable_as_base_class = 
 Sk.builtin.list_iter_.prototype.sk$acceptable_as_base_class = 
 Sk.builtin.set_iter_.prototype.sk$acceptable_as_base_class = 
+Sk.builtin.str_iter_.prototype.sk$acceptable_as_base_class = 
 Sk.builtin.tuple_iter_.prototype.sk$acceptable_as_base_class = false;
 
 Sk.exportSymbol("Sk.builtin.setUpGenericIterator", Sk.builtin.setUpGenericIterator);
@@ -114,4 +133,7 @@ Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.dict_iter_", Sk.builtin.dict_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
+Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);
 Sk.exportSymbol("Sk.builtin.tuple_iter_", Sk.builtin.tuple_iter_);
+
+
