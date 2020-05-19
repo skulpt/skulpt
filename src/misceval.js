@@ -575,7 +575,7 @@ Sk.misceval.objectRepr = function (v) {
     } else {
         try {
             // str goes through the common javascript cases or throws a TypeError;
-            return new Sk.builtin.str(x);
+            return new Sk.builtin.str(v);
         } catch (e) {
             if (e instanceof Sk.builtin.TypeError) {
                 return new Sk.builtin.str("<unknown>");
