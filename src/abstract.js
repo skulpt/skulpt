@@ -1206,14 +1206,45 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     child.prototype.sk$prototypical = true;
 };
 
-Sk.abstr.setUpGetSets = function (builtin) {
-    if (builtin.prototype.hasOwnProperty('tp$getsets')) {
-        const gsd = builtin.prototype.tp$getsets; 
+Sk.abstr.setUpGetSets = function (klass) {
+    if (klass.prototype.hasOwnProperty("tp$getsets")) {
+        const gsd = klass.prototype.tp$getsets; 
         for (let i = 0; i < gsd.length; i++) {
-            builtin.prototype[gsd[i]._name] = new Sk.builtin.getset_descriptor(builtin, gsd[i]);
+            klass.prototype[gsd[i].$name] = new Sk.builtin.getset_descriptor(klass, gsd[i]);
         }
     }
 };
+
+Sk.abstr.setUpMethods = function (klass) {
+    if (klass.prototype.hasOwnProperty("tp$methods")) {
+        const methods = klass.prototype.tp$methods; 
+        for (let i = 0; i < methods.length; i++) {
+            klass.prototype[methods[i].$name] = new Sk.builtin.method_descriptor(klass, methods[i]);
+        }
+    }
+};
+
+
+
+Sk.abstr.setUpSlotWrappers = function (klass) {
+    for (let slot_name in Sk.tpSlots) {
+        if (klass.prototype.hasOwnProperty(slot_name)) {
+            const slot = Sk.Slots[slot_name];
+            debugger
+            klass.prototype[slot.dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, klass.prototype[slot_name]);
+        }
+    }
+    return;
+    for (slot_name in Sk.subSlots) {
+        const sub_slots = Sk.subSlots[slot_name];
+        for (let i = 0; i < sub_slots.length; i++) {
+            if (klass.prototype.hasOwnProperty(slot_name)) {
+                const slot = Sk.Slots[slot_name]
+                klass.prototype[slot.dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, klass.prototype[slot_name]);
+            } 
+        }
+    }
+}
 
 /**
  * Call the super constructor of the provided class, with the object `self` as
