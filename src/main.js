@@ -18,7 +18,7 @@ require("./type.js");
 require("./generic.js");
 require("./abstract.js");
 require("./object.js");
-require("./getsets.js");
+require("./descr.js");
 require("./slotdefs.js");
 require("./function.js");
 require("./builtin.js");
