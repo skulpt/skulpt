@@ -12,12 +12,30 @@ if (Sk.builtin === undefined) {
  */
 
 Sk.GetSetDef = function (_name, get, set, doc) {
-    this._name = _name;
-    this.get = get;
-    this.set = set;
-    this.doc = doc;
+    this.$name = _name;
+    this.$get = get;
+    this.$set = set;
+    this.$doc = doc;
 };
 Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
+
+/**
+ * Create methods for builtins
+ * @constructor
+ * @param {String} _name
+ * @param {Function} method
+ * @param {Object} flags 
+ * @param {String} doc
+ */
+
+Sk.MethodDef = function (_name, method, flags, doc) {
+    this.$name = _name;
+    this.$raw = method || {}; // just a place holder for now
+    this.$raw.$name = _name;
+    this.$flags = flags;
+    this.$doc = doc;
+};
+Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
 
 /**
  *
@@ -537,6 +555,51 @@ Sk.builtin.type.prototype.tp$getsets = [
             this.prototype.__module__ = value;
         }
     ),
+];
+
+
+
+Sk.builtin.type.prototype.tp$methods = [
+    new Sk.MethodDef("mro", 
+    Sk.builtin.type.prototype.$buildMRO, 
+    {NoArgs: true}, 
+    "Return a type's method resolution order."
+    ),
+    new Sk.MethodDef("__dir__", 
+    function __dir__ () {
+        const seen = new Set;
+        const dir = [];
+        function push_or_continue(attr) {
+            if (attr in Sk.reservedNames_) {
+                return;
+            } 
+            attr = Sk.unfixReserved(attr);
+            if (attr.indexOf("$") !== -1) {
+                return;
+            }
+            if (!(seen.has(attr))) {
+                seen.add(attr);
+                dir.push(new Sk.builtin.str(attr));
+            }
+        }
+        if (this.prototype.sk$prototypical) {
+            for (let attr in this.prototype) {
+                push_or_continue(attr);
+            }
+        } else {
+            const mro = this.prototype.tp$mro.v;
+            for (let i = 0; i < mro.length; i++) {
+                const attrs = Object.getOwnPropertyNames(mro[i].prototype);
+                for (let j=0; j<attrs.length; j++ ){
+                    push_or_continue(attrs[j]);
+                }
+            }
+        }
+        return new Sk.builtin.list(dir.sort((a,b) => a.v.localeCompare(b.v)));
+    },
+    {NoArgs: true},
+    "Specialized __dir__ implementation for types."  
+    )
 ];
 
 

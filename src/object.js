@@ -107,6 +107,31 @@ Sk.builtin.object.prototype.tp$getsets = [
     )
 ];
 
+Sk.builtin.object.prototype.tp$methods = [
+    new Sk.MethodDef("__dir__",
+    function __dir__ () {
+        const dir = [];
+        if (this.$d) {
+            if (this.$d.ob$type === Sk.builtin.dict) {
+                dir.concat(this.$d.$allkeys());
+            } else {
+                for (let key in this.$d) {
+                    dir.push(new Sk.builtin.str(key));
+                }
+            } 
+        }
+        // for metattypes that override __dir__ we might need to check it's a list of str
+        type_dir = this.ob$type.__dir__();
+        type_dir.v.push(...dir);
+        type_dir.v.sort((a,b) => a.v.localeCompare(b.v));
+        return type_dir
+    },
+    {NoArgs: true}
+    ,
+    "Default dir() implementation."
+    )
+];
+
 
 
 Sk.builtin.object.prototype.GenericPythonGetAttr = function (self, pyName) {
@@ -286,8 +311,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
  * Array of all the Python functions which are methods of this class.
  * @type {Array}
  */
-Sk.builtin.object.pythonFunctions = [
-];
+Sk.builtin.object.pythonFunctions = [];
 
 /**
  * @constructor
