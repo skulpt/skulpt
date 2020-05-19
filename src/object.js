@@ -49,7 +49,13 @@ Sk.builtin.object.prototype.tp$getattr = Sk.builtin.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.GenericSetAttr;
 
 Sk.builtin.object.prototype.$r = function () {
-    return new Sk.builtin.str("<" + Sk.abstr.typeName(this) + " object>");
+    const mod = this.ob$type.$typeLookup("__module__");
+    let cname = "";
+    if (mod && Sk.builtin.checkString(mod)) {
+        cname = mod.v + ".";
+    }
+    return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + "'>");
+
 };
 
 
