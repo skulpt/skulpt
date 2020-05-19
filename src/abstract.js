@@ -1230,7 +1230,6 @@ Sk.abstr.setUpSlotWrappers = function (klass) {
     for (let slot_name in Sk.tpSlots) {
         if (klass.prototype.hasOwnProperty(slot_name)) {
             const slot = Sk.Slots[slot_name];
-            debugger
             klass.prototype[slot.dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, klass.prototype[slot_name]);
         }
     }
