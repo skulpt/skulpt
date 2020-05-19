@@ -1100,6 +1100,7 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
 /**
  * Set up inheritance between two Python classes. This allows only for single
  * inheritance -- multiple inheritance is not supported by Javascript.
+ * multiple inheritance is dealt with by tp$getattr implementations
  *
  * Javascript's inheritance is prototypal. This means that properties must
  * be defined on the superclass' prototype in order for subclasses to inherit
@@ -1117,26 +1118,83 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
  *
  * @param {string} childName The Python name of the child (subclass).
  * @param {*} child     The subclass.
- * @param {*} parent    The superclass.
+ * @param {*} parent    The base of child.
+ * @param {*} metaclass    The metaclass - if none set use Sk.builtin.type.
  * @return {undefined}
  */
-Sk.abstr.setUpInheritance = function (childName, child, parent) {
-    Sk.abstr.inherits(child, parent);
+Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
+    metaclass = metaclass || Sk.builtin.type;
+    Object.setPrototypeOf(child, metaclass.prototype);
+    
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+    
+
+    // now some house keeping
     child.prototype.tp$base = parent;
-    Sk.builtin.type.$makeIntoTypeObj(childName, child);
+    child.prototype.tp$name = childName;
+    child.prototype.ob$type = child;
 };
 
 
+/**
+ * Set up inheritance between type and object
+ * type   instanceof object => true
+ * object instanceof type   => true
+ * type   instanceof type   => true
+ * object instanceof object => true
+ * 
+ * type   subclassof object => type.prototype   instanceof object => true
+ * object subclassof type   => object.prototype instanceof type   => false
+ * 
+ * this algorithm achieves the equivalent with the following prototypical chains 
+ * using Object.setPrototypeOf
+ * type.__proto__             = type   (type instanceof type)
+ * type.__proto__.__proto__   = object (type instanceof object)
+ * type.prototype.__proto__   = object (type subclassof object)
+ * object.__proto__           = type   (object instanceof type)
+ * object.__proto__.__proto__ = object (object instanceof object)
+ * 
+ * while Object.setPrototypeOf is not considered good practice
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
+ * this is a particularly unique use case and creates a lot of prototypical benefits
+ * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
+ * similarly it makes metclasses that much easier to implement
+ * Object.setPrototypeOf is also a feature built into the javascript language
+ * 
+ * @function
+ */
+Sk.abstr.setUpBaseInheritance = function () {
+    Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+
+    // required so that type objects can be called!
+    Sk.builtin.type.prototype.call = Function.prototype.call;
+    Sk.builtin.type.prototype.apply = Function.prototype.apply;
+
+    // some house keeping that would usually be taken careof by Sk.abstr.setUpInheritance
+    Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
+    Sk.builtin.type.prototype.tp$name = "type"
+    Sk.builtin.object.prototype.tp$name = "object"
+    Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
+    Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
+};
+
+/**
+ * This function is called in {@link Sk.doOneTimeInitialization} 
+ * builtins should inherit from Sk.builtin.object.
+ *
+ * @param  {Sk.builtin.type} child     
+ * @return {undefined}
+ */
+
 Sk.abstr.setUpBuiltinMro = function (child) {
-    // expects a typeObject with a base;
-    // builtins only have one typeobject in their bases
-    // this was assigned in setUpInheritance
     let parent = child.prototype.tp$base;
     const bases = parent === undefined ? [] : [parent];
     const mro = [child];
     for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
         if (!base.sk$abstract) {
-            // check the base is not an abstract class and that it is in the builtins dict
             mro.push(base);
         }
     }
