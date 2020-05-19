@@ -58,6 +58,106 @@ Sk.builtin.getset_descriptor.prototype.tp$getsets = [
 
 /**
  * @constructor
+ * @param {Sk.builtin.type} type_obj
+ * @param wrapper_base
+ */
+
+Sk.builtin.wrapper_descriptor = function (type_obj, wrapper_base, wrapped) {
+    this.d$type = type_obj;
+    this.d$name = wrapper_base._name;
+    this.d$base = wrapper_base;
+    this.d$wrapped = wrapped;
+};
+
+Sk.abstr.setUpInheritance("wrapper_descriptor", Sk.builtin.wrapper_descriptor, Sk.builtin.object);
+Sk.builtin.wrapper_descriptor.sk$acceptable_as_base_class = false;
+
+Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
+    // make sure the first argument is acceptable as self
+    if (args.length < 1) {
+        throw new Sk.builtin.TypeError("descriptor '"+this.d$name+"' of '"+this.d$type.prototype.tp$name+"' object needs an argument");
+    } 
+    const self = args.unshift();
+    if (!Sk.builtin.type.$isSubTypeInternal(self.ob$type, this.d$type)) {
+        throw new Sk.builtin.TypeError("descriptor '"+this.d$name+"' requires a '"+this.d$type.prototype.tp$name+"' object but received a '"+Sk.abstr.typeName(self)+"'");
+    }
+    return this.raw$call(self, args, kwargs);
+};
+
+Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs) {
+    // the base might have some flags I guess...
+    debugger;
+    return this.d$base.wrapper.call(this.d$wrapped, self, args, kwargs);
+}
+
+Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
+    if (Sk.builtin.checkNone(obj)) {
+        return this;
+    } else if (!(Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this.d$type))) {
+        throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
+    } 
+
+    return new Sk.builtin.method_wrapper(this, obj);
+};
+
+
+Sk.builtin.wrapper_descriptor.prototype.$r = function () {
+    return new Sk.builtin.str("<slot wrapper '"+ this.d$name +"' of '"+ this.d$type.prototype.tp$name+"' objects>");
+};
+
+Sk.builtin.wrapper_descriptor.prototype.tp$getsets = [
+    new Sk.GetSetDef("__doc__", function () {
+        return this.d$base.doc ? new Sk.builtin.str(this.d$base.doc) : Sk.builtin.none.none$;
+    }),
+    new Sk.GetSetDef("__objclass__", function () {
+        return this.d$type;
+    }),
+    new Sk.GetSetDef("__name__", function () {
+        return new Sk.builtin.str(this.d$name);
+    })
+];
+
+
+/**
+ * @constructor
+ * @param {Sk.builtin.type} type_obj
+ * @param wrapper_base
+ */
+
+Sk.builtin.method_wrapper = function (wrapper_descr, self) {
+    this.m$descr = wrapper_descr;
+    this.m$self = self;
+};
+
+Sk.abstr.setUpInheritance("method_wrapper", Sk.builtin.method_wrapper, Sk.builtin.object);
+Sk.builtin.method_wrapper.sk$acceptable_as_base_class = false;
+
+
+Sk.builtin.method_wrapper.prototype.tp$call = function (args, kwargs) {
+
+    return this.m$descr.raw$call(this.m$self, args, kwargs);
+}
+
+Sk.builtin.method_wrapper.prototype.$r = function () {
+    return new Sk.builtin.str("<method wrapper '"+ this.m$descr.d$name +"' of '"+ Sk.abstr.typeName(this.m$self)+"' object>");
+};
+
+Sk.builtin.method_wrapper.prototype.tp$getsets = [
+    new Sk.GetSetDef("__doc__", function () {
+        return this.m$descr.d$base.doc ? new Sk.builtin.str(this.m$descr.d$base.doc) : Sk.builtin.none.none$;
+    }),
+    new Sk.GetSetDef("__objclass__", function () {
+        return this.m$descr.d$type;
+    }),
+    new Sk.GetSetDef("__name__", function () {
+        return new Sk.builtin.str(this.m$descr.d$name);
+    })
+];
+
+
+
+/**
+ * @constructor
  * @param {Sk.builtin.func} fget
  * @param {Sk.builtin.func} fset
  * @param {Sk.builtin.func} fdel
