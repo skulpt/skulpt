@@ -5,40 +5,29 @@
  * @return {undefined}
  */
 Sk.builtin.GenericGetAttr = function __getattr__ (pyName, canSuspend) {
-    var res;
-    var f;
-    var descr;
-    var tp;
-    var dict;
-    var getf;
-    var jsName = pyName.$jsstr();
+    let f, res;
 
-    tp = this.ob$type;
-    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
 
-    dict = this["$d"];
-    //print("getattr", tp.tp$name, name);
+    const descr = this.ob$type.$typeLookup(pyName);
 
-
-    descr = tp.$typeLookup(pyName);
-
-    // look in the type for a getset_descriptor
+    // look in the type for a descriptor
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
-        // todo - data descriptors (ie those with tp$descr_set too) get a different lookup priority
         if (f && Sk.builtin.checkDataDescr(descr)){
             return f.call(descr, this, this.ob$type, canSuspend);
         }
     }
 
-    // todo; assert? force?
+    const dict = this.$d;
+
     if (dict) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
             res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            res = dict[jsName];
+            res = dict[pyName.$jsstr()];
         }
         if (res !== undefined) {
             return res;
@@ -53,30 +42,6 @@ Sk.builtin.GenericGetAttr = function __getattr__ (pyName, canSuspend) {
         return descr;
     }
 
-    // OK, try __getattr__
-
-    descr = tp.$typeLookup(Sk.builtin.str.$getattr);
-    if (descr !== undefined && descr !== null) {
-        f = descr.tp$descr_get;
-        if (f) {
-            getf = f.call(descr, this, this.ob$type);
-        } else {
-            getf = descr;
-        }
-
-        res = Sk.misceval.tryCatch(function() {
-            return Sk.misceval.callsimOrSuspendArray(getf, [pyName]);
-        }, function(e) {
-            if (e instanceof Sk.builtin.AttributeError) {
-                return undefined;
-            } else {
-                throw e;
-            }
-        });
-        return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
-    }
-
-
     return undefined;
 };
 Sk.exportSymbol("Sk.builtin.GenericGetAttr", Sk.builtin.GenericGetAttr);
@@ -89,54 +54,44 @@ Sk.exportSymbol("Sk.builtin.GenericGetAttr", Sk.builtin.GenericGetAttr);
  * @return {undefined}
  */
 Sk.builtin.GenericSetAttr = function __setattr__ (pyName, value, canSuspend) {
-    var objname = Sk.abstr.typeName(this);
-    var jsName = pyName.$jsstr();
-    var dict;
-    var tp = this.ob$type;
-    var descr;
-    var f;
+    Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
 
-    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
-
-    dict = this["$d"];
-
-    descr = tp.$typeLookup(pyName);
+    const descr = this.ob$type.$typeLookup(pyName);
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
-        f = descr.tp$descr_set;
+        const f = descr.tp$descr_set;
         // todo; is this the right lookup priority for data descriptors?
         if (f) {
             return f.call(descr, this, value, canSuspend);
         }
     }
 
+    const dict = this.$d;
     if (dict) {
         if (dict.mp$ass_subscript) {
             try {
                 dict.mp$ass_subscript(pyName, value);
             } catch (e) {
                 if (e instanceof Sk.builtin.AttributeError) {
-                    throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+                    throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + Sk.unfixReserved(pyName.$jsstr()) + "'");
                 } else {
                     throw e;
                 }
             }
         } else if (typeof dict === "object") {
-            dict[jsName] = value;
+            dict[pyName.$jsstr()] = value;
         }
     } else {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + Sk.unfixReserved(pyName.$jsstr()) + "'");
     }
-    
-
 };
 Sk.exportSymbol("Sk.builtin.GenericSetAttr", Sk.builtin.GenericSetAttr);
 
 
 Sk.builtin.GenericNew = function (builtin) {
     const GenericNew = function __new__ (args, kwargs) {
-        // this is a prototype of an sk$type object.
+        // this = prototype of an sk$type object.
         if (this === builtin.prototype) {
             return new this.constructor;
         } else {
