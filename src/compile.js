@@ -2845,3 +2845,6 @@ Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
 
 Sk.mangleName = mangleName;
 Sk.exportSymbol("Sk.mangleName", Sk.mangleName);
+
+Sk.reservedNames_ = reservedNames_;
+Sk.reservedWords_ = reservedWords_;
