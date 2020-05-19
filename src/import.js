@@ -60,56 +60,24 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * @return {undefined}
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
-    var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type, j;
-
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
-    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
-    Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
-    // Register a Python class with an internal dictionary, which allows it to
-    // be subclassed
     var setUpClass = function (child) {
         if (child.prototype.tp$mro === undefined) {
             Sk.abstr.setUpBuiltinMro(child);
         }
         Sk.abstr.setUpGetSets(child); 
+        // Sk.abstr.setUpMethods(child);
+        Sk.abstr.setUpSlotWrappers(child);
+        child.prototype.__doc__ = new Sk.builtin.str(child.prototype.tp$doc);
     };
-
-    for (x in Sk.builtin) {
-        func = Sk.builtin[x];
+    for (let x in Sk.builtin) {
+        const func = Sk.builtin[x];
         if (func instanceof Sk.builtin.type && !func.sk$abstract) {
             setUpClass(func);
         }
     }
 
-    // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
-    // Sk.builtin.func, as that class was undefined when these functions were declared
-    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method, Sk.builtin.property];
-
-    for (i = 0; i < typesWithFunctionsToWrap.length; i++) {
-        builtin_type = typesWithFunctionsToWrap[i];
-        proto = builtin_type.prototype;
-        for (j = 0; j < builtin_type.pythonFunctions.length; j++) {
-            name = builtin_type.pythonFunctions[j];
-
-            if (proto[name] instanceof Sk.builtin.func) {
-                // If functions have already been initialized, do not wrap again.
-                break;
-            }
-
-            proto[name].co_kwargs = null;
-            proto[name] = new Sk.builtin.func(proto[name]);
-        }
-    }
-
-
-    // for (var file in Sk.internalPy.files) {
-    //     var fileWithoutExtension = file.split(".")[0].split("/")[1];
-    //     var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-    //     mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-    //     Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
-    //     Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
-    // }
 };
 
 /**
