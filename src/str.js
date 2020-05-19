@@ -8,6 +8,10 @@ Sk.builtin.interned = {};
 Sk.builtin.str = function (x) {
     // new Sk.builtin.str is an internal function called with a JS value x
     // occasionally called with a python object and returns tp$str() or $r();
+
+    // temporary to catch when this is called with apply
+    Sk.asserts.assert(this instanceof Sk.builtin.str);
+
     let ret;
     if (typeof x === "string") {
         // the common case
@@ -18,7 +22,7 @@ Sk.builtin.str = function (x) {
         ret = "None";
     } else if (x.tp$str !== undefined) {
         // then we're a python object - all objects inherit from object which has tp$str
-        ret = x.tp$str().v;
+        return x.tp$str();
     } else if (x === true) {
         ret = "True";
     } else if (x === false) {
@@ -30,49 +34,31 @@ Sk.builtin.str = function (x) {
         } else if (ret === "-Infinity") {
             ret = "-inf";
         }
-    } else if (x.$r !== undefined) {
-        // last resort;
-        return x.$r().v;
-    }
-    if (ret === undefined) {
+    } else {
         throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
     }
     // interning required for strings in py
     if (Sk.builtin.interned["1" + ret]) {
         return Sk.builtin.interned["1" + ret];
-    }
+    };
 
     this.v = ret;
     Sk.builtin.interned["1" + ret] = this;
-    return this;
-
 };
+
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
-
-Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
-
+Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.object);
+Sk.builtin.str.prototype.tp$as_sequence = true;
 Sk.builtin.str.prototype.tp$doc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.";
 
 Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.str.prototype) {
         return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
     }
-
-    // currently only supports str(object='')
-    if (kwargs) {
-        for (let i=1; i<kwargs.length; i+=2) {
-            args.push(kwargs[i]);
-        }
-        if (kwargs.length && kwargs[0] != "object") {
-            throw new Sk.builtin.TypeError("'" + kwargs[0] + "' is an invalid keyword argument for str()");
-        }
-    }
-    if (args.length > 1) {
-        throw new Sk.builtin.TypeError("str() takes at most 1 argument ("+args.length+" given)");
-    }
+    args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs);
+    Sk.abstr.checkArgsLen("str", args, 0, 1);
     x = args[0];
-    // x is a python object and all python objects have tp$str which may be inherited from object
-    return x.tp$str();
+    return new Sk.builtin.str(x);
 };
 
 Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
@@ -162,10 +148,6 @@ Sk.builtin.str.prototype.sq$contains = function (ob) {
     return this.v.indexOf(ob.v) != -1;
 };
 
-Sk.builtin.str.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    return new Sk.builtin.str_iter_(self);
-});
-
 Sk.builtin.str.prototype.tp$iter = function () {
     return new Sk.builtin.str_iter_(this);
 };
@@ -193,7 +175,7 @@ Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
     }
 };
 
-Sk.builtin.str.prototype["$r"] = function () {
+Sk.builtin.str.prototype.$r = function () {
     // single is preferred
     var ashex;
     var c;
@@ -237,11 +219,11 @@ Sk.builtin.str.prototype.tp$str = function () {
         return this;
     } else {
         return new Sk.builtin.str(this.v);
-    } 
+    }
 };
 
 
-Sk.builtin.str.re_escape_ = function (s) {
+Sk.builtin.str.$re_escape = function (s) {
     var c;
     var i;
     var ret = [];
@@ -262,108 +244,211 @@ Sk.builtin.str.re_escape_ = function (s) {
     return ret.join("");
 };
 
-Sk.builtin.str.prototype["lower"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("lower", arguments.length, 1, 1);
-    return new Sk.builtin.str(self.v.toLowerCase());
-});
+/**
+ *
+ * encode ($self, /, encoding='utf-8', errors='strict') NamedArgs: ["encoding", "errors"], Defaults: [new Sk.builtin.st("utf-8"), new Sk.builtin.str("strict")]
+replace ($self, old, new, count=-1, /) NoKwargs: true, MinArgs: 2, MaxArgs: 3, Defaults: [new Sk.builtin.int_(-1)]
+split ($self, /, sep=None, maxsplit=-1) NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, new Sk.builtin.int_(-1)]
+rsplit ($self, /, sep=None, maxsplit=-1) NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, new Sk.builtin.int_(-1)]
+join ($self, iterable, /) NoKwargs: true, MinArgs: 1, MaxArgs: 1, 
+capitalize ($self, /) NoArgs: true
+casefold ($self, /) NoArgs: true
+title ($self, /) NoArgs: true
+center ($self, width, fillchar=' ', /) NamedArgs: ["fillchar"], Defaults: [new Sk.builtin.str(" ")], MinArgs: 1, MaxArgs: 2
+count None MinArgs: 1
+expandtabs ($self, /, tabsize=8) 
+find None
+partition ($self, sep, /)
+index None
+ljust ($self, width, fillchar=' ', /)
+lower ($self, /)
+lstrip ($self, chars=None, /)
+rfind None
+rindex None
+rjust ($self, width, fillchar=' ', /)
+rstrip ($self, chars=None, /)
+rpartition ($self, sep, /)
+splitlines ($self, /, keepends=False)
+strip ($self, chars=None, /)
+swapcase ($self, /)
+translate ($self, table, /)
+upper ($self, /)
+startswith None
+endswith None
+isascii ($self, /)
+islower ($self, /)
+isupper ($self, /)
+istitle ($self, /)
+isspace ($self, /)
+isdecimal ($self, /)
+isdigit ($self, /)
+isnumeric ($self, /)
+isalpha ($self, /)
+isalnum ($self, /)
+isidentifier ($self, /)
+isprintable ($self, /)
+zfill ($self, width, /)
+format None
+format_map None
+__format__ ($self, format_spec, /)
+__sizeof__ ($self, /)
+__getnewargs__ None 
+ * 
+ * 
+ */ 
 
-Sk.builtin.str.prototype["upper"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("upper", arguments.length, 1, 1);
-    return new Sk.builtin.str(self.v.toUpperCase());
-});
-
-Sk.builtin.str.prototype["capitalize"] = new Sk.builtin.func(function (self) {
-    var i;
-    var cap;
-    var orig;
-    Sk.builtin.pyCheckArgsLen("capitalize", arguments.length, 1, 1);
-    orig = self.v;
-
-    if (orig.length === 0) {
-        return new Sk.builtin.str("");
-    }
-    cap = orig.charAt(0).toUpperCase();
-
-    for (i = 1; i < orig.length; i++) {
-        cap += orig.charAt(i).toLowerCase();
-    }
-    return new Sk.builtin.str(cap);
-});
-
-Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
-    var it, i;
-    var arrOfStrs;
-    Sk.builtin.pyCheckArgsLen("join", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("seq", "iterable", Sk.builtin.checkIterable(seq));
-    arrOfStrs = [];
-    for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i.constructor !== Sk.builtin.str) {
-            throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found");
+Sk.builtin.str.tp$methods = [
+    new Sk.MethodDef("encode"),
+    new Sk.MethodDef("replace"),
+    new Sk.MethodDef("split", 
+    function (on, howmany) {
+        var splits;
+        var index;
+        var match;
+        var result;
+        var s;
+        var str;
+        var regex;
+        Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
+        if ((on === undefined) || (on instanceof Sk.builtin.none)) {
+            on = null;
         }
-        arrOfStrs.push(i.v);
-    }
-    return new Sk.builtin.str(arrOfStrs.join(self.v));
-});
-
-Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howmany) {
-    var splits;
-    var index;
-    var match;
-    var result;
-    var s;
-    var str;
-    var regex;
-    Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
-        on = null;
-    }
-    if ((on !== null) && !Sk.builtin.checkString(on)) {
-        throw new Sk.builtin.TypeError("expected a string");
-    }
-    if ((on !== null) && on.v === "") {
-        throw new Sk.builtin.ValueError("empty separator");
-    }
-    if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
-
-    howmany = Sk.builtin.asnum$(howmany);
-    regex = /[\s\xa0]+/g;
-    str = self.v;
-    if (on === null) {
-        // Remove leading whitespace
-        str = str.replace(/^[\s\xa0]+/, "");
-    } else {
-        // Escape special characters in "on" so we can use a regexp
-        s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
-        regex = new RegExp(s, "g");
-    }
-
-    // This is almost identical to re.split,
-    // except how the regexp is constructed
-
-    result = [];
-    index = 0;
-    splits = 0;
-    while ((match = regex.exec(str)) != null) {
-        if (match.index === regex.lastIndex) {
-            // empty match
-            break;
+        if ((on !== null) && !Sk.builtin.checkString(on)) {
+            throw new Sk.builtin.TypeError("expected a string");
         }
-        result.push(new Sk.builtin.str(str.substring(index, match.index)));
-        index = regex.lastIndex;
-        splits += 1;
-        if (howmany && (splits >= howmany)) {
-            break;
+        if ((on !== null) && on.v === "") {
+            throw new Sk.builtin.ValueError("empty separator");
         }
+        if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
+            throw new Sk.builtin.TypeError("an integer is required");
+        }
+    
+        howmany = Sk.builtin.asnum$(howmany);
+        regex = /[\s\xa0]+/g;
+        str = this.v;
+        if (on === null) {
+            // Remove leading whitespace
+            str = str.replace(/^[\s\xa0]+/, "");
+        } else {
+            // Escape special characters in "on" so we can use a regexp
+            s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
+            regex = new RegExp(s, "g");
+        }
+    
+        // This is almost identical to re.split,
+        // except how the regexp is constructed
+    
+        result = [];
+        index = 0;
+        splits = 0;
+        while ((match = regex.exec(str)) != null) {
+            if (match.index === regex.lastIndex) {
+                // empty match
+                break;
+            }
+            result.push(new Sk.builtin.str(str.substring(index, match.index)));
+            index = regex.lastIndex;
+            splits += 1;
+            if (howmany && (splits >= howmany)) {
+                break;
+            }
+        }
+        str = str.substring(index);
+        if (on !== null || (str.length > 0)) {
+            result.push(new Sk.builtin.str(str));
+        }
+    
+        return new Sk.builtin.list(result);
+    },
+    {
+        NamedArgs: ["sep", "maxsplit"],
+        MinArgs: 0,
+        MaxArgs: 2,
     }
-    str = str.substring(index);
-    if (on !== null || (str.length > 0)) {
-        result.push(new Sk.builtin.str(str));
+    ),
+    new Sk.MethodDef("rsplit"),
+    new Sk.MethodDef("join",
+    function (seq) {
+        const it = Sk.abstr.iter(seq);
+        const arrOfStrs = [];
+        for (let i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if (i.constructor !== Sk.builtin.str) {
+                throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected string, " + Sk.abstr.typeName(i) + " found");
+            }
+            arrOfStrs.push(i.v);
+        }
+        return new Sk.builtin.str(arrOfStrs.join(this.v));
+    },
+    {
+        OneArg: true,
     }
+    ),
+    new Sk.MethodDef("capitalize",
+    function () {
+        const orig = this.v;
+        if (orig.length === 0) {
+            return new Sk.builtin.str("");
+        }
+        let cap = orig.charAt(0).toUpperCase();
+    
+        for (let i = 1; i < orig.length; i++) {
+            cap += orig.charAt(i).toLowerCase();
+        }
+        return new Sk.builtin.str(cap);
+    }
+    ),
+    new Sk.MethodDef("casefold"),
+    new Sk.MethodDef("title"),
+    new Sk.MethodDef("center"),
+    new Sk.MethodDef("count"),
+    new Sk.MethodDef("expandtabs"),
+    new Sk.MethodDef("find"),
+    new Sk.MethodDef("partition"),
+    new Sk.MethodDef("index"),
+    new Sk.MethodDef("ljust"),
+    new Sk.MethodDef("lower",
+    function () {
+        return new Sk.builtin.str(this.v.toLowerCase());
+    }
+    ),
+    new Sk.MethodDef("lstrip"),
+    new Sk.MethodDef("rfind"),
+    new Sk.MethodDef("rindex"),
+    new Sk.MethodDef("rjust"),
+    new Sk.MethodDef("rstrip"),
+    new Sk.MethodDef("rpartition"),
+    new Sk.MethodDef("splitlines"),
+    new Sk.MethodDef("strip"),
+    new Sk.MethodDef("swapcase"),
+    new Sk.MethodDef("translate"),
+    new Sk.MethodDef("upper",
+    function () {
+        return new Sk.builtin.str(this.v.toUpperCase());
+    }
+    ),
+    new Sk.MethodDef("startswith"),
+    new Sk.MethodDef("endswith"),
+    new Sk.MethodDef("isascii"),
+    new Sk.MethodDef("islower"),
+    new Sk.MethodDef("isupper"),
+    new Sk.MethodDef("istitle"),
+    new Sk.MethodDef("isspace"),
+    new Sk.MethodDef("isdecimal"),
+    new Sk.MethodDef("isdigit"),
+    new Sk.MethodDef("isnumeric"),
+    new Sk.MethodDef("isalpha"),
+    new Sk.MethodDef("isalnum"),
+    new Sk.MethodDef("isidentifier"),
+    new Sk.MethodDef("isprintable"),
+    new Sk.MethodDef("zfill"),
+    new Sk.MethodDef("format"),
+    new Sk.MethodDef("format_map"),
+    new Sk.MethodDef("__format__"),
+    new Sk.MethodDef("__sizeof__"),
+    new Sk.MethodDef("__getnewargs__"),
+]
 
-    return new Sk.builtin.list(result);
-});
+
 
 Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
@@ -375,7 +460,7 @@ Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     if (chars === undefined) {
         pattern = /^\s+|\s+$/g;
     } else {
-        regex = Sk.builtin.str.re_escape_(chars.v);
+        regex = Sk.builtin.str.$re_escape(chars.v);
         pattern = new RegExp("^[" + regex + "]+|[" + regex + "]+$", "g");
     }
     return new Sk.builtin.str(self.v.replace(pattern, ""));
@@ -391,7 +476,7 @@ Sk.builtin.str.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) 
     if (chars === undefined) {
         pattern = /^\s+/g;
     } else {
-        regex = Sk.builtin.str.re_escape_(chars.v);
+        regex = Sk.builtin.str.$re_escape(chars.v);
         pattern = new RegExp("^[" + regex + "]+", "g");
     }
     return new Sk.builtin.str(self.v.replace(pattern, ""));
@@ -407,7 +492,7 @@ Sk.builtin.str.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) 
     if (chars === undefined) {
         pattern = /\s+$/g;
     } else {
-        regex = Sk.builtin.str.re_escape_(chars.v);
+        regex = Sk.builtin.str.$re_escape(chars.v);
         pattern = new RegExp("[" + regex + "]+$", "g");
     }
     return new Sk.builtin.str(self.v.replace(pattern, ""));
@@ -676,7 +761,7 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
             Sk.abstr.typeName(count));
     }
     count = Sk.builtin.asnum$(count);
-    patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
+    patt = new RegExp(Sk.builtin.str.$re_escape(oldS.v), "g");
 
     if ((count === undefined) || (count < 0)) {
         return new Sk.builtin.str(self.v.replace(patt, newS.v));
