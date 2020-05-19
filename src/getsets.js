@@ -17,7 +17,7 @@ Sk.builtin.getset_descriptor.sk$acceptable_as_base_class = false;
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     if (Sk.builtin.checkNone(obj)) {
         return this;
-    } else if (!(Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this.d$type))) {
+    } else if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } 
 
@@ -30,7 +30,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
 
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
-    if (!(Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this.d$type))) {
+    if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } else if (this.d$getset.set !== undefined){
         return this.d$getset.set.call(obj, value);
@@ -78,7 +78,7 @@ Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
         throw new Sk.builtin.TypeError("descriptor '"+this.d$name+"' of '"+this.d$type.prototype.tp$name+"' object needs an argument");
     } 
     const self = args.unshift();
-    if (!Sk.builtin.type.$isSubTypeInternal(self.ob$type, this.d$type)) {
+    if (!self.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '"+this.d$name+"' requires a '"+this.d$type.prototype.tp$name+"' object but received a '"+Sk.abstr.typeName(self)+"'");
     }
     return this.raw$call(self, args, kwargs);
@@ -93,7 +93,7 @@ Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs)
 Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
     if (Sk.builtin.checkNone(obj)) {
         return this;
-    } else if (!(Sk.builtin.type.$isSubTypeInternal(obj.ob$type, this.d$type))) {
+    } else if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } 
 

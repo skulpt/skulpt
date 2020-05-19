@@ -1179,6 +1179,9 @@ Sk.abstr.setUpBaseInheritance = function () {
     Sk.builtin.object.prototype.tp$name = "object"
     Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
     Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
+
+    // flag for checking type objects
+    Sk.builtin.type.prototype.sk$type = true;
 };
 
 /**
