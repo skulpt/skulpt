@@ -19,6 +19,7 @@ require("./generic.js");
 require("./abstract.js");
 require("./object.js");
 require("./getsets.js");
+require("./slotdefs.js");
 require("./function.js");
 require("./builtin.js");
 require("./fromcodepoint.js");
