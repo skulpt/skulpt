@@ -6,7 +6,7 @@
 
 Sk.builtin.getset_descriptor = function (type_obj, gsd) {
     this.d$type = type_obj;
-    this.d$name = gsd._name;
+    this.d$name = gsd.$name;
     this.d$getset = gsd;
 };
 
@@ -21,8 +21,8 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     } 
 
-    if (this.d$getset && this.d$getset.get !== undefined) {
-        return this.d$getset.get.call(obj);
+    if (this.d$getset && this.d$getset.$get !== undefined) {
+        return this.d$getset.$get.call(obj);
     }
 
     throw new Sk.builtin.AttributeError("getset_descriptor '"+ this.d$name +"' of '" + this.d$type.prototype.tp$name + "' objects is not readable");
@@ -32,8 +32,8 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
     if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
-    } else if (this.d$getset.set !== undefined){
-        return this.d$getset.set.call(obj, value);
+    } else if (this.d$getset.$set !== undefined){
+        return this.d$getset.$set.call(obj, value);
     }
     throw new Sk.builtin.AttributeError("getset_descriptor '"+ this.d$name +"' of '" + this.d$type.prototype.tp$name + "' objects is not writeable");
 };
@@ -44,27 +44,72 @@ Sk.builtin.getset_descriptor.prototype.$r = function () {
 
 Sk.builtin.getset_descriptor.prototype.tp$getsets = [
     new Sk.GetSetDef("__doc__", function () {
-        return this.d$getset.doc ? new Sk.builtin.str(this.d$getset.doc) : Sk.builtin.none.none$;
+        return this.d$getset.$doc ? new Sk.builtin.str(this.d$getset.$doc) : Sk.builtin.none.none$;
     }),
     new Sk.GetSetDef("__objclass__", function () {
         return this.d$type;
     }),
-    new Sk.GetSetDef("__name__", function () {
+    new Sk.GetSetDef("_$name__", function () {
         return new Sk.builtin.str(this.d$name);
     })
 ];
 
 
 
+
 /**
  * @constructor
  * @param {Sk.builtin.type} type_obj
- * @param wrapper_base
+ * @param {Sk.MethodDef} method
+ */
+
+Sk.builtin.method_descriptor = function (type_obj, method) {
+    this.d$type = type_obj;
+    this.d$name = method.$name;
+    this.d$method = method;
+};
+
+Sk.abstr.setUpInheritance("method_descriptor", Sk.builtin.method_descriptor, Sk.builtin.object);
+Sk.builtin.method_descriptor.sk$acceptable_as_base_class = false;
+
+Sk.builtin.method_descriptor.prototype.tp$call = Sk.builtin.VectorCall; //whatever this means
+
+Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
+    if (Sk.builtin.checkNone(obj)) {
+        return this;
+    } else if (!obj.ob$type.$isSubType(this.d$type)) {
+        throw new Sk.builtin.TypeError("descriptor '"+ this.d$name + "' for '"+ this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
+    }
+    return new Sk.builtin.functionOrMethod(this.d$method.$raw, this.d$method.$flags, this.d$method.$doc, obj);
+};
+
+
+Sk.builtin.method_descriptor.prototype.$r = function () {
+    return new Sk.builtin.str("<method '"+ this.d$name +"' of '" + this.d$type.prototype.tp$name + "' objects>");
+};
+
+Sk.builtin.method_descriptor.prototype.tp$getsets = [
+    new Sk.GetSetDef("__doc__", function () {
+        return this.d$method.$doc ? new Sk.builtin.str(this.d$method.$doc) : Sk.builtin.none.none$;
+    }),
+    new Sk.GetSetDef("__objclass__", function () {
+        return this.d$type;
+    }),
+    new Sk.GetSetDef("_$name__", function () {
+        return new Sk.builtin.str(this.d$name);
+    })
+];
+
+
+/**
+ * @constructor
+ * @param {Sk.builtin.type} type_obj
+ * @param {Sk.builtin.SlotDef} wrapper_base
  */
 
 Sk.builtin.wrapper_descriptor = function (type_obj, wrapper_base, wrapped) {
     this.d$type = type_obj;
-    this.d$name = wrapper_base._name;
+    this.d$name = wrapper_base.$name;
     this.d$base = wrapper_base;
     this.d$wrapped = wrapped;
 };
@@ -87,7 +132,7 @@ Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
 Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs) {
     // the base might have some flags I guess...
     debugger;
-    return this.d$base.wrapper.call(this.d$wrapped, self, args, kwargs);
+    return this.d$base.$wrapper.call(this.d$wrapped, self, args, kwargs);
 }
 
 Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
@@ -107,12 +152,12 @@ Sk.builtin.wrapper_descriptor.prototype.$r = function () {
 
 Sk.builtin.wrapper_descriptor.prototype.tp$getsets = [
     new Sk.GetSetDef("__doc__", function () {
-        return this.d$base.doc ? new Sk.builtin.str(this.d$base.doc) : Sk.builtin.none.none$;
+        return this.d$base.$doc ? new Sk.builtin.str(this.d$base.$doc) : Sk.builtin.none.none$;
     }),
     new Sk.GetSetDef("__objclass__", function () {
         return this.d$type;
     }),
-    new Sk.GetSetDef("__name__", function () {
+    new Sk.GetSetDef("_$name__", function () {
         return new Sk.builtin.str(this.d$name);
     })
 ];
@@ -144,12 +189,12 @@ Sk.builtin.method_wrapper.prototype.$r = function () {
 
 Sk.builtin.method_wrapper.prototype.tp$getsets = [
     new Sk.GetSetDef("__doc__", function () {
-        return this.m$descr.d$base.doc ? new Sk.builtin.str(this.m$descr.d$base.doc) : Sk.builtin.none.none$;
+        return this.m$descr.d$base.$doc ? new Sk.builtin.str(this.m$descr.d$base.$doc) : Sk.builtin.none.none$;
     }),
     new Sk.GetSetDef("__objclass__", function () {
         return this.m$descr.d$type;
     }),
-    new Sk.GetSetDef("__name__", function () {
+    new Sk.GetSetDef("_$name__", function () {
         return new Sk.builtin.str(this.m$descr.d$name);
     })
 ];
@@ -273,10 +318,6 @@ Sk.builtin.property.prototype.tp$getsets = [
     new Sk.GetSetDef("fset", function () {return this.prop$set}),
     new Sk.GetSetDef("fdel", function () {return this.prop$del}),
     new Sk.GetSetDef("__doc__", function () {return this.prop$doc}),
-];
-
-Sk.builtin.property.pythonFunctions = [
-    "getter", "setter", "deleter", "__init__", "__new__"
 ];
 
 
