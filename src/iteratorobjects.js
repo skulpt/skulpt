@@ -4,16 +4,15 @@
  * @param {number=} start
  * @extends Sk.builtin.object
  */
-Sk.builtin.enumerate = Sk.builtin.setUpGenericIterator("enumerate", 
-function enumerate (iterable, start) {
+Sk.builtin.enumerate = function enumerate (iterable, start) {
     if (!(this instanceof Sk.builtin.enumerate)) {
         return new Sk.builtin.enumerate(iterable, start);
     }
     this.$iterable = iterable;
     this.$index = start;
     return this;
-});
-
+};
+Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
 Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
 
 Sk.builtin.enumerate.prototype.tp$doc = "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ..."
@@ -43,8 +42,8 @@ Sk.builtin.enumerate.prototype.tp$new = function (args, kwargs) {
     }
 };
 
-Sk.builtin.enumerate.prototype.tp$iternext = function () {
-    var next = this.$iterable.tp$iternext();
+Sk.builtin.enumerate.prototype.tp$iternext = function (canSuspend) {
+    var next = this.$iterable.tp$iternext(canSuspend);
     if (next === undefined) {
         return undefined;
     }
@@ -60,12 +59,11 @@ Sk.builtin.enumerate.prototype.tp$iternext = function () {
  * @extends Sk.builtin.object
  */
 
-Sk.builtin.filter_ = Sk.builtin.setUpGenericIterator("filter",
-function filter_ (func, iterable) {
+Sk.builtin.filter_ = function filter_ (func, iterable) {
    this.func = func;
    this.iterable = iterable;
-});
-
+};
+Sk.abstr.setUpInheritance("filter", Sk.builtin.filter_, Sk.builtin.object);
 Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
 
 Sk.builtin.filter_.prototype.tp$doc = "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true."
@@ -103,20 +101,17 @@ Sk.builtin.filter_.prototype.tp$iternext = function () {
 };
 
 
-
 /**
  * @constructor
  * @param {Object} seq
  * @extends Sk.builtin.object
  */
-
-
-Sk.builtin.reversed = Sk.builtin.setUpGenericIterator("reversed", 
-function reversed (seq) {
+Sk.builtin.reversed = function reversed (seq) {
     this.idx = seq.sq$length() - 1;
     this.seq = seq;
     return this;
-});
+};
+Sk.abstr.setUpInheritance("reversed", Sk.builtin.reversed, Sk.builtin.object);
 
 Sk.builtin.reversed.prototype.tp$doc = "Return a reverse iterator over the values of the given sequence."
 
@@ -160,11 +155,15 @@ Sk.builtin.reversed.prototype.tp$iternext = function () {
     }
 };
 
-// will need to turn this into a method wrapper
-Sk.builtin.reversed.prototype.__length_hint__ = new Sk.builtin.func(function __length_hint__ (self) {
-    Sk.builtin.pyCheckArgs("__length_hint__", arguments, 0, 0, false, true);
-    return self.idx >= 0 ? Sk.builtin.int_(self.idx) : Sk.builtin.int_(0);
-});
+Sk.builtin.reversed.prototype.tp$methods = [
+    new Sk.MethodDef("__length_hint__", 
+    function __length_hint__ (self) {
+        return self.idx >= 0 ? Sk.builtin.int_(self.idx) : Sk.builtin.int_(0);
+    }, 
+    {NoArgs: true}
+    )
+];
+
 
 
 
@@ -173,10 +172,11 @@ Sk.builtin.reversed.prototype.__length_hint__ = new Sk.builtin.func(function __l
  * @param {Array} JS Array of iterator objects
  * @extends Sk.builtin.object
  */
-Sk.builtin.zip_ = Sk.builtin.setUpGenericIterator("zip", function zip_ (iters) {
+Sk.builtin.zip_ = function zip_ (iters) {
     this.iters = iters;
     return this;
-});
+};
+Sk.abstr.setUpInheritance("zip", Sk.builtin.zip_, Sk.builtin.object);
 
 Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);
 
@@ -231,11 +231,12 @@ Sk.builtin.zip_.prototype.tp$iternext = function () {
  * @param {Array} array of iterators
  * @extends Sk.builtin.object
  */
-Sk.builtin.map_ = Sk.builtin.setUpGenericIterator("map", function map_ (func, iters) {
+Sk.builtin.map_ = function map_ (func, iters) {
     this.func = func;
     this.iters = iters;
     return this;
-});
+};
+Sk.abstr.setUpInheritance("map", Sk.builtin.map_, Sk.builtin.object);
 
 Sk.exportSymbol("Sk.builtin.map_", Sk.builtin.map_);
 
