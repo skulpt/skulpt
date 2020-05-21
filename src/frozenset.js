@@ -4,17 +4,11 @@
  */
 Sk.builtin.frozenset = function (S) {
     // internal function S is an Array or undefined
-    if (!(this instanceof Sk.builtin.frozenset)) {
-        return new Sk.builtin.frozenset(S);
-    }
-
+    Sk.asserts.assert(this instanceof Sk.builtin.frozenset);
     if (S === undefined) {
         S = [];
     }
-
     this.v = new Sk.builtin.dict(S);
-
-    return this;
 };
 
 
@@ -26,14 +20,13 @@ Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.frozenset.prototype) {
         return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
     }
-
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("frozenset() takes no keyword arguments")
-    } else if (args.length > 1) {
-        throw new Sk.builtin.TypeError("frozenset expected at most 1 arguments, got " + args.length)
-    }
+    Sk.abstr.noKwargs("frozenset", kwargs);
+    Sk.abstr.checkArgsLen("frozenset", 0, 1);
     const arg = args[0];
     const S = [];
+    if (arg.ob$type === Sk.builtin.frozenset) {
+        return arg;
+    }
     if (arg !== undefined) {
         Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
             S.push(i);
@@ -44,7 +37,6 @@ Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
 };
 
 Sk.builtin.frozenset.prototype.$subtype_new = function (args, kwargs) {
-    debugger;
     const instance = new this.constructor;
     // pass the args but ignore the kwargs for subtyping
     const frozenset = Sk.builtin.frozenset.prototype.tp$new(args);

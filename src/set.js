@@ -3,27 +3,20 @@
  * @param {Array.<Object>} S
  */
 Sk.builtin.set = function (S) {
-    if (!(this instanceof Sk.builtin.set)) {
-        return new Sk.builtin.set(S);
-    }
-    // this.v is a dict
-    this.set_reset_();
-    return this;
+    Sk.asserts.assert(this instanceof Sk.builtin.set);
+    this.v = new Sk.builtin.dict(S);
 };
+
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
-
 Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.";
 
-Sk.builtin.set.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.set);
+Sk.builtin.set.prototype.tp$new = Sk.Generic.New(Sk.builtin.set);
 
 Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("set() takes no keyword arguments")
-    } else if (args.length > 1) {
-        throw new Sk.builtin.TypeError("set expected at most 1 arguments, got " + args.length)
-    }
+    Sk.abstr.noKwargs("set", kwargs);
+    Sk.abstr.checkArgsLen("set", args, 0, 1);
     let S = args[0];
     let self = this;
 
@@ -32,7 +25,7 @@ Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
         S = Sk.abstr.iter(S);
         if (!this.v.size) {
             // if we already have a elements in the set then we clear them first
-            this.set_reset_();
+            this.$set_reset();
         }
         Sk.misceval.iterFor(S, function (i) {
             self.v.mp$ass_subscript(i, true);
@@ -41,14 +34,11 @@ Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
     return Sk.builtin.none.none$
 };
 
-Sk.builtin.set.prototype.set_reset_ = function () {
-    this.v = new Sk.builtin.dict([]);
-};
 
-Sk.builtin.set.prototype["$r"] = function () {
-    var it, i;
-    var ret = [];
-    for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+
+Sk.builtin.set.prototype.$r = function () {
+    const ret = [];
+    for (let it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
@@ -393,7 +383,7 @@ Sk.builtin.set.prototype["symmetric_difference_update"] = new Sk.builtin.func(fu
     Sk.builtin.pyCheckArgsLen("symmetric_difference_update", arguments.length, 2, 2);
 
     var sd = Sk.builtin.set.prototype["symmetric_difference"].func_code(self, other);
-    self.set_reset_();
+    self.$set_reset();
     Sk.builtin.set.prototype["update"].func_code(self, sd);
     return Sk.builtin.none.none$;
 });
