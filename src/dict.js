@@ -4,22 +4,15 @@
  */
 Sk.builtin.dict = function dict (L) {
     // calling new Sk.builtin.dict is an internal method that requires an array of key value pairs
-
-    if (!(this instanceof Sk.builtin.dict)) {
-        return new Sk.builtin.dict(L);
-    }
-
+    Sk.asserts.assert(this instanceof Sk.builtin.dict);
     if (L === undefined) {
         L = [];
     }
-
     this.size = 0;
     this.buckets = {};
-
     for (let i = 0; i < L.length; i += 2) {
         this.mp$ass_subscript(L[i], L[i + 1]);
     }
-    return this;
 };
 
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
@@ -30,10 +23,10 @@ var kf = Sk.builtin.hash;
 Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)"
 
 
-Sk.builtin.dict.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.dict);
+Sk.builtin.dict.prototype.tp$new = Sk.Generic.New(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
-    Sk.builtin.pyCheckArgsLen("dict", args, 0, 1);
+    Sk.abstr.checkArgsLen("dict", args, 0, 1);
     const arg = args[0];
     if (arg !== undefined) {
         let self = this;
@@ -57,9 +50,7 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
             this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i+1]);
         }
     }
-
     return Sk.builtin.none.none$;
-
 };
 
 
