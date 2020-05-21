@@ -11,8 +11,7 @@ if (Sk.builtin === undefined) {
  * @param {String} doc
  */
 
-Sk.GetSetDef = function (_name, get, set, doc) {
-    this.$name = _name;
+Sk.GetSetDef = function (get, set, doc) {
     this.$get = get;
     this.$set = set;
     this.$doc = doc;
@@ -28,10 +27,8 @@ Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
  * @param {String} doc
  */
 
-Sk.MethodDef = function (_name, method, flags, doc) {
-    this.$name = _name;
-    this.$raw = method || {}; // just a place holder for now
-    this.$raw.$name = _name;
+Sk.MethodDef = function (method, flags, doc) {
+    this.$raw = method || {}; // just a place holder for now while some methods have yet to be defined;
     this.$flags = flags;
     this.$doc = doc;
 };
@@ -40,13 +37,66 @@ Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
 /**
  *
  * @constructor
+ * @param {String} typename
+ * @param {Object} options
+ * 
+ * 
  * @description
- * we never call type directly
- * classes are created in the tp$call and tp$new methods 
- * combined with {@link Sk.abstr.setUpInheritance} (in src/abstract.js)
+ * this can be called to create a typeobj
+ * options include 
+ * {
+ * base: default to Sk.builtin.object
+ * meta: default to Sk.builtin.type
+ * 
+ * slots: skulpt slot functions that will be allocated slot wrappers
+ * methods: method objects {$raw: Function, $flags: callmethod, $doc: String},
+ * getsets: getset objects {$get: Function, $set: Function, $doc, String},
+ * 
+ * flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
+ * proto: Object allocated onto the prototype useful for private methods
+ * }
+ * tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
  */
 
-Sk.builtin.type = function () {};
+Sk.builtin.type = function (typename, options) {
+    options = options || {};
+    typeobject = options.constructor || function () {this.$d = new Sk.builtin.dict};
+    let mod;
+    if (typename.includes(".")) {
+        // you should define the module like "collections.defaultdict" for static classes
+        const mod_typename = typename.split(".");
+        typename = mod_typename.pop();
+        mod = mod_typename.join(".");
+    }
+    
+    Sk.abstr.setUpInheritance(typename, typeobject, options.base, options.meta);
+
+    // would need to change this for multiple inheritance.
+    Sk.abstr.setUpBuiltinMro(typeobject);
+    
+    if (options.slots !== undefined) {
+        // only setUpSlotWrappers if slots defined;
+        Sk.abstr.setUpSlots(typeobject, options.slots);
+    }
+
+    Sk.abstr.setUpMethods(typeobject, options.methods);
+    Sk.abstr.setUpGetSets(typeobject, options.getsets);
+
+    if (mod !== undefined) {
+        typeobject.prototype.__module__ = new Sk.builtin.str(mod);
+    }
+    proto = options.proto || {};
+    for (p in proto) {
+        typeobject.prototype[p] = proto[p];
+    }
+    flags = options.flags || {};
+    for (f in flags) {
+        typeobject[f] = flags[f];
+    }
+
+    return typeobject;
+};
+
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
 
 
@@ -115,7 +165,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     if (kwargs) {
         const meta_idx = kwargs.indexOf("metaclass");
         if (meta_idx >= 0) {
-            metaclass = kwargs[meta_idx+1];
+            metaclass = kwargs[meta_idx + 1];
             kwargs = kwargs.splice(meta_idx, 1);
         }
     }
@@ -220,7 +270,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // there is always a fast path for type objects
     // examples that would live down this path __dict__, __module__, __mro__, __name__
     // __class__ which is on the object.prototype is also here since type is an instance of object
-    const meta_attribute = this[jsName];
+    const meta_attribute = this.ob$type.$typeLookup(jsName);
 
 
     let meta_get;
@@ -297,8 +347,10 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     this.prototype[jsName] = value;
 
     if (Sk.prototype.prototypical && jsName in Sk.dunderToSkulpt) {
-       this.$allocateSlot(jsName);
+        this.$allocateSlot(jsName);
     }
+
+
 };
 
 Sk.builtin.type.prototype.$typeLookup = function (pyName) {
@@ -310,7 +362,7 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
 
     const mro = this.prototype.tp$mro;
 
-    for (let i = 0; i < mro.v.length; ++i) {
+    for (let i = 0; i < mro.length; ++i) {
         const base = mro.v[i];
         if (base.prototype.hasOwnProperty(jsName)) {
             return base.prototype[jsName];
@@ -332,7 +384,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
      */
     this.prototype.sk$prototypical = true; // assume true to start with
     let seq, i, next, k, sseq, j, cand, cands, res = [];
-    for (;;) {
+    for (; ;) {
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
             if (seq.length !== 0) {
@@ -352,14 +404,14 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
 
                 /* eslint-disable */
                 OUTER:
-                    for (j = 0; j < seqs.length; ++j) {
-                        sseq = seqs[j];
-                        for (k = 1; k < sseq.length; ++k) {
-                            if (sseq[k] === cand) {
-                                break OUTER;
-                            }
+                for (j = 0; j < seqs.length; ++j) {
+                    sseq = seqs[j];
+                    for (k = 1; k < sseq.length; ++k) {
+                        if (sseq[k] === cand) {
+                            break OUTER;
                         }
                     }
+                }
                 /* eslint-enable */
 
                 // cand is not in any sequences' tail -> constraint-free
@@ -406,32 +458,6 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
     }
 };
 
-
-Sk.builtin.type.prototype.$buildMRO_ = function () {
-    // MERGE(klass + mro(bases) + bases)
-    var i;
-    var bases;
-    var all = [
-        [this]
-    ];
-
-    //Sk.debugout("buildMRO for", klass.tp$name);
-
-    const kbases = this.prototype.tp$bases;
-
-    for (i = 0; i < kbases.v.length; ++i) {
-        all.push([...kbases.v[i].prototype.tp$mro.v]);
-    }
-
-    bases = [];
-    for (i = 0; i < kbases.v.length; ++i) {
-        bases.push(kbases.v[i]);
-    }
-    all.push(bases);
-
-    return this.$mroMerge_(all);
-};
-
 /*
  * C3 MRO (aka CPL) linearization. Figures out which order to search through
  * base classes to determine what should override what. C3 does the "right
@@ -449,8 +475,31 @@ Sk.builtin.type.prototype.$buildMRO_ = function () {
  * discussing its addition to Python.
  */
 Sk.builtin.type.prototype.$buildMRO = function () {
-    return new Sk.builtin.tuple(this.$buildMRO_());
+    // MERGE(klass + mro(bases) + bases)
+    var i;
+    var bases;
+    var all = [
+        [this]
+    ];
+
+    //Sk.debugout("buildMRO for", klass.tp$name);
+
+    const kbases = this.prototype.tp$bases;
+
+    for (i = 0; i < kbases.length; ++i) {
+        all.push([...kbases[i].prototype.tp$mro]);
+    }
+
+    bases = [];
+    for (i = 0; i < kbases.length; ++i) {
+        bases.push(kbases[i]);
+    }
+    all.push(bases);
+
+    return this.$mroMerge_(all);
 };
+
+
 
 Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     var r2;
@@ -468,12 +517,6 @@ Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
     return r1.tp$richcompare(r2, op);
 };
 
-Sk.builtin.type.prototype["__format__"] = function (self, format_spec) {
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
-    return new Sk.builtin.str(self);
-};
-
-Sk.builtin.type.pythonFunctions = ["__format__"];
 
 Sk.builtin.type.prototype.$allocateSlots = function () {
     Sk.asserts.assert(this.sk$klass);
@@ -499,122 +542,122 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
 };
 
 
-Sk.builtin.type.prototype.tp$getsets = [
-    new Sk.GetSetDef("__bases__",
-        function () {
-            return this.prototype.tp$bases;
+Sk.builtin.type.prototype.tp$getsets = {
+    __base__: {
+        $get: function () {
+            return new Sk.builtin.tuple(this.prototype.tp$bases);
         }
-    ),
-    new Sk.GetSetDef("__base__",
-        function () {
+    },
+    __bases__: {
+        $get: function () {
             return this.prototype.tp$base ? this.prototype.tp$base : Sk.builtin.none.none$;
         }
-    ),
-    new Sk.GetSetDef("__mro__",
-        function () {
-            return this.prototype.tp$mro;
+    },
+    ___mro___: {
+        $get: function () {
+            return new Sk.builtin.tuple(this.prototype.tp$mro);
         }
-    ),
-    new Sk.GetSetDef("__dict__",
-        function () {
+    },
+    __dict__: {
+        $get: function () {
             return new Sk.builtin.mappingproxy(this.prototype);
         }
-    ),
-    new Sk.GetSetDef("__doc__",
-        function () {
-            return this.prototype.tp$doc ? this.prototype.tp$doc : Sk.builtin.none.none$;
+    },
+    __doc__: {
+        $get: function () {
+            if (this.prototype.__doc__) {
+                return this.prototype.__doc__;
+            } else if (this.prototype.tp$doc) {
+                return new Sk.builtin.str(tp$doc);
+            }
+            return Sk.builtin.none.none$;
         }
-    ),
-    new Sk.GetSetDef("__name__",
-        function () {
+    },
+    __name__: {
+        $get: function () {
             return new Sk.builtin.str(this.prototype.tp$name);
         },
-        function (value) {
+        $set: function (value) {
             if (!Sk.builtin.checkString(value)) {
                 throw new Sk.builtin.TypeError("can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'");
             }
             this.prototype.tp$name = value.$jsstr();
             return;
         }
-    ),
-    new Sk.GetSetDef("__module__",
-        function () {
-            if (this.sk$klass) {
-                return this.prototype.__module__;
-            }
-            let mod = this.prototype.tp$name.split(".");
-            mod = mod.slice(0, mod.length - 1).join(".");
+    },
+    ___module__: {
+        $get: function () {
+            let mod = this.prototypeo.___module___;
             if (mod) {
-                return new Sk.builtin.str(mod);
-            } else {
-                return new Sk.builtin.str("builtins");
+                return mod;
             }
+            return new Sk.builtin.str("builtins");
         },
-        function (value) {
+        $set: function (value) {
             // they can set the module to whatever they like
             this.prototype.__module__ = value;
         }
-    ),
-];
+    }
+}
 
 
-
-Sk.builtin.type.prototype.tp$methods = [
-    new Sk.MethodDef("mro", 
-    Sk.builtin.type.prototype.$buildMRO, 
-    {NoArgs: true}, 
-    "Return a type's method resolution order."
-    ),
-    new Sk.MethodDef("__dir__", 
-    function __dir__ () {
-        const seen = new Set;
-        const dir = [];
-        function push_or_continue(attr) {
-            if (attr in Sk.reservedNames_) {
-                return;
-            } 
-            attr = Sk.unfixReserved(attr);
-            if (attr.indexOf("$") !== -1) {
-                return;
-            }
-            if (!(seen.has(attr))) {
-                seen.add(attr);
-                dir.push(new Sk.builtin.str(attr));
-            }
-        }
-        if (this.prototype.sk$prototypical) {
-            for (let attr in this.prototype) {
-                push_or_continue(attr);
-            }
-        } else {
-            const mro = this.prototype.tp$mro.v;
-            for (let i = 0; i < mro.length; i++) {
-                const attrs = Object.getOwnPropertyNames(mro[i].prototype);
-                for (let j=0; j<attrs.length; j++ ){
-                    push_or_continue(attrs[j]);
+Sk.builtin.type.prototype.tp$methods = {
+    mro: {
+        $raw: function () {
+            return new Sk.builtin.tuple(this.$buildMRO());
+        },
+        $flags: { NoArgs: true }
+    },
+    __dir__: {
+        $raw: function __dir__() {
+            const seen = new Set;
+            const dir = [];
+            function push_or_continue(attr) {
+                if (attr in Sk.reservedNames_) {
+                    return;
+                }
+                attr = Sk.unfixReserved(attr);
+                if (attr.indexOf("$") !== -1) {
+                    return;
+                }
+                if (!(seen.has(attr))) {
+                    seen.add(attr);
+                    dir.push(new Sk.builtin.str(attr));
                 }
             }
-        }
-        return new Sk.builtin.list(dir.sort((a,b) => a.v.localeCompare(b.v)));
-    },
-    {NoArgs: true},
-    "Specialized __dir__ implementation for types."  
-    )
-];
-
+            if (this.prototype.sk$prototypical) {
+                for (let attr in this.prototype) {
+                    push_or_continue(attr);
+                }
+            } else {
+                const mro = this.prototype.tp$mro;
+                for (let i = 0; i < mro.length; i++) {
+                    const attrs = Object.getOwnPropertyNames(mro[i].prototype);
+                    for (let j = 0; j < attrs.length; j++) {
+                        push_or_continue(attrs[j]);
+                    }
+                }
+            }
+            return new Sk.builtin.list(dir.sort((a, b) => a.v.localeCompare(b.v)));
+        },
+        $flags: { NoArgs: true },
+        $doc: "Specialized __dir__ implementation for types."
+    }
+}
 
 Sk.builtin.type.$bestBase = function (bases) {
     // deal with bases
-    if (bases.v.length === 0) {
+    if (bases.length === 0) {
         // new style class, inherits from object by default
         if (Sk.__future__.inherit_from_object) {
-            bases.v.push(Sk.builtin.object);
+            bases.push(Sk.builtin.object);
         }
     }
 
-    let parent, it, firstAncestor, builtin_bases = [];
+    let parent, firstAncestor, builtin_bases = [];
     // Set up inheritance from any builtins
-    for (it = bases.tp$iter(), parent = it.tp$iternext(); parent !== undefined; parent = it.tp$iternext()) {
+    for (let i = 0; i<bases.length; i++) {
+        parent = bases[i];
         if (!parent.prototype || !parent.sk$type) {
             throw new Sk.builtin.TypeError("bases must be 'type' objects");
         }
@@ -634,9 +677,7 @@ Sk.builtin.type.$bestBase = function (bases) {
     if (builtin_bases.length > 1) {
         throw new Sk.builtin.TypeError("Multiple inheritance with more than one builtin type is unsupported");
     }
-
     return firstAncestor;
-
 }
 
 
@@ -645,6 +686,7 @@ Sk.builtin.type.prototype.$isSubType = function (other) {
         return true;
     } else if (other.prototype && this.prototype.sk$prototypical) {
         return this.prototype instanceof other;
-    } 
-    return this.prototype.tp$mro.v.includes(other) || false;
+    }
+    return this.prototype.tp$mro.includes(other) || false;
 };
+
