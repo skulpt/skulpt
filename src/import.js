@@ -62,19 +62,28 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
 Sk.doOneTimeInitialization = function (canSuspend) {
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
-    var setUpClass = function (child) {
-        if (child.prototype.tp$mro === undefined) {
-            Sk.abstr.setUpBuiltinMro(child);
+    const setUpClass = function (klass) {
+        const mro = klass.prototype.tp$mro;
+        const slots = klass.prototype.tp$slots;
+        const getsets = klass.prototype.tp$mro;
+        const methods = klass.prototype.tp$methods;
+        if (mro === undefined) {
+            Sk.abstr.setUpBuiltinMro(klass);
         }
-        Sk.abstr.setUpGetSets(child); 
-        // Sk.abstr.setUpMethods(child);
-        Sk.abstr.setUpSlotWrappers(child);
-        child.prototype.__doc__ = new Sk.builtin.str(child.prototype.tp$doc);
+        if (slots !== null) {
+            Sk.abstr.setUpSlots(klass, klass.prototype);
+        }
+        if (getsets !== null) {
+            Sk.abstr.setUpGetSets(klass, getsets);
+        }
+        if (methods !== null) {
+            Sk.abstr.setUpGetSets(klass, methods);
+        }
     };
     for (let x in Sk.builtin) {
-        const func = Sk.builtin[x];
-        if (func instanceof Sk.builtin.type && !func.sk$abstract) {
-            setUpClass(func);
+        const obj = Sk.builtin[x];
+        if (obj instanceof Sk.builtin.type && !func.sk$abstract) {
+            setUpClass(obj);
         }
     }
 
