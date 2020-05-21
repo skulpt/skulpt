@@ -760,7 +760,7 @@ Sk.abstr.noKwargs = function (func_name, kwargs) {
 }
 Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
 
-Sk.abstr.noArgs = function (func_name, args, kargs) {
+Sk.abstr.noArgs = function (func_name, args, kwargs) {
     const nargs = args.length + kwargs ? kwargs.length : 0;
     if (nargs) {
         throw new Sk.builting.TypeError(func_name + "() takes no arguments (" + nargs + "given)");
