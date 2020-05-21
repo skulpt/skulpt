@@ -263,7 +263,7 @@ Sk.builtin.round = function round (number, ndigits) {
 
     // try calling internal magic method
     special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
-    if (special != null) {
+    if (special !== undefined) {
         // method on builtin, provide this arg
         if (!Sk.builtin.checkFunction(number)) {
             return Sk.misceval.callsimArray(special, [number, ndigits]);
@@ -283,9 +283,6 @@ Sk.builtin.len = function len (item) {
     var int_ = function(i) { return new Sk.builtin.int_(i); };
     intcheck = function(j) {
         if (Sk.builtin.checkInt(j)) {
-            if (j instanceof Sk.builtin.int_ || j instanceof Sk.builtin.long) {
-                return j;
-            }
             return int_(j);
         } else {
             if (Sk.__future__.exceptions) {
@@ -307,7 +304,7 @@ Sk.builtin.len = function len (item) {
     if (item.tp$length) {
         if (Sk.builtin.checkFunction(item)) {
             special = Sk.abstr.lookupSpecial(item, Sk.builtin.str.$len);
-            if (special != null) {
+            if (special !== undefined) {
                 return Sk.misceval.callsimArray(special, [item]);
             } else {
                 if (Sk.__future__.exceptions) {
@@ -366,24 +363,17 @@ Sk.builtin.max = function max () {
     return highest;
 };
 
-Sk.builtin.any = function any (iter) {
-    var it, i;
-
-    Sk.builtin.pyCheckArgsLen("any", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+Sk.builtin.any = new Sk.builtin.builtinFuncOrMethod(function any (iter) {
+    ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
         if (Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.true$;
+            return new Sk.misceval.Break(true);
         }
-    }
-
-    return Sk.builtin.bool.false$;
-};
+    })
+    return ret === undefined  ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+}, 
+{OneArg: true}, 
+"'Return True if bool(x) is True for any x in the iterable.\n\nIf the iterable is empty, return False."
+);
 
 Sk.builtin.all = function all (iter) {
     var it, i;
@@ -614,125 +604,11 @@ Sk.builtin.bin = function bin (x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
-Sk.builtin.dir = function dir (x) { 
-    var last;
-    var it;
-    var prop;
-    var base;
-    var mro;
-    var i;
-    var s;
-    var k;
-    var names;
-    var getName;
-    Sk.builtin.pyCheckArgsLen("dir", arguments.length, 1, 1);
-
-    getName = function (k) {
-        var s = null;
-        // perhaps we should make this private methods to prevent them feature in dict apart from call/apply/constructor
-        var internal = [
-            "GenericGetAttr",
-            "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
-            "pythonFunctions", "HashNotImplemented", "constructor", "call", "apply"
-        ];
-        if (internal.indexOf(k) !== -1) {
-            return null;
-        }
-        s = Sk.unfixReserved(k);
-        // should make all private methods have a $ rather than ending in _
-        if (k.indexOf("$") !== -1) {
-            // these should all be properties on the klass!
-            return null;
-        }
-        return s;
-    };
-    names = [];
-
-    var _seq;
-
-    // try calling magic method
-    // really all python objects should get the __dir__ from object or type
-    var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$dir);
-    if(special != null) {
-        // method on builtin, provide this arg
-        _seq = Sk.misceval.callsimArray(special, [x]);
-
-        if (!Sk.builtin.checkSequence(_seq)) {
-            throw new Sk.builtin.TypeError("__dir__ must return sequence.");
-        }
-
-        // proper unwrapping
-        _seq = Sk.ffi.remapToJs(_seq);
-
-        for (i = 0; i < _seq.length; ++i) {
-            names.push(new Sk.builtin.str(_seq[i]));
-        }
-    } else {
-        // Add all attributes
-        if (x["$d"]) {
-            if (x["$d"].tp$iter) {
-                // Dictionary
-                it = x["$d"].tp$iter();
-                for (let k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
-                    names.push(k);
-                }
-            } else {
-                // Object
-                for (s in x["$d"]) {
-                    // have to rename object $ds incase they were mangled...
-                    s = getName(s.v);
-                    if (s) {
-                        names.push(new Sk.builtin.str(s));
-                    }
-                }
-            }
-        }
-
-        // Add all class attributes
-        if (x.sk$type) {
-            mro = x.prototype.tp$mro;
-        } else {
-            mro = x.tp$mro;
-        }
-        // mro = x.tp$mro;
-        // if(!mro && x.ob$type) {
-        //     mro = x.ob$type.tp$mro;
-        // }
-        if (mro) {
-            for (i = 0; i < mro.v.length; ++i) {
-                base = mro.v[i];
-                for (prop in base.prototype) {
-                    if (base.prototype.hasOwnProperty(prop)) {
-                        s = getName(prop);
-                        if (s) {
-                            names.push(new Sk.builtin.str(s));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Sort results
-    names.sort(function (a, b) {
-        return (a.v > b.v) - (a.v < b.v);
-    });
-
-    // Get rid of duplicates before returning, as duplicates should
-    //  only occur when they are shadowed
-    last = function (value, index, self) {
-        // Returns true iff the value is not the same as the next value
-        return value !== self[index + 1];
-    };
-    return new Sk.builtin.list(names.filter(last));
+Sk.builtin.dir = function dir () { 
+   return callsimArray(this.__dir__, []);
 };
 
-Sk.builtin.dir.slotNameToRichName = function (k) {
-    // todo; map tp$xyz to __xyz__ properly
-    return undefined;
-};
-
-Sk.builtin.repr = function repr (x) {
+Sk.builtin.repr = function repr () {
     Sk.builtin.pyCheckArgsLen("repr", arguments.length, 1, 1);
 
     return Sk.misceval.objectRepr(x);
@@ -755,7 +631,7 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
 
 const issubclass_multiple_inheritance = function (klass, base) {
     const mro = klass.prototype.tp$mro;
-    for (let i = 0; i < mro.v.length; i++) {
+    for (let i = 0; i < mro.length; i++) {
         if (base === mro.v[i]) {
             return true;
         }

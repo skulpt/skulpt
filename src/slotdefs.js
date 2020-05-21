@@ -92,7 +92,7 @@ Sk.Slots.$r = new Sk.SlotDef("__repr__",
         }
         return res;
     },
-    Sk.builtin.GenericSlotCallNoArgs,
+    Sk.Generic.SlotCallNoArgs,
     "Return repr(self).", 
     {NoArgs: true}
 );
@@ -133,7 +133,7 @@ Sk.Slots.tp$str = new Sk.SlotDef("__str__",
         }
         return res;
     },
-    Sk.builtin.GenericSlotCallNoArgs,
+    Sk.Generic.SlotCallNoArgs,
     "Return str(self).", 
     {NoArgs: true}
 

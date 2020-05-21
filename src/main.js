@@ -18,9 +18,11 @@ require("./type.js");
 require("./generic.js");
 require("./abstract.js");
 require("./object.js");
-require("./descr.js");
 require("./slotdefs.js");
+require("./descr.js");
+// we can only create type objects from now...
 require("./function.js");
+require("./builtinfuncmethod.js");
 require("./builtin.js");
 require("./fromcodepoint.js");
 require("./errors.js");
