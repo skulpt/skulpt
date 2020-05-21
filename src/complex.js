@@ -241,7 +241,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
     // the lookup special method does already all the magic
     f = Sk.abstr.lookupSpecial(op, Sk.builtin.str.$complex);
 
-    if (f != null) {
+    if (f !== undefined) {
         // method on builtin, provide this arg
         res = Sk.misceval.callsimArray(f, [op]);
 

@@ -61,7 +61,7 @@ Sk.builtin.float_ = function (x) {
 
     // try calling __float__
     var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$float_);
-    if (special != null) {
+    if (special !== undefined) {
         // method on builtin, provide this arg
         return Sk.misceval.callsimArray(special, [x]);
     }

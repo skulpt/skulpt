@@ -113,7 +113,7 @@ Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
  * @returns {boolean} true if the object is iterable
  */
 Sk.builtin.checkIterable = function (arg) {
-    var ret = false;
+    let ret = false;
     if (arg !== undefined) {
         try {
             ret = Sk.abstr.iter(arg);
@@ -136,26 +136,14 @@ Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (obj) {
     // takes care of builtin functions and methods, builtins
-    if (typeof obj === "function") {
-        return true;
+    if (obj.sk$prototypical) {
+        return obj.tp$call !== undefined;
     }
-    // takes care of python function, methods and lambdas
-    if (obj instanceof Sk.builtin.func) {
-        return true;
-    }
-    // takes care of instances of methods
-    if (obj instanceof Sk.builtin.method) {
-        return true;
-    }
-    // go up the prototype chain to see if the class has a __call__ method
-    if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) !== undefined) {
-        return true;
-    }
-    return false;
+    return Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) !== undefined;
 };
 
 Sk.builtin.checkNumber = function (arg) {
-    return (arg !== undefined && (typeof arg === "number" ||
+    return (arg != null && (typeof arg === "number" ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.float_ ||
         arg instanceof Sk.builtin.lng));
@@ -172,24 +160,24 @@ Sk.builtin.checkComplex = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg !== undefined) && ((typeof arg === "number" && arg === (arg | 0)) ||
+    return (arg != null) && ((typeof arg === "number" && arg === (arg | 0)) ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.lng);
 };
 Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg !== undefined) && (arg instanceof Sk.builtin.float_);
+    return (arg != null) && (arg instanceof Sk.builtin.float_);
 };
 Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
-    return (arg !== undefined && arg.ob$type == Sk.builtin.str);
+    return (arg != null && arg.ob$type == Sk.builtin.str);
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkClass = function (arg) {
-    return (arg !== undefined && arg.sk$type);
+    return (arg != null && arg.sk$type);
 };
 Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
@@ -199,12 +187,12 @@ Sk.builtin.checkBool = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
 Sk.builtin.checkNone = function (arg) {
-    return (arg instanceof Sk.builtin.none);
+    return (arg === Sk.builtin.none.none$);
 };
 Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
-    return (arg !== undefined && arg.tp$call !== undefined);
+    return (arg != null && arg.tp$call !== undefined);
 };
 Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
