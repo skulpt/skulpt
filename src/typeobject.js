@@ -85,14 +85,15 @@ Sk.builtin.super_.prototype.tp$getattr = function (pyName, canSuspend) {
     tp = this.obj_type;
     Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
 
-    dict = this.obj["$d"] || this.obj.constructor["$d"];
+    dict = this.obj["$d"];
 
-    // todo; assert? force?
     if (dict) {
         if (dict.mp$lookup) {
             res = dict.mp$lookup(pyName);
         } else if (dict.mp$subscript) {
-            res = Sk.builtin._tryGetSubscript(dict, pyName);
+            try {
+                res = dict.mp$subscript(pyName);
+            } catch { }
         } else if (typeof dict === "object") {
             // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = dict[jsName];

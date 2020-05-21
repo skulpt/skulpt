@@ -8,7 +8,7 @@
  *
  * @return {Sk.builtin.object} Python object
  */
-Sk.builtin.object = function () { };
+Sk.builtin.object = function () {};
 
 // now that object has been created we setup the base inheritances
 // between type and object
@@ -45,8 +45,8 @@ Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
 };
 
 
-Sk.builtin.object.prototype.tp$getattr = Sk.builtin.GenericGetAttr;
-Sk.builtin.object.prototype.tp$setattr = Sk.builtin.GenericSetAttr;
+Sk.builtin.object.prototype.tp$getattr = Sk.Generic.GetAttr;
+Sk.builtin.object.prototype.tp$setattr = Sk.Generic.SetAttr;
 
 Sk.builtin.object.prototype.$r = function () {
     const mod = this.ob$type.$typeLookup("__module__");
@@ -73,6 +73,13 @@ Sk.builtin.object.prototype.tp$str = function () {
     return res;
 };
 
+/**
+ * Return the hash value of this instance.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} The hash value
+ */
 
 Sk.builtin.object.prototype.tp$hash = function () {
     if (!this.$savedHash_) {
@@ -81,25 +88,31 @@ Sk.builtin.object.prototype.tp$hash = function () {
     return this.$savedHash_;
 };
 
-
-Sk.builtin.object.prototype.tp$richcompare = true;
-
-
-Sk.builtin._tryGetSubscript = function (dict, pyName) {
-    try {
-        return dict.mp$subscript(pyName);
-    } catch (x) {
-        return undefined;
+Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
+    let res;
+    switch (op) {
+        case "Eq":
+            res =  this === other ||  Sk.builtin.NotImplemented.NotImplemented$;
+            break;
+        case "NotEq":
+            res = this.tp$richcompare(other, "Eq");
+            if (res && res !== Sk.builtin.NotImplemented.NotImplemented$) {
+                res = Sk.misceval.isTrue(res);
+            }
+            break;
+        default:
+            res = Sk.builtin.NotImplemented.NotImplemented$;
     }
+    return res;
 };
-Sk.exportSymbol("Sk.builtin._tryGetSubscript", Sk.builtin._tryGetSubscript);
 
-Sk.builtin.object.prototype.tp$getsets = [
-    new Sk.GetSetDef("__class__",
-        function () {
+
+Sk.builtin.object.prototype.tp$getsets = {
+    __class__ : {
+        $get : function () {
             return this.ob$type;
         },
-        function (value) {
+        $set : function (value) {
             if (!Sk.builtin.checkClass(value)) {
                 throw new Sk.builtin.TypeError("__class__ must be set to a class, not '" + Sk.abstr.typeName(value) + "' object");
             }
@@ -109,93 +122,60 @@ Sk.builtin.object.prototype.tp$getsets = [
             Object.setPrototypeOf(this, value.prototype);
             return;
         },
-        "the object's class"
-    )
-];
-
-Sk.builtin.object.prototype.tp$methods = [
-    new Sk.MethodDef("__dir__",
-    function __dir__ () {
-        const dir = [];
-        if (this.$d) {
-            if (this.$d.ob$type === Sk.builtin.dict) {
-                dir.concat(this.$d.$allkeys());
-            } else {
-                for (let key in this.$d) {
-                    dir.push(new Sk.builtin.str(key));
-                }
-            } 
-        }
-        // for metattypes that override __dir__ we might need to check it's a list of str
-        type_dir = this.ob$type.__dir__();
-        type_dir.v.push(...dir);
-        type_dir.v.sort((a,b) => a.v.localeCompare(b.v));
-        return type_dir
-    },
-    {NoArgs: true}
-    ,
-    "Default dir() implementation."
-    )
-];
-
-
-
-Sk.builtin.object.prototype.GenericPythonGetAttr = function (self, pyName) {
-    if (!Sk.builtin.checkString(pyName)) {
-        throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
+        $doc : "the object's class"
     }
-    var r = Sk.builtin.object.prototype.GenericGetAttr.call(self, pyName, true);
-    if (r === undefined) {
-        throw new Sk.builtin.AttributeError(pyName);
-    }
-    return r;
-};
-Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
-
-
-Sk.builtin.object.prototype.GenericPythonSetAttr = function (self, pyName, value) {
-    if (!Sk.builtin.checkString(pyName)) {
-        throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
-    }
-    return Sk.builtin.object.prototype.GenericSetAttr.call(self, pyName, value, true);
-};
-Sk.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
-
-Sk.builtin.object.prototype.HashNotImplemented = function () {
-    throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
-};
-
-
+}
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
 // overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
-Sk.builtin.object.prototype["__getattribute__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
-Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
+Sk.builtin.object.prototype["__getattribute__"] = Sk.Generic.PythonGetAttr;
+Sk.builtin.object.prototype["__setattr__"] = Sk.Generic.PythonSetAttr;
 
 
-
-
-Sk.builtin.object.prototype["__format__"] = function (self, format_spec) {
-    var formatstr;
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
-    if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.__future__.exceptions) {
-            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
-        } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
-        }
-    } else {
-        formatstr = Sk.ffi.remapToJs(format_spec);
-        if (formatstr !== "") {
-            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
-        }
+Sk.builtin.object.prototype.tp$methods = {
+    __dir__: {
+        $raw: function __dir__() {
+            const dir = [];
+            if (this.$d) {
+                if (this.$d.ob$type === Sk.builtin.dict) {
+                    dir.concat(this.$d.$allkeys());
+                } else {
+                    for (let key in this.$d) {
+                        dir.push(new Sk.builtin.str(key));
+                    }
+                }
+            }
+            // for metattypes that override __dir__ we might need to check it's a list of str
+            type_dir = this.ob$type.__dir__();
+            type_dir.v.push(...dir);
+            type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
+            return type_dir
+        },
+        $flags: { NoArgs: true }
+        ,
+        $doc: "Default dir() implementation."
+    },
+    __format__: {
+        $raw: function (format_spec) {
+            let formatstr;
+            if (!Sk.builtin.checkString(format_spec)) {
+                if (Sk.__future__.exceptions) {
+                    throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+                } else {
+                    throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
+                }
+            } else {
+                formatstr = Sk.ffi.remapToJs(format_spec);
+                if (formatstr !== "") {
+                    throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
+                }
+            }
+            return new Sk.builtin.str(this);
+        },
+        $flags: { OneArg: true },
+        $doc: "Default object formatter."
     }
-
-    return new Sk.builtin.str(self);
-};
-
-
+}
 
 /** Default implementations of Javascript functions used in dunder methods */
 
@@ -213,120 +193,12 @@ Sk.builtin.hashCount = 1;
 Sk.builtin.idCount = 1;
 
 /**
- * Return the hash value of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.int_} The hash value
- */
-
-/**
- * Perform equality check between this instance and a Python object (i.e. this == other).
- *
- * Implements `__eq__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to check for equality.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if equal, false otherwise
- */
-Sk.builtin.object.prototype.ob$eq = function (other) {
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * Perform non-equality check between this instance and a Python object (i.e. this != other).
- *
- * Implements `__ne__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to check for non-equality.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if not equal, false otherwise
- */
-Sk.builtin.object.prototype.ob$ne = function (other) {
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * Determine if this instance is less than a Python object (i.e. this < other).
- *
- * Implements `__lt__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this < other, false otherwise
- */
-Sk.builtin.object.prototype.ob$lt = function (other) {
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * Determine if this instance is less than or equal to a Python object (i.e. this <= other).
- *
- * Implements `__le__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
- */
-Sk.builtin.object.prototype.ob$le = function (other) {
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * Determine if this instance is greater than a Python object (i.e. this > other).
- *
- * Implements `__gt__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this > other, false otherwise
- */
-Sk.builtin.object.prototype.ob$gt = function (other) {
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-/**
- * Determine if this instance is greater than or equal to a Python object (i.e. this >= other).
- *
- * Implements `__ge__` dunder method.
- *
- * Javascript function, returns Python object.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
- */
-Sk.builtin.object.prototype.ob$ge = function (other) {
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-// Wrap the following functions in Sk.builtin.func once that class is initialized
-/**
- * Array of all the Python functions which are methods of this class.
- * @type {Array}
- */
-Sk.builtin.object.pythonFunctions = [];
-
-/**
  * @constructor
  * Sk.builtin.none
- *
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.none = function () {
-    this.v = null;
+    return Sk.builtin.none.none$;
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
@@ -338,11 +210,17 @@ Sk.builtin.none.prototype.tp$hash = function () {
     return new Sk.builtin.int_(0);
 };
 
+
+Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
+    Sk.abstr.NoArgs("NoneType", args, kwargs);
+    return Sk.builtin.none.none$;
+}
+
 /**
- * Python None constant.
+ * Python None value.
  * @type {Sk.builtin.none}
  */
-Sk.builtin.none.none$ = new Sk.builtin.none();
+Sk.builtin.none.none$ = /** @type {Sk.builtin.none} */ (Object.create(Sk.builtin.none.prototype, {v: {value: null, enumerable: true}}));
 
 /**
  * @constructor
@@ -356,11 +234,16 @@ Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.bu
 /** @override */
 Sk.builtin.NotImplemented.prototype.$r = function () { return new Sk.builtin.str("NotImplemented"); };
 
+Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
+    Sk.abstr.NoArgs("NotImplementedType", args, kwargs);
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
 /**
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
+Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype);
+
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
