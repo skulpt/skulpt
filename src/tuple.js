@@ -3,19 +3,14 @@
  * @param {Array.<Object>|Object} L
  */
 Sk.builtin.tuple = function (L) {
-    // this is used internally and L must be an Array or undefined. 
-    if (!(this instanceof Sk.builtin.tuple)) {
-        return new Sk.builtin.tuple(L);
-    }
+    Sk.asserts.assert(this instanceof Sk.builtin.tuple);
     if (L === undefined) {
         L = [];
     }
     this.v = L;
-    
-    return this;
 };
 
-Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
+Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.object);
 
 Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object."
 
@@ -24,12 +19,8 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.tuple.prototype) {
         return Sk.builtin.tuple.prototype.$subtype_new.call(this, args, kwargs);
     }
-
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("tuple() takes no keyword arguments")
-    } else if (args && args.length > 1) {
-        throw new Sk.builtin.TypeError("tuple expected at most 1 argument, got " + args.length)
-    }
+    Sk.abstr.noKwargs("list", kwargs);
+    Sk.abstr.checkArgsLen("list", args, 0, 1);
     const L = [];
     const arg = args[0];
 
@@ -37,7 +28,7 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
         return new Sk.builtin.tuple(L);
     }
 
-    if (arg instanceof Sk.builtin.tuple) {
+    if (arg.ob$type === Sk.builtin.tuple) {
         return arg;
     }
 
@@ -48,13 +39,6 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     return new Sk.builtin.tuple(L);
 };
 
-
-
-// temporary for testing
-Sk.builtin.tuple.prototype.__new__ = new Sk.builtin.func(function (cls, arg) {
-    return cls.prototype.tp$new([arg]);
-}
-);
 
 Sk.builtin.tuple.prototype.$subtype_new = function (args, kwargs) {
     // should we check that this is indeed a subtype of tuple?
