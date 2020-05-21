@@ -8,8 +8,6 @@ Sk.builtin.interned = {};
 Sk.builtin.str = function (x) {
     // new Sk.builtin.str is an internal function called with a JS value x
     // occasionally called with a python object and returns tp$str() or $r();
-
-    // temporary to catch when this is called with apply
     Sk.asserts.assert(this instanceof Sk.builtin.str);
 
     let ret;
@@ -55,8 +53,7 @@ Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.str.prototype) {
         return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
     }
-    args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs);
-    Sk.abstr.checkArgsLen("str", args, 0, 1);
+    args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs, [Sk.builtin.str.$empty]);
     x = args[0];
     return new Sk.builtin.str(x);
 };

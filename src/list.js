@@ -1,3 +1,5 @@
+
+
 /**
  * @constructor
  * @param {Array.<Object>=} L
@@ -6,57 +8,35 @@
  */
 Sk.builtin.list = function (L) {
     // this is an internal function and should be called with an array object
-    if (!(this instanceof Sk.builtin.list)) {
-        return new Sk.builtin.list(L);
-    }
-
+    Sk.asserts.assert(this instanceof Sk.builtin.list);
     if (L === undefined) {
         L = [];
     }
-
     this.v = L;
-
-    return this
-
 };
 
-Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
+Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
 Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified."
 
 
-Sk.builtin.list.prototype.tp$new = Sk.builtin.GenericNew(Sk.builtin.list);
+Sk.builtin.list.prototype.tp$new = Sk.Generic.New(Sk.builtin.list);
 
 Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("list() takes no keyword arguments")
-    } else if (args && args.length > 1) {
-        throw new Sk.builtin.TypeError("list expected at most 1 argument, got " + args.length)
-    }
-
-    const arg = args ? args[0] : undefined;
-
+    Sk.abstr.noKwargs("list", kwargs);
+    Sk.abstr.checkArgsLen("list", args, 0, 1);
+    const arg = args[0];
     if (arg === undefined) {
         return Sk.builtin.none.none$;
     }
-    
-    let self = this;
+    const self = this;
     Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
         self.v.push(i);
-    })
-
+    })        
     return Sk.builtin.none.none$;
-
 };
-
-// temporary for testing
-Sk.builtin.list.prototype.__new__ = new Sk.builtin.func(function (cls, arg) {
-    debugger;
-    return cls.prototype.tp$new([arg]);
-}
-);
 
 
 Sk.builtin.list.prototype.list_concat_ = function (other) {
