@@ -8,19 +8,17 @@ Sk.abstr = {};
 // Number
 //
 
-Sk.abstr.typeName = function (v) {
-    var vtypename;
-    if (v.tp$name !== undefined) {
-        vtypename = v.tp$name;
+Sk.abstr.typeName = function (obj) {
+    if (obj != null && obj.tp$name !== undefined) {
+        return  obj.tp$name();
     } else {
-        vtypename = "<invalid type>";
+        return "<invalid type>";
     }
-    return vtypename;
 };
 
 Sk.abstr.binop_type_error = function (v, w, name) {
-    var vtypename = Sk.abstr.typeName(v),
-        wtypename = Sk.abstr.typeName(w);
+    const vtypename = Sk.abstr.typeName(v);
+    const wtypename = Sk.abstr.typeName(w);
 
     throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '" + vtypename + "' and '" + wtypename + "'");
 };
@@ -492,7 +490,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
      *  python objects
      */
     special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$contains);
-    if (special != null) {
+    if (special !== undefined) {
         // method on builtin, provide this arg
         return Sk.misceval.isTrue(Sk.misceval.callsimArray(special, [seq, ob]));
     }
@@ -762,17 +760,14 @@ Sk.abstr.noKwargs = function (func_name, kwargs) {
 }
 Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
 
-Sk.abstr.applyDefaultsToArgs = function (defaults, args) {
-    const nargs = args.length;
-    for (let i = args.length - 1; i >= 0; i--) {
-        if (args[i] === undefined) {
-            args[i] = defaults[nargs - defaults.length - 1];
-        }
+Sk.abstr.noArgs = function (func_name, args, kargs) {
+    const nargs = args.length + kwargs ? kwargs.length : 0;
+    if (nargs) {
+        throw new Sk.builting.TypeError(func_name + "() takes no arguments (" + nargs + "given)");
     }
-    return args;
 }
+Sk.exportSymbol("Sk.abstr.noArgs", Sk.abstr.noArgs)
 
-Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
 
 
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
@@ -806,7 +801,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
 
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format);
-    if (meth == null) {
+    if (meth === undefined) {
         return Sk.misceval.callsimArray(Sk.builtin.object.prototype["__format__"], [obj, format_spec]);
     }
 
@@ -993,59 +988,29 @@ Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
  */
 
 Sk.abstr.iter = function(obj) {
-    var iter;
-    var getit;
-    var ret;
-
-    /**
-     * Builds an iterator around classes that have a __getitem__ method.
-     *
-     * @constructor
-     */
-    var seqIter = function (obj) {
-        this.idx = 0;
-        this.myobj = obj;
-        this.getitem = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
-        this.tp$iternext = function () {
-            var ret;
-            try {
-                ret = Sk.misceval.callsimArray(this.getitem, [this.myobj, Sk.ffi.remapToPy(this.idx)]);
-            } catch (e) {
-                if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
-                    return undefined;
-                } else {
-                    throw e;
-                }
-            }
-            this.idx++;
-            return ret;
-        };
-    };
-
-    if (obj.tp$iter) {
-        try {  // catch and ignore not iterable error here.
-            ret = obj.tp$iter();
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        } catch (e) { }
-    }
-
-    // I think this should go since we should already have assigned the magic method if __iter__ was set on the klass.
-    if (obj.tp$getattr) {
-        iter =  Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
-        if (iter) {
-            ret = Sk.misceval.callsimArray(iter, [obj]);
-            if (ret.tp$iternext) {
-                return ret;
+    let iter;
+    if (obj.sk$prototypical) {
+        // this is the easy case we can just check 
+        // slots for (tp$iter and then tp$iternext) or mp$subscript
+        if (obj.tp$iter) {
+            iter = obj.tp$iter();
+            if (iter !== undefined && iter.tp$iternext) {
+                return iter;
             }
         }
-    }
-
-    getit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
-    if (getit) {
-        // create internal iterobject if __getitem__
-        return new seqIter(obj);
+        if (obj.mp$subscript) {
+            return new Sk.builtin.seq_iter_(obj);
+        }
+    } else {
+        // in the rare case of multiple inheritance
+        iter = obj.tp$iter();
+        if (iter !== undefined && Sk.abstr.lookupSpecial(iter, Sk.builtin.str.$next) !== undefined) {
+            return iter;
+        }
+        if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem)) {
+            // then we have an object that supports __getitem__ so return a seq iterator
+            return new Sk.builtin.seq_iter_(obj);
+        }
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
@@ -1056,18 +1021,10 @@ Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  * internal dict and getattr. If getattr is not present (builtins)
  * try if method is defined on the object itself
  *
- * @returns {null|Object} Return null if not found or the function
+ * @returns {undefined | Object} Return undefined if not found or the function
  */
-Sk.abstr.lookupSpecial = function(op, pyName) {
-    var res;
-    var obtp;
-    if (op.ob$type) {
-        obtp = op.ob$type;
-    } else {
-        return null;
-    }
-
-    return obtp.$typeLookup(pyName);
+Sk.abstr.lookupSpecial = function(obj, pyName) {
+    return obj.ob$type.$typeLookup(pyName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
@@ -1201,48 +1158,69 @@ Sk.abstr.setUpBuiltinMro = function (child) {
             mro.push(base);
         }
     }
-    child.prototype.tp$bases = new Sk.builtin.tuple([bases[0]]);
-    child.prototype.tp$mro = new Sk.builtin.tuple(mro);
+    // internally we keep the mro and bases as array objects
+    // the wrapper descripor returns the tuple of the array
+    child.prototype.tp$bases = bases;
+    child.prototype.tp$mro = mro;
     child.prototype.sk$prototypical = true;
 };
 
-Sk.abstr.setUpGetSets = function (klass) {
-    if (klass.prototype.hasOwnProperty("tp$getsets")) {
-        const gsd = klass.prototype.tp$getsets; 
-        for (let i = 0; i < gsd.length; i++) {
-            klass.prototype[gsd[i].$name] = new Sk.builtin.getset_descriptor(klass, gsd[i]);
-        }
+Sk.abstr.setUpGetSets = function (klass, getsets) {
+    getsets = getsets || klass.prototype.tp$getsets || {};
+    for (getset_name in getsets) {
+        gsd = getsets[getset_name];
+        gsd.$name = getset_name;
+        klass.prototype[getset_name] = new Sk.builtin.getset_descriptor(klass, gsd);
     }
+    // we check this later in onetimeInitialization
+    // it also means that you can create more getsets and then allocate them later
+    klass.prototype.tp$getsets = null;
 };
 
-Sk.abstr.setUpMethods = function (klass) {
-    if (klass.prototype.hasOwnProperty("tp$methods")) {
-        const methods = klass.prototype.tp$methods; 
-        for (let i = 0; i < methods.length; i++) {
-            klass.prototype[methods[i].$name] = new Sk.builtin.method_descriptor(klass, methods[i]);
-        }
+Sk.abstr.setUpMethods = function (klass, methods) {
+    methods = methods || klass.prototype.tp$methods || {};
+    for (method_name in methods) {
+        method_def = methods[method_name];
+        method_def.$name = method_name;
+        klass.prototype[method_name] = new Sk.builtin.getset_descriptor(klass, method_def);
     }
+    klass.prototype.tp$methods = null;
 };
 
 
 
-Sk.abstr.setUpSlotWrappers = function (klass) {
-    for (let slot_name in Sk.tpSlots) {
-        if (klass.prototype.hasOwnProperty(slot_name)) {
-            const slot = Sk.Slots[slot_name];
-            klass.prototype[slot.dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, klass.prototype[slot_name]);
+Sk.abstr.setUpSlots = function (klass, slots) {
+    slots = slots || klass.prototype || {};
+    let slot_def, slot_name, dunder_name, wrapped_func;
+
+    klass.prototype.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
+    if (slots !== klass.prototype) {
+        // the difference between the two loops is that one assigns the wrapped function to the prototype
+        // whilst the other doesn't
+        for (slot_name in slots) {
+            wrapped_func = slots[slot_name];
+            slot_def = Sk.Slots[slot_name];
+            if (slot_def === undefined) {
+                continue;
+            }
+            klass.prototype[slot_name] = slot;
+            dunder_name = slot_def.$wrapper.name;
+
+            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
+        }
+    } else {
+        for (slot_name in slots) {
+            wrapped_func = slots[slot_name];
+            slot_def = Sk.Slots[slot_name];
+            if (slot_def === undefined) {
+                continue;
+            }
+            dunder_name = slot_def.$wrapper.name;
+            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, wrapped_func);
         }
     }
-    return;
-    for (slot_name in Sk.subSlots) {
-        const sub_slots = Sk.subSlots[slot_name];
-        for (let i = 0; i < sub_slots.length; i++) {
-            if (klass.prototype.hasOwnProperty(slot_name)) {
-                const slot = Sk.Slots[slot_name]
-                klass.prototype[slot.dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, klass.prototype[slot_name]);
-            } 
-        }
-    }
+    // not a a cpython flag but we'll use it to check in onetime initialization
+    klass.prototype.tp$slots = null;
 }
 
 /**
