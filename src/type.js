@@ -36,66 +36,9 @@ Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
 
 /**
  *
- * @constructor
- * @param {String} typename
- * @param {Object} options
- * 
- * 
- * @description
- * this can be called to create a typeobj
- * options include 
- * {
- * base: default to Sk.builtin.object
- * meta: default to Sk.builtin.type
- * 
- * slots: skulpt slot functions that will be allocated slot wrappers
- * methods: method objects {$raw: Function, $flags: callmethod, $doc: String},
- * getsets: getset objects {$get: Function, $set: Function, $doc, String},
- * 
- * flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
- * proto: Object allocated onto the prototype useful for private methods
- * }
- * tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
  */
 
-Sk.builtin.type = function (typename, options) {
-    options = options || {};
-    typeobject = options.constructor || function () {this.$d = new Sk.builtin.dict};
-    let mod;
-    if (typename.includes(".")) {
-        // you should define the module like "collections.defaultdict" for static classes
-        const mod_typename = typename.split(".");
-        typename = mod_typename.pop();
-        mod = mod_typename.join(".");
-    }
-    
-    Sk.abstr.setUpInheritance(typename, typeobject, options.base, options.meta);
-
-    // would need to change this for multiple inheritance.
-    Sk.abstr.setUpBuiltinMro(typeobject);
-    
-    if (options.slots !== undefined) {
-        // only setUpSlotWrappers if slots defined;
-        Sk.abstr.setUpSlots(typeobject, options.slots);
-    }
-
-    Sk.abstr.setUpMethods(typeobject, options.methods);
-    Sk.abstr.setUpGetSets(typeobject, options.getsets);
-
-    if (mod !== undefined) {
-        typeobject.prototype.__module__ = new Sk.builtin.str(mod);
-    }
-    proto = options.proto || {};
-    for (p in proto) {
-        typeobject.prototype[p] = proto[p];
-    }
-    flags = options.flags || {};
-    for (f in flags) {
-        typeobject[f] = flags[f];
-    }
-
-    return typeobject;
-};
+Sk.builtin.type = function () { };
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
 
@@ -656,7 +599,7 @@ Sk.builtin.type.$bestBase = function (bases) {
 
     let parent, firstAncestor, builtin_bases = [];
     // Set up inheritance from any builtins
-    for (let i = 0; i<bases.length; i++) {
+    for (let i = 0; i < bases.length; i++) {
         parent = bases[i];
         if (!parent.prototype || !parent.sk$type) {
             throw new Sk.builtin.TypeError("bases must be 'type' objects");

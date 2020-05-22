@@ -10,7 +10,7 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function (obj) {
     if (obj != null && obj.tp$name !== undefined) {
-        return  obj.tp$name();
+        return obj.tp$name();
     } else {
         return "<invalid type>";
     }
@@ -26,8 +26,8 @@ Sk.abstr.binop_type_error = function (v, w, name) {
 Sk.abstr.unop_type_error = function (v, name) {
     var vtypename = Sk.abstr.typeName(v),
         uop = {
-            "UAdd"  : "+",
-            "USub"  : "-",
+            "UAdd": "+",
+            "USub": "-",
             "Invert": "~"
         }[name];
 
@@ -284,14 +284,14 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     if (a.constructor === Sk.builtin.lng) {
         return [a, b];
     } else if ((a.constructor === Sk.builtin.int_ ||
-                a.constructor === Sk.builtin.float_) &&
-                b.constructor === Sk.builtin.complex) {
+        a.constructor === Sk.builtin.float_) &&
+        b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
         tmp = new Sk.builtin.complex(a);
         return [tmp, b];
     } else if (a.constructor === Sk.builtin.int_ ||
-               a.constructor === Sk.builtin.float_) {
+        a.constructor === Sk.builtin.float_) {
         return [a, b];
     } else if (typeof a === "number") {
         tmp = Sk.builtin.assk$(a);
@@ -302,16 +302,16 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 };
 
 Sk.abstr.boNumPromote_ = {
-    "Add"     : function (a, b) {
+    "Add": function (a, b) {
         return a + b;
     },
-    "Sub"     : function (a, b) {
+    "Sub": function (a, b) {
         return a - b;
     },
-    "Mult"    : function (a, b) {
+    "Mult": function (a, b) {
         return a * b;
     },
-    "Mod"     : function (a, b) {
+    "Mod": function (a, b) {
         var m;
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
@@ -319,7 +319,7 @@ Sk.abstr.boNumPromote_ = {
         m = a % b;
         return ((m * b) < 0 ? (m + b) : m);
     },
-    "Div"     : function (a, b) {
+    "Div": function (a, b) {
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         } else {
@@ -333,29 +333,29 @@ Sk.abstr.boNumPromote_ = {
             return Math.floor(a / b);
         } // todo; wrong? neg?
     },
-    "Pow"     : Math.pow,
-    "BitAnd"  : function (a, b) {
+    "Pow": Math.pow,
+    "BitAnd": function (a, b) {
         var m = a & b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "BitOr"   : function (a, b) {
+    "BitOr": function (a, b) {
         var m = a | b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "BitXor"  : function (a, b) {
+    "BitXor": function (a, b) {
         var m = a ^ b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "LShift"  : function (a, b) {
+    "LShift": function (a, b) {
         var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
@@ -368,7 +368,7 @@ Sk.abstr.boNumPromote_ = {
             return a * Math.pow(2, b);
         }
     },
-    "RShift"  : function (a, b) {
+    "RShift": function (a, b) {
         var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
@@ -500,7 +500,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    r = Sk.misceval.iterFor(Sk.abstr.iter(seq), function(i) {
+    r = Sk.misceval.iterFor(Sk.abstr.iter(seq), function (i) {
         if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
             return new Sk.misceval.Break(true);
         } else {
@@ -683,15 +683,15 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
 // We should probably migrate that interface to using Python strings
 // at some point, but in the meantime we have this function to
 // unpack keyword dictionaries into our special format
-Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObject) {
-    return Sk.misceval.chain(pyMapping.tp$getattr(new Sk.builtin.str("items")), function(itemfn) {
+Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObject) {
+    return Sk.misceval.chain(pyMapping.tp$getattr(new Sk.builtin.str("items")), function (itemfn) {
         if (!itemfn) { throw new Sk.builtin.TypeError("Object is not a mapping"); }
         return Sk.misceval.callsimOrSuspend(itemfn);
-    }, function(items) {
-        return Sk.misceval.iterFor(Sk.abstr.iter(items), function(item) {
+    }, function (items) {
+        return Sk.misceval.iterFor(Sk.abstr.iter(items), function (item) {
             if (!item || !item.v) { throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples"); }
             if (!(item.v[0] instanceof Sk.builtin.str)) {
-                throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name +":" : "") + "keywords must be strings");
+                throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name + ":" : "") + "keywords must be strings");
             }
             jsArray.push(item.v[0].v, item.v[1]);
         });
@@ -708,8 +708,8 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function(jsArray, pyMapping, pyCodeObje
 Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, defaults) {
     // args is an array, kwargs is an array or undefined
     kwargs = kwargs || [];
-    
-    const nargs = args.length + kwargs.length/2;
+
+    const nargs = args.length + kwargs.length / 2;
     if (nargs > varnames.length) {
         throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + "arguments (" + nargs + "given)");
     }
@@ -723,7 +723,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
         if (name === null) {
             continue;
         }
-        const value = kwargs[i+1]; // Python value
+        const value = kwargs[i + 1]; // Python value
         const idx = varnames.indexOf(name);
 
         if (idx >= 0) {
@@ -731,7 +731,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
                 throw new Sk.builtin.TypeError(func_name + "() got multiple values for argument '" + name + "'");
             }
             args[idx] = value;
-        }  else {
+        } else {
             throw new Sk.builtin.TypeError(func_name + "() got an unexpected keyword argument '" + name + "'");
         }
     }
@@ -741,8 +741,8 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
             if (args[i] === undefined) {
                 args[i] = defaults[defaults.length - 1 - (nargs - 1 - i)];
             }
-        } 
-        const num_missing = args.filter(x => x===undefined).length;
+        }
+        const num_missing = args.filter(x => x === undefined).length;
         if (num_missing) {
             throw new Sk.builtin.TypeError(func_name + "() missing " + num_missing + " positional arguments");
         }
@@ -936,7 +936,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     if (ret === undefined) {
         throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
     } else if (ret.$isSuspension) {
-        return Sk.misceval.chain(ret, function(r) {
+        return Sk.misceval.chain(ret, function (r) {
             if (r === undefined) {
                 throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
             }
@@ -987,7 +987,7 @@ Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
  * @returns {Object}
  */
 
-Sk.abstr.iter = function(obj) {
+Sk.abstr.iter = function (obj) {
     let iter;
     if (obj.sk$prototypical) {
         // this is the easy case we can just check 
@@ -1023,7 +1023,7 @@ Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  *
  * @returns {undefined | Object} Return undefined if not found or the function
  */
-Sk.abstr.lookupSpecial = function(obj, pyName) {
+Sk.abstr.lookupSpecial = function (obj, pyName) {
     return obj.ob$type.$typeLookup(pyName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
@@ -1082,10 +1082,10 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
 Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     metaclass = metaclass || Sk.builtin.type;
     Object.setPrototypeOf(child, metaclass.prototype);
-    
+
     child.prototype = Object.create(parent.prototype);
     child.prototype.constructor = child;
-    
+
 
     // now some house keeping
     child.prototype.tp$base = parent;
@@ -1222,6 +1222,68 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     // not a a cpython flag but we'll use it to check in onetime initialization
     klass.prototype.tp$slots = null;
 }
+
+/** 
+* @function
+* @param {String} typename
+* @param {Object} options
+* 
+* 
+* @description
+* this can be called to create a typeobj
+* options include 
+* {
+* base: default to Sk.builtin.object
+* meta: default to Sk.builtin.type
+* 
+* slots: skulpt slot functions that will be allocated slot wrappers
+* methods: method objects {$raw: Function, $flags: callmethod, $doc: String},
+* getsets: getset objects {$get: Function, $set: Function, $doc, String},
+* 
+* flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
+* proto: Object allocated onto the prototype useful for private methods
+* }
+* tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
+*/
+
+Sk.abstr.buildNativeClass = function (typename, options) {
+    options = options || {};
+    typeobject = options.constructor || function () { this.$d = new Sk.builtin.dict };
+    let mod;
+    if (typename.includes(".")) {
+        // you should define the module like "collections.defaultdict" for static classes
+        const mod_typename = typename.split(".");
+        typename = mod_typename.pop();
+        mod = mod_typename.join(".");
+    }
+
+    Sk.abstr.setUpInheritance(typename, typeobject, options.base, options.meta);
+
+    // would need to change this for multiple inheritance.
+    Sk.abstr.setUpBuiltinMro(typeobject);
+
+    if (options.slots !== undefined) {
+        // only setUpSlotWrappers if slots defined;
+        Sk.abstr.setUpSlots(typeobject, options.slots);
+    }
+
+    Sk.abstr.setUpMethods(typeobject, options.methods);
+    Sk.abstr.setUpGetSets(typeobject, options.getsets);
+
+    if (mod !== undefined) {
+        typeobject.prototype.__module__ = new Sk.builtin.str(mod);
+    }
+    proto = options.proto || {};
+    for (p in proto) {
+        typeobject.prototype[p] = proto[p];
+    }
+    flags = options.flags || {};
+    for (f in flags) {
+        typeobject[f] = flags[f];
+    }
+
+    return typeobject;
+};
 
 /**
  * Call the super constructor of the provided class, with the object `self` as
