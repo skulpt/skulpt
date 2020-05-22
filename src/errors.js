@@ -12,85 +12,86 @@
  * @constructor
  * @param {String|Array} args
  */
-Sk.builtin.BaseException = function (args) {
-    // internally args is either a string
-    if (typeof args === "string") {
-        this.args = new Sk.builtin.tuple([new Sk.builtin.str(args)]);
-    } else {
-        this.args = new Sk.builtin.tuple(args);
-    }
-    this.traceback = [];
-    // For errors occurring during normal execution, the line/col/etc
-    // of the error are populated by each stack frame of the runtime code
-
-};
-Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
-
-Sk.builtin.BaseException.prototype.tp$doc = "Common base class for all exceptions";
-Sk.builtin.BaseException.prototype.tp$new = function (args, kwargs) {
-    if (!this.hp$type) {
-        // then we have a builtin constructor so just return it as new this
-        return new this.constructor(args);
-    } else {
-        const instance = new this.constructor;
-        Sk.builtin.BaseException.call(instance, args);
-        return instance;
-    }
-};
-
-Sk.builtin.BaseException.prototype.tp$init = function (args, kwargs) {
-    Sk.abstr.noKwargs(Sk.abstr.typeName(this), kwargs);
-    if (this.args.v !== args) {
-        // we only initiate the args if they are not identical to the args from tp$new;
-        this.args.v = args;
-    }
-    return Sk.builtin.none.none$;
-};
-
-Sk.builtin.BaseException.prototype.tp$getsets = [
-    new Sk.GetSetDef("args",
-                     function () {
-                         return this.args;
-                     }
-                    ),
-];
-
-Sk.builtin.BaseException.prototype.tp$str = function (args) {
-    var i;
-    var ret = "";
-
-    ret += this.tp$name;
-    if (this.args) {
-        ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
-    }
-    if (this.traceback.length !== 0) {
-        ret += " on line " + this.traceback[0].lineno;
-    } else {
-        ret += " at <unknown>";
-    }
-
-    if (this.args.v.length > 4) {
-        ret += "\n" + this.args.v[4].v + "\n";
-        for (i = 0; i < this.args.v[3]; ++i) {
-            ret += " ";
+Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
+    constructor: function (args) {
+        // internally args is either a string
+        if (typeof args === "string") {
+            this.args = new Sk.builtin.tuple([new Sk.builtin.str(args)]);
+        } else {
+            this.args = new Sk.builtin.tuple(args);
         }
-        ret += "^\n";
-    }
+        this.traceback = [];
+        // For errors occurring during normal execution, the line/col/etc
+        // of the error are populated by each stack frame of the runtime code
 
-    /*for (i = 0; i < this.traceback.length; i++) {
-        ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
-        if ("colno" in this.traceback[i]) {
-            ret += " column " + this.traceback[i].colno;
+        // note the python implementation includes a $d dict. we currently don't
+    },
+    slots: {
+        tp$doc: "Common base class for all exceptions",
+        tp$new: function (args, kwargs) {
+            if (!this.hp$type) {
+                // then we have a builtin constructor so just return it as new this
+                return new this.constructor(args);
+            } else {
+                const instance = new this.constructor;
+                Sk.builtin.BaseException.call(instance, args);
+                return instance;
+            }
+        },
+        tp$init: function (args, kwargs) {
+            Sk.abstr.noKwargs(Sk.abstr.typeName(this), kwargs);
+            if (this.args.v !== args) {
+                // we only initiate the args if they are not identical to the args from tp$new;
+                this.args.v = args;
+            }
+            return Sk.builtin.none.none$;
+        },
+        $r: function () {
+            let ret = "";
+
+            ret += this.tp$name;
+            if (this.args) {
+                ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
+            }
+            if (this.traceback.length !== 0) {
+                ret += " on line " + this.traceback[0].lineno;
+            } else {
+                ret += " at <unknown>";
+            }
+
+            if (this.args.v.length > 4) {
+                ret += "\n" + this.args.v[4].v + "\n";
+                for (let i = 0; i < this.args.v[3]; ++i) {
+                    ret += " ";
+                }
+                ret += "^\n";
+            }
+
+            /*for (i = 0; i < this.traceback.length; i++) {
+                ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
+                if ("colno" in this.traceback[i]) {
+                    ret += " column " + this.traceback[i].colno;
+                }
+            }*/
+
+            return new Sk.builtin.str(ret);
+        },
+        tp$str: function () {
+            if (this.args.v.length <= 1) {
+                return new Sk.builtin.str(this.args.v[0]);
+            }
+            return this.args.$r();
         }
-    }*/
-
-    return new Sk.builtin.str(ret);
-};
-
-Sk.builtin.BaseException.prototype.toString = function () {
-    return this.tp$str().v;
-};
-
+    },
+    getsets: {
+        args: {
+            $get: function () { return this.args }
+        }
+    },
+    proto: {
+        toString: function () { return this.$r().v }
+    }
+});
 
 Sk.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
@@ -337,7 +338,7 @@ Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
  * @param {String|Array} args
  */
 Sk.builtin.ExternalError = function (args) {
-    
+
 
     this.nativeError = args;
     const msg = args.toString();
@@ -382,7 +383,7 @@ Sk.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
 // TODO: Extract into sys.exc_info(). Work out how the heck
 // to find out what exceptions are being processed by parent stack frames...
-Sk.builtin.getExcInfo = function(e) {
+Sk.builtin.getExcInfo = function (e) {
     var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
 
     // TODO create a Traceback object for the third tuple element
