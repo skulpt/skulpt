@@ -8,7 +8,7 @@
  *
  * @return {Sk.builtin.object} Python object
  */
-Sk.builtin.object = function () {};
+Sk.builtin.object = function object () {};
 
 // now that object has been created we setup the base inheritances
 // between type and object
@@ -59,23 +59,14 @@ Sk.builtin.object.prototype.$r = function () {
     if (mod && Sk.builtin.checkString(mod)) {
         cname = mod.v + ".";
     }
-    return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + "'>");
+    return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + " object>");
 
 };
 
 
 Sk.builtin.object.prototype.tp$str = function () {
     // if we're calling this function then the object has no __str__ or tp$str defined
-    const func = this.ob$type.$typeLookup(Sk.builtin.str.$repr);
-    if (func instanceof Sk.builtin.wrapper_descriptor) {
-        return func.d$wrapped.call(this);
-    } else if (func !== undefined) {
-        const res = Sk.misceval.callsimArray(func, [this]);
-        if (!(Sk.builtin.checkString(res))) {
-            throw new Sk.builtin.TypeError("__str__ returned non-string (type " + Sk.abstr.typeName(res) + ")")
-        }
-    }
-    return res;
+    return this.$r();
 };
 
 /**
@@ -217,7 +208,7 @@ Sk.builtin.none.prototype.tp$hash = function () {
 
 
 Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
-    Sk.abstr.NoArgs("NoneType", args, kwargs);
+    Sk.abstr.checkNoArgs("NoneType", args, kwargs);
     return Sk.builtin.none.none$;
 }
 
@@ -240,7 +231,7 @@ Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.bu
 Sk.builtin.NotImplemented.prototype.$r = function () { return new Sk.builtin.str("NotImplemented"); };
 
 Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
-    Sk.abstr.NoArgs("NotImplementedType", args, kwargs);
+    Sk.abstr.checkNoArgs("NotImplementedType", args, kwargs);
     return Sk.builtin.NotImplemented.NotImplemented$;
 }
 /**

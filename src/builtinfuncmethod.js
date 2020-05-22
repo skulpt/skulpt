@@ -12,7 +12,7 @@
  * NoArgs: true, raises exception if there are args or kwargs (METH_NOARGS)
  * OneArg: true, raises exception if there is more than one Arg (METH_O)
  * 
- * MinArgs: int (also assumes NoKwargs)
+ * MinArgs: int (also assumes noKwargs)
  * MaxArgs: int optional (used in conjuntiontion with MinArgs)
  * 
  * NamedArgs: Array e.g. [null, null, "name1", "name2"]
@@ -29,67 +29,60 @@
  * 
  */
 Sk.builtin.funcOrMethod = Sk.abstr.buildNativeClass("builtin_function_or_method", {
-    constructor: function (method_obj, self, module) {
+    constructor: function (method_def, self, module) {
 
         // here we set this.$raw binding it's call signature to self
-        this.$raw = method_obj.$raw.bind(self);
-
-        this.$doc = method_obj.$doc;
+        this.$raw = method_def.$raw.bind(self);
+        this.$doc = method_def.$doc;
         this.$self = self;
         this.$module = module? new Sk.builtin.str(module) : Sk.builtin.none.none$;
-        this.$name = method_obj.$raw.name || method_obj.$name || "<native JS>";
+        this.$name = method_def.$name || method_def.$raw.name || "<native JS>";
 
         // useful to set the $textsig to determine the correct flags
-        this.$textsig = method_obj.$textsig;
+        this.$textsig = method_def.$textsig;
 
         // override the default tp$call method if there is a valid flag
-        flags = method_obj.$flags || {};
+        const flags = method_def.$flags || {};
+        this.$flags = flags;
 
-        switch (flags) {
-            case flags.FastCall && flags.NoKwargs:
-                this.tp$call = this.$FastCallNoKwargs;
-                break;
-            case flags.FastCall:
-                this.tp$call = this.$raw
-                break;
-            case flags.NoArgs:
-                this.tp$call = this.$NoArgs;
-                break;
-            case flags.OneArg:
-                this.tp$call = this.$OneArg;
-                break;
-            case flags.NamedArgs:
-                this.tp$call = this.$NamedArgs;
-                break;
-            case flags.MinArgs:
-                this.tp$call = this.$MinArgs;
-                break;
-            default:
-                // if we use function tp$call we need the func_code object to be set
-                this.func_code = this.method_obj.$raw;
+        if (flags.FastCall && flags.NoKwargs) {
+            this.tp$call = this.$fastCallNoKwargs;
+        } else if (flags.fastCall) {
+            this.tp$call = this.$raw;
+        } else if (flags.NoArgs) {
+            this.tp$call = this.$callNoArgs;
+        } else if (flags.OneArg) {
+            this.tp$call = this.$callOneArg;
+        } else if (flags.NamedArgs) {
+            this.tp$call = this.$callNamedArgs;
+        } else if (flags.MinArgs) {
+            this.tp$call = this.$callMinArgs;
+        } else {
+            this.func_code = method_def.$raw;
         }
     },
     proto: {
         $fastCallNoKwargs: function (args, kwargs) {
-            Sk.abstr.NoKwargs(this.$name, kwargs);
+            Sk.abstr.checkNoKwargs(this.$name, kwargs);
             return this.$raw(args);
         },
-        $NoArgs: function (args, kwargs) {
-            Sk.abstr.noArgs(this.$name, args, kwargs);
+        $callNoArgs: function (args, kwargs) {
+            debugger;
+            Sk.abstr.checkNoArgs(this.$name, args, kwargs);
             return this.$raw()
         },
-        $OneArg: function (args, kwargs) {
-            Sk.abstr.OneArg(this.$name, args, kwargs);
+        $callOneArg: function (args, kwargs) {
+            Sk.abstr.checkOneArg(this.$name, args, kwargs);
             return this.$raw(args[0]);
         },
-        $NamedArgs: function (args, kwargs) {
+        $callNamedArgs: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs(this.$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
-            return this.$raw(args);
+            return this.$raw(...args);
         },
-        $MinArgs: function (args, kwargs) {
-            Sk.abstr.NoKwargs(this.$name, kwargs)
-            args = Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
-            this.$raw(args);
+        $callMinArgs: function (args, kwargs) {
+            Sk.abstr.checkNoKwargs(this.$name, kwargs)
+            Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
+            return this.$raw(...args);
         },
     },
     flags: { sk$acceptable_as_base_class: false },
@@ -118,7 +111,7 @@ Sk.builtin.funcOrMethod = Sk.abstr.buildNativeClass("builtin_function_or_method"
                 return new Sk.builtin.str(this.$name);
             }
         },
-        __text_signature: {
+        __text_signature__: {
             $get: function () {
                 return new Sk.builtin.str(this.$textsig);
             }

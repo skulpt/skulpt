@@ -244,10 +244,10 @@ Sk.builtin.str.$re_escape = function (s) {
 /**
  *
  * encode ($self, /, encoding='utf-8', errors='strict') NamedArgs: ["encoding", "errors"], Defaults: [new Sk.builtin.st("utf-8"), new Sk.builtin.str("strict")]
-replace ($self, old, new, count=-1, /) NoKwargs: true, MinArgs: 2, MaxArgs: 3, Defaults: [new Sk.builtin.int_(-1)]
+replace ($self, old, new, count=-1, /) noKwargs: true, MinArgs: 2, MaxArgs: 3, Defaults: [new Sk.builtin.int_(-1)]
 split ($self, /, sep=None, maxsplit=-1) NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, new Sk.builtin.int_(-1)]
 rsplit ($self, /, sep=None, maxsplit=-1) NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, new Sk.builtin.int_(-1)]
-join ($self, iterable, /) NoKwargs: true, MinArgs: 1, MaxArgs: 1, 
+join ($self, iterable, /) noKwargs: true, MinArgs: 1, MaxArgs: 1, 
 capitalize ($self, /) NoArgs: true
 casefold ($self, /) NoArgs: true
 title ($self, /) NoArgs: true

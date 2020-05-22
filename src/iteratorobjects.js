@@ -117,7 +117,7 @@ Sk.builtin.reversed.prototype.tp$doc = "Return a reverse iterator over the value
 
 Sk.builtin.reversed.prototype.tp$new = function (args, kwargs) {
     if (this === Sk.builtin.reversed.prototype) {
-        Sk.abstr.noKwargs("reversed", kwargs);
+        Sk.abstr.checkNoKwargs("reversed", kwargs);
     }
     Sk.abstr.checkArgsLen("reversed", args, 1, 1);
     let seq = args[0];
@@ -185,7 +185,7 @@ Sk.builtin.zip_.prototype.tp$doc = "zip(iter1 [,iter2 [...]]) --> zip object\n\n
 
 Sk.builtin.zip_.prototype.tp$new = function (args, kwargs) {
     if (this === Sk.builtin.zip_.prototype) {
-        Sk.abstr.noKwargs("zip", kwargs);
+        Sk.abstr.checkNoKwargs("zip", kwargs);
     } 
     const iters = [];
     for (let i = 0; i < args.length; i++) {
@@ -244,7 +244,7 @@ Sk.builtin.map_.prototype.tp$doc = "map(func, *iterables) --> map object\n\nMake
 
 Sk.builtin.map_.prototype.tp$new = function (args, kwargs) {
     if (this === Sk.builtin.map_.prototype) {
-        Sk.abstr.noKwargs("map", kwargs);
+        Sk.abstr.checkNoKwargs("map", kwargs);
     }
     Sk.abstr.checkArgsLen("map", args, 2);
     const func = args[0];

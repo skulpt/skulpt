@@ -4,12 +4,13 @@
 // if we hit a slotwrapper then just call it"s raw function rather than calling the slot wrapper!
 
 Sk.SlotDef = function (_name, func, wrapper, doc, flags) {
-    this.$name = this.dunder_name = _name;
+    this.$name = _name;
     this.$slot_func = func; // this function is called when the sk$klass defines a dunder method
     this.$doc = doc;
     this.$wrapper = wrapper;
     this.$flags = flags || {};
     this.$wrapper.$flags = this.$flags;
+    this.$wrapper.$name = _name;
 };
 
 Sk.tpSlots = {
@@ -75,12 +76,13 @@ Sk.subSlots = {
     ],
 };
 
-Sk.Slots = {};
+Sk.Slots = Object.create(null); 
 
 Sk.Slots.$r = new Sk.SlotDef("__repr__",
     function $r() {
         let res;
         const func = this.ob$type.$typeLookup("__repr__");
+        debugger;
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             // then just call the wrapped function
             return func.d$wrapped.call(this);
@@ -92,7 +94,7 @@ Sk.Slots.$r = new Sk.SlotDef("__repr__",
         }
         return res;
     },
-    Sk.Generic.SlotCallNoArgs,
+    Sk.generic.slotCallNoArgs,
     "Return repr(self).", 
     {NoArgs: true}
 );
@@ -124,6 +126,7 @@ Sk.Slots.tp$str = new Sk.SlotDef("__str__",
         let res;
         const func = this.ob$type.$typeLookup("__str__");
         if (func instanceof Sk.builtin.wrapper_descriptor) {
+            debugger;
             return func.d$wrapped.call(this);
         } else if (func !== undefined) {
             res = Sk.misceval.callsimArray(func, [this]);
@@ -133,10 +136,9 @@ Sk.Slots.tp$str = new Sk.SlotDef("__str__",
         }
         return res;
     },
-    Sk.Generic.SlotCallNoArgs,
+    Sk.generic.slotCallNoArgs,
     "Return str(self).", 
     {NoArgs: true}
-
 );
 
 
@@ -279,3 +281,22 @@ Sk.setupDunderMethods = function (py3) {
 //         }
 //     };
 // }
+
+
+// things from other modules that might be usefl
+
+/**
+ * 
+ * 
+ Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
+    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
+    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+    }
+
+    return self.tp$descr_get(instance, owner);
+};
+ * 
+ * 
+ * 
+ */

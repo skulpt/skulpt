@@ -63,26 +63,30 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
     const setUpClass = function (klass) {
-        const mro = klass.prototype.tp$mro;
-        const slots = klass.prototype.tp$slots;
-        const getsets = klass.prototype.tp$mro;
-        const methods = klass.prototype.tp$methods;
+        const proto = Object.getOwnPropertyDescriptors(klass.prototype);
+        const mro = proto.tp$mro && proto.tp$mro.value;
+        const slots = proto.tp$slots && proto.tp$slots.value;
+        const getsets = proto.tp$getsets && proto.tp$getsets.value;
+        const methods = proto.tp$methods && proto.tp$methods.value;
+        if (slots !== null) {
+            Sk.abstr.setUpSlots(klass);
+        }
         if (mro === undefined) {
             Sk.abstr.setUpBuiltinMro(klass);
         }
-        if (slots !== null) {
-            Sk.abstr.setUpSlots(klass, klass.prototype);
+        if (getsets != null) {
+            Sk.abstr.setUpGetSets(klass);
         }
-        if (getsets !== null) {
-            Sk.abstr.setUpGetSets(klass, getsets);
+        if (methods != null) {
+            Sk.abstr.setUpMethods(klass);
         }
-        if (methods !== null) {
-            Sk.abstr.setUpGetSets(klass, methods);
-        }
+        if (!proto.__doc__ && proto.tp$doc) {
+            klass.prototype.__doc__ = new Sk.builtin.str(proto.tp$doc.value);
+        } 
     };
     for (let x in Sk.builtin) {
         const obj = Sk.builtin[x];
-        if (obj instanceof Sk.builtin.type && !func.sk$abstract) {
+        if (obj instanceof Sk.builtin.type && !obj.sk$abstract) {
             setUpClass(obj);
         }
     }
@@ -154,10 +158,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
     // if leaf is already in sys.modules, early out
     try {
-        prev = Sk.sysmodules.mp$subscript(modname);
+        prev = Sk.sysmodules.mp$subscript(new Sk.builtin.str(modname));
         // if we're a dotted module, return the top level, otherwise ourselves
         if (modNameSplit.length > 1) {
-            return Sk.sysmodules.mp$subscript(absolutePackagePrefix + modNameSplit[0]);
+            return Sk.sysmodules.mp$subscript(new Sk.builtin.str(absolutePackagePrefix + modNameSplit[0]));
         } else {
             return prev;
         }
@@ -186,7 +190,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             if (!topLevelModuleToReturn) {
                 return undefined;
             }
-            parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
+            parentModule = Sk.sysmodules.mp$subscript(new Sk.builtin.str(absolutePackagePrefix + parentModName));
             searchFileName = modNameSplit[modNameSplit.length-1];
             searchPath = parentModule.tp$getattr(Sk.builtin.str.$path);
         }
@@ -256,7 +260,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         }
 
         // Now we know this module exists, we can add it to the cache
-        Sk.sysmodules.mp$ass_subscript(modname, module);
+        Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str(modname), module);
 
         module.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
@@ -455,7 +459,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             relativeToPackageName = relativeToPackageNames.join(".");
         }
         try {
-            relativeToPackage = Sk.sysmodules.mp$subscript(relativeToPackageName);
+            relativeToPackage = Sk.sysmodules.mp$subscript(new Sk.builtin.str(relativeToPackageName));
         } catch(e) {
             relativeToPackageName = undefined;
         }
@@ -502,10 +506,10 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             var leafModule;
             var importChain;
 
-            leafModule = Sk.sysmodules.mp$subscript(
+            leafModule = Sk.sysmodules.mp$subscript(new Sk.builtin.str(
                 (relativeToPackageName || "") +
                     ((relativeToPackageName && name) ? "." : "") +
-                    name);
+                    name));
 
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];

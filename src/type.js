@@ -38,7 +38,7 @@ Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
  *
  */
 
-Sk.builtin.type = function () { };
+Sk.builtin.type = function type () { };
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
 
@@ -101,7 +101,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     };
 
     // todo: improve best_base algorithm to reflect layout conflicts as per python and check sk$acceptable_as_base_class
-    const best_base = Sk.builtin.type.$bestBase(bases);
+    const best_base = Sk.builtin.type.$bestBase(bases.v);
 
     // get the metaclass from kwargs
     let metaclass;
@@ -121,7 +121,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         klass.prototype.tp$base = Sk.builtin.none.none$;
     }
 
-    klass.prototype.tp$bases = bases;
+    klass.prototype.tp$bases = bases.v;
     klass.prototype.tp$mro = klass.$buildMRO();
 
     // some properties of klass objects and instances
@@ -147,29 +147,13 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     if (klass.prototype.__doc__ === undefined) {
         klass.prototype.__doc__ = Sk.builtin.none.none$;
     }
-    klass.prototype.tp$doc = klass.prototype.__doc__;
 
     if (klass.prototype.__dict__ === undefined) {
-        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(
-            klass,
-            new Sk.GetSetDef("__dict__",
-                function () {
-                    return this["$d"];
-                },
-                function (value) {
-                    const tp_name = Sk.abstr.typeName(value);
-                    if (tp_name !== "dict") {
-                        throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + tp_name + "'");
-                    }
-                    this["$d"] = value;
-                    return;
-                },
-                "dictionary for instance variables (if defined)"
-            )
-        );
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
 
-    klass.$allocateSlots()
+    klass.$allocateSlots();
+    debugger;
 
     return klass;
 };
@@ -230,7 +214,8 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     if (attribute !== undefined) {
         const local_get = attribute.tp$descr_get;
         if (local_get !== undefined) {
-            res = local_get.call(attribute, Sk.builtin.none.none$, this);
+            // null indicates that the descriptor was on the target object itself or a buss
+            res = local_get.call(attribute, null, this);
             return res;
         }
         return attribute;
@@ -306,7 +291,7 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     const mro = this.prototype.tp$mro;
 
     for (let i = 0; i < mro.length; ++i) {
-        const base = mro.v[i];
+        const base = mro[i];
         if (base.prototype.hasOwnProperty(jsName)) {
             return base.prototype[jsName];
         }
@@ -473,7 +458,7 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
     } else {
         // then just allocate all the slots 
         for (let slot in Sk.Slots) {
-            this.prototype[slot] = Sk.Slots[slot].slot_func;
+            this.prototype[slot] = Sk.Slots[slot].$slot_func;
         }
     }
 
@@ -481,7 +466,7 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
 
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
     const slot = Sk.dunderToSkulpt[dunder];
-    this.prototype[slot] = Sk.Slots[slot].slot_func;
+    this.prototype[slot] = Sk.Slots[slot].$slot_func;
 };
 
 
@@ -496,7 +481,7 @@ Sk.builtin.type.prototype.tp$getsets = {
             return this.prototype.tp$base ? this.prototype.tp$base : Sk.builtin.none.none$;
         }
     },
-    ___mro___: {
+    __mro__: {
         $get: function () {
             return new Sk.builtin.tuple(this.prototype.tp$mro);
         }
@@ -510,8 +495,6 @@ Sk.builtin.type.prototype.tp$getsets = {
         $get: function () {
             if (this.prototype.__doc__) {
                 return this.prototype.__doc__;
-            } else if (this.prototype.tp$doc) {
-                return new Sk.builtin.str(tp$doc);
             }
             return Sk.builtin.none.none$;
         }
@@ -528,9 +511,9 @@ Sk.builtin.type.prototype.tp$getsets = {
             return;
         }
     },
-    ___module__: {
+    __module__: {
         $get: function () {
-            let mod = this.prototypeo.___module___;
+            let mod = this.prototype.__module__;
             if (mod) {
                 return mod;
             }
@@ -547,6 +530,7 @@ Sk.builtin.type.prototype.tp$getsets = {
 Sk.builtin.type.prototype.tp$methods = {
     mro: {
         $raw: function () {
+            debugger;
             return new Sk.builtin.tuple(this.$buildMRO());
         },
         $flags: { NoArgs: true }

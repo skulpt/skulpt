@@ -10,7 +10,7 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function (obj) {
     if (obj != null && obj.tp$name !== undefined) {
-        return obj.tp$name();
+        return obj.tp$name;
     } else {
         return "<invalid type>";
     }
@@ -753,21 +753,29 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
 
 Sk.exportSymbol("Sk.abstr.copyKeywordsToNamedArgs", Sk.abstr.copyKeywordsToNamedArgs);
 
-Sk.abstr.noKwargs = function (func_name, kwargs) {
+Sk.abstr.checkNoKwargs = function (func_name, kwargs) {
     if (kwargs && kwargs.length) {
         throw new Sk.builting.TypeError(func_name + "() takes no keyword arguments");
     }
 }
-Sk.exportSymbol("Sk.abstr.noKwargs", Sk.abstr.noKwargs);
+Sk.exportSymbol("Sk.abstr.checkNoKwargs", Sk.abstr.checkNoKwargs);
 
-Sk.abstr.noArgs = function (func_name, args, kwargs) {
-    const nargs = args.length + kwargs ? kwargs.length : 0;
+Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
+    const nargs = args.length + (kwargs ? kwargs.length : 0);
     if (nargs) {
-        throw new Sk.builting.TypeError(func_name + "() takes no arguments (" + nargs + "given)");
+        throw new Sk.builtin.TypeError(func_name + "() takes no arguments (" + nargs + " given)");
     }
 }
-Sk.exportSymbol("Sk.abstr.noArgs", Sk.abstr.noArgs)
+Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs)
 
+
+Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
+    const nargs = args.length + (kwargs ? kwargs.length : 0);
+    if (nargs !== 1) {
+        throw new Sk.builtin.TypeError(func_name + "() takes exactly one argument (" + nargs + " given)");
+    }
+}
+Sk.exportSymbol("Sk.abstr.checkOneArg", Sk.abstr.checkOneArg)
 
 
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
@@ -1081,6 +1089,7 @@ Sk.abstr.inherits = function (childCtor, parentCtor) {
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     metaclass = metaclass || Sk.builtin.type;
+    parent = parent || Sk.builtin.object;
     Object.setPrototypeOf(child, metaclass.prototype);
 
     child.prototype = Object.create(parent.prototype);
@@ -1132,10 +1141,15 @@ Sk.abstr.setUpBaseInheritance = function () {
 
     // some house keeping that would usually be taken careof by Sk.abstr.setUpInheritance
     Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
+
     Sk.builtin.type.prototype.tp$name = "type"
     Sk.builtin.object.prototype.tp$name = "object"
+    
     Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
     Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
+    
+    Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
+    Sk.abstr.setUpBuiltinMro(Sk.builtin.object);
 
     // flag for checking type objects
     Sk.builtin.type.prototype.sk$type = true;
@@ -1182,7 +1196,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     for (method_name in methods) {
         method_def = methods[method_name];
         method_def.$name = method_name;
-        klass.prototype[method_name] = new Sk.builtin.getset_descriptor(klass, method_def);
+        klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
     }
     klass.prototype.tp$methods = null;
 };
@@ -1190,33 +1204,39 @@ Sk.abstr.setUpMethods = function (klass, methods) {
 
 
 Sk.abstr.setUpSlots = function (klass, slots) {
-    slots = slots || klass.prototype || {};
     let slot_def, slot_name, dunder_name, wrapped_func;
 
-    klass.prototype.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
-    if (slots !== klass.prototype) {
+    if (slots) {
         // the difference between the two loops is that one assigns the wrapped function to the prototype
         // whilst the other doesn't
+        if (Sk.builtin.str) {
+            klass.prototype.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
+        }
+
         for (slot_name in slots) {
             wrapped_func = slots[slot_name];
+            klass.prototype[slot_name] = wrapped_func;
             slot_def = Sk.Slots[slot_name];
             if (slot_def === undefined) {
                 continue;
             }
-            klass.prototype[slot_name] = slot;
-            dunder_name = slot_def.$wrapper.name;
+            dunder_name = slot_def.$name || slot_def.$wrapper.name;
 
             klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
         }
     } else {
-        for (slot_name in slots) {
-            wrapped_func = slots[slot_name];
+        const proto = klass.prototype;
+        const slot_names = Object.getOwnPropertyNames(proto);
+        klass.prototype.__doc__ = proto.hasOwnProperty('tp$doc') ? new Sk.builtin.str(proto.tp$doc) : Sk.builtin.none.none$;
+        for (let i = 0; i < slot_names.length; i++) {
+            slot_name = slot_names[i];
+            wrapped_func = klass.prototype[slot_name];
             slot_def = Sk.Slots[slot_name];
             if (slot_def === undefined) {
                 continue;
             }
-            dunder_name = slot_def.$wrapper.name;
-            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot, wrapped_func);
+            dunder_name = slot_def.$name || slot_def.$wrapper.name; 
+            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
         }
     }
     // not a a cpython flag but we'll use it to check in onetime initialization
@@ -1267,8 +1287,8 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         Sk.abstr.setUpSlots(typeobject, options.slots);
     }
 
-    Sk.abstr.setUpMethods(typeobject, options.methods);
-    Sk.abstr.setUpGetSets(typeobject, options.getsets);
+    Sk.abstr.setUpMethods(typeobject, options.methods || {});
+    Sk.abstr.setUpGetSets(typeobject, options.getsets || {});
 
     if (mod !== undefined) {
         typeobject.prototype.__module__ = new Sk.builtin.str(mod);

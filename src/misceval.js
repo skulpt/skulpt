@@ -236,6 +236,8 @@ Sk.misceval.opSymbols = {
 Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
+    Sk.asserts.assert(v.ob$type);
+    Sk.asserts.assert(w.ob$type);
     var wname,
         vname,
         ret,
@@ -440,7 +442,6 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // depending on the op, try left:op:right, and if not, then
     // right:reversed-top:left
-
     method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
     if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsimArray(method, [v, w]);
@@ -456,6 +457,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             return Sk.misceval.isTrue(ret);
         }
     }
+
     if (!Sk.__future__.python3) {
         vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
         if (vcmp) {
@@ -570,6 +572,7 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
+    debugger;
     if (v !== null && v.$r) {
         return v.$r();
     } else {

@@ -20,7 +20,7 @@ Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.frozenset.prototype) {
         return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
     }
-    Sk.abstr.noKwargs("frozenset", kwargs);
+    Sk.abstr.checkNoKwargs("frozenset", kwargs);
     Sk.abstr.checkArgsLen("frozenset", 0, 1);
     const arg = args[0];
     const S = [];

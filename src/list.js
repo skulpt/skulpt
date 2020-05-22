@@ -25,7 +25,7 @@ Sk.builtin.list.prototype.tp$new = Sk.generic.new(Sk.builtin.list);
 
 Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
-    Sk.abstr.noKwargs("list", kwargs);
+    Sk.abstr.checkNoKwargs("list", kwargs);
     Sk.abstr.checkArgsLen("list", args, 0, 1);
     const arg = args[0];
     if (arg === undefined) {

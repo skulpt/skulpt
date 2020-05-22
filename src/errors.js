@@ -39,7 +39,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
             }
         },
         tp$init: function (args, kwargs) {
-            Sk.abstr.noKwargs(Sk.abstr.typeName(this), kwargs);
+            Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kwargs);
             if (this.args.v !== args) {
                 // we only initiate the args if they are not identical to the args from tp$new;
                 this.args.v = args;

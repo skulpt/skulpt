@@ -228,13 +228,14 @@ Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
  *
  */
 Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
-    constructor: function (code, globals, closure, closure2) {
+    constructor: function func (code, globals, closure, closure2) {
         if (!(this instanceof Sk.builtin.func)) {
             // otherwise it assigned .func_code and .func_globals somewhere and in certain
             // situations that will cause a lot of strange errors.
             throw new Error("builtin func should be called as a class with `new`");
         }
-        this.$d = new Sk.builtin.dict;
+        // this.$d = new Sk.builtin.dict;
+        this.$d = {};
 
         var k;
         this.func_code = code;
@@ -245,7 +246,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
                 closure[k] = closure2[k];
             }
         }
-        this.$defaults = func_code.$defaults || [];
+        this.$defaults = code.$defaults || [];
         this.func_closure = closure;
         this.$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
         return this;
@@ -260,7 +261,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             return new Sk.builtin.method(this, obj, objtype);
         },
         $r: function () {
-            return new Sk.builtin.str("<function " + name + ">");
+            return new Sk.builtin.str("<function " + this.$name + ">");
         },
         tp$call: function (posargs, kw) {
             // The rest of this function is a logical Javascript port of
@@ -425,6 +426,9 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             $get: function () {
                 return new Sk.builtin.tuple(this.$defaults);
             } // technically this is a writable property but we'll leave it as read-only for now
+        },
+        __doc__: {
+            $get: function () {return new Sk.builtin.str(this.$doc)},
         }
     }
 },

@@ -8,6 +8,7 @@ Sk.builtin.dict = function dict (L) {
     if (L === undefined) {
         L = [];
     }
+
     this.size = 0;
     this.buckets = {};
     for (let i = 0; i < L.length; i += 2) {

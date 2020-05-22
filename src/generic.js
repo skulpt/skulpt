@@ -6,17 +6,19 @@ Sk.generic = {};
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.generic.getAttr = function __getattr__(pyName, canSuspend) {
+Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     let f, res;
 
     Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
+
+    debugger;
 
     const descr = this.ob$type.$typeLookup(pyName);
 
     // look in the type for a descriptor
     if (descr !== undefined && descr !== null) {
         f = descr.tp$descr_get;
-        if (f && Sk.checkDataDescr(descr)) {
+        if (f && Sk.builtin.checkDataDescr(descr)) {
             return f.call(descr, this, this.ob$type, canSuspend);
         }
     }
@@ -163,8 +165,7 @@ Sk.generic.iterator = function (type_name, iterator) {
     iterator.slots = iterator.slots || {};
     iterator.slots.tp$iter = Sk.generic.selfIter;
     iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
-    iterator = new Sk.type(type_name, iterator);
-    return iterator;
+    return Sk.abstr.buildNativeClass(type_name, iterator);
 };
 
 /**
@@ -227,5 +228,7 @@ Sk.generic.getSetDict = {
             throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + Sk.abstr.typeName(value) + "'")
         }
         this.$d = value;
-    }
+    },
+    $doc: "dictionary for instance variables (if defined)",
+    $name: "__dict__",
 }

@@ -29,7 +29,7 @@ Sk.builtin.slice.sk$acceptable_as_base_class = false;
 Sk.builtin.slice.prototype.tp$doc = "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2])."
 
 Sk.builtin.slice.prototype.tp$new = function (args, kwargs) {
-    Sk.abstr.noKwargs("slice", kwargs);
+    Sk.abstr.checkNoKwargs("slice", kwargs);
     Sk.abstr.checkArgsLen("slice", args, 1, 3);
     return new Sk.builtin.slice(...args);
 };

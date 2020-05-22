@@ -19,7 +19,7 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.tuple.prototype) {
         return Sk.builtin.tuple.prototype.$subtype_new.call(this, args, kwargs);
     }
-    Sk.abstr.noKwargs("list", kwargs);
+    Sk.abstr.checkNoKwargs("list", kwargs);
     Sk.abstr.checkArgsLen("list", args, 0, 1);
     const L = [];
     const arg = args[0];

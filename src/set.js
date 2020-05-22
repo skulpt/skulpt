@@ -15,7 +15,7 @@ Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) 
 Sk.builtin.set.prototype.tp$new = Sk.generic.new(Sk.builtin.set);
 
 Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
-    Sk.abstr.noKwargs("set", kwargs);
+    Sk.abstr.checkNoKwargs("set", kwargs);
     Sk.abstr.checkArgsLen("set", args, 0, 1);
     let S = args[0];
     let self = this;

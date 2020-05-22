@@ -28,7 +28,7 @@ Sk.builtin.bool.sk$acceptable_as_base_class = false;
 Sk.builtin.bool.prototype.tp$doc = "bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed."
 
 Sk.builtin.bool.prototype.tp$new = function (args, kwargs) {
-    Sk.abstr.noKwargs("bool", kwargs);
+    Sk.abstr.checkNoKwargs("bool", kwargs);
     Sk.abstr.checkArgsLen("bool", args, 0, 1);
     return Sk.builtin.bool(args[0]);
 };

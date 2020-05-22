@@ -8,7 +8,6 @@ Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);
 Sk.abstr.setUpInheritance("module", Sk.builtin.module, Sk.builtin.object)
 
 Sk.builtin.module.prototype.$r = function() {
-    debugger;
     let get = (s) => {
         let v = this.tp$getattr(new Sk.builtin.str(s));
         return Sk.builtin.repr(v || Sk.builtin.str.$emptystr).$jsstr();

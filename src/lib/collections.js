@@ -168,7 +168,6 @@ const collections_mod = function (keywds) {
                     let k, count;
                     const mapping = args[0];
                     const iter = Sk.abstr.iter(mapping);
-                    const iter = Sk.abstr.iter(mapping);
                     for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext) {
                         count = this.mp$subscript(k);
                         this.mp$ass_subscript(k, count.nb$subtract(mapping.mp$subscript(k)));
@@ -262,7 +261,7 @@ const collections_mod = function (keywds) {
                 }
                 return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
             },
-            mp$del_subscript = function (key) {
+            mp$del_subscript: function (key) {
                 // oops need to edit this as it really doesn't ever get called... or maybe it does by dict;
                 var idx = this.orderedkeys.indexOf(key);
                 if (idx != -1) {

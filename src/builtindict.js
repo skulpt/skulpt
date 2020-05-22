@@ -3,7 +3,8 @@
 // Javascript. This is a bit hokey.
 Sk.builtins = {
     "range"     : new Sk.builtin.func(Sk.builtin.range),
-    "round"     : new Sk.builtin.func(Sk.builtin.round),
+    // "round"     : new Sk.builtin.func(Sk.builtin.round),
+    "round"     : Sk.builtin.round,
     "len"       : new Sk.builtin.func(Sk.builtin.len),
     "min"       : new Sk.builtin.func(Sk.builtin.min),
     "max"       : new Sk.builtin.func(Sk.builtin.max),
@@ -26,7 +27,7 @@ Sk.builtins = {
 
     "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
     "sorted"    : new Sk.builtin.func(Sk.builtin.sorted),
-    "any"       : new Sk.builtin.func(Sk.builtin.any),
+    "any"       : Sk.builtin.any,
     "all"       : new Sk.builtin.func(Sk.builtin.all),
 
     "BaseException"      : Sk.builtin.BaseException, 

@@ -15,8 +15,8 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
         /* Deal with multiple inheritance without recursion
            by walking the MRO tuple */
         Sk.asserts.assert(mro instanceof Sk.builtin.tuple);
-        for (var i = 0; i < mro.v.length; i++) {
-            if (mro.v[i] == b) {
+        for (var i = 0; i < mro.length; i++) {
+            if (mro[i] == b) {
                 return true;
             }
         }
@@ -51,7 +51,7 @@ Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_se
         throw new Sk.builtin.TypeError("must be type, not " + Sk.abstr.typeName(a_type));
     }
 
-    self.obj_type = a_type.prototype.tp$mro.v[1];
+    self.obj_type = a_type.prototype.tp$mro[1];
 
     if (!other_self) {
         throw new Sk.builtin.NotImplementedError("unbound super not supported because " +

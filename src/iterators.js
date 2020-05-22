@@ -63,7 +63,7 @@ Sk.builtin.dict_iter_ = Sk.generic.iterator("dict_keyiterator", {
  * @constructor
  * @param {Sk.builtin.list} lst
  */
-Sk.builtin.list_iter_ = Sk.generic.iter("list_iterator", {
+Sk.builtin.list_iter_ = Sk.generic.iterator("list_iterator", {
     constructor: function (lst) {
         this.$index = 0;
         this.$seq = lst.v;
