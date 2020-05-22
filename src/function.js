@@ -139,7 +139,7 @@ Sk.builtin.checkCallable = function (obj) {
     if (obj.sk$prototypical) {
         return obj.tp$call !== undefined;
     }
-    return Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) !== undefined;
+    return Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) != null;
 };
 
 Sk.builtin.checkNumber = function (arg) {
@@ -227,217 +227,205 @@ Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
  * to access them via dict-style lookup for closure.
  *
  */
-Sk.builtin.func = function (code, globals, closure, closure2) {
-    if (!(this instanceof Sk.builtin.func)) {
-        // otherwise it assigned .func_code and .func_globals somewhere and in certain
-        // situations that will cause a lot of strange errors.
-        throw new Error("builtin func should be called as a class with `new`");
-    }
-
-    var k;
-    this.func_code = code;
-    this.func_globals = globals || null;
-    if (closure2 !== undefined) {
-        // todo; confirm that modification here can't cause problems
-        for (k in closure2) {
-            closure[k] = closure2[k];
+Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
+    constructor: function (code, globals, closure, closure2) {
+        if (!(this instanceof Sk.builtin.func)) {
+            // otherwise it assigned .func_code and .func_globals somewhere and in certain
+            // situations that will cause a lot of strange errors.
+            throw new Error("builtin func should be called as a class with `new`");
         }
-    }
+        this.$d = new Sk.builtin.dict;
 
-    this["$d"] = {
-        "__name__": code["co_name"],
-        "__class__": Sk.builtin.func
-    };
-    this.func_closure = closure;
-    this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
-    return this;
-};
-
-Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
-
-Sk.exportSymbol("Sk.builtin.func", Sk.builtin.func);
-
-Sk.builtin.func.prototype.tp$name = "function";
-
-Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    Sk.asserts.assert(!(obj === undefined && objtype === undefined));
-    if (objtype && objtype.prototype && objtype.prototype.tp$name in Sk.builtin && Sk.builtin[objtype.prototype.tp$name] === objtype) {
-        // it's a builtin
-        return new Sk.builtin.method(this, obj, objtype, true);
-    }
-    return new Sk.builtin.method(this, obj, objtype);
-};
-
-Sk.builtin.func.pythonFunctions = ["__get__"];
-
-Sk.builtin.func.prototype.__get__ = function __get__(self, instance, owner) {
-    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
-    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
-        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
-    }
-
-    return self.tp$descr_get(instance, owner);
-};
-
-Sk.builtin.func.prototype.tp$getname = function () {
-    return (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
-};
-
-Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
-    // The rest of this function is a logical Javascript port of
-    // _PyEval_EvalCodeWithName, and follows its logic,
-    // plus fast-paths imported from _PyFunction_FastCall* as marked
-
-    let co_argcount = this.func_code.co_argcount;
-
-    if (co_argcount === undefined) {
-        co_argcount = this.func_code.co_varnames ? this.func_code.co_varnames.length : posargs.length;
-    }
-    let varnames = this.func_code.co_varnames || [];
-    let co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
-    let totalArgs = co_argcount + co_kwonlyargcount;
-
-    // Fast path from _PyFunction_FastCallDict
-    if (co_kwonlyargcount === 0 && !this.func_code.co_kwargs && (!kw || kw.length === 0) && !this.func_code.co_varargs) {
-        if (posargs.length == co_argcount) {
-            if (this.func_closure) {
-                posargs.push(this.func_closure);
+        var k;
+        this.func_code = code;
+        this.func_globals = globals || null;
+        if (closure2 !== undefined) {
+            // todo; confirm that modification here can't cause problems
+            for (k in closure2) {
+                closure[k] = closure2[k];
             }
-            return this.func_code.apply(this.func_globals, posargs);
-        } else if(posargs.length === 0 && this.func_code.$defaults &&
+        }
+        this.$defaults = func_code.$defaults || [];
+        this.func_closure = closure;
+        this.$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
+        return this;
+    },
+    slots: {
+        tp$descr_get: function (obj, objtype) {
+            Sk.asserts.assert(!(obj === undefined && objtype === undefined));
+            if (objtype && objtype.prototype && objtype.prototype.tp$name in Sk.builtin && Sk.builtin[objtype.prototype.tp$name] === objtype) {
+                // it's a builtin
+                return new Sk.builtin.method(this, obj, objtype, true);
+            }
+            return new Sk.builtin.method(this, obj, objtype);
+        },
+        $r: function () {
+            return new Sk.builtin.str("<function " + name + ">");
+        },
+        tp$call: function (posargs, kw) {
+            // The rest of this function is a logical Javascript port of
+            // _PyEval_EvalCodeWithName, and follows its logic,
+            // plus fast-paths imported from _PyFunction_FastCall* as marked
+
+            let co_argcount = this.func_code.co_argcount;
+
+            if (co_argcount === undefined) {
+                co_argcount = this.func_code.co_varnames ? this.func_code.co_varnames.length : posargs.length;
+            }
+            let varnames = this.func_code.co_varnames || [];
+            let co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+            let totalArgs = co_argcount + co_kwonlyargcount;
+
+            // Fast path from _PyFunction_FastCallDict
+            if (co_kwonlyargcount === 0 && !this.func_code.co_kwargs && (!kw || kw.length === 0) && !this.func_code.co_varargs) {
+                if (posargs.length == co_argcount) {
+                    if (this.func_closure) {
+                        posargs.push(this.func_closure);
+                    }
+                    return this.func_code.apply(this.func_globals, posargs);
+                } else if (posargs.length === 0 && this.func_code.$defaults &&
                     this.func_code.$defaults.length === co_argcount) {
-            for (let i=0; i!=this.func_code.$defaults.length; i++) {
-                posargs[i] = this.func_code.$defaults[i];
+                    for (let i = 0; i != this.func_code.$defaults.length; i++) {
+                        posargs[i] = this.func_code.$defaults[i];
+                    }
+                    if (this.func_closure) {
+                        posargs.push(this.func_closure);
+                    }
+                    return this.func_code.apply(this.func_globals, posargs);
+                }
             }
+            // end fast path from _PyFunction_FastCallDict
+            let kwargs;
+
+            /* Create a NOT-a-dictionary for keyword parameters (**kwags) */
+            if (this.func_code.co_kwargs) {
+                kwargs = [];
+            }
+
+            /* Copy positional arguments into arguments to our JS function*/
+            let nposargs = posargs.length;
+            let args = (posargs.length <= co_argcount) ? posargs : posargs.slice(0, co_argcount);
+
+
+            /* Pack other positional arguments into the *args argument */
+            if (this.func_code.co_varargs) {
+                let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
+                args[totalArgs] = new Sk.builtin.tuple(vararg);
+            } else if (nposargs > co_argcount) {
+                throw new Sk.builtin.TypeError(this.$name + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+            }
+
+            /* Handle keyword arguments */
+            if (kw) {
+                if (this.func_code["no_kw"]) {
+                    throw new Sk.builtin.TypeError(this.$name + "() takes no keyword arguments");
+                }
+
+                for (let i = 0; i < kw.length; i += 2) {
+                    let name = kw[i]; // JS string
+                    let value = kw[i + 1]; // Python value
+                    let idx = varnames.indexOf(name);
+
+                    if (idx >= 0) {
+                        if (args[idx] !== undefined) {
+                            throw new Sk.builtin.TypeError(this.$name + "() got multiple values for argument '" + name + "'");
+                        }
+                        args[idx] = value;
+                    } else if (kwargs) {
+                        kwargs.push(new Sk.builtin.str(name), value);
+                    } else {
+                        throw new Sk.builtin.TypeError(this.$name + "() got an unexpected keyword argument '" + name + "'");
+                    }
+                }
+            }
+
+            /* "Check the number of positional arguments" (which only checks for too many)
+               has been handled before keywords */
+
+            /* Add missing positional arguments (copy default values from defs)
+               (also checks for missing args where no defaults) */
+            {
+                let defaults = this.func_code.$defaults || [];
+                let i = 0, missing = [], missingUnnamed = false;
+                // Positional args for which we *don't* have a default
+                let defaultStart = co_argcount - defaults.length;
+                for (; i < defaultStart; i++) {
+                    if (args[i] === undefined) {
+                        missing.push(varnames[i]);
+                        if (varnames[i] === undefined) {
+                            missingUnnamed = true;
+                        }
+                    }
+                }
+                if (missing.length != 0 && (this.func_code.co_argcount || this.func_code.co_varnames)) {
+                    throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required argument" + (missing.length == 1 ? "" : "s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
+                }
+                for (; i < co_argcount; i++) {
+                    if (args[i] === undefined) {
+                        args[i] = defaults[i - defaultStart];
+                    }
+                }
+            }
+
+            /* Add missing keyword arguments (copy default values from kwdefs) */
+
+            if (co_kwonlyargcount > 0) {
+                let missing = [];
+                let kwdefs = this.func_code.$kwdefs;
+
+                for (let i = co_argcount; i < totalArgs; i++) {
+                    if (args[i] === undefined) {
+                        if (kwdefs[i - co_argcount] !== undefined) {
+                            args[i] = kwdefs[i - co_argcount];
+                        } else {
+                            missing.push(varnames[i]);
+                        }
+                    }
+                }
+                if (missing.length !== 0) {
+                    throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required keyword argument" + (missing.length == 1 ? "" : "s") + ": " + missing.join(", "));
+                }
+            }
+
             if (this.func_closure) {
-                posargs.push(this.func_closure);
-            }
-            return this.func_code.apply(this.func_globals, posargs);
-        }
-    }
-    // end fast path from _PyFunction_FastCallDict
-    
-
-
-    let kwargs;
-
-    /* Create a NOT-a-dictionary for keyword parameters (**kwags) */
-    if (this.func_code.co_kwargs) {
-        kwargs = [];
-    }
-
-    /* Copy positional arguments into arguments to our JS function*/
-    let nposargs = posargs.length;
-    let args = (posargs.length <= co_argcount) ? posargs : posargs.slice(0, co_argcount);
-
-
-    /* Pack other positional arguments into the *args argument */
-    if (this.func_code.co_varargs) {
-        let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
-        args[totalArgs] = new Sk.builtin.tuple(vararg);
-    } else if (nposargs > co_argcount) {
-        throw new Sk.builtin.TypeError(this.tp$getname() + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
-    }
-
-    /* Handle keyword arguments */
-    if (kw) {
-        if (this.func_code["no_kw"]) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
-        }
-
-        for (let i = 0; i < kw.length; i += 2) {
-            let name = kw[i]; // JS string
-            let value = kw[i+1]; // Python value
-            let idx = varnames.indexOf(name);
-
-            if (idx >= 0) {
-                if (args[idx] !== undefined) {
-                    throw new Sk.builtin.TypeError(this.tp$getname() + "() got multiple values for argument '" + name + "'");
+                // todo; OK to modify?
+                if (varnames) {
+                    // Make sure all default arguments are in args before adding closure
+                    for (let i = args.length; i < varnames.length; i++) {
+                        args.push(undefined);
+                    }
                 }
-                args[idx] = value;
-            } else if (kwargs) {
-                kwargs.push(new Sk.builtin.str(name), value);
-            } else {
-                throw new Sk.builtin.TypeError(this.tp$getname() + "() got an unexpected keyword argument '" + name + "'");
+
+                args.push(this.func_closure);
             }
+
+            if (kwargs) {
+                args.unshift(kwargs);
+            }
+
+            // note: functions expect 'this' to be globals to avoid having to
+            // slice/unshift onto the main args
+            return this.func_code.apply(this.func_globals, args);
+
         }
-    }
 
-    /* "Check the number of positional arguments" (which only checks for too many)
-       has been handled before keywords */
-
-    /* Add missing positional arguments (copy default values from defs)
-       (also checks for missing args where no defaults) */
-    {
-        let defaults = this.func_code.$defaults || [];
-        let i = 0, missing = [], missingUnnamed = false;
-        // Positional args for which we *don't* have a default
-        let defaultStart = co_argcount - defaults.length;
-        for (; i < defaultStart; i++) {
-            if (args[i] === undefined) {
-                missing.push(varnames[i]);
-                if (varnames[i] === undefined) {
-                    missingUnnamed = true;
+    },
+    getsets: {
+        __name__: {
+            $get: function () { return new Sk.builtin.str(this.$name) },
+            $set: function (value) {
+                if (!Sk.builtin.checkString(value)) {
+                    throw new Sk.builtin.TypeError("__name__ must be set to a string object");
                 }
+                this.$name = value.$jsstr();
             }
-        }
-        if (missing.length != 0 && (this.func_code.co_argcount || this.func_code.co_varnames)) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
-        }
-        for (; i < co_argcount; i++) {
-            if (args[i] === undefined) {
-                args[i] = defaults[i - defaultStart];
-            }
+        },
+        __dict__: Sk.generic.getSetDict,
+        __defaults__: {
+            $get: function () {
+                return new Sk.builtin.tuple(this.$defaults);
+            } // technically this is a writable property but we'll leave it as read-only for now
         }
     }
-
-    /* Add missing keyword arguments (copy default values from kwdefs) */
-
-    if (co_kwonlyargcount > 0) {
-        let missing = [];
-        let kwdefs = this.func_code.$kwdefs;
-
-        for (let i = co_argcount; i < totalArgs; i++) {
-            if (args[i] === undefined) {
-                if (kwdefs[i-co_argcount] !== undefined) {
-                    args[i] = kwdefs[i-co_argcount];
-                } else {
-                    missing.push(varnames[i]);
-                }
-            }
-        }
-        if (missing.length !== 0) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required keyword argument" + (missing.length==1?"":"s") + ": " + missing.join(", "));
-        }
-    }
-
-    if (this.func_closure) {
-        // todo; OK to modify?
-        if (varnames) {
-            // Make sure all default arguments are in args before adding closure
-            for (let i = args.length; i < varnames.length; i++) {
-                args.push(undefined);
-            }
-        }
-
-        args.push(this.func_closure);
-    }
-
-    if (kwargs) {
-        args.unshift(kwargs);
-    }
-
-    // note: functions expect 'this' to be globals to avoid having to
-    // slice/unshift onto the main args
-    return this.func_code.apply(this.func_globals, args);
-
-};
-
-Sk.builtin.func.prototype["$r"] = function () {
-    var name = this.tp$getname();
-    if (name in Sk.builtins && this === Sk.builtins[name]) {
-        return new Sk.builtin.str("<built-in function " + name + ">");
-    } else {
-        return new Sk.builtin.str("<function " + name + ">");
-    }
-};
+},
+)
