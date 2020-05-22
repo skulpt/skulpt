@@ -1,7 +1,7 @@
 const collections_mod = function (keywds) {
     const collections = {};
     // defaultdict object
-    collections.defaultdict = {
+    collections.defaultdict = Sk.abstr.buildNativeClass("collections.defaultdict", {
         constructor: function (default_factory, L) {
             this.default_factory = default_factory;
             Sk.builtin.dict.call(this, L);
@@ -11,7 +11,6 @@ const collections_mod = function (keywds) {
             copy: {
                 $raw: function () {
                     const L = [];
-
                     Sk.misceval.iterFor(Sk.abstr.iter(this), function (k) {
                         L.push(k);
                         L.push(self.mp$subscript(k));
@@ -66,10 +65,9 @@ const collections_mod = function (keywds) {
                 return this.mp$lookup(key) || Sk.misceval.callsimArray(this.__missing__, [this, key]);
             }
         }
-    };
-    collections.defaultdict = new Sk.builtin.type("collections.defaultdict", collections.defaultdict);
+    });
 
-    collections.Counter = {
+    collections.Counter = Sk.abstr.buildNativeClass("Counter", {
         constructor: function () {
             this.$d = new Sk.builtin.dict;
         },
@@ -188,7 +186,7 @@ const collections_mod = function (keywds) {
 
         },
         getsets: {
-            __dict__: Sk.Generic.GetSetDict,
+            __dict__: Sk.generic.getSetDict,
         },
         slots: {
             tp$doc: "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
@@ -223,12 +221,10 @@ const collections_mod = function (keywds) {
                 return this.mp$lookup(key) || new Sk.builtin.int_(0);
             },
         },
-    };
-    collections.Counter = new Sk.builtin.type("collections.Counter", collections.Counter);
+    });
 
     // OrderedDict
-
-    collections.OrderedDict = {
+    collections.OrderedDict = Sk.abstr.buildNativeClass("OrderedDict", {
         constructor: function () {
             this.orderedkeys = [];
             Sk.builtin.dict.call(this);
@@ -305,8 +301,7 @@ const collections_mod = function (keywds) {
                 }
             }
         }
-    }
-    collections.OrderedDict = new Sk.builtin.type("collections.OrderedDict", collections.OrderedDict);
+    });
 
 
 
@@ -468,7 +463,7 @@ const collections_mod = function (keywds) {
 
         // Constructor for namedtuple
 
-        let nt_cons = {
+        const nt_klass = Sk.abstr.buildNativeClass($name, {
             constructor: function () { },
             base: Sk.builtin.tuple,
             slots: {
@@ -488,11 +483,15 @@ const collections_mod = function (keywds) {
                     cls = Sk.abstr.typeName(this);
                     return new Sk.builtin.str(cls + "(" + pairs + ")");
                 },
+            },
+            proto: {
+                __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
+                __slots__: new Sk.builtin.tuple,
+                _fields: new Sk.builtin.tuple(flds.map(x => new Sk.builtin.str(x))),
             }
-        }
-        nt_cons = new Sk.builtin.type($name, nt_cons);
-        collections.namedtuples[$name] = nt_cons;
+        });
 
+        // since the function api isn't particularly nice we define the remainder of the functions after creating the class
         // create the field properties
         for (let i = 0; i < flds.length; i++) {
             const fld = Sk.fixReservedNames(flds[i]);
@@ -500,18 +499,8 @@ const collections_mod = function (keywds) {
                 Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
                 return self.v[i];
             }
-            nt_cons.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number " + i));
+            nt_klass.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number " + i));
         };
-
-        // allocate non slot attributes (functions, classmethods properties etc)
-        if (Sk.builtin.checkNone(module)) {
-            module = Sk.globals["__name__"];
-        }
-        nt_cons.prototype.__module__ = module;
-        nt_cons.prototype.__slots__ = new Sk.builtin.tuple([]);
-
-        // _fields
-        nt_cons.prototype._fields = new Sk.builtin.tuple(flds.map(x => new Sk.builtin.str(x)));
 
         // _make
         const _make = function _make(_cls, iterable) {
@@ -523,7 +512,7 @@ const collections_mod = function (keywds) {
             return _cls.prototype.tp$new(values);
         };
         _make.co_varnames = ["_cls", "iterable"];
-        nt_cons.prototype._make = new Sk.builtin.classmethod(new Sk.builtin.func(_make));
+        nt_klass.prototype._make = new Sk.builtin.classmethod(new Sk.builtin.func(_make));
 
         // _asdict
         const _asdict = function _asdict(self) {
@@ -535,7 +524,7 @@ const collections_mod = function (keywds) {
             return new Sk.builtin.dict(asdict);
         };
         _asdict.co_varnames = ["self"];
-        nt_cons.prototype._asdict = new Sk.builtin.func(_asdict);
+        nt_klass.prototype._asdict = new Sk.builtin.func(_asdict);
 
         // _flds_defaults
         const dflts_dict = [];
@@ -543,7 +532,7 @@ const collections_mod = function (keywds) {
             dflts_dict.push(new Sk.builtin.str(flds[i]));
             dflts_dict.push(dflts[i - (flds.length - dflts.length)]);
         }
-        nt_cons.prototype._field_defaults = new Sk.builtin.dict(dflts_dict);
+        nt_klass.prototype._field_defaults = new Sk.builtin.dict(dflts_dict);
 
         // _replace
         const _replace = function _replace(kwds, _self) {
@@ -565,13 +554,14 @@ const collections_mod = function (keywds) {
                 const key_list = Object.keys(kwd_dict).map(x => "'" + x + "'");
                 throw new Sk.builtin.ValueError("Got unexpectd field names: [" + key_list + "]");
             }
-            return nt_cons.prototype.tp$new(args);
+            return nt_klass.prototype.tp$new(args);
         };
         _replace.co_kwargs = 1;
         _replace.co_varnames = ["_self"];
-        nt_cons.prototype._replace = new Sk.builtin.func(_replace);
+        nt_klass.prototype._replace = new Sk.builtin.func(_replace);
 
-        return nt_cons;
+        collections.namedtuples[$name] = nt_klass;
+        return nt_klass;
     };
 
     namedtuple.co_name = new Sk.builtin.str("namedtuple");
