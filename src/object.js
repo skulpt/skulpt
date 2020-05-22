@@ -14,6 +14,11 @@ Sk.builtin.object = function () {};
 // between type and object
 Sk.abstr.setUpBaseInheritance();
 
+/**
+ * worth noting that don't use the new api for object since descr_objects are not yet initialized
+ * slot_wrappers, methods and getsets will be created in the import one time initialization
+ */
+
 Sk.builtin.object.prototype.tp$doc = "The most base type";
 
 Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
@@ -45,8 +50,8 @@ Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
 };
 
 
-Sk.builtin.object.prototype.tp$getattr = Sk.Generic.GetAttr;
-Sk.builtin.object.prototype.tp$setattr = Sk.Generic.SetAttr;
+Sk.builtin.object.prototype.tp$getattr = Sk.generic.getAttr;
+Sk.builtin.object.prototype.tp$setattr = Sk.generic.setAttr;
 
 Sk.builtin.object.prototype.$r = function () {
     const mod = this.ob$type.$typeLookup("__module__");
@@ -128,8 +133,8 @@ Sk.builtin.object.prototype.tp$getsets = {
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
 // overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
-Sk.builtin.object.prototype["__getattribute__"] = Sk.Generic.PythonGetAttr;
-Sk.builtin.object.prototype["__setattr__"] = Sk.Generic.PythonSetAttr;
+Sk.builtin.object.prototype["__getattribute__"] = Sk.generic.pythonGetAttr;
+Sk.builtin.object.prototype["__setattr__"] = Sk.generic.pythonSetAttr;
 
 
 Sk.builtin.object.prototype.tp$methods = {

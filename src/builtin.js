@@ -21,7 +21,7 @@ Sk.builtin.range = function range (start, stop, step) {
         Sk.builtin.pyCheckType("step", "integer", Sk.misceval.isIndex(step));
         step = Sk.misceval.asIndex(step);
     }
-
+ 
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
         start = 0;
@@ -363,7 +363,7 @@ Sk.builtin.max = function max () {
     return highest;
 };
 
-Sk.builtin.any = new Sk.builtin.builtinFuncOrMethod(function any (iter) {
+Sk.builtin.any = new Sk.builtin.funcOrMethod(function any (iter) {
     ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
         if (Sk.misceval.isTrue(i)) {
             return new Sk.misceval.Break(true);

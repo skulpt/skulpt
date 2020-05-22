@@ -23,7 +23,7 @@ var kf = Sk.builtin.hash;
 Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)"
 
 
-Sk.builtin.dict.prototype.tp$new = Sk.Generic.New(Sk.builtin.dict);
+Sk.builtin.dict.prototype.tp$new = Sk.generic.new(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.checkArgsLen("dict", args, 0, 1);

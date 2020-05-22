@@ -3,7 +3,7 @@
  * @param {Sk.builtin.func} callable
  * @param {Sk.builtin.object} sentinel - if reached returns undefined
  */
-Sk.builtin.callable_iter_ = new Sk.Generic.Iterator("callable_iterator", {
+Sk.builtin.callable_iter_ = Sk.generic.iterator("callable_iterator", {
     constructor: function (callable, sentinel) {
         if (!Sk.builtin.checkCallable(callable)) {
             throw new Sk.builtin.TypeError("iter(v, w): v must be callable");
@@ -46,15 +46,15 @@ Sk.builtin.callable_iter_ = new Sk.Generic.Iterator("callable_iterator", {
  * @constructor
  * @param {Sk.builtin.dict || Sk.builtin.mappingproxy} dict
  */
-Sk.builtin.dict_iter_ = new Sk.Generic.Iterator("dict_keyiterator", {
+Sk.builtin.dict_iter_ = Sk.generic.iterator("dict_keyiterator", {
     constructor: function (dict) {
         this.$index = 0;
         this.$seq = dict.$allkeys(); // a private method of dict objects
         this.$orig = dict;
     },
-    iternext: Sk.Generic.IterNextWithArray(true /*check size during iteration */),
+    iternext: Sk.generic.iterNextWithArrayCheckSize,
     methods: {
-        __length_hint__: Sk.Generic.IterLengthHintWithArray,
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
@@ -63,7 +63,7 @@ Sk.builtin.dict_iter_ = new Sk.Generic.Iterator("dict_keyiterator", {
  * @constructor
  * @param {Sk.builtin.list} lst
  */
-Sk.builtin.list_iter_ = new Sk.Generic.Iter("list_iterator", {
+Sk.builtin.list_iter_ = Sk.generic.iter("list_iterator", {
     constructor: function (lst) {
         this.$index = 0;
         this.$seq = lst.v;
@@ -77,7 +77,7 @@ Sk.builtin.list_iter_ = new Sk.Generic.Iter("list_iterator", {
         return this.$seq[this.$index++];
     },
     methods: {
-        __length_hint__: Sk.Generic.IterLengthHintWithArray,
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
@@ -86,15 +86,15 @@ Sk.builtin.list_iter_ = new Sk.Generic.Iter("list_iterator", {
  * @constructor
  * @param {Sk.builtin.set || Sk.builtin.frozenset} set
  */
-Sk.builtin.set_iter_ = new Sk.Generic.Iterator("set_iterator", {
+Sk.builtin.set_iter_ = Sk.generic.iterator("set_iterator", {
     constructor: function (set) {
         this.$index = 0;
         this.$seq = set.v.$allkeys();
         this.$orig = set.v;
     },
-    iternext: Sk.Generic.IterNextWithArray(true /*check size during iteration */),
+    iternext: Sk.generic.iterNextWithArrayCheckSize,
     methods: {
-        __length_hint__: Sk.Generic.IterLengthHintWithArray,
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
@@ -103,7 +103,7 @@ Sk.builtin.set_iter_ = new Sk.Generic.Iterator("set_iterator", {
  * @constructor
  * @param {Sk.builtin.object} obj
  */
-Sk.builtin.seq_iter_ = new Sk.Generic.Iterator("iterator", {
+Sk.builtin.seq_iter_ = Sk.generic.iterator("iterator", {
     constructor: function (seq) {
         this.$index = 0;
         this.$seq = seq;
@@ -150,16 +150,14 @@ Sk.builtin.seq_iter_ = new Sk.Generic.Iterator("iterator", {
  * @constructor
  * @param {Sk.builtin.str} str
  */
-Sk.builtin.str_iter_ = new Sk.Generic.Iterator("str_iterator", {
+Sk.builtin.str_iter_ = Sk.generic.iterator("str_iterator", {
     constructor: function (str) {
         this.$index = 0;
         this.$seq = str.v.slice();
     },
-    iternext: Sk.Generic.IterNextWithArray(
-        false /*check size during iteration */
-    ),
+    iternext: Sk.generic.iterNextWithArray,
     methods: {
-        __length_hint__: Sk.Generic.IterLengthHintWithArray,
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
@@ -168,16 +166,14 @@ Sk.builtin.str_iter_ = new Sk.Generic.Iterator("str_iterator", {
  * @constructor
  * @param {Sk.builtin.tuple} tuple
  */
-Sk.builtin.tuple_iter_ = new Sk.Generic.Iterator("tuple_iterator", {
+Sk.builtin.tuple_iter_ = Sk.generic.iterator("tuple_iterator", {
     constructor: function (tuple) {
         this.$index = 0;
         this.$seq = tuple.v;
     },
-    iternext: Sk.Generic.IterNextWithArray(
-        false /*check size during iteration */
-    ),
+    iternext: Sk.generic.iterNextWithArray,
     methods: {
-        __length_hint__: Sk.Generic.IterLengthHintWithArray,
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });

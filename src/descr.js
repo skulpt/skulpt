@@ -4,7 +4,7 @@
  * @param {Sk.GetSetDef} gsd
  */
 
-Sk.Generic.Descriptor = function (type_name, repr_name, descr_constructor) {
+Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
     descr = {
         constructor: descr_constructor || function (typeobj, d_base) {
             this.d$base = d_base;
@@ -15,16 +15,16 @@ Sk.Generic.Descriptor = function (type_name, repr_name, descr_constructor) {
         // we can't use slots/methods/getsets yet since they're not defined!
         proto: {
             d$repr_name: repr_name || type_name,
-            d$check: Sk.Generic.Descriptor.check,
-            d$set_check: Sk.Generic.Descriptor.setCheck,
-            $r: Sk.Generic.Descriptor.repr,
-            tp$getsets: Sk.Generic.Descriptor.getsets,
+            d$check: Sk.generic.descriptor.check,
+            d$set_check: Sk.generic.descriptor.setCheck,
+            $r: Sk.generic.descriptor.repr,
+            tp$getsets: Sk.generic.descriptor.getsets,
         }
     }
-    return new Sk.builtin.type(type_name, descr);
+    return Sk.abstr.buildNativeClass(type_name, descr);
 };
 
-Sk.Generic.Descriptor.check = function () {
+Sk.generic.descriptor.check = function () {
     if (Sk.builtin.checkNone(obj)) {
         return this;
     } else if (!obj.ob$type.$isSubType(this.d$type)) {
@@ -33,17 +33,17 @@ Sk.Generic.Descriptor.check = function () {
     return;
 };
 
-Sk.Generic.Descriptor.setCheck = function (obj) {
+Sk.generic.descriptor.setCheck = function (obj) {
     if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' for '" + this.d$type.prototype.tp$name + "' object doesn't apply to a '" + Sk.abstr.typeName(obj) + "' object");
     }
 };
 
-Sk.Generic.Description.repr = function () {
+Sk.generic.description.repr = function () {
     return new Sk.builtin.str("<" + this.d$repr_name + " '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects>");
 };
 
-Sk.Generic.Descriptor.getsets = {
+Sk.generic.descriptor.getsets = {
     __doc__: new Sk.GetSetDef("__doc__", function () {
         return this.d$base.$doc ? new Sk.builtin.str(this.d$base.$doc) : Sk.builtin.none.none$;
     }),
@@ -61,7 +61,7 @@ Sk.Generic.Descriptor.getsets = {
  * @param {Sk.GetSetDef} gsd
  */
 
-Sk.builtin.getset_descriptor = new Sk.Generic.Descriptor("getset_descriptor");
+Sk.builtin.getset_descriptor = new Sk.generic.descriptor("getset_descriptor");
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
@@ -93,7 +93,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
  * @param {Sk.MethodDef} method
  */
 
-Sk.builtin.method_descriptor = new Sk.Generic.Descriptor("method_descriptor", "method");
+Sk.builtin.method_descriptor = new Sk.generic.descriptor("method_descriptor", "method");
 Sk.builtin.method_descriptor.prototype.tp$call = Sk.builtin.VectorCall; //whatever this means
 
 Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
@@ -101,7 +101,7 @@ Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
     if (ret = this.d$check(obj)) {
         return ret;
     }
-    return new Sk.builtin.builtinFunctionOrMethod(this.d$method, obj);
+    return new Sk.builtin.functionOrMethod(this.d$method, obj);
 };
 
 /**
@@ -110,7 +110,7 @@ Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param {Sk.builtin.SlotDef} wrapper_base
  */
 
-Sk.builtin.wrapper_descriptor = new Sk.Generic.Descriptor("wrapper_descriptor", "slot wrapper",
+Sk.builtin.wrapper_descriptor = new Sk.generic.descriptor("wrapper_descriptor", "slot wrapper",
     function (type_obj, slot_def, wrapped) {
         this.d$type = type_obj;
         this.d$name = slot_def.$wrapper.name;
@@ -151,7 +151,7 @@ Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param wrapper_base
  */
 
-Sk.builtin.method_wrapper = new Sk.Generic.Descriptor("method_wrapper", undefined,
+Sk.builtin.method_wrapper = new Sk.generic.descriptor("method_wrapper", undefined,
     function (wrapper_descr, self) {
         this.m$descr = wrapper_descr;
         this.m$self = self;
@@ -181,7 +181,7 @@ Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = new Sk.GetSetDef(funct
  * @param {Sk.builtin.func} fdel
  * @param {Sk.builtin.str || undefine} doc
  */
-Sk.builtin.property = {
+Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
     constructor: function (fget, fset, fdel, doc) {
         // this can be uses as an internal function 
         // typically these properties will be set in the init method
@@ -191,7 +191,7 @@ Sk.builtin.property = {
         this.prop$doc = doc || (fget && fget.$doc) || Sk.builtin.none.none$;
     },
     slots: {
-        tp$new: Sk.Generic.New(Sk.builtin.property),
+        tp$new: Sk.generic.new(Sk.builtin.property),
         tp$init: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs(
                 "property",
@@ -277,8 +277,7 @@ Sk.builtin.property = {
             $get: function () { return this.prop$doc }
         },
     }
-}
-Sk.builtin.property = new Sk.builtin.type("property", Sk.builtin.property);
+});
 
 
 
@@ -301,7 +300,7 @@ Sk.builtin.property = function (fget, fset, fdel, doc) {
 Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
 Sk.abstr.setUpBuiltinMro(Sk.builtin.property);
 
-Sk.builtin.property.prototype.tp$new = Sk.Generic.New(Sk.builtin.property);
+Sk.builtin.property.prototype.tp$new = Sk.generic.new(Sk.builtin.property);
 
 Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
     args = Sk.abstr.copyKeywordsToNamedArgs(
@@ -403,7 +402,7 @@ Sk.abstr.setUpGetSets(Sk.builtin.prototype);
  * @param {Sk.builtin.func} callable
  */
 
-Sk.builtin.classmethod = {
+Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
     constructor: function (callable) {
         // this can be used as an internal function 
         // typically callable will be set in the init method if being called by python
@@ -411,7 +410,7 @@ Sk.builtin.classmethod = {
         this.$d = new Sk.builtin.dict;
     },
     slots: {
-        tp$new: Sk.Generic.New(Sk.builtin.classmethod),
+        tp$new: Sk.generic.new(Sk.builtin.classmethod),
         tp$init: function (args, kwargs) {
             Sk.abstr.noKwargs("classmethod", kwargs);
             Sk.abstr.checkArgsLen("classmethod", args, 1, 1);
@@ -437,12 +436,10 @@ Sk.builtin.classmethod = {
         __func__: {
             $get: function () { return this.cm$callable }
         },
-        __dict__: Sk.Generic.GetSetDict,
+        __dict__: Sk.generic.getSetDict,
     }
 
-};
-
-Sk.builtin.classmethod = new Sk.builtin.type("classmethod", Sk.builtin.classmethod);
+});
 
 
 Sk.builtin.classmethod = function (callable) {
@@ -453,7 +450,7 @@ Sk.builtin.classmethod = function (callable) {
 
 Sk.abstr.setUpInheritance("classmethod", Sk.builtin.classmethod, Sk.builtin.object);
 
-Sk.builtin.classmethod.prototype.tp$new = Sk.Generic.New(Sk.builtin.classmethod);
+Sk.builtin.classmethod.prototype.tp$new = Sk.generic.new(Sk.builtin.classmethod);
 
 
 Sk.builtin.classmethod.prototype.tp$init = function (args, kwargs) {
@@ -504,7 +501,7 @@ Sk.builtin.staticmethod = function (callable) {
 
 Sk.abstr.setUpInheritance("staticmethod", Sk.builtin.staticmethod, Sk.builtin.object);
 
-Sk.builtin.staticmethod.prototype.tp$new = Sk.Generic.New(Sk.builtin.staticmethod);
+Sk.builtin.staticmethod.prototype.tp$new = Sk.generic.new(Sk.builtin.staticmethod);
 
 Sk.builtin.staticmethod.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.noKwargs("staticmethod", kwargs);

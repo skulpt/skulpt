@@ -153,7 +153,7 @@ var $builtinmodule = function(name)
       }
     );
 
-    $loc.tp$getattr = Sk.Generic.GetAttr;
+    $loc.tp$getattr = Sk.generic.getAttr;
 
     $loc.bufferData = new Sk.builtin.func(
       function(self, target, data, usage) {
