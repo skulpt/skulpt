@@ -259,7 +259,7 @@ var $builtinmodule = function (name) {
     A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local
     DST timezone. If no DST timezone is defined, the second string should not be used.
     */
-    mod.tzname = Sk.builtin.tuple(timeZoneNames());
+    mod.tzname = new Sk.builtin.tuple(timeZoneNames());
 
     mod.accept2dyear = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
 
