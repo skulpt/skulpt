@@ -236,8 +236,8 @@ Sk.misceval.opSymbols = {
 Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
-    Sk.asserts.assert(v.ob$type);
-    Sk.asserts.assert(w.ob$type);
+    Sk.asserts.assert(v.sk$object);
+    Sk.asserts.assert(w.sk$object);
     var wname,
         vname,
         ret,

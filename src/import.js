@@ -54,34 +54,31 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * Complete any initialization of Python classes which relies on internal
  * dependencies.
  *
- * This includes making Python classes subclassable and ensuring that the
- * {@link Sk.builtin.object} magic methods are wrapped inside Python functions.
- *
- * @return {undefined}
+ * type, object, super, nonetype, notimplemented
+ * getset_descr, method_descr, wrapper_descr, method_wrapper
+ * 
+ * __doc__ for the above + classmethod, property, staticmethod
+ * 
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
-    // can't fill these out when making the type because tuple/dict aren't
-    // defined yet.
     const setUpClass = function (klass) {
-        const proto = Object.getOwnPropertyDescriptors(klass.prototype);
-        const mro = proto.tp$mro && proto.tp$mro.value;
-        const slots = proto.tp$slots && proto.tp$slots.value;
-        const getsets = proto.tp$getsets && proto.tp$getsets.value;
-        const methods = proto.tp$methods && proto.tp$methods.value;
-        if (slots !== null) {
+        if (!proto.hasOwnProperty("sk$slots")) {
+            // sk$slots was set to null during setUpSlots
+            // if this flag is not set then we setUpSlots using the klass prototype
             Sk.abstr.setUpSlots(klass);
         }
-        if (mro === undefined) {
+        if (!proto.hasOwnProperty("tp$mro")) {
             Sk.abstr.setUpBuiltinMro(klass);
         }
-        if (getsets != null) {
+        if (proto.hasOwnProperty("tp$getsets") && proto.tp$getsets != null) {
             Sk.abstr.setUpGetSets(klass);
         }
-        if (methods != null) {
+        if (proto.hasOwnProperty("tp$methods") && proto.tp$methods != null) {
             Sk.abstr.setUpMethods(klass);
         }
-        if (!proto.__doc__ && proto.tp$doc) {
-            klass.prototype.__doc__ = new Sk.builtin.str(proto.tp$doc.value);
+        if (!proto.hasOwnProperty("__doc__") && proto.hasOwnProperty("tp$doc")) {
+            // a few klasses had slots setup before str was initialized so we add them here
+            klass.prototype.__doc__ = new Sk.builtin.str(proto.tp$doc);
         } 
     };
     for (let x in Sk.builtin) {

@@ -1144,15 +1144,16 @@ Sk.abstr.setUpBaseInheritance = function () {
 
     Sk.builtin.type.prototype.tp$name = "type"
     Sk.builtin.object.prototype.tp$name = "object"
-    
+
     Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
     Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
-    
+
     Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
     Sk.abstr.setUpBuiltinMro(Sk.builtin.object);
 
     // flag for checking type objects
     Sk.builtin.type.prototype.sk$type = true;
+    Sk.builtin.type.prototype.sk$object = true;
 };
 
 /**
@@ -1212,6 +1213,22 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         if (Sk.builtin.str) {
             klass.prototype.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
         }
+        if (slots.tp$richcompare) {
+            const op2shortcut = {
+                "Eq": "ob$eq",
+                "NotEq": "ob$ne",
+                "Gt": "ob$gt",
+                "GtE": "ob$ge",
+                "Lt": "ob$lt",
+                "LtE": "ob$le"
+            };
+            for (let op in op2shortcut) {
+                const shortcut = op2shortcut[op];
+                slots[shortcut] = slots[shortcut] || function (other) {
+                    return this.tp$richcompare(other, op);
+                }
+            }
+        }
 
         for (slot_name in slots) {
             wrapped_func = slots[slot_name];
@@ -1224,10 +1241,34 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
             klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
         }
+        // we do rich compare a little differently
+        // if only tp$richcompare is defined we set up hook slots for ob$eq and assign appropriate slot wrappers 
+
+
+
     } else {
         const proto = klass.prototype;
         const slot_names = Object.getOwnPropertyNames(proto);
         klass.prototype.__doc__ = proto.hasOwnProperty('tp$doc') ? new Sk.builtin.str(proto.tp$doc) : Sk.builtin.none.none$;
+        if (slot_names.includes("tp$richcompare")) {
+            const op2shortcut = {
+                "Eq": "ob$eq",
+                "NotEq": "ob$ne",
+                "Gt": "ob$gt",
+                "GtE": "ob$ge",
+                "Lt": "ob$lt",
+                "LtE": "ob$le"
+            };
+            for (let op in op2shortcut) {
+                const shortcut = op2shortcut[op];
+                if (!slot_names.includes(shortcut)) {
+                    klass.prototype[shortcut] = function (other) {
+                        return this.tp$richcompare(other, op);
+                    }
+                    slot_names.push(shortcut)
+                }
+            }
+        }
         for (let i = 0; i < slot_names.length; i++) {
             slot_name = slot_names[i];
             wrapped_func = klass.prototype[slot_name];
@@ -1235,12 +1276,12 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             if (slot_def === undefined) {
                 continue;
             }
-            dunder_name = slot_def.$name || slot_def.$wrapper.name; 
+            dunder_name = slot_def.$name || slot_def.$wrapper.name;
             klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
         }
     }
     // not a a cpython flag but we'll use it to check in onetime initialization
-    klass.prototype.tp$slots = null;
+    klass.prototype.sk$slots = null;
 }
 
 /** 
@@ -1257,7 +1298,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 * meta: default to Sk.builtin.type
 * 
 * slots: skulpt slot functions that will be allocated slot wrappers
-* methods: method objects {$raw: Function, $flags: callmethod, $doc: String},
+* methods: method objects {$meth: Function, $flags: callmethod, $doc: String},
 * getsets: getset objects {$get: Function, $set: Function, $doc, String},
 * 
 * flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
