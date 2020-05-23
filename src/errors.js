@@ -115,6 +115,8 @@ Sk.builtin.StandardError = function (args) {
     Sk.builtin.Exception.call(this, args);
 };
 Sk.abstr.setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
+// error is not used in py3
+Sk.builtins.StandardError.sk$abstract = true;
 Sk.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
 
 /**
