@@ -1,5 +1,5 @@
-var $builtinmodule = function (name) {
-    var math = {};
+const $builtinmodule = function (name) {
+    const math = {};
 
     // Mathematical Constants
     math.pi = new Sk.builtin.float_(Math.PI);
@@ -8,8 +8,10 @@ var $builtinmodule = function (name) {
     math.nan = new Sk.builtin.float_(NaN);
     math.inf = new Sk.builtin.float_(Infinity);
 
-    // Number-theoretic and representation functions
+    // create all the methods as JS functions
     const methods = {};
+
+    // Number-theoretic and representation functions
     methods.ceil = function ceil(x) {
         if (Sk.__future__.ceil_floor_int) {
             return new Sk.builtin.int_(Math.ceil(Sk.builtin.asnum$(x)));
@@ -21,7 +23,7 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("methods.comb() is not yet implemented in Skulpt")
     };
 
-    var get_sign = function (n) {
+    const get_sign = function (n) {
         //deals with signed zeros
         // returns -1 or +1 for the sign
         if (n) {
@@ -57,7 +59,7 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(_x);
     };
 
-    var MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
+    const MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
     methods.factorial = function (x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
@@ -71,8 +73,8 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.ValueError("factorial() not defined for negative numbers");
         }
 
-        var r = 1;
-        for (var i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
+        let r = 1;
+        for (let i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
             r *= i;
         }
         if (x <= MAX_SAFE_INTEGER_FACTORIAL) {
@@ -85,13 +87,13 @@ var $builtinmodule = function (name) {
 
             // promotes an integer to a biginteger
             function bigup(number) {
-                var n = Sk.builtin.asnum$nofloat(number);
-                return new Sk.builtin.biginteger(number);
+                const n = Sk.builtin.asnum$nofloat(number);
+                return new Sk.builtin.biginteger(n);
             }
 
             r = bigup(r);
-            for (var i = MAX_SAFE_INTEGER_FACTORIAL + 1; i <= x; i++) {
-                var i_bigup = bigup(i);
+            for (let i = MAX_SAFE_INTEGER_FACTORIAL + 1; i <= x; i++) {
+                const i_bigup = bigup(i);
                 r = r.multiply(i_bigup);
             }
             return new Sk.builtin.lng(r);
@@ -278,7 +280,7 @@ var $builtinmodule = function (name) {
     methods.isfinite = function isfinite(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        let _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
         if (Sk.builtin.checkInt(x)) {
             return Sk.builtin.bool.true$; //deals with big integers returning False
         } else if (isFinite(_x)) {
@@ -292,7 +294,7 @@ var $builtinmodule = function (name) {
         /* Return True if x is infinite or nan, and False otherwise. */
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        let _x = Sk.builtin.asnum$(x);
+        const _x = Sk.builtin.asnum$(x);
         if (Sk.builtin.checkInt(x)) {
             return Sk.builtin.bool.false$; //deals with big integers returning True
         } else if (isFinite(_x) || isNaN(_x)) {
@@ -369,8 +371,8 @@ var $builtinmodule = function (name) {
         // as per cpython algorithm see cpython for details
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-        _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
-        _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
+        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
 
         // deal with most common cases first
         if (isFinite(_x) && isFinite(_y)) {
@@ -642,7 +644,7 @@ var $builtinmodule = function (name) {
 
         x = Sk.builtin.asnum$(x);
 
-        var L = x + Math.sqrt(x * x + 1);
+        const L = x + Math.sqrt(x * x + 1);
 
         return new Sk.builtin.float_(Math.log(L));
     };
@@ -652,7 +654,7 @@ var $builtinmodule = function (name) {
 
         x = Sk.builtin.asnum$(x);
 
-        var L = x + Math.sqrt(x * x - 1);
+        const L = x + Math.sqrt(x * x - 1);
 
         return new Sk.builtin.float_(Math.log(L));
     };
@@ -662,7 +664,7 @@ var $builtinmodule = function (name) {
 
         x = Sk.builtin.asnum$(x);
 
-        var L = (1 + x) / (1 - x);
+        const L = (1 + x) / (1 - x);
 
         return new Sk.builtin.float_(Math.log(L) / 2);
     };
@@ -672,10 +674,10 @@ var $builtinmodule = function (name) {
 
         x = Sk.builtin.asnum$(x);
 
-        var e = Math.E;
-        var p = Math.pow(e, x);
-        var n = 1 / p;
-        var result = (p - n) / 2;
+        const e = Math.E;
+        const p = Math.pow(e, x);
+        const n = 1 / p;
+        const result = (p - n) / 2;
 
         return new Sk.builtin.float_(result);
     };
@@ -685,10 +687,10 @@ var $builtinmodule = function (name) {
 
         x = Sk.builtin.asnum$(x);
 
-        var e = Math.E;
-        var p = Math.pow(e, x);
-        var n = 1 / p;
-        var result = (p + n) / 2;
+        const e = Math.E;
+        const p = Math.pow(e, x);
+        const n = 1 / p;
+        const result = (p + n) / 2;
 
         return new Sk.builtin.float_(result);
     };
@@ -702,10 +704,10 @@ var $builtinmodule = function (name) {
             return Sk.builtin.float_(x);
         };
 
-        var e = Math.E;
-        var p = Math.pow(e, _x);
-        var n = 1 / p;
-        var result = ((p - n) / 2) / ((p + n) / 2);
+        const e = Math.E;
+        const p = Math.pow(e, _x);
+        const n = 1 / p;
+        const result = ((p - n) / 2) / ((p + n) / 2);
 
         return new Sk.builtin.float_(result);
     };
@@ -714,14 +716,14 @@ var $builtinmodule = function (name) {
     methods.radians = function radians(deg) {
         Sk.builtin.pyCheckType("deg", "number", Sk.builtin.checkNumber(deg));
 
-        var ret = Math.PI / 180.0 * Sk.builtin.asnum$(deg);
+        const ret = Math.PI / 180.0 * Sk.builtin.asnum$(deg);
         return new Sk.builtin.float_(ret);
     };
 
     methods.degrees = function degrees(rad) {
         Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
 
-        var ret = 180.0 / Math.PI * Sk.builtin.asnum$(rad);
+        const ret = 180.0 / Math.PI * Sk.builtin.asnum$(rad);
         return new Sk.builtin.float_(ret);
     };
 

@@ -3,42 +3,12 @@ if (Sk.builtin === undefined) {
 }
 
 /**
- * Create getters and setters for builtins
- * @constructor
- * @param {String} _name
- * @param {Function} get
- * @param {Function} set 
- * @param {String} doc
- */
-
-Sk.GetSetDef = function (get, set, doc) {
-    this.$get = get;
-    this.$set = set;
-    this.$doc = doc;
-};
-Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
-
-/**
- * Create methods for builtins
- * @constructor
- * @param {String} _name
- * @param {Function} method
- * @param {Object} flags 
- * @param {String} doc
- */
-
-Sk.MethodDef = function (method, flags, doc) {
-    this.$meth = method || {}; // just a place holder for now while some methods have yet to be defined;
-    this.$flags = flags;
-    this.$doc = doc;
-};
-Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
-
-/**
  *
  */
 
-Sk.builtin.type = function type() { };
+Sk.builtin.type = function type() {
+    Sk.asserts.assert(false);
+};
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
 
@@ -104,6 +74,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     const best_base = Sk.builtin.type.$bestBase(bases.v);
 
     // get the metaclass from kwargs
+    // todo this is not really the right way to do it... 
     let metaclass;
     if (kwargs) {
         const meta_idx = kwargs.indexOf("metaclass");
@@ -191,12 +162,8 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
     const metatype = this.ob$type;
 
-    // now check whether there is a descriptor down the prototypical chain
-    // since we don't support metatypes yet this function will only ever be called by type objects
-    // there is always a fast path for type objects
-    // examples that would live down this path __dict__, __module__, __mro__, __name__
-    // __class__ which is on the object.prototype is also here since type is an instance of object
-    const meta_attribute = this.ob$type.$typeLookup(jsName);
+    // now check whether there is a descriptor down on the metatype
+    const meta_attribute = metatype.$typeLookup(jsName);
 
 
     let meta_get;
@@ -403,9 +370,8 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
  */
 Sk.builtin.type.prototype.$buildMRO = function () {
     // MERGE(klass + mro(bases) + bases)
-    var i;
-    var bases;
-    var all = [
+    let i;
+    const all = [
         [this]
     ];
 
@@ -417,7 +383,7 @@ Sk.builtin.type.prototype.$buildMRO = function () {
         all.push([...kbases[i].prototype.tp$mro]);
     }
 
-    bases = [];
+    const bases = [];
     for (i = 0; i < kbases.length; ++i) {
         bases.push(kbases[i]);
     }
@@ -427,26 +393,14 @@ Sk.builtin.type.prototype.$buildMRO = function () {
 };
 
 
-
-Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
-    var r2;
-    var r1;
-    if (other.ob$type != Sk.builtin.type) {
-        return undefined;
-    }
-    if (!this["$r"] || !other["$r"]) {
-        return undefined;
-    }
-
-    r1 = this["$r"]();
-    r2 = other["$r"]();
-
-    return r1.tp$richcompare(r2, op);
+Sk.builtin.type.prototype.$isSubType = function (other) {
+    return this === other ||
+        this.prototype instanceof other ||
+        (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 };
 
 
 Sk.builtin.type.prototype.$allocateSlots = function () {
-    Sk.asserts.assert(this.sk$klass);
     if (this.prototype.sk$prototypical) {
         // only allocate certain slots
         for (let dunder in Sk.dunderToSkulpt) {
@@ -460,7 +414,6 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
             this.prototype[slot] = Sk.Slots[slot].$slot_func;
         }
     }
-
 };
 
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
@@ -612,10 +565,4 @@ Sk.builtin.type.$bestBase = function (bases) {
     return firstAncestor;
 }
 
-
-Sk.builtin.type.prototype.$isSubType = function (other) {
-    return this === other ||
-        this.prototype instanceof other ||
-        (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
-};
 

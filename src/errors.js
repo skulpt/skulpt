@@ -15,6 +15,7 @@
 Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     constructor: function (args) {
         // internally args is either a string
+        Sk.asserts.assert(this instanceof Sk.builtin.BaseException);
         if (typeof args === "string") {
             this.args = new Sk.builtin.tuple([new Sk.builtin.str(args)]);
         } else {

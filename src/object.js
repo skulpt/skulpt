@@ -8,7 +8,9 @@
  *
  * @return {Sk.builtin.object} Python object
  */
-Sk.builtin.object = function object () {};
+Sk.builtin.object = function object () {
+    Sk.asserts.assert(this instanceof Sk.builtin.object);
+};
 
 // now that object has been created we setup the base inheritances
 // between type and object
