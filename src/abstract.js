@@ -1335,15 +1335,24 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         typeobject.prototype.__module__ = new Sk.builtin.str(mod);
     }
     proto = options.proto || {};
-    for (p in proto) {
+    for (let p in proto) {
         typeobject.prototype[p] = proto[p];
     }
     flags = options.flags || {};
-    for (f in flags) {
+    for (let f in flags) {
         typeobject[f] = flags[f];
     }
 
     return typeobject;
+};
+
+
+Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
+    for (let method_name in method_defs) {
+        method_def = method_defs[method_name];
+        method_def.$name = method_def.$name || method_name;
+        module[method_name] = new Sk.builtin.sk_method(method_def, undefined, module_name);
+    }
 };
 
 /**
