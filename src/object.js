@@ -141,14 +141,14 @@ Sk.builtin.object.prototype.tp$methods = {
                     }
                 }
             }
-            // for metattypes that override __dir__ we might need to check it's a list of str
-            type_dir = this.ob$type.__dir__();
+            // for metatypes that override __dir__ we might need to check it's a list of str
+            const type_dir_func = Sk.abstr.lookupSpecial(this.ob$type, Sk.builtin.str.$dir);
+            const type_dir = Sk.misceval.callsimArray(type_dir_func, [this.ob$type]);
             type_dir.v.push(...dir);
             type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
             return type_dir
         },
-        $flags: { NoArgs: true }
-        ,
+        $flags: { NoArgs: true },
         $doc: "Default dir() implementation."
     },
     __format__: {

@@ -547,14 +547,14 @@ Sk.builtin.bin = function bin(x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
-Sk.builtin.dir = function dir(object) {
-    if (object !== undefined) {
-        return callsimArray(object.__dir__, []);
+Sk.builtin.dir = function dir(obj) {
+    if (obj !== undefined) {
+        const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
+        return Sk.misceval.callsimArray(obj_dir_func, [obj]);
     }
     // then we want all the objects in the global scope
     //todo
     throw new Sk.builtin.NotImplementedError("skulpt does not yet support dir with no args")
-    // return callsimArray(Sk.builtin.object.__dir__, [Sk.global]);
 };
 
 Sk.builtin.repr = function repr(x) {
