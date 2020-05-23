@@ -1,7 +1,7 @@
 import math as module
 
-meth = type(sum) 
-for x in dir(module): 
+meth = type(str.count) 
+for x in module.__dict__: 
     bltin = getattr(module, x) 
     if isinstance(bltin, meth): 
             print(\
