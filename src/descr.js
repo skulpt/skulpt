@@ -301,10 +301,9 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 const msg = value === undefined ? "delete" : "set";
                 throw new Sk.builtin.AttributeError("can't " + msg + " attribute");
             }
-            const args = value
             if (!func.tp$call) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable")
-            }
+            };
 
             if (value === undefined) {
                 return func.tp$call([obj]);
@@ -398,36 +397,31 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
  * @param {Sk.builtin.func} callable
  */
 
-Sk.builtin.staticmethod = function staticmethod(callable) {
-    // this can be used as an internal function 
-    // typically callable will be set in the init method if being called by python
-    this.sm$callable = callable;
-};
-
-Sk.abstr.setUpInheritance("staticmethod", Sk.builtin.staticmethod, Sk.builtin.object);
-
-Sk.builtin.staticmethod.prototype.tp$new = Sk.generic.new(Sk.builtin.staticmethod);
-
-Sk.builtin.staticmethod.prototype.tp$init = function (args, kwargs) {
-    Sk.abstr.checkNoKwargs("staticmethod", kwargs);
-    Sk.abstr.checkArgsLen("staticmethod", args, 1, 1);
-    this.sm$callable = args[0];
-    return Sk.builtin.none.none$;
-};
-
-Sk.builtin.staticmethod.prototype.tp$doc = "staticmethod(function) -> method\n\nConvert a function to be a static method.\n\nA static method does not receive an implicit first argument.\nTo declare a static method, use this idiom:\n\n     class C:\n         @staticmethod\n         def f(arg1, arg2, ...):\n             ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\n\nStatic methods in Python are similar to those found in Java or C++.\nFor a more advanced concept, see the classmethod builtin."
-
-
-Sk.builtin.staticmethod.prototype.tp$descr_get = function (obj, type) {
-    if (this.sm$callable === undefined) {
-        throw new Sk.builtin.RuntimeError("uninitialized staticmethod object")
+Sk.builtin.staticmethod = Sk.abstr.buildNativeClass("staticmethod", {
+    constructor: function staticmethod(callable) {
+        // this can be used as an internal function 
+        // typically callable will be set in the init method if being called by python
+        this.sm$callable = callable
+    },
+    slots: {
+        tp$new: Sk.generic.new(Sk.builtin.staticmethod),
+        tp$init: function (args, kwargs) {
+            Sk.abstr.checkNoKwargs("staticmethod", kwargs);
+            Sk.abstr.checkArgsLen("staticmethod", args, 1, 1);
+            this.sm$callable = args[0];
+            return Sk.builtin.none.none$;
+        },
+        tp$doc: "staticmethod(function) -> method\n\nConvert a function to be a static method.\n\nA static method does not receive an implicit first argument.\nTo declare a static method, use this idiom:\n\n     class C:\n         @staticmethod\n         def f(arg1, arg2, ...):\n             ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\n\nStatic methods in Python are similar to those found in Java or C++.\nFor a more advanced concept, see the classmethod builtin.",
+        tp$descr_get: function (obj, type) {
+            if (this.sm$callable === undefined) {
+                throw new Sk.builtin.RuntimeError("uninitialized staticmethod object")
+            }
+            return this.sm$callable;
+        }
+    },
+    getsets: {
+        __func__: {
+            $get: function () { return this.sm$callable }
+        }
     }
-
-    return this.sm$callable;
-
-};
-
-
-// Sk.builtin.staticmethod.prototype.tp$getsets = [
-//     new Sk.GetSetDef("__func__", function () { return this.sm$callable }),
-// ];
+});
