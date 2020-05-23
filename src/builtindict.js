@@ -447,7 +447,7 @@ delete Sk.builtins.$method_defs;
 
 Sk.setupObjects = function (py3) {
     if (!py3) {
-        delete Sk.builtins.StandardError.sk$abstract;
+        delete Sk.builtin.StandardError.sk$abstract;
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);

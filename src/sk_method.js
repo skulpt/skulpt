@@ -35,7 +35,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         this.$meth = method_def.$meth.bind(self);
         this.$doc = method_def.$doc;
         this.$self = self;
-        this.$module = module? new Sk.builtin.str(module) : Sk.builtin.none.none$;
+        this.$module = module ? new Sk.builtin.str(module) : Sk.builtin.none.none$;
         this.$name = method_def.$name || method_def.$meth.name || "<native JS>";
 
         // useful to set the $textsig to determine the correct flags

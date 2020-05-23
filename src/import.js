@@ -62,6 +62,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
     const setUpClass = function (klass) {
+        const proto = klass.prototype;
         if (!proto.hasOwnProperty("sk$slots")) {
             // sk$slots was set to null during setUpSlots
             // if this flag is not set then we setUpSlots using the klass prototype
@@ -81,13 +82,12 @@ Sk.doOneTimeInitialization = function (canSuspend) {
             klass.prototype.__doc__ = new Sk.builtin.str(proto.tp$doc);
         } 
     };
-    for (let x in Sk.builtin) {
-        const obj = Sk.builtin[x];
+    for (let x in Sk.builtins) {
+        const obj = Sk.builtins[x];
         if (obj instanceof Sk.builtin.type && !obj.sk$abstract) {
             setUpClass(obj);
         }
     }
-
 };
 
 /**

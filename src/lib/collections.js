@@ -84,7 +84,7 @@ const collections_mod = function (keywds) {
                         }
                     }
                     if (collections._chain === undefined) {
-                        let itertools = Sk.importmodule("itertools", false, true);
+                        let itertools = Sk.importModule("itertools", false, true);
                         return Sk.misceval.chain(itertools, function (i) {
                             collections._chain = i.$d.chain;
                             return Sk.misceval.callsimArray(collections._chain, all_elements);
@@ -575,5 +575,5 @@ const collections_mod = function (keywds) {
 }
 
 var $builtinmodule = function (name) {
-    return Sk.misceval.chain(Sk.importmodule("keyword", false, true), collections_mod);
+    return Sk.misceval.chain(Sk.importModule("keyword", false, true), collections_mod);
 };
