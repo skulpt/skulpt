@@ -609,11 +609,6 @@ Sk.builtin.type.$bestBase = function (bases) {
 
 
 Sk.builtin.type.prototype.$isSubType = function (other) {
-    if (this === other) {
-        return true;
-    } else if (other.prototype && this.prototype.sk$prototypical) {
-        return this.prototype instanceof other;
-    }
-    return this.prototype.tp$mro.includes(other) || false;
+    return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 };
 

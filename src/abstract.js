@@ -1153,7 +1153,7 @@ Sk.abstr.setUpBaseInheritance = function () {
 
     // flag for checking type objects
     Sk.builtin.type.prototype.sk$type = true;
-    Sk.builtin.type.prototype.sk$object = true;
+    Sk.builtin.object.prototype.sk$object = true;
 };
 
 /**
