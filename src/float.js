@@ -157,7 +157,7 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
         return true;
     }
 
-    if (Sk.builtin.issubclass(op.ob$type, Sk.builtin.float_)) {
+    if (op.ob$type.$isSubType(Sk.builtin.float_)) {
         return true;
     }
 

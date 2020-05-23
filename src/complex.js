@@ -696,7 +696,7 @@ Sk.builtin.complex._complex_check = function (op) {
     }
 
     // check if type of ob is a subclass
-    if (Sk.builtin.issubclass(op.ob$type, Sk.builtin.complex)) {
+    if (op.ob$type.$isSubType(Sk.builtin.complex)) {
         return true;
     }
 
