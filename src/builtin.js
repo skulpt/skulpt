@@ -239,48 +239,42 @@ Sk.builtin.asnum$nofloat = function (a) {
 };
 Sk.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
-Sk.builtin.round = new Sk.builtin.funcOrMethod({
-    $flags: { NamedArgs: ["number", "ndigits"], Defaults: [Sk.builtin.none.none$] },
-    $textsig: "($module, /, number, ndigits=None)",
-    $raw: function round(number, ndigits) {
-        var special;
-        if (!Sk.builtin.checkNumber(number)) {
-            if (!Sk.builtin.checkFunction(number)) {
-                throw new Sk.builtin.TypeError("a float is required");
-            } else {
-                if (!Sk.__future__.exceptions) {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
-                }
-            }
-        }
-
-        if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
-        }
-
-        if (!Sk.__future__.dunder_round && number.round$) {
-            return number.round$(number, ndigits);
-        }
-
-        // try calling internal magic method
-        special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
-        if (special !== undefined) {
-            // method on builtin, provide this arg
-            if (!Sk.builtin.checkFunction(number)) {
-                return Sk.misceval.callsimArray(special, [number, ndigits]);
-            } else {
-                return Sk.misceval.callsimArray(special, [number]);
-            }
-        } else {
+Sk.builtin.round = function round(number, ndigits) {
+    var special;
+    if (!Sk.builtin.checkNumber(number)) {
+        if (!Sk.builtin.checkFunction(number)) {
             throw new Sk.builtin.TypeError("a float is required");
+        } else {
+            if (!Sk.__future__.exceptions) {
+                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
+            }
         }
-    },
-    $doc: "Round a number to a given precision in decimal digits.\n\nThe return value is an integer if ndigits is omitted or None.  Otherwise\nthe return value has the same type as the number.  ndigits may be negative."
-});
+    }
+
+    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+    }
+
+    if (!Sk.__future__.dunder_round && number.round$) {
+        return number.round$(number, ndigits);
+    }
+
+    // try calling internal magic method
+    special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
+    if (special !== undefined) {
+        // method on builtin, provide this arg
+        if (!Sk.builtin.checkFunction(number)) {
+            return Sk.misceval.callsimArray(special, [number, ndigits]);
+        } else {
+            return Sk.misceval.callsimArray(special, [number]);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("a float is required");
+    }
+};
 
 Sk.builtin.len = function len(item) {
     var intcheck;
-    var special;
     Sk.builtin.pyCheckArgsLen("len", arguments.length, 1, 1);
 
     var int_ = function (i) { return new Sk.builtin.int_(i); };
@@ -299,26 +293,9 @@ Sk.builtin.len = function len(item) {
     if (item.sq$length) {
         return Sk.misceval.chain(item.sq$length(true), intcheck);
     }
-
+    // mp$length is no longer part of dicts instead we use sq.length so this is for legacy.
     if (item.mp$length) {
         return Sk.misceval.chain(item.mp$length(), int_);
-    }
-
-    if (item.tp$length) {
-        if (Sk.builtin.checkFunction(item)) {
-            special = Sk.abstr.lookupSpecial(item, Sk.builtin.str.$len);
-            if (special !== undefined) {
-                return Sk.misceval.callsimArray(special, [item]);
-            } else {
-                if (Sk.__future__.exceptions) {
-                    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
-                } else {
-                    throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
-                }
-            }
-        } else {
-            return Sk.misceval.chain(item.tp$length(true), intcheck);
-        }
     }
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
@@ -366,84 +343,55 @@ Sk.builtin.max = function max() {
     return highest;
 };
 
-Sk.builtin.any = new Sk.builtin.funcOrMethod({
-    $raw: function any(iter) {
-        ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-            if (Sk.misceval.isTrue(i)) {
-                return new Sk.misceval.Break(true);
-            }
-        })
-        return ret === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    },
-    $flags: { OneArg: true },
-    $doc: "'Return True if bool(x) is True for any x in the iterable.\n\nIf the iterable is empty, return False.",
-    $textsig: "($module, iterable, /)"
-});
+Sk.builtin.any = function any(iter) {
+    ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+        if (Sk.misceval.isTrue(i)) {
+            return new Sk.misceval.Break(true);
+        }
+    })
+    return ret === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+};
 
 Sk.builtin.all = function all(iter) {
-    var it, i;
-
-    Sk.builtin.pyCheckArgsLen("all", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.false$;
+    ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+        if (Sk.misceval.isTrue(i)) {
+            return new Sk.misceval.Break(false);
         }
-    }
-
-    return Sk.builtin.bool.true$;
+    })
+    return ret === undefined ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
 };
 
 Sk.builtin.sum = function sum(iter, start) {
     var tot;
-    var intermed;
-    var it, i;
     var has_float;
-
-    Sk.builtin.pyCheckArgsLen("sum", arguments.length, 1, 2);
+    // this follows the order python checks errors
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (start !== undefined && Sk.builtin.checkString(start)) {
+    if (Sk.builtin.checkString(start)) {
         throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     }
-    if (start === undefined) {
-        tot = new Sk.builtin.int_(0);
-    } else {
-        tot = start;
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i instanceof Sk.builtin.float_) {
+    tot = start;
+    Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+        if (!has_float && i instanceof Sk.builtin.float_) {
             has_float = true;
-            if (!(tot instanceof Sk.builtin.float_)) {
-                tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
-            }
-        } else if (i instanceof Sk.builtin.lng) {
-            if (!has_float) {
-                if (!(tot instanceof Sk.builtin.lng)) {
-                    tot = new Sk.builtin.lng(tot);
-                }
-            }
+            tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
         }
-
+        // else if (i instanceof Sk.builtin.lng) {
+        //     if (!has_float && !(tot instanceof Sk.builtin.lng)) {
+        //         tot = new Sk.builtin.lng(tot);
+        //     }
+        // } 
         if (tot.nb$add !== undefined) {
-            intermed = tot.nb$add(i);
+            const itermed = tot.nb$add(i);
             if ((intermed !== undefined) && (intermed !== Sk.builtin.NotImplemented.NotImplemented$)) {
-                tot = tot.nb$add(i);
-                continue;
+                tot = itermed;
+                return;
             }
         }
-
         throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
             Sk.abstr.typeName(tot) + "' and '" +
             Sk.abstr.typeName(i) + "'");
-    }
 
+    })
     return tot;
 };
 
@@ -609,8 +557,15 @@ Sk.builtin.bin = function bin(x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
-Sk.builtin.dir = function dir() {
-    return callsimArray(this.__dir__, []);
+Sk.builtin.dir = function dir(object) {
+    Sk.builtin.pyCheckArgsLen("dir", arguments.length, 1, 1);
+    if (object !== undefined) {
+        return callsimArray(object.__dir__, []);
+    }
+    // then we want all the objects in the global scope
+    //todo
+    throw new Sk.builtin.NotImplementedError("skulpt does not yet support dir with no args")
+    // return callsimArray(Sk.builtin.object.__dir__, [Sk.global]);
 };
 
 Sk.builtin.repr = function repr(x) {
@@ -1154,19 +1109,13 @@ Sk.builtin.help = function help() {
     throw new Sk.builtin.NotImplementedError("help is not yet implemented");
 };
 
-Sk.builtin.iter = new Sk.builtin.funcOrMethod({
-    $flags: { MinArgs: 1, MaxArgs: 2 },
-    $raw: function iter(obj, sentinel) {
-        Sk.builtin.pyCheckArgsLen("iter", arguments.length, 1, 2);
-        debugger;
-        if (arguments.length === 1) {
-            return Sk.abstr.iter(obj);
-        } else {
-            return Sk.abstr.iter(new Sk.builtin.callable_iterator(obj, sentinel));
-        }
-    },
-    $doc: "iter(iterable) -> iterator\niter(callable, sentinel) -> iterator\n\nGet an iterator from an object.  In the first form, the argument must\nsupply its own iterator, or be a sequence.\nIn the second form, the callable is called until it returns the sentinel.",
-});
+Sk.builtin.iter = function iter(obj, sentinel) {
+    if (arguments.length === 1) {
+        return Sk.abstr.iter(obj);
+    } else {
+        return Sk.abstr.iter(new Sk.builtin.callable_iterator(obj, sentinel));
+    }
+};
 
 Sk.builtin.locals = function locals() {
     throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
