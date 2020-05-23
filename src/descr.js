@@ -63,7 +63,7 @@ Sk.generic.descriptor.getsets = {
  * @param {Sk.GetSetDef} gsd
  */
 
-Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor", "attribute");
+Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor");
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
@@ -102,9 +102,9 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
     this.d$name = method_def.$name;
     const flags = method_def.$flags || {};
     if (flags.fastCall && flags.noKwargs) {
-        this.tp$call = this.$fastCallNoKwargs;
+        this.tp$call = this.$methodFastCallNoKwargs;
     } else if (flags.fastCall) {
-        this.tp$call = this.$fastCall;
+        this.tp$call = this.$methodFastCall;
     } else if (flags.NoArgs) {
         this.tp$call = this.$methodCallNoArgs;
     } else if (flags.OneArg) {
@@ -114,46 +114,48 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
     } else if (flags.MinArgs) {
         this.tp$call = this.$methodCallMinArgs;
     } else {
-        this.func_code = method_def.$raw;
+        this.func_code = method_def.$meth;
+        this.tp$call = Sk.builtin.func.tp$call;
     }
 });
+
 Sk.builtin.method_descriptor.prototype.tp$call = undefined;
-Sk.builtin.method_descriptor.prototype.$fastCall = function (args, kwargs) {
+Sk.builtin.method_descriptor.prototype.$methodFastCall = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
-    this.d$def.$raw.call(self, args);
+    this.d$def.$meth.call(self, args);
 };
-Sk.builtin.method_descriptor.prototype.$fastCallNoKwargs = function (args, kwargs) {
+Sk.builtin.method_descriptor.prototype.$methodFastCallNoKwargs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoKwargs(this.d$name, kwargs);
-    return this.d$def.$raw.call(self, args);
+    return this.d$def.$meth.call(self, args);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallNoArgs = function (args, kwargs) {
     debugger;
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoArgs(this.d$name, args, kwargs);
-    return this.d$def.$raw.call(self);
+    return this.d$def.$meth.call(self);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallOneArg = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkOneArg(this.d$name, args, kwargs);
-    return this.d$def.$raw.call(self, args[0]);
+    return this.d$def.$meth.call(self, args[0]);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallNamedArgs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     args = Sk.abstr.copyKeywordsToNamedArgs(this.d$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
-    return this.d$def.$raw.call(self, ...args);
+    return this.d$def.$meth.call(self, ...args);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallMinArgs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoKwargs(this.d$name, kwargs);
     Sk.abstr.checkArgsLen(this.d$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
-    return this.d$def.$raw.call(self, ...args);
+    return this.d$def.$meth.call(self, ...args);
 };
 Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
     if (self === undefined) {
@@ -161,41 +163,15 @@ Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
     };
     this.d$check(self);
 }
-// method_check_args(PyObject *func, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
-// {
-//     assert(!PyErr_Occurred());
-//     if (nargs < 1) {
-//         PyObject *funcstr = _PyObject_FunctionStr(func);
-//         if (funcstr != NULL) {
-//             PyErr_Format(PyExc_TypeError,
-//                          "unbound method %U needs an argument", funcstr);
-//             Py_DECREF(funcstr);
-//         }
-//         return -1;
-//     }
-//     PyObject *self = args[0];
-//     PyObject *dummy;
-//     if (descr_check((PyDescrObject *)func, self, &dummy)) {
-//         return -1;
-//     }
-//     if (kwnames && PyTuple_GET_SIZE(kwnames)) {
-//         PyObject *funcstr = _PyObject_FunctionStr(func);
-//         if (funcstr != NULL) {
-//             PyErr_Format(PyExc_TypeError,
-//                          "%U takes no keyword arguments", funcstr);
-//             Py_DECREF(funcstr);
-//         }
-//         return -1;
-//     }
-//     return 0;
-// }
+
+
 Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
     if (ret = this.d$check(obj)) {
         return ret;
     }
     debugger;
-    return new Sk.builtin.funcOrMethod(this.d$def, obj);
+    return new Sk.builtin.sk_method(this.d$def, obj);
 };
 
 /**
@@ -339,19 +315,19 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
     },
     methods: {
         getter: {
-            $raw: function (fget) {
+            $meth: function (fget) {
                 return new Sk.builtin.property(fget, this.prop$set, this.prop$del, this.prop$doc);
             },
             $flags: { OneArg: true }
         },
         setter: {
-            $raw: function (fset) {
+            $meth: function (fset) {
                 return new Sk.builtin.property(this.prop$get, fset, this.prop$del, this.prop$doc);
             },
             $flags: { OneArg: true }
         },
         deletter: {
-            $raw: function (fdel) {
+            $meth: function (fdel) {
                 return new Sk.builtin.property(this.prop$get, this.prop$set, fdel, this.prop$doc);
             },
             $flags: { OneArg: true }
@@ -372,124 +348,6 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
         },
     }
 });
-
-
-
-
-// Sk.builtin.property = function (fget, fset, fdel, doc) {
-//     // this can be uses as an internal function 
-//     // typically these properties will be set in the init method
-//     this.prop$get = fget || Sk.builtin.none.none$;
-//     this.prop$set = fset || Sk.builtin.none.none$;
-//     this.prop$del = fdel || Sk.builtin.none.none$;
-//     if (doc !== undefined) {
-//         this.prop$doc = doc;
-//     } else if (fget && fget.f$doc) {
-//         this.prop$doc = fget.f$doc;
-//     } else {
-//         this.prop$doc = Sk.builtin.none.none$;
-//     }
-// };
-
-// Sk.abstr.setUpInheritance("property", Sk.builtin.property, Sk.builtin.object);
-// Sk.abstr.setUpBuiltinMro(Sk.builtin.property);
-
-// Sk.builtin.property.prototype.tp$new = Sk.generic.new(Sk.builtin.property);
-
-// Sk.builtin.property.prototype.tp$init = function (args, kwargs) {
-//     args = Sk.abstr.copyKeywordsToNamedArgs(
-//         "property",
-//         ["fget", "fset", "fdel", "doc"],
-//         args,
-//         kwargs,
-//         new Array(4).fill(Sk.builtin.none.none$)
-//     );
-
-//     this.prop$get = args[0];
-//     this.prop$set = args[1];
-//     this.prop$del = args[2];
-//     this.prop$doc = Sk.builtin.checkNone(args[3]) ? this.prop$get.$doc : Sk.builtin.none.none$;
-//     return Sk.builtin.none.none$;
-// };
-
-// Sk.builtin.property.prototype.tp$doc = "Property attribute.\n\n  fget\n    function to be used for getting an attribute value\n  fset\n    function to be used for setting an attribute value\n  fdel\n    function to be used for del\'ing an attribute\n  doc\n    docstring\n\nTypical use is to define a managed attribute x:\n\nclass C(object):\n    def getx(self): return self._x\n    def setx(self, value): self._x = value\n    def delx(self): del self._x\n    x = property(getx, setx, delx, 'I\'m the \'x\' property.')\n\nDecorators make defining new properties or modifying existing ones easy:\n\nclass C(object):\n    @property\n    def x(self):\n        'I am the \'x\' property.'\n        return self._x\n    @x.setter\n    def x(self, value):\n        self._x = value\n    @x.deleter\n    def x(self):\n        del self._x"
-
-
-// Sk.builtin.property.prototype.tp$descr_get = function (obj, type) {
-//     if (Sk.builtin.checkNone(obj)) {
-//         return this;
-//     }
-
-//     if (this.prop$get === undefined) {
-//         throw new Sk.builtin.AttributeError("unreadable attribute")
-//     }
-
-//     if (!this.prop$get.tp$call) {
-//         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this.prop$get) + "' is not callable")
-//     }
-//     return this.prop$get.tp$call([obj]);
-// };
-
-// Sk.builtin.property.prototype.tp$descr_set = function (obj, value) {
-//     if (value === undefined) {
-//         func = this.prop$del;
-//     } else {
-//         func = this.prop$set;
-//     }
-//     if (Sk.builtin.checkNone(func)) {
-//         const msg = value === undefined ? "delete" : "set";
-//         throw new Sk.builtin.AttributeError("can't " + msg + " attribute");
-//     }
-//     if (!func.tp$call) {
-//         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable")
-//     }
-
-//     if (value === undefined) {
-//         return func.tp$call([obj]);
-//     } else {
-//         return func.tp$call([obj, value]);
-//     }
-// };
-
-// Sk.builtin.property.prototype.tp$methods = {
-//     getter: {
-//         $raw: function (fget) {
-//             return new Sk.builtin.property(fget, this.prop$set, this.prop$del, this.prop$doc);
-//         },
-//         $flags: { OneArg: true }
-//     },
-//     setter: {
-//         $raw: function (fset) {
-//             return new Sk.builtin.property(this.prop$get, fset, this.prop$del, this.prop$doc);
-//         },
-//         $flags: { OneArg: true }
-//     },
-//     deletter: {
-//         $raw: function (fdel) {
-//             return new Sk.builtin.property(this.prop$get, this.prop$set, fdel, this.prop$doc);
-//         },
-//         $flags: { OneArg: true }
-//     }
-// }
-
-// Sk.builtin.property.prototype.tp$getsets = {
-//     fget: {
-//         $get: function () { return this.prop$get }
-//     },
-//     fset: {
-//         $get: function () { return this.prop$set }
-//     },
-//     fdel: {
-//         $get: function () { return this.prop$del }
-//     },
-//     __doc__: {
-//         $get: function () { return this.prop$doc }
-//     },
-// }
-
-// Sk.abstr.setUpSlots(Sk.builtin.property);
-// Sk.abstr.setUpMethods(Sk.builtin.prototype);
-// Sk.abstr.setUpGetSets(Sk.builtin.prototype);
 
 /**
  * @constructor
@@ -534,53 +392,6 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
     }
 
 });
-
-
-// Sk.builtin.classmethod = function (callable) {
-//     // this can be used as an internal function 
-//     // typically callable will be set in the init method if being called by python
-//     this.cm$callable = callable;
-// };
-
-// Sk.abstr.setUpInheritance("classmethod", Sk.builtin.classmethod, Sk.builtin.object);
-
-// Sk.builtin.classmethod.prototype.tp$new = Sk.generic.new(Sk.builtin.classmethod);
-
-
-// Sk.builtin.classmethod.prototype.tp$init = function (args, kwargs) {
-//     Sk.abstr.checkNoKwargs("classmethod", kwargs);
-//     Sk.abstr.checkArgsLen("classmethod", args, 1, 1);
-//     this.cm$callable = args[0];
-//     return Sk.builtin.none.none$;
-// };
-
-// Sk.builtin.classmethod.prototype.tp$doc = "classmethod(function) -> method\n\nConvert a function to be a class method.\n\nA class method receives the class as implicit first argument,\njust like an instance method receives the instance.\nTo declare a class method, use this idiom:\n\n  class C:\n      @classmethod\n      def f(cls, arg1, arg2, ...):\n          ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\nIf a class method is called for a derived class, the derived class\nobject is passed as the implied first argument.\n\nClass methods are different than C++ or Java static methods.\nIf you want those, see the staticmethod builtin."
-
-
-// Sk.builtin.classmethod.prototype.tp$descr_get = function (obj, type) {
-//     if (this.cm$callable === undefined) {
-//         throw new Sk.builtin.RuntimeError("uninitialized classmethod object")
-//     }
-
-//     if (type === undefined) {
-//         type = obj.ob$type;
-//     }
-
-//     const f = this.cm$callable.tp$descr_get;
-//     if (f) {
-//         return f.call(this.cm$callable, type);
-//     }
-//     return new Sk.builtin.method(this.cm$callable, type);
-
-// };
-
-
-// Sk.builtin.classmethod.prototype.tp$getsets = {
-//     __func__: {
-//         $get: function () { return this.cm$callable }
-//     }
-// }
-
 
 /**
  * @constructor
