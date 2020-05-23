@@ -133,7 +133,7 @@ Sk.builtin.object.prototype.tp$methods = {
         $meth: function __dir__() {
             const dir = [];
             if (this.$d) {
-                if (this.$d.ob$type === Sk.builtin.dict) {
+                if (this.$d instanceof Sk.builtin.dict) {
                     dir.concat(this.$d.$allkeys());
                 } else {
                     for (let key in this.$d) {
@@ -141,9 +141,8 @@ Sk.builtin.object.prototype.tp$methods = {
                     }
                 }
             }
-            // for metatypes that override __dir__ we might need to check it's a list of str
-            const type_dir_func = Sk.abstr.lookupSpecial(this.ob$type, Sk.builtin.str.$dir);
-            const type_dir = Sk.misceval.callsimArray(type_dir_func, [this.ob$type]);
+            // here we use the type.__dir__ implementation
+            const type_dir = Sk.builtin.type.prototype.__dir__.$get.call(this.ob$type);
             type_dir.v.push(...dir);
             type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
             return type_dir

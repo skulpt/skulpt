@@ -38,7 +38,7 @@ Sk.exportSymbol("Sk.MethodDef", Sk.MethodDef);
  *
  */
 
-Sk.builtin.type = function type () { };
+Sk.builtin.type = function type() { };
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
 
@@ -472,17 +472,25 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
 Sk.builtin.type.prototype.tp$getsets = {
     __base__: {
         $get: function () {
-            return new Sk.builtin.tuple(this.prototype.tp$bases);
+            return this.prototype.tp$base || Sk.builtin.none.none$;
         }
     },
     __bases__: {
         $get: function () {
-            return this.prototype.tp$base ? this.prototype.tp$base : Sk.builtin.none.none$;
+            if (this.sk$tuple_bases === undefined) {
+                this.sk$tuple_bases = new Sk.builtin.tuple(this.prototype.tp$bases);
+                // make sure we always return the same tuple
+            }
+            return this.sk$tuple_bases;
         }
     },
     __mro__: {
         $get: function () {
-            return new Sk.builtin.tuple(this.prototype.tp$mro);
+            if (this.sk$tuple_mro === undefined) {
+                this.sk$tuple_mro = new Sk.builtin.tuple(this.prototype.tp$mro);
+                // make sure we always return the same tuple
+            }
+            return this.sk$tuple_mro;
         }
     },
     __dict__: {
@@ -507,13 +515,12 @@ Sk.builtin.type.prototype.tp$getsets = {
                 throw new Sk.builtin.TypeError("can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'");
             }
             this.prototype.tp$name = value.$jsstr();
-            return;
         }
     },
     __module__: {
         $get: function () {
             let mod = this.prototype.__module__;
-            if (mod) {
+            if (mod && !(mod instanceof Sk.builtin.getset_descriptor)) {
                 return mod;
             }
             return new Sk.builtin.str("builtins");
@@ -607,6 +614,8 @@ Sk.builtin.type.$bestBase = function (bases) {
 
 
 Sk.builtin.type.prototype.$isSubType = function (other) {
-    return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
+    return this === other ||
+        this.prototype instanceof other ||
+        (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 };
 

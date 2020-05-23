@@ -455,6 +455,25 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
+    } else {
+        // fix Standard Error appearing as part of the __base__ and __bases__ for py3 errors
+        Sk.builtin.AttributeError.prototype.tp$base =
+        Sk.builtin.ValueError.prototype.tp$base =
+        Sk.builtin.ZeroDivisionError.prototype.tp$base =
+        Sk.builtin.AssertionError.prototype.tp$base =
+        Sk.builtin.ImportError.prototype.tp$base =
+        Sk.builtin.IndentationError.prototype.tp$base =
+        Sk.builtin.IndexError.prototype.tp$base =
+        Sk.builtin.KeyError.prototype.tp$base =
+        Sk.builtin.TypeError.prototype.tp$base =
+        Sk.builtin.NameError.prototype.tp$base =
+        Sk.builtin.IOError.prototype.tp$base =
+        Sk.builtin.NotImplementedError.prototype.tp$base =
+        Sk.builtin.OverflowError.prototype.tp$base =
+        Sk.builtin.OperationError.prototype.tp$base =
+        Sk.builtin.NegativePowerError.prototype.tp$base =
+        Sk.builtin.RuntimeError.prototype.tp$base =
+        Sk.builtin.SyntaxError.prototype.tp$base = Sk.builtin.Exception;
     }
 };
 
