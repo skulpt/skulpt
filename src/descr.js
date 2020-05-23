@@ -132,7 +132,6 @@ Sk.builtin.method_descriptor.prototype.$methodFastCallNoKwargs = function (args,
     return this.d$def.$meth.call(self, args);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallNoArgs = function (args, kwargs) {
-    debugger;
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoArgs(this.d$name, args, kwargs);
@@ -170,7 +169,6 @@ Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
     if (ret = this.d$check(obj)) {
         return ret;
     }
-    debugger;
     return new Sk.builtin.sk_method(this.d$def, obj);
 };
 

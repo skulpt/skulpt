@@ -572,7 +572,6 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
-    debugger;
     if (v !== null && v.$r) {
         return v.$r();
     } else {

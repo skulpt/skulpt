@@ -82,7 +82,7 @@ Sk.Slots.$r = new Sk.SlotDef("__repr__",
     function $r() {
         let res;
         const func = this.ob$type.$typeLookup("__repr__");
-        debugger;
+;
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             // then just call the wrapped function
             return func.d$wrapped.call(this);
@@ -126,7 +126,6 @@ Sk.Slots.tp$str = new Sk.SlotDef("__str__",
         let res;
         const func = this.ob$type.$typeLookup("__str__");
         if (func instanceof Sk.builtin.wrapper_descriptor) {
-            debugger;
             return func.d$wrapped.call(this);
         } else if (func !== undefined) {
             res = Sk.misceval.callsimArray(func, [this]);

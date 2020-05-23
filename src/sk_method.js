@@ -67,7 +67,6 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             return this.$meth(args);
         },
         $callNoArgs: function (args, kwargs) {
-            debugger;
             Sk.abstr.checkNoArgs(this.$name, args, kwargs);
             return this.$meth()
         },
@@ -93,8 +92,12 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             }
             return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>")
         },
-        tp$call: Sk.builtin.func.prototype.tp$call, // by default we use the implementation of func.prototype.tp$call
-
+        tp$call: function (args, kwargs) {
+            // default implementation for all currently created functions that have yet to be be converted 
+            // and don't utilise flagged calls
+            args.unshift(this.$self);
+            return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs)
+        }
     },
     getsets: {
         __module__: {

@@ -95,7 +95,7 @@ const collections_mod = function (keywds) {
                 },
             },
             most_common: {
-                flags: {
+                $flags: {
                     NamedArgs: ["n"],
                     Defaults: [Sk.builtin.none.none$]
                 },

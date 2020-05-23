@@ -153,7 +153,6 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
 
     klass.$allocateSlots();
-    debugger;
 
     return klass;
 };
@@ -530,7 +529,6 @@ Sk.builtin.type.prototype.tp$getsets = {
 Sk.builtin.type.prototype.tp$methods = {
     mro: {
         $meth: function () {
-            debugger;
             return new Sk.builtin.tuple(this.$buildMRO());
         },
         $flags: { NoArgs: true }
