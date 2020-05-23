@@ -131,7 +131,7 @@ Sk.builtin.seq_iter_ = Sk.generic.iterator("iterator", {
     methods: {
         __length_hint__: {
             $flags: { NoArgs: true },
-            $raw: function () {
+            $meth: function () {
                 if (this.$seq.sq$length) {
                     // sq$length will return Sk.miseval.asIndex
                     return this.$seq.sq$length() - this.$index;

@@ -212,7 +212,7 @@ Sk.generic.iterNextWithArray = function __next__() {
  * compares the $seq.length to the $index
  */
 Sk.generic.iterLengthHintWithArrayMethodDef = {
-    $raw: function __length_hint__() {
+    $meth: function __length_hint__() {
         return this.$seq.length - this.$index;
     },
     $flags: { NoArgs: true }

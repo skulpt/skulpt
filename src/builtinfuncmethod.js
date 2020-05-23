@@ -1,9 +1,9 @@
 /**
  * @constructor
- * Sk.builtin.funcOrMethod
+ * Sk.builtin.sk_method
  * 
  * @description
- * this function is used by all builtin functions or methods
+ * this constructor is used by all builtin functions or methods
  * the tp$call method is defined based on the flags
  * 
  * A good way to determine the flags is to look at the textsignature of a function
@@ -19,7 +19,7 @@
  *            use null for posonly args 
  *            ensures that the total number of args (including kwargs) equals the named args
  *            the call sig will check the kwarg names are valid
- *            applies Defaults (if set) to any named args
+ *            the call sig applies Defaults (if set) to any named args
  * Defaults: Array (used in conjunction with NamedArgs, can use [undefined] see dict.pop for use case)
  * 
  * FastCall && NoKwargs: true, check NoKewords and pass args the function will handle these (METH_FASTCALL)
@@ -28,15 +28,15 @@
  * if no flags are set then the tp$call = function.prototype.tp$call
  * 
  */
-Sk.builtin.funcOrMethod = Sk.abstr.buildNativeClass("builtin_function_or_method", {
+Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
     constructor: function (method_def, self, module) {
 
-        // here we set this.$raw binding it's call signature to self
-        this.$raw = method_def.$raw.bind(self);
+        // here we set this.$meth binding it's call signature to self
+        this.$meth = method_def.$meth.bind(self);
         this.$doc = method_def.$doc;
         this.$self = self;
         this.$module = module? new Sk.builtin.str(module) : Sk.builtin.none.none$;
-        this.$name = method_def.$name || method_def.$raw.name || "<native JS>";
+        this.$name = method_def.$name || method_def.$meth.name || "<native JS>";
 
         // useful to set the $textsig to determine the correct flags
         this.$textsig = method_def.$textsig;
@@ -48,7 +48,7 @@ Sk.builtin.funcOrMethod = Sk.abstr.buildNativeClass("builtin_function_or_method"
         if (flags.FastCall && flags.NoKwargs) {
             this.tp$call = this.$fastCallNoKwargs;
         } else if (flags.fastCall) {
-            this.tp$call = this.$raw;
+            this.tp$call = this.$meth;
         } else if (flags.NoArgs) {
             this.tp$call = this.$callNoArgs;
         } else if (flags.OneArg) {
@@ -58,31 +58,31 @@ Sk.builtin.funcOrMethod = Sk.abstr.buildNativeClass("builtin_function_or_method"
         } else if (flags.MinArgs) {
             this.tp$call = this.$callMinArgs;
         } else {
-            this.func_code = method_def.$raw;
+            this.func_code = method_def.$meth;
         }
     },
     proto: {
         $fastCallNoKwargs: function (args, kwargs) {
             Sk.abstr.checkNoKwargs(this.$name, kwargs);
-            return this.$raw(args);
+            return this.$meth(args);
         },
         $callNoArgs: function (args, kwargs) {
             debugger;
             Sk.abstr.checkNoArgs(this.$name, args, kwargs);
-            return this.$raw()
+            return this.$meth()
         },
         $callOneArg: function (args, kwargs) {
             Sk.abstr.checkOneArg(this.$name, args, kwargs);
-            return this.$raw(args[0]);
+            return this.$meth(args[0]);
         },
         $callNamedArgs: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs(this.$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
-            return this.$raw(...args);
+            return this.$meth(...args);
         },
         $callMinArgs: function (args, kwargs) {
             Sk.abstr.checkNoKwargs(this.$name, kwargs)
             Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
-            return this.$raw(...args);
+            return this.$meth(...args);
         },
     },
     flags: { sk$acceptable_as_base_class: false },

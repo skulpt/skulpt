@@ -28,7 +28,7 @@ Sk.exportSymbol("Sk.GetSetDef", Sk.GetSetDef);
  */
 
 Sk.MethodDef = function (method, flags, doc) {
-    this.$raw = method || {}; // just a place holder for now while some methods have yet to be defined;
+    this.$meth = method || {}; // just a place holder for now while some methods have yet to be defined;
     this.$flags = flags;
     this.$doc = doc;
 };
@@ -529,14 +529,14 @@ Sk.builtin.type.prototype.tp$getsets = {
 
 Sk.builtin.type.prototype.tp$methods = {
     mro: {
-        $raw: function () {
+        $meth: function () {
             debugger;
             return new Sk.builtin.tuple(this.$buildMRO());
         },
         $flags: { NoArgs: true }
     },
     __dir__: {
-        $raw: function __dir__() {
+        $meth: function __dir__() {
             const seen = new Set;
             const dir = [];
             function push_or_continue(attr) {

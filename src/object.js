@@ -130,7 +130,7 @@ Sk.builtin.object.prototype["__setattr__"] = Sk.generic.pythonSetAttr;
 
 Sk.builtin.object.prototype.tp$methods = {
     __dir__: {
-        $raw: function __dir__() {
+        $meth: function __dir__() {
             const dir = [];
             if (this.$d) {
                 if (this.$d.ob$type === Sk.builtin.dict) {
@@ -152,7 +152,7 @@ Sk.builtin.object.prototype.tp$methods = {
         $doc: "Default dir() implementation."
     },
     __format__: {
-        $raw: function (format_spec) {
+        $meth: function (format_spec) {
             let formatstr;
             if (!Sk.builtin.checkString(format_spec)) {
                 if (Sk.__future__.exceptions) {

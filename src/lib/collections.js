@@ -9,7 +9,7 @@ const collections_mod = function (keywds) {
         base: Sk.builtin.dict,
         methods: {
             copy: {
-                $raw: function () {
+                $meth: function () {
                     const L = [];
                     Sk.misceval.iterFor(Sk.abstr.iter(this), function (k) {
                         L.push(k);
@@ -20,7 +20,7 @@ const collections_mod = function (keywds) {
                 $flags: { NoArgs: true }
             },
             __missing__: {
-                $raw: function (key) {
+                $meth: function (key) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
                         throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).v);
                     } else {
@@ -75,7 +75,7 @@ const collections_mod = function (keywds) {
         methods: {
             elements: {
                 $flags: { NoArgs: true },
-                $raw: function () {
+                $meth: function () {
                     Sk.builtin.pyCheckArgsLen("elements", arguments.length, 1, 1);
                     const all_elements = [];
                     for (let iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
@@ -99,7 +99,7 @@ const collections_mod = function (keywds) {
                     NamedArgs: ["n"],
                     Defaults: [Sk.builtin.none.none$]
                 },
-                $raw: function (n) {
+                $meth: function (n) {
                     length = this.sq$length();
                     if (Sk.builtin.checkNone(n)) {
                         n = length;
@@ -143,7 +143,7 @@ const collections_mod = function (keywds) {
             },
             update: {
                 $flags: { FastCall: true },
-                $raw: function (args, kwargs) {
+                $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("update", args, 0, 1)
                     let k, count;
                     const mapping = args[0];
@@ -163,7 +163,7 @@ const collections_mod = function (keywds) {
             },
             subtract: {
                 $flags: { FastCall: true },
-                $raw: function (args, kwargs) {
+                $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("subtract", args, 0, 1);
                     let k, count;
                     const mapping = args[0];
@@ -273,20 +273,20 @@ const collections_mod = function (keywds) {
         methods: {
             pop: {
                 $flags: { NamedArgs: ['key', 'default'], Defaults: [null, undefined] },
-                $raw: function (args) {
+                $meth: function (args) {
                     const key = args[0];
                     const d = args[1];
                     const idx = this.orderedkeys.indexOf(key);
                     if (idx != -1) {
                         this.orderedkeys.splice(idx, 1);
                     }
-                    // Sk.builtin.dict.prototype.pop.$raw.call(this, key, d);
+                    // Sk.builtin.dict.prototype.pop.$meth.call(this, key, d);
                     return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]);
                 }
             },
             popitem: {
                 $flags: { NamedArgs: ['last'], Defaults: [Sk.builtin.bool.true$] },
-                $raw: function (last) {
+                $meth: function (last) {
                     let key, val;
                     if (this.orderedkeys.length == 0) {
                         throw new Sk.builtin.KeyError("dictionary is empty");
