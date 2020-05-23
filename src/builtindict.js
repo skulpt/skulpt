@@ -121,7 +121,7 @@ Sk.builtins = {
 };
 
 
-Sk.builtin.$method_defs = {
+Sk.builtins.$method_defs = {
     // __build_class__: {
     //     $meth: Sk.builtin.__build_class__,
     //     $flags: {},
@@ -384,7 +384,7 @@ Sk.builtin.$method_defs = {
 
     print: {
         $meth: Sk.builtin.print,
-        $flags: {}, // should be fastcall for now leave to builtin.func.prototype.tp$call
+        $flags: {FastCall: true},
         $textsig: null,
         $doc: "print(value, ..., sep=' ', end='\\n', file=sys.stdout, flush=False)\n\nPrints the values to a stream, or to sys.stdout by default.\nOptional keyword arguments:\nfile:  a file-like object (stream); defaults to the current sys.stdout.\nsep:   string inserted between values, default a space.\nend:   string appended after the last value, default a newline.\nflush: whether to forcibly flush the stream."
     },
@@ -439,9 +439,11 @@ Sk.builtin.$method_defs = {
 
 };
 
-for (let method_def_name in Sk.builtin.$method_defs) {
-    Sk.builtins[method_def_name] = new Sk.builtin.sk_method(Sk.builtin.$method_defs[method_def_name], undefined, "builtins");
+for (let def_name in Sk.builtins.$method_defs) {
+    Sk.builtins[def_name] = new Sk.builtin.sk_method(Sk.builtins.$method_defs[def_name], undefined, "builtins");
 }
+
+delete Sk.builtins.$method_defs;
 
 Sk.setupObjects = function (py3) {
     if (!py3) {

@@ -47,7 +47,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
 
         if (flags.FastCall && flags.NoKwargs) {
             this.tp$call = this.$fastCallNoKwargs;
-        } else if (flags.fastCall) {
+        } else if (flags.FastCall) {
             this.tp$call = this.$meth;
         } else if (flags.NoArgs) {
             this.tp$call = this.$callNoArgs;

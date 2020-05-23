@@ -22,7 +22,7 @@ require("./slotdefs.js");
 require("./descr.js");
 // we can only create type objects from now...
 require("./function.js");
-require("./builtinfuncmethod.js");
+require("./sk_method.js");
 require("./builtin.js");
 require("./fromcodepoint.js");
 require("./errors.js");
