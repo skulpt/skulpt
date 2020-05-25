@@ -2,7 +2,7 @@
  * @constructor
  * @param {Array.<Object>} L
  */
-Sk.builtin.dict = function dict (L) {
+Sk.builtin.dict = function dict(L) {
     // calling new Sk.builtin.dict is an internal method that requires an array of key value pairs
     Sk.asserts.assert(this instanceof Sk.builtin.dict);
     if (L === undefined) {
@@ -21,7 +21,7 @@ Sk.abstr.markUnhashable(Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
 
-Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)"
+Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)";
 
 
 Sk.builtin.dict.prototype.tp$new = Sk.generic.new(Sk.builtin.dict);
@@ -37,18 +37,18 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
                 // should also check that the sq length is not longer than 2.
                 const len = i.sq$length(); //this can't currently suspend
                 if (len !== 2) {
-                    throw new Sk.builtin.ValueError("dictionary update sequence element #"+ idx +" has length "+len+"; 2 is required")
+                    throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + len + "; 2 is required");
                 }
                 self.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
                 idx++;
             } else {
                 throw new Sk.builtin.TypeError("element " + idx + " is not a sequence");
             }
-        })
+        });
     }
     if (kwargs) {
-        for (i = 0; i < kwargs.length; i += 2) {
-            this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i+1]);
+        for (let i = 0; i < kwargs.length; i += 2) {
+            this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
         }
     }
     return Sk.builtin.none.none$;
@@ -151,9 +151,11 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
             throw new Sk.builtin.AttributeError("dict object has no attribute " + Sk.misceval.objectRepr(key));
         }
         // New bucket
-        bucket = {$hash: k, items: [
-            {lhs: key, rhs: w}
-        ]};
+        bucket = {
+            $hash: k, items: [
+                { lhs: key, rhs: w }
+            ]
+        };
         this.buckets[k.v] = bucket;
         this.size += 1;
         return;
@@ -168,7 +170,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     }
 
     // Not found in dictionary
-    bucket.items.push({lhs: key, rhs: w});
+    bucket.items.push({ lhs: key, rhs: w });
     this.size += 1;
 };
 
@@ -208,7 +210,7 @@ Sk.builtin.dict.prototype["$r"] = function () {
 
         // we need to check if value is same as object
         // otherwise it would cause an stack overflow
-        if(v === this) {
+        if (v === this) {
             ret.push(Sk.misceval.objectRepr(k).v + ": {...}");
         } else {
             ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
@@ -485,10 +487,10 @@ Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, ke
     this function mimics the cpython implementation, which is also the reason for the
     almost similar code, this may be changed in future
 */
-Sk.builtin.dict.prototype.dict_merge = function(b) {
+Sk.builtin.dict.prototype.dict_merge = function (b) {
     var iter;
     var k, v;
-    if(b instanceof Sk.builtin.dict) {
+    if (b instanceof Sk.builtin.dict) {
         // fast way
         for (iter = b.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
             v = b.mp$subscript(k);
@@ -517,9 +519,9 @@ Sk.builtin.dict.prototype.dict_merge = function(b) {
  */
 var update_f = function (kwargs, self, other) {
     // case another dict or obj with keys and getitem has been provided
-    if(other !== undefined && (other.tp$name === "dict" || other["keys"])) {
+    if (other !== undefined && (other.tp$name === "dict" || other["keys"])) {
         self.dict_merge(other); // we merge with override
-    } else if(other !== undefined && Sk.builtin.checkIterable(other)) {
+    } else if (other !== undefined && Sk.builtin.checkIterable(other)) {
         // 2nd case, we expect an iterable that contains another iterable of length 2
         var iter;
         var k, v;
@@ -532,7 +534,7 @@ var update_f = function (kwargs, self, other) {
 
             // cpython impl. would transform iterable into sequence
             // we just call iternext twice if k has length of 2
-            if(k.sq$length() === 2) {
+            if (k.sq$length() === 2) {
                 var k_iter = Sk.abstr.iter(k);
                 var k_key = k_iter.tp$iternext();
                 var k_value = k_iter.tp$iternext();
@@ -542,9 +544,9 @@ var update_f = function (kwargs, self, other) {
                 throw new Sk.builtin.ValueError("dictionary update sequence element #" + seq_i + " has length " + k.sq$length() + "; 2 is required");
             }
         }
-    } else if(other !== undefined) {
+    } else if (other !== undefined) {
         // other is not a dict or iterable
-        throw new Sk.builtin.TypeError("'" +Sk.abstr.typeName(other) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
     }
 
     // apply all key/value pairs of kwargs
@@ -553,7 +555,7 @@ var update_f = function (kwargs, self, other) {
     self.dict_merge(kwargs_dict);
 
     // returns none, when successful or throws exception
-    return  Sk.builtin.none.none$;
+    return Sk.builtin.none.none$;
 };
 
 update_f.co_kwargs = true;

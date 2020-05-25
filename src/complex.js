@@ -1,7 +1,7 @@
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
  */
-Math.hypot = Math.hypot || function() {
+Math.hypot = Math.hypot || function () {
     var y = 0;
     var length = arguments.length;
 
@@ -52,7 +52,7 @@ Sk.builtin.complex = function (real, imag) {
     }
 
     if (r != null && Sk.builtin.checkString(r)) {
-        if(i != null) {
+        if (i != null) {
             throw new Sk.builtin.TypeError("complex() can't take second arg if first is a string");
         }
 
@@ -83,12 +83,12 @@ Sk.builtin.complex = function (real, imag) {
     }
 
     // this function mimics the tp_as_number->nb_float check in cpython
-    var nb_float = function(op) {
-        if(Sk.builtin.checkNumber(op)) {
+    var nb_float = function (op) {
+        if (Sk.builtin.checkNumber(op)) {
             return true;
         }
 
-        if(op.ob$type.$typeLookup(Sk.builtin.str.$float_) !== undefined) {
+        if (op.ob$type.$typeLookup(Sk.builtin.str.$float_) !== undefined) {
             return true;
         }
     };
@@ -170,26 +170,26 @@ Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
 
-Sk.builtin.complex.prototype.tp$doc = "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0."
+Sk.builtin.complex.prototype.tp$doc = "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.";
 
 Sk.builtin.complex.prototype.tp$new = function (args, kwargs) {
     let real, imag;
-    const nargs = args.length + (kwargs ? kwargs.length/2 : 0);
+    const nargs = args.length + (kwargs ? kwargs.length / 2 : 0);
     if (nargs > 2) {
-        throw new Sk.builtin.TypeError("complex() takes at most 2 arguments ("+nargs+" given)")
-    } 
+        throw new Sk.builtin.TypeError("complex() takes at most 2 arguments (" + nargs + " given)");
+    }
     if (kwargs) {
-        real_index = kwargs.indexOf("real");
+        const real_index = kwargs.indexOf("real");
         if (real_index !== -1) {
             if (args.length) {
-                throw new Sk.builtin.TypeError("argument for complex() given by name ('real') and position (1)")
+                throw new Sk.builtin.TypeError("argument for complex() given by name ('real') and position (1)");
             } else {
-                args.push(kwargs[real_index+1])
+                args.push(kwargs[real_index + 1]);
             }
-        } 
-        imag_index = kwargs.indexOf("imag");
+        }
+        const imag_index = kwargs.indexOf("imag");
         if (imag_index !== -1) {
-            args.push(kwargs[imag_index+1]) 
+            args.push(kwargs[imag_index + 1]);
         }
     }
     real = args[0];
@@ -208,7 +208,7 @@ Sk.builtin.complex.prototype.nb$int_ = function () {
     throw new Sk.builtin.TypeError("can't convert complex to int");
 };
 
-Sk.builtin.complex.prototype.nb$float_ = function() {
+Sk.builtin.complex.prototype.nb$float_ = function () {
     throw new Sk.builtin.TypeError("can't convert complex to float");
 };
 
@@ -223,7 +223,7 @@ Sk.builtin.complex._isNegativeZero = function (val) {
         return false;
     }
 
-    return 1/val === -Infinity;
+    return 1 / val === -Infinity;
 };
 
 /**
@@ -365,7 +365,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
         if (val[index] === "j" || val[index] === "J") {
             y = parseFloat(match[0]);
             index++;
-        } else if(val[index] === "+" || val[index] === "-") {
+        } else if (val[index] === "+" || val[index] === "-") {
             /* <float><signed-float>j | <float><sign>j */
             x = parseFloat(match[0]);
 
@@ -592,7 +592,7 @@ Sk.builtin.complex.c_pow = function (a, b) {
         real = 1.0;
         imag = 0.0;
     } else if (areal === 0.0 && aimag === 0.0) {
-        if(bimag !== 0.0 || breal < 0.0) {
+        if (bimag !== 0.0 || breal < 0.0) {
             throw new Sk.builtin.ZeroDivisionError("complex division by zero");
         }
 
@@ -604,7 +604,7 @@ Sk.builtin.complex.c_pow = function (a, b) {
         at = Math.atan2(aimag, areal);
         phase = at * breal;
 
-        if(bimag !== 0.0) {
+        if (bimag !== 0.0) {
             len /= Math.exp(at * bimag);
             phase += bimag * Math.log(vabs);
         }
@@ -629,7 +629,7 @@ Sk.builtin.complex.c_powi = function (x, n) {
     } else {
         //  return c_quot(c_1,c_powu(x,-n));
         c1 = new Sk.builtin.complex(new Sk.builtin.float_(1.0), new Sk.builtin.float_(0.0));
-        return c1.nb$divide(Sk.builtin.complex.c_powu(x,-n));
+        return c1.nb$divide(Sk.builtin.complex.c_powu(x, -n));
     }
 };
 
@@ -709,7 +709,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
     var i;
 
     if (op !== "Eq" && op !== "NotEq") {
-        if(Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
+        if (Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
             throw new Sk.builtin.TypeError("no ordering relation is defined for complex numbers");
         }
 
@@ -746,7 +746,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
     }
 
     // invert result if op == NotEq
-    if(op === "NotEq") {
+    if (op === "NotEq") {
         equal = !equal;
     }
 
@@ -798,10 +798,10 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 
 Sk.builtin.complex.prototype.tp$getsets = {
     real: {
-        $get: function () {return this.real}
+        $get: function () { return this.real; }
     },
     imag: {
-        $get: function () {return this.imag}
+        $get: function () { return this.imag; }
     }
 };
 
@@ -812,7 +812,7 @@ Sk.builtin.complex.prototype.tp$getsets = {
  *
  * This functions assumes, that v is always instance of Sk.builtin.complex
  */
-Sk.builtin.complex.complex_format = function (v, precision, format_code){
+Sk.builtin.complex.complex_format = function (v, precision, format_code) {
     function copysign(a, b) {
         let sign;
         if (b) {
@@ -846,7 +846,7 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
 
         im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN, null);
 
-        if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
+        if (v.imag.v === 0 && 1 / v.imag.v === -Infinity && im && im[0] !== "-") {
             im = "-" + im; // force negative zero sign
         }
 
@@ -874,7 +874,7 @@ Sk.builtin.complex.prototype.tp$str = function () {
  * We currently use the signature (self, format_spec) instead of (self, args). So we do
  * not need to unwrap the args.
  */
-Sk.builtin.complex.prototype.int$format = function __format__(self, format_spec){
+Sk.builtin.complex.prototype.int$format = function __format__(self, format_spec) {
     var result; // PyObject
 
     if (format_spec == null) {
@@ -893,7 +893,7 @@ Sk.builtin.complex.prototype.int$format = function __format__(self, format_spec)
 Sk.builtin.complex.prototype.int$format.co_name = new Sk.builtin.str("__format__");
 Sk.builtin.complex.prototype.__format__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$format);
 
-Sk.builtin.complex._PyComplex_FormatAdvanced = function(self, format_spec) {
+Sk.builtin.complex._PyComplex_FormatAdvanced = function (self, format_spec) {
     throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex type.");
 };
 
@@ -956,14 +956,14 @@ Sk.builtin.complex.prototype.int$bool = function __bool__(self) {
 Sk.builtin.complex.prototype.int$bool.co_name = new Sk.builtin.str("__bool__");
 Sk.builtin.complex.prototype.__bool__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$bool);
 
-Sk.builtin.complex.prototype.int$truediv = function __truediv__(self, other){
+Sk.builtin.complex.prototype.int$truediv = function __truediv__(self, other) {
     Sk.builtin.pyCheckArgsLen("__truediv__", arguments.length, 1, 1, true);
     return self.nb$divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$truediv.co_name = new Sk.builtin.str("__truediv__");
 Sk.builtin.complex.prototype.__truediv__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$truediv);
 
-Sk.builtin.complex.prototype.int$hash = function __hash__(self){
+Sk.builtin.complex.prototype.int$hash = function __hash__(self) {
     Sk.builtin.pyCheckArgsLen("__hash__", arguments.length, 0, 0, true);
 
     return self.tp$hash.call(self);
@@ -971,7 +971,7 @@ Sk.builtin.complex.prototype.int$hash = function __hash__(self){
 Sk.builtin.complex.prototype.int$hash.co_name = new Sk.builtin.str("__hash__");
 Sk.builtin.complex.prototype.__hash__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$hash);
 
-Sk.builtin.complex.prototype.int$add = function __add__(self, other){
+Sk.builtin.complex.prototype.int$add = function __add__(self, other) {
     Sk.builtin.pyCheckArgsLen("__add__", arguments.length, 1, 1, true);
     return self.nb$add.call(self, other);
 };
@@ -979,7 +979,7 @@ Sk.builtin.complex.prototype.int$add.co_name = new Sk.builtin.str("__add__");
 Sk.builtin.complex.prototype.__add__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$add);
 
 
-Sk.builtin.complex.prototype.int$repr = function __repr__(self){
+Sk.builtin.complex.prototype.int$repr = function __repr__(self) {
     Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, true);
 
     return self["r$"].call(self);
@@ -987,7 +987,7 @@ Sk.builtin.complex.prototype.int$repr = function __repr__(self){
 Sk.builtin.complex.prototype.int$repr.co_name = new Sk.builtin.str("__repr__");
 Sk.builtin.complex.prototype.__repr__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$repr);
 
-Sk.builtin.complex.prototype.int$str = function __str__(self){
+Sk.builtin.complex.prototype.int$str = function __str__(self) {
     Sk.builtin.pyCheckArgsLen("__str__", arguments.length, 0, 0, true);
 
     return self.tp$str.call(self);
@@ -995,62 +995,62 @@ Sk.builtin.complex.prototype.int$str = function __str__(self){
 Sk.builtin.complex.prototype.int$str.co_name = new Sk.builtin.str("__str__");
 Sk.builtin.complex.prototype.__str__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$str);
 
-Sk.builtin.complex.prototype.int$sub = function __sub__(self, other){
+Sk.builtin.complex.prototype.int$sub = function __sub__(self, other) {
     Sk.builtin.pyCheckArgsLen("__sub__", arguments.length, 1, 1, true);
     return self.nb$subtract.call(self, other);
 };
 Sk.builtin.complex.prototype.int$sub.co_name = new Sk.builtin.str("__sub__");
 Sk.builtin.complex.prototype.__sub__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$sub);
 
-Sk.builtin.complex.prototype.int$mul = function __mul__(self, other){
+Sk.builtin.complex.prototype.int$mul = function __mul__(self, other) {
     Sk.builtin.pyCheckArgsLen("__mul__", arguments.length, 1, 1, true);
     return self.nb$multiply.call(self, other);
 };
 Sk.builtin.complex.prototype.int$mul.co_name = new Sk.builtin.str("__mul__");
 Sk.builtin.complex.prototype.__mul__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$mul);
 
-Sk.builtin.complex.prototype.int$div = function __div__(self, other){
+Sk.builtin.complex.prototype.int$div = function __div__(self, other) {
     Sk.builtin.pyCheckArgsLen("__div__", arguments.length, 1, 1, true);
     return self.nb$divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$div.co_name = new Sk.builtin.str("__div__");
 Sk.builtin.complex.prototype.__div__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$div);
 
-Sk.builtin.complex.prototype.int$floordiv = function __floordiv__(self, other){
+Sk.builtin.complex.prototype.int$floordiv = function __floordiv__(self, other) {
     Sk.builtin.pyCheckArgsLen("__floordiv__", arguments.length, 1, 1, true);
     return self.nb$floor_divide.call(self, other);
 };
 Sk.builtin.complex.prototype.int$floordiv.co_name = new Sk.builtin.str("__floordiv__");
 Sk.builtin.complex.prototype.__floordiv__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$floordiv);
 
-Sk.builtin.complex.prototype.int$mod = function __mod__(self, other){
+Sk.builtin.complex.prototype.int$mod = function __mod__(self, other) {
     Sk.builtin.pyCheckArgsLen("__mod__", arguments.length, 1, 1, true);
     return self.nb$remainder.call(self, other);
 };
 Sk.builtin.complex.prototype.int$mod.co_name = new Sk.builtin.str("__mod__");
 Sk.builtin.complex.prototype.__mod__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$mod);
 
-Sk.builtin.complex.prototype.int$pow = function __pow__(self, other, z){
+Sk.builtin.complex.prototype.int$pow = function __pow__(self, other, z) {
     Sk.builtin.pyCheckArgsLen("__pow__", arguments.length, 1, 2, true);
     return self.nb$power.call(self, other, z);
 };
 Sk.builtin.complex.prototype.int$pow.co_name = new Sk.builtin.str("__pow__");
 Sk.builtin.complex.prototype.__pow__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$pow);
 
-Sk.builtin.complex.prototype.int$neg = function __neg__(self){
+Sk.builtin.complex.prototype.int$neg = function __neg__(self) {
     Sk.builtin.pyCheckArgsLen("__neg__", arguments.length, 0, 0, true);
     return self.nb$negative.call(self);
 };
 Sk.builtin.complex.prototype.__neg__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$neg);
 
-Sk.builtin.complex.prototype.int$pos = function __pos__(self){
+Sk.builtin.complex.prototype.int$pos = function __pos__(self) {
     Sk.builtin.pyCheckArgsLen("__pos__", arguments.length, 0, 0, true);
     return self.nb$positive.call(self);
 };
 Sk.builtin.complex.prototype.int$pos.co_name = new Sk.builtin.str("__pos__");
 Sk.builtin.complex.prototype.__pos__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$pos);
 
-Sk.builtin.complex.prototype.int$conjugate = function conjugate(self){
+Sk.builtin.complex.prototype.int$conjugate = function conjugate(self) {
     Sk.builtin.pyCheckArgsLen("conjugate", arguments.length, 0, 0, true);
     var _imag = self.imag.v;
     _imag = -_imag;
@@ -1061,7 +1061,7 @@ Sk.builtin.complex.prototype.int$conjugate.co_name = new Sk.builtin.str("conjuga
 Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(Sk.builtin.complex.prototype.int$conjugate);
 
 // deprecated
-Sk.builtin.complex.prototype.int$divmod = function __divmod__(self, other){
+Sk.builtin.complex.prototype.int$divmod = function __divmod__(self, other) {
     Sk.builtin.pyCheckArgsLen("__divmod__", arguments.length, 1, 1, true);
 
     var div, mod; // Py_complex
@@ -1084,7 +1084,7 @@ Sk.builtin.complex.prototype.int$divmod = function __divmod__(self, other){
 Sk.builtin.complex.prototype.int$divmod.co_name = new Sk.builtin.str("__divmod__");
 Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$divmod);
 
-Sk.builtin.complex.prototype.int$getnewargs = function __getnewargs__(self){
+Sk.builtin.complex.prototype.int$getnewargs = function __getnewargs__(self) {
     Sk.builtin.pyCheckArgsLen("__getnewargs__", arguments.length, 0, 0, true);
 
     return new Sk.builtin.tuple([self.real, self.imag]);
@@ -1092,10 +1092,10 @@ Sk.builtin.complex.prototype.int$getnewargs = function __getnewargs__(self){
 Sk.builtin.complex.prototype.int$getnewargs.co_name = new Sk.builtin.str("__getnewargs__");
 Sk.builtin.complex.prototype.__getnewargs__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$getnewargs);
 
-Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self){
+Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self) {
     Sk.builtin.pyCheckArgsLen("__nonzero__", arguments.length, 0, 0, true);
 
-    if(self.real.v !== 0.0 || self.imag.v !== 0.0) {
+    if (self.real.v !== 0.0 || self.imag.v !== 0.0) {
         return Sk.builtin.bool.true$;
     } else {
         return Sk.builtin.bool.false$;
@@ -1130,7 +1130,7 @@ Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
  * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
  * infinite number, or not a number, respectively.
  */
-Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision, flags, type) {
+Sk.builtin.complex.PyOS_double_to_string = function (val, format_code, precision, flags, type) {
     var format;
     var buf;
     var t;
@@ -1138,7 +1138,7 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
     var upper = false;
 
     // Validate format code, and map upper and lower case
-    switch(format_code) {
+    switch (format_code) {
         case "e": /* exponent */
         case "f": /* fixed */
         case "g": /* general */
@@ -1153,7 +1153,7 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
             break;
         case "r": /* repr format */
             // Supplied precision is unused, must be 0.
-            if(precision !== 0) {
+            if (precision !== 0) {
                 throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
             }
 
@@ -1168,7 +1168,7 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
     // no need for buffer size calculation like in cpython
 
     // Handle nan and inf
-    if(isNaN(val)) {
+    if (isNaN(val)) {
         buf = "nan";
         t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_NAN;
     } else if (val === Infinity) {
@@ -1179,7 +1179,7 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
         t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE;
     } else {
         t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_FINITE;
-        if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
+        if (flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
             format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
         }
 
@@ -1188,7 +1188,7 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
         var format_str = "%";
         format_str += flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ALT ? "#" : "";
 
-        if(precision != null) {
+        if (precision != null) {
             format_str += ".";
             format_str += precision;
         }
@@ -1209,11 +1209,11 @@ Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision,
      * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
      * include sign even for inf and nan.
      */
-    if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
+    if (flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
         buf = "+" + buf;
     }
 
-    if(upper) {
+    if (upper) {
         // Convert to upper case
         buf = buf.toUpperCase();
     }

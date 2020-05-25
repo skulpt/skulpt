@@ -223,7 +223,7 @@ Sk.builtins.$method_defs = {
     eval_$rn$: {
         $name: "eval",
         $meth: Sk.builtin.eval_,
-        $flags: {MaxArgs: 1, MaxArgs: 3},
+        $flags: {MinArgs: 1, MaxArgs: 3},
         $textsig: "($module, source, globals=None, locals=None, /)",
         $doc: "Evaluate the given source in the context of globals and locals.\n\nThe source may be a string representing a Python expression\nor a code object as returned by compile().\nThe globals must be a dictionary and locals can be any mapping,\ndefaulting to the current globals and locals.\nIf only globals is given, locals defaults to it."
     },
@@ -443,7 +443,6 @@ for (let def_name in Sk.builtins.$method_defs) {
     Sk.builtins[def_name] = new Sk.builtin.sk_method(Sk.builtins.$method_defs[def_name], undefined, "builtins");
 }
 
-delete Sk.builtins.$method_defs;
 
 Sk.setupObjects = function (py3) {
     if (!py3) {

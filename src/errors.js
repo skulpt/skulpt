@@ -86,11 +86,11 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     },
     getsets: {
         args: {
-            $get: function () { return this.args }
+            $get: function () { return this.args; }
         }
     },
     proto: {
-        toString: function () { return this.$r().v }
+        toString: function () { return this.$r().v; }
     }
 });
 
@@ -251,7 +251,7 @@ Sk.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
  * @extends Sk.builtin.BaseException
  * @param {String|Array} args
  */
-Sk.builtin.SystemExit = function () {
+Sk.builtin.SystemExit = function (args) {
     Sk.builtin.BaseException.call(this, args);
 };
 Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
@@ -377,7 +377,7 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
  * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
-Sk.builtin.StopIteration = function () {
+Sk.builtin.StopIteration = function (args) {
     Sk.builtin.Exception.call(this, args);
 };
 Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);

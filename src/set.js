@@ -31,7 +31,7 @@ Sk.builtin.set.prototype.tp$init = function (args, kwargs) {
             self.v.mp$ass_subscript(i, true);
         });
     }
-    return Sk.builtin.none.none$
+    return Sk.builtin.none.none$;
 };
 
 
@@ -42,17 +42,17 @@ Sk.builtin.set.prototype.$r = function () {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
-    if(Sk.__future__.python3) {
+    if (Sk.__future__.python3) {
         if (ret.length === 0) {
             return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
         } else if (this.hp$type) {
             // then we are a subclass of set
-            return new Sk.builtin.str(Sk.abstr.typeName(this) +"({" + ret.join(", ") + "})");
+            return new Sk.builtin.str(Sk.abstr.typeName(this) + "({" + ret.join(", ") + "})");
         } else {
             return new Sk.builtin.str("{" + ret.join(", ") + "}");
         }
     } else {
-        return new Sk.builtin.str(Sk.abstr.typeName(this) +"([" + ret.join(", ") + "])");
+        return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
     }
 };
 
@@ -152,7 +152,7 @@ Sk.builtin.set.prototype.ob$ge = function (other) {
     return this["issuperset"].func_code(this, other);
 };
 
-Sk.builtin.set.prototype.nb$and = function(other){
+Sk.builtin.set.prototype.nb$and = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'set' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -160,7 +160,7 @@ Sk.builtin.set.prototype.nb$and = function(other){
     return this["intersection"].func_code(this, other);
 };
 
-Sk.builtin.set.prototype.nb$or = function(other){
+Sk.builtin.set.prototype.nb$or = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for |: 'set' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -168,7 +168,7 @@ Sk.builtin.set.prototype.nb$or = function(other){
     return this["union"].func_code(this, other);
 };
 
-Sk.builtin.set.prototype.nb$xor = function(other){
+Sk.builtin.set.prototype.nb$xor = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for ^: 'set' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -176,7 +176,7 @@ Sk.builtin.set.prototype.nb$xor = function(other){
     return this["symmetric_difference"].func_code(this, other);
 };
 
-Sk.builtin.set.prototype.nb$subtract = function(other){
+Sk.builtin.set.prototype.nb$subtract = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.set)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for -: 'set' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -197,7 +197,7 @@ Sk.builtin.set.prototype.sq$length = function () {
     return this["v"].sq$length();
 };
 
-Sk.builtin.set.prototype.sq$contains = function(ob) {
+Sk.builtin.set.prototype.sq$contains = function (ob) {
     return this["v"].sq$contains(ob);
 };
 
@@ -342,7 +342,7 @@ Sk.builtin.set.prototype["intersection_update"] = new Sk.builtin.func(function (
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                                           "' object is not iterable");
+                "' object is not iterable");
         }
     }
 
@@ -364,7 +364,7 @@ Sk.builtin.set.prototype["difference_update"] = new Sk.builtin.func(function (se
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                                           "' object is not iterable");
+                "' object is not iterable");
         }
     }
 
@@ -399,8 +399,7 @@ Sk.builtin.set.prototype["add"] = new Sk.builtin.func(function (self, item) {
 Sk.builtin.set.prototype["discard"] = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgsLen("discard", arguments.length, 2, 2);
 
-    Sk.builtin.dict.prototype["pop"].func_code(self.v, item,
-                                               Sk.builtin.none.none$);
+    Sk.builtin.dict.prototype["pop"].func_code(self.v, item, Sk.builtin.none.none$);
     return Sk.builtin.none.none$;
 });
 
@@ -426,7 +425,7 @@ Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     return Sk.builtin.none.none$;
 });
 
-Sk.builtin.set.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+Sk.builtin.set.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
     return new Sk.builtin.bool(self.sq$contains(item));
 });

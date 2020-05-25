@@ -44,7 +44,7 @@ Sk.builtin.callable_iter_ = Sk.generic.iterator("callable_iterator", {
 
 /**
  * @constructor
- * @param {Sk.builtin.dict || Sk.builtin.mappingproxy} dict
+ * @param {Sk.builtin.dict} dict
  */
 Sk.builtin.dict_iter_ = Sk.generic.iterator("dict_keyiterator", {
     constructor: function (dict) {
@@ -84,7 +84,7 @@ Sk.builtin.list_iter_ = Sk.generic.iterator("list_iterator", {
 
 /**
  * @constructor
- * @param {Sk.builtin.set || Sk.builtin.frozenset} set
+ * @param {Sk.builtin.set} set or frozenset
  */
 Sk.builtin.set_iter_ = Sk.generic.iterator("set_iterator", {
     constructor: function (set) {

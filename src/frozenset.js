@@ -14,7 +14,7 @@ Sk.builtin.frozenset = function (S) {
 
 Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
 
-Sk.builtin.frozenset.prototype.tp$doc = "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements."
+Sk.builtin.frozenset.prototype.tp$doc = "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.";
 
 Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.frozenset.prototype) {
@@ -41,7 +41,6 @@ Sk.builtin.frozenset.prototype.$subtype_new = function (args, kwargs) {
     // pass the args but ignore the kwargs for subtyping
     const frozenset = Sk.builtin.frozenset.prototype.tp$new(args);
     instance.v = frozenset.v;
-    delete frozenset;
     return instance;
 };
 
@@ -56,7 +55,7 @@ Sk.builtin.frozenset.prototype["$r"] = function () {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
 
-    if(Sk.__future__.python3){
+    if (Sk.__future__.python3) {
         if (ret.length === 0) {
             return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
         } else {
@@ -163,7 +162,7 @@ Sk.builtin.frozenset.prototype.ob$ge = function (other) {
     return this["issuperset"].func_code(this, other);
 };
 
-Sk.builtin.frozenset.prototype.nb$and = function(other){
+Sk.builtin.frozenset.prototype.nb$and = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -171,7 +170,7 @@ Sk.builtin.frozenset.prototype.nb$and = function(other){
     return this["intersection"].func_code(this, other);
 };
 
-Sk.builtin.frozenset.prototype.nb$or = function(other){
+Sk.builtin.frozenset.prototype.nb$or = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for |: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -179,7 +178,7 @@ Sk.builtin.frozenset.prototype.nb$or = function(other){
     return this["union"].func_code(this, other);
 };
 
-Sk.builtin.frozenset.prototype.nb$xor = function(other){
+Sk.builtin.frozenset.prototype.nb$xor = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for ^: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -187,7 +186,7 @@ Sk.builtin.frozenset.prototype.nb$xor = function(other){
     return this["symmetric_difference"].func_code(this, other);
 };
 
-Sk.builtin.frozenset.prototype.nb$subtract = function(other){
+Sk.builtin.frozenset.prototype.nb$subtract = function (other) {
     if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
         throw new Sk.builtin.TypeError("unsupported operand type(s) for -: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
     }
@@ -208,7 +207,7 @@ Sk.builtin.frozenset.prototype.sq$length = function () {
     return this["v"].sq$length();
 };
 
-Sk.builtin.frozenset.prototype.sq$contains = function(ob) {
+Sk.builtin.frozenset.prototype.sq$contains = function (ob) {
     return this["v"].sq$contains(ob);
 };
 
@@ -300,11 +299,11 @@ Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (s
     }
 
     var i, it, item;
-    
+
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                                           "' object is not iterable");
+                "' object is not iterable");
         }
     }
 
@@ -336,7 +335,7 @@ Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (sel
     for (i = 1; i < arguments.length; i++) {
         if (!Sk.builtin.checkIterable(arguments[i])) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                                           "' object is not iterable");
+                "' object is not iterable");
         }
     }
 

@@ -25,7 +25,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
     cons.prototype.tp$new = function (args, kwargs) {
         if (kwargs && kwargs.length) {
-            throw new Sk.builtin.TypeError(nm + "() takes no keyword arguments"); 
+            throw new Sk.builtin.TypeError(nm + "() takes no keyword arguments");
         } else if (args.length !== 1) {
             throw new Sk.builtin.TypeError(nm + "() takes at most 1 argument (" + args.length + " given)");
         }
@@ -33,8 +33,8 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         const arg = args[0];
 
         for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                v.push(i);
-            }
+            v.push(i);
+        }
         if (v.length != flds.length) {
             throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
         }
@@ -74,16 +74,16 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         }
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
-    
+
     const getsets = {};
-    for (i=0; i<flds.length; i++) {
+    for (i = 0; i < flds.length; i++) {
         getsets[flds[i]] = {
-            $get: function () {return this.v[i]},
+            $get: function () { return this.v[i]; },
             $doc: docs[i]
-        }
+        };
     }
     Sk.abstr.setUpGetSets(cons, getsets);
-    
+
     cons.prototype.num_sequence_fields = new Sk.builtin.int_(flds.length);
 
     return cons;

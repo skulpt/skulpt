@@ -18,7 +18,7 @@ Sk.builtin.type = function type() {
     Sk.asserts.assert(false);
 };
 
-Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type"
+Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
 
 
 Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
@@ -51,7 +51,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     // currently skulpt does not support metatypes...
     // metatype.prototype = this
     if (args.length != 1 && args.length != 3) {
-        throw new Sk.builtin.AttributeError("type() takes 1 or 3 arguments")
+        throw new Sk.builtin.AttributeError("type() takes 1 or 3 arguments");
     }
 
     let $name, bases, dict;
@@ -93,7 +93,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
 
     if (best_base !== undefined) {
-        Sk.abstr.setUpInheritance($name, klass, best_base, metaclass)
+        Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
     } else {
         // todo: create some sort of abstract base class that is like object but is not object
         Sk.abstr.setUpInheritance($name, klass, Sk.builtin.object, metaclass);
@@ -115,11 +115,10 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     // copy properties into klass.prototype 
     // uses python iter methods
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
-        v = dict.mp$subscript(k);
-        if (v === undefined) {
-            v = null;
+        const v = dict.mp$subscript(k);
+        if (v !== undefined) {
+            klass.prototype[k.v] = v;
         }
-        klass.prototype[k.v] = v;
     }
 
     // assign __doc__
@@ -143,8 +142,7 @@ Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
         throw new Sk.builtin.TypeError("type.__init__() takes 1 or 3 arguments");
     }
     // according to Cpython we just call the object init method here
-    res = Sk.builtin.object.prototype.tp$init.call(this, []);
-    return res;
+    return Sk.builtin.object.prototype.tp$init.call(this, []);
 };
 
 Sk.builtin.type.prototype.$r = function () {
@@ -331,7 +329,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
 
         // check prototypical mro
         if (res.length && this.prototype.sk$prototypical) {
-            let prevs_prototype = Object.getPrototypeOf(res[res.length - 1].prototype)
+            let prevs_prototype = Object.getPrototypeOf(res[res.length - 1].prototype);
             if (prevs_prototype === next.prototype) {
                 // pass
             } else if (prevs_prototype.constructor.sk$abstract) {
@@ -491,7 +489,7 @@ Sk.builtin.type.prototype.tp$getsets = {
             this.prototype.__module__ = value;
         }
     }
-}
+};
 
 
 Sk.builtin.type.prototype.tp$methods = {
@@ -536,7 +534,7 @@ Sk.builtin.type.prototype.tp$methods = {
         $flags: { NoArgs: true },
         $doc: "Specialized __dir__ implementation for types."
     }
-}
+};
 
 Sk.builtin.type.$bestBase = function (bases) {
     // deal with bases
@@ -547,7 +545,7 @@ Sk.builtin.type.$bestBase = function (bases) {
         }
     }
 
-    let parent, firstAncestor, builtin_bases = [];
+    let parent, firstAncestor, inheritsBuiltin, builtin_bases = [];
     // Set up inheritance from any builtins
     for (let i = 0; i < bases.length; i++) {
         parent = bases[i];
@@ -571,6 +569,6 @@ Sk.builtin.type.$bestBase = function (bases) {
         throw new Sk.builtin.TypeError("Multiple inheritance with more than one builtin type is unsupported");
     }
     return firstAncestor;
-}
+};
 
 

@@ -347,20 +347,6 @@ Sk.setup_method_mappings = function () {
         },
         "next$": {
             "classes" : [],
-            // "classes": [
-                        // Sk.builtin.dict_iter_,
-                        // Sk.builtin.list_iter_,
-                        // Sk.builtin.set_iter_,
-                        // Sk.builtin.frozenset_iter_,
-                        // Sk.builtin.str_iter_,
-                        // Sk.builtin.tuple_iter_,
-                        // Sk.builtin.generator,
-            //             Sk.builtin.enumerate,
-            //             Sk.builtin.filter_,
-            //             Sk.builtin.zip_,
-            //             Sk.builtin.map_,
-            // ],
-                        // Sk.builtin.iterator],
             2: "next",
             3: "__next__"
         },

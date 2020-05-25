@@ -42,7 +42,7 @@ Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
 /* NOTE: See constants used for kwargs in constants.js */
 
-Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4"
+Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4";
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
     args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs);
@@ -98,23 +98,23 @@ Sk.builtin.int_.$getJsInt = function (x, base) {
     } else if (x.hp$type && (func = x.tp$getattr(Sk.builtin.str.$trunc))) {
         x = Sk.misceval.callsimArray(func);
         // check return type of magic methods
-        if(!Sk.builtin.checkInt(x)) {
-            throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x)+")");
+        if (!Sk.builtin.checkInt(x)) {
+            throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
         }
     } else {
-        throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '"+Sk.abstr.typeName(x)+"'")
+        throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '" + Sk.abstr.typeName(x) + "'");
     }
 
     x = Sk.builtin.asnum$(x);
 
     return x;
-}
+};
 
 Sk.builtin.int_.prototype.nb$int_ = function () {
     return this;
 };
 
-Sk.builtin.int_.prototype.nb$float_ = function() {
+Sk.builtin.int_.prototype.nb$float_ = function () {
     return new Sk.builtin.float_(this.v);
 };
 
@@ -127,7 +127,7 @@ Sk.builtin.int_.prototype.nb$lng = function () {
  *
  * @instance
  */
-Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function(self) {
+Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
@@ -136,7 +136,7 @@ Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function(self) {
  *
  * @instance
  */
-Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function(self) {
+Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function (self) {
     return self;
 });
 
@@ -145,7 +145,7 @@ Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function(self) {
  *
  * @instance
  */
-Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function(self) {
+Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function (self) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
@@ -376,7 +376,7 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
 
         if (other.v < 0 && tmp === 0) {
             tmp = -0.0; // otherwise the sign gets lost by javascript modulo
-        } else if (tmp === 0 && Infinity/tmp === -Infinity) {
+        } else if (tmp === 0 && Infinity / tmp === -Infinity) {
             tmp = 0.0;
         }
 
@@ -978,7 +978,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     if (Sk.__future__.bankers_rounding) {
         num10 = number * Math.pow(10, ndigs);
         rounded = Math.round(num10);
-        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        bankRound = (((((num10 > 0) ? num10 : (-num10)) % 1) === 0.5) ? (((0 === (rounded % 2))) ? rounded : (rounded - 1)) : rounded);
         result = bankRound / Math.pow(10, ndigs);
         return new Sk.builtin.int_(result);
     } else {

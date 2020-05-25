@@ -17,11 +17,11 @@ Sk.builtin.range_ = function (start, stop, step, lst) {
 Sk.abstr.setUpInheritance("range", Sk.builtin.range_, Sk.builtin.object);
 Sk.builtin.range_.sk$acceptable_as_base_class = false;
 
-Sk.builtin.range_.prototype.tp$doc = "range(stop) -> range object\nrange(start, stop[, step]) -> range object\n\nReturn an object that produces a sequence of integers from start (inclusive)\nto stop (exclusive) by step.  range(i, j) produces i, i+1, i+2, ..., j-1.\nstart defaults to 0, and stop is omitted!  range(4) produces 0, 1, 2, 3.\nThese are exactly the valid indices for a list of 4 elements.\nWhen step is given, it specifies the increment (or decrement)."
+Sk.builtin.range_.prototype.tp$doc = "range(stop) -> range object\nrange(start, stop[, step]) -> range object\n\nReturn an object that produces a sequence of integers from start (inclusive)\nto stop (exclusive) by step.  range(i, j) produces i, i+1, i+2, ..., j-1.\nstart defaults to 0, and stop is omitted!  range(4) produces 0, 1, 2, 3.\nThese are exactly the valid indices for a list of 4 elements.\nWhen step is given, it specifies the increment (or decrement).";
 
 Sk.builtin.range_.prototype.tp$new = function (args, kwargs) {
     if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("range() takes no keyword arguments")
+        throw new Sk.builtin.TypeError("range() takes no keyword arguments");
     }
     return Sk.builtin.range(...args);
 };
@@ -121,12 +121,12 @@ Sk.builtin.range_.prototype["count"] = new Sk.builtin.func(function (self, item)
 
 Sk.builtin.range_.prototype.tp$getsets = {
     start: {
-        $get: function () {return new Sk.builtin.int_(this.$start)}
+        $get: function () { return new Sk.builtin.int_(this.$start); }
     },
     step: {
-        $get: function () {return new Sk.builtin.int_(this.$step)}
+        $get: function () { return new Sk.builtin.int_(this.$step); }
     },
     stop: {
-        $get: function () {return new Sk.builtin.int_(this.$stop)}
+        $get: function () { return new Sk.builtin.int_(this.$stop); }
     }
 };

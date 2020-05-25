@@ -25,7 +25,7 @@ Sk.abstr.setUpInheritance("bool", Sk.builtin.bool, Sk.builtin.int_);
 
 Sk.builtin.bool.sk$acceptable_as_base_class = false;
 
-Sk.builtin.bool.prototype.tp$doc = "bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed."
+Sk.builtin.bool.prototype.tp$doc = "bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed.";
 
 Sk.builtin.bool.prototype.tp$new = function (args, kwargs) {
     Sk.abstr.checkNoKwargs("bool", kwargs);
@@ -42,23 +42,23 @@ Sk.builtin.bool.prototype["$r"] = function () {
 
 Sk.builtin.bool.prototype.tp$str = function () {
     return this.$r();
-}
+};
 
 Sk.builtin.bool.prototype.tp$hash = function () {
     return new Sk.builtin.int_(this.v);
 };
 
-Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
+Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function (self) {
     var v = Sk.builtin.asnum$(self);
 
     return new Sk.builtin.int_(v);
 });
 
-Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
+Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function (self) {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
-Sk.builtin.bool.prototype.__format__ = new Sk.builtin.func(function(self) {
+Sk.builtin.bool.prototype.__format__ = new Sk.builtin.func(function (self) {
     return self.$r();
 });
 

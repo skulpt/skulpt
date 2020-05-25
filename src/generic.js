@@ -178,8 +178,8 @@ Sk.generic.newMethodDef = {
  * @function
  * @param {String} type_name
  * @param {Function} iterator_constructor
- * @param {Object || undefined} methods
- * @param {Boolean || undefined} acceptable_as_base
+ * @param {Object} methods
+ * @param {Boolean} acceptable_as_base
  * 
  * @description
  * effectively a wrapper for easily defining an iterator
@@ -223,7 +223,7 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
     if (this.$index >= this.$seq.length) {
         return undefined;
     } else if (this.$seq.length !== this.$orig.sq$length()) {
-        const error_name = name.split("_")[0];
+        const error_name = this.tp$name.split("_")[0];
         throw new Sk.RuntimeError(error_name + " changed size during iteration");
     }
     return this.$seq[this.$index++];

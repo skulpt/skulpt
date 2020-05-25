@@ -3,7 +3,7 @@
  * @param {Sk.builtin.func} fget
  * @param {Sk.builtin.func} fset
  * @param {Sk.builtin.func} fdel
- * @param {Sk.builtin.str || undefine} doc
+ * @param {Sk.builtin.str} doc
  */
 Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
     constructor: function property(fget, fset, fdel, doc) {
@@ -41,11 +41,12 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 return this;
             }
             if (this.prop$get === undefined) {
-                throw new Sk.builtin.AttributeError("unreadable attribute")
+                throw new Sk.builtin.AttributeError("unreadable attribute");
             }
             return Sk.misceval.callsimArray(this.prop$get, [obj]);
         },
         tp$descr_set: function (obj, value) {
+            let func;
             if (value === undefined) {
                 func = this.prop$del;
             } else {
@@ -56,7 +57,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 throw new Sk.builtin.AttributeError("can't " + msg + " attribute");
             }
             if (!func.tp$call) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable")
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable");
             };
 
             if (value === undefined) {
@@ -88,16 +89,16 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
     },
     getsets: {
         fget: {
-            $get: function () { return this.prop$get }
+            $get: function () { return this.prop$get; }
         },
         fset: {
-            $get: function () { return this.prop$set }
+            $get: function () { return this.prop$set; }
         },
         fdel: {
-            $get: function () { return this.prop$del }
+            $get: function () { return this.prop$del; }
         },
         __doc__: {
-            $get: function () { return this.prop$doc }
+            $get: function () { return this.prop$doc; }
         },
     }
 });
@@ -125,7 +126,7 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
         tp$doc: "classmethod(function) -> method\n\nConvert a function to be a class method.\n\nA class method receives the class as implicit first argument,\njust like an instance method receives the instance.\nTo declare a class method, use this idiom:\n\n  class C:\n      @classmethod\n      def f(cls, arg1, arg2, ...):\n          ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\nIf a class method is called for a derived class, the derived class\nobject is passed as the implied first argument.\n\nClass methods are different than C++ or Java static methods.\nIf you want those, see the staticmethod builtin.",
         tp$descr_get: function (obj, type) {
             if (this.cm$callable === undefined) {
-                throw new Sk.builtin.RuntimeError("uninitialized classmethod object")
+                throw new Sk.builtin.RuntimeError("uninitialized classmethod object");
             }
             if (type === undefined) {
                 type = obj.ob$type;
@@ -139,7 +140,7 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
     },
     getsets: {
         __func__: {
-            $get: function () { return this.cm$callable }
+            $get: function () { return this.cm$callable; }
         },
         __dict__: Sk.generic.getSetDict,
     }
@@ -155,7 +156,7 @@ Sk.builtin.staticmethod = Sk.abstr.buildNativeClass("staticmethod", {
     constructor: function staticmethod(callable) {
         // this can be used as an internal function 
         // typically callable will be set in the init method if being called by python
-        this.sm$callable = callable
+        this.sm$callable = callable;
         this.$d = new Sk.builtin.dict;
     },
     slots: {
@@ -169,14 +170,14 @@ Sk.builtin.staticmethod = Sk.abstr.buildNativeClass("staticmethod", {
         tp$doc: "staticmethod(function) -> method\n\nConvert a function to be a static method.\n\nA static method does not receive an implicit first argument.\nTo declare a static method, use this idiom:\n\n     class C:\n         @staticmethod\n         def f(arg1, arg2, ...):\n             ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\n\nStatic methods in Python are similar to those found in Java or C++.\nFor a more advanced concept, see the classmethod builtin.",
         tp$descr_get: function (obj, type) {
             if (this.sm$callable === undefined) {
-                throw new Sk.builtin.RuntimeError("uninitialized staticmethod object")
+                throw new Sk.builtin.RuntimeError("uninitialized staticmethod object");
             }
             return this.sm$callable;
         }
     },
     getsets: {
         __func__: {
-            $get: function () { return this.sm$callable }
+            $get: function () { return this.sm$callable; }
         },
         __dict__: Sk.generic.getSetDict,
     }

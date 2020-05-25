@@ -341,20 +341,20 @@ Sk.builtin.max = function max() {
 };
 
 Sk.builtin.any = function any(iter) {
-    ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
         if (Sk.misceval.isTrue(i)) {
             return new Sk.misceval.Break(true);
         }
-    })
+    });
     return ret === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
 };
 
 Sk.builtin.all = function all(iter) {
-    ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
         if (Sk.misceval.isTrue(i)) {
             return new Sk.misceval.Break(false);
         }
-    })
+    });
     return ret === undefined ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
 };
 
@@ -379,16 +379,15 @@ Sk.builtin.sum = function sum(iter, start) {
         // } 
         if (tot.nb$add !== undefined) {
             const itermed = tot.nb$add(i);
-            if ((intermed !== undefined) && (intermed !== Sk.builtin.NotImplemented.NotImplemented$)) {
+            if (itermed !== undefined && !(itermed instanceof Sk.builtin.NotImplemented)) {
                 tot = itermed;
                 return;
             }
-        }
+        } 
         throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-            Sk.abstr.typeName(tot) + "' and '" +
-            Sk.abstr.typeName(i) + "'");
-
-    })
+        Sk.abstr.typeName(tot) + "' and '" +
+        Sk.abstr.typeName(i) + "'");
+    });
     return tot;
 };
 
@@ -554,7 +553,7 @@ Sk.builtin.dir = function dir(obj) {
     }
     // then we want all the objects in the global scope
     //todo
-    throw new Sk.builtin.NotImplementedError("skulpt does not yet support dir with no args")
+    throw new Sk.builtin.NotImplementedError("skulpt does not yet support dir with no args");
 };
 
 Sk.builtin.repr = function repr(x) {
@@ -593,7 +592,7 @@ Sk.builtin.isinstance = function isinstance(obj, type) {
 
     // Normal case
     if (!(type instanceof Sk.builtin.tuple)) {
-        return obj.ob$type.$isSubType(type) ? Sk.builtin.bool.true$: Sk.builtin.bool.false$;
+        return obj.ob$type.$isSubType(type) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
     // Handle tuple type argument
     for (let i = 0; i < type.v.length; ++i) {
@@ -977,7 +976,7 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
     if (c2_isClass) {
-        return c1.$isSubType(c2) ? Sk.builtin.bool.true$: Sk.builtin.bool.false$;
+        return c1.$isSubType(c2) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
     // Handle tuple type argument
     for (let i = 0; i < c2.v.length; ++i) {

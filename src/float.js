@@ -46,14 +46,14 @@ Sk.builtin.float_ = function (x) {
     }
 
     // this is a special internal case
-    if(typeof x === "boolean") {
+    if (typeof x === "boolean") {
         this.v = x ? 1.0 : 0.0;
         return this;
     }
 
     if (typeof x === "string") {
         this.v = parseFloat(x);
-        if (this.v == Infinity || this.v == -Infinity){ //trying to convert a large js string to a float
+        if (this.v == Infinity || this.v == -Infinity) { //trying to convert a large js string to a float
             throw new Sk.builtin.OverflowError("int too large to convert to float");
         }
         return this;
@@ -71,13 +71,13 @@ Sk.builtin.float_ = function (x) {
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
-Sk.builtin.float_.prototype.tp$doc =  "Convert a string or number to a floating point number, if possible."
+Sk.builtin.float_.prototype.tp$doc = "Convert a string or number to a floating point number, if possible.";
 
 Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
     if (kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("float() takes no keyword arguments");
     } else if (args && args.length > 1) {
-        throw new Sk.builtin.TypeError("float expected at most 1 arguments, got "+ args.length);
+        throw new Sk.builtin.TypeError("float expected at most 1 arguments, got " + args.length);
     }
     // is args always an empty list?
     if (this === Sk.builtin.float_.prototype) {
@@ -87,7 +87,7 @@ Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
         Sk.builtin.float_.call(instance, args[0]);
         return instance;
     };
-}
+};
 
 
 Sk.builtin._str_to_float = function (str) {
@@ -120,13 +120,13 @@ Sk.builtin.float_.prototype.nb$int_ = function () {
     }
 
     if (!Sk.builtin.checkInt(v)) {
-        throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer")
+        throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
     }
     // this should take care of int/long fitting
     return new Sk.builtin.int_(v);
 };
 
-Sk.builtin.float_.prototype.nb$float_ = function() {
+Sk.builtin.float_.prototype.nb$float_ = function () {
     return this;
 };
 
@@ -480,7 +480,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
 
         if (other.v < 0 && tmp === 0) {
             tmp = -0.0; // otherwise the sign gets lost by javascript modulo
-        } else if (tmp === 0 && Infinity/tmp === -Infinity) {
+        } else if (tmp === 0 && Infinity / tmp === -Infinity) {
             tmp = 0.0;
         }
 
@@ -511,7 +511,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
 
         if (other.nb$isnegative() && tmp === 0) {
             tmp = -0.0; // otherwise the sign gets lost by javascript modulo
-        } else if (tmp === 0 && Infinity/tmp === -Infinity) {
+        } else if (tmp === 0 && Infinity / tmp === -Infinity) {
             tmp = 0.0;
         }
 
@@ -817,7 +817,7 @@ Sk.builtin.float_.prototype.round$ = function (self, ndigits) {
     if (Sk.__future__.bankers_rounding) {
         num10 = number * Math.pow(10, ndigs);
         rounded = Math.round(num10);
-        bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+        bankRound = (((((num10 > 0) ? num10 : (-num10)) % 1) === 0.5) ? (((0 === (rounded % 2))) ? rounded : (rounded - 1)) : rounded);
         result = bankRound / Math.pow(10, ndigs);
         if (ndigits === undefined) {
             return new Sk.builtin.int_(result);
@@ -897,7 +897,7 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
         } else {
             tmp = work.toPrecision(12);
         }
-        
+
 
         // transform fractions with 4 or more leading zeroes into exponents
         idx = tmp.indexOf(".");
@@ -913,10 +913,10 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
         }
 
         if (tmp.indexOf("e") < 0 && tmp.indexOf(".") >= 0) {
-            while (tmp.charAt(tmp.length-1) == "0") {
-                tmp = tmp.substring(0,tmp.length-1);
+            while (tmp.charAt(tmp.length - 1) == "0") {
+                tmp = tmp.substring(0, tmp.length - 1);
             }
-            if (tmp.charAt(tmp.length-1) == ".") {
+            if (tmp.charAt(tmp.length - 1) == ".") {
                 tmp = tmp + "0";
             }
         }
@@ -931,7 +931,7 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
     }
 
     // restore negative zero sign
-    if(this.v === 0 && 1/this.v === -Infinity) {
+    if (this.v === 0 && 1 / this.v === -Infinity) {
         tmp = "-" + tmp;
     }
 

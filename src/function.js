@@ -27,7 +27,7 @@
  *
  */
 Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
-    constructor: function func (code, globals, closure, closure2) {
+    constructor: function func(code, globals, closure, closure2) {
         if (!(this instanceof Sk.builtin.func)) {
             // otherwise it assigned .func_code and .func_globals somewhere and in certain
             // situations that will cause a lot of strange errors.
@@ -212,7 +212,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
     },
     getsets: {
         __name__: {
-            $get: function () { return new Sk.builtin.str(this.$name) },
+            $get: function () { return new Sk.builtin.str(this.$name); },
             $set: function (value) {
                 if (!Sk.builtin.checkString(value)) {
                     throw new Sk.builtin.TypeError("__name__ must be set to a string object");
@@ -227,8 +227,8 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             } // technically this is a writable property but we'll leave it as read-only for now
         },
         __doc__: {
-            $get: function () {return new Sk.builtin.str(this.$doc)},
+            $get: function () { return new Sk.builtin.str(this.$doc); },
         }
     }
 },
-)
+);

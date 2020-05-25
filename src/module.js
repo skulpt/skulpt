@@ -5,15 +5,15 @@ Sk.builtin.module = function module() {
 };
 Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);
 
-Sk.abstr.setUpInheritance("module", Sk.builtin.module, Sk.builtin.object)
+Sk.abstr.setUpInheritance("module", Sk.builtin.module, Sk.builtin.object);
 
 Sk.builtin.module.prototype.$r = function () {
     let get = (s) => {
         let v = this.tp$getattr(new Sk.builtin.str(s));
         return Sk.builtin.repr(v || Sk.builtin.str.$emptystr).$jsstr();
     };
-    _name = get("__name__");
-    _file = get("__file__");
+    const _name = get("__name__");
+    let _file = get("__file__");
     if (_file === "''") {
         _file = "(built-in)";
     } else {

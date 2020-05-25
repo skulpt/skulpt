@@ -21,10 +21,10 @@ require("./abstract.js");
 require("./object.js");
 require("./slotdefs.js");
 require("./descr.js");
-// we can only create type objects from now...
+// can only setUpMethods / setUpGetsets / setUpSlots from now.
 require("./function.js");
 require("./sk_method.js");
-require("./property_class_static.js");
+// can only do setUpSlots with tp$new from now since __new__ is a sk_method
 require("./builtin.js");
 require("./fromcodepoint.js");
 require("./errors.js");
@@ -38,6 +38,7 @@ require("./formatting.js");
 require("./tuple.js");
 require("./dict.js");
 require("./mappingproxy.js");
+require("./property_class_static.js");
 require("./numtype.js");
 require("./biginteger.js");
 require("./int.js");

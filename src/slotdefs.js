@@ -9,18 +9,18 @@ Sk.generic.wrapperFastCall = function (self, args, kwargs) {
     return this.call(self, args, kwargs);
 };
 
+Sk.generic.wrapperCallOneArg = function (self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkOneArg(this.$name, args, kwargs);
+    return this.call(self, args[0]);
+};
+
 Sk.generic.wrapperRichCompare = function (self, args, kwargs) {
     const res = Sk.generic.wrapperCallOneArg.call(this, self, args, kwargs);
     if (res === Sk.builtin.NotImplemented.NotImplemented$) {
         return res;
     }
     return new Sk.builtin.bool(res);
-};
-
-Sk.generic.wrapperCallOneArg = function (self, args, kwargs) {
-    // this = the wrapped function
-    Sk.abstr.checkOneArg(this.$name, args, kwargs);
-    return this.call(self, args[0]);
 };
 
 Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) {
@@ -32,11 +32,11 @@ Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) 
         } else if (func !== undefined) {
             res = Sk.misceval.callsimArray(func, [this]);
             if (!(checkFunc(res))) {
-                throw new Sk.builtin.TypeError(dunderName + " returned " + checkMsg + " (type " + Sk.abstr.typeName(res) + ")")
+                throw new Sk.builtin.TypeError(dunderName + " returned " + checkMsg + " (type " + Sk.abstr.typeName(res) + ")");
             }
         }
         return res;
-    }
+    };
 };
 
 Sk.generic.slotFuncOneArg = function (dunderName) {
@@ -46,8 +46,8 @@ Sk.generic.slotFuncOneArg = function (dunderName) {
             return func.d$wrapper.call(this, value);
         }
         return Sk.misceval.callsimArray(func, [this, value]);
-    }
-}
+    };
+};
 
 
 Sk.slots = Object.create(null);
@@ -90,7 +90,7 @@ slots.__new__ = {
         }
         args.unshift(this);
         return Sk.misceval.callsimOrSuspendArray(func, args, kwargs);
-     },
+    },
     $wrapper: null,
     $textsig: "($self, /, *args, **kwargs)",
     $flags: { FastCall: true },
@@ -104,7 +104,7 @@ slots.__call__ = {
     $textsig: "($self, /, *args, **kwargs)",
     $flags: { FastCall: true },
     $doc: "Call self as a function.",
-}
+};
 
 slots.__repr__ = {
     $name: "__repr__",
@@ -127,7 +127,7 @@ slots.__str__ = {
 slots.__hash__ = {
     $name: "__hash__",
     $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "non-int"),
-	$wrapper: Sk.generic.wrapperCallNoArgs,
+    $wrapper: Sk.generic.wrapperCallNoArgs,
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "Return hash(self).",
@@ -201,59 +201,59 @@ slots.__delete__ = {
 
 // tp richcompare
 {
-slots.__eq__ = {
-    $name: "__eq__",
-    $slot_func: Sk.generic.slotFuncOneArg("__eq__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self==value.",
-};
+    slots.__eq__ = {
+        $name: "__eq__",
+        $slot_func: Sk.generic.slotFuncOneArg("__eq__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self==value.",
+    };
 
-slots.__ge__ = {
-    $name: "__ge__",
-    $slot_func: Sk.generic.slotFuncOneArg("__ge__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self>=value.",
-};
+    slots.__ge__ = {
+        $name: "__ge__",
+        $slot_func: Sk.generic.slotFuncOneArg("__ge__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self>=value.",
+    };
 
-slots.__gt__ = {
-    $name: "__gt__",
-    $slot_func: Sk.generic.slotFuncOneArg("__gt__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self>value.",
-};
+    slots.__gt__ = {
+        $name: "__gt__",
+        $slot_func: Sk.generic.slotFuncOneArg("__gt__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self>value.",
+    };
 
-slots.__le__ = {
-    $name: "__le__",
-    $slot_func: Sk.generic.slotFuncOneArg("__le__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self<=value.",
-};
+    slots.__le__ = {
+        $name: "__le__",
+        $slot_func: Sk.generic.slotFuncOneArg("__le__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self<=value.",
+    };
 
-slots.__lt__ = {
-    $name: "__lt__",
-    $slot_func: Sk.generic.slotFuncOneArg("__lt__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self<value.",
-};
+    slots.__lt__ = {
+        $name: "__lt__",
+        $slot_func: Sk.generic.slotFuncOneArg("__lt__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self<value.",
+    };
 
-slots.__ne__ = {
-    $name: "__ne__",
-    $slot_func: Sk.generic.slotFuncOneArg("__ne__"),
-    $wrapper: Sk.generic.wrapperRichCompare,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Return self!=value.",
-};
+    slots.__ne__ = {
+        $name: "__ne__",
+        $slot_func: Sk.generic.slotFuncOneArg("__ne__"),
+        $wrapper: Sk.generic.wrapperRichCompare,
+        $textsig: "($self, value, /)",
+        $flags: { OneArg: true },
+        $doc: "Return self!=value.",
+    };
 }
 // iters
 
@@ -789,9 +789,9 @@ Sk.slotToDunder = {
     // sequence and mapping slots
     sq$length: "__len__",
     sq$containes: "__contains__",
-    mp$subscript: "__getitem__", 
+    mp$subscript: "__getitem__",
     mp$ass_subscript: ["__setitem__", "__delitem__"],
-    
+
 
     // number slots
     nb$abs: "__abs__",
@@ -821,7 +821,7 @@ Sk.slotToDunder = {
     nb$bool: "__bool__",
     nb$nonzero: "__nonzero__",
 
-}
+};
 
 
 Sk.setupDunderMethods = function (py3) {

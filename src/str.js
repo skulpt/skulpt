@@ -55,7 +55,7 @@ Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
         return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
     }
     args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs, [Sk.builtin.str.$empty]);
-    x = args[0];
+    const x = args[0];
     return new Sk.builtin.str(x);
 };
 
@@ -64,7 +64,6 @@ Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
     // we call str new method with all the args and kwargs
     const str_instance = Sk.builtin.str.prototype.tp$new(args, kwargs);
     instance.v = str_instance.v;
-    delete str_instance;
     return instance;
 };
 
@@ -1430,7 +1429,7 @@ Sk.builtin.str.prototype.tp$methods = {
     //     $flags:{},
     //     $textsig: null,
     //     $doc: null },
-}
+};
 
 
 Sk.abstr.setUpSlots(Sk.builtin.str);

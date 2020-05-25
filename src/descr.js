@@ -7,7 +7,7 @@
  */
 
 Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
-    descr = {
+    const descr = {
         constructor: descr_constructor || function descr(typeobj, d_base) {
             this.d$def = d_base;
             this.d$type = typeobj;
@@ -22,7 +22,7 @@ Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
             $r: Sk.generic.descriptor.repr,
             tp$getsets: Sk.generic.descriptor.getsets,
         }
-    }
+    };
     return Sk.abstr.buildNativeClass(type_name, descr);
 };
 
@@ -52,10 +52,10 @@ Sk.generic.descriptor.getsets = {
         }
     },
     __obj_class__: {
-        $get: function () { return this.d$type }
+        $get: function () { return this.d$type; }
     },
     __name__: {
-        $get: function () { return new Sk.builtin.str(this.d$name) }
+        $get: function () { return new Sk.builtin.str(this.d$name); }
     },
 };
 
@@ -163,7 +163,7 @@ Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' object needs an argument");
     };
     this.d$check(self);
-}
+};
 
 
 Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
@@ -180,7 +180,9 @@ Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param {Sk.builtin.SlotDef} wrapper_base
  */
 
-Sk.builtin.wrapper_descriptor = Sk.generic.descriptor("wrapper_descriptor", "slot wrapper",
+Sk.builtin.wrapper_descriptor = Sk.generic.descriptor(
+    "wrapper_descriptor",
+    "slot wrapper",
     function wrapper_descriptor(typeobj, slot_def, wrapped) {
         this.d$def = slot_def;
         this.d$type = typeobj;
@@ -204,7 +206,7 @@ Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
 Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs) {
     // the base might have some flags I guess...
     return this.d$def.$wrapper.call(this.d$wrapped, self, args, kwargs);
-}
+};
 
 Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
@@ -221,7 +223,9 @@ Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param wrapper_base
  */
 
-Sk.builtin.method_wrapper = Sk.generic.descriptor("method_wrapper", undefined,
+Sk.builtin.method_wrapper = Sk.generic.descriptor(
+    "method_wrapper",
+    undefined,
     function method_wrapper(wrapper_descr, self) {
         this.m$descr = wrapper_descr;
         this.m$self = self;
@@ -239,6 +243,6 @@ Sk.builtin.method_wrapper.prototype.$r = function () {
 };
 
 Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
-    $get: function () { return this.m$self }
+    $get: function () { return this.m$self; }
 };
 

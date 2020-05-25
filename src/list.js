@@ -18,7 +18,7 @@ Sk.builtin.list = function (L) {
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
-Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified."
+Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified.";
 
 
 Sk.builtin.list.prototype.tp$new = Sk.generic.new(Sk.builtin.list);
@@ -34,7 +34,7 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     const self = this;
     Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
         self.v.push(i);
-    })        
+    });
     return Sk.builtin.none.none$;
 };
 
@@ -125,7 +125,7 @@ Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
     for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if(i === this) {
+        if (i === this) {
             ret.push("[...]");
         } else {
             ret.push(Sk.misceval.objectRepr(i).v);
@@ -248,7 +248,7 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     return new Sk.builtin.list(ret, false);
 };
 Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
-Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
+Sk.builtin.list.prototype.nb$inplace_multiply = function (n) {
     var j;
     var i;
     var len;
@@ -291,7 +291,7 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
     return false;
 };
 
-Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
     return new Sk.builtin.bool(self.sq$contains(item));
 });
@@ -597,7 +597,7 @@ Sk.builtin.list.prototype.clear$ = function (self) {
 };
 
 Sk.builtin.list.prototype.copy$ = function (self) {
-    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);   
+    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);
     // via array concat() function to simulate shallow copy 
     var tmpArray = [];
     return new Sk.builtin.list(self.v.concat(tmpArray));
@@ -665,10 +665,10 @@ Sk.builtin.list.prototype["copy"] = new Sk.builtin.func(function (self) {
         k !== undefined;
         k = it.tp$iternext()) {
         items.push(k);
-    
+
     }
     return new Sk.builtin.list(items);
-    
+
 });
 
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);

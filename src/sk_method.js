@@ -68,7 +68,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         },
         $callNoArgs: function (args, kwargs) {
             Sk.abstr.checkNoArgs(this.$name, args, kwargs);
-            return this.$meth()
+            return this.$meth();
         },
         $callOneArg: function (args, kwargs) {
             Sk.abstr.checkOneArg(this.$name, args, kwargs);
@@ -79,7 +79,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             return this.$meth(...args);
         },
         $callMinArgs: function (args, kwargs) {
-            Sk.abstr.checkNoKwargs(this.$name, kwargs)
+            Sk.abstr.checkNoKwargs(this.$name, kwargs);
             Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
             return this.$meth(...args);
         },
@@ -90,19 +90,19 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             if (this.$self === undefined) {
                 return new Sk.builtin.str("<built-in function " + this.$name + ">");
             }
-            return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>")
+            return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>");
         },
         tp$call: function (args, kwargs) {
             // default implementation for all currently created functions that have yet to be be converted 
             // and don't utilise flagged calls
             args.unshift(this.$self);
-            return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs)
+            return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
         }
     },
     getsets: {
         __module__: {
-            $get: function () { return this.$module },
-            $set: function (value) { this.$module = value }
+            $get: function () { return this.$module; },
+            $set: function (value) { this.$module = value; }
         },
         __doc__: {
             $get: function () {

@@ -62,13 +62,13 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     },
     getsets: {
         start: {
-            $get: function () { return this.start }
+            $get: function () { return this.start; }
         },
         step: {
-            $get: function () { return this.step }
+            $get: function () { return this.step; }
         },
         stop: {
-            $get: function () { return this.stop }
+            $get: function () { return this.stop; }
         }
     },
     methods: {

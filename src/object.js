@@ -123,7 +123,7 @@ Sk.builtin.object.prototype.tp$getsets = {
         },
         $doc: "the object's class"
     }
-}
+};
 
 // Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
 // overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
@@ -148,7 +148,7 @@ Sk.builtin.object.prototype.tp$methods = {
             const type_dir = Sk.builtin.type.prototype.__dir__.$get.call(this.ob$type);
             type_dir.v.push(...dir);
             type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
-            return type_dir
+            return type_dir;
         },
         $flags: { NoArgs: true },
         $doc: "Default dir() implementation."
@@ -173,7 +173,7 @@ Sk.builtin.object.prototype.tp$methods = {
         $flags: { OneArg: true },
         $doc: "Default object formatter."
     }
-}
+};
 
 /** Default implementations of Javascript functions used in dunder methods */
 
@@ -212,15 +212,13 @@ Sk.builtin.none.prototype.tp$hash = function () {
 Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
     Sk.abstr.checkNoArgs("NoneType", args, kwargs);
     return Sk.builtin.none.none$;
-}
+};
 
 /**
  * Python None value.
  * @type {Sk.builtin.none}
  */
-Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype,
-    { v: { value: null, enumerable: true } }
-);
+Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, { v: { value: null, enumerable: true } });
 
 /**
  * @constructor
@@ -240,14 +238,12 @@ Sk.builtin.NotImplemented.prototype.$r = function () { return new Sk.builtin.str
 Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
     Sk.abstr.checkNoArgs("NotImplementedType", args, kwargs);
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 /**
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype,
-    { v: { value: null, enumerable: true } }
-);
+Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, { v: { value: null, enumerable: true } });
 
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);

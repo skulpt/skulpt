@@ -12,7 +12,7 @@ Sk.builtin.tuple = function (L) {
 
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.object);
 
-Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object."
+Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.";
 
 Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     // this will be Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
@@ -34,7 +34,7 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
 
     Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
         L.push(i);
-    })
+    });
 
     return new Sk.builtin.tuple(L);
 };
@@ -46,7 +46,6 @@ Sk.builtin.tuple.prototype.$subtype_new = function (args, kwargs) {
     // pass the args but ignore the kwargs for subtyping
     const tuple = Sk.builtin.tuple.prototype.tp$new(args);
     instance.v = tuple.v;
-    delete tuple;
     return instance;
 };
 
@@ -276,7 +275,7 @@ Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) 
             count += 1;
         }
     }
-    return  new Sk.builtin.int_(count);
+    return new Sk.builtin.int_(count);
 });
 
 Sk.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);

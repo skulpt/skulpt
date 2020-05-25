@@ -749,7 +749,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     }
 
     return args;
-}
+};
 
 Sk.exportSymbol("Sk.abstr.copyKeywordsToNamedArgs", Sk.abstr.copyKeywordsToNamedArgs);
 
@@ -757,7 +757,7 @@ Sk.abstr.checkNoKwargs = function (func_name, kwargs) {
     if (kwargs && kwargs.length) {
         throw new Sk.builting.TypeError(func_name + "() takes no keyword arguments");
     }
-}
+};
 Sk.exportSymbol("Sk.abstr.checkNoKwargs", Sk.abstr.checkNoKwargs);
 
 Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
@@ -765,17 +765,17 @@ Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
     if (nargs) {
         throw new Sk.builtin.TypeError(func_name + "() takes no arguments (" + nargs + " given)");
     }
-}
-Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs)
+};
+Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs);
 
 
 Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
     Sk.abstr.checkNoKwargs(func_name, kwargs);
     if (args.length !== 1) {
-        throw new Sk.builtin.TypeError(func_name + "() takes exactly one argument (" + nargs + " given)");
+        throw new Sk.builtin.TypeError(func_name + "() takes exactly one argument (" + args.length + " given)");
     }
-}
-Sk.exportSymbol("Sk.abstr.checkOneArg", Sk.abstr.checkOneArg)
+};
+Sk.exportSymbol("Sk.abstr.checkOneArg", Sk.abstr.checkOneArg);
 
 
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
@@ -1142,8 +1142,8 @@ Sk.abstr.setUpBaseInheritance = function () {
     // some house keeping that would usually be taken careof by Sk.abstr.setUpInheritance
     Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
 
-    Sk.builtin.type.prototype.tp$name = "type"
-    Sk.builtin.object.prototype.tp$name = "object"
+    Sk.builtin.type.prototype.tp$name = "type";
+    Sk.builtin.object.prototype.tp$name = "object";
 
     Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
     Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
@@ -1157,10 +1157,10 @@ Sk.abstr.setUpBaseInheritance = function () {
 };
 
 /**
- * This function is called in {@link Sk.doOneTimeInitialization} 
+ * This function is called in {@link Sk.doOneTimeInitialization}
  * builtins should inherit from Sk.builtin.object.
  *
- * @param  {Sk.builtin.type} child     
+ * @param  {Sk.builtin.type} child
  * @return {undefined}
  */
 
@@ -1182,8 +1182,8 @@ Sk.abstr.setUpBuiltinMro = function (child) {
 
 Sk.abstr.setUpGetSets = function (klass, getsets) {
     getsets = getsets || klass.prototype.tp$getsets || {};
-    for (getset_name in getsets) {
-        gsd = getsets[getset_name];
+    for (let getset_name in getsets) {
+        const gsd = getsets[getset_name];
         gsd.$name = getset_name;
         klass.prototype[getset_name] = new Sk.builtin.getset_descriptor(klass, gsd);
     }
@@ -1194,25 +1194,26 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
 
 Sk.abstr.setUpMethods = function (klass, methods) {
     methods = methods || klass.prototype.tp$methods || {};
-    for (method_name in methods) {
-        method_def = methods[method_name];
+    for (let method_name in methods) {
+        const method_def = methods[method_name];
         method_def.$name = method_name;
-        klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
+        klass.prototype[method_name] = new Sk.builtin.method_descriptor(
+            klass,
+            method_def
+        );
     }
     klass.prototype.tp$methods = null;
 };
 
-
-
 Sk.abstr.setUpSlots = function (klass, slots) {
     const proto = klass.prototype;
     const op2shortcut = {
-        "Eq": "ob$eq",
-        "NotEq": "ob$ne",
-        "Gt": "ob$gt",
-        "GtE": "ob$ge",
-        "Lt": "ob$lt",
-        "LtE": "ob$le"
+        Eq: "ob$eq",
+        NotEq: "ob$ne",
+        Gt: "ob$gt",
+        GtE: "ob$ge",
+        Lt: "ob$lt",
+        LtE: "ob$le",
     };
     if (slots === undefined) {
         // make a shallow copy so that we don't accidently consider parent slots
@@ -1223,10 +1224,12 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             proto[slot_name] = slots[slot_name];
         }
     }
-    
+
     // str might not have been created yet
     if (Sk.builtin.str !== undefined) {
-        proto.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
+        proto.__doc__ = slots.tp$doc
+            ? new Sk.builtin.str(slots.tp$doc)
+            : Sk.builtin.none.none$;
     }
     // set up richcompare skulpt slots
     if (slots.tp$richcompare !== undefined) {
@@ -1234,7 +1237,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             const shortcut = op2shortcut[op];
             proto[shortcut] = slots[shortcut] = slots[shortcut] || function (other) {
                 return this.tp$richcompare(other, op);
-            }
+            };
         }
     }
 
@@ -1242,11 +1245,15 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         // we deal with tp$new differently because it is not a slot wrapper but sk_method
         proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
     }
-    
+
     function wrap_func(klass, dunder_name, wrapped_func) {
         debugger;
         const slot_def = Sk.slots[dunder_name];
-        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
+        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(
+            klass,
+            slot_def,
+            wrapped_func
+        );
     }
 
     for (let slot_name in slots) {
@@ -1256,7 +1263,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
         const wrapped_func = slots[slot_name];
         if (typeof dunder_name === "string") {
-            wrap_func(klass, dunder_name, wrapped_func)
+            wrap_func(klass, dunder_name, wrapped_func);
         } else {
             for (let i = 0; i < dunder_name.length; i++) {
                 wrap_func(klass, dunder_name[i], wrapped_func);
@@ -1264,37 +1271,38 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
     }
 
-
     // a flag to check during doOneTimeInitialization
     klass.prototype.sk$slots = null;
 };
 
-/** 
-* @function
-* @param {String} typename
-* @param {Object} options
-* 
-* 
-* @description
-* this can be called to create a typeobj
-* options include 
-* {
-* base: default to Sk.builtin.object
-* meta: default to Sk.builtin.type
-* 
-* slots: skulpt slot functions that will be allocated slot wrappers
-* methods: method objects {$meth: Function, $flags: callmethod, $doc: String},
-* getsets: getset objects {$get: Function, $set: Function, $doc, String},
-* 
-* flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
-* proto: Object allocated onto the prototype useful for private methods
-* }
-* tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
-*/
+/**
+ * @function
+ * @param {String} typename
+ * @param {Object} options
+ *
+ *
+ * @description
+ * this can be called to create a typeobj
+ * options include
+ * {
+ * base: default to Sk.builtin.object
+ * meta: default to Sk.builtin.type
+ *
+ * slots: skulpt slot functions that will be allocated slot wrappers
+ * methods: method objects {$meth: Function, $flags: callmethod, $doc: String},
+ * getsets: getset objects {$get: Function, $set: Function, $doc, String},
+ *
+ * flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
+ * proto: Object allocated onto the prototype useful for private methods
+ * }
+ * tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
+ */
 
 Sk.abstr.buildNativeClass = function (typename, options) {
     options = options || {};
-    typeobject = options.constructor || function () { this.$d = new Sk.builtin.dict };
+    const typeobject = options.constructor || function () {
+        this.$d = new Sk.builtin.dict();
+    };
     let mod;
     if (typename.includes(".")) {
         // you should define the module like "collections.defaultdict" for static classes
@@ -1319,11 +1327,11 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     if (mod !== undefined) {
         typeobject.prototype.__module__ = new Sk.builtin.str(mod);
     }
-    proto = options.proto || {};
+    const proto = options.proto || {};
     for (let p in proto) {
         typeobject.prototype[p] = proto[p];
     }
-    flags = options.flags || {};
+    const flags = options.flags || {};
     for (let f in flags) {
         typeobject[f] = flags[f];
     }
@@ -1331,10 +1339,9 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     return typeobject;
 };
 
-
 Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
     for (let method_name in method_defs) {
-        method_def = method_defs[method_name];
+        const method_def = method_defs[method_name];
         method_def.$name = method_def.$name || method_name;
         module[method_name] = new Sk.builtin.sk_method(method_def, undefined, module_name);
     }
