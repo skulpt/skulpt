@@ -1,4 +1,5 @@
 Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
+    // TODO make this suspension aware
     var arr;
     var next;
     var iter;
@@ -38,17 +39,24 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
             compare_func = cmp;
         }
-        list = new Sk.builtin.list(iterable);
+        arr = [];
+        iter = iterable.tp$iter();
+        next = iter.tp$iternext();
+        while (next !== undefined) {
+            arr.push(next);
+            next = iter.tp$iternext();
+        }
+        list = new Sk.builtin.list(arr);
     }
 
     if (compare_func !== undefined) {
-        list.list_sort_(list, compare_func);
+        list.$list_sort(list, compare_func);
     } else {
-        list.list_sort_(list);
+        list.$list_sort(list);
     }
 
     if (rev) {
-        list.list_reverse_(list);
+        list.$list_reverse(list);
     }
 
     if (key !== undefined && !(key instanceof Sk.builtin.none)) {
