@@ -137,13 +137,9 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     }
     return new Sk.builtin.tuple(ret);
 };
-Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
-Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
-Sk.builtin.tuple.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 1, 1);
-    return new Sk.builtin.tuple_iter_(self);
-});
+Sk.builtin.tuple.prototype.nb$multiply = 
+Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     return new Sk.builtin.tuple_iter_(this);
@@ -233,6 +229,9 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
 
+Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
+
+
 Sk.builtin.tuple.prototype.sq$contains = function (ob) {
     var it, i;
 
@@ -245,38 +244,56 @@ Sk.builtin.tuple.prototype.sq$contains = function (ob) {
     return false;
 };
 
-Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
-Sk.builtin.tuple.prototype.nb$inplace_add = Sk.builtin.tuple.prototype.sq$concat;
-
 Sk.builtin.tuple.prototype.sq$length = function () {
     return this.v.length;
 };
 
+Sk.builtin.tuple.prototype.tp$methods = {
+    __getnewargs__: {
+        $meth: function () {
+            return new Sk.builtin.tuple(this.v.slice())
+        },
+        $flags: {NoArgs: true},
+        $textsig: "($self, /)",
+        $doc: null
+    },
+    index: {
+        $meth: function (item, start, stop) {
+            // TODO: currently doesn't support start and stop
+            var i;
+            var len = this.v.length;
+            var obj = this.v;
+            for (i = 0; i < len; ++i) {
+                if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+                    return new Sk.builtin.int_(i);
+                }
+            }
+            throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
+        },
+        $flags: { MinArgs: 1, MaxArgs: 3 },
+        $textsig: "($self, value, start=0, stop=sys.maxsize, /)",
+        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present."
+    },
+    count: {
+        $meth: function (item) {
+            var i;
+            var len = this.v.length;
+            var obj = this.v;
+            var count = 0;
+            for (i = 0; i < len; ++i) {
+                if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+                    count += 1;
+                }
+            }
+            return new Sk.builtin.int_(count);
+        },
+        $flags: { OneArg: true },
+        $textsig: "($self, value, /)",
+        $doc: "Return number of occurrences of value."
+    },
+};
 
-Sk.builtin.tuple.prototype["index"] = new Sk.builtin.func(function (self, item) {
-    var i;
-    var len = self.v.length;
-    var obj = self.v;
-    for (i = 0; i < len; ++i) {
-        if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
-            return new Sk.builtin.int_(i);
-        }
-    }
-    throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
-});
-
-Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) {
-    var i;
-    var len = self.v.length;
-    var obj = self.v;
-    var count = 0;
-    for (i = 0; i < len; ++i) {
-        if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
-            count += 1;
-        }
-    }
-    return new Sk.builtin.int_(count);
-});
-
+Sk.abstr.setUpSlots(Sk.builtin.tuple);
+Sk.abstr.setUpMethods(Sk.builtin.tuple);
 Sk.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
 
