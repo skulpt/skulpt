@@ -154,8 +154,14 @@ Sk.builtin.str_iter_ = Sk.generic.iterator("str_iterator", {
     constructor: function (str) {
         this.$index = 0;
         this.$seq = str.v.slice();
+        this.sq$length = this.$seq.length;
     },
-    iternext: Sk.generic.iterNextWithArray,
+    iternext: function () {
+        if (this.$index >= this.sq$length) {
+            return undefined;
+        }
+        return new Sk.builtin.str(this.$seq.substr(this.$index++, 1));
+    },
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
