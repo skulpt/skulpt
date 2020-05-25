@@ -86,11 +86,7 @@ class TestCase(object):
         pass
     
     def cleanName(self,funcName):
-    # work around skulpts lack of an __name__
-        funcName = str(funcName)
-        funcName = funcName[13:]
-        funcName = funcName[:funcName.find('<')-3]
-        return funcName
+        return funcName.__func__.__name__
 
     def main(self):
 
