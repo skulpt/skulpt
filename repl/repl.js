@@ -1,4 +1,6 @@
-const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
+const reqskulpt = require("../support/run/require-skulpt").requireSkulpt;
+const program = require("commander");
+const chalk = require("chalk");
 
 // Import Skulpt
 var skulpt = reqskulpt(false);
@@ -6,19 +8,37 @@ if (skulpt === null) {
     process.exit(1);
 }
 
-var readlineSync = require('readline-sync');
-var fs = require('fs');
+var readlineSync = require("readline-sync");
+var fs = require("fs");
 
 var readline = function () {
     return readlineSync.question("", { keepWhitespace: true });
 };
 
+program.parse(process.argv);
+
+if (program.args.length != 1) {
+    console.log(chalk.red("error: must specify python version (py2/py3) and python program to run"));
+    process.exit(1);
+}
+
+var py3;
+if (program.args[0] == "py2") {
+    py3 = false;
+} else if (program.args[0] == "py3") {
+    py3 = true;
+} else {
+    console.log(chalk.red("error: must specify python version ('py2' or 'py3'), not '" + program.args[0] + "'"));
+    process.exit(1);
+}
+
 Sk.configure({
-        output: (args) => { process.stdout.write(args); },
-        read: (fname) => { return fs.readFileSync(fname, "utf8"); },
-        systemexit: true,
-        retainglobals: true,
-        inputfun: readline
+    output: (args) => { process.stdout.write(args); },
+    read: (fname) => { return fs.readFileSync(fname, "utf8"); },
+    systemexit: true,
+    retainglobals: true,
+    inputfun: readline,
+    __future__: py3 ? Sk.python3 : Sk.python2,
 });
 
 var compilableLines = [],
@@ -50,30 +70,30 @@ console.log("[node: " + process.version + "] on a system");
 console.log('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
 
 function isBalanced(lines) {
-    'use strict';
-        var depth = 0,
+    "use strict";
+    var depth = 0,
         mlsopened = false,
-                l;
+        l;
 
     for (l = 0; l < lines.length; l = l + 1) {
-                if (lines[l] !== undefined) {
-                        if (lines[l].match(/'''/) !== null && lines[l].match(/'''/).length === 1) {
-                                mlsopened = !mlsopened;
-                        }
-                        if (!mlsopened && lines[l].substr(lines[l].length - 1) === ":") {
-                                depth = depth + 1;
-                        }
-                        if (!mlsopened && lines[l] === "" && depth > 0) {
-                                depth = 0;
-                        }
-                }
+        if (lines[l] !== undefined) {
+            if (lines[l].match(/'''/) !== null && lines[l].match(/'''/).length === 1) {
+                mlsopened = !mlsopened;
+            }
+            if (!mlsopened && lines[l].substr(lines[l].length - 1) === ":") {
+                depth = depth + 1;
+            }
+            if (!mlsopened && lines[l] === "" && depth > 0) {
+                depth = 0;
+            }
+        }
     }
     return depth === 0 && !mlsopened;
 }
 
 //Loop
 while (true) {
-    process.stdout.write(isBalanced(lines) ? '>>> ' : '... ');
+    process.stdout.write(isBalanced(lines) ? ">>> " : "... ");
 
     //Read
     var l = readline();
@@ -93,7 +113,7 @@ while (true) {
         if (!assignment.test(lines[0]) && !defre.test(lines[0]) && !importre.test(lines[0]) && !comment.test(lines[0]) && lines[0].length > 0) {
             //if it doesn't contain print make sure it doesn't print None
             if (!re.test(lines[0])) {
-                                //remove the statement
+                //remove the statement
                 //evaluate it if nessecary
                 lines.push("evaluationresult = " + lines.pop());
                 //print the result if not None
@@ -105,10 +125,9 @@ while (true) {
     try {
         //Evaluate
         if (!lines || /^\s*$/.test(lines)) {
-            continue
-        }
-        else {
-            Sk.importMainWithBody("repl", false, lines.join('\n'));
+            continue;
+        } else {
+            Sk.importMainWithBody("repl", false, lines.join("\n"));
         }
     } catch (err) {
         if (err instanceof Sk.builtin.SystemExit) {
@@ -127,8 +146,8 @@ while (true) {
         //Don't add the last statement to the accumulated code
         console.log(origLines.map(function (str) {
             return ++line + (index === line ? ">" : " ") + ": " + str;
-        }).join('\n'));
+        }).join("\n"));
     } finally {
-                lines = [];
-        }
+        lines = [];
+    }
 }
