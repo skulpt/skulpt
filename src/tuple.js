@@ -1,12 +1,12 @@
 /**
  * @constructor
- * @param {Array.<Object>|Object} L
+ * @param {Array} L
  */
 Sk.builtin.tuple = function (L) {
-    Sk.asserts.assert(this instanceof Sk.builtin.tuple);
     if (L === undefined) {
         L = [];
     }
+    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple);
     this.v = L;
 };
 
@@ -49,7 +49,7 @@ Sk.builtin.tuple.prototype.$subtype_new = function (args, kwargs) {
     return instance;
 };
 
-Sk.builtin.tuple.prototype["$r"] = function () {
+Sk.builtin.tuple.prototype.$r = function () {
     var ret;
     var i;
     var bits;
