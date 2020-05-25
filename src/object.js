@@ -8,7 +8,7 @@
  *
  * @return {Sk.builtin.object} Python object
  */
-Sk.builtin.object = function object () {
+Sk.builtin.object = function object() {
     Sk.asserts.assert(this instanceof Sk.builtin.object);
 };
 
@@ -90,10 +90,11 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
     let res;
     switch (op) {
         case "Eq":
-            res =  this === other ||  Sk.builtin.NotImplemented.NotImplemented$;
+            res = this === other || Sk.builtin.NotImplemented.NotImplemented$;
             break;
         case "NotEq":
-            res = this.tp$richcompare(other, "Eq");
+            // us ob$eq rather than tp$richcompare
+            res = this.ob$eq(other);
             if (res && res !== Sk.builtin.NotImplemented.NotImplemented$) {
                 res = Sk.misceval.isTrue(res);
             }
@@ -106,11 +107,11 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
 
 
 Sk.builtin.object.prototype.tp$getsets = {
-    __class__ : {
-        $get : function () {
+    __class__: {
+        $get: function () {
             return this.ob$type;
         },
-        $set : function (value) {
+        $set: function (value) {
             if (!Sk.builtin.checkClass(value)) {
                 throw new Sk.builtin.TypeError("__class__ must be set to a class, not '" + Sk.abstr.typeName(value) + "' object");
             }
@@ -120,7 +121,7 @@ Sk.builtin.object.prototype.tp$getsets = {
             Object.setPrototypeOf(this, value.prototype);
             return;
         },
-        $doc : "the object's class"
+        $doc: "the object's class"
     }
 }
 
@@ -195,7 +196,7 @@ Sk.builtin.idCount = 1;
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.none = function () {
-    return Sk.builtin.none.none$;
+    return Sk.builtin.none.none$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
@@ -217,7 +218,9 @@ Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
  * Python None value.
  * @type {Sk.builtin.none}
  */
-Sk.builtin.none.none$ = /** @type {Sk.builtin.none} */ (Object.create(Sk.builtin.none.prototype, {v: {value: null, enumerable: true}}));
+Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype,
+    { v: { value: null, enumerable: true } }
+);
 
 /**
  * @constructor
@@ -225,7 +228,10 @@ Sk.builtin.none.none$ = /** @type {Sk.builtin.none} */ (Object.create(Sk.builtin
  *
  * @extends {Sk.builtin.object}
  */
-Sk.builtin.NotImplemented = function () { };
+Sk.builtin.NotImplemented = function () {
+    return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object 
+};
+
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
 /** @override */
@@ -239,7 +245,9 @@ Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype);
+Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype,
+    { v: { value: null, enumerable: true } }
+);
 
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);

@@ -55,7 +55,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             this.tp$call = this.$callOneArg;
         } else if (flags.NamedArgs) {
             this.tp$call = this.$callNamedArgs;
-        } else if (flags.MinArgs) {
+        } else if (flags.MinArgs !== undefined) {
             this.tp$call = this.$callMinArgs;
         } else {
             this.func_code = method_def.$meth;

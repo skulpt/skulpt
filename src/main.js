@@ -16,6 +16,7 @@ require("assert");
 require("./env.js");
 require("./type.js");
 require("./generic.js");
+require("./check.js");
 require("./abstract.js");
 require("./object.js");
 require("./slotdefs.js");
@@ -23,6 +24,7 @@ require("./descr.js");
 // we can only create type objects from now...
 require("./function.js");
 require("./sk_method.js");
+require("./property_class_static.js");
 require("./builtin.js");
 require("./fromcodepoint.js");
 require("./errors.js");

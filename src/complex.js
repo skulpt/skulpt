@@ -796,19 +796,14 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 };
 
 
-Sk.builtin.complex.prototype.tp$getsets = [
-    new Sk.GetSetDef("real", 
-                     function () {
-                         return this.real;
-                     }
-                    ),
-    new Sk.GetSetDef("imag", 
-                     function () {
-                         return this.imag;
-                     }
-                   ),
-
-];
+Sk.builtin.complex.prototype.tp$getsets = {
+    real: {
+        $get: function () {return this.real}
+    },
+    imag: {
+        $get: function () {return this.imag}
+    }
+};
 
 
 /**

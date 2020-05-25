@@ -155,17 +155,14 @@ Sk.builtin.reversed.prototype.tp$iternext = function () {
     }
 };
 
-Sk.builtin.reversed.prototype.tp$methods = [
-    new Sk.MethodDef("__length_hint__", 
-    function __length_hint__ (self) {
-        return self.idx >= 0 ? Sk.builtin.int_(self.idx) : Sk.builtin.int_(0);
-    }, 
-    {NoArgs: true}
-    )
-];
-
-
-
+Sk.builtin.reversed.prototype.tp$methods = {
+    __length_hint__: {
+        $meth: function __length_hint__ (self) {
+            return self.idx >= 0 ? Sk.builtin.int_(self.idx) : Sk.builtin.int_(0);
+        },
+        $flags: {NoArgs: true}
+    }
+}
 
 /**
  * @constructor

@@ -119,8 +119,14 @@ Sk.builtin.range_.prototype["count"] = new Sk.builtin.func(function (self, item)
     return Sk.misceval.callsimArray(self.v.count, [self.v, item]);
 });
 
-Sk.builtin.range_.prototype.tp$getsets = [
-    new Sk.GetSetDef("start", function () {return new Sk.builtin.int_(this.$start);}),
-    new Sk.GetSetDef("step", function () {return new Sk.builtin.int_(this.$step);}),
-    new Sk.GetSetDef("stop", function () {return new Sk.builtin.int_(this.$stop);}),
-]
+Sk.builtin.range_.prototype.tp$getsets = {
+    start: {
+        $get: function () {return new Sk.builtin.int_(this.$start)}
+    },
+    step: {
+        $get: function () {return new Sk.builtin.int_(this.$step)}
+    },
+    stop: {
+        $get: function () {return new Sk.builtin.int_(this.$stop)}
+    }
+};

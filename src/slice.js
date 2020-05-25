@@ -190,5 +190,4 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     flags: {
         sk$acceptable_as_base_class: false
     }
-
 });

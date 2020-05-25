@@ -75,17 +75,15 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
     
+    const getsets = {};
     for (i=0; i<flds.length; i++) {
-        const gsd = new Sk.GetSetDef(flds[i], 
-                                     function () {
-                                         return this.v[i];
-                                     },
-                                     undefined,
-                                     docs[i]
-                                    )
-
-        cons.prototype[flds[i]] = new Sk.builtin.getset_descriptor(cons, gsd);
+        getsets[flds[i]] = {
+            $get: function () {return this.v[i]},
+            $doc: docs[i]
+        }
     }
+    Sk.abstr.setUpGetSets(cons, getsets);
+    
     cons.prototype.num_sequence_fields = new Sk.builtin.int_(flds.length);
 
     return cons;

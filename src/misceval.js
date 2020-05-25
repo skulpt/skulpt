@@ -426,37 +426,37 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    // use comparison methods if they are given for either object
-    if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
-        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
-    }
+    // // use comparison methods if they are given for either object
+    // if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
+    //     if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+    //         return Sk.misceval.isTrue(ret);
+    //     }
+    // }
 
-    if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
-    }
+    // if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
+    //     if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+    //         return Sk.misceval.isTrue(ret);
+    //     }
+    // }
 
 
-    // depending on the op, try left:op:right, and if not, then
-    // right:reversed-top:left
-    method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
-    if (method && !v_has_shortcut) {
-        ret = Sk.misceval.callsimArray(method, [v, w]);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
-    }
+    // // depending on the op, try left:op:right, and if not, then
+    // // right:reversed-top:left
+    // method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
+    // if (method && !v_has_shortcut) {
+    //     ret = Sk.misceval.callsimArray(method, [v, w]);
+    //     if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+    //         return Sk.misceval.isTrue(ret);
+    //     }
+    // }
 
-    swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
-    if (swapped_method && !w_has_shortcut) {
-        ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
-    }
+    // swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
+    // if (swapped_method && !w_has_shortcut) {
+    //     ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
+    //     if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+    //         return Sk.misceval.isTrue(ret);
+    //     }
+    // }
 
     if (!Sk.__future__.python3) {
         vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);

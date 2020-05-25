@@ -132,8 +132,46 @@ Sk.generic.new = function (builtin) {
     return genericNew;
 };
 
-Sk.generic.slotCallNoArgs = function (self) {
-    return this.call(self);
+Sk.generic.newMethodDef = {
+    $meth: function (args, kwargs) {
+        // this = a type object
+        let this_name, subs_name;
+
+        if (args.length < 1) {
+            this_name = this.prototype.tp$name;
+            throw new Sk.builtin.TypeError(this_name + ".__new__(): not enough arguments")
+        }
+        
+        const subtype = args.shift();
+
+        if (subtype.sk$type === undefined) {
+            this_name = this.prototype.tp$name;
+            throw new Sk.builtin.TypeError(this_name + "__new__(X): X is not a type object ("+ Sk.abst.typeName(subtype)+")")
+        }
+
+        if (!subtype.$isSubType(this)) {
+            this_name = this.prototype.tp$name;
+            subs_name = subtype.prototype.tp$name;
+            throw new Sk.builtin.TypeError(this_name+ ".__new__("+subs_name+"): "+subs_name+" is not a subtype of "+this_name)
+        }
+        /* from CPython: Check that the use doesn't do something silly and unsafe like
+       object.__new__(dict).  To do this, we check that the
+       most derived base that's not a heap type is this type. */
+       let staticbase = subtype;
+       const slot_new = Sk.slots.__new__.$slot_func;
+       while (staticbase && staticbase.prototype.tp$new === slot_new) {
+           staticbase = staticbase.prototype.tp$base;
+       }
+       if (staticbase && staticbase.prototype.tp$new !== this.prototype.tp$new) {
+        this_name = this.prototype.tp$name;
+        subs_name = staticbase.prototype.tp$name;
+         throw new Sk.builtin.TypeError(this_name + ".__new__("+subs_name+") is not safe, use "+subs_name+".__new__()")
+       }
+       return  this.prototype.tp$new.call(subtype.prototype, args, kwargs);
+    },
+    $flags: {FastCall: true},
+    $textsig: "($type, *args, **kwargs)",
+    $name: "__new__",
 };
 
 /**

@@ -770,8 +770,8 @@ Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs)
 
 
 Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
-    const nargs = args.length + (kwargs ? kwargs.length : 0);
-    if (nargs !== 1) {
+    Sk.abstr.checkNoKwargs(func_name, kwargs);
+    if (args.length !== 1) {
         throw new Sk.builtin.TypeError(func_name + "() takes exactly one argument (" + nargs + " given)");
     }
 }
@@ -1025,14 +1025,14 @@ Sk.abstr.iter = function (obj) {
 Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 /**
- * Special method look up. First try getting the method via
- * internal dict and getattr. If getattr is not present (builtins)
- * try if method is defined on the object itself
+ * Special method look up. 
+ * can take a pyName or jsName
+ * uses the ob$type.$typeLookup method
  *
  * @returns {undefined | Object} Return undefined if not found or the function
  */
-Sk.abstr.lookupSpecial = function (obj, pyName) {
-    return obj.ob$type.$typeLookup(pyName);
+Sk.abstr.lookupSpecial = function (obj, pyOrJsName) {
+    return obj.ob$type.$typeLookup(pyOrJsName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
@@ -1205,84 +1205,69 @@ Sk.abstr.setUpMethods = function (klass, methods) {
 
 
 Sk.abstr.setUpSlots = function (klass, slots) {
-    let slot_def, slot_name, dunder_name, wrapped_func;
-
-    if (slots) {
-        // the difference between the two loops is that one assigns the wrapped function to the prototype
-        // whilst the other doesn't
-        if (Sk.builtin.str) {
-            klass.prototype.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
-        }
-        if (slots.tp$richcompare) {
-            const op2shortcut = {
-                "Eq": "ob$eq",
-                "NotEq": "ob$ne",
-                "Gt": "ob$gt",
-                "GtE": "ob$ge",
-                "Lt": "ob$lt",
-                "LtE": "ob$le"
-            };
-            for (let op in op2shortcut) {
-                const shortcut = op2shortcut[op];
-                slots[shortcut] = slots[shortcut] || function (other) {
-                    return this.tp$richcompare(other, op);
-                }
-            }
-        }
-
-        for (slot_name in slots) {
-            wrapped_func = slots[slot_name];
-            klass.prototype[slot_name] = wrapped_func;
-            slot_def = Sk.Slots[slot_name];
-            if (slot_def === undefined) {
-                continue;
-            }
-            dunder_name = slot_def.$name || slot_def.$wrapper.name;
-
-            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
-        }
-        // we do rich compare a little differently
-        // if only tp$richcompare is defined we set up hook slots for ob$eq and assign appropriate slot wrappers 
-
-
-
+    const proto = klass.prototype;
+    const op2shortcut = {
+        "Eq": "ob$eq",
+        "NotEq": "ob$ne",
+        "Gt": "ob$gt",
+        "GtE": "ob$ge",
+        "Lt": "ob$lt",
+        "LtE": "ob$le"
+    };
+    if (slots === undefined) {
+        // make a shallow copy so that we don't accidently consider parent slots
+        slots = { ...klass.prototype };
     } else {
-        const proto = klass.prototype;
-        const slot_names = Object.getOwnPropertyNames(proto);
-        klass.prototype.__doc__ = proto.hasOwnProperty('tp$doc') ? new Sk.builtin.str(proto.tp$doc) : Sk.builtin.none.none$;
-        if (slot_names.includes("tp$richcompare")) {
-            const op2shortcut = {
-                "Eq": "ob$eq",
-                "NotEq": "ob$ne",
-                "Gt": "ob$gt",
-                "GtE": "ob$ge",
-                "Lt": "ob$lt",
-                "LtE": "ob$le"
-            };
-            for (let op in op2shortcut) {
-                const shortcut = op2shortcut[op];
-                if (!slot_names.includes(shortcut)) {
-                    klass.prototype[shortcut] = function (other) {
-                        return this.tp$richcompare(other, op);
-                    }
-                    slot_names.push(shortcut)
-                }
-            }
-        }
-        for (let i = 0; i < slot_names.length; i++) {
-            slot_name = slot_names[i];
-            wrapped_func = klass.prototype[slot_name];
-            slot_def = Sk.Slots[slot_name];
-            if (slot_def === undefined) {
-                continue;
-            }
-            dunder_name = slot_def.$name || slot_def.$wrapper.name;
-            klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
+        for (let slot_name in slots) {
+            // inefficiency of looping twice vs code reuse.
+            proto[slot_name] = slots[slot_name];
         }
     }
-    // not a a cpython flag but we'll use it to check in onetime initialization
+    
+    // str might not have been created yet
+    if (Sk.builtin.str !== undefined) {
+        proto.__doc__ = slots.tp$doc ? new Sk.builtin.str(slots.tp$doc) : Sk.builtin.none.none$;
+    }
+    // set up richcompare skulpt slots
+    if (slots.tp$richcompare !== undefined) {
+        for (let op in op2shortcut) {
+            const shortcut = op2shortcut[op];
+            proto[shortcut] = slots[shortcut] = slots[shortcut] || function (other) {
+                return this.tp$richcompare(other, op);
+            }
+        }
+    }
+
+    if (slots.tp$new !== undefined) {
+        // we deal with tp$new differently because it is not a slot wrapper but sk_method
+        proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
+    }
+    
+    function wrap_func(klass, dunder_name, wrapped_func) {
+        debugger;
+        const slot_def = Sk.slots[dunder_name];
+        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
+    }
+
+    for (let slot_name in slots) {
+        const dunder_name = Sk.slotToDunder[slot_name];
+        if (dunder_name === undefined) {
+            continue;
+        }
+        const wrapped_func = slots[slot_name];
+        if (typeof dunder_name === "string") {
+            wrap_func(klass, dunder_name, wrapped_func)
+        } else {
+            for (let i = 0; i < dunder_name.length; i++) {
+                wrap_func(klass, dunder_name[i], wrapped_func);
+            }
+        }
+    }
+
+
+    // a flag to check during doOneTimeInitialization
     klass.prototype.sk$slots = null;
-}
+};
 
 /** 
 * @function

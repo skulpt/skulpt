@@ -1,3 +1,598 @@
+Sk.generic.wrapperCallNoArgs = function (self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkNoArgs(this.$name, args, kwargs);
+    return this.call(self);
+};
+
+Sk.generic.wrapperFastCall = function (self, args, kwargs) {
+    // this = the wrapped function
+    return this.call(self, args, kwargs);
+};
+
+Sk.generic.wrapperRichCompare = function (self, args, kwargs) {
+    const res = Sk.generic.wrapperCallOneArg.call(this, self, args, kwargs);
+    if (res === Sk.builtin.NotImplemented.NotImplemented$) {
+        return res;
+    }
+    return new Sk.builtin.bool(res);
+};
+
+Sk.generic.wrapperCallOneArg = function (self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkOneArg(this.$name, args, kwargs);
+    return this.call(self, args[0]);
+};
+
+Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) {
+    return function () {
+        let res;
+        const func = Sk.abstr.lookupSpecial(this, dunderName);
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this);
+        } else if (func !== undefined) {
+            res = Sk.misceval.callsimArray(func, [this]);
+            if (!(checkFunc(res))) {
+                throw new Sk.builtin.TypeError(dunderName + " returned " + checkMsg + " (type " + Sk.abstr.typeName(res) + ")")
+            }
+        }
+        return res;
+    }
+};
+
+Sk.generic.slotFuncOneArg = function (dunderName) {
+    return function (value) {
+        const func = Sk.abstr.lookupSpecial(this, dunderName);
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, value);
+        }
+        return Sk.misceval.callsimArray(func, [this, value]);
+    }
+}
+
+
+Sk.slots = Object.create(null);
+const slots = Sk.slots;
+
+// tp slots
+slots.__init__ = {
+    $name: "__init__",
+    $slot_func: function tp$init(args, kwargs) {
+        const func = Sk.abstr.lookupSpecial("__init__");
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, args, kwargs);
+        }
+        args.unshift(this);
+        let ret = Sk.misceval.callsimOrSuspendArray(func, args, kwargs);
+        return Sk.misceval.chain(ret, function (r) {
+            if (!Sk.builtin.checkNone(r) && r !== undefined) {
+                throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(r));
+            } else {
+                return r;
+            }
+        });
+    },
+    $wrapper: function (self, args, kwargs) {
+        // this = the wrapped function
+        this.call(self, args, kwargs);
+        return Sk.builtin.none.none$;
+    },
+    $textsig: "($self, /, *args, **kwargs)",
+    $flags: { FastCall: true },
+    $doc: "Initialize self.  See help(type(self)) for accurate signature.",
+};
+
+slots.__new__ = {
+    $name: "__new__",
+    $slot_func: function tp$new(args, kwargs) {
+        const func = Sk.abstr.lookupSpecial("__new__");
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, args, kwargs);
+        }
+        args.unshift(this);
+        return Sk.misceval.callsimOrSuspendArray(func, args, kwargs);
+     },
+    $wrapper: null,
+    $textsig: "($self, /, *args, **kwargs)",
+    $flags: { FastCall: true },
+    $doc: "Create and return a new object.",
+};
+
+slots.__call__ = {
+    $name: "__call__",
+    $slot_func: function tp$call(args, kwargs) { },
+    $wrapper: function __call__(args, kwargs) { },
+    $textsig: "($self, /, *args, **kwargs)",
+    $flags: { FastCall: true },
+    $doc: "Call self as a function.",
+}
+
+slots.__repr__ = {
+    $name: "__repr__",
+    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__repr__", Sk.builtin.checkString, "non-string"),
+    $wrapper: Sk.generic.wrapperCallNoArgs,
+    $textsig: "($self, /)",
+    $flags: { NoArgs: true },
+    $doc: "Return repr(self).",
+};
+
+slots.__str__ = {
+    $name: "__str__",
+    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__str__", Sk.builtin.checkString, "non-string"),
+    $wrapper: Sk.generic.wrapperCallNoArgs,
+    $textsig: "($self, /)",
+    $flags: { NoArgs: true },
+    $doc: "Return str(self).",
+};
+
+slots.__hash__ = {
+    $name: "__hash__",
+    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "non-int"),
+	$wrapper: Sk.generic.wrapperCallNoArgs,
+    $textsig: "($self, /)",
+    $flags: { NoArgs: true },
+    $doc: "Return hash(self).",
+};
+
+// getters/setters/deletters
+slots.__getattribute__ = {
+    $name: "__getattribute__",
+    $slot_func: function tp$getattr(pyName, canSuspend) { },
+    $wrapper: function () { },
+    $textsig: "($self, name, /)",
+    $doc: "Return getattr(self, name).",
+};
+
+slots.__getattr__ = {
+    $name: "__getattr__",
+    $slot_func: function tp$getattr(pyName, canSuspend) { },
+    $wrapper: function __getattribute__(pyName) { },
+    $textsig: "($self, name, /)",
+    $doc: "Return getattr(self, name).",
+};
+
+slots.__setattr__ = {
+    $name: "__setattr__",
+    $slot_func: function tp$setattr(pyName, value, canSuspend) { },
+    $wrapper: function __setattr__(pyName, value) { },
+    $textsig: "($self, name, value, /)",
+    $doc: "Implement setattr(self, name, value).",
+};
+
+slots.__delattr__ = {
+    $name: "__delattr__",
+    $slot_func: function tp$descr_set(self, pyName, canSuspend) { },
+    $wrapper: function __delattr__() { },
+    $textsig: "($self, name, /)",
+    $doc: "Implement delattr(self, name).",
+};
+
+slots.__get__ = {
+    $name: "__get__",
+    $slot_func: function tp$descr_get(obj, obtype, canSuspend) { },
+    $wrapper: function __get__(obj, obtype) { },
+    $textsig: "($self, instance, owner, /)",
+    $doc: "Return an attribute of instance, which is of type owner.",
+};
+
+slots.__set__ = {
+    $name: "__set__",
+    $slot_func: function tp$descr_set(obj, value, canSuspend) { },
+    $wrapper: function __set__(obj, value) { },
+    $textsig: "($self, instance, value, /)",
+    $doc: "Set an attribute of instance to value.",
+};
+
+slots.__delete__ = {
+    $name: "__delete__",
+    $slot_func: function tp$descr_set() { },
+    $wrapper: function __delete__() { },
+    $textsig: "($self, instance, /)",
+    $doc: "Delete an attribute of instance.",
+};
+
+// slots.__del__ = {
+// 	$name: "__del__",
+// 	$slot_func: function tp$finalize () { },
+// 	$wrapper: function __del__ () { },
+// 	$textsig: null,
+// 	$doc: "",
+// };
+
+
+// tp richcompare
+{
+slots.__eq__ = {
+    $name: "__eq__",
+    $slot_func: Sk.generic.slotFuncOneArg("__eq__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self==value.",
+};
+
+slots.__ge__ = {
+    $name: "__ge__",
+    $slot_func: Sk.generic.slotFuncOneArg("__ge__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self>=value.",
+};
+
+slots.__gt__ = {
+    $name: "__gt__",
+    $slot_func: Sk.generic.slotFuncOneArg("__gt__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self>value.",
+};
+
+slots.__le__ = {
+    $name: "__le__",
+    $slot_func: Sk.generic.slotFuncOneArg("__le__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self<=value.",
+};
+
+slots.__lt__ = {
+    $name: "__lt__",
+    $slot_func: Sk.generic.slotFuncOneArg("__lt__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self<value.",
+};
+
+slots.__ne__ = {
+    $name: "__ne__",
+    $slot_func: Sk.generic.slotFuncOneArg("__ne__"),
+    $wrapper: Sk.generic.wrapperRichCompare,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self!=value.",
+};
+}
+// iters
+
+slots.__iter__ = {
+    $name: "__iter__",
+    $slot_func: function tp$iter() { },
+    $wrapper: function __iter__() { },
+    $textsig: "($self, /)",
+    $doc: "Implement iter(self).",
+};
+
+slots.__next__ = {
+    $name: "__next__",
+    $slot_func: function tp$iternext(canSuspend) { },
+    $wrapper: function __next__() { },
+    $textsig: "($self, /)",
+    $doc: "Implement next(self).",
+};
+
+// sequence and mapping
+slots.__len__ = {
+    $name: "__len__",
+    $slot_func: function sq$length(canSuspend) { },
+    $wrapper: function __len__() { },
+    $textsig: "($self, /)",
+    $doc: "Return len(self).",
+};
+
+slots.__contains__ = {
+    $name: "__contains__",
+    $slot_func: function sq$contains(key) { },
+    $wrapper: function __contains__(key) { },
+    $textsig: "($self, key, /)",
+    $doc: "Return key in self.",
+};
+
+slots.__getitem__ = {
+    $name: "__getitem__",
+    $slot_func: function mp$subscript(key) { },
+    $wrapper: function __getitem__(key) { },
+    $textsig: "($self, key, /)",
+    $doc: "Return self[key].",
+};
+
+slots.__setitem__ = {
+    $name: "__setitem__",
+    $slot_func: function mp$ass_subscript(key, value) { },
+    $wrapper: function __setitem__(key, value) { },
+    $textsig: "($self, key, value, /)",
+    $doc: "Set self[key] to value.",
+};
+
+slots.__delitem__ = {
+    $name: "__delitem__",
+    $slot_func: function mp$ass_subscript(key, value) { },
+    $wrapper: function __delitem__(key) { },
+    $textsig: "($self, key, /)",
+    $doc: "Delete self[key].",
+};
+
+
+// number
+slots.__add__ = {
+    $name: "__add__",
+    $slot_func: function () { },
+    $wrapper: function __add__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self+value.",
+};
+slots.__radd__ = {
+    $name: "__radd__",
+    $slot_func: function () { },
+    $wrapper: function __radd__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value+self.",
+};
+slots.__sub__ = {
+    $name: "__sub__",
+    $slot_func: function () { },
+    $wrapper: function __sub__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self-value.",
+};
+slots.__rsub__ = {
+    $name: "__rsub__",
+    $slot_func: function () { },
+    $wrapper: function __rsub__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value-self.",
+};
+slots.__mul__ = {
+    $name: "__mul__",
+    $slot_func: function () { },
+    $wrapper: function __mul__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self*value.",
+};
+slots.__rmul__ = {
+    $name: "__rmul__",
+    $slot_func: function () { },
+    $wrapper: function __rmul__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value*self.",
+};
+slots.__mod__ = {
+    $name: "__mod__",
+    $slot_func: function () { },
+    $wrapper: function __mod__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self%value.",
+};
+slots.__rmod__ = {
+    $name: "__rmod__",
+    $slot_func: function () { },
+    $wrapper: function __rmod__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value%self.",
+};
+slots.__divmod__ = {
+    $name: "__divmod__",
+    $slot_func: function () { },
+    $wrapper: function __divmod__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return divmod(self, value).",
+};
+slots.__rdivmod__ = {
+    $name: "__rdivmod__",
+    $slot_func: function () { },
+    $wrapper: function __rdivmod__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return divmod(value, self).",
+};
+slots.__pow__ = {
+    $name: "__pow__",
+    $slot_func: function () { },
+    $wrapper: function __pow__() { },
+    $textsig: "($self, value, mod=None, /)",
+    $doc: "Return pow(self, value, mod).",
+};
+slots.__rpow__ = {
+    $name: "__rpow__",
+    $slot_func: function () { },
+    $wrapper: function __rpow__() { },
+    $textsig: "($self, value, mod=None, /)",
+    $doc: "Return pow(value, self, mod).",
+};
+slots.__neg__ = {
+    $name: "__neg__",
+    $slot_func: function () { },
+    $wrapper: function __neg__() { },
+    $textsig: "($self, /)",
+    $doc: "-self",
+};
+slots.__pos__ = {
+    $name: "__pos__",
+    $slot_func: function () { },
+    $wrapper: function __pos__() { },
+    $textsig: "($self, /)",
+    $doc: "+self",
+};
+slots.__abs__ = {
+    $name: "__abs__",
+    $slot_func: function () { },
+    $wrapper: function __abs__() { },
+    $textsig: "($self, /)",
+    $doc: "abs(self)",
+};
+slots.__bool__ = {
+    $name: "__bool__",
+    $slot_func: function () { },
+    $wrapper: function __bool__() { },
+    $textsig: "($self, /)",
+    $doc: "self != 0",
+};
+slots.__invert__ = {
+    $name: "__invert__",
+    $slot_func: function () { },
+    $wrapper: function __invert__() { },
+    $textsig: "($self, /)",
+    $doc: "~self",
+};
+slots.__lshift__ = {
+    $name: "__lshift__",
+    $slot_func: function () { },
+    $wrapper: function __lshift__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self<<value.",
+};
+slots.__rlshift__ = {
+    $name: "__rlshift__",
+    $slot_func: function () { },
+    $wrapper: function __rlshift__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value<<self.",
+};
+slots.__rshift__ = {
+    $name: "__rshift__",
+    $slot_func: function () { },
+    $wrapper: function __rshift__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self>>value.",
+};
+slots.__rrshift__ = {
+    $name: "__rrshift__",
+    $slot_func: function () { },
+    $wrapper: function __rrshift__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value>>self.",
+};
+slots.__and__ = {
+    $name: "__and__",
+    $slot_func: function () { },
+    $wrapper: function __and__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self&value.",
+};
+slots.__rand__ = {
+    $name: "__rand__",
+    $slot_func: function () { },
+    $wrapper: function __rand__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value&self.",
+};
+slots.__xor__ = {
+    $name: "__xor__",
+    $slot_func: function () { },
+    $wrapper: function __xor__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self^value.",
+};
+slots.__rxor__ = {
+    $name: "__rxor__",
+    $slot_func: function () { },
+    $wrapper: function __rxor__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value^self.",
+};
+slots.__or__ = {
+    $name: "__or__",
+    $slot_func: function () { },
+    $wrapper: function __or__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self|value.",
+};
+slots.__ror__ = {
+    $name: "__ror__",
+    $slot_func: function () { },
+    $wrapper: function __ror__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value|self.",
+};
+slots.__int__ = {
+    $name: "__int__",
+    $slot_func: function () { },
+    $wrapper: function __int__() { },
+    $textsig: "($self, /)",
+    $doc: "int(self)",
+};
+slots.__float__ = {
+    $name: "__float__",
+    $slot_func: function () { },
+    $wrapper: function __float__() { },
+    $textsig: "($self, /)",
+    $doc: "float(self)",
+};
+slots.__floordiv__ = {
+    $name: "__floordiv__",
+    $slot_func: function () { },
+    $wrapper: function __floordiv__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self//value.",
+};
+slots.__rfloordiv__ = {
+    $name: "__rfloordiv__",
+    $slot_func: function () { },
+    $wrapper: function __rfloordiv__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value//self.",
+};
+slots.__truediv__ = {
+    $name: "__truediv__",
+    $slot_func: function () { },
+    $wrapper: function __truediv__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return self/value.",
+};
+slots.__rtruediv__ = {
+    $name: "__rtruediv__",
+    $slot_func: function () { },
+    $wrapper: function __rtruediv__() { },
+    $textsig: "($self, value, /)",
+    $doc: "Return value/self.",
+};
+slots.__index__ = {
+    $name: "__index__",
+    $slot_func: function () { },
+    $wrapper: function __index__() { },
+    $textsig: "($self, /)",
+    $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",
+};
+
+
+// py2 ONLY slots
+slots.__long__ = {
+    $name: "__long__",
+    $slot_func: function () { },
+    $wrapper: function __long__() { },
+    $textsig: "($self, /)",
+    $doc: "int(self)",
+};
+
+slots.__div__ = {
+    $name: "__div__",
+    $slot_func: function () { },
+    $wrapper: function __div__() { },
+    $textsig: "($self, other/)",
+    $doc: "x.__div__(y) <==> x/y",
+};
+
+slots.__rdiv__ = {
+    $name: "__rdiv__",
+    $slot_func: function () { },
+    $wrapper: function __div__() { },
+    $textsig: "($self, other/)",
+    $doc: "x.__rdiv__(y) <==> x/y",
+};
+
+slots.__nonzero__ = {
+    $name: "__nonzero__",
+    $slot_func: function () { },
+    $wrapper: function __nonzero__() { },
+    $textsig: "($self, /)",
+    $doc: "x.__nonzero__() <==> x != 0",
+};
+
+
+
+
+
 // quick note to self
 
 // in multpile inheritance do the search thing
@@ -12,148 +607,6 @@ Sk.SlotDef = function (_name, func, wrapper, doc, flags) {
     this.$wrapper.$flags = this.$flags;
     this.$wrapper.$name = _name;
 };
-
-Sk.tpSlots = {
-    tp$str: true,
-    $r: true,
-    // tp$descr_get: true,
-    // tp$descr_set: true,
-    // tp$hash: true,
-    tp$init: true,
-    // tp$new: true,
-    // tp$iter: true,
-    // tp$iternext: true,
-};
-
-
-Sk.subSlots = {
-    tp$as_number: [
-        "nb$add",
-        "nb$inplace_add",
-        "nb$subtract",
-        "nb$inplace_subtract",
-        "nb$multiply",
-        "nb$inplace_multiply",
-        "nb$remainder",
-        "nb$inplace_remainder",
-        "nb$divmod",
-        "nb$power",
-        "nb$inplace_power",
-        "nb$negative",
-        "nb$positive",
-        "nb$absolute",
-        "nb$bool",
-        "nb$invert",
-        "nb$lshift",
-        "nb$inplace_lshift",
-        "nb$rshift",
-        "nb$inplace_rshift",
-        "nb$and",
-        "nb$inplace_and",
-        "nb$xor",
-        "nb$inplace_xor",
-        "nb$or",
-        "nb$inplace_or",
-        "nb$int",
-        "nb$reserved",
-    ],
-    tp$as_mapping: ["sq$length", "mp$subscript", "mp$ass_subscript"],
-    tp$as_sequence: [
-        "sq$length",
-        "sq$concat",
-        "sq$repeat",
-        "mp$subscript",
-        "mp$ass_subscript",
-        "sq$contains",
-        "sq$inplace_concat",
-        "sq$inplace_repeat"
-    ],
-
-    tp$rich_compare: ["ob$lt", "ob$le", "ob$eq", "ob$ne", "ob$gt", "ob$ge"],
-    tp$await: ["am$await",
-        "am$aiter",
-        "am$anext",
-    ],
-};
-
-Sk.Slots = Object.create(null); 
-
-Sk.Slots.$r = new Sk.SlotDef("__repr__",
-    function $r() {
-        let res;
-        const func = this.ob$type.$typeLookup("__repr__");
-;
-        if (func instanceof Sk.builtin.wrapper_descriptor) {
-            // then just call the wrapped function
-            return func.d$wrapped.call(this);
-        } else if (func !== undefined) {
-            res = Sk.misceval.callsimArray(func, [this]);
-            if (!(Sk.builtin.checkString(res))) {
-                throw new Sk.builtin.TypeError("__repr__ returned non-string (type " + Sk.abstr.typeName(res) + ")")
-            }
-        }
-        return res;
-    },
-    Sk.generic.slotCallNoArgs,
-    "Return repr(self).", 
-    {NoArgs: true}
-);
-
-Sk.Slots.tp$init = new Sk.SlotDef("__init__",
-    function tp$init(args, kwargs) {
-        const func = this.ob$type.$typeLookup("__init__");
-        if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapped.call(this, args, kwargs);
-        }
-        args.unshift(this);
-        let ret = Sk.misceval.callsimOrSuspendArray(func, args, kwargs);
-        return Sk.misceval.chain(ret, function (r) {
-            if (!Sk.builtin.checkNone(r) && r !== undefined) {
-                throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(r));
-            } else {
-                return r;
-            }
-        });
-    },
-    function __init__(self, args, kwargs) {
-        // this = wrapped function
-        return this.call(self, args, kwargs);
-    }
-);
-
-Sk.Slots.tp$str = new Sk.SlotDef("__str__",
-    function tp$str () {
-        let res;
-        const func = this.ob$type.$typeLookup("__str__");
-        if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapped.call(this);
-        } else if (func !== undefined) {
-            res = Sk.misceval.callsimArray(func, [this]);
-            if (!(Sk.builtin.checkString(res))) {
-                throw new Sk.builtin.TypeError("__str__ returned non-string (type " + Sk.abstr.typeName(res) + ")")
-            }
-        }
-        return res;
-    },
-    Sk.generic.slotCallNoArgs,
-    "Return str(self).", 
-    {NoArgs: true}
-);
-
-
-// Sk.Slots.tp$init = new Sk.SlotDef(Sk.builtin.str.$init,
-//     function __init__() {},
-// )
-
-// Sk.Slots.tp$new = new Sk.SlotDef(Sk.builtin.str.$new,
-//     function __init__() {
-
-//     },
-// )
-
-// Sk.Slots.tp$str = new Sk.SlotDef(Sk.builtin.str.$repr, Sk.builtin.repr_wrapper, {
-//     NoArgs: true
-// });
 
 
 /**
@@ -215,6 +668,7 @@ Sk.dunderToSkulpt = {
     "__get__": ["tp$descr_get", 3],
     "__set__": ["tp$descr_set", 3]
 };
+
 
 Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 
@@ -299,3 +753,87 @@ Sk.setupDunderMethods = function (py3) {
  * 
  * 
  */
+
+
+Sk.slotToDunder = {
+    // stop constructor causing issues in slotToDunder checks
+    constructor: undefined,
+
+    // nb we handle tp$new differently
+    // tp_slots
+    tp$init: "__init__",
+    tp$call: "__call__",
+    $r: "__repr__",
+    tp$str: "__str__",
+    tp$hash: "__hash__",
+
+    // tp$richcompare
+    ob$eq: "__eq__",
+    ob$ne: "__ne__",
+    ob$lt: "__lt__",
+    ob$le: "__le__",
+    ob$gt: "__gt__",
+    ob$ge: "__ge__",
+
+    // getters and setters
+    tp$descr_get: "__get__",
+    tp$descr_set: ["__set__", "__delete__"],
+
+    tp$getattr: "__getattribute__",
+    tp$setattr: ["__setattr__", "__delattr__"],
+
+    // iter
+    tp$iter: "__iter__",
+    tp$iternext: "__next__",
+
+    // sequence and mapping slots
+    sq$length: "__len__",
+    sq$containes: "__contains__",
+    mp$subscript: "__getitem__", 
+    mp$ass_subscript: ["__setitem__", "__delitem__"],
+    
+
+    // number slots
+    nb$abs: "__abs__",
+    nb$negative: "__neg__",
+    nb$positive: "__pos__",
+    nb$int_: "__int__",
+    nb$lng: "__long__",
+    nb$float_: "__float__",
+    nb$add: "__add__",
+    nb$reflected_add: "__radd__",
+    nb$subtract: "__sub__",
+    nb$reflected_subtract: "__rsub__",
+    nb$multiply: "__mul__",
+    nb$reflected_multiply: "__rmul__",
+    nb$divide: "__div__",
+    nb$reflected_divide: "__rdiv__",
+    nb$floor_divide: "__floordiv__",
+    nb$reflected_floor_divide: "__rfloordiv__",
+    nb$invert: "__invert__",
+    nb$remainder: "__mod__",
+    nb$reflected_remainder: "__rmod__",
+    nb$divmod: "__divmod__",
+    nb$reflected_divmod: "__rdivmod__",
+    nb$power: "__pow__",
+    nb$reflected_power: "__rpow__",
+    sq$contains: "__contains__",
+    nb$bool: "__bool__",
+    nb$nonzero: "__nonzero__",
+
+}
+
+
+Sk.setupDunderMethods = function (py3) {
+    if (py3) {
+        Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
+        Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
+    } else {
+        if (Sk.dunderToSkulpt["__matmul__"]) {
+            delete Sk.dunderToSkulpt["__matmul__"];
+        }
+        if (Sk.dunderToSkulpt["__rmatmul__"]) {
+            delete Sk.dunderToSkulpt["__rmatmul__"];
+        }
+    }
+};

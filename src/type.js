@@ -3,7 +3,15 @@ if (Sk.builtin === undefined) {
 }
 
 /**
+ * @constructor
+ * Sk.builtin.type
  *
+ * @description
+ * this should never be called as a constructor
+ * instead use Sk.abstr.buildinNativeClass
+ * Sk.misceval.buildClass
+ * Sk.misceval.callsimArray(Sk.builtin.type)
+ * 
  */
 
 Sk.builtin.type = function type() {
@@ -410,15 +418,15 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
         }
     } else {
         // then just allocate all the slots 
-        for (let slot in Sk.Slots) {
-            this.prototype[slot] = Sk.Slots[slot].$slot_func;
+        for (let dunder in Sk.slots) {
+            this.$allocateSlot(dunder);
         }
     }
 };
 
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
     const slot = Sk.dunderToSkulpt[dunder];
-    this.prototype[slot] = Sk.Slots[slot].$slot_func;
+    this.prototype[slot] = Sk.slots[dunder].$slot_func;
 };
 
 
