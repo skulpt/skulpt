@@ -145,7 +145,7 @@ Sk.builtin.object.prototype.tp$methods = {
                 }
             }
             // here we use the type.__dir__ implementation
-            const type_dir = Sk.builtin.type.prototype.__dir__.$get.call(this.ob$type);
+            const type_dir = Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [this.ob$type]);
             type_dir.v.push(...dir);
             type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
             return type_dir;
