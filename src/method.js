@@ -26,12 +26,12 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     if (klass.prototype && builtin !== true) {
         if (func instanceof Sk.builtin.method) {
             // in python 2 we replace the name the method is bound to
-            this.tp$name = klass.prototype.tp$name + "." + func.tp$name.split(".").pop();
+            this.$name = klass.prototype.tp$name + "." + func.$name.split(".").pop();
         } else {
-            this.tp$name = klass.prototype.tp$name + "." + func.tp$name;
+            this.$name = klass.prototype.tp$name + "." + func.$name;
         }
     } else {
-        this.tp$name = func.tp$name;
+        this.$name = func.tp$name;
     }
     this.im_builtin = builtin;
     this["$d"] = {
@@ -89,7 +89,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     // state.
     if (this.im_self === Sk.builtin.none.none$) {
         var getMessage = (function (reason) {
-            const name_bound = this.tp$name.split(".");
+            const name_bound = this.$name.split(".");
             return "unbound method " + name_bound.pop() + "() must be called with " + name_bound.pop() + " instance as first argument (got " + reason + " instead)";
         }).bind(this);
 
@@ -136,10 +136,16 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
 
 Sk.builtin.method.prototype["$r"] = function () {
     if (this.im_builtin) {
-        return new Sk.builtin.str("<built-in method " + this.tp$name + " of type object>");
+        return new Sk.builtin.str("<built-in method " + this.$name + " of type object>");
     }
     if (this.im_self !== Sk.builtin.none.none$) {
-        return new Sk.builtin.str("<bound method " + this.tp$name + " of " + Sk.misceval.objectRepr(this.im_self).$jsstr() + ">");
+        return new Sk.builtin.str("<bound method " + this.$name + " of " + Sk.misceval.objectRepr(this.im_self).$jsstr() + ">");
     } 
-    return new Sk.builtin.str("<unbound method " + this.tp$name + ">");
+    return new Sk.builtin.str("<unbound method " + this.$name + ">");
 };
+
+Sk.builtin.method.prototype.tp$getsets = {
+    __func__ : {
+        $get: function () { return this.im_func},
+    }
+}
