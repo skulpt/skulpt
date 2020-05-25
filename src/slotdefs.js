@@ -57,7 +57,7 @@ const slots = Sk.slots;
 slots.__init__ = {
     $name: "__init__",
     $slot_func: function tp$init(args, kwargs) {
-        const func = Sk.abstr.lookupSpecial("__init__");
+        const func = Sk.abstr.lookupSpecial(this, "__init__");
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             return func.d$wrapper.call(this, args, kwargs);
         }
@@ -276,16 +276,47 @@ slots.__next__ = {
 // sequence and mapping
 slots.__len__ = {
     $name: "__len__",
-    $slot_func: function sq$length(canSuspend) { },
-    $wrapper: function __len__() { },
+    $slot_func: function sq$length(canSuspend) {
+        let res;
+        const func = Sk.abstr.lookupSpecial(this, dunderName);
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this);
+        } else if (func !== undefined) {
+            if (canSuspend) {
+                res = Sk.misceval.callsimOrSuspendArray(func, [this]);
+                return Sk.misceval.chain(res, function (r) {
+                    if (!Sk.builtin.checkInt(r)) {
+                        throw new Sk.builtin.TypeError(Sk.abstr.typeName(res) + " object cannot be interpreted as an integer");
+                    }
+                    return r;
+                });
+            } else {
+                res = Sk.misceval.callsimArray(func, [this]);
+                if (!Sk.builtin.checkInt(res)) {
+                    throw new Sk.builtin.TypeError(Sk.abstr.typeName(res) + " object cannot be interpreted as an integer");
+                }
+            }
+        }
+        return res;
+    },
+    $wrapper: function __len__(self, args, kwargs) {
+        Sk.abstr.checkNoArgs("__len__", args, kwargs);
+        return Sk.builtin.int_(self.sq$length());
+    },
+    $flags: { NoArgs: true },
     $textsig: "($self, /)",
     $doc: "Return len(self).",
 };
 
 slots.__contains__ = {
     $name: "__contains__",
-    $slot_func: function sq$contains(key) { },
-    $wrapper: function __contains__(key) { },
+    $slot_func: function sq$contains (key) {
+        return Sk.misceval.isTrue(Sk.generic.slotFuncOneArg("__contiains__").call(this, key))
+    },
+    $wrapper: function __contains__(self, args, kwargs) {
+        Sk.abstr.checkOneArg("__contains__", args, kwargs);
+        return new Sk.builtin.bool(this.call(self, args[0]))
+    },
     $textsig: "($self, key, /)",
     $doc: "Return key in self.",
 };
@@ -318,43 +349,43 @@ slots.__delitem__ = {
 // number
 slots.__add__ = {
     $name: "__add__",
-    $slot_func: function () { },
-    $wrapper: function __add__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return self+value.",
 };
 slots.__radd__ = {
     $name: "__radd__",
-    $slot_func: function () { },
-    $wrapper: function __radd__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return value+self.",
 };
 slots.__sub__ = {
     $name: "__sub__",
-    $slot_func: function () { },
-    $wrapper: function __sub__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return self-value.",
 };
 slots.__rsub__ = {
     $name: "__rsub__",
-    $slot_func: function () { },
-    $wrapper: function __rsub__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return value-self.",
 };
 slots.__mul__ = {
     $name: "__mul__",
-    $slot_func: function () { },
-    $wrapper: function __mul__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return self*value.",
 };
 slots.__rmul__ = {
     $name: "__rmul__",
-    $slot_func: function () { },
-    $wrapper: function __rmul__() { },
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
     $doc: "Return value*self.",
 };
@@ -553,6 +584,22 @@ slots.__index__ = {
     $wrapper: function __index__() { },
     $textsig: "($self, /)",
     $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",
+};
+slots.__iadd__ = {
+	$name: "__iadd__",
+	$slot_func: Sk.generic.slotFuncOneArg,
+	$wrapped: Sk.generic.wrapperCallOneArg,
+	$flags: {OneArg: true},
+	$textsig: "($self, value, /)",
+	$doc: "Implement self+=value.",
+};
+slots.__imul__ = {
+	$name: "__imul__",
+	$slot_func: Sk.generic.slotFuncOneArg,
+	$wrapped: Sk.generic.wrapperCallOneArg,
+	$flags: {OneArg: true},
+	$textsig: "($self, value, /)",
+	$doc: "Implement self*=value.",
 };
 
 
