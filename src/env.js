@@ -21,7 +21,7 @@
  * Any variables that aren't set will be left alone.
  */
 
-Sk.bool_check = function(variable, name) {
+Sk.bool_check = function (variable, name) {
     if (variable === undefined || variable === null || typeof variable !== "boolean") {
         throw new Error("must specify " + name + " and it must be a boolean");
     }
@@ -169,15 +169,15 @@ Sk.configure = function (options) {
     }
     Sk.asserts.assert(typeof Sk.signals === "object");
 
-    Sk.breakpoints = options["breakpoints"] || function() { return true; };
+    Sk.breakpoints = options["breakpoints"] || function () { return true; };
     Sk.asserts.assert(typeof Sk.breakpoints === "function");
 
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
         if (typeof setTimeout === "function") {
-            Sk.setTimeout = function(func, delay) { setTimeout(func, delay); };
+            Sk.setTimeout = function (func, delay) { setTimeout(func, delay); };
         } else {
-            Sk.setTimeout = function(func, delay) { func(); };
+            Sk.setTimeout = function (func, delay) { func(); };
         }
     }
     Sk.asserts.assert(typeof Sk.setTimeout === "function");
@@ -220,14 +220,14 @@ Sk.exportSymbol("Sk.configure", Sk.configure);
 /*
 * Replaceable handler for uncaught exceptions
 */
-Sk.uncaughtException = function(err) {
+Sk.uncaughtException = function (err) {
     throw err;
 };
 
 /*
  * Replaceable handler for uncaught exceptions
  */
-Sk.uncaughtException = function(err) {
+Sk.uncaughtException = function (err) {
     throw err;
 };
 Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
@@ -330,8 +330,8 @@ Sk.setup_method_mappings = function () {
     return {
         "round$": {
             "classes": [Sk.builtin.float_,
-                        Sk.builtin.int_,
-                        Sk.builtin.nmber],
+            Sk.builtin.int_,
+            Sk.builtin.nmber],
             2: null,
             3: "__round__"
         },
@@ -346,7 +346,20 @@ Sk.setup_method_mappings = function () {
             3: "copy"
         },
         "next$": {
-            "classes" : [],
+            "classes": [
+                Sk.builtin.dict_iter_,
+                Sk.builtin.list_iter_,
+                Sk.builtin.set_iter_,
+                Sk.builtin.frozenset_iter_,
+                Sk.builtin.str_iter_,
+                Sk.builtin.tuple_iter_,
+                Sk.builtin.generator,
+                Sk.builtin.enumerate,
+                Sk.builtin.filter_,
+                Sk.builtin.zip_,
+                Sk.builtin.map_,
+                Sk.builtin.iterator
+            ],
             2: "next",
             3: "__next__"
         },
@@ -365,23 +378,18 @@ Sk.switch_version = function (method_to_map, python3) {
 
     mapping = mappings[method_to_map];
 
-    if (python3) {
-        newmeth = mapping[3];
-        oldmeth = mapping[2];
-    } else {
+    // lets assume python 3 and then adjust to python 2
+    if (!python3) {
         newmeth = mapping[2];
         oldmeth = mapping[3];
-    }
-
-    classes = mapping["classes"];
-    len = classes.length;
-    for (idx = 0; idx < len; idx++) {
-        klass = classes[idx];
-        if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
+        classes = mapping["classes"];
+        len = classes.length;
+        for (idx = 0; idx < len; idx++) {
+            klass = classes[idx];
+            if (newmeth !== null) {
+                klass.prototype[newmeth] = klass.prototype[oldmeth];
+            }
             delete klass.prototype[oldmeth];
-        }
-        if (newmeth) {
-            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
         }
     }
 };
