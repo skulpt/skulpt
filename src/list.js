@@ -8,14 +8,15 @@
  */
 Sk.builtin.list = function (L) {
     // this is an internal function and should be called with an array object
-    Sk.asserts.assert(this instanceof Sk.builtin.list);
     if (L === undefined) {
         L = [];
     }
+    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.list);
     this.v = L;
 };
 
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.object);
+
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
 Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified.";
@@ -39,89 +40,7 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
 };
 
 
-Sk.builtin.list.prototype.list_concat_ = function (other) {
-    // other not a list
-    var i;
-    var ret;
-    if (!other.ob$type || other.ob$type != Sk.builtin.list) {
-        throw new Sk.builtin.TypeError("can only concatenate list to list");
-    }
-
-    ret = this.v.slice();
-    for (i = 0; i < other.v.length; ++i) {
-        ret.push(other.v[i]);
-    }
-    return new Sk.builtin.list(ret, false);
-};
-
-Sk.builtin.list.prototype.list_extend_ = function (other) {
-    var it, i;
-    var newb;
-    if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) +
-            "' object is not iterable");
-    }
-
-    if (this == other) {
-        // Handle extending list with itself
-        newb = [];
-        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            newb.push(i);
-        }
-
-        // Concatenate
-        this.v.push.apply(this.v, newb);
-    } else {
-        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            this.v.push(i);
-        }
-    }
-
-    return this;
-};
-
-Sk.builtin.list.prototype.list_del_item_ = function (i) {
-    i = Sk.builtin.asnum$(i);
-    if (i < 0 || i >= this.v.length) {
-        throw new Sk.builtin.IndexError("list assignment index out of range");
-    }
-    this.list_del_slice_(i, i + 1);
-};
-
-Sk.builtin.list.prototype.list_del_slice_ = function (ilow, ihigh) {
-    var args;
-    ilow = Sk.builtin.asnum$(ilow);
-    ihigh = Sk.builtin.asnum$(ihigh);
-    args = [];
-    args.unshift(ihigh - ilow);
-    args.unshift(ilow);
-    this.v.splice.apply(this.v, args);
-};
-
-Sk.builtin.list.prototype.list_ass_item_ = function (i, v) {
-    i = Sk.builtin.asnum$(i);
-    if (i < 0 || i >= this.v.length) {
-        throw new Sk.builtin.IndexError("list assignment index out of range");
-    }
-    this.v[i] = v;
-};
-
-Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
-    var args;
-    ilow = Sk.builtin.asnum$(ilow);
-    ihigh = Sk.builtin.asnum$(ihigh);
-
-    if (Sk.builtin.checkIterable(v)) {
-        args = new Sk.builtin.list(v, false).v.slice(0);
-    } else {
-        throw new Sk.builtin.TypeError("can only assign an iterable");
-    }
-    args.unshift(ihigh - ilow);
-    args.unshift(ilow);
-    this.v.splice.apply(this.v, args);
-};
-
-Sk.builtin.list.prototype["$r"] = function () {
+Sk.builtin.list.prototype.$r = function () {
     var it, i;
     var ret = [];
     for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
@@ -212,11 +131,6 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     return Sk.misceval.richCompareBool(v[i], w[i], op);
 };
 
-Sk.builtin.list.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
-    return new Sk.builtin.list_iter_(self);
-});
-
 Sk.builtin.list.prototype.tp$iter = function () {
     return new Sk.builtin.list_iter_(this);
 };
@@ -224,84 +138,8 @@ Sk.builtin.list.prototype.tp$iter = function () {
 Sk.builtin.list.prototype.sq$length = function () {
     return this.v.length;
 };
-Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
-Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.list_concat_;
-Sk.builtin.list.prototype.nb$inplace_add = Sk.builtin.list.prototype.list_extend_;
-Sk.builtin.list.prototype.sq$repeat = function (n) {
-    var j;
-    var i;
-    var ret;
-    if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
-    }
 
-    n = Sk.misceval.asIndex(n);
-    if (typeof n !== "number") {
-        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
-    }
-    ret = [];
-    for (i = 0; i < n; ++i) {
-        for (j = 0; j < this.v.length; ++j) {
-            ret.push(this.v[j]);
-        }
-    }
-    return new Sk.builtin.list(ret, false);
-};
-Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
-Sk.builtin.list.prototype.nb$inplace_multiply = function (n) {
-    var j;
-    var i;
-    var len;
-    if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
-    }
-
-    // works on list itself --> inplace
-    n = Sk.misceval.asIndex(n);
-    if (typeof n !== "number") {
-        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
-    }
-    len = this.v.length;
-    for (i = 1; i < n; ++i) {
-        for (j = 0; j < len; ++j) {
-            this.v.push(this.v[j]);
-        }
-    }
-
-    return this;
-};
-
-/*
- Sk.builtin.list.prototype.sq$item = list_item;
- Sk.builtin.list.prototype.sq$slice = list_slice;
- */
-Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.prototype.list_ass_item_;
-Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.list_del_item_;
-Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.prototype.list_ass_slice_;
-Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.list_del_slice_;
-
-Sk.builtin.list.prototype.sq$contains = function (item) {
-    var it, i;
-
-    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.richCompareBool(i, item, "Eq")) {
-            return true;
-        }
-    }
-    return false;
-};
-
-Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
-    return new Sk.builtin.bool(self.sq$contains(item));
-});
-
-/*
- Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
- Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
- */
-
-Sk.builtin.list.prototype.list_subscript_ = function (index) {
+Sk.builtin.list.prototype.mp$subscript = function (index) {
     var ret;
     var i;
     if (Sk.misceval.isIndex(index)) {
@@ -329,7 +167,7 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
+Sk.builtin.list.prototype.mp$ass_subscript = function (index, value) {
     var i;
     var j;
     var tosub;
@@ -343,13 +181,13 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
             if (i < 0) {
                 i = this.v.length + i;
             }
-            this.list_ass_item_(i, value);
+            this.sq$ass_item(i, value);
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        indices = index.$slice_indices(this.v.length);
         if (indices[2] === 1) {
-            this.list_ass_slice_(indices[0], indices[1], value);
+            this.sq$ass_slice(indices[0], indices[1], value);
         } else {
             tosub = [];
             index.sssiter$(this, function (i, wrt) {
@@ -370,7 +208,165 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
+
+Sk.builtin.list.prototype.sq$concat = function (other) {
+    // other not a list
+    var i;
+    var ret;
+    if (!other.ob$type || other.ob$type != Sk.builtin.list) {
+        throw new Sk.builtin.TypeError("can only concatenate list to list");
+    }
+
+    ret = this.v.slice();
+    for (i = 0; i < other.v.length; ++i) {
+        ret.push(other.v[i]);
+    }
+    return new Sk.builtin.list(ret, false);
+};
+
+Sk.builtin.list.prototype.nb$add =
+    Sk.builtin.list.prototype.nb$reflected_add = Sk.builtin.list.prototype.sq$concat;
+
+Sk.builtin.list.prototype.sq$repeat = function (n) {
+    var j;
+    var i;
+    var ret;
+    if (!Sk.misceval.isIndex(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+
+    n = Sk.misceval.asIndex(n);
+    if (typeof n !== "number") {
+        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
+    }
+    ret = [];
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < this.v.length; ++j) {
+            ret.push(this.v[j]);
+        }
+    }
+    return new Sk.builtin.list(ret, false);
+};
+
+Sk.builtin.list.prototype.nb$multiply =
+    Sk.builtin.list.prototype.nb$reflected_multiply = Sk.builtin.list.prototype.sq$repeat;
+
+Sk.builtin.list.prototype.sq$contains = function (item) {
+    var it, i;
+
+    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(i, item, "Eq")) {
+            return true;
+        }
+    }
+    return false;
+};
+
+Sk.builtin.list.prototype.nb$inplace_add = function (other) {
+    var it, i;
+    var newb;
+    if (!Sk.builtin.checkIterable(other)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) +
+            "' object is not iterable");
+    }
+
+    if (this == other) {
+        // Handle extending list with itself
+        newb = [];
+        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            newb.push(i);
+        }
+
+        // Concatenate
+        this.v.push.apply(this.v, newb);
+    } else {
+        for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            this.v.push(i);
+        }
+    }
+
+    return this;
+};
+
+
+Sk.builtin.list.prototype.nb$inplace_multiply = function (n) {
+    var j;
+    var i;
+    var len;
+    if (!Sk.misceval.isIndex(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+
+    // works on list itself --> inplace
+    n = Sk.misceval.asIndex(n);
+    if (typeof n !== "number") {
+        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
+    }
+    len = this.v.length;
+    for (i = 1; i < n; ++i) {
+        for (j = 0; j < len; ++j) {
+            this.v.push(this.v[j]);
+        }
+    }
+
+    return this;
+};
+
+//TODO: Delete should be really just trigger subscript with null as the value
+Sk.builtin.list.prototype.$list_del_item = function (i) {
+    i = Sk.builtin.asnum$(i);
+    if (i < 0 || i >= this.v.length) {
+        throw new Sk.builtin.IndexError("list assignment index out of range");
+    }
+    this.$list_del_slice(i, i + 1);
+};
+
+Sk.builtin.list.prototype.$list_del_slice = function (ilow, ihigh) {
+    var args;
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
+    args = [];
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
+Sk.builtin.list.prototype.sq$ass_item = function (i, v) {
+    i = Sk.builtin.asnum$(i);
+    if (i < 0 || i >= this.v.length) {
+        throw new Sk.builtin.IndexError("list assignment index out of range");
+    }
+    this.v[i] = v;
+};
+
+Sk.builtin.list.prototype.sq$ass_slice = function (ilow, ihigh, v) {
+    const args = [];
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
+
+    if (Sk.builtin.checkIterable(v)) {
+        const iter = Sk.abstr.iter(v);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            args.push(i);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("can only assign an iterable");
+    }
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
+
+/*
+ Sk.builtin.list.prototype.sq$item = list_item;
+ Sk.builtin.list.prototype.sq$slice = list_slice;
+ */
+Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.$list_del_item;
+Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.$list_del_slice;
+
+
+Sk.builtin.list.prototype.$list_del_subscript = function (index) {
     var offdir;
     var dec;
     var self;
@@ -382,13 +378,13 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
             if (i < 0) {
                 i = this.v.length + i;
             }
-            this.list_del_item_(i);
+            this.$list_del_item(i);
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        indices = index.$slice_indices(this.v.length);
         if (indices[2] === 1) {
-            this.list_del_slice_(indices[0], indices[1]);
+            this.$list_del_slice(indices[0], indices[1]);
         } else {
             self = this;
             dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
@@ -404,21 +400,8 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
     throw new Sk.builtin.TypeError("list indices must be integers, not " + typeof index);
 };
 
-Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
-Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_subscript_;
-Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.list_del_subscript_;
-
-Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.list.prototype.list_subscript_.call(self, index);
-});
-
-Sk.builtin.list.prototype.__setitem__ = new Sk.builtin.func(function (self, index, val) {
-    return Sk.builtin.list.prototype.list_ass_subscript_.call(self, index, val);
-});
-
-Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.list.prototype.list_del_subscript_.call(self, index);
-});
+// TODO: this should really be mp$ass_subscript with a null value
+Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.$list_del_subscript;
 
 /**
  * @param {?=} self
@@ -426,7 +409,7 @@ Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, inde
  * @param {?=} key optional
  * @param {?=} reverse optional
  */
-Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
+Sk.builtin.list.prototype.$list_sort = function sort(self, cmp, key, reverse) {
     var mucked;
     var j;
     var keyvalue;
@@ -445,7 +428,7 @@ Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
     } else {
         rev = Sk.misceval.isTrue(reverse);
     }
-
+    debugger;
     timsort = new Sk.builtin.timSort(self);
 
     self.v = [];
@@ -475,13 +458,13 @@ Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
     }
 
     if (rev) {
-        timsort.list.list_reverse_(timsort.list);
+        timsort.list.$list_reverse(timsort.list);
     }
 
     timsort.sort();
 
     if (rev) {
-        timsort.list.list_reverse_(timsort.list);
+        timsort.list.$list_reverse(timsort.list);
     }
 
     if (has_key) {
@@ -501,113 +484,25 @@ Sk.builtin.list.prototype.list_sort_ = function sort(self, cmp, key, reverse) {
 
     return Sk.builtin.none.none$;
 };
-Sk.builtin.list.prototype.list_sort_.co_varnames = ["__self__", "cmp", "key", "reverse"];
-Sk.builtin.list.prototype.list_sort_.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
 
 /**
  * @param {Sk.builtin.list=} self optional
  **/
-Sk.builtin.list.prototype.list_reverse_ = function (self) {
-    var i;
-    var newarr;
-    var old;
-    var len;
-    Sk.builtin.pyCheckArgsLen("reverse", arguments.length, 1, 1);
-
-    len = self.v.length;
-    old = self.v;
-    newarr = [];
-    for (i = len - 1; i > -1; --i) {
+Sk.builtin.list.prototype.$list_reverse = function () {
+    const len = this.v.length;
+    const old = this.v;
+    const newarr = [];
+    for (let i = len - 1; i > -1; --i) {
         newarr.push(old[i]);
     }
-    self["v"] = newarr;
+    this.v = newarr;
     return Sk.builtin.none.none$;
 };
 
-//Sk.builtin.list.prototype.__reversed__ = todo;
-
-Sk.builtin.list.prototype["append"] = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgsLen("append", arguments.length, 2, 2);
-
-    self.v.push(item);
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) {
-    Sk.builtin.pyCheckArgsLen("insert", arguments.length, 3, 3);
-    if (!Sk.builtin.checkNumber(i)) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
-
-    i = Sk.builtin.asnum$(i);
-    if (i < 0) {
-        i = i + self.v.length;
-    }
-    if (i < 0) {
-        i = 0;
-    } else if (i > self.v.length) {
-        i = self.v.length;
-    }
-    self.v.splice(i, 0, x);
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.list.prototype["extend"] = new Sk.builtin.func(function (self, b) {
-    Sk.builtin.pyCheckArgsLen("extend", arguments.length, 2, 2);
-    self.list_extend_(b);
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.list.prototype["pop"] = new Sk.builtin.func(function (self, i) {
-    var ret;
-    Sk.builtin.pyCheckArgsLen("pop", arguments.length, 1, 2);
-    if (i === undefined) {
-        i = self.v.length - 1;
-    }
-
-    if (!Sk.builtin.checkNumber(i)) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
-
-    i = Sk.builtin.asnum$(i);
-    if (i < 0) {
-        i = i + self.v.length;
-    }
-    if ((i < 0) || (i >= self.v.length)) {
-        throw new Sk.builtin.IndexError("pop index out of range");
-    }
-    ret = self.v[i];
-    self.v.splice(i, 1);
-    return ret;
-});
-
-Sk.builtin.list.prototype["remove"] = new Sk.builtin.func(function (self, item) {
-    var idx;
-    Sk.builtin.pyCheckArgsLen("remove", arguments.length, 2, 2);
-
-    idx = Sk.builtin.list.prototype["index"].func_code(self, item);
-    self.v.splice(Sk.builtin.asnum$(idx), 1);
-    return Sk.builtin.none.none$;
-});
-
-Sk.builtin.list.prototype.clear$ = function (self) {
-    Sk.builtin.pyCheckArgsLen("clear", arguments.length, 1, 1);
-    self.v = [];
-    return Sk.builtin.none.none$;
-};
-
-Sk.builtin.list.prototype.copy$ = function (self) {
-    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);
-    // via array concat() function to simulate shallow copy 
-    var tmpArray = [];
-    return new Sk.builtin.list(self.v.concat(tmpArray));
-};
-
-Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, start, stop) {
+Sk.builtin.list.prototype.$index = function (item, start, stop) {
     var i;
     var obj;
     var len;
-    Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers");
     }
@@ -615,8 +510,8 @@ Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, s
         throw new Sk.builtin.TypeError("slice indices must be integers");
     }
 
-    len = self.v.length;
-    obj = self.v;
+    len = this.v.length;
+    obj = this.v;
 
     start = (start === undefined) ? 0 : start.v;
     if (start < 0) {
@@ -634,44 +529,163 @@ Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, s
         }
     }
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
-});
+};
 
-Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
-    var i;
-    var count;
-    var obj;
-    var len;
-    Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 2);
 
-    len = self.v.length;
-    obj = self.v;
-    count = 0;
-    for (i = 0; i < len; ++i) {
-        if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
-            count += 1;
-        }
-    }
-    return new Sk.builtin.int_(count);
-});
+//TODO: __reversed__,;
 
-Sk.builtin.list.prototype["copy"] = new Sk.builtin.func(function (self) {
-    var it;
-    var k;
-    var items;
-    Sk.builtin.pyCheckArgsLen("copy", arguments.length - 1, 0, 0);
+Sk.builtin.list.prototype.tp$methods = {
+    // __getitem__: {
+    //     $meth: methods.__getitem__,
+    //     $flags: {},
+    //     $textsig: "on",
+    //     $doc: "x.__getitem__(y) <==> x[y]"
+    // },
+    // __reversed__: {
+    //     $meth: methods.__reversed__,
+    //     $flags: { NoArgs: true },
+    //     $textsig: "($self, /)",
+    //     $doc: "Return a reverse iterator over the list."
+    // },
+    // __sizeof__: {
+    //     $meth: methods.__sizeof__,
+    //     $flags: { NoArgs: true },
+    //     $textsig: "($self, /)",
+    //     $doc: "Return the size of the list in memory, in bytes."
+    // },
+    clear: {
+        $meth: function () {
+            this.v = [];
+            return Sk.builtin.none.none$;
+        },
+        $flags: { NoArgs: true },
+        $textsig: "($self, /)",
+        $doc: "Remove all items from list."
+    },
+    copy: {
+        $meth: function () {
+            return new Sk.builtin.list(this.v.slice());
+        },
+        $flags: { NoArgs: true },
+        $textsig: "($self, /)",
+        $doc: "Return a shallow copy of the list."
+    },
+    append: {
+        $meth: function (item) {
+            this.v.push(item);
+            return Sk.builtin.none.none$;
+        },
+        $flags: { OneArg: true },
+        $textsig: "($self, object, /)",
+        $doc: "Append object to the end of the list."
+    },
+    insert: {
+        $meth: function (i, x) {
+            if (!Sk.builtin.checkNumber(i)) {
+                throw new Sk.builtin.TypeError("an integer is required");
+            }
+            i = Sk.builtin.asnum$(i);
+            if (i < 0) {
+                i = i + this.v.length;
+            }
+            if (i < 0) {
+                i = 0;
+            } else if (i > this.v.length) {
+                i = this.v.length;
+            }
+            this.v.splice(i, 0, x);
+            return Sk.builtin.none.none$;
+        },
+        $flags: { MinArgs: 2, MaxArgs: 2 },
+        $textsig: "($self, index, object, /)",
+        $doc: "Insert object before index."
+    },
+    extend: {
+        $meth: Sk.builtin.list.prototype.nb$inplace_add,
+        $flags: { OneArg: true },
+        $textsig: "($self, iterable, /)",
+        $doc: "Extend list by appending elements from the iterable."
+    },
+    pop: {
+        $meth: function (i) {
+            if (i === undefined) {
+                i = this.v.length - 1;
+            }
+            if (!Sk.builtin.checkNumber(i)) {
+                throw new Sk.builtin.TypeError("an integer is required");
+            }
+            i = Sk.builtin.asnum$(i);
+            if (i < 0) {
+                i = i + this.v.length;
+            }
+            if ((i < 0) || (i >= this.v.length)) {
+                throw new Sk.builtin.IndexError("pop index out of range");
+            }
+            const res = this.v[i];
+            this.v.splice(i, 1);
+            return res;
+        },
+        $flags: { MinArgs: 0, MaxArgs: 1 },
+        $textsig: "($self, index=-1, /)",
+        $doc: "Remove and return item at index (default last).\n\nRaises IndexError if list is empty or index is out of range."
+    },
+    remove: {
+        $meth: function (item) {
+            const idx = this.$index(item);
+            this.v.splice(Sk.builtin.asnum$(idx), 1);
+            return Sk.builtin.none.none$;
+        },
+        $flags: { OneArg: true },
+        $textsig: "($self, value, /)",
+        $doc: "Remove first occurrence of value.\n\nRaises ValueError if the value is not present."
+    },
+    index: {
+        $meth: Sk.builtin.list.prototype.$index,
+        $flags: { MinArgs: 1, MaxArgs: 3 },
+        $textsig: "($self, value, start=0, stop=sys.maxsize, /)",
+        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present."
+    },
+    count: {
+        $meth: function (item) {
+            let count = 0;
+            const len = this.v.length;
+            const obj = this.v;
+            for (let i = 0; i < len; ++i) {
+                if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+                    count += 1;
+                }
+            }
+            return new Sk.builtin.int_(count);
+        },
+        $flags: { OneArg: true },
+        $textsig: "($self, value, /)",
+        $doc: "Return number of occurrences of value."
+    },
+    reverse: {
+        $meth: Sk.builtin.list.prototype.$list_reverse,
+        $flags: { NoArgs: true },
+        $textsig: "($self, /)",
+        $doc: "Reverse *IN PLACE*."
+    },
+    // sort: {
+    //     // TODO: py3 implementation is different
+    //     $meth: null,
+    //     $flags: { FastCall: true },
+    //     $textsig: "($self, /, *, key=None, reverse=False)",
+    //     $doc: "Stable sort *IN PLACE*."
+    // },
+};
 
-    items = [];
-    for (it = Sk.abstr.iter(self), k = it.tp$iternext();
-        k !== undefined;
-        k = it.tp$iternext()) {
-        items.push(k);
 
-    }
-    return new Sk.builtin.list(items);
+Sk.abstr.setUpSlots(Sk.builtin.list);
+Sk.abstr.setUpMethods(Sk.builtin.list);
 
-});
+// TODO: make this into a sk_method
+Sk.builtin.list.prototype.$list_sort.co_varnames = ["__self__", "cmp", "key", "reverse"];
+Sk.builtin.list.prototype.$list_sort.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
+debugger;
+Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.$list_sort);
 
-Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
-Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
+
 
 Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);
