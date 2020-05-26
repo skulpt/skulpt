@@ -1225,12 +1225,6 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
     }
 
-    // str might not have been created yet
-    if (Sk.builtin.str !== undefined) {
-        proto.__doc__ = slots.tp$doc
-            ? new Sk.builtin.str(slots.tp$doc)
-            : Sk.builtin.none.none$;
-    }
     // set up richcompare skulpt slots
     if (slots.tp$richcompare !== undefined) {
         for (let op in op2shortcut) {
@@ -1256,12 +1250,13 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         );
     }
 
-    for (let slot_name in slots) {
-        const dunder_name = Sk.slotToDunder[slot_name];
-        if (dunder_name === undefined) {
+    for (let slot_name in Sk.slots) {
+        if (!slots.hasOwnProperty(slot_name)) {
             continue;
         }
         const wrapped_func = slots[slot_name];
+        // some slots get multpile dunders
+        const dunder_name = Sk.slotToDunder[slot_name];
         if (typeof dunder_name === "string") {
             wrap_func(klass, dunder_name, wrapped_func);
         } else {
@@ -1336,6 +1331,14 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         typeobject[f] = flags[f];
     }
 
+    // str might not have been created yet
+
+    if (Sk.builtin.str !== undefined && typeobject.prototype.hasOwnProperty("tp$doc")) {
+        const docstr = typeobject.prototype.tp$doc;
+        if (typeof docstr == "string") {
+            typeobjecte.prototype.__doc__ = new Sk.builtin.str(docstr);
+        }
+    }
     return typeobject;
 };
 
