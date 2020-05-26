@@ -811,9 +811,13 @@ Sk.slotToDunder = {
     tp$init: "__init__",
     tp$call: "__call__",
     $r: "__repr__",
-    tp$str: "__str__",
     tp$hash: "__hash__",
+    tp$str: "__str__",
 
+    // getattribute, setattr, delattr
+    tp$getattr: "__getattribute__",
+    tp$setattr: ["__setattr__", "__delattr__"],
+    
     // tp$richcompare
     ob$eq: "__eq__",
     ob$ne: "__ne__",
@@ -823,11 +827,13 @@ Sk.slotToDunder = {
     ob$ge: "__ge__",
 
     // getters and setters
+    tp$descr_get: "__getitem__",
+    tp$descr_set: ["__setitem__", "__delitem__"],
+
+    // getters and setters
     tp$descr_get: "__get__",
     tp$descr_set: ["__set__", "__delete__"],
 
-    tp$getattr: "__getattribute__",
-    tp$setattr: ["__setattr__", "__delattr__"],
 
     // iter
     tp$iter: "__iter__",
