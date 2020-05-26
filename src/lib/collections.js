@@ -266,22 +266,22 @@ const collections_mod = function (keywds) {
                 const l = this.size;
                 const otherl = other.size;
                 if (l !== otherl) {
-                    return new Sk.builtin.bool(!$true);
+                    return !$true;
                 }
 
                 for (let iter = this.tp$iter(), otheriter = other.tp$iter(),
                     k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
                     if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
-                        return new Sk.builtin.bool(!$true);
+                        return !$true;
                     }
                     const v = this.mp$subscript(k);
                     const otherv = other.mp$subscript(otherk);
 
                     if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
-                        return new Sk.builtin.bool(!$true);
+                        return !$true;
                     }
                 }
-                return new Sk.builtin.bool($true);
+                return $true;
             },
             mp$ass_subscript: function (key, w) {
                 var idx = this.orderedkeys.indexOf(key);
