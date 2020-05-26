@@ -2,7 +2,7 @@ import unittest
 import random
 import sys
 import math
-
+from operator import neg
 
 def add_one(num):
     """function for testing"""
@@ -797,7 +797,6 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(type(f), map)
         self.assertEqual(str(f), '<map object>')
 
-
     def test_max(self):
         self.assertEqual(max('123123'), '3')
         self.assertEqual(max(1, 2, 3), 3)
@@ -808,45 +807,75 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(max(1, 2.0, 3), 3)
         self.assertEqual(max(1.0, 2, 3), 3)
 
-        l = [1, 2, 3]
-        self.assertEqual(max(l), 3)
-        self.assertEqual(max(*l), 3)
+        # with self.assertRaisesRegex(
+        #     TypeError,
+        #     'max expected at least 1 argument, got 0'
+        # ):
+        #     max()
 
-        self.assertRaises(TypeError, max)
+        with self.assertRaises(TypeError):
+            # assertRaisesRegex not supported
+            max()
+
         self.assertRaises(TypeError, max, 42)
         self.assertRaises(ValueError, max, ())
-
-        self.assertEqual(max([1,2],[2,1],[2,2],[2,2,3]), [2,2,3])
-        self.assertEqual(max((1,2),(2,1),(2,2),(2,2,3)), (2,2,3))
-        self.assertEqual(max({1:2,3:4,5:6}), 5)
-        self.assertEqual(max({1:6,3:4,5:2}), 5)
-
-        s = '01234'
-        self.assertEqual(max(s), '4')
-
         class BadSeq:
             def __getitem__(self, index):
                 raise ValueError
-
         self.assertRaises(ValueError, max, BadSeq())
 
-        # self.assertEqual(max((), default=None), None)  # zero elem iterable
-        # self.assertEqual(max((1,), default=None), 1)  # one elem iterable
-        # self.assertEqual(max((1, 2), default=None), 2)  # two elem iterable
+        # for stmt in (
+        #     "max(key=int)",                 # no args
+        #     "max(default=None)",
+        #     "max(1, 2, default=None)",      # require container for default
+        #     "max(default=None, key=int)",
+        #     "max(1, key=int)",              # single arg not iterable
+        #     "max(1, 2, keystone=int)",      # wrong keyword
+        #     "max(1, 2, key=int, abc=int)",  # two many keywords
+        #     "max(1, 2, key=1)",             # keyfunc is not callable
+        #     ):
+        #     try:
+        #         exec(stmt, globals())
+        #     except TypeError:
+        #         pass
+        #     else:
+        #         self.fail(stmt)
+        # exec not supported - rewritten tests:
+        with self.assertRaises(TypeError):
+            max(key=int)
+        with self.assertRaises(TypeError):
+            max(default=None)         
+        with self.assertRaises(TypeError):
+            max(1, 2, default=None)
+        with self.assertRaises(TypeError):
+            max(default=None, key=int)
+        with self.assertRaises(TypeError):
+            max(1, key=int)       
+        with self.assertRaises(TypeError):
+            max(1, 2, keystone=int)       
+        with self.assertRaises(TypeError):
+            max(1, 2, key=int, abc=int)
+        with self.assertRaises(TypeError):
+            max(1, 2, key=1)         
+
+        self.assertEqual(max((1,), key=neg), 1)     # one elem iterable
+        self.assertEqual(max((1,2), key=neg), 1)    # two elem iterable
+        self.assertEqual(max(1, 2, key=neg), 1)     # two elems
+
+        self.assertEqual(max((), default=None), None)    # zero elem iterable
+        self.assertEqual(max((1,), default=None), 1)     # one elem iterable
+        self.assertEqual(max((1,2), default=None), 2)    # two elem iterable
+
+        self.assertEqual(max((), default=1, key=neg), 1)
+        self.assertEqual(max((1, 2), default=3, key=neg), 1)
+
+        self.assertEqual(max((1, 2), key=None), 2)
 
         data = [random.randrange(200) for i in range(100)]
         keys = dict((elem, random.randrange(50)) for elem in data)
         f = keys.__getitem__
-        # self.assertEqual(max(data, key=f),
-        #                  sorted(reversed(data), key=f)[-1])
-
-        class BadSeq:
-            def __getitem__(self, i):
-                if i == 5:
-                    raise ValueError
-                else:
-                    return i
-        # self.assertRaises(ValueError, list, zip(BadSeq(), BadSeq()))
+        self.assertEqual(max(data, key=f),
+                         sorted(reversed(data), key=f)[-1])
 
     def test_min(self):
         self.assertEqual(min('123123'), '1')
@@ -858,16 +887,74 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(min(1, 2.0, 3), 1)
         self.assertEqual(min(1.0, 2, 3), 1.0)
 
-        self.assertRaises(TypeError, min)
+        # with self.assertRaisesRegex(
+        #     TypeError,
+        #     'min expected at least 1 argument, got 0'
+        # ):
+        #     min()
+        with self.assertRaises(TypeError):
+            # assertRaisesRegex not supported
+            min()
+
         self.assertRaises(TypeError, min, 42)
         self.assertRaises(ValueError, min, ())
+        class BadSeq:
+            def __getitem__(self, index):
+                raise ValueError
+        self.assertRaises(ValueError, min, BadSeq())
 
-        self.assertEqual(min([2,1],[1,2],[1,1],[1,1,0]), [1,1])
-        self.assertEqual(min({1:2,3:4,5:6}), 1)
-        self.assertEqual(min({1:6,3:4,5:2}), 1)
+        # for stmt in (
+        #     "min(key=int)",                 # no args
+        #     "min(default=None)",
+        #     "min(1, 2, default=None)",      # require container for default
+        #     "min(default=None, key=int)",
+        #     "min(1, key=int)",              # single arg not iterable
+        #     "min(1, 2, keystone=int)",      # wrong keyword
+        #     "min(1, 2, key=int, abc=int)",  # two many keywords
+        #     "min(1, 2, key=1)",             # keyfunc is not callable
+        #     ):
+        #     try:
+        #         exec(stmt, globals())
+        #     except TypeError:
+        #         pass
+        #     else:
+        #         self.fail(stmt)
+        # exec not supported rewritten tests:
+        with self.assertRaises(TypeError):
+            min(key=int)
+        with self.assertRaises(TypeError):
+            min(default=None)         
+        with self.assertRaises(TypeError):
+            min(1, 2, default=None)
+        with self.assertRaises(TypeError):
+            min(default=None, key=int)
+        with self.assertRaises(TypeError):
+            min(1, key=int)       
+        with self.assertRaises(TypeError):
+            min(1, 2, keystone=int)       
+        with self.assertRaises(TypeError):
+            min(1, 2, key=int, abc=int)
+        with self.assertRaises(TypeError):
+            min(1, 2, key=1)   
+ 
+        self.assertEqual(min((1,), key=neg), 1)     # one elem iterable
+        self.assertEqual(min((1,2), key=neg), 2)    # two elem iterable
+        self.assertEqual(min(1, 2, key=neg), 2)     # two elems
 
-        s = '01234'
-        self.assertEqual(min(s), '0')
+        self.assertEqual(min((), default=None), None)    # zero elem iterable
+        self.assertEqual(min((1,), default=None), 1)     # one elem iterable
+        self.assertEqual(min((1,2), default=None), 1)    # two elem iterable
+
+        self.assertEqual(min((), default=1, key=neg), 1)
+        self.assertEqual(min((1, 2), default=1, key=neg), 2)
+
+        self.assertEqual(min((1, 2), key=None), 1)
+
+        data = [random.randrange(200) for i in range(100)]
+        keys = dict((elem, random.randrange(50)) for elem in data)
+        f = keys.__getitem__
+        self.assertEqual(min(data, key=f),
+                         sorted(data, key=f)[0])
 
     def test_neg(self):
         x = -sys.maxsize-1
@@ -1185,6 +1272,10 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(sys.spam, 1)
         self.assertRaises(TypeError, setattr, sys, 1, 'spam')
         self.assertRaises(TypeError, setattr)
+        for builtin_type in (int, float, Exception, object, type, super):
+            self.assertRaises(TypeError, setattr, builtin_type, 'foo', 'bar')
+            with self.assertRaises(TypeError):
+                builtin_type.foo = 'bar'
 
     # test_str(): see test_unicode.py and test_bytes.py for str() tests.
 
