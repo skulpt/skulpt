@@ -4,10 +4,10 @@
  */
 Sk.builtin.dict = function dict(L) {
     // calling new Sk.builtin.dict is an internal method that requires an array of key value pairs
-    Sk.asserts.assert(this instanceof Sk.builtin.dict);
     if (L === undefined) {
         L = [];
     }
+    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.dict);
 
     this.size = 0;
     this.buckets = {};
