@@ -41,17 +41,13 @@ Sk.configure({
     __future__: py3 ? Sk.python3 : Sk.python2,
 });
 
-var compilableLines = [],
-    //finds lines starting with "print"
+var //finds lines starting with "print"
     re = new RegExp("\\s*print"),
     //finds import statements
     importre = new RegExp("\\s*import"),
-    //finds multuline string constants
-    mls = new RegExp("'''"),
     //finds defining statements
     defre = new RegExp("def.*|class.*"),
     //test for empty line.
-    emptyline = new RegExp("^\\s*$"),
     comment = new RegExp("^#.*"),
     //a regex to check if a line is an assignment
     //this regex checks whether or not a line starts with
@@ -80,7 +76,7 @@ function isBalanced(lines) {
 
     for (l = 0; l < lines.length; l = l + 1) {
         if (lines[l] !== undefined) {
-            if (lines[l].match(/'''/) !== null && lines[l].match(/'''/).length === 1) {
+            if (lines[l].match(/'''|"""/) !== null && lines[l].match(/'''|"""/).length === 1) {
                 mlsopened = !mlsopened;
             }
             if (!mlsopened && lines[l].substr(lines[l].length - 1) === ":") {
