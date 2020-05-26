@@ -308,13 +308,13 @@ var format = function (kwa) {
     // hand off format spec
     // return resulting spec to function
 
-
-    if(kwargs.size !== 0){
-
-        var kwItems = Sk.misceval.callsimArray(Sk.builtin.dict.prototype["items"], [kwargs]);
-
-        for (var n in kwItems.v){
-            arg_dict[kwItems.v[n].v[0].v] = kwItems.v[n].v[1];
+    if(kwargs.size !== 0) {
+        let iter, k, v;
+        for (iter = kwargs.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext()) {
+            v = kwargs.mp$lookup(k);
+            arg_dict[k.v] = v;
         }
     }
     for(var i in args.v){
