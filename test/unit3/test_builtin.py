@@ -1185,6 +1185,10 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(sys.spam, 1)
         self.assertRaises(TypeError, setattr, sys, 1, 'spam')
         self.assertRaises(TypeError, setattr)
+        for builtin_type in (int, float, Exception, object, type, super):
+            self.assertRaises(TypeError, setattr, builtin_type, 'foo', 'bar')
+            with self.assertRaises(TypeError):
+                builtin_type.foo = 'bar'
 
     # test_str(): see test_unicode.py and test_bytes.py for str() tests.
 
@@ -1492,6 +1496,15 @@ class TestType(unittest.TestCase):
         class B:
             def ham(self):
                 return 'ham%d' % self
+
+        # test __dict__ is not self referencing
+        b = B()
+        self.assertEqual(b.__dict__, {})
+        b.x = 3
+        self.assertEqual(b.__dict__, {'x':3})
+        self.assertIn('x', b.__dict__)
+        self.assertNotIn('__dict__', b.__dict__)
+        
         # C = type('C', (B, int), {'spam': lambda self: 'spam%s' % self})
         # self.assertEqual(C.__name__, 'C')
         # self.assertEqual(C.__qualname__, 'C')

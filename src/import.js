@@ -70,12 +70,15 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
-        var parent = child.tp$base;
+        var parent = child.prototype.tp$base;
         var bases = [];
         var base;
 
-        for (base = parent; base !== undefined; base = base.tp$base) {
-            bases.push(base);
+        for (base = parent; base !== undefined; base = base.prototype.tp$base) {
+            if (!base.sk$abstract && Sk.builtins[base.tp$name]) {
+                // check the base is not an abstract class and that it is in the builtins dict
+                bases.push(base);
+            }
         }
 
         child.tp$mro = new Sk.builtin.tuple([child]);
@@ -84,7 +87,11 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         }
         child["$d"] = new Sk.builtin.dict([]);
         child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child].concat(bases)));
+        child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
+        child.tp$setattr = function(pyName, value, canSuspend) {
+            throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+        };
     };
 
     for (x in Sk.builtin) {
