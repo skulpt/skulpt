@@ -209,7 +209,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         // if leaf is already in sys.modules, early out
         try {
-            prev = Sk.sysmodules.mp$subscript(modname);
+            prev = Sk.sysmodules.mp$subscript(new Sk.builtin.str(modname));
             // if we're a dotted module, return the top level, otherwise ourselves
             return topLevelModuleToReturn || prev;
         } catch (x) {
@@ -226,7 +226,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 if (!topLevelModuleToReturn) {
                     return undefined;
                 }
-                parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
+                parentModule = Sk.sysmodules.mp$subscript(new Sk.builtin.str(absolutePackagePrefix + parentModName));
                 searchFileName = modNameSplit[modNameSplit.length-1];
                 searchPath = parentModule.tp$getattr(Sk.builtin.str.$path);
             }
@@ -296,7 +296,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             }
 
             // Now we know this module exists, we can add it to the cache
-            Sk.sysmodules.mp$ass_subscript(modname, module);
+            Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str(modname), module);
 
             module.$js = co.code; // todo; only in DEBUG?
             finalcode = co.code;
@@ -496,7 +496,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             relativeToPackageName = relativeToPackageNames.join(".");
         }
         try {
-            relativeToPackage = Sk.sysmodules.mp$subscript(relativeToPackageName);
+            relativeToPackage = Sk.sysmodules.mp$subscript(new Sk.builtin.str(relativeToPackageName));
         } catch(e) {
             relativeToPackageName = undefined;
         }
@@ -543,10 +543,10 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             var leafModule;
             var importChain;
 
-            leafModule = Sk.sysmodules.mp$subscript(
+            leafModule = Sk.sysmodules.mp$subscript(new Sk.builtin.str(
                 (relativeToPackageName || "") +
                     ((relativeToPackageName && name) ? "." : "") +
-                    name);
+                    name));
 
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];
