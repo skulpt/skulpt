@@ -14,7 +14,7 @@ const collections_mod = function (keywds) {
                     Sk.misceval.iterFor(Sk.abstr.iter(this), function (k) {
                         L.push(k);
                         L.push(self.mp$subscript(k));
-                    })
+                    });
                     return new collections.defaultdict(this.default_factory, L);
                 },
                 $flags: { NoArgs: true }
@@ -36,7 +36,7 @@ const collections_mod = function (keywds) {
         getsets: {
             default_factory: {
                 $get: function () {
-                    return this.default_factory
+                    return this.default_factory;
                 },
                 $set: function (value) {
                     this.default_factory = value;
@@ -144,7 +144,7 @@ const collections_mod = function (keywds) {
             update: {
                 $flags: { FastCall: true },
                 $meth: function (args, kwargs) {
-                    Sk.abstr.checkArgsLen("update", args, 0, 1)
+                    Sk.abstr.checkArgsLen("update", args, 0, 1);
                     let k, count;
                     const mapping = args[0];
                     const iter = Sk.abstr.iter(mapping);
@@ -199,14 +199,14 @@ const collections_mod = function (keywds) {
                         let count = self.mp$subscript(k);
                         count = count.nb$add(one);
                         self.mp$ass_subscript(k, count);
-                    })
+                    });
                 }
                 for (let i = 0; i < kwargs.length; i += 2) {
                     const k = new Sk.builtin.str(kwargs[i]);
                     let count = this.mp$subscript(k);
                     count = count.nb$add(kwargs[i + 1]);
                     if (count === Sk.builtin.NotImplemented.NotImplemented$) {
-                        throw new Sk.builtin.NotImplementedError("can't add " + Sk.abstr.typeName(k) + " with int")
+                        throw new Sk.builtin.NotImplementedError("can't add " + Sk.abstr.typeName(k) + " with int");
                     }
                     this.mp$ass_subscript(k, count);
                 }
@@ -253,6 +253,35 @@ const collections_mod = function (keywds) {
                     pairstr = "[" + pairstr + "]";
                 }
                 return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
+            },
+            tp$richcompare: function (other, op) {
+                if (op != "Eq" && op != "Ne") {
+                    return Sk.builtin.NotImplemented.NotImplemented$;
+                }
+                const shortcut = op == "Eq" ? "ob$eq" : "ob$ne";
+                const $true = op == "Eq" ? true : false;
+                if (!(other instanceof collections.OrderedDict)) {
+                    return Sk.builtin.dict.prototype[shortcut].call(this, other);
+                }
+                const l = this.size;
+                const otherl = other.size;
+                if (l !== otherl) {
+                    return new Sk.builtin.bool(!$true);
+                }
+
+                for (let iter = this.tp$iter(), otheriter = other.tp$iter(),
+                    k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
+                    if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
+                        return new Sk.builtin.bool(!$true);
+                    }
+                    const v = this.mp$subscript(k);
+                    const otherv = other.mp$subscript(otherk);
+
+                    if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
+                        return new Sk.builtin.bool(!$true);
+                    }
+                }
+                return new Sk.builtin.bool($true);
             },
             mp$ass_subscript: function (key, w) {
                 var idx = this.orderedkeys.indexOf(key);
@@ -303,85 +332,16 @@ const collections_mod = function (keywds) {
     });
 
 
-
-    collections.OrderedDict.prototype.ob$eq = function (other) {
-        var l;
-        var otherl;
-        var iter;
-        var k;
-        var v;
-
-        if (!(other instanceof collections.OrderedDict)) {
-            return Sk.builtin.dict.prototype.ob$eq.call(this, other);
-        }
-
-        l = this.sq$length();
-        otherl = other.sq$length();
-
-        if (l !== otherl) {
-            return Sk.builtin.bool.false$;
-        }
-
-        for (iter = this.tp$iter(), otheriter = other.tp$iter(),
-            k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
-            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
-                return Sk.builtin.bool.false$;
-            }
-            v = this.mp$subscript(k);
-            otherv = other.mp$subscript(otherk);
-
-            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
-                return Sk.builtin.bool.false$;
-            }
-        }
-
-        return Sk.builtin.bool.true$;
-    };
-
-    collections.OrderedDict.prototype.ob$ne = function (other) {
-        var l;
-        var otherl;
-        var iter;
-        var k;
-        var v;
-
-        if (!(other instanceof collections.OrderedDict)) {
-            return Sk.builtin.dict.prototype.ob$ne.call(this, other);
-        }
-
-        l = this.size;
-        otherl = other.size;
-
-        if (l !== otherl) {
-            return Sk.builtin.bool.true$;
-        }
-
-        for (iter = this.tp$iter(), otheriter = other.tp$iter(),
-            k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
-            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
-                return Sk.builtin.bool.true$;
-            }
-            v = this.mp$subscript(k);
-            otherv = other.mp$subscript(otherk);
-
-            if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
-                return Sk.builtin.bool.true$;
-            }
-        }
-
-        return Sk.builtin.bool.false$;
-    };
-
     // deque
     collections.deque = function deque(iterable, maxlen) {
-        throw new Sk.builtin.NotImplementedError("deque is not implemented")
+        throw new Sk.builtin.NotImplementedError("deque is not implemented");
     };
 
     // namedtuple
     // namedtuple
     collections.namedtuples = {};
 
-    const namedtuple = function (name, fields, rename, defaults, module) {
+    const namedtuple = function namedtuple(name, fields, rename, defaults, module) {
         if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [name]))) {
             throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: '" + Sk.misceval.objectRepr(name) + "'");
         }
@@ -404,7 +364,7 @@ const collections_mod = function (keywds) {
                 flds = [];
             }
         } else {
-            flds = []
+            flds = [];
             iter = Sk.abstr.iter(fields);
             for (i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
                 flds.push(Sk.ffi.remapToJs(i));
@@ -460,8 +420,65 @@ const collections_mod = function (keywds) {
             throw new Sk.builtin.TypeError("Got more default values than field names");
         }
 
-        // Constructor for namedtuple
+        // _field_defaults
+        const dflts_dict = [];
+        for (let i = flds.length - dflts.length; i < flds.length; i++) {
+            dflts_dict.push(new Sk.builtin.str(flds[i]));
+            dflts_dict.push(dflts[i - (flds.length - dflts.length)]);
+        }
+        const _field_defaults = new Sk.builtin.dict(dflts_dict);
 
+        // _make
+        const $make = function _make(_cls, iterable) {
+            iterable = Sk.abstr.iter(iterable);
+            values = [];
+            for (let i = iterable.tp$iternext(); i !== undefined; i = iterable.tp$iternext()) {
+                values.push(i);
+            }
+            return _cls.prototype.tp$new(values);
+        };
+        $make.co_varnames = ["_cls", "iterable"];
+        const _make = new Sk.builtin.classmethod(new Sk.builtin.func($make));
+
+        // _asdict
+        const $asdict = function _asdict(self) {
+            const asdict = [];
+            for (let i = 0; i < self._fields.v.length; i++) {
+                asdict.push(self._fields.v[i]);
+                asdict.push(self.v[i]);
+            }
+            return new Sk.builtin.dict(asdict);
+        };
+        $asdict.co_varnames = ["self"];
+        const _asdict = new Sk.builtin.func($asdict);
+
+        // _replace
+        const $replace = function _replace(kwds, _self) {
+            const kwd_dict = {};
+            for (let i = 0; i < kwds.length; i = i + 2) {
+                kwd_dict[kwds[i].$jsstr()] = kwds[i + 1];
+            }
+            // get the arguments to pass to the contructor
+            const args = [];
+            for (let i = 0; i < flds.length; i++) {
+                const key = flds[i];
+                const v = key in kwd_dict ? kwd_dict[key] : _self.v[i];
+                args.push(v);
+                delete kwd_dict[key];
+            }
+            // check if kwd_dict is empty
+            for (let _ in kwd_dict) {
+                // if we're here we got an enexpected kwarg
+                const key_list = Object.keys(kwd_dict).map(x => "'" + x + "'");
+                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + key_list + "]");
+            }
+            return nt_klass.prototype.tp$new(args);
+        };
+        $replace.co_kwargs = 1;
+        $replace.co_varnames = ["_self"];
+        const _replace = new Sk.builtin.func($replace);
+
+        // Constructor for namedtuple
         const nt_klass = Sk.abstr.buildNativeClass($name, {
             constructor: function () { },
             base: Sk.builtin.tuple,
@@ -487,83 +504,27 @@ const collections_mod = function (keywds) {
                 __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
                 __slots__: new Sk.builtin.tuple,
                 _fields: new Sk.builtin.tuple(flds.map(x => new Sk.builtin.str(x))),
-            }
+                _field_defaults: _field_defaults,
+                _make: _make,
+                _asdict: _asdict,
+                _replace: _replace,
+            },
         });
 
-        // since the function api isn't particularly nice we define the remainder of the functions after creating the class
         // create the field properties
         for (let i = 0; i < flds.length; i++) {
             const fld = Sk.fixReservedNames(flds[i]);
             const fget = function (self) {
                 Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
                 return self.v[i];
-            }
+            };
             nt_klass.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number " + i));
         };
-
-        // _make
-        const _make = function _make(_cls, iterable) {
-            iterable = Sk.abstr.iter(iterable);
-            values = [];
-            for (let i = iterable.tp$iternext(); i !== undefined; i = iterable.tp$iternext()) {
-                values.push(i);
-            }
-            return _cls.prototype.tp$new(values);
-        };
-        _make.co_varnames = ["_cls", "iterable"];
-        nt_klass.prototype._make = new Sk.builtin.classmethod(new Sk.builtin.func(_make));
-
-        // _asdict
-        const _asdict = function _asdict(self) {
-            const asdict = [];
-            for (let i = 0; i < self._fields.v.length; i++) {
-                asdict.push(self._fields.v[i]);
-                asdict.push(self.v[i]);
-            }
-            return new Sk.builtin.dict(asdict);
-        };
-        _asdict.co_varnames = ["self"];
-        nt_klass.prototype._asdict = new Sk.builtin.func(_asdict);
-
-        // _flds_defaults
-        const dflts_dict = [];
-        for (let i = flds.length - dflts.length; i < flds.length; i++) {
-            dflts_dict.push(new Sk.builtin.str(flds[i]));
-            dflts_dict.push(dflts[i - (flds.length - dflts.length)]);
-        }
-        nt_klass.prototype._field_defaults = new Sk.builtin.dict(dflts_dict);
-
-        // _replace
-        const _replace = function _replace(kwds, _self) {
-            const kwd_dict = {};
-            for (let i = 0; i < kwds.length; i = i + 2) {
-                kwd_dict[kwds[i].$jsstr()] = kwds[i + 1];
-            }
-            // get the arguments to pass to the contructor
-            const args = [];
-            for (let i = 0; i < flds.length; i++) {
-                const key = flds[i];
-                const v = key in kwd_dict ? kwd_dict[key] : _self.v[i];
-                args.push(v);
-                delete kwd_dict[key];
-            }
-            // check if kwd_dict is empty
-            for (let _ in kwd_dict) {
-                // if we're here we got an enexpected kwarg
-                const key_list = Object.keys(kwd_dict).map(x => "'" + x + "'");
-                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + key_list + "]");
-            }
-            return nt_klass.prototype.tp$new(args);
-        };
-        _replace.co_kwargs = 1;
-        _replace.co_varnames = ["_self"];
-        nt_klass.prototype._replace = new Sk.builtin.func(_replace);
 
         collections.namedtuples[$name] = nt_klass;
         return nt_klass;
     };
 
-    namedtuple.co_name = new Sk.builtin.str("namedtuple");
     namedtuple.co_argcount = 2;
     namedtuple.co_kwonlyargcount = 3;
     namedtuple.$kwdefs = [Sk.builtin.bool.false$, Sk.builtin.none.none$, Sk.builtin.none.none$];
@@ -572,7 +533,7 @@ const collections_mod = function (keywds) {
     collections.namedtuple = new Sk.builtin.func(namedtuple);
 
     return collections;
-}
+};
 
 var $builtinmodule = function (name) {
     return Sk.misceval.chain(Sk.importModule("keyword", false, true), collections_mod);
