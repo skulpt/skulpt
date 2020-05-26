@@ -1010,7 +1010,8 @@ Sk.abstr.iter = function (obj) {
             return new Sk.builtin.seq_iter_(obj);
         }
     } else {
-        // in the rare case of multiple inheritance
+        // in the case of multiple inheritance 
+        // we know tp$iter will exist because it has all the slot functions
         iter = obj.tp$iter();
         if (iter !== undefined && Sk.abstr.lookupSpecial(iter, Sk.builtin.str.$next) !== undefined) {
             return iter;

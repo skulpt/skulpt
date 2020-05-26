@@ -1,18 +1,44 @@
 Sk.generic.wrapperCallNoArgs = function (self, args, kwargs) {
     // this = the wrapped function
     Sk.abstr.checkNoArgs(this.$name, args, kwargs);
-    return this.call(self);
+    res = this.call(self);
+    if (res === undefined) {
+        return Sk.builtin.none.none$;
+    }
+    return res;
 };
 
 Sk.generic.wrapperFastCall = function (self, args, kwargs) {
     // this = the wrapped function
-    return this.call(self, args, kwargs);
+    res = this.call(self, args, kwargs);
+    if (res === undefined) {
+        return Sk.builtin.none.none$;
+    }
+    return res;
 };
 
 Sk.generic.wrapperCallOneArg = function (self, args, kwargs) {
     // this = the wrapped function
     Sk.abstr.checkOneArg(this.$name, args, kwargs);
-    return this.call(self, args[0]);
+    res = this.call(self, args[0]);
+    if (res === undefined) {
+        return Sk.builtin.none.none$;
+    }
+    return res;
+};
+
+Sk.generic.wrapperSetDelete = function (set_name) {
+    return function (self, args, kwargs) {
+        const $name = this.$name;
+        Sk.abstr.checkNoKwargs(this.$name, kwargs);
+        if ($name == set_name) {
+            Sk.abstr.checkArgsLen($name, args, 2, 2);
+        } else {
+            Sk.abstr.checkOneArg($name, args, kwargs);
+        }
+        res = this.call(self, args[0], args[1]);
+        return Sk.builtin.none.none$;
+    };
 };
 
 Sk.generic.wrapperRichCompare = function (self, args, kwargs) {
@@ -22,6 +48,18 @@ Sk.generic.wrapperRichCompare = function (self, args, kwargs) {
     }
     return new Sk.builtin.bool(res);
 };
+
+Sk.generic.slotFuncNoArgs = function () {
+    let res;
+    const func = Sk.abstr.lookupSpecial(this, dunderName);
+    if (func instanceof Sk.builtin.wrapper_descriptor) {
+        return func.d$wrapper.call(this);
+    } else if (func !== undefined) {
+        res = Sk.misceval.callsimArray(func, [this]);
+    }
+    return res;
+};
+
 
 Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) {
     return function () {
@@ -49,6 +87,41 @@ Sk.generic.slotFuncOneArg = function (dunderName) {
     };
 };
 
+Sk.generic.slotFuncFastCall = function (dunderName) {
+    return function (args, kwargs) {
+        const func = Sk.abstr.lookupSpecial(this, dunderName);
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, args, kwargs);
+        }
+        return Sk.misceval.callsimOrSuspendArray(func, [this, value]);
+    };
+};
+
+Sk.generic.slotFuncSetDelete = function (set_name, del_name, error_msg) {
+    return function (obj, value, canSuspend) {
+        let func, res;
+        if (value == null) {
+            // then we're deleting
+            func = Sk.abstr.lookupSpecial(this, del_name);
+        } else {
+            func = Sk.abstr.lookupSpecial(this, set_name);
+        }
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, value);
+        }
+        const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
+        if (func !== undefined) {
+            res = value == null ? call_version(func, [this, obj]) : call_version(func, [this, obj, value]);
+        } else if (value == null) {
+            throw new Sk.builtin.AttributeError(del_name);
+        } else if (error_msg) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
+        } else {
+            throw new Sk.builtin.AttributeError(set_name);
+        }
+        return res;
+    };
+};
 
 Sk.slots = Object.create(null);
 const slots = Sk.slots;
@@ -83,14 +156,7 @@ slots.__init__ = {
 
 slots.__new__ = {
     $name: "__new__",
-    $slot_func: function tp$new(args, kwargs) {
-        const func = Sk.abstr.lookupSpecial("__new__");
-        if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapper.call(this, args, kwargs);
-        }
-        args.unshift(this);
-        return Sk.misceval.callsimOrSuspendArray(func, args, kwargs);
-    },
+    $slot_func: Sk.generic.slotFuncFastCall("__new__"),
     $wrapper: null,
     $textsig: "($self, /, *args, **kwargs)",
     $flags: { FastCall: true },
@@ -99,8 +165,8 @@ slots.__new__ = {
 
 slots.__call__ = {
     $name: "__call__",
-    $slot_func: function tp$call(args, kwargs) { },
-    $wrapper: function __call__(args, kwargs) { },
+    $slot_func: Sk.generic.slotFuncFastCall("__call__"),
+    $wrapper: Sk.generic.wrapperFastCall,
     $textsig: "($self, /, *args, **kwargs)",
     $flags: { FastCall: true },
     $doc: "Call self as a function.",
@@ -152,23 +218,35 @@ slots.__getattr__ = {
 
 slots.__setattr__ = {
     $name: "__setattr__",
-    $slot_func: function tp$setattr(pyName, value, canSuspend) { },
-    $wrapper: function __setattr__(pyName, value) { },
+    $slot_func: Sk.generic.slotFuncSetDelete("__setattr__", "__delattr__"),
+    // not need for an error message setattr is always defined on object
+    $wrapper: Sk.generic.wrapperSetDelete("__setattr__"),
     $textsig: "($self, name, value, /)",
     $doc: "Implement setattr(self, name, value).",
 };
 
 slots.__delattr__ = {
     $name: "__delattr__",
-    $slot_func: function tp$descr_set(self, pyName, canSuspend) { },
-    $wrapper: function __delattr__() { },
+    $slot_func: slots.__setattr__.$slot_func,
+    $wrapper: slots.__setattr__.$wrapper,
     $textsig: "($self, name, /)",
     $doc: "Implement delattr(self, name).",
 };
 
 slots.__get__ = {
     $name: "__get__",
-    $slot_func: function tp$descr_get(obj, obtype, canSuspend) { },
+    $slot_func: function tp$descr_get(obj, obtype, canSuspend) {
+        let res;
+        const func = Sk.abstr.lookupSpecial(this, "__get__");
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this, value);
+        }
+        const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
+        if (func !== undefined) {
+            res = call_version(func, [this, obj, obtype]);
+        }
+        return res;
+    },
     $wrapper: function __get__(obj, obtype) { },
     $textsig: "($self, instance, owner, /)",
     $doc: "Return an attribute of instance, which is of type owner.",
@@ -176,16 +254,16 @@ slots.__get__ = {
 
 slots.__set__ = {
     $name: "__set__",
-    $slot_func: function tp$descr_set(obj, value, canSuspend) { },
-    $wrapper: function __set__(obj, value) { },
+    $slot_func: Sk.generic.slotFuncSetDelete("__set__", "__delete__"),
+    $wrapper: Sk.generic.wrapperSetDelete("__set__"),
     $textsig: "($self, instance, value, /)",
     $doc: "Set an attribute of instance to value.",
 };
 
 slots.__delete__ = {
     $name: "__delete__",
-    $slot_func: function tp$descr_set() { },
-    $wrapper: function __delete__() { },
+    $slot_func: slots.__set__.$slot_func,
+    $wrapper: slots.__set__.$wrapper,
     $textsig: "($self, instance, /)",
     $doc: "Delete an attribute of instance.",
 };
@@ -259,7 +337,7 @@ slots.__delete__ = {
 
 slots.__iter__ = {
     $name: "__iter__",
-    $slot_func: function tp$iter() { },
+    $slot_func: Sk.generic.slotFuncNoArgs("__iter__"),
     $wrapper: function __iter__() { },
     $textsig: "($self, /)",
     $doc: "Implement iter(self).",
@@ -267,8 +345,37 @@ slots.__iter__ = {
 
 slots.__next__ = {
     $name: "__next__",
-    $slot_func: function tp$iternext(canSuspend) { },
-    $wrapper: function __next__() { },
+    $slot_func: function tp$iternext(canSuspend) {
+        const self = this;
+        const func = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$next);
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapper.call(this);
+        } else if (func !== undefined) {
+            if (canSuspend) {
+                return Sk.misceval.tryCatch(function () {
+                    return Sk.misceval.callsimOrSuspendArray(func, [self]);
+                }, function (e) {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                });
+            } else {
+                try {
+                    res = Sk.misceval.callsimArray(func, [this]);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                }
+            }
+        }
+        return res;
+    },
+    $wrapper: Sk.generic.wrapperCallNoArgs,
     $textsig: "($self, /)",
     $doc: "Implement next(self).",
 };
@@ -310,12 +417,12 @@ slots.__len__ = {
 
 slots.__contains__ = {
     $name: "__contains__",
-    $slot_func: function sq$contains (key) {
-        return Sk.misceval.isTrue(Sk.generic.slotFuncOneArg("__contiains__").call(this, key))
+    $slot_func: function sq$contains(key) {
+        return Sk.misceval.isTrue(Sk.generic.slotFuncOneArg("__contiains__").call(this, key));
     },
     $wrapper: function __contains__(self, args, kwargs) {
         Sk.abstr.checkOneArg("__contains__", args, kwargs);
-        return new Sk.builtin.bool(this.call(self, args[0]))
+        return new Sk.builtin.bool(this.call(self, args[0]));
     },
     $textsig: "($self, key, /)",
     $doc: "Return key in self.",
@@ -331,16 +438,16 @@ slots.__getitem__ = {
 
 slots.__setitem__ = {
     $name: "__setitem__",
-    $slot_func: function mp$ass_subscript(key, value) { },
-    $wrapper: function __setitem__(key, value) { },
+    $slot_func: Sk.generic.slotFuncSetDelete("__setitem__", "__delitem__", "does not support item assignment"),
+    $wrapper: Sk.generic.wrapperSetDelete("__setitem__"),
     $textsig: "($self, key, value, /)",
     $doc: "Set self[key] to value.",
 };
 
 slots.__delitem__ = {
     $name: "__delitem__",
-    $slot_func: function mp$ass_subscript(key, value) { },
-    $wrapper: function __delitem__(key) { },
+    $slot_func: slots.__setitem__.$slot_func,
+    $wrapper: slots.__setitem__.$wrapper,
     $textsig: "($self, key, /)",
     $doc: "Delete self[key].",
 };
@@ -586,20 +693,20 @@ slots.__index__ = {
     $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",
 };
 slots.__iadd__ = {
-	$name: "__iadd__",
-	$slot_func: Sk.generic.slotFuncOneArg,
-	$wrapped: Sk.generic.wrapperCallOneArg,
-	$flags: {OneArg: true},
-	$textsig: "($self, value, /)",
-	$doc: "Implement self+=value.",
+    $name: "__iadd__",
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapped: Sk.generic.wrapperCallOneArg,
+    $flags: { OneArg: true },
+    $textsig: "($self, value, /)",
+    $doc: "Implement self+=value.",
 };
 slots.__imul__ = {
-	$name: "__imul__",
-	$slot_func: Sk.generic.slotFuncOneArg,
-	$wrapped: Sk.generic.wrapperCallOneArg,
-	$flags: {OneArg: true},
-	$textsig: "($self, value, /)",
-	$doc: "Implement self*=value.",
+    $name: "__imul__",
+    $slot_func: Sk.generic.slotFuncOneArg,
+    $wrapped: Sk.generic.wrapperCallOneArg,
+    $flags: { OneArg: true },
+    $textsig: "($self, value, /)",
+    $doc: "Implement self*=value.",
 };
 
 
@@ -636,24 +743,6 @@ slots.__nonzero__ = {
     $doc: "x.__nonzero__() <==> x != 0",
 };
 
-
-
-
-
-// quick note to self
-
-// in multpile inheritance do the search thing
-// if we hit a slotwrapper then just call it"s raw function rather than calling the slot wrapper!
-
-Sk.SlotDef = function (_name, func, wrapper, doc, flags) {
-    this.$name = _name;
-    this.$slot_func = func; // this function is called when the sk$klass defines a dunder method
-    this.$doc = doc;
-    this.$wrapper = wrapper;
-    this.$flags = flags || {};
-    this.$wrapper.$flags = this.$flags;
-    this.$wrapper.$name = _name;
-};
 
 
 /**
@@ -817,7 +906,7 @@ Sk.slotToDunder = {
     // getattribute, setattr, delattr
     tp$getattr: "__getattribute__",
     tp$setattr: ["__setattr__", "__delattr__"],
-    
+
     // tp$richcompare
     ob$eq: "__eq__",
     ob$ne: "__ne__",
