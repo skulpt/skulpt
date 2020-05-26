@@ -18,7 +18,7 @@ var readline = function () {
 program.parse(process.argv);
 
 if (program.args.length != 1) {
-    console.log(chalk.red("error: must specify python version (py2/py3) and python program to run"));
+    console.log(chalk.red("error: must specify python version (py2/py3)"));
     process.exit(1);
 }
 
@@ -59,12 +59,15 @@ var compilableLines = [],
     //it also checks if the identifier is a tuple.
     assignment = /^((\s*\(\s*(\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*,)*\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*\)\s*)|(\s*\s*(\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*,)*\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*\s*))([+-/*%&\^\|]?|[/<>*]{2})=/,
     lines = [],
-    origLines;
+    origLines,
+    printevaluationresult;
 
 if (Sk.__future__.python3) {
     console.log("Python 3.7(ish) (skulpt, " + new Date() + ")");
+    printevaluationresult = "if not evaluationresult == None: print(repr(evaluationresult))"
 } else {
     console.log("Python 2.7(ish) (skulpt, " + new Date() + ")");
+    printevaluationresult = "if not evaluationresult == None: print repr(evaluationresult)"
 }
 console.log("[node: " + process.version + "] on a system");
 console.log('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
@@ -117,7 +120,7 @@ while (true) {
                 //evaluate it if nessecary
                 lines.push("evaluationresult = " + lines.pop());
                 //print the result if not None
-                lines.push("if not evaluationresult == None: print repr(evaluationresult)");
+                lines.push(printevaluationresult);
             }
         }
     }
