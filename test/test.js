@@ -63,7 +63,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += Sk.builtins['str'](e).v + "\n";
+        got += Sk.misceval.objectRepr(e).v + "\n";
     }
     if (expect !== got)
     {
@@ -241,7 +241,7 @@ function testRun(name, nocatch, debugMode)
             }
             else
             {
-                got = "EXCEPTION: " + Sk.builtins['str'](e).v + "\n";
+                got = "EXCEPTION: " + Sk.misceval.objectRepr(e).v + "\n";
             }
         });
 
@@ -273,8 +273,8 @@ function testRun(name, nocatch, debugMode)
                     if (module && module.$js)
                     {
                         console.log("-----\nJS:\n-----");
-                        var beaut = Sk.js_beautify(module.$js);
-                        console.log(beaut);
+                        // var beaut = Sk.js_beautify(module.$js);
+                        // console.log(beaut);
                     }
                     runfail += 1;
                     //throw "dying on first run fail";
@@ -320,8 +320,8 @@ function testInteractive(name)
         {
             try {
                 var ret = eval(js);
-                if (ret && ret.tp$repr !== undefined)
-                    got += ret.tp$repr().v + "\n";
+                if (ret && ret.$r !== undefined)
+                    got += ret.$r().v + "\n";
             }
             catch (e) { got += "EXCEPTION: " + e.name + "\n" }
             //console.log("made new context");
@@ -334,6 +334,7 @@ function testInteractive(name)
         console.log("FAILED: (" + name + ".py)\n-----");
         console.log(input);
         console.log("-----\nGOT:\n-----");
+        console.log('b')
         console.log(got);
         console.log("-----\nWANTED:\n-----");
         console.log(expect);

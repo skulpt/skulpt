@@ -96,7 +96,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
     } else {
         // todo: create some sort of abstract base class that is like object but is not object
-        Sk.abstr.setUpInheritance($name, klass, Sk.builtin.object, metaclass);
+        Sk.abstr.setUpInheritance($name, klass, Sk.builtin.abstract_object_base_class, metaclass);
         klass.prototype.tp$base = Sk.builtin.none.none$;
     }
 
@@ -180,7 +180,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
             return res;
         }
     }
-
+    debugger;
     const attribute = this.$typeLookup(jsName);
 
     if (attribute !== undefined) {
@@ -237,7 +237,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
             delete this.prototype[jsName];
             // delete the slot_func if this object follows protypical inheritance
             const slot_name = Sk.dunderToSkulpt[jsName];
-            if (Sk.prototype.prototypical && slot_name !== undefined) {
+            if (this.prototype.prototypical && slot_name !== undefined) {
                 delete this.prototype[slot_name];
             }
             return;
@@ -246,7 +246,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
 
     this.prototype[jsName] = value;
 
-    if (Sk.prototype.prototypical && jsName in Sk.dunderToSkulpt) {
+    if (this.prototype.prototypical && jsName in Sk.dunderToSkulpt) {
         this.$allocateSlot(jsName);
     }
 
@@ -409,8 +409,9 @@ Sk.builtin.type.prototype.$isSubType = function (other) {
 Sk.builtin.type.prototype.$allocateSlots = function () {
     if (this.prototype.sk$prototypical) {
         // only allocate certain slots
-        for (let dunder in Sk.dunderToSkulpt) {
-            if (this.prototype.hasOwnProperty(dunder)) {
+        const proto = {...this.prototype};
+        for (let dunder in proto) {
+            if (dunder in Sk.slots) {
                 this.$allocateSlot(dunder);
             }
         }
@@ -423,8 +424,8 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
 };
 
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
-    const slot = Sk.dunderToSkulpt[dunder];
-    this.prototype[slot] = Sk.slots[dunder].$slot_func;
+    const slot_def = Sk.slots[dunder];
+    this.prototype[slot_def.$slot_name] = slot_def.$slot_func;
 };
 
 

@@ -103,9 +103,10 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
     this.d$type = typeobj;
     this.d$name = method_def.$name;
     const flags = method_def.$flags || {};
-    if (flags.fastCall && flags.noKwargs) {
+    this.$flags = flags;
+    if (flags.FastCall && flags.NoKwargs) {
         this.tp$call = this.$methodFastCallNoKwargs;
-    } else if (flags.fastCall) {
+    } else if (flags.FastCall) {
         this.tp$call = this.$methodFastCall;
     } else if (flags.NoArgs) {
         this.tp$call = this.$methodCallNoArgs;
@@ -117,7 +118,7 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
         this.tp$call = this.$methodCallMinArgs;
     } else {
         this.func_code = method_def.$meth;
-        this.tp$call = Sk.builtin.func.tp$call;
+        this.tp$call = Sk.builtin.func.prototype.tp$call;
     }
 });
 

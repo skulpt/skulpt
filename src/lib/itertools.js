@@ -111,7 +111,7 @@ var $builtinmodule = function (name) {
 
     _chain = function () {
         let iterables = Array.from(arguments);
-        iterables = Sk.abstr.iter(Sk.builtin.list(iterables));
+        iterables = Sk.abstr.iter(new Sk.builtin.list(iterables));
         const current_it = iterables.tp$iternext();
         return new Sk.builtin.itertools_gen(_chain_gen, mod, [iterables, current_it]);
     };
@@ -649,7 +649,7 @@ var $builtinmodule = function (name) {
         }
         const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
         const n = pool.length;
-        r = Sk.builtin.checkNone(r) ? Sk.builtin.int_(n) : r;
+        r = Sk.builtin.checkNone(r) ? new Sk.builtin.int_(n) : r;
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -737,7 +737,7 @@ var $builtinmodule = function (name) {
     _product.co_argcount = 0;
     _product.co_varnames = ["repeat"];
     _product.co_varargs = 1;
-    _product.$kwdefs = [Sk.builtin.int_(1)];
+    _product.$kwdefs = [new Sk.builtin.int_(1)];
 
     mod.product = new Sk.builtin.func(_product);
 

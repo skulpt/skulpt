@@ -62,7 +62,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
     var self = this;
     this["gi$running"] = true;
     if (yielded === undefined) {
-        yielded = null;
+        yielded = Sk.builtin.none.none$;
     }
     this["gi$sentvalue"] = yielded;
 
@@ -95,10 +95,6 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
         //print("returning:", JSON.stringify(ret));
         return ret;
     })(ret);
-};
-
-Sk.builtin.generator.prototype.next$ = function (self) {
-    return self.tp$iternext(true);
 };
 
 Sk.builtin.generator.prototype["$r"] = function () {

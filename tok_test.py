@@ -24,7 +24,7 @@ for x in this.__dict__.keys() - other.__dict__.keys():
 f"slots.{x} = {'{'}\n"
 f"\t$name: \"{x}\",\n" 
 f"\t$slot_func: function () {'{ }'},\n" 
-f"\t$wrapped: function {x} () {'{ }'},\n"
+f"\t$wrapper: function {x} () {'{ }'},\n"
 f"\t$flags: {'{ }'},\n"
 f"\t$textsig: \"{ bltin.__text_signature__.__repr__()[1:-1] }\",\n"
 f"\t$doc: \"{bltin.__doc__.__repr__()[1:-1]}\",\n" 

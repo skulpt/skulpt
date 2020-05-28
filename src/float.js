@@ -119,7 +119,7 @@ Sk.builtin.float_.prototype.nb$int_ = function () {
         v = Math.floor(v);
     }
 
-    if (!Sk.builtin.checkInt(v)) {
+    if (!Number.isInteger(v)) {
         throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
     }
     // this should take care of int/long fitting

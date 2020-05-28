@@ -138,8 +138,8 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     return new Sk.builtin.tuple(ret);
 };
 
-Sk.builtin.tuple.prototype.nb$multiply = 
-Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
+Sk.builtin.tuple.prototype.nb$multiply =
+    Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     return new Sk.builtin.tuple_iter_(this);
@@ -251,9 +251,9 @@ Sk.builtin.tuple.prototype.sq$length = function () {
 Sk.builtin.tuple.prototype.tp$methods = {
     __getnewargs__: {
         $meth: function () {
-            return new Sk.builtin.tuple(this.v.slice())
+            return new Sk.builtin.tuple(this.v.slice());
         },
-        $flags: {NoArgs: true},
+        $flags: { NoArgs: true },
         $textsig: "($self, /)",
         $doc: null
     },

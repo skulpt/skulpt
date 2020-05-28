@@ -96,7 +96,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             // default implementation for all currently created functions that have yet to be be converted 
             // and don't utilise flagged calls
             if (this.$self !== undefined) {
-               args.unshift(this.$self); 
+                args.unshift(this.$self);
             }
             return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
         }

@@ -24,7 +24,7 @@ Sk.builtins = {
     "hasattr"   : null,
     "id"        : null,
     
-    "reduce"    : null,
+    "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
     "sorted"    : null,
     "any"       : null,
     "all"       : null,
@@ -328,14 +328,14 @@ Sk.builtins.$method_defs = {
 
     max: {
         $meth: Sk.builtin.max,
-        $flags: {MinArgs: 1}, // should be fastcall but leave for now
+        $flags: {FastCall: true}, 
         $textsig: null,
         $doc: "max(iterable, *[, default=obj, key=func]) -> value\nmax(arg1, arg2, *args, *[, key=func]) -> value\n\nWith a single iterable argument, return its biggest item. The\ndefault keyword-only argument specifies an object to return if\nthe provided iterable is empty.\nWith two or more arguments, return the largest argument."
     },
 
     min: {
         $meth: Sk.builtin.min,
-        $flags: {MinArgs: 1}, //should be fastcall but we'll leave for now
+        $flags: {FastCall: true}, 
         $textsig: null,
         $doc: "min(iterable, *[, default=obj, key=func]) -> value\nmin(arg1, arg2, *args, *[, key=func]) -> value\n\nWith a single iterable argument, return its smallest item. The\ndefault keyword-only argument specifies an object to return if\nthe provided iterable is empty.\nWith two or more arguments, return the smallest argument."
     },
@@ -399,8 +399,8 @@ Sk.builtins.$method_defs = {
     round: {
         $meth: Sk.builtin.round,
         $flags: {
-            NamedArgs: ["number, ndigits"], 
-            Defaults: [Sk.builtin.none.none$]},
+            NamedArgs: ["number", "ndigits"], 
+        },
         $textsig: "($module, /, number, ndigits=None)",
         $doc: "Round a number to a given precision in decimal digits.\n\nThe return value is an integer if ndigits is omitted or None.  Otherwise\nthe return value has the same type as the number.  ndigits may be negative."
     },
@@ -445,8 +445,15 @@ for (let def_name in Sk.builtins.$method_defs) {
 
 
 Sk.setupObjects = function (py3) {
-    if (!py3) {
-        delete Sk.builtin.StandardError.sk$abstract;
+    if (py3) {
+        Sk.builtins["filter"] = Sk.builtin.filter_;
+        Sk.builtins["map"] = Sk.builtin.map_;
+        Sk.builtins["zip"] = Sk.builtin.zip_;
+        Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.xrange);
+        delete Sk.builtins["xrange"];
+        delete Sk.builtins["StandardError"];
+        delete Sk.builtins["unicode"];
+    } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
@@ -454,25 +461,15 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
-    } else {
-        // fix Standard Error appearing as part of the __base__ and __bases__ for py3 errors
-        Sk.builtin.AttributeError.prototype.tp$base =
-        Sk.builtin.ValueError.prototype.tp$base =
-        Sk.builtin.ZeroDivisionError.prototype.tp$base =
-        Sk.builtin.AssertionError.prototype.tp$base =
-        Sk.builtin.ImportError.prototype.tp$base =
-        Sk.builtin.IndentationError.prototype.tp$base =
-        Sk.builtin.IndexError.prototype.tp$base =
-        Sk.builtin.KeyError.prototype.tp$base =
-        Sk.builtin.TypeError.prototype.tp$base =
-        Sk.builtin.NameError.prototype.tp$base =
-        Sk.builtin.IOError.prototype.tp$base =
-        Sk.builtin.NotImplementedError.prototype.tp$base =
-        Sk.builtin.OverflowError.prototype.tp$base =
-        Sk.builtin.OperationError.prototype.tp$base =
-        Sk.builtin.NegativePowerError.prototype.tp$base =
-        Sk.builtin.RuntimeError.prototype.tp$base =
-        Sk.builtin.SyntaxError.prototype.tp$base = Sk.builtin.Exception;
+
+        // create an abstract base class for old style classes
+        if (Sk.builtin.abstract_object_base_class === undefined) {
+            Sk.builtin.abstract_object_base_class = new Function;
+            Sk.builtin.abstract_object_base_class.prototype = Object.create({ ...Sk.builtin.object.prototype });
+            Sk.abstr.setUpSlots(Sk.builtin.abstract_object_base_class);
+            Sk.abstr.setUpGetSets(Sk.builtin.abstract_object_base_class);
+        }
+
     }
 };
 

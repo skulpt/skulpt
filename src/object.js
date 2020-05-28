@@ -137,7 +137,7 @@ Sk.builtin.object.prototype.tp$methods = {
             const dir = [];
             if (this.$d) {
                 if (this.$d instanceof Sk.builtin.dict) {
-                    dir.concat(this.$d.$allkeys());
+                    dir.concat(this.$d.sk$asarray());
                 } else {
                     for (let key in this.$d) {
                         dir.push(new Sk.builtin.str(key));
@@ -248,6 +248,3 @@ Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemen
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
-
-
-

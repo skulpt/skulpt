@@ -5,7 +5,7 @@ class A:
 try:
     print bool(A())
 except TypeError as e:
-    print e
+    print repr(e)
 
 class B:
     def __len__(self):
@@ -14,4 +14,4 @@ class B:
 try:
     print bool(B())
 except TypeError as e:
-    print e
+    print repr(e)

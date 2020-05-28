@@ -25,7 +25,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
      */
     var structseq = Sk.abstr.buildNativeClass(nm, {
         constructor: function structseq_constructor(v) {
-            Sk.asserts.assert((Array.isArray(v) || v===undefined) && this instanceof cons);
+            Sk.asserts.assert((Array.isArray(v) || v === undefined) && this instanceof structseq);
             Sk.builtin.tuple.call(this, v);
         },
         base: Sk.builtin.tuple,
@@ -44,7 +44,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 if (v.length != flds.length) {
                     throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
                 }
-                return new cons(v);
+                return new structseq(v);
             },
             tp$doc: doc ? doc : Sk.builtin.none.none$,
             $r: function () {
@@ -71,12 +71,12 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 $meth: function () {
                     throw new Sk.builtin.NotImplementedError("__reduce__ is not implemented");
                 },
-                $flags: {NoArgs: true}
+                $flags: { NoArgs: true }
             }
         },
         getsets: getsets,
         proto: {
-            num_sequence_fields = new Sk.builtin.int_(flds.length)
+            num_sequence_fields: new Sk.builtin.int_(flds.length)
         }
     });
     return structseq;

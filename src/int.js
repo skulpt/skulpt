@@ -26,6 +26,8 @@
  */
 Sk.builtin.int_ = function (x) {
     // internal function called with a javascript int/float/str
+    Sk.asserts.assert(this instanceof Sk.builtin.int_);
+    
     if (x > Sk.builtin.int_.threshold$ || x < -Sk.builtin.int_.threshold$) {
         return new Sk.builtin.lng(x);
     }

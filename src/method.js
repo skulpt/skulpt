@@ -47,7 +47,7 @@ Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object
 Sk.builtin.method.prototype.tp$name = "method";
 
 Sk.builtin.method.prototype.ob$eq = function (other) {
-    if (((this.im_self == Sk.builtin.none.none$) && (other.im_self != Sk.builtin.none.none$)) ||  ((other.im_self == Sk.builtin.none.none$) && (this.im_self != Sk.builtin.none.none$))) {
+    if (((this.im_self == Sk.builtin.none.none$) && (other.im_self != Sk.builtin.none.none$)) || ((other.im_self == Sk.builtin.none.none$) && (this.im_self != Sk.builtin.none.none$))) {
         return false;
     }
     try {
@@ -140,12 +140,12 @@ Sk.builtin.method.prototype["$r"] = function () {
     }
     if (this.im_self !== Sk.builtin.none.none$) {
         return new Sk.builtin.str("<bound method " + this.$name + " of " + Sk.misceval.objectRepr(this.im_self).$jsstr() + ">");
-    } 
+    }
     return new Sk.builtin.str("<unbound method " + this.$name + ">");
 };
 
 Sk.builtin.method.prototype.tp$getsets = {
-    __func__ : {
-        $get: function () { return this.im_func},
+    __func__: {
+        $get: function () { return this.im_func; },
     }
-}
+};

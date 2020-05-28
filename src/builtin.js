@@ -251,7 +251,7 @@ Sk.builtin.round = function round(number, ndigits) {
         }
     }
 
-    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+    if (ndigits !== undefined && !(Sk.builtin.checkNone(ndigits)) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
@@ -263,7 +263,7 @@ Sk.builtin.round = function round(number, ndigits) {
     special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
     if (special !== undefined) {
         // method on builtin, provide this arg
-        if (!Sk.builtin.checkFunction(number)) {
+        if (ndigits !== undefined) {
             return Sk.misceval.callsimArray(special, [number, ndigits]);
         } else {
             return Sk.misceval.callsimArray(special, [number]);
@@ -274,68 +274,134 @@ Sk.builtin.round = function round(number, ndigits) {
 };
 
 Sk.builtin.len = function len(item) {
-    var intcheck;
-
-    var int_ = function (i) { return new Sk.builtin.int_(i); };
-    intcheck = function (j) {
-        if (Sk.builtin.checkInt(j)) {
-            return int_(j);
-        } else {
-            if (Sk.__future__.exceptions) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(j) + "' object cannot be interpreted as an integer");
-            } else {
-                throw new Sk.builtin.TypeError("__len__() should return an int");
-            }
-        }
-    };
-
+    // checking will happen in slot wrapper
+    let res; 
     if (item.sq$length) {
-        return Sk.misceval.chain(item.sq$length(true), intcheck);
+        res = item.sq$length(true);
+    } 
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
     }
-    // mp$length is no longer part of dicts instead we use sq.length so this is for legacy.
-    if (item.mp$length) {
-        return Sk.misceval.chain(item.mp$length(), int_);
-    }
-
-    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
+    return Sk.misceval.chain(res, (r) => {return new Sk.builtin.int_(r)});
 };
 
-Sk.builtin.min = function min() {
-    var i;
-    var lowest;
-    var args;
+Sk.builtin.min = function min(args, kwargs) {
+    let iter;
+    const nargs = args.length;
+    if (!nargs) {
+        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
+    }
+    const default_key = Sk.abstr.copyKeywordsToNamedArgs(
+        "min",
+        ["default", "key"],
+        [],
+        kwargs,
+        [null, Sk.builtin.none.none$]
+    );
+    const $default = default_key[0];
+    const key = default_key[1];
 
-    args = Sk.misceval.arrayFromArguments(arguments);
-    lowest = args[0];
-
-    if (lowest === undefined) {
-        throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (nargs > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for min() with multiple positional arguments");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
-            lowest = args[i];
+    if (nargs == 1) {
+        iter = Sk.abstr.iter(args[0]);
+    } else {
+        iter = Sk.abstr.iter(new Sk.builtin.tuple(args));
+    }
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let lowest = iter.tp$iternext();
+
+    if (lowest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+        } else {
+            return $default;
         }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
+                lowest = i;
+            }
+        }
+    } else {
+        let lowest_compare = Sk.misceval.callsimOrSuspendArray(key, [lowest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
+                lowest = i;
+                lowest_compare = i_compare;
+            }
+        }
+
     }
     return lowest;
 };
 
-Sk.builtin.max = function max() {
-    var i;
-    var highest;
-    var args;
+Sk.builtin.max = function max(args, kwargs) {
+    let iter;
+    const nargs = args.length;
 
-    args = Sk.misceval.arrayFromArguments(arguments);
-    highest = args[0];
+    if (!nargs) {
+        throw new Sk.builtin.TypeError("max expected 1 argument, got 0");
+    }
+    const default_key = Sk.abstr.copyKeywordsToNamedArgs(
+        "min",
+        ["default", "key"],
+        [],
+        kwargs,
+        [null, Sk.builtin.none.none$]
+    );
+    const $default = default_key[0];
+    const key = default_key[1];
 
-    if (highest === undefined) {
-        throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (nargs > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for max() with multiple positional arguments");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], highest, "Gt")) {
-            highest = args[i];
+    if (nargs === 1) {
+        iter = Sk.abstr.iter(args[0]);
+    } else {
+        iter = Sk.abstr.iter(new Sk.builtin.tuple(args));
+    }
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let highest = iter.tp$iternext();
+
+    if (highest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+        } else {
+            return $default;
         }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
+                highest = i;
+            }
+        }
+    } else {
+        let highest_compare = Sk.misceval.callsimOrSuspendArray(key, [highest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
+                highest = i;
+                highest_compare = i_compare;
+            }
+        }
+
     }
     return highest;
 };
@@ -351,7 +417,7 @@ Sk.builtin.any = function any(iter) {
 
 Sk.builtin.all = function all(iter) {
     const ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-        if (Sk.misceval.isTrue(i)) {
+        if (!Sk.misceval.isTrue(i)) {
             return new Sk.misceval.Break(false);
         }
     });
@@ -383,10 +449,10 @@ Sk.builtin.sum = function sum(iter, start) {
                 tot = itermed;
                 return;
             }
-        } 
+        }
         throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-        Sk.abstr.typeName(tot) + "' and '" +
-        Sk.abstr.typeName(i) + "'");
+            Sk.abstr.typeName(tot) + "' and '" +
+            Sk.abstr.typeName(i) + "'");
     });
     return tot;
 };
@@ -616,7 +682,7 @@ Sk.builtin.hash = function hash(value) {
     if (value instanceof Object) {
         if (Sk.builtin.checkNone(value.tp$hash)) {
             // python sets the hash function to None , so we have to catch this case here
-            throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+            throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(value) + "'");
         } else if (value.tp$hash !== undefined) {
             if (value.$savedHash_) {
                 return value.$savedHash_;

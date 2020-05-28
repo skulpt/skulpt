@@ -13,7 +13,7 @@ const collections_mod = function (keywds) {
                     const L = [];
                     Sk.misceval.iterFor(Sk.abstr.iter(this), function (k) {
                         L.push(k);
-                        L.push(self.mp$subscript(k));
+                        L.push(this.mp$subscript(k));
                     });
                     return new collections.defaultdict(this.default_factory, L);
                 },
@@ -24,7 +24,7 @@ const collections_mod = function (keywds) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
                         throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).v);
                     } else {
-                        const ret = Sk.misceval.callsimArray(self.default_factory, []);
+                        const ret = Sk.misceval.callsimArray(this.default_factory, []);
                         this.mp$ass_subscript(key, ret);
                         return ret;
                     }
@@ -76,7 +76,6 @@ const collections_mod = function (keywds) {
             elements: {
                 $flags: { NoArgs: true },
                 $meth: function () {
-                    Sk.builtin.pyCheckArgsLen("elements", arguments.length, 1, 1);
                     const all_elements = [];
                     for (let iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                         for (let i = 0; i < this.mp$subscript(k).v; i++) {
@@ -145,18 +144,28 @@ const collections_mod = function (keywds) {
                 $flags: { FastCall: true },
                 $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("update", args, 0, 1);
-                    let k, count;
-                    const mapping = args[0];
-                    const iter = Sk.abstr.iter(mapping);
-                    for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext) {
-                        count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$add(mapping.mp$subscript(k)));
+                    let k, iter, count;
+                    const other = args[0];
+                    if (other !== undefined) {
+                        iter = Sk.abstr.iter(other);
+                    }
+                    if (other instanceof Sk.builtin.dict) {
+                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, count.nb$add(other.mp$subscript(k)));
+                        }
+                    } else if (iter) {
+                        const one = new Sk.builtin.int_(1);
+                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, count.nb$add(one));
+                        }
                     }
                     kwargs = kwargs || [];
                     for (let i = 0; i < kwargs.length; i += 2) {
                         k = new Sk.builtin.str(kwargs[i]);
                         count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$add(mapping.mp$subscript(k)));
+                        this.mp$ass_subscript(k, count.nb$add(kwargs[i+1]));
                     }
                     return Sk.builtin.none.none$;
                 },
@@ -165,18 +174,28 @@ const collections_mod = function (keywds) {
                 $flags: { FastCall: true },
                 $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("subtract", args, 0, 1);
-                    let k, count;
-                    const mapping = args[0];
-                    const iter = Sk.abstr.iter(mapping);
-                    for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext) {
-                        count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$subtract(mapping.mp$subscript(k)));
+                    let k, iter, count;
+                    const other = args[0];
+                    if (other !== undefined) {
+                        iter = Sk.abstr.iter(other);
+                    }
+                    if (other instanceof Sk.builtin.dict) {
+                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, count.nb$subtract(other.mp$subscript(k)));
+                        }
+                    } else if (iter) {
+                        const one = new Sk.builtin.int_(1);
+                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, count.nb$subtract(one));
+                        }
                     }
                     kwargs = kwargs || [];
                     for (let i = 0; i < kwargs.length; i += 2) {
                         k = new Sk.builtin.str(kwargs[i]);
                         count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$subtract(mapping.mp$subscript(k)));
+                        this.mp$ass_subscript(k, count.nb$subtract(kwargs[i+1]));
                     }
                     return Sk.builtin.none.none$;
                 },
@@ -191,26 +210,9 @@ const collections_mod = function (keywds) {
             tp$doc: "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
             tp$init: function (args, kwargs) {
                 Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
-                const one = new Sk.builtin.int_(1);
-                kwargs = kwargs || [];
-                let self = this;
-                if (args[0] !== undefined) {
-                    Sk.misceval.iterFor(Sk.abstr.iter(args[0]), function (k) {
-                        let count = self.mp$subscript(k);
-                        count = count.nb$add(one);
-                        self.mp$ass_subscript(k, count);
-                    });
-                }
-                for (let i = 0; i < kwargs.length; i += 2) {
-                    const k = new Sk.builtin.str(kwargs[i]);
-                    let count = this.mp$subscript(k);
-                    count = count.nb$add(kwargs[i + 1]);
-                    if (count === Sk.builtin.NotImplemented.NotImplemented$) {
-                        throw new Sk.builtin.NotImplementedError("can't add " + Sk.abstr.typeName(k) + " with int");
-                    }
-                    this.mp$ass_subscript(k, count);
-                }
-                return Sk.builtin.none.none$;
+                args = [this].concat(args);
+                debugger;
+                return Sk.misceval.callsimArray(this.update, args, kwargs);
             },
             $r: function () {
                 var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : '';

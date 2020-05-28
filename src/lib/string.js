@@ -69,7 +69,7 @@ var $builtinmodule = function (name) {
         var words = Sk.misceval.callsimArray(mod.split, [s, sep]);
         var capWords = [];
         for (var i = 0; i < words.v.length; i++) {
-            var word = Sk.builtin.list.prototype['list_subscript_'].call(words, i);
+            var word = Sk.abstr.sequenceGetItem(words, i);
             var cap = Sk.misceval.callsimArray(mod.capitalize, [word]);
             capWords.push(cap);
         }

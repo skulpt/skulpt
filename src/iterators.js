@@ -49,7 +49,7 @@ Sk.builtin.callable_iter_ = Sk.generic.iterator("callable_iterator", {
 Sk.builtin.dict_iter_ = Sk.generic.iterator("dict_keyiterator", {
     constructor: function (dict) {
         this.$index = 0;
-        this.$seq = dict.$allkeys(); // a private method of dict objects
+        this.$seq = dict.sk$asarray(); // a private method of dict objects
         this.$orig = dict;
     },
     iternext: Sk.generic.iterNextWithArrayCheckSize,
@@ -89,7 +89,7 @@ Sk.builtin.list_iter_ = Sk.generic.iterator("list_iterator", {
 Sk.builtin.set_iter_ = Sk.generic.iterator("set_iterator", {
     constructor: function (set) {
         this.$index = 0;
-        this.$seq = set.v.$allkeys();
+        this.$seq = set.v.sk$asarray();
         this.$orig = set.v;
     },
     iternext: Sk.generic.iterNextWithArrayCheckSize,

@@ -32,11 +32,17 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     if (arg === undefined) {
         return Sk.builtin.none.none$;
     }
+    if (arg.sk$asarray && !arg.hp$type) {
+        this.v = arg.sk$asarray();
+        return Sk.builtin.none.none$;
+    }
     const self = this;
-    Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
-        self.v.push(i);
-    });
-    return Sk.builtin.none.none$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(arg),
+            (i) => { self.v.push(i); }
+        ),
+        () => { return Sk.builtin.none.none$; }
+    );
 };
 
 
@@ -428,7 +434,6 @@ Sk.builtin.list.prototype.$list_sort = function sort(self, cmp, key, reverse) {
     } else {
         rev = Sk.misceval.isTrue(reverse);
     }
-    debugger;
     timsort = new Sk.builtin.timSort(self);
 
     self.v = [];
@@ -601,7 +606,10 @@ Sk.builtin.list.prototype.tp$methods = {
         $doc: "Insert object before index."
     },
     extend: {
-        $meth: Sk.builtin.list.prototype.nb$inplace_add,
+        $meth: function (iterable) {
+            this.nb$inplace_add(iterable);
+            return Sk.builtin.none.none$;
+        },
         $flags: { OneArg: true },
         $textsig: "($self, iterable, /)",
         $doc: "Extend list by appending elements from the iterable."
@@ -683,7 +691,6 @@ Sk.abstr.setUpMethods(Sk.builtin.list);
 // TODO: make this into a sk_method
 Sk.builtin.list.prototype.$list_sort.co_varnames = ["__self__", "cmp", "key", "reverse"];
 Sk.builtin.list.prototype.$list_sort.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
-debugger;
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.$list_sort);
 
 

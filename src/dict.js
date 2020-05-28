@@ -30,21 +30,25 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.checkArgsLen("dict", args, 0, 1);
     const arg = args[0];
     if (arg !== undefined) {
-        let self = this;
-        let idx = 0;
-        Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
-            if (Sk.builtin.checkSequence(i)) {
-                // should also check that the sq length is not longer than 2.
-                const len = i.sq$length(); //this can't currently suspend
-                if (len !== 2) {
-                    throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + len + "; 2 is required");
+        if (arg instanceof Sk.builtin.dict) {
+            this.dict_merge(arg);
+        } else {
+            let self = this;
+            let idx = 0;
+            Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
+                if (Sk.builtin.checkSequence(i)) {
+                    // should also check that the sq length is not longer than 2.
+                    const len = i.sq$length(); //this can't currently suspend
+                    if (len !== 2) {
+                        throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + len + "; 2 is required");
+                    }
+                    self.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
+                    idx++;
+                } else {
+                    throw new Sk.builtin.TypeError("element " + idx + " is not a sequence");
                 }
-                self.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
-                idx++;
-            } else {
-                throw new Sk.builtin.TypeError("element " + idx + " is not a sequence");
-            }
-        });
+            });
+        }
     }
     if (kwargs) {
         for (let i = 0; i < kwargs.length; i += 2) {
@@ -105,7 +109,6 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
     var k = kf(key);
     var bucket = this.buckets[k.v];
     var item;
-
     // todo; does this need to go through mp$ma_lookup
 
     if (bucket !== undefined) {
@@ -719,7 +722,7 @@ Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
     return res;
 };
 
-Sk.builtin.dict.prototype.$allkeys = function () {
+Sk.builtin.dict.prototype.sk$asarray = function () {
     let bucket;
     let buckets = this.buckets;
     const allkeys = [];

@@ -711,7 +711,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
 
     const nargs = args.length + kwargs.length / 2;
     if (nargs > varnames.length) {
-        throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + "arguments (" + nargs + "given)");
+        throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + " arguments (" + nargs + " given)");
     }
     if (!kwargs.length && defaults === undefined) {
         return args;
@@ -1242,8 +1242,9 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     function wrap_func(klass, dunder_name, wrapped_func) {
-        debugger;
         const slot_def = Sk.slots[dunder_name];
+        // we do this here because in the generic.wrapperCall methods the wrapped_func 
+        // the wrapped func should have a $name property and a $flags property (for minArgs)
         klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(
             klass,
             slot_def,
@@ -1251,7 +1252,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         );
     }
 
-    for (let slot_name in Sk.slots) {
+    for (let slot_name in Sk.slotToDunder) {
         if (!slots.hasOwnProperty(slot_name)) {
             continue;
         }
@@ -1336,8 +1337,8 @@ Sk.abstr.buildNativeClass = function (typename, options) {
 
     if (Sk.builtin.str !== undefined && typeobject.prototype.hasOwnProperty("tp$doc")) {
         const docstr = typeobject.prototype.tp$doc;
-        if (typeof docstr == "string") {
-            typeobjecte.prototype.__doc__ = new Sk.builtin.str(docstr);
+        if (typeof docstr === "string") {
+            typeobject.prototype.__doc__ = new Sk.builtin.str(docstr);
         }
     }
     return typeobject;

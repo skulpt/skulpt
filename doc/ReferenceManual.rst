@@ -161,7 +161,7 @@ Misc
     Slot("__new__", "tp$new", "new"),
     Slot("__init__", "tp$init", "init"),
     Slot("__str__", "tp$print", "print"),
-    Slot("__repr__", "tp$repr", "repr",
+    Slot("__repr__", "$r", "repr",
          opcode="UNARY_CONVERT"),
 
     Slot("__hash__", "tp$hash", "hash"),

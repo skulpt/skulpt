@@ -4,53 +4,52 @@
  * @param {number=} start
  * @extends Sk.builtin.object
  */
-Sk.builtin.enumerate = function enumerate(iterable, start) {
-    if (!(this instanceof Sk.builtin.enumerate)) {
-        return new Sk.builtin.enumerate(iterable, start);
-    }
-    this.$iterable = iterable;
-    this.$index = start;
-    return this;
-};
-Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
-Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
-
-Sk.builtin.enumerate.prototype.tp$doc = "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ...";
-
-Sk.builtin.enumerate.prototype.tp$new = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs);
-    if (args[0] === undefined) {
-        throw new Sk.builtin.TypeError("__new__() missing 1 required positional argument: 'iterable'");
-    }
-    const iterable = Sk.abstr.iter(args[0]);
-    let start = args[1];
-    if (start !== undefined) {
-        if (!Sk.misceval.isIndex(start)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
-        } else {
-            start = Sk.misceval.asIndex(start);
+Sk.builtin.enumerate = Sk.generic.iterator("enumerate", {
+    constructor: function enumerate(iterable, start) {
+        if (!(this instanceof Sk.builtin.enumerate)) {
+            return new Sk.builtin.enumerate(iterable, start);
         }
-    } else {
-        start = 0;
-    }
-    if (this === Sk.builtin.enumerate.prototype) {
-        return new Sk.builtin.enumerate(iterable, start);
-    } else {
-        const instance = new this.constructor;
-        Sk.builtin.enumerate.call(instance, iterable, start);
-        return instance;
-    }
-};
-
-Sk.builtin.enumerate.prototype.tp$iternext = function (canSuspend) {
-    var next = this.$iterable.tp$iternext(canSuspend);
-    if (next === undefined) {
-        return undefined;
-    }
-    const idx = new Sk.builtin.int_(this.$index++);
-    return new Sk.builtin.tuple([idx, next]);
-};
-
+        this.$iterable = iterable;
+        this.$index = start;
+        return this;
+    },
+    iternext: function (canSuspend) {
+        const next = this.$iterable.tp$iternext(canSuspend);
+        if (next === undefined) {
+            return undefined;
+        }
+        const idx = new Sk.builtin.int_(this.$index++);
+        return new Sk.builtin.tuple([idx, next]);
+    },
+    slots: {
+        tp$doc: "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ...",
+        tp$new: function (args, kwargs) {
+            args = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs);
+            if (args[0] === undefined) {
+                throw new Sk.builtin.TypeError("__new__() missing 1 required positional argument: 'iterable'");
+            }
+            const iterable = Sk.abstr.iter(args[0]);
+            let start = args[1];
+            if (start !== undefined) {
+                if (!Sk.misceval.isIndex(start)) {
+                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
+                } else {
+                    start = Sk.misceval.asIndex(start);
+                }
+            } else {
+                start = 0;
+            }
+            if (this === Sk.builtin.enumerate.prototype) {
+                return new Sk.builtin.enumerate(iterable, start);
+            } else {
+                const instance = new this.constructor;
+                Sk.builtin.enumerate.call(instance, iterable, start);
+                return instance;
+            }
+        },
+    },
+});
+Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
 
 
 /**

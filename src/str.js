@@ -9,7 +9,7 @@ Sk.builtin.str = function (x) {
     // new Sk.builtin.str is an internal function called with a JS value x
     // occasionally called with a python object and returns tp$str() or $r();
     Sk.asserts.assert(this instanceof Sk.builtin.str);
-    Sk.asserts.assert(typeof x === "string" || x.sk$object);
+    Sk.asserts.assert(typeof this === "string" || this === undefined || this.sk$object);
 
     let ret;
     if (typeof x === "string") {
@@ -124,7 +124,8 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
     }
     return new Sk.builtin.str(ret);
 };
-Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
+Sk.builtin.str.prototype.nb$multiply = 
+Sk.builtin.str.prototype.nb$reflected_multiply =
 Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.sq$item = function () {
     Sk.asserts.fail();

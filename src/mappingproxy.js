@@ -103,7 +103,7 @@ Sk.builtin.mappingproxy.prototype.sq$length = function () {
 };
 
 
-Sk.builtin.mappingproxy.prototype.$allkeys = function () {
+Sk.builtin.mappingproxy.prototype.sk$asarray = function () {
     return Object.keys(this.v).map(x  => new Sk.builtin.str(x));
 };
 

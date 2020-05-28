@@ -14,7 +14,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     const descr = this.ob$type.$typeLookup(pyName);
 
     // look in the type for a descriptor
-    if (descr !== undefined && descr !== null) {
+    if (descr != null) {
         f = descr.tp$descr_get;
         if (f && Sk.builtin.checkDataDescr(descr)) {
             return f.call(descr, this, this.ob$type, canSuspend);
@@ -42,7 +42,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
         return f.call(descr, this, this.ob$type, canSuspend);
     }
 
-    if (descr !== undefined) {
+    if (descr != null) {
         return descr;
     }
 
@@ -224,7 +224,7 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
         return undefined;
     } else if (this.$seq.length !== this.$orig.sq$length()) {
         const error_name = this.tp$name.split("_")[0];
-        throw new Sk.RuntimeError(error_name + " changed size during iteration");
+        throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
     }
     return this.$seq[this.$index++];
 };
