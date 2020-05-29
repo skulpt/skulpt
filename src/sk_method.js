@@ -98,7 +98,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             if (this.$self !== undefined) {
                 args.unshift(this.$self);
             }
-            return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
+            return Sk.generic.functionCallMethod.call(this, args, kwargs);
         }
     },
     getsets: {

@@ -118,11 +118,10 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
         this.tp$call = this.$methodCallMinArgs;
     } else {
         this.func_code = method_def.$meth;
-        this.tp$call = Sk.builtin.func.prototype.tp$call;
     }
 });
 
-Sk.builtin.method_descriptor.prototype.tp$call = undefined;
+Sk.builtin.method_descriptor.prototype.tp$call = Sk.generic.functionCallMethod;
 Sk.builtin.method_descriptor.prototype.$methodFastCall = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
