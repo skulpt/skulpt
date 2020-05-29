@@ -1238,6 +1238,10 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
     if (slots.tp$new !== undefined) {
         // we deal with tp$new differently because it is not a slot wrapper but sk_method
+        if (slots.tp$new === Sk.generic.new) {
+            // this is a bit of a work around since we can't call the Sk.generic.new as a wrapper until we have created the class.
+            slots.tp$new = proto.tp$new = Sk.generic.new(klass);
+        }
         proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
     }
 
