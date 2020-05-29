@@ -28,7 +28,6 @@
 Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
     constructor: function func(code, globals, closure, closure2) {
         Sk.asserts.assert(this instanceof Sk.builtin.func, "builtin func should be called as a class with `new`");
-        debugger;
 
         this.func_code = code;
         this.func_globals = globals || null;
@@ -55,7 +54,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             return new Sk.builtin.method(this, obj);
         },
         $r: function () {
-            return new Sk.builtin.str("<function " + this.func_qualname + ">");
+            return new Sk.builtin.str("<function " + this.$qualname + ">");
         },
         tp$call: Sk.generic.functionCallMethod,
     },

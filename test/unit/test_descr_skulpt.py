@@ -48,36 +48,36 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
         # when __dict__ is implemented
         # self.assertTrue(str(Test.__dict__['test'].startwith('<function test'))
 
-    def test_method_descriptor(self):
-        class Test(object):
-            def test(self):
-                pass
+    # def test_method_descriptor(self):
+    #     class Test(object):
+    #         def test(self):
+    #             pass
 
-        class OtherTest(Test):
-            pass
+    #     class OtherTest(Test):
+    #         pass
 
-        def test2(self):
-            pass
+    #     def test2(self):
+    #         pass
 
-        unbound = Test.test
-        self.assertEqual(str(unbound), '<unbound method Test.test>')
+    #     unbound = Test.test
+    #     self.assertEqual(str(unbound), '<unbound method Test.test>')
 
-        bound_no_type = Test.test.__get__(4)
-        # Type information disappears when __get__ is called without a type
-        self.assertEqual(str(bound_no_type), '<bound method Test.test of 4>')
+    #     bound_no_type = Test.test.__get__(4)
+    #     # Type information disappears when __get__ is called without a type
+    #     self.assertEqual(str(bound_no_type), '<bound method Test.test of 4>')
 
-        # Calling __get__ with a non sensical type results in a no-op
-        self.assertEqual(unbound.__get__(None, int), unbound)
+    #     # Calling __get__ with a non sensical type results in a no-op
+    #     self.assertEqual(unbound.__get__(None, int), unbound)
 
-        # Calling __get__ with sensical type results it to change the type
-        self.assertEqual(str(unbound.__get__(None, OtherTest)), '<unbound method OtherTest.test>')
+    #     # Calling __get__ with sensical type results it to change the type
+    #     self.assertEqual(str(unbound.__get__(None, OtherTest)), '<unbound method OtherTest.test>')
 
-        try:
-            unbound.__get__(None, None)
-        except TypeError:
-            pass
-        else:
-            self.fail("should not allow method descriptor to be called with None, None")
+    #     try:
+    #         unbound.__get__(None, None)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("should not allow method descriptor to be called with None, None")
 
     def test_calling_after_bound_method(self):
         def test(self):

@@ -176,7 +176,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     if (meta_attribute !== undefined) {
         meta_get = meta_attribute.tp$descr_get;
         if (meta_get !== undefined && Sk.builtin.checkDataDescr(meta_attribute)) {
-            res = meta_get.call(meta_attribute, this, metatype);
+            res = meta_get.call(meta_attribute, this, metatype, canSuspend);
             return res;
         }
     }
@@ -187,7 +187,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
         const local_get = attribute.tp$descr_get;
         if (local_get !== undefined) {
             // null indicates that the descriptor was on the target object itself or a buss
-            res = local_get.call(attribute, null, this);
+            res = local_get.call(attribute, null, this, canSuspend);
             return res;
         }
         return attribute;
@@ -195,7 +195,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
     // attribute was not found so use the meta_get if any
     if (meta_get !== undefined) {
-        res = meta_get.call(meta_attribute, this, metatype);
+        res = meta_get.call(meta_attribute, this, metatype, canSuspend);
         return res;
     }
 

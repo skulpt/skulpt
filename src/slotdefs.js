@@ -383,6 +383,12 @@ slots.__get__ = {
             return func.d$wrapped.call(this, obj, obtype);
         }
         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
+        if (obj == null) {
+            obj = Sk.builtin.none.none$;
+        }
+        if (obtype == null) {
+            obtype = Sk.builtin.none.none$;
+        }
         if (func !== undefined) {
             res = call_version(func, [this, obj, obtype]);
         }
