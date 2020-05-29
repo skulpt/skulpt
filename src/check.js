@@ -202,3 +202,7 @@ Sk.builtin.checkDataDescr = function (arg) {
     return (arg && arg.tp$descr_set !== undefined);
 };
 Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
+
+Sk.builtin.checkType = function (arg) {
+    return (arg != null && arg.sk$type !== undefined);
+};
