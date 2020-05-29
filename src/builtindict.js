@@ -461,14 +461,6 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
-
-        // // create an abstract base class for old style classes
-        // if (Sk.builtin.abstract_object_base_class === undefined) {
-        //     Sk.builtin.abstract_object_base_class = new Function;
-        //     // Sk.builtin.abstract_object_base_class.prototype = Object.create({ ...Sk.builtin.object.prototype });
-        //     Sk.abstr.setUpSlots(Sk.builtin.abstract_object_base_class, Sk.builtin.object.prototype);
-        //     Sk.abstr.setUpGetSets(Sk.builtin.abstract_object_base_class);
-        // }
     }
 };
 
