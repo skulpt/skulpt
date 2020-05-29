@@ -81,10 +81,10 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
 
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
-    this.d$set_check();
+    this.d$set_check(obj);
 
     if (this.d$def.$set !== undefined) {
-        return this.d$getset.$set.call(obj, value);
+        return this.d$def.$set.call(obj, value);
     }
     throw new Sk.builtin.AttributeError("getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not writeable");
 };
