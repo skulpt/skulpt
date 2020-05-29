@@ -264,6 +264,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     v_type = v.ob$type;
     w_type = w.ob$type;
+    debugger;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
@@ -410,17 +411,14 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     };
 
     shortcut = op2shortcut[op];
-    v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
-    if (v_has_shortcut) {
+    if (v[shortcut] !== undefined) {
         if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
 
     swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-    w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
-    if (w_has_shortcut) {
-
+    if (w[swapped_shortcut] !== undefined) {
         if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }

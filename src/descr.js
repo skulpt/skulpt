@@ -27,7 +27,7 @@ Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
 };
 
 Sk.generic.descriptor.check = function (obj) {
-    if (obj === null) {
+    if (obj == null) {
         return this;
     } else if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' requires a '" + this.d$type.prototype.tp$name + "' object but received a '" + Sk.abstr.typeName(obj) + "' object");

@@ -1,5 +1,3 @@
-
-
 /**
  * @constructor
  * @param {Array.<Object>=} L
@@ -19,8 +17,8 @@ Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.object);
 
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
-Sk.builtin.list.prototype.tp$doc = "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified.";
-
+Sk.builtin.list.prototype.tp$doc =
+    "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified.";
 
 Sk.builtin.list.prototype.tp$new = Sk.generic.new(Sk.builtin.list);
 
@@ -38,13 +36,14 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     }
     const self = this;
     return Sk.misceval.chain(
-        Sk.misceval.iterFor(Sk.abstr.iter(arg),
-            (i) => { self.v.push(i); }
-        ),
-        () => { return Sk.builtin.none.none$; }
+        Sk.misceval.iterFor(Sk.abstr.iter(arg), (i) => {
+            self.v.push(i);
+        }),
+        () => {
+            return Sk.builtin.none.none$;
+        }
     );
 };
-
 
 Sk.builtin.list.prototype.$r = function () {
     var it, i;
@@ -75,7 +74,7 @@ Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     }
 
     // w not a list
-    if (!w.ob$type || w.ob$type != Sk.builtin.list) {
+    if (!(w instanceof Sk.builtin.list)) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;
@@ -201,7 +200,9 @@ Sk.builtin.list.prototype.mp$ass_subscript = function (index, value) {
             });
             j = 0;
             if (tosub.length !== value.v.length) {
-                throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
+                throw new Sk.builtin.ValueError(
+                    "attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length
+                );
             }
             for (i = 0; i < tosub.length; ++i) {
                 this.v.splice(tosub[i], 1, value.v[j]);
@@ -213,7 +214,6 @@ Sk.builtin.list.prototype.mp$ass_subscript = function (index, value) {
 
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
-
 
 Sk.builtin.list.prototype.sq$concat = function (other) {
     // other not a list
@@ -230,8 +230,7 @@ Sk.builtin.list.prototype.sq$concat = function (other) {
     return new Sk.builtin.list(ret, false);
 };
 
-Sk.builtin.list.prototype.nb$add =
-    Sk.builtin.list.prototype.nb$reflected_add = Sk.builtin.list.prototype.sq$concat;
+Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.nb$reflected_add = Sk.builtin.list.prototype.sq$concat;
 
 Sk.builtin.list.prototype.sq$repeat = function (n) {
     var j;
@@ -254,8 +253,7 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     return new Sk.builtin.list(ret, false);
 };
 
-Sk.builtin.list.prototype.nb$multiply =
-    Sk.builtin.list.prototype.nb$reflected_multiply = Sk.builtin.list.prototype.sq$repeat;
+Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.nb$reflected_multiply = Sk.builtin.list.prototype.sq$repeat;
 
 Sk.builtin.list.prototype.sq$contains = function (item) {
     var it, i;
@@ -272,8 +270,7 @@ Sk.builtin.list.prototype.nb$inplace_add = function (other) {
     var it, i;
     var newb;
     if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) +
-            "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
     }
 
     if (this == other) {
@@ -293,7 +290,6 @@ Sk.builtin.list.prototype.nb$inplace_add = function (other) {
 
     return this;
 };
-
 
 Sk.builtin.list.prototype.nb$inplace_multiply = function (n) {
     var j;
@@ -363,14 +359,12 @@ Sk.builtin.list.prototype.sq$ass_slice = function (ilow, ihigh, v) {
     this.v.splice.apply(this.v, args);
 };
 
-
 /*
  Sk.builtin.list.prototype.sq$item = list_item;
  Sk.builtin.list.prototype.sq$slice = list_slice;
  */
 Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.$list_del_item;
 Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.$list_del_slice;
-
 
 Sk.builtin.list.prototype.$list_del_subscript = function (index) {
     var offdir;
@@ -518,14 +512,14 @@ Sk.builtin.list.prototype.$index = function (item, start, stop) {
     len = this.v.length;
     obj = this.v;
 
-    start = (start === undefined) ? 0 : start.v;
+    start = start === undefined ? 0 : start.v;
     if (start < 0) {
-        start = ((start + len) >= 0) ? start + len : 0;
+        start = start + len >= 0 ? start + len : 0;
     }
 
-    stop = (stop === undefined) ? len : stop.v;
+    stop = stop === undefined ? len : stop.v;
     if (stop < 0) {
-        stop = ((stop + len) >= 0) ? stop + len : 0;
+        stop = stop + len >= 0 ? stop + len : 0;
     }
 
     for (i = start; i < stop; ++i) {
@@ -535,7 +529,6 @@ Sk.builtin.list.prototype.$index = function (item, start, stop) {
     }
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
 };
-
 
 //TODO: __reversed__,;
 
@@ -565,7 +558,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { NoArgs: true },
         $textsig: "($self, /)",
-        $doc: "Remove all items from list."
+        $doc: "Remove all items from list.",
     },
     copy: {
         $meth: function () {
@@ -573,7 +566,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { NoArgs: true },
         $textsig: "($self, /)",
-        $doc: "Return a shallow copy of the list."
+        $doc: "Return a shallow copy of the list.",
     },
     append: {
         $meth: function (item) {
@@ -582,7 +575,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { OneArg: true },
         $textsig: "($self, object, /)",
-        $doc: "Append object to the end of the list."
+        $doc: "Append object to the end of the list.",
     },
     insert: {
         $meth: function (i, x) {
@@ -603,7 +596,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { MinArgs: 2, MaxArgs: 2 },
         $textsig: "($self, index, object, /)",
-        $doc: "Insert object before index."
+        $doc: "Insert object before index.",
     },
     extend: {
         $meth: function (iterable) {
@@ -612,7 +605,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { OneArg: true },
         $textsig: "($self, iterable, /)",
-        $doc: "Extend list by appending elements from the iterable."
+        $doc: "Extend list by appending elements from the iterable.",
     },
     pop: {
         $meth: function (i) {
@@ -626,7 +619,7 @@ Sk.builtin.list.prototype.tp$methods = {
             if (i < 0) {
                 i = i + this.v.length;
             }
-            if ((i < 0) || (i >= this.v.length)) {
+            if (i < 0 || i >= this.v.length) {
                 throw new Sk.builtin.IndexError("pop index out of range");
             }
             const res = this.v[i];
@@ -635,7 +628,7 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { MinArgs: 0, MaxArgs: 1 },
         $textsig: "($self, index=-1, /)",
-        $doc: "Remove and return item at index (default last).\n\nRaises IndexError if list is empty or index is out of range."
+        $doc: "Remove and return item at index (default last).\n\nRaises IndexError if list is empty or index is out of range.",
     },
     remove: {
         $meth: function (item) {
@@ -645,13 +638,13 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { OneArg: true },
         $textsig: "($self, value, /)",
-        $doc: "Remove first occurrence of value.\n\nRaises ValueError if the value is not present."
+        $doc: "Remove first occurrence of value.\n\nRaises ValueError if the value is not present.",
     },
     index: {
         $meth: Sk.builtin.list.prototype.$index,
         $flags: { MinArgs: 1, MaxArgs: 3 },
         $textsig: "($self, value, start=0, stop=sys.maxsize, /)",
-        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present."
+        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present.",
     },
     count: {
         $meth: function (item) {
@@ -667,13 +660,13 @@ Sk.builtin.list.prototype.tp$methods = {
         },
         $flags: { OneArg: true },
         $textsig: "($self, value, /)",
-        $doc: "Return number of occurrences of value."
+        $doc: "Return number of occurrences of value.",
     },
     reverse: {
         $meth: Sk.builtin.list.prototype.$list_reverse,
         $flags: { NoArgs: true },
         $textsig: "($self, /)",
-        $doc: "Reverse *IN PLACE*."
+        $doc: "Reverse *IN PLACE*.",
     },
     // sort: {
     //     // TODO: py3 implementation is different
@@ -684,7 +677,6 @@ Sk.builtin.list.prototype.tp$methods = {
     // },
 };
 
-
 Sk.abstr.setUpSlots(Sk.builtin.list);
 Sk.abstr.setUpMethods(Sk.builtin.list);
 
@@ -692,7 +684,5 @@ Sk.abstr.setUpMethods(Sk.builtin.list);
 Sk.builtin.list.prototype.$list_sort.co_varnames = ["__self__", "cmp", "key", "reverse"];
 Sk.builtin.list.prototype.$list_sort.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.$list_sort);
-
-
 
 Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);

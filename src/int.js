@@ -26,12 +26,13 @@
  */
 Sk.builtin.int_ = function (x) {
     // internal function called with a javascript int/float/str
-    Sk.asserts.assert(this instanceof Sk.builtin.int_);
-    
+    Sk.asserts.assert(this instanceof Sk.builtin.int_ || this.sk$object, "bad call to int constructor");
+
     if (x > Sk.builtin.int_.threshold$ || x < -Sk.builtin.int_.threshold$) {
+        // this means we can't inherit from int because we pass the work over to long
         return new Sk.builtin.lng(x);
     }
-    if ((x > -1) && (x < 1)) {
+    if (x > -1 && x < 1) {
         x = 0;
     }
     this.v = parseInt(x);
@@ -44,30 +45,34 @@ Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
 /* NOTE: See constants used for kwargs in constants.js */
 
-Sk.builtin.int_.prototype.tp$doc = "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4";
+Sk.builtin.int_.prototype.tp$doc =
+    "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4";
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs);
+    args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [new Sk.builtin.int_(0), Sk.builtin.none.none$]);
 
     let x = args[0];
     const base = args[1];
 
-    x = Sk.builtin.int_.$getJsInt(x, base);
+    const jsInt = Sk.builtin.int_.$getJsInt(x, base);
+    if (jsInt > Sk.builtin.int_.threshold$ || jsInt < -Sk.builtin.int_.threshold$) {
+        // this means we can't inherit from int since we pass the work to long instead
+        return new Sk.builtin.lng(x, base);
+    }
 
     if (this === Sk.builtin.int_.prototype) {
-        return new Sk.builtin.int_(x);
+        return new Sk.builtin.int_(jsInt);
     } else {
-        const instance = new this.constructor;
-        Sk.builtin.int_.call(instance, x);
+        const instance = new this.constructor();
+        Sk.builtin.int_.call(instance, jsInt);
         return instance;
     }
 };
 
 Sk.builtin.int_.$getJsInt = function (x, base) {
     let func;
-
     // if base is not of type int, try calling .__index__
-    if (base !== Sk.builtin.none.none$ && base !== undefined && !Sk.builtin.checkInt(base)) {
+    if (base !== Sk.builtin.none.none$ && base != null && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else if (base.__index__) {
@@ -81,13 +86,19 @@ Sk.builtin.int_.$getJsInt = function (x, base) {
 
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
-        if (base === Sk.builtin.none.none$) {
+        if (base === null) {
             base = 10;
         }
 
-        x = Sk.str2number(x.v, base, parseInt, function (x) {
-            return -x;
-        }, "int");
+        x = Sk.str2number(
+            x.v,
+            base,
+            parseInt,
+            function (x) {
+                return -x;
+            },
+            "int"
+        );
     } else if (base !== undefined && base !== Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     } else if (x instanceof Sk.builtin.int_) {
@@ -198,8 +209,7 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         result = this.v + other.v;
-        if (result > Sk.builtin.int_.threshold$ ||
-            result < -Sk.builtin.int_.threshold$) {
+        if (result > Sk.builtin.int_.threshold$ || result < -Sk.builtin.int_.threshold$) {
             thisAsLong = new Sk.builtin.lng(this.v);
             return thisAsLong.nb$add(other);
         }
@@ -233,8 +243,7 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
 
     if (other instanceof Sk.builtin.int_) {
         result = this.v - other.v;
-        if (result > Sk.builtin.int_.threshold$ ||
-            result < -Sk.builtin.int_.threshold$) {
+        if (result > Sk.builtin.int_.threshold$ || result < -Sk.builtin.int_.threshold$) {
             thisAsLong = new Sk.builtin.lng(this.v);
             return thisAsLong.nb$subtract(other);
         }
@@ -269,8 +278,7 @@ Sk.builtin.int_.prototype.nb$multiply = function (other) {
     if (other instanceof Sk.builtin.int_) {
         product = this.v * other.v;
 
-        if (product > Sk.builtin.int_.threshold$ ||
-            product < -Sk.builtin.int_.threshold$) {
+        if (product > Sk.builtin.int_.threshold$ || product < -Sk.builtin.int_.threshold$) {
             thisAsLong = new Sk.builtin.lng(this.v);
             return thisAsLong.nb$multiply(other);
         } else {
@@ -333,7 +341,6 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     var thisAsLong, thisAsFloat;
 
     if (other instanceof Sk.builtin.int_) {
-
         if (other.v === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
@@ -412,10 +419,7 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong, thisAsFloat;
 
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.tuple([
-            this.nb$floor_divide(other),
-            this.nb$remainder(other)
-        ]);
+        return new Sk.builtin.tuple([this.nb$floor_divide(other), this.nb$remainder(other)]);
     }
 
     if (other instanceof Sk.builtin.lng) {
@@ -434,10 +438,7 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
 /** @override */
 Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.tuple([
-            other.nb$floor_divide(this),
-            other.nb$remainder(this)
-        ]);
+        return new Sk.builtin.tuple([other.nb$floor_divide(this), other.nb$remainder(this)]);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -448,11 +449,9 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     var power, ret, thisAsLong, thisAsFloat;
 
     if (other instanceof Sk.builtin.int_ && (mod === undefined || mod instanceof Sk.builtin.int_)) {
-
         power = Math.pow(this.v, other.v);
 
-        if (power > Sk.builtin.int_.threshold$ ||
-            power < -Sk.builtin.int_.threshold$) {
+        if (power > Sk.builtin.int_.threshold$ || power < -Sk.builtin.int_.threshold$) {
             thisAsLong = new Sk.builtin.lng(this.v);
             ret = thisAsLong.nb$power(other, mod);
         } else if (other.v < 0) {
@@ -516,7 +515,7 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
         var tmp;
         other = Sk.builtin.asnum$(other);
         tmp = this.v & other;
-        if ((tmp !== undefined) && (tmp < 0)) {
+        if (tmp !== undefined && tmp < 0) {
             tmp = tmp + 4294967296; // convert back to unsigned
         }
 
@@ -552,7 +551,7 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
         var tmp;
         other = Sk.builtin.asnum$(other);
         tmp = this.v | other;
-        if ((tmp !== undefined) && (tmp < 0)) {
+        if (tmp !== undefined && tmp < 0) {
             tmp = tmp + 4294967296; // convert back to unsigned
         }
 
@@ -588,7 +587,7 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
         var tmp;
         other = Sk.builtin.asnum$(other);
         tmp = this.v ^ other;
-        if ((tmp !== undefined) && (tmp < 0)) {
+        if (tmp !== undefined && tmp < 0) {
             tmp = tmp + 4294967296; // convert back to unsigned
         }
 
@@ -688,7 +687,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
                 throw new Sk.builtin.ValueError("negative shift count");
             }
             tmp = this.v >> shift;
-            if ((this.v > 0) && (tmp < 0)) {
+            if (this.v > 0 && tmp < 0) {
                 // Fix incorrect sign extension
                 tmp = tmp & (Math.pow(2, 32 - shift) - 1);
             }
@@ -888,8 +887,7 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$eq = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) == 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
         return Sk.builtin.bool.false$;
@@ -900,8 +898,7 @@ Sk.builtin.int_.prototype.ob$eq = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$ne = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) != 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
         return Sk.builtin.bool.true$;
@@ -912,8 +909,7 @@ Sk.builtin.int_.prototype.ob$ne = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$lt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) < 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -922,8 +918,7 @@ Sk.builtin.int_.prototype.ob$lt = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$le = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) <= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -932,8 +927,7 @@ Sk.builtin.int_.prototype.ob$le = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$gt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) > 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -942,8 +936,7 @@ Sk.builtin.int_.prototype.ob$gt = function (other) {
 
 /** @override */
 Sk.builtin.int_.prototype.ob$ge = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.numberCompare(other) >= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -966,7 +959,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
 
-    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+    if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
@@ -980,7 +973,7 @@ Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
     if (Sk.__future__.bankers_rounding) {
         num10 = number * Math.pow(10, ndigs);
         rounded = Math.round(num10);
-        bankRound = (((((num10 > 0) ? num10 : (-num10)) % 1) === 0.5) ? (((0 === (rounded % 2))) ? rounded : (rounded - 1)) : rounded);
+        bankRound = (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
         result = bankRound / Math.pow(10, ndigs);
         return new Sk.builtin.int_(result);
     } else {
@@ -1126,13 +1119,13 @@ Sk.str2number = function (s, base, parser, negater, fname) {
     for (i = 0; i < s.length; i = i + 1) {
         ch = s.charCodeAt(i);
         val = base;
-        if ((ch >= 48) && (ch <= 57)) {
+        if (ch >= 48 && ch <= 57) {
             // 0-9
             val = ch - 48;
-        } else if ((ch >= 65) && (ch <= 90)) {
+        } else if (ch >= 65 && ch <= 90) {
             // A-Z
             val = ch - 65 + 10;
-        } else if ((ch >= 97) && (ch <= 122)) {
+        } else if (ch >= 97 && ch <= 122) {
             // a-z
             val = ch - 97 + 10;
         }

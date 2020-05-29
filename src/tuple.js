@@ -12,7 +12,8 @@ Sk.builtin.tuple = function (L) {
 
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.object);
 
-Sk.builtin.tuple.prototype.tp$doc = "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.";
+Sk.builtin.tuple.prototype.tp$doc =
+    "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.";
 
 Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     // this will be Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
@@ -39,10 +40,9 @@ Sk.builtin.tuple.prototype.tp$new = function (args, kwargs) {
     return new Sk.builtin.tuple(L);
 };
 
-
 Sk.builtin.tuple.prototype.$subtype_new = function (args, kwargs) {
     // should we check that this is indeed a subtype of tuple?
-    const instance = new this.constructor;
+    const instance = new this.constructor();
     // pass the args but ignore the kwargs for subtyping
     const tuple = Sk.builtin.tuple.prototype.tp$new(args);
     instance.v = tuple.v;
@@ -138,8 +138,7 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     return new Sk.builtin.tuple(ret);
 };
 
-Sk.builtin.tuple.prototype.nb$multiply =
-    Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
+Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     return new Sk.builtin.tuple_iter_(this);
@@ -147,15 +146,14 @@ Sk.builtin.tuple.prototype.tp$iter = function () {
 
 Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
-
+    debugger;
     // w not a tuple
     var k;
     var i;
     var wl;
     var vl;
     var v;
-    if (!w.ob$type ||
-        !Sk.misceval.isTrue(Sk.builtin.isinstance(w, Sk.builtin.tuple))) {
+    if (!(w instanceof Sk.builtin.tuple)) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;
@@ -221,8 +219,8 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
 Sk.builtin.tuple.prototype.sq$concat = function (other) {
     var msg;
     if (other.ob$type != Sk.builtin.tuple) {
-        msg = "can only concatenate tuple (not \"";
-        msg += Sk.abstr.typeName(other) + "\") to tuple";
+        msg = 'can only concatenate tuple (not "';
+        msg += Sk.abstr.typeName(other) + '") to tuple';
         throw new Sk.builtin.TypeError(msg);
     }
 
@@ -230,7 +228,6 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
 };
 
 Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
-
 
 Sk.builtin.tuple.prototype.sq$contains = function (ob) {
     var it, i;
@@ -255,7 +252,7 @@ Sk.builtin.tuple.prototype.tp$methods = {
         },
         $flags: { NoArgs: true },
         $textsig: "($self, /)",
-        $doc: null
+        $doc: null,
     },
     index: {
         $meth: function (item, start, stop) {
@@ -272,7 +269,7 @@ Sk.builtin.tuple.prototype.tp$methods = {
         },
         $flags: { MinArgs: 1, MaxArgs: 3 },
         $textsig: "($self, value, start=0, stop=sys.maxsize, /)",
-        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present."
+        $doc: "Return first index of value.\n\nRaises ValueError if the value is not present.",
     },
     count: {
         $meth: function (item) {
@@ -289,11 +286,10 @@ Sk.builtin.tuple.prototype.tp$methods = {
         },
         $flags: { OneArg: true },
         $textsig: "($self, value, /)",
-        $doc: "Return number of occurrences of value."
+        $doc: "Return number of occurrences of value.",
     },
 };
 
 Sk.abstr.setUpSlots(Sk.builtin.tuple);
 Sk.abstr.setUpMethods(Sk.builtin.tuple);
 Sk.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
-

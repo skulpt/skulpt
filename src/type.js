@@ -92,13 +92,13 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         }
     }
 
-    if (best_base !== undefined) {
-        Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
-    } else {
-        // todo: create some sort of abstract base class that is like object but is not object
-        Sk.abstr.setUpInheritance($name, klass, Sk.builtin.abstract_object_base_class, metaclass);
-        klass.prototype.tp$base = Sk.builtin.none.none$;
-    }
+    // if (best_base !== undefined) {
+    Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
+    // } else {
+    // todo: create some sort of abstract base class that is like object but is not object
+    //     Sk.abstr.setUpInheritance($name, klass, Sk.builtin.abstract_object_base_class, metaclass);
+    //     klass.prototype.tp$base = Sk.builtin.none.none$;
+    // }
 
     klass.prototype.tp$bases = bases.v;
     klass.prototype.tp$mro = klass.$buildMRO();
@@ -122,11 +122,11 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
 
     // assign __doc__
-    if (klass.prototype.__doc__ === undefined) {
+    if (!klass.prototype.hasOwnProperty("__doc__")) {
         klass.prototype.__doc__ = Sk.builtin.none.none$;
     }
 
-    if (klass.prototype.__dict__ === undefined) {
+    if (klass.$typeLookup("__dict__") === undefined) {
         klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
 
@@ -541,9 +541,9 @@ Sk.builtin.type.$bestBase = function (bases) {
     // deal with bases
     if (bases.length === 0) {
         // new style class, inherits from object by default
-        if (Sk.__future__.inherit_from_object) {
-            bases.push(Sk.builtin.object);
-        }
+        // if (Sk.__future__.inherit_from_object) {
+        bases.push(Sk.builtin.object);
+        // }
     }
 
     let parent, firstAncestor, inheritsBuiltin, builtin_bases = [];

@@ -31,7 +31,7 @@ Sk.builtin.method = function (func, self, klass, builtin) {
             this.$name = klass.prototype.tp$name + "." + func.$name;
         }
     } else {
-        this.$name = func.tp$name;
+        this.$name = func.$name;
     }
     this.im_builtin = builtin;
     this["$d"] = {
@@ -112,27 +112,26 @@ Sk.builtin.method.prototype.tp$descr_get = function (obj, objtype) {
     return new Sk.builtin.method(this, obj, objtype, this.im_builtin);
 };
 
-Sk.builtin.method.pythonFunctions = ["__get__"];
 
-Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
-    Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
-    if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
-        throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
-    }
+// Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
+//     Sk.builtin.pyCheckArgsLen("__get__", arguments.length, 1, 2, false, true);
+//     if (instance === Sk.builtin.none.none$ && owner === Sk.builtin.none.none$) {
+//         throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+//     }
 
-    // if the owner is specified it needs to be a a subclass of im_self
-    if (owner && owner !== Sk.builtin.none.none$) {
-        if (Sk.misceval.isTrue(Sk.builtin.issubclass(owner, self.im_class))) {
-            return self.tp$descr_get(instance, owner);
-        }
+//     // if the owner is specified it needs to be a a subclass of im_self
+//     if (owner && owner !== Sk.builtin.none.none$) {
+//         if (Sk.misceval.isTrue(Sk.builtin.issubclass(owner, self.im_class))) {
+//             return self.tp$descr_get(instance, owner);
+//         }
 
-        // if it's not we're not bound
-        return self;
-    }
+//         // if it's not we're not bound
+//         return self;
+//     }
 
-    // use the original type to get a bound object
-    return self.tp$descr_get(instance, Sk.builtin.none.none$);
-};
+//     // use the original type to get a bound object
+//     return self.tp$descr_get(instance, Sk.builtin.none.none$);
+// };
 
 Sk.builtin.method.prototype["$r"] = function () {
     if (this.im_builtin) {

@@ -1,17 +1,16 @@
 Sk.builtin.structseq_types = {};
 
 Sk.builtin.make_structseq = function (module, name, fields, doc) {
-    var nm = module + "." + name;
-    var flds = [];
-    var docs = [];
-    var i;
-    for (var key in fields) {
+    const nm = module + "." + name;
+    const flds = [];
+    const docs = [];
+    for (let key in fields) {
         flds.push(key);
         docs.push(fields[key]);
     }
 
     const getsets = {};
-    for (i = 0; i < flds.length; i++) {
+    for (let i = 0; i < flds.length; i++) {
         getsets[flds[i]] = {
             $get: function () { return this.v[i]; },
             $doc: docs[i]

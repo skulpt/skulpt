@@ -78,8 +78,6 @@ Sk.generic.slotFuncNoArgs = function (dunderName) {
     };
 };
 
-
-
 Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) {
     return function () {
         let res;
@@ -88,7 +86,7 @@ Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) 
             return func.d$wrapped.call(this);
         } else if (func !== undefined) {
             res = Sk.misceval.callsimArray(func, [this]);
-            if (!(checkFunc(res))) {
+            if (!checkFunc(res)) {
                 throw new Sk.builtin.TypeError(dunderName + " should return " + checkMsg + " (returned " + Sk.abstr.typeName(res) + ")");
             }
         }
@@ -118,7 +116,6 @@ Sk.generic.slotFuncGetAttribute = function (pyName, canSuspend) {
         return Sk.misceval.callsimArray(func, [this, pyName]);
     }
 };
-
 
 Sk.generic.slotFuncFastCall = function (dunderName) {
     return function (args, kwargs) {
@@ -301,28 +298,42 @@ slots.__getattribute__ = {
         const getattributeFn = Sk.abstr.lookupSpecial(this, "__getattribute__");
         const self = this;
 
-        let r = Sk.misceval.chain(Sk.misceval.tryCatch(
-            () => {
-                if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
-                    return getattributeFn.d$wrapped.call(self, pyName, canSuspend);
-                } else {
-                    return Sk.misceval.callsimOrSuspendArray(getattributeFn, [self, pyName]);
+        let r = Sk.misceval.chain(
+            Sk.misceval.tryCatch(
+                () => {
+                    if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
+                        debugger;
+                        return getattributeFn.d$wrapped.call(self, pyName, canSuspend);
+                    } else {
+                        return Sk.misceval.callsimOrSuspendArray(getattributeFn, [self, pyName]);
+                    }
+                },
+                function (e) {
+                    if (e instanceof Sk.builtin.AttributeError) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
                 }
-            },
-            function (e) {
-                if (e instanceof Sk.builtin.AttributeError) {
-                    return undefined;
-                } else {
-                    throw e;
-                }
-            }
-        ), (val) => {
-            if (val !== undefined) {
-                return val;
-            }
-            return Sk.misceval.callsimOrSuspendArray(getattrFn, [self, pyName]);
-
-        });
+            ),
+            (val) =>
+                Sk.misceval.tryCatch(
+                    () => {
+                        debugger;
+                        if (val !== undefined) {
+                            return val;
+                        }
+                        return Sk.misceval.callsimOrSuspendArray(getattrFn, [self, pyName]);
+                    },
+                    function (e) {
+                        if (e instanceof Sk.builtin.AttributeError) {
+                            return undefined;
+                        } else {
+                            throw e;
+                        }
+                    }
+                )
+        );
         return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
     },
     $wrapper: Sk.generic.wrapperCallOneArg,
@@ -377,7 +388,22 @@ slots.__get__ = {
         }
         return res;
     },
-    $wrapper: function __get__(obj, obtype) { },
+    $wrapper: function (self, args, kwargs) {
+        Sk.abstr.checkNoKwargs(this.$name, kwargs);
+        Sk.abstr.checkArgsLen(this.$name, args, 1, 2);
+        let obj = args[0];
+        let obtype = args[1];
+        if (obj === Sk.builtin.none.none$) {
+            obj = null;
+        } 
+        if (obtype === Sk.builtin.none.none$) {
+            obtype = null;
+        }
+        if (obtype == null && obj == null) {
+            throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
+        }
+        return this.call(self, obj, obtype);
+    },
     $textsig: "($self, instance, owner, /)",
     $flags: { MinArgs: 2, MaxArgs: 2 },
     $doc: "Return an attribute of instance, which is of type owner.",
@@ -410,7 +436,6 @@ slots.__delete__ = {
 // 	$textsig: null,
 // 	$doc: "",
 // };
-
 
 // tp richcompare
 {
@@ -497,15 +522,18 @@ slots.__next__ = {
         } else if (func !== undefined) {
             if (canSuspend) {
                 const self = this;
-                return Sk.misceval.tryCatch(function () {
-                    return Sk.misceval.callsimOrSuspendArray(func, [self]);
-                }, function (e) {
-                    if (e instanceof Sk.builtin.StopIteration) {
-                        return undefined;
-                    } else {
-                        throw e;
+                return Sk.misceval.tryCatch(
+                    function () {
+                        return Sk.misceval.callsimOrSuspendArray(func, [self]);
+                    },
+                    function (e) {
+                        if (e instanceof Sk.builtin.StopIteration) {
+                            return undefined;
+                        } else {
+                            throw e;
+                        }
                     }
-                });
+                );
             } else {
                 try {
                     res = Sk.misceval.callsimArray(func, [this]);
@@ -565,7 +593,7 @@ slots.__len__ = {
     },
     $wrapper: function __len__(self, args, kwargs) {
         Sk.abstr.checkNoArgs("__len__", args, kwargs);
-        return Sk.builtin.int_(self.sq$length());
+        return new Sk.builtin.int_(self.sq$length());
     },
     $flags: { NoArgs: true },
     $textsig: "($self, /)",
@@ -601,7 +629,7 @@ slots.__getitem__ = {
         }
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not subscriptable");
     },
-    $wrapper: Sk.generic.slotFuncOneArg,
+    $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return self[key].",
@@ -626,7 +654,6 @@ slots.__delitem__ = {
     $flags: { OneArg: true },
     $doc: "Delete self[key].",
 };
-
 
 // number
 slots.__add__ = {
@@ -982,7 +1009,6 @@ slots.__rpow__ = {
     $doc: "Return pow(value, self, mod).",
 };
 
-
 // py2 ONLY slots
 slots.__long__ = {
     $name: "__long__",
@@ -1024,7 +1050,6 @@ slots.__nonzero__ = {
     $doc: "x.__nonzero__() <==> x != 0",
 };
 
-
 Sk.slotToDunder = {
     // nb we handle tp$new differently
     // tp_slots
@@ -1050,17 +1075,15 @@ Sk.slotToDunder = {
     tp$descr_get: "__get__",
     tp$descr_set: ["__set__", "__delete__"],
 
-
     // iter
     tp$iter: "__iter__",
     tp$iternext: "__next__",
 
     // sequence and mapping slots
     sq$length: "__len__",
-    sq$containes: "__contains__",
-    tp$mp$subscript: "__getitem__",
-    tp$mp$ass_subscript: ["__setitem__", "__delitem__"],
-
+    sq$contains: "__contains__",
+    mp$subscript: "__getitem__",
+    mp$ass_subscript: ["__setitem__", "__delitem__"],
 
     // number slots
     nb$abs: "__abs__",
@@ -1089,10 +1112,7 @@ Sk.slotToDunder = {
     sq$contains: "__contains__",
     nb$bool: "__bool__",
     nb$nonzero: "__nonzero__",
-
 };
-
-
 
 /**
  * Maps Python dunder names to the Skulpt Javascript function names that
@@ -1114,53 +1134,52 @@ Sk.slotToDunder = {
  * @type {Object}
  */
 Sk.dunderToSkulpt = {
-    "__repr__": "$r",
-    "__str__": "tp$str",
-    "__init__": "tp$init",
-    "__new__": "tp$new",
-    "__hash__": "tp$hash",
+    __repr__: "$r",
+    __str__: "tp$str",
+    __init__: "tp$init",
+    __new__: "tp$new",
+    __hash__: "tp$hash",
 
-    "__eq__": "ob$eq",
-    "__ne__": "ob$ne",
-    "__lt__": "ob$lt",
-    "__le__": "ob$le",
-    "__gt__": "ob$gt",
-    "__ge__": "ob$ge",
+    __eq__: "ob$eq",
+    __ne__: "ob$ne",
+    __lt__: "ob$lt",
+    __le__: "ob$le",
+    __gt__: "ob$gt",
+    __ge__: "ob$ge",
 
-    "__abs__": "nb$abs",
-    "__neg__": "nb$negative",
-    "__pos__": "nb$positive",
-    "__int__": "nb$int_",
-    "__long__": "nb$lng",
-    "__float__": "nb$float_",
-    "__add__": "nb$add",
-    "__radd__": "nb$reflected_add",
-    "__sub__": "nb$subtract",
-    "__rsub__": "nb$reflected_subtract",
-    "__mul__": "nb$multiply",
-    "__rmul__": "nb$reflected_multiply",
-    "__div__": "nb$divide",
-    "__rdiv__": "nb$reflected_divide",
-    "__floordiv__": "nb$floor_divide",
-    "__rfloordiv__": "nb$reflected_floor_divide",
-    "__invert__": "nb$invert",
-    "__mod__": "nb$remainder",
-    "__rmod__": "nb$reflected_remainder",
-    "__divmod__": "nb$divmod",
-    "__rdivmod__": "nb$reflected_divmod",
-    "__pow__": "nb$power",
-    "__rpow__": "nb$reflected_power",
+    __abs__: "nb$abs",
+    __neg__: "nb$negative",
+    __pos__: "nb$positive",
+    __int__: "nb$int_",
+    __long__: "nb$lng",
+    __float__: "nb$float_",
+    __add__: "nb$add",
+    __radd__: "nb$reflected_add",
+    __sub__: "nb$subtract",
+    __rsub__: "nb$reflected_subtract",
+    __mul__: "nb$multiply",
+    __rmul__: "nb$reflected_multiply",
+    __div__: "nb$divide",
+    __rdiv__: "nb$reflected_divide",
+    __floordiv__: "nb$floor_divide",
+    __rfloordiv__: "nb$reflected_floor_divide",
+    __invert__: "nb$invert",
+    __mod__: "nb$remainder",
+    __rmod__: "nb$reflected_remainder",
+    __divmod__: "nb$divmod",
+    __rdivmod__: "nb$reflected_divmod",
+    __pow__: "nb$power",
+    __rpow__: "nb$reflected_power",
 
-    "__contains__": "sq$contains",
+    __contains__: "sq$contains",
 
-    "__bool__": "nb$bool",
-    "__nonzero__": "nb$nonzero",
+    __bool__: "nb$bool",
+    __nonzero__: "nb$nonzero",
 
-    "__len__": "sq$length",
-    "__get__": "tp$descr_get",
-    "__set__": "tp$descr_set",
+    __len__: "sq$length",
+    __get__: "tp$descr_get",
+    __set__: "tp$descr_set",
 };
-
 
 Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 
@@ -1177,5 +1196,3 @@ Sk.setupDunderMethods = function (py3) {
         }
     }
 };
-
-

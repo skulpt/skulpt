@@ -70,7 +70,7 @@ Sk.builtin.list_iter_ = Sk.generic.iterator("list_iterator", {
         this.$done = false; // the list can change size but once we've consumed the iterator we must stop
     },
     iternext: function () {
-        if (this.$index >= this.$seq.length || this.$flag) {
+        if (this.$index >= this.$seq.length || this.$done) {
             this.$done = true;
             return undefined;
         }
@@ -125,7 +125,7 @@ Sk.builtin.seq_iter_ = Sk.generic.iterator("iterator", {
                 throw e;
             }
         }
-        this.idx++;
+        this.$index++;
         return ret;
     },
     methods: {

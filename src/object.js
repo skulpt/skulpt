@@ -96,7 +96,7 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
             // us ob$eq rather than tp$richcompare
             res = this.ob$eq(other);
             if (res && res !== Sk.builtin.NotImplemented.NotImplemented$) {
-                res = Sk.misceval.isTrue(res);
+                res = !Sk.misceval.isTrue(res);
             }
             break;
         default:

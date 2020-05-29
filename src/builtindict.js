@@ -307,7 +307,7 @@ Sk.builtins.$method_defs = {
 
     iter: {
         $meth: Sk.builtin.iter,
-        $flags: {OneArg: true},
+        $flags: {MinArgs: 1, MaxArgs: 2},
         $textsig: "($module, iterable /)",
         $doc: "iter(iterable) -> iterator\niter(callable, sentinel) -> iterator\n\nGet an iterator from an object.  In the first form, the argument must\nsupply its own iterator, or be a sequence.\nIn the second form, the callable is called until it returns the sentinel."
     },
@@ -462,14 +462,13 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
 
-        // create an abstract base class for old style classes
-        if (Sk.builtin.abstract_object_base_class === undefined) {
-            Sk.builtin.abstract_object_base_class = new Function;
-            Sk.builtin.abstract_object_base_class.prototype = Object.create({ ...Sk.builtin.object.prototype });
-            Sk.abstr.setUpSlots(Sk.builtin.abstract_object_base_class);
-            Sk.abstr.setUpGetSets(Sk.builtin.abstract_object_base_class);
-        }
-
+        // // create an abstract base class for old style classes
+        // if (Sk.builtin.abstract_object_base_class === undefined) {
+        //     Sk.builtin.abstract_object_base_class = new Function;
+        //     // Sk.builtin.abstract_object_base_class.prototype = Object.create({ ...Sk.builtin.object.prototype });
+        //     Sk.abstr.setUpSlots(Sk.builtin.abstract_object_base_class, Sk.builtin.object.prototype);
+        //     Sk.abstr.setUpGetSets(Sk.builtin.abstract_object_base_class);
+        // }
     }
 };
 
