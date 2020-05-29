@@ -28,10 +28,19 @@ Sk.builtin.dict.prototype.tp$new = Sk.generic.new(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.checkArgsLen("dict", args, 0, 1);
+    debugger;
     const arg = args[0];
     if (arg !== undefined) {
         if (arg instanceof Sk.builtin.dict) {
-            this.dict_merge(arg);
+            // we could use dict_merge but mp$ass_subscript might have been overridden by a subclass 
+            const set_item = Sk.builtin.dict.prototype.mp$ass_subscript;
+            for (let iter = arg.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                v = arg.mp$subscript(k);
+                if (v === undefined) {
+                    throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
+                }
+                set_item.call(this, k, v);
+            }
         } else {
             let self = this;
             let idx = 0;
@@ -202,10 +211,12 @@ Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
     var ret = [];
+    // for subclassing we make sure we use the dict get_item method and subclass method;
+    const get_item = Sk.builtin.dict.prototype.mp$subscript;
     for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
         k !== undefined;
         k = iter.tp$iternext()) {
-        v = this.mp$subscript(k);
+        v = get_item.call(this, k);
         if (v === undefined) {
             //print(k, "had undefined v");
             v = null;
@@ -564,61 +575,16 @@ var update_f = function (kwargs, self, other) {
 update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
-Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);
-    return new Sk.builtin.bool(self.sq$contains(item));
-});
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
     // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
     return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
-Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.mp$del_subscript.call(self, item);
-});
-
-Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, item) {
-    Sk.builtin.pyCheckArgsLen("__getitem__", arguments.length, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.mp$subscript.call(self, item);
-});
-
-Sk.builtin.dict.prototype.__setitem__ = new Sk.builtin.func(function (self, item, value) {
-    Sk.builtin.pyCheckArgsLen("__setitem__", arguments.length, 2, 2, false, true);
-    return Sk.builtin.dict.prototype.mp$ass_subscript.call(self, item, value);
-});
-
-Sk.builtin.dict.prototype.__hash__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__hash__", arguments.length, 0, 0, false, true);
-    return Sk.builtin.dict.prototype.tp$hash.call(self);
-});
-
-Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__len__", arguments.length, 0, 0, false, true);
-    return Sk.builtin.dict.prototype.sq$length.call(self);
-});
-
-Sk.builtin.dict.prototype.__getattribute__ = new Sk.builtin.func(function (self, attr) {
-    Sk.builtin.pyCheckArgsLen("__getattribute__", arguments.length, 1, 1, false, true);
-    if (!Sk.builtin.checkString(attr)) { throw new Sk.builtin.TypeError("__getattribute__ requires a string"); }
-    return Sk.builtin.dict.prototype.tp$getattr.call(self, attr);
-});
-
-Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
-
-    return new Sk.builtin.dict_iter_(self);
-});
-
 Sk.builtin.dict.prototype.tp$iter = function () {
     return new Sk.builtin.dict_iter_(this);
 };
 
-Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__repr__", arguments.length, 0, 0, false, true);
-    return Sk.builtin.dict.prototype["$r"].call(self);
-});
 
 /* python3 recommends implementing simple ops */
 Sk.builtin.dict.prototype.ob$eq = function (other) {
