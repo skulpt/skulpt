@@ -44,22 +44,17 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return new Sk.builtin.method(func, self);
         },
         tp$richcompare: function (other, op) {
-            let res, eq;
             if ((op != "Eq" && op != "NotEq") || !(other instanceof Sk.builtin.method)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             const a = this;
             const b = other;
-            eq = Sk.misceval.richCompareBool(a.im_func, b.im_func, "Eq");
-            if (eq) {
-                eq = a.im_self === b.im_self;
-            }
+            const eq = Sk.misceval.richCompareBool(a.im_func, b.im_func, "Eq");
             if (op == "Eq") {
-                res = eq ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+                return eq;
             } else {
-                res = eq ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+                return !eq;
             }
-            return res;
         },
         tp$descr_get: function (obj, obtype) {
             return this;
