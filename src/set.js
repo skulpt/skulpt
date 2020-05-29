@@ -9,7 +9,7 @@ Sk.builtin.set = function (S) {
     }
     Sk.asserts.assert(Array.isArray(S) && this instanceof Sk.builtin.set);
     const L = [];
-    for (i = 0; i < S.length; i++) {
+    for (let i = 0; i < S.length; i++) {
         L.push(S[i]);
         L.push(true);
     }
@@ -306,7 +306,7 @@ Sk.builtin.set.prototype["symmetric_difference"] = new Sk.builtin.func(function 
     Sk.builtin.pyCheckArgsLen("symmetric_difference", arguments.length, 2, 2);
 
     S = Sk.builtin.set.prototype["union"].func_code(self, other);
-    vals = S.sk$asarray();
+    const vals = S.sk$asarray();
     for (let i = 0; i < vals.length; i++) {
         item = vals[i];
         if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {

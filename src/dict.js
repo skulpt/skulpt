@@ -35,7 +35,7 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
             // we could use dict_merge but mp$ass_subscript might have been overridden by a subclass 
             const set_item = Sk.builtin.dict.prototype.mp$ass_subscript;
             for (let iter = arg.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                v = arg.mp$subscript(k);
+                const v = arg.mp$subscript(k);
                 if (v === undefined) {
                     throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
                 }
