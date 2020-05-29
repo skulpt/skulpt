@@ -152,15 +152,18 @@ Sk.generic.newMethodDef = {
         /* from CPython: Check that the use doesn't do something silly and unsafe like
        object.__new__(dict).  To do this, we check that the
        most derived base that's not a heap type is this type. */
-        let staticbase = subtype;
         const slot_new = Sk.slots.__new__.$slot_func;
-        while (staticbase && staticbase.prototype.tp$new === slot_new) {
+        let staticbase = subtype;
+        let static_new = staticbase.prototype.hasOwnProperty("tp$new") ? staticbase.prototype.tp$new : null;
+        while (staticbase && (static_new === null || static_new === slot_new)) {
             staticbase = staticbase.prototype.tp$base;
+            static_new = staticbase.prototype.hasOwnProperty("tp$new") ? staticbase.prototype.tp$new : null;
         }
         if (staticbase && staticbase.prototype.tp$new !== this.prototype.tp$new) {
             this_name = this.prototype.tp$name;
-            subs_name = staticbase.prototype.tp$name;
-            throw new Sk.builtin.TypeError(this_name + ".__new__(" + subs_name + ") is not safe, use " + subs_name + ".__new__()");
+            subs_name = subtype.prototype.tp$name;
+            const suitable = staticbase.prototype.tp$name;
+            throw new Sk.builtin.TypeError(this_name + ".__new__(" + subs_name + ") is not safe, use " + suitable + ".__new__()");
         }
         return this.prototype.tp$new.call(subtype.prototype, args, kwargs);
     },
@@ -263,7 +266,6 @@ Sk.generic.getSetDict = {
     $name: "__dict__",
 };
 
-
 Sk.generic.functionCallMethod = function (posargs, kw) {
     // The rest of this function is a logical Javascript port of
     // _PyEval_EvalCodeWithName, and follows its logic,
@@ -285,8 +287,7 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
                 posargs.push(this.func_closure);
             }
             return this.func_code.apply(this.func_globals, posargs);
-        } else if (posargs.length === 0 && this.func_code.$defaults &&
-            this.func_code.$defaults.length === co_argcount) {
+        } else if (posargs.length === 0 && this.func_code.$defaults && this.func_code.$defaults.length === co_argcount) {
             for (let i = 0; i != this.func_code.$defaults.length; i++) {
                 posargs[i] = this.func_code.$defaults[i];
             }
@@ -306,15 +307,24 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
 
     /* Copy positional arguments into arguments to our JS function*/
     let nposargs = posargs.length;
-    let args = (posargs.length <= co_argcount) ? posargs : posargs.slice(0, co_argcount);
-
+    let args = posargs.length <= co_argcount ? posargs : posargs.slice(0, co_argcount);
 
     /* Pack other positional arguments into the *args argument */
     if (this.func_code.co_varargs) {
-        let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
+        let vararg = posargs.length > args.length ? posargs.slice(args.length) : [];
         args[totalArgs] = new Sk.builtin.tuple(vararg);
     } else if (nposargs > co_argcount) {
-        throw new Sk.builtin.TypeError(this.$name + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+        throw new Sk.builtin.TypeError(
+            this.$name +
+                "() takes " +
+                co_argcount +
+                " positional argument" +
+                (co_argcount == 1 ? "" : "s") +
+                " but " +
+                nposargs +
+                (nposargs == 1 ? " was " : " were ") +
+                " given"
+        );
     }
 
     /* Handle keyword arguments */
@@ -348,7 +358,9 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
        (also checks for missing args where no defaults) */
     {
         let defaults = this.func_code.$defaults || [];
-        let i = 0, missing = [], missingUnnamed = false;
+        let i = 0,
+            missing = [],
+            missingUnnamed = false;
         // Positional args for which we *don't* have a default
         let defaultStart = co_argcount - defaults.length;
         for (; i < defaultStart; i++) {
@@ -360,7 +372,14 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
             }
         }
         if (missing.length != 0 && (this.func_code.co_argcount || this.func_code.co_varnames)) {
-            throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required argument" + (missing.length == 1 ? "" : "s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
+            throw new Sk.builtin.TypeError(
+                this.$name +
+                    "() missing " +
+                    missing.length +
+                    " required argument" +
+                    (missing.length == 1 ? "" : "s") +
+                    (missingUnnamed ? "" : ": " + missing.join(", "))
+            );
         }
         for (; i < co_argcount; i++) {
             if (args[i] === undefined) {
@@ -385,7 +404,15 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
             }
         }
         if (missing.length !== 0) {
-            throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required keyword argument" + (missing.length == 1 ? "" : "s") + ": " + missing.join(", "));
+            throw new Sk.builtin.TypeError(
+                this.$name +
+                    "() missing " +
+                    missing.length +
+                    " required keyword argument" +
+                    (missing.length == 1 ? "" : "s") +
+                    ": " +
+                    missing.join(", ")
+            );
         }
     }
 
@@ -408,5 +435,4 @@ Sk.generic.functionCallMethod = function (posargs, kw) {
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
-
 };
