@@ -96,6 +96,7 @@ Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) 
 
 Sk.generic.slotFuncOneArg = function (dunderName) {
     return function (value) {
+        debugger;
         const func = Sk.abstr.lookupSpecial(this, dunderName);
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             return func.d$wrapped.call(this, value);
@@ -108,13 +109,15 @@ Sk.generic.slotFuncOneArg = function (dunderName) {
 
 Sk.generic.slotFuncGetAttribute = function (pyName, canSuspend) {
     const func = Sk.abstr.lookupSpecial(this, "__getattribute__");
+    let res;
     if (func instanceof Sk.builtin.wrapper_descriptor) {
         return func.d$wrapped.call(this, pyName);
     } else if (canSuspend) {
-        return Sk.misceval.callsimOrSuspendArray(func, [this, pyName]);
+        res = Sk.misceval.callsimOrSuspendArray(func, [this, pyName]);
     } else {
-        return Sk.misceval.callsimArray(func, [this, pyName]);
+        res = Sk.misceval.callsimArray(func, [this, pyName]);
     }
+    return res;
 };
 
 Sk.generic.slotFuncFastCall = function (dunderName) {
@@ -128,15 +131,15 @@ Sk.generic.slotFuncFastCall = function (dunderName) {
 };
 
 Sk.generic.slotFuncSet = function (dunderName, error_msg) {
-    return function (obj, value, canSuspend) {
+    return function (pyName, value, canSuspend) {
         let res;
         const func = Sk.abstr.lookupSpecial(this, dunderName);
         if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapped.call(this, value);
+            return func.d$wrapped.call(this, pyName, value);
         }
         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
         if (func !== undefined) {
-            res = call_version(func, [this, obj, value]);
+            res = call_version(func, [this, pyName, value]);
         } else if (error_msg) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
         } else {
@@ -147,16 +150,16 @@ Sk.generic.slotFuncSet = function (dunderName, error_msg) {
 };
 
 Sk.generic.slotFuncDelete = function (dunderName, error_msg) {
-    return function (obj, value, canSuspend) {
+    return function (pyName, value, canSuspend) {
         //value should be null
         let res;
         const func = Sk.abstr.lookupSpecial(this, dunderName);
         if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapped.call(this, value);
+            return func.d$wrapped.call(this, pyName, value);
         }
         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
         if (func !== undefined) {
-            res = call_version(func, [this, obj]);
+            res = call_version(func, [this, pyName]);
         } else if (error_msg) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
         } else {
@@ -336,7 +339,19 @@ slots.__getattribute__ = {
         );
         return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
     },
-    $wrapper: Sk.generic.wrapperCallOneArg,
+    $wrapper: function (self, args, kwargs) {
+        // this = the wrapped function
+        Sk.abstr.checkOneArg(this.$name, args, kwargs);
+        const pyName = args[0];
+        if (!Sk.builtin.checkString(pyName)) {
+            throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
+        }
+        const res = this.call(self, pyName);
+        if (res === undefined) {
+            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(self) + " has no attribute " + pyName.$jsstr());
+        }
+        return res;
+    },
     $textsig: "($self, name, /)",
     $flags: { OneArg: true },
     $doc: "Return getattr(self, name).",
@@ -401,7 +416,7 @@ slots.__get__ = {
         let obtype = args[1];
         if (obj === Sk.builtin.none.none$) {
             obj = null;
-        } 
+        }
         if (obtype === Sk.builtin.none.none$) {
             obtype = null;
         }
@@ -610,7 +625,7 @@ slots.__contains__ = {
     $name: "__contains__",
     $slot_name: "sq$contains",
     $slot_func: function sq$contains(key) {
-        return Sk.misceval.isTrue(Sk.generic.slotFuncOneArg("__contiains__").call(this, key));
+        return Sk.misceval.isTrue(Sk.generic.slotFuncOneArg("__contains__").call(this, key));
     },
     $wrapper: function __contains__(self, args, kwargs) {
         Sk.abstr.checkOneArg("__contains__", args, kwargs);
