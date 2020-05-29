@@ -25,13 +25,23 @@ Sk.builtin.object.prototype.tp$doc = "The most base type";
 
 Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
     // see cypthon object_new for algorithm details
-    const type_obj = this.ob$type;
     if ((args && args.length) || (kwargs && kwargs.length)) {
-        if (type_obj.prototype.tp$new !== Sk.builtin.object.prototype.tp$new) {
-            throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
-        }
-        if (type_obj.prototype.tp$init === Sk.builtin.object.prototype.tp$init) {
-            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
+        if (this.sk$prototypical) {
+            if (this.tp$new !== Sk.builtin.object.prototype.tp$new) {
+                throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
+            }
+            if (this.tp$init === Sk.builtin.object.prototype.tp$init) {
+                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
+            }
+        } else {
+            const new_meth = Sk.abstr.lookupSpecial(this, "__new__");
+            const init_meth = Sk.abstr.lookupSpecial(this, "__init__");
+            if (new_meth !== Sk.builtin.object.prototype.__new__) {
+                throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
+            }
+            if (init_meth === Sk.builtin.object.prototype.__init__) {
+                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
+            }
         }
     }
     return new this.constructor;
@@ -39,13 +49,23 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
 
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     // see cypthon object_init for algorithm details
-    const type_obj = this.ob$type;
     if ((args && args.length) || (kwargs && kwargs.length)) {
-        if (type_obj.prototype.tp$init !== Sk.builtin.object.prototype.tp$init) {
-            throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
-        }
-        if (type_obj.prototype.tp$new === Sk.builtin.object.prototype.tp$new) {
-            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
+        if (this.sk$prototypical) {
+            if (this.tp$init !== Sk.builtin.object.prototype.tp$init) {
+                throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
+            }
+            if (this.tp$new === Sk.builtin.object.prototype.tp$new) {
+                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
+            }
+        } else {
+            const new_meth = Sk.abstr.lookupSpecial(this, "__new__");
+            const init_meth = Sk.abstr.lookupSpecial(this, "__init__");
+            if (init_meth !== Sk.builtin.object.prototype.__init__) {
+                throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
+            }
+            if (new_meth === Sk.builtin.object.prototype.__new__) {
+                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
+            }
         }
     }
     return Sk.builtin.none.none$;
