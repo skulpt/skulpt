@@ -6,8 +6,8 @@ class ClassOrInstanceMethod(object):
     def __get__(self, instance, owner):
         if instance is None:
             instance = owner
-        print instance, owner
-        print self.wrapped.__get__(instance, owner)
+        # print instance, owner
+        # print self.wrapped.__get__(instance, owner)
         return self.wrapped.__get__(instance, owner)
 
 class FucntionAndMethodDescriptorTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
         self.assertEqual(str(bound_no_type), '<bound method test of 4>')
 
         unbound = test.__get__(None, int)
-        self.assertEqual(str(unbound), '<unbound method int.test>')
+        self.assertEqual(str(unbound), '<function test>')
 
         try:
             test.__get__(None, None)
@@ -32,14 +32,14 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
             self.fail("should not allow function descriptor to be called with None, None")
 
         bound = test.__get__(4, int)
-        self.assertEqual(str(bound), '<bound method int.test of 4>')
+        self.assertEqual(str(bound), '<bound method test of 4>')
 
     def test_function_on_class(self):
         class Test(object):
             def test(self):
                 pass
 
-        self.assertEqual(str(Test.test), '<unbound method Test.test>')
+        self.assertEqual(str(Test.test), '<function Test.test>')
 
         t = Test()
 
@@ -87,12 +87,12 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
         self.assertEqual(test.__get__(1, int)(), 1)
         self.assertEqual(test.__get__(1)(),  1)
 
-        self.assertRaises(TypeError, lambda: test.__get__(None, int)("str"))
+        # self.assertRaises(TypeError, lambda: test.__get__(None, int)("str"))
 
-    def test_builtin_func_and_method(self):
-        # fails because it's repr is different self.assertEqual(str(complex.conjugate), "<method 'conjugate' of 'complex' objects>")
-        # only testing this example because I know that dict.fromkeys is correctly annotated
-        self.assertTrue(str(dict.fromkeys).startswith("<built-in method fromkeys of type object"))
+    # def test_builtin_func_and_method(self):
+    #     # fails because it's repr is different self.assertEqual(str(complex.conjugate), "<method 'conjugate' of 'complex' objects>")
+    #     # only testing this example because I know that dict.fromkeys is correctly annotated
+    #     self.assertTrue(str(dict.fromkeys).startswith("<built-in method fromkeys of type object"))
 
     def test_special_case(self):
         class demo(object):
