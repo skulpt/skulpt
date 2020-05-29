@@ -166,7 +166,7 @@ Sk.builtin.complex = function (real, imag) {
     return this;
 };
 
-Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
+Sk.abstr.setUpInheritance("complex", Sk.builtin.complex);
 //Sk.builtin.complex.co_kwargs = true;
 
 

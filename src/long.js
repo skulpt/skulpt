@@ -57,13 +57,19 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     return this;
 };
 
-Sk.abstr.setUpInheritance("long", Sk.builtin.lng, Sk.builtin.numtype);
+Sk.abstr.setUpInheritance("long", Sk.builtin.lng);
 
 Sk.builtin.lng.prototype.tp$new = function (args, kwargs) {
     args = Sk.abstr.copyKeywordsToNamedArgs("long", [null, "base"], args, kwargs);
     let x = args[0];
     const base = args[1];
-    return new Sk.builtin.lng(x, base);
+    if (this === Sk.builtin.lng.prototype) {
+        return new Sk.builtin.lng(x, base);
+    } else {
+        const instance = new this.constructor();
+        Sk.builtin.lng.call(instance, x, base);
+        return instance;
+    }
 };
 
 /* NOTE: See constants used for kwargs in constants.js */

@@ -69,7 +69,7 @@ Sk.builtin.float_ = function (x) {
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
-Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
+Sk.abstr.setUpInheritance("float", Sk.builtin.float_);
 
 Sk.builtin.float_.prototype.tp$doc = "Convert a string or number to a floating point number, if possible.";
 
