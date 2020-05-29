@@ -126,7 +126,7 @@ var $builtinmodule = function (name) {
     // chain has a bound method from_iterable
     Sk.builtin.chain_func = function (func) {
         Sk.builtin.func.call(this, func);
-        this.$d["from_iterable"] = new Sk.builtin.func(_chain_from_iterable);
+        Sk.abstr.sattr(this, new Sk.builtin.str("from_iterable"), new Sk.builtin.func(_chain_from_iterable));
     };
     Sk.builtin.chain_func.prototype = Object.create(Sk.builtin.func.prototype)
 
