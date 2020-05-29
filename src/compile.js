@@ -2678,6 +2678,10 @@ Compiler.prototype.exitScope = function () {
         mangled = fixReservedWords(mangled);
         mangled = fixReservedNames(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+        if (this.stack.length && this.u.ste.blockType == "class") {
+            const classname = this.u.name.v;
+            out(prev.scopename, ".co_qualname=new Sk.builtins['str']('"+classname+ "." + mangled + "');");
+        }
     }
     for (var constant in prev.consts) {
         if (prev.consts.hasOwnProperty(constant)) {
