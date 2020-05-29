@@ -11,7 +11,7 @@ if (Sk.builtin === undefined) {
  * instead use Sk.abstr.buildinNativeClass
  * Sk.misceval.buildClass
  * Sk.misceval.callsimArray(Sk.builtin.type)
- * 
+ *
  */
 
 Sk.builtin.type = function type() {
@@ -20,31 +20,35 @@ Sk.builtin.type = function type() {
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
 
-
 Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
     if (this === Sk.builtin.type) {
-        // check the args are 1 - only interested in the 1 argument form if 
+        // check the args are 1 - only interested in the 1 argument form if
         // if the nargs and nkewords != 1or3 and zero raise an error
         if (args.length == 1) {
             return args[0].ob$type;
         }
     }
-    let obj, self = this;
+    let obj,
+        self = this;
 
     obj = this.prototype.tp$new(args, kwargs);
 
-    return Sk.misceval.chain(obj, function (o) {
-        obj = o;
-        if (!obj.ob$type.$isSubType(self)) {
-            // don't initialize an obj if it's type is not a subtype of this!
-            return undefined;
+    return Sk.misceval.chain(
+        obj,
+        function (o) {
+            obj = o;
+            if (!obj.ob$type.$isSubType(self)) {
+                // don't initialize an obj if it's type is not a subtype of this!
+                return undefined;
+            }
+            if (obj.tp$init !== undefined) {
+                return obj.tp$init(args, kwargs);
+            }
+        },
+        function () {
+            return obj;
         }
-        if (obj.tp$init !== undefined) {
-            return obj.tp$init(args, kwargs);
-        }
-    }, function () {
-        return obj;
-    });
+    );
 };
 
 Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
@@ -82,7 +86,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     const best_base = Sk.builtin.type.$bestBase(bases.v);
 
     // get the metaclass from kwargs
-    // todo this is not really the right way to do it... 
+    // todo this is not really the right way to do it...
     let metaclass;
     if (kwargs) {
         const meta_idx = kwargs.indexOf("metaclass");
@@ -107,12 +111,12 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.prototype.hp$type = true;
     klass.sk$klass = true;
 
-    // set __module__ 
+    // set __module__
     if (dict.mp$lookup(Sk.builtin.str.$module) === undefined) {
         dict.mp$ass_subscript(Sk.builtin.str.$module, Sk.globals["__name__"]);
     }
 
-    // copy properties into klass.prototype 
+    // copy properties into klass.prototype
     // uses python iter methods
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
@@ -160,7 +164,6 @@ Sk.builtin.type.prototype.$r = function () {
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
 
-
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // first check that the pyName is indeed a string
     let res;
@@ -171,7 +174,6 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // now check whether there is a descriptor down on the metatype
     const meta_attribute = metatype.$typeLookup(jsName);
 
-
     let meta_get;
     if (meta_attribute !== undefined) {
         meta_get = meta_attribute.tp$descr_get;
@@ -180,7 +182,6 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
             return res;
         }
     }
-    debugger;
     const attribute = this.$typeLookup(jsName);
 
     if (attribute !== undefined) {
@@ -249,8 +250,6 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     if (this.prototype.prototypical && jsName in Sk.dunderToSkulpt) {
         this.$allocateSlot(jsName);
     }
-
-
 };
 
 Sk.builtin.type.prototype.$typeLookup = function (pyName) {
@@ -272,7 +271,6 @@ Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     return undefined;
 };
 
-
 Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
     /*
      var tmp = [];
@@ -283,15 +281,24 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
      print(Sk.builtin.repr(new Sk.builtin.list(tmp)).v);
      */
     this.prototype.sk$prototypical = true; // assume true to start with
-    let seq, i, next, k, sseq, j, cand, cands, res = [];
-    for (; ;) {
+    let seq,
+        i,
+        next,
+        k,
+        sseq,
+        j,
+        cand,
+        cands,
+        res = [];
+    for (;;) {
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
             if (seq.length !== 0) {
                 break;
             }
         }
-        if (i === seqs.length) { // all empty
+        if (i === seqs.length) {
+            // all empty
             return res;
         }
         cands = [];
@@ -303,8 +310,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
                 //print("CAND", Sk.builtin.repr(cand).v);
 
                 /* eslint-disable */
-                OUTER:
-                for (j = 0; j < seqs.length; ++j) {
+                OUTER: for (j = 0; j < seqs.length; ++j) {
                     sseq = seqs[j];
                     for (k = 1; k < sseq.length; ++k) {
                         if (sseq[k] === cand) {
@@ -348,7 +354,6 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
         // append next to result and remove from sequences
         res.push(next);
 
-
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
             if (seq.length > 0 && seq[0] === next) {
@@ -377,9 +382,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
 Sk.builtin.type.prototype.$buildMRO = function () {
     // MERGE(klass + mro(bases) + bases)
     let i;
-    const all = [
-        [this]
-    ];
+    const all = [[this]];
 
     //Sk.debugout("buildMRO for", klass.tp$name);
 
@@ -398,25 +401,22 @@ Sk.builtin.type.prototype.$buildMRO = function () {
     return this.$mroMerge_(all);
 };
 
-
 Sk.builtin.type.prototype.$isSubType = function (other) {
-    return this === other ||
-        this.prototype instanceof other ||
-        (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
+    return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 };
-
 
 Sk.builtin.type.prototype.$allocateSlots = function () {
     if (this.prototype.sk$prototypical) {
         // only allocate certain slots
-        const proto = {...this.prototype};
+        debugger;
+        const proto = { ...this.prototype };
         for (let dunder in proto) {
             if (dunder in Sk.slots) {
                 this.$allocateSlot(dunder);
             }
         }
     } else {
-        // then just allocate all the slots 
+        // then just allocate all the slots
         for (let dunder in Sk.slots) {
             this.$allocateSlot(dunder);
         }
@@ -428,12 +428,11 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
     this.prototype[slot_def.$slot_name] = slot_def.$slot_func;
 };
 
-
 Sk.builtin.type.prototype.tp$getsets = {
     __base__: {
         $get: function () {
             return this.prototype.tp$base || Sk.builtin.none.none$;
-        }
+        },
     },
     __bases__: {
         $get: function () {
@@ -442,7 +441,7 @@ Sk.builtin.type.prototype.tp$getsets = {
                 // make sure we always return the same tuple
             }
             return this.sk$tuple_bases;
-        }
+        },
     },
     __mro__: {
         $get: function () {
@@ -451,12 +450,12 @@ Sk.builtin.type.prototype.tp$getsets = {
                 // make sure we always return the same tuple
             }
             return this.sk$tuple_mro;
-        }
+        },
     },
     __dict__: {
         $get: function () {
             return new Sk.builtin.mappingproxy(this.prototype);
-        }
+        },
     },
     __doc__: {
         $get: function () {
@@ -464,7 +463,7 @@ Sk.builtin.type.prototype.tp$getsets = {
                 return this.prototype.__doc__;
             }
             return Sk.builtin.none.none$;
-        }
+        },
     },
     __name__: {
         $get: function () {
@@ -472,10 +471,12 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
         $set: function (value) {
             if (!Sk.builtin.checkString(value)) {
-                throw new Sk.builtin.TypeError("can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'");
+                throw new Sk.builtin.TypeError(
+                    "can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'"
+                );
             }
             this.prototype.tp$name = value.$jsstr();
-        }
+        },
     },
     __module__: {
         $get: function () {
@@ -488,21 +489,20 @@ Sk.builtin.type.prototype.tp$getsets = {
         $set: function (value) {
             // they can set the module to whatever they like
             this.prototype.__module__ = value;
-        }
-    }
+        },
+    },
 };
-
 
 Sk.builtin.type.prototype.tp$methods = {
     mro: {
         $meth: function () {
             return new Sk.builtin.tuple(this.$buildMRO());
         },
-        $flags: { NoArgs: true }
+        $flags: { NoArgs: true },
     },
     __dir__: {
         $meth: function __dir__() {
-            const seen = new Set;
+            const seen = new Set();
             const dir = [];
             function push_or_continue(attr) {
                 if (attr in Sk.reservedNames_) {
@@ -512,7 +512,7 @@ Sk.builtin.type.prototype.tp$methods = {
                 if (attr.indexOf("$") !== -1) {
                     return;
                 }
-                if (!(seen.has(attr))) {
+                if (!seen.has(attr)) {
                     seen.add(attr);
                     dir.push(new Sk.builtin.str(attr));
                 }
@@ -533,8 +533,8 @@ Sk.builtin.type.prototype.tp$methods = {
             return new Sk.builtin.list(dir.sort((a, b) => a.v.localeCompare(b.v)));
         },
         $flags: { NoArgs: true },
-        $doc: "Specialized __dir__ implementation for types."
-    }
+        $doc: "Specialized __dir__ implementation for types.",
+    },
 };
 
 Sk.builtin.type.$bestBase = function (bases) {
@@ -572,4 +572,3 @@ Sk.builtin.type.$bestBase = function (bases) {
     }
     return base;
 };
-
