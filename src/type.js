@@ -538,38 +538,38 @@ Sk.builtin.type.prototype.tp$methods = {
 };
 
 Sk.builtin.type.$bestBase = function (bases) {
-    // deal with bases
     if (bases.length === 0) {
-        // new style class, inherits from object by default
-        // if (Sk.__future__.inherit_from_object) {
         bases.push(Sk.builtin.object);
-        // }
+    }
+    function solid_base(type) {
+        // if we support slots we would need to change this function - for now it just checks for the builtin.
+        if (type.sk$klass === undefined) {
+            return type;
+        }
+        return solid_base(type.prototype.tp$base);
     }
 
-    let parent, firstAncestor, inheritsBuiltin, builtin_bases = [];
-    // Set up inheritance from any builtins
+    let base, winner, candidate, base_i;
     for (let i = 0; i < bases.length; i++) {
-        parent = bases[i];
-        if (!parent.prototype || !parent.sk$type) {
+        base_i = bases[i];
+        if (!Sk.builtin.checkType(base_i)) {
             throw new Sk.builtin.TypeError("bases must be 'type' objects");
+        } else if (base_i.sk$acceptable_as_base_class === false) {
+            throw new Sk.builtin.TypeError("type '" + base_i.prototype.tp$name + "' is not an acceptable base type");
         }
-        if (firstAncestor === undefined) {
-            firstAncestor = parent;
-        }
-
-        while (parent.sk$klass && parent.prototype.tp$base) {
-            parent = parent.prototype.tp$base;
-        }
-
-        if (!parent.sk$klass && builtin_bases.indexOf(parent) < 0 && parent !== Sk.builtin.object) {
-            builtin_bases.push(parent);
-            inheritsBuiltin = true;
+        candidate = solid_base(base_i); // basically the builtin I think
+        if (winner === undefined) {
+            winner = candidate;
+            base = base_i;
+        } else if (winner.$isSubType(candidate)) {
+            // carry on
+        } else if (candidate.$isSubType(winner)) {
+            winner = candidate;
+            base = base_i;
+        } else {
+            throw new Sk.builtin.TypeError("multiple bases have instance layout conficts");
         }
     }
-    if (builtin_bases.length > 1) {
-        throw new Sk.builtin.TypeError("Multiple inheritance with more than one builtin type is unsupported");
-    }
-    return firstAncestor;
+    return base;
 };
-
 
