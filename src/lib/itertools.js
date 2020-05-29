@@ -1,36 +1,36 @@
 // Itertools generators have a different repr
 Sk.builtin.itertools_gen = function (code, globals, args, closure, closure2) {
-    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
-}
-Sk.builtin.itertools_gen.prototype = Object.create(Sk.builtin.generator.prototype)
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2);
+};
+Sk.builtin.itertools_gen.prototype = Object.create(Sk.builtin.generator.prototype);
 Sk.builtin.itertools_gen.prototype["$r"] = function () {
-    return new Sk.builtin.str("<itertools." + this.func_code["co_name"].v + " object>")
+    return new Sk.builtin.str("<itertools." + this.func_code["co_name"].v + " object>");
 };
 
 // repeat has a different repr
 Sk.builtin.itertools_repeat = function (code, globals, args, closure, closure2) {
-    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
-}
-Sk.builtin.itertools_repeat.prototype = Object.create(Sk.builtin.generator.prototype)
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2);
+};
+Sk.builtin.itertools_repeat.prototype = Object.create(Sk.builtin.generator.prototype);
 Sk.builtin.itertools_repeat.prototype["$r"] = function () {
     object_repr = this.gi$locals.object.$r().$jsstr();
     times = this.gi$locals.times;
     times_repr = times === undefined ? "" : ", " + times;
     return new Sk.builtin.str(this.func_code["co_name"].v +
-        "(" + object_repr + times_repr + ")")
+        "(" + object_repr + times_repr + ")");
 };
 
 // count has a different repr
 Sk.builtin.itertools_count = function (code, globals, args, closure, closure2) {
-    Sk.builtin.generator.call(this, code, globals, args, closure, closure2)
-}
-Sk.builtin.itertools_count.prototype = Object.create(Sk.builtin.generator.prototype)
+    Sk.builtin.generator.call(this, code, globals, args, closure, closure2);
+};
+Sk.builtin.itertools_count.prototype = Object.create(Sk.builtin.generator.prototype);
 Sk.builtin.itertools_count.prototype["$r"] = function () {
     start_repr = this.gi$locals.n.$r().$jsstr();
     step_repr = this.gi$locals.step.$r().$jsstr();
     step_repr = step_repr === "1" ? "" : ", " + step_repr;
     return new Sk.builtin.str(this.func_code["co_name"].v +
-        "(" + start_repr + step_repr + ")")
+        "(" + start_repr + step_repr + ")");
 };
 
 
@@ -66,7 +66,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("accumulate", arguments.length, 1, 3, true);
         const it = Sk.abstr.iter(iterable);
         const total = initial;
-        return new Sk.builtin.itertools_gen(_accumulate_gen, mod, [it, func, total, true])
+        return new Sk.builtin.itertools_gen(_accumulate_gen, mod, [it, func, total, true]);
     };
 
     const func = new Sk.builtin.func(function (a, b) {
@@ -121,14 +121,14 @@ var $builtinmodule = function (name) {
         iterables = Sk.abstr.iter(iterables);
         const current_it = iterables.tp$iternext();
         return new Sk.builtin.itertools_gen(_chain_gen, mod, [iterables, current_it]);
-    }
+    };
 
     // chain has a bound method from_iterable
     Sk.builtin.chain_func = function (func) {
         Sk.builtin.func.call(this, func);
         Sk.abstr.sattr(this, new Sk.builtin.str("from_iterable"), new Sk.builtin.func(_chain_from_iterable));
     };
-    Sk.builtin.chain_func.prototype = Object.create(Sk.builtin.func.prototype)
+    Sk.builtin.chain_func.prototype = Object.create(Sk.builtin.func.prototype);
 
     _chain_from_iterable.co_name = new Sk.builtin.str("from_iterable");
     _chain.co_name = new Sk.builtin.str("chain");
@@ -153,7 +153,7 @@ var $builtinmodule = function (name) {
             $gen.gi$locals.initial = false;
             return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(pool.slice(0, r))];
         }
-        let found = false
+        let found = false;
         let i;
         for (i = r - 1; i >= 0; i--) {
             if (indices[i] != i + n - r) {
@@ -163,7 +163,7 @@ var $builtinmodule = function (name) {
         }
         if (!found) {
             $gen.gi$locals.r = 0;
-            return [ /*resume*/ , /*ret*/ ]
+            return [ /*resume*/ , /*ret*/ ];
         }
         indices[i]++;
         for (let j = i + 1; j < r; j++) {
@@ -216,7 +216,7 @@ var $builtinmodule = function (name) {
             $gen.gi$locals.initial = false;
             return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
         }
-        let found = false
+        let found = false;
         let i;
         for (i = r - 1; i >= 0; i--) {
             if (indices[i] != n - 1) {
@@ -230,7 +230,7 @@ var $builtinmodule = function (name) {
         }
         const val = indices[i] + 1;
         for (let j = i; j < r; j++) {
-            indices[j] = val
+            indices[j] = val;
         }
         const res = indices.map(i => pool[i]);
         return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
@@ -285,7 +285,7 @@ var $builtinmodule = function (name) {
         data = Sk.abstr.iter(data);
         selectors = Sk.abstr.iter(selectors);
 
-        return new Sk.builtin.itertools_gen(_compress_gen, mod, [data, selectors])
+        return new Sk.builtin.itertools_gen(_compress_gen, mod, [data, selectors]);
     };
 
     _compress_gen.co_name = new Sk.builtin.str("compress");
@@ -309,10 +309,10 @@ var $builtinmodule = function (name) {
     var _count = function (start, step) {
         Sk.builtin.pyCheckArgsLen("count", arguments.length, 0, 2);
         if (!Sk.builtin.checkNumber(start) && !Sk.builtin.checkComplex(start)) {
-            throw new Sk.builtin.TypeError("a number is required")
+            throw new Sk.builtin.TypeError("a number is required");
         }
         if (!Sk.builtin.checkNumber(step) && !Sk.builtin.checkComplex(step)) {
-            throw new Sk.builtin.TypeError("a number is required")
+            throw new Sk.builtin.TypeError("a number is required");
         }
         const n = start;
         return new Sk.builtin.itertools_count(_count_gen, mod, [n, step]);
@@ -373,7 +373,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.passed = true;
                 return [ /*resume*/ , /*ret*/ x];
             }
-            x = it.tp$iternext()
+            x = it.tp$iternext();
         }
         return [ /*resume*/ , /*ret*/ x];
     };
@@ -381,8 +381,8 @@ var $builtinmodule = function (name) {
     _dropwhile = function (predicate, iterable) {
         Sk.builtin.pyCheckArgsLen("dropwhile", arguments.length, 2, 2);
         const it = Sk.abstr.iter(iterable);
-        return new Sk.builtin.itertools_gen(_dropwhile_gen, mod, [predicate, it])
-    }
+        return new Sk.builtin.itertools_gen(_dropwhile_gen, mod, [predicate, it]);
+    };
 
     _dropwhile_gen.co_name = new Sk.builtin.str("dropwhile");
     _dropwhile_gen.co_varnames = ["predicate", "it"];
@@ -427,8 +427,8 @@ var $builtinmodule = function (name) {
         }
         const it = iterable; // unlike many don't convert to an iter until inside the generator 
         predicate = Sk.builtin.checkNone(predicate) ? Sk.builtin.bool : predicate;
-        return new Sk.builtin.itertools_gen(_filterfalse_gen, mod, [predicate, it])
-    }
+        return new Sk.builtin.itertools_gen(_filterfalse_gen, mod, [predicate, it]);
+    };
 
     _filterfalse_gen.co_name = new Sk.builtin.str("filterfalse");
     _filterfalse_gen.co_varnames = ["predicate", "it"];
@@ -474,9 +474,9 @@ var $builtinmodule = function (name) {
         $gen.gi$locals.id = Object();
         let compare = Sk.misceval.richCompareBool(currkey, tgtkey, "Eq", true);
         while (compare) {
-            currval = it.tp$iternext()
+            currval = it.tp$iternext();
             if (currval === undefined) {
-                return [ /*resume*/ , /*ret*/ ]
+                return [ /*resume*/ , /*ret*/ ];
             }
             currkey = (keyf.tp$call) ? keyf.tp$call([currval], undefined) : Sk.misceval.applyOrSuspend(keyf, undefined, undefined, undefined, [currval]);
             compare = Sk.misceval.richCompareBool(currkey, tgtkey, "Eq", true);
@@ -484,7 +484,7 @@ var $builtinmodule = function (name) {
         $gen.gi$locals.tgtkey = $gen.gi$locals.currkey = currkey;
         $gen.gi$locals.currval = currval;
 
-        const grouper = new Sk.builtin.itertools_gen(_grouper, mod, [$gen, $gen.gi$locals.tgtkey, $gen.gi$locals.id])
+        const grouper = new Sk.builtin.itertools_gen(_grouper, mod, [$gen, $gen.gi$locals.tgtkey, $gen.gi$locals.id]);
         return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([currkey, grouper])];
     };
 
@@ -493,11 +493,11 @@ var $builtinmodule = function (name) {
         iterable = Sk.abstr.iter(iterable);
         if (Sk.builtin.checkNone(key)) {
             key = new Sk.builtin.func(function (x) {
-                return x
+                return x;
             });
         }
         const currval = currkey = tgtkey = Sk.builtin.object();
-        return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey])
+        return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey]);
     };
 
     _groupby_gen.co_name = new Sk.builtins.str("groupby");
@@ -567,31 +567,31 @@ var $builtinmodule = function (name) {
 
         // check stop first
         if (!(Sk.builtin.checkNone(stop) || Sk.misceval.isIndex(stop))) {
-            throw new Sk.builtin.ValueError("Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.")
+            throw new Sk.builtin.ValueError("Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.");
         } else {
             stop = Sk.builtin.checkNone(stop) ? Number.MAX_SAFE_INTEGER : Sk.misceval.asIndex(stop);
             if (stop < 0 || stop > Number.MAX_SAFE_INTEGER) {
-                throw new Sk.builtin.ValueError("Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.")
+                throw new Sk.builtin.ValueError("Stop for islice() must be None or an integer: 0 <= x <= sys.maxsize.");
             }
         };
 
         // check start
         if (!(Sk.builtin.checkNone(start) || Sk.misceval.isIndex(start))) {
-            throw new Sk.builtin.ValueError("Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.")
+            throw new Sk.builtin.ValueError("Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.");
         } else {
             start = Sk.builtin.checkNone(start) ? 0 : Sk.misceval.asIndex(start);
             if (start < 0 || start > Number.MAX_SAFE_INTEGER) {
-                throw new Sk.builtin.ValueError("Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.")
+                throw new Sk.builtin.ValueError("Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.");
             }
         };
 
         // check step
         if (!(Sk.builtin.checkNone(step) || Sk.misceval.isIndex(step))) {
-            throw new Sk.builtin.ValueError("Step for islice() must be a positive integer or None")
+            throw new Sk.builtin.ValueError("Step for islice() must be a positive integer or None");
         } else {
             step = Sk.builtin.checkNone(step) ? 1 : Sk.misceval.asIndex(step);
             if (step <= 0 || step > Number.MAX_SAFE_INTEGER) {
-                throw new Sk.builtin.ValueError("Step for islice() must be a positive integer or None.")
+                throw new Sk.builtin.ValueError("Step for islice() must be a positive integer or None.");
             }
         };
         const previt = start;
@@ -688,9 +688,9 @@ var $builtinmodule = function (name) {
 
         let i = n - 1;
         while (i >= 0 && i < n) {
-            indices[i]++
+            indices[i]++;
             if (indices[i] >= pool_sizes[i]) {
-                indices[i] = -1
+                indices[i] = -1;
                 i--;
             } else {
                 i++;
@@ -725,8 +725,8 @@ var $builtinmodule = function (name) {
         }
         const pools = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
         const n = pools.length;
-        const pool_sizes = pools.map(x => x.length)
-        const indices = Array(n).fill(0)
+        const pool_sizes = pools.map(x => x.length);
+        const indices = Array(n).fill(0);
         return new Sk.builtin.itertools_gen(_product_gen, mod, [pools, pool_sizes, n, indices]);
     };
 
@@ -760,7 +760,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("repeat", arguments.length, 1, 2);
         if (!Sk.builtin.checkNone(times)) {
             Sk.builtin.pyCheckType("times", "integer", Sk.builtin.checkInt(times));
-            times = Sk.builtin.asnum$(times)
+            times = Sk.builtin.asnum$(times);
             times = times < 0 ? 0 : times; //not important for the algorithm but the repr
         } else {
             times = undefined;
@@ -772,7 +772,7 @@ var $builtinmodule = function (name) {
     _repeat_gen.co_name = new Sk.builtin.str("repeat");
     _repeat.co_varnames = ["object", "times"];
     _repeat.co_name = new Sk.builtin.str("repeat");
-    _repeat.$defaults = [Sk.builtin.none.none$]
+    _repeat.$defaults = [Sk.builtin.none.none$];
 
     mod.repeat = new Sk.builtin.func(_repeat);
 
@@ -780,7 +780,7 @@ var $builtinmodule = function (name) {
     var _starmap_gen = function ($gen) {
         const f = $gen.gi$locals.func;
         const it = $gen.gi$locals.it;
-        const unpack = []
+        const unpack = [];
         const args = it.tp$iternext();
 
         if (args === undefined) {
@@ -799,8 +799,8 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("starmap", arguments.length, 2, 2);
         it = Sk.abstr.iter(iterable);
         func = Sk.builtin.checkNone(func) ? Sk.builtin.bool : func;
-        return new Sk.builtin.itertools_gen(_starmap_gen, mod, [func, it])
-    }
+        return new Sk.builtin.itertools_gen(_starmap_gen, mod, [func, it]);
+    };
 
     _starmap_gen.co_name = new Sk.builtin.str("starmap");
     _starmap_gen.co_varnames = ["func", "it"];
@@ -830,8 +830,8 @@ var $builtinmodule = function (name) {
     _takewhile = function (predicate, iterable) {
         Sk.builtin.pyCheckArgsLen("takewhile", arguments.length, 2, 2);
         it = Sk.abstr.iter(iterable);
-        return new Sk.builtin.itertools_gen(_takewhile_gen, mod, [predicate, it])
-    }
+        return new Sk.builtin.itertools_gen(_takewhile_gen, mod, [predicate, it]);
+    };
 
     _takewhile_gen.co_name = new Sk.builtin.str("takewhile");
     _takewhile_gen.co_varnames = ["predicate", "it"];
@@ -884,7 +884,7 @@ var $builtinmodule = function (name) {
             args[i] = Sk.abstr.iter(iterable);
         }
         const active = args.length;
-        return new Sk.builtin.itertools_gen(_zip_longest_gen, mod, [args, active, fillvalue])
+        return new Sk.builtin.itertools_gen(_zip_longest_gen, mod, [args, active, fillvalue]);
     };
 
     _zip_longest_gen.co_name = new Sk.builtin.str("zip_longest");
@@ -898,8 +898,8 @@ var $builtinmodule = function (name) {
 
     mod.zip_longest = new Sk.builtin.func(_zip_longest);
 
-    mod.__doc__ = new Sk.builtin.str("An implementation of the python itertools module in Skulpt")
-    mod.__package__ = new Sk.builtin.str("")
+    mod.__doc__ = new Sk.builtin.str("An implementation of the python itertools module in Skulpt");
+    mod.__package__ = new Sk.builtin.str("");
 
     return mod;
 };
