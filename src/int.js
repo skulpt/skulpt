@@ -1144,3 +1144,17 @@ Sk.str2number = function (s, base, parser, negater, fname) {
 };
 
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
+
+
+Sk.builtin.int_.prototype.tp$getsets = {
+    real: {
+        $get: function () {
+            return this;
+        }
+    },
+    imag: {
+        $get: function () {
+            return new Sk.builtin.int_(0);
+        }
+    }
+};

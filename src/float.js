@@ -941,3 +941,18 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 
     return tmp;
 };
+
+
+
+Sk.builtin.float_.prototype.tp$getsets = {
+    real: {
+        $get: function () {
+            return this;
+        }
+    },
+    imag: {
+        $get: function () {
+            return new Sk.builtin.float_(0.0);
+        }
+    }
+};

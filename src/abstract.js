@@ -288,7 +288,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
         b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
-        tmp = new Sk.builtin.complex(a);
+        tmp = new Sk.builtin.complex(a.v);
         return [tmp, b];
     } else if (a.constructor === Sk.builtin.int_ ||
         a.constructor === Sk.builtin.float_) {

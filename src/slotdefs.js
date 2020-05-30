@@ -1125,6 +1125,7 @@ Sk.slotToDunder = {
     nb$reflected_divmod: "__rdivmod__",
     nb$power: "__pow__",
     nb$reflected_power: "__rpow__",
+    nb$true_divide: "__truediv__",
     nb$bool: "__bool__",
     nb$nonzero: "__nonzero__",
 };

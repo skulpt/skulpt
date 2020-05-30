@@ -114,7 +114,8 @@ class ComplexTest(unittest.TestCase):
 
     def test_richcompare(self):
         self.assertIs(complex.__eq__(1+1j, 1 << 10000), False)
-        self.assertRaises(TypeError, complex.__lt__, 1+1j, None)
+        # in py3 this is returns NotImplemented so comment this out
+        # self.assertRaises(TypeError, complex.__lt__, 1+1j, None)
         self.assertIs(complex.__eq__(1+1j, 1+1j), True)
         self.assertIs(complex.__eq__(1+1j, 2+2j), False)
         self.assertIs(complex.__ne__(1+1j, 1+1j), False)
@@ -177,7 +178,7 @@ class ComplexTest(unittest.TestCase):
         # and
         # c.__divmod__ return <method-wrapper '__divmod__' of complex object at 0x10d88d0f0>
         # but since we don't do slots and the old one was also wrong I figured this was good too.
-        self.assertEqual(str(c.__divmod__), "<built-in method __divmod__ of type object>")
+        self.assertEqual(str(c.__divmod__), "<method-wrapper '__divmod__' of complex object>")
 
 
     def test_pow(self):

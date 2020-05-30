@@ -239,7 +239,7 @@ Sk.builtin.method_wrapper.prototype.tp$call = function (args, kwargs) {
 };
 
 Sk.builtin.method_wrapper.prototype.$r = function () {
-    return new Sk.builtin.str("<method wrapper '" + this.d$name + "' of '" + Sk.abstr.typeName(this.m$self) + "' object>");
+    return new Sk.builtin.str("<method-wrapper '" + this.d$name + "' of " + Sk.abstr.typeName(this.m$self) + " object>");
 };
 
 Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
