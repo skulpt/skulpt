@@ -818,7 +818,7 @@ slots.__lshift__ = {
 };
 slots.__rlshift__ = {
     $name: "__rlshift__",
-    $slot_name: "nb$lshift",
+    $slot_name: "nb$reflected_lshift",
     $slot_func: Sk.generic.slotFuncOneArg("__rlshift__"),
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
@@ -836,7 +836,7 @@ slots.__rshift__ = {
 };
 slots.__rrshift__ = {
     $name: "__rrshift__",
-    $slot_name: "nb$rshift",
+    $slot_name: "nb$reflected_rshift",
     $slot_func: Sk.generic.slotFuncOneArg("__rrshift__"),
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
@@ -1066,68 +1066,124 @@ slots.__nonzero__ = {
     $doc: "x.__nonzero__() <==> x != 0",
 };
 
-Sk.slotToDunder = {
-    // nb we handle tp$new differently
-    // tp_slots
-    tp$init: "__init__",
-    tp$call: "__call__",
-    $r: "__repr__",
-    tp$hash: "__hash__",
-    tp$str: "__str__",
 
-    // getattribute, setattr, delattr
-    tp$getattr: "__getattribute__",
-    tp$setattr: ["__setattr__", "__delattr__"],
+Sk.subSlots = {
+    main_slots :{
+        // nb we handle tp$new differently
+        // tp_slots
+        tp$init: "__init__",
+        tp$call: "__call__",
+        $r: "__repr__",
+        tp$hash: "__hash__",
+        tp$str: "__str__",
+    
+        // getattribute, setattr, delattr
+        tp$getattr: "__getattribute__",
+        tp$setattr: ["__setattr__", "__delattr__"],
+    
+        // tp$richcompare
+        ob$eq: "__eq__",
+        ob$ne: "__ne__",
+        ob$lt: "__lt__",
+        ob$le: "__le__",
+        ob$gt: "__gt__",
+        ob$ge: "__ge__",
+    
+        // getters and setters
+        tp$descr_get: "__get__",
+        tp$descr_set: ["__set__", "__delete__"],
+    
+        // iter
+        tp$iter: "__iter__",
+        tp$iternext: "__next__",
+    },
 
-    // tp$richcompare
-    ob$eq: "__eq__",
-    ob$ne: "__ne__",
-    ob$lt: "__lt__",
-    ob$le: "__le__",
-    ob$gt: "__gt__",
-    ob$ge: "__ge__",
+    number_slots: {
+        nb$abs: "__abs__",
+        nb$negative: "__neg__",
+        nb$positive: "__pos__",
+        nb$int_: "__int__",
+        nb$lng: "__long__",
+        nb$float_: "__float__",
+        nb$add: "__add__",
+        nb$reflected_add: "__radd__",
+        nb$inplace_add: "__iadd__",
+        nb$subtract: "__sub__",
+        nb$reflected_subtract: "__rsub__",
+        nb$inplace_subtract: "__isub__",
+        nb$multiply: "__mul__",
+        nb$reflected_multiply: "__rmul__",
+        nb$inplace_multiply: "__imul__",
+        nb$divide: "__div__",
+        nb$reflected_divide: "__rdiv__",
+        nb$inplace_divide: "__idiv__",
+        nb$floor_divide: "__floordiv__",
+        nb$reflected_floor_divide: "__rfloordiv__",
+        nb$inplace_floor_divide: "__ifloordiv__",
+        nb$invert: "__invert__",
+        nb$remainder: "__mod__",
+        nb$reflected_remainder: "__rmod__",
+        nb$divmod: "__divmod__",
+        nb$reflected_divmod: "__rdivmod__",
+        nb$inplace_divmod: "__idivmod__",
+        nb$power: "__pow__",
+        nb$reflected_power: "__rpow__",
+        nb$inplace_power: "__ipow__",
+        nb$true_divide: "__truediv__",
 
-    // getters and setters
-    tp$descr_get: "__get__",
-    tp$descr_set: ["__set__", "__delete__"],
+        nb$bool: "__bool__",
+        nb$nonzero: "__nonzero__",
 
-    // iter
-    tp$iter: "__iter__",
-    tp$iternext: "__next__",
+        nb$and: "__and__",
+        nb$reflected_and: "__rand__",
+        nb$inplace_and: "__iand__",
+        nb$or: "__or__",
+        nb$reflected_or: "__ror__",
+        nb$inplace_or: "__ior__",
+        nb$xor: "__xor__",
+        nb$reflected_xor: "__rxor__",
+        nb$inplace_xor: "__ixor__",
 
-    // sequence and mapping slots
-    sq$length: "__len__",
-    sq$contains: "__contains__",
-    mp$subscript: "__getitem__",
-    mp$ass_subscript: ["__setitem__", "__delitem__"],
+        nb$lshift: "__lshift__",
+        nb$reflected_lshift: "__rlshift__",
+        nb$rshift: "__rshift__",
+        nb$reflected_rshift: "__rrshift__",
+    },
 
-    // number slots
-    nb$abs: "__abs__",
-    nb$negative: "__neg__",
-    nb$positive: "__pos__",
-    nb$int_: "__int__",
-    nb$lng: "__long__",
-    nb$float_: "__float__",
-    nb$add: "__add__",
-    nb$reflected_add: "__radd__",
-    nb$subtract: "__sub__",
-    nb$reflected_subtract: "__rsub__",
-    nb$multiply: "__mul__",
-    nb$reflected_multiply: "__rmul__",
-    nb$divide: "__div__",
-    nb$reflected_divide: "__rdiv__",
-    nb$floor_divide: "__floordiv__",
-    nb$reflected_floor_divide: "__rfloordiv__",
-    nb$invert: "__invert__",
-    nb$remainder: "__mod__",
-    nb$reflected_remainder: "__rmod__",
-    nb$divmod: "__divmod__",
-    nb$reflected_divmod: "__rdivmod__",
-    nb$power: "__pow__",
-    nb$reflected_power: "__rpow__",
-    nb$true_divide: "__truediv__",
-    nb$bool: "__bool__",
-    nb$nonzero: "__nonzero__",
+    sequence_and_mapping_slots: {
+        // sequence and mapping slots
+        sq$length: "__len__",
+        sq$contains: "__contains__",
+        mp$subscript: "__getitem__",
+        mp$ass_subscript: ["__setitem__", "__delitem__"],
+        nb$add: "__add__",
+        nb$inplace_add: "__iadd__",
+        nb$inplace_multiply: "__imul__",
+    },
+};
+
+Sk.reflectedNumberSlots = {
+    nb$add: "nb$reflected_add",
+    nb$subtract: "nb$reflected_subtract",
+    nb$multiply: "nb$reflected_multiply",
+    nb$divide: "nb$reflected_divide",
+    nb$floor_divide: "nb$reflected_floor_divide",
+    nb$remainder: "nb$reflected_remainder",
+    nb$divmod: "nb$reflected_divmod",
+    nb$power: "nb$reflected_power",
+    nb$true_divide: "nb$reflected_true_divide",
+    nb$and: "nb$reflected_and",
+    nb$or: "nb$reflected_or",
+    nb$xor: "nb$reflected_xor",
+    nb$and: "nb$reflected_and",
+    nb$lshift: "nb$reflected_lshift",
+    nb$rshift: "nb$reflected_rshift",
+};
+
+Sk.sequenceAndMappingSlots = {
+    sq$concat: ["nb$add", "nb$reflected_add"],
+    sq$repeat: ["nb$multiply", "nb$reflected_multiply"],
+    mp$length: ["sq$length"],
 };
 
 /**

@@ -71,6 +71,8 @@ Sk.builtin.float_ = function (x) {
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_);
 
+Sk.builtin.float_.prototype.tp$as_number = true;
+
 Sk.builtin.float_.prototype.tp$doc = "Convert a string or number to a floating point number, if possible.";
 
 Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {

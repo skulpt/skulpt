@@ -17,12 +17,10 @@ Math.hypot = Math.hypot || function () {
 /**
  * complex_new see https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911
  * @constructor
- * @param {Number} real part of the complex number
- * @param {Number} imag part of the complex number
+ * @param {Number|undefined} real part of the complex number
+ * @param {Number|undefined} imag part of the complex number
  *
  * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
- *
- * FIXME: it seems that we somehow need to call __float__/__int__ if arguments provide those methods
  *
  */
 Sk.builtin.complex = function (real, imag) {
@@ -33,7 +31,7 @@ Sk.builtin.complex = function (real, imag) {
 
 Sk.abstr.setUpInheritance("complex", Sk.builtin.complex);
 
-
+Sk.builtin.complex.prototype.tp$as_number = true;
 Sk.builtin.complex.prototype.tp$doc = "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.";
 
 

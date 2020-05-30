@@ -17,6 +17,8 @@ Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.object);
 
 Sk.abstr.markUnhashable(Sk.builtin.list);
 
+Sk.builtin.list.prototype.tp$as_sequence_or_mapping = true;
+
 Sk.builtin.list.prototype.tp$doc =
     "Built-in mutable sequence.\n\nIf no argument is given, the constructor creates a new empty list.\nThe argument must be an iterable if specified.";
 
@@ -230,7 +232,7 @@ Sk.builtin.list.prototype.sq$concat = function (other) {
     return new Sk.builtin.list(ret, false);
 };
 
-Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.nb$reflected_add = Sk.builtin.list.prototype.sq$concat;
+// Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.nb$reflected_add = Sk.builtin.list.prototype.sq$concat;
 
 Sk.builtin.list.prototype.sq$repeat = function (n) {
     var j;
@@ -253,7 +255,7 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     return new Sk.builtin.list(ret, false);
 };
 
-Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.nb$reflected_multiply = Sk.builtin.list.prototype.sq$repeat;
+// Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.nb$reflected_multiply = Sk.builtin.list.prototype.sq$repeat;
 
 Sk.builtin.list.prototype.sq$contains = function (item) {
     var it, i;

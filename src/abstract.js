@@ -48,35 +48,35 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
 
     switch (name) {
         case "Add":
-            return obj.nb$add ? obj.nb$add : obj["__add__"];
+            return obj.nb$add;
         case "Sub":
-            return obj.nb$subtract ? obj.nb$subtract : obj["__sub__"];
+            return obj.nb$subtract ;
         case "Mult":
-            return obj.nb$multiply ? obj.nb$multiply : obj["__mul__"];
+            return obj.nb$multiply ;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$matmul ? obj.tp$matmul : obj["__matmul__"];
+                return obj.tp$matmul ;
             }
         case "Div":
-            return obj.nb$divide ? obj.nb$divide : obj["__div__"];
+            return obj.nb$divide ;
         case "FloorDiv":
-            return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__floordiv__"];
+            return obj.nb$floor_divide ;
         case "Mod":
-            return obj.nb$remainder ? obj.nb$remainder : obj["__mod__"];
+            return obj.nb$remainder ;
         case "DivMod":
-            return obj.nb$divmod ? obj.nb$divmod : obj["__divmod__"];
+            return obj.nb$divmod ;
         case "Pow":
-            return obj.nb$power ? obj.nb$power : obj["__pow__"];
+            return obj.nb$power ;
         case "LShift":
-            return obj.nb$lshift ? obj.nb$lshift : obj["__lshift__"];
+            return obj.nb$lshift ;
         case "RShift":
-            return obj.nb$rshift ? obj.nb$rshift : obj["__rshift__"];
+            return obj.nb$rshift ;
         case "BitAnd":
-            return obj.nb$and ? obj.nb$and : obj["__and__"];
+            return obj.nb$and ;
         case "BitXor":
-            return obj.nb$xor ? obj.nb$xor : obj["__xor__"];
+            return obj.nb$xor ;
         case "BitOr":
-            return obj.nb$or ? obj.nb$or : obj["__or__"];
+            return obj.nb$or ;
     }
 };
 
@@ -87,68 +87,68 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
 
     switch (name) {
         case "Add":
-            return obj.nb$reflected_add ? obj.nb$reflected_add : obj["__radd__"];
+            return obj.nb$reflected_add ;
         case "Sub":
-            return obj.nb$reflected_subtract ? obj.nb$reflected_subtract : obj["__rsub__"];
+            return obj.nb$reflected_subtract ;
         case "Mult":
-            return obj.nb$reflected_multiply ? obj.nb$reflected_multiply : obj["__rmul__"];
+            return obj.nb$reflected_multiply ;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$reflected_matmul ? obj.tp$reflected_matmul : obj["__rmatmul__"];
+                return obj.tp$reflected_matmul ;
             }
         case "Div":
-            return obj.nb$reflected_divide ? obj.nb$reflected_divide : obj["__rdiv__"];
+            return obj.nb$reflected_divide ;
         case "FloorDiv":
-            return obj.nb$reflected_floor_divide ? obj.nb$reflected_floor_divide : obj["__rfloordiv__"];
+            return obj.nb$reflected_floor_divide ;
         case "Mod":
-            return obj.nb$reflected_remainder ? obj.nb$reflected_remainder : obj["__rmod__"];
+            return obj.nb$reflected_remainder ;
         case "DivMod":
-            return obj.nb$reflected_divmod ? obj.nb$reflected_divmod : obj["__rdivmod__"];
+            return obj.nb$reflected_divmod ;
         case "Pow":
-            return obj.nb$reflected_power ? obj.nb$reflected_power : obj["__rpow__"];
+            return obj.nb$reflected_power ;
         case "LShift":
-            return obj.nb$reflected_lshift ? obj.nb$reflected_lshift : obj["__rlshift__"];
+            return obj.nb$reflected_lshift ;
         case "RShift":
-            return obj.nb$reflected_rshift ? obj.nb$reflected_rshift : obj["__rrshift__"];
+            return obj.nb$reflected_rshift ;
         case "BitAnd":
-            return obj.nb$reflected_and ? obj.nb$reflected_and : obj["__rand__"];
+            return obj.nb$reflected_and ;
         case "BitXor":
-            return obj.nb$reflected_xor ? obj.nb$reflected_xor : obj["__rxor__"];
+            return obj.nb$reflected_xor ;
         case "BitOr":
-            return obj.nb$reflected_or ? obj.nb$reflected_or : obj["__ror__"];
+            return obj.nb$reflected_or ;
     }
 };
 
 Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
     switch (name) {
         case "Add":
-            return obj.nb$inplace_add ? obj.nb$inplace_add : obj["__iadd__"];
+            return obj.nb$inplace_add || obj.nb$add;
         case "Sub":
-            return obj.nb$inplace_subtract ? obj.nb$inplace_subtract : obj["__isub__"];
+            return obj.nb$inplace_subtract || obj.nb$subtract;
         case "Mult":
-            return obj.nb$inplace_multiply ? obj.nb$inplace_multiply : obj["__imul__"];
+            return obj.nb$inplace_multiply || obj.nb$multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$inplace_matmul ? obj.tp$inplace_matmul : obj["__imatmul__"];
+                return obj.tp$inplace_matmul ;
             }
         case "Div":
-            return obj.nb$inplace_divide ? obj.nb$inplace_divide : obj["__idiv__"];
+            return obj.nb$inplace_divide || obj.nb$divide;
         case "FloorDiv":
-            return obj.nb$inplace_floor_divide ? obj.nb$inplace_floor_divide : obj["__ifloordiv__"];
+            return obj.nb$inplace_floor_divide || obj.nb$floor_divide;
         case "Mod":
-            return obj.nb$inplace_remainder;
+            return obj.nb$inplace_remainder || obj.nb$remainder;
         case "Pow":
-            return obj.nb$inplace_power;
+            return obj.nb$inplace_power || obj.nb$power;
         case "LShift":
-            return obj.nb$inplace_lshift ? obj.nb$inplace_lshift : obj["__ilshift__"];
+            return obj.nb$inplace_lshift || obj.nb$lshift;
         case "RShift":
-            return obj.nb$inplace_rshift ? obj.nb$inplace_rshift : obj["__irshift__"];
+            return obj.nb$inplace_rshift || obj.nb$rshift;
         case "BitAnd":
-            return obj.nb$inplace_and;
+            return obj.nb$inplace_and || obj.nb$and;
         case "BitOr":
-            return obj.nb$inplace_or;
+            return obj.nb$inplace_or || obj.nb$or;
         case "BitXor":
-            return obj.nb$inplace_xor ? obj.nb$inplace_xor : obj["__ixor__"];
+            return obj.nb$inplace_xor || obj.nb$xor;
     }
 };
 Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
@@ -157,11 +157,11 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     }
     switch (name) {
         case "USub":
-            return obj.nb$negative ? obj.nb$negative : obj["__neg__"];
+            return obj.nb$negative ;
         case "UAdd":
-            return obj.nb$positive ? obj.nb$positive : obj["__pos__"];
+            return obj.nb$positive ;
         case "Invert":
-            return obj.nb$invert ? obj.nb$invert : obj["__invert__"];
+            return obj.nb$invert ;
     }
 };
 
@@ -187,11 +187,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     if (w_is_subclass) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
-            if (wop.call) {
-                ret = wop.call(w, v);
-            } else {
-                ret = Sk.misceval.callsimArray(wop, [w, v]);
-            }
+            ret = wop.call(w, v);
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
             }
@@ -200,11 +196,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
 
     vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
-            ret = vop.call(v, w);
-        } else {
-            ret = Sk.misceval.callsimArray(vop, [v, w]);
-        }
+        ret = vop.call(v, w);
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
@@ -213,11 +205,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     if (!w_is_subclass) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
-            if (wop.call) {
-                ret = wop.call(w, v);
-            } else {
-                ret = Sk.misceval.callsimArray(wop, [w, v]);
-            }
+            ret = wop.call(w, v);
             if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
             }
@@ -231,11 +219,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
     var ret;
     var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
-            ret = vop.call(v, w);
-        } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsimArray(vop, [v, w]);
-        }
+        ret = vop.call(v, w);
         if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
@@ -1255,14 +1239,10 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             wrapped_func
         );
     }
-
-    for (let slot_name in Sk.slotToDunder) {
-        if (!slots.hasOwnProperty(slot_name)) {
-            continue;
-        }
+    function set_up_slot (slot_name, slots, klass, slot_mapping) {
         const wrapped_func = slots[slot_name];
         // some slots get multpile dunders
-        const dunder_name = Sk.slotToDunder[slot_name];
+        const dunder_name = slot_mapping[slot_name];
         if (typeof dunder_name === "string") {
             wrap_func(klass, dunder_name, wrapped_func);
         } else {
@@ -1272,6 +1252,48 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
     }
 
+    // main slots
+    const main_slots = Sk.subSlots.main_slots;
+    for (let slot_name in main_slots) {
+        if (slots[slot_name] !== undefined) {
+            set_up_slot(slot_name, slots, klass, main_slots);
+        }
+    }
+
+    // as_number_slots
+    const number_slots = Sk.subSlots.number_slots;
+    if (slots.tp$as_number !== undefined) {
+        for (let slot_name in Sk.reflectedNumberSlots) {
+            if (slots[slot_name] !== undefined) {
+                const reflect_name = Sk.reflectedNumberSlots[slot_name];
+                klass.prototype[reflect_name] = slots[reflect_name] = slots[slot_name];
+            }
+        }
+        for (let slot_name in number_slots) {
+            if (slots[slot_name] !== undefined) {
+                set_up_slot(slot_name, slots, klass, number_slots);
+            }
+        }
+    }
+
+    // as_sequence_or_mapping slots
+    const seqeunce_and_mapping_slots = Sk.subSlots.seqeunce_and_mapping_slots;
+    if (slots.tp$as_sequence_or_mapping !== undefined) {
+        for (let slot_name in Sk.sequenceAndMappingSlots) {
+            if (slots[slot_name] !== undefined) {
+                const equiv_slots = Sk.sequenceAndMappingSlots[slot_name];
+                for (let i = 0; i < equiv_slots.length; i++) {
+                    const equiv_slot = equiv_slots[i];
+                    klass.prototype[equiv_slot] = slots[equiv_slot] = slots[slot_name];
+                }
+            }
+        }
+        for (let slot_name in seqeunce_and_mapping_slots) {
+            if (slots[slot_name] !== undefined) {
+                set_up_slot(slot_name, slots, klass, seqeunce_and_mapping_slots);
+            }
+        }
+    }
     // a flag to check during doOneTimeInitialization
     klass.prototype.sk$slots = null;
 };
