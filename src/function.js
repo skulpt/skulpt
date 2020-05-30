@@ -32,11 +32,11 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         this.func_code = code;
         this.func_globals = globals || null;
 
-        this.$name = code.co_name && code.co_name.v || code.name || "<native JS>";
-        this.$d = Sk.builtin.dict ? new Sk.builtin.dict : undefined;
+        this.$name = (code.co_name && code.co_name.v) || code.name || "<native JS>";
+        this.$d = Sk.builtin.dict ? new Sk.builtin.dict() : undefined;
         this.$doc = code.$doc;
         this.$module = (Sk.globals && Sk.globals["__name__"]) || Sk.builtin.none.none$;
-        this.$qualname = code.co_qualname && code.co_qualname.v || this.$name;
+        this.$qualname = (code.co_qualname && code.co_qualname.v) || this.$name;
 
         if (closure2 !== undefined) {
             // todo; confirm that modification here can't cause problems
