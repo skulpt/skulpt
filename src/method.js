@@ -1,18 +1,15 @@
 /**
  * @constructor
  *
- * @param {Sk.builtin.func|Sk.builtin.method} func
- * @param {Object} self
- * @param {Sk.builtin.type|Sk.builtin.none} klass
- * @param {boolean=} builtin
+ * @param {Sk.builtin.func} func
+ * @param {Sk.builtin.object} self
  *
- * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
     constructor: function (func, self) {
         Sk.asserts.assert(this instanceof Sk.builtin.method, "bad call to method constructor, use 'new'");
         this.im_func = func;
-        this.im_self = self || Sk.builtin.none.none$;
+        this.im_self = self;
     },
     slots: {
         $r: function () {
