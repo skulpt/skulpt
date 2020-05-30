@@ -96,7 +96,6 @@ Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) 
 
 Sk.generic.slotFuncOneArg = function (dunderName) {
     return function (value) {
-        debugger;
         const func = Sk.abstr.lookupSpecial(this, dunderName);
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             return func.d$wrapped.call(this, value);
@@ -234,7 +233,6 @@ slots.__new__ = {
         const func = Sk.abstr.lookupSpecial(this, "__new__");
         const new_args = [this.constructor].concat(args);
         if (func instanceof Sk.builtin.sk_method) {
-            debugger;
             return func.tp$call(new_args, kwargs);
         }
         return Sk.misceval.callsimOrSuspendArray(func, new_args, kwargs);
@@ -291,7 +289,6 @@ slots.__getattribute__ = {
     $name: "__getattribute__",
     $slot_name: "tp$getattr",
     $slot_func: function tp$getattr(pyName, canSuspend) {
-        debugger;
         const getattrFn = Sk.abstr.lookupSpecial(this, "__getattr__");
         if (getattrFn === undefined) {
             // we don't support dynamically created __getattr__ but hey...
@@ -305,7 +302,6 @@ slots.__getattribute__ = {
             Sk.misceval.tryCatch(
                 () => {
                     if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
-                        debugger;
                         return getattributeFn.d$wrapped.call(self, pyName, canSuspend);
                     } else {
                         return Sk.misceval.callsimOrSuspendArray(getattributeFn, [self, pyName]);
@@ -322,7 +318,6 @@ slots.__getattribute__ = {
             (val) =>
                 Sk.misceval.tryCatch(
                     () => {
-                        debugger;
                         if (val !== undefined) {
                             return val;
                         }

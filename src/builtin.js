@@ -420,10 +420,8 @@ Sk.builtin.sum = function sum(iter, start) {
     if (Sk.builtin.checkString(start)) {
         throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     }
-    debugger;
     tot = start;
     Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-        debugger;
         if (!has_float && i instanceof Sk.builtin.float_) {
             has_float = true;
             tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));

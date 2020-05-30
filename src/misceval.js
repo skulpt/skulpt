@@ -264,7 +264,6 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     v_type = v.ob$type;
     w_type = w.ob$type;
-    debugger;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types

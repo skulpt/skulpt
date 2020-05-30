@@ -408,7 +408,6 @@ Sk.builtin.type.prototype.$isSubType = function (other) {
 Sk.builtin.type.prototype.$allocateSlots = function () {
     if (this.prototype.sk$prototypical) {
         // only allocate certain slots
-        debugger;
         const proto = { ...this.prototype };
         for (let dunder in proto) {
             if (dunder in Sk.slots) {

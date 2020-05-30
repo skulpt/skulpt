@@ -28,7 +28,6 @@ Sk.builtin.dict.prototype.tp$new = Sk.generic.new(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.checkArgsLen("dict", args, 0, 1);
-    debugger;
     const arg = args[0];
     if (arg !== undefined) {
         if (arg instanceof Sk.builtin.dict) {

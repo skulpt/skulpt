@@ -146,7 +146,6 @@ Sk.builtin.tuple.prototype.tp$iter = function () {
 
 Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
-    debugger;
     // w not a tuple
     var k;
     var i;

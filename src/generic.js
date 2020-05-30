@@ -11,7 +11,6 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
 
     Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
 
-    debugger;
     const descr = this.ob$type.$typeLookup(pyName);
 
     // look in the type for a descriptor

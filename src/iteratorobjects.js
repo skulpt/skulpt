@@ -137,7 +137,6 @@ Sk.builtin.reversed = Sk.generic.iterator("reversed", {
             if (this === Sk.builtin.reversed.prototype) {
                 Sk.abstr.checkNoKwargs("reversed", kwargs);
             }
-            debugger;
             Sk.abstr.checkArgsLen("reversed", args, 1, 1);
             let seq = args[0];
             const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);

@@ -211,7 +211,6 @@ const collections_mod = function (keywds) {
             tp$init: function (args, kwargs) {
                 Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
                 args = [this].concat(args);
-                debugger;
                 return Sk.misceval.callsimArray(this.update, args, kwargs);
             },
             $r: function () {
