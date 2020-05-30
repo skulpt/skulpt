@@ -10,12 +10,12 @@ if (Sk.builtin === undefined) {
  * this should never be called as a constructor
  * instead use Sk.abstr.buildinNativeClass
  * Sk.misceval.buildClass
- * Sk.misceval.callsimArray(Sk.builtin.type)
+ * Sk.misceval.callsimArray(Sk.builtin.type, [pyName, bases_tuple, attribute_dict])
  *
  */
 
 Sk.builtin.type = function type() {
-    Sk.asserts.assert(false);
+    Sk.asserts.assert(false, "calling new Sk.builtin.type is not safe");
 };
 
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
@@ -78,12 +78,15 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
 
     // klass is essentially a function that gives its instances a dict
+    // if we support slots then we would need to have two versions of this constructor
+    // TODO slots
     const klass = function () {
         this.$d = new Sk.builtin.dict();
     };
 
-    // todo: improve best_base algorithm to reflect layout conflicts as per python and check sk$acceptable_as_base_class
-    const best_base = Sk.builtin.type.$bestBase(bases.v);
+    // this function tries to match Cpython - the best base is not always bases[0]
+    // we require a best bases for checks in __new__ as well as future support for slots
+    const best_base = Sk.builtin.type.$best_base(bases.v);
 
     // get the metaclass from kwargs
     // todo this is not really the right way to do it...
@@ -96,13 +99,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         }
     }
 
-    // if (best_base !== undefined) {
     Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
-    // } else {
-    // todo: create some sort of abstract base class that is like object but is not object
-    //     Sk.abstr.setUpInheritance($name, klass, Sk.builtin.abstract_object_base_class, metaclass);
-    //     klass.prototype.tp$base = Sk.builtin.none.none$;
-    // }
 
     klass.prototype.tp$bases = bases.v;
     klass.prototype.tp$mro = klass.$buildMRO();
@@ -111,27 +108,21 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.prototype.hp$type = true;
     klass.sk$klass = true;
 
-    // set __module__
-    if (dict.mp$lookup(Sk.builtin.str.$module) === undefined) {
-        dict.mp$ass_subscript(Sk.builtin.str.$module, Sk.globals["__name__"]);
+    // set some defaults which can be overridden by the dict object
+    klass.prototype.__module__ = Sk.globals["__name__"];
+    klass.prototype.__doc__ = Sk.builtin.none.none$;
+
+    // set __dict__ if not already on the prototype
+    if (klass.$typeLookup("__dict__") === undefined) {
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
 
-    // copy properties into klass.prototype
-    // uses python iter methods
+    // copy properties from dict into klass.prototype
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
         if (v !== undefined) {
             klass.prototype[k.v] = v;
         }
-    }
-
-    // assign __doc__
-    if (!klass.prototype.hasOwnProperty("__doc__")) {
-        klass.prototype.__doc__ = Sk.builtin.none.none$;
-    }
-
-    if (klass.$typeLookup("__dict__") === undefined) {
-        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
 
     klass.$allocateSlots();
@@ -171,7 +162,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
     const metatype = this.ob$type;
 
-    // now check whether there is a descriptor down on the metatype
+    // now check whether there is a descriptor on the metatype
     const meta_attribute = metatype.$typeLookup(jsName);
 
     let meta_get;
@@ -536,7 +527,9 @@ Sk.builtin.type.prototype.tp$methods = {
     },
 };
 
-Sk.builtin.type.$bestBase = function (bases) {
+// we could move this to the prototype but this is called before the klass constructor inheritance is set
+// this function is used to determine the class constructor inheritance.
+Sk.builtin.type.$best_base = function (bases) {
     if (bases.length === 0) {
         bases.push(Sk.builtin.object);
     }
