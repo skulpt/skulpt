@@ -50,33 +50,33 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
         case "Add":
             return obj.nb$add;
         case "Sub":
-            return obj.nb$subtract ;
+            return obj.nb$subtract;
         case "Mult":
-            return obj.nb$multiply ;
+            return obj.nb$multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$matmul ;
+                return obj.tp$matmul;
             }
         case "Div":
-            return obj.nb$divide ;
+            return obj.nb$divide;
         case "FloorDiv":
-            return obj.nb$floor_divide ;
+            return obj.nb$floor_divide;
         case "Mod":
-            return obj.nb$remainder ;
+            return obj.nb$remainder;
         case "DivMod":
-            return obj.nb$divmod ;
+            return obj.nb$divmod;
         case "Pow":
-            return obj.nb$power ;
+            return obj.nb$power;
         case "LShift":
-            return obj.nb$lshift ;
+            return obj.nb$lshift;
         case "RShift":
-            return obj.nb$rshift ;
+            return obj.nb$rshift;
         case "BitAnd":
-            return obj.nb$and ;
+            return obj.nb$and;
         case "BitXor":
-            return obj.nb$xor ;
+            return obj.nb$xor;
         case "BitOr":
-            return obj.nb$or ;
+            return obj.nb$or;
     }
 };
 
@@ -87,35 +87,35 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
 
     switch (name) {
         case "Add":
-            return obj.nb$reflected_add ;
+            return obj.nb$reflected_add;
         case "Sub":
-            return obj.nb$reflected_subtract ;
+            return obj.nb$reflected_subtract;
         case "Mult":
-            return obj.nb$reflected_multiply ;
+            return obj.nb$reflected_multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$reflected_matmul ;
+                return obj.tp$reflected_matmul;
             }
         case "Div":
-            return obj.nb$reflected_divide ;
+            return obj.nb$reflected_divide;
         case "FloorDiv":
-            return obj.nb$reflected_floor_divide ;
+            return obj.nb$reflected_floor_divide;
         case "Mod":
-            return obj.nb$reflected_remainder ;
+            return obj.nb$reflected_remainder;
         case "DivMod":
-            return obj.nb$reflected_divmod ;
+            return obj.nb$reflected_divmod;
         case "Pow":
-            return obj.nb$reflected_power ;
+            return obj.nb$reflected_power;
         case "LShift":
-            return obj.nb$reflected_lshift ;
+            return obj.nb$reflected_lshift;
         case "RShift":
-            return obj.nb$reflected_rshift ;
+            return obj.nb$reflected_rshift;
         case "BitAnd":
-            return obj.nb$reflected_and ;
+            return obj.nb$reflected_and;
         case "BitXor":
-            return obj.nb$reflected_xor ;
+            return obj.nb$reflected_xor;
         case "BitOr":
-            return obj.nb$reflected_or ;
+            return obj.nb$reflected_or;
     }
 };
 
@@ -129,7 +129,7 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
             return obj.nb$inplace_multiply || obj.nb$multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$inplace_matmul ;
+                return obj.tp$inplace_matmul;
             }
         case "Div":
             return obj.nb$inplace_divide || obj.nb$divide;
@@ -157,11 +157,11 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     }
     switch (name) {
         case "USub":
-            return obj.nb$negative ;
+            return obj.nb$negative;
         case "UAdd":
-            return obj.nb$positive ;
+            return obj.nb$positive;
         case "Invert":
-            return obj.nb$invert ;
+            return obj.nb$invert;
     }
 };
 
@@ -1239,7 +1239,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             wrapped_func
         );
     }
-    function set_up_slot (slot_name, slots, klass, slot_mapping) {
+    function set_up_slot(slot_name, slots, klass, slot_mapping) {
         const wrapped_func = slots[slot_name];
         // some slots get multpile dunders
         const dunder_name = slot_mapping[slot_name];
