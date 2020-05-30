@@ -17,7 +17,7 @@ const collections_mod = function (keywds) {
                     });
                     return new collections.defaultdict(this.default_factory, L);
                 },
-                $flags: { NoArgs: true }
+                $flags: { NoArgs: true },
             },
             __missing__: {
                 $meth: function (key) {
@@ -29,9 +29,8 @@ const collections_mod = function (keywds) {
                         return ret;
                     }
                 },
-                $flags: { OneArg: true }
-            }
-
+                $flags: { OneArg: true },
+            },
         },
         getsets: {
             default_factory: {
@@ -40,16 +39,17 @@ const collections_mod = function (keywds) {
                 },
                 $set: function (value) {
                     this.default_factory = value;
-                }
-            }
+                },
+            },
         },
         slots: {
-            tp$doc: "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n",
+            tp$doc:
+                "defaultdict(default_factory[, ...]) --> dict with default factory\n\nThe default factory is called without arguments to produce\na new value when a key is not present, in __getitem__ only.\nA defaultdict compares equal to a dict with the same items.\nAll remaining arguments are treated the same as if they were\npassed to the dict constructor, including keyword arguments.\n",
             tp$init: function (args, kwargs) {
                 const default_ = args.shift();
                 if (default_ === undefined) {
                     this.default_factory = Sk.builtin.none.none$;
-                } else if (!Sk.builtin.checkCallable(default_) && !(Sk.builtin.checkNone(default_))) {
+                } else if (!Sk.builtin.checkCallable(default_) && !Sk.builtin.checkNone(default_)) {
                     throw new Sk.builtin.TypeError("first argument must be callable");
                 } else {
                     this.default_factory = default_;
@@ -63,13 +63,13 @@ const collections_mod = function (keywds) {
             },
             mp$subscript: function (key) {
                 return this.mp$lookup(key) || Sk.misceval.callsimArray(this.__missing__, [this, key]);
-            }
-        }
+            },
+        },
     });
 
     collections.Counter = Sk.abstr.buildNativeClass("Counter", {
         constructor: function () {
-            this.$d = new Sk.builtin.dict;
+            this.$d = new Sk.builtin.dict();
         },
         base: Sk.builtin.dict,
         methods: {
@@ -96,7 +96,7 @@ const collections_mod = function (keywds) {
             most_common: {
                 $flags: {
                     NamedArgs: ["n"],
-                    Defaults: [Sk.builtin.none.none$]
+                    Defaults: [Sk.builtin.none.none$],
                 },
                 $meth: function (n) {
                     length = this.sq$length();
@@ -165,7 +165,7 @@ const collections_mod = function (keywds) {
                     for (let i = 0; i < kwargs.length; i += 2) {
                         k = new Sk.builtin.str(kwargs[i]);
                         count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$add(kwargs[i+1]));
+                        this.mp$ass_subscript(k, count.nb$add(kwargs[i + 1]));
                     }
                     return Sk.builtin.none.none$;
                 },
@@ -195,26 +195,25 @@ const collections_mod = function (keywds) {
                     for (let i = 0; i < kwargs.length; i += 2) {
                         k = new Sk.builtin.str(kwargs[i]);
                         count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$subtract(kwargs[i+1]));
+                        this.mp$ass_subscript(k, count.nb$subtract(kwargs[i + 1]));
                     }
                     return Sk.builtin.none.none$;
                 },
-            }
-
-
+            },
         },
         getsets: {
             __dict__: Sk.generic.getSetDict,
         },
         slots: {
-            tp$doc: "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
+            tp$doc:
+                "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
             tp$init: function (args, kwargs) {
                 Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
                 args = [this].concat(args);
                 return Sk.misceval.callsimArray(this.update, args, kwargs);
             },
             $r: function () {
-                var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : '';
+                var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : "";
                 return new Sk.builtin.str("Counter(" + dict_str + ")");
             },
             mp$subscript: function (key) {
@@ -270,8 +269,11 @@ const collections_mod = function (keywds) {
                     return !$true;
                 }
 
-                for (let iter = this.tp$iter(), otheriter = other.tp$iter(),
-                    k = iter.tp$iternext(), otherk = otheriter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) {
+                for (
+                    let iter = this.tp$iter(), otheriter = other.tp$iter(), k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
+                    k !== undefined;
+                    k = iter.tp$iternext(), otherk = otheriter.tp$iternext()
+                ) {
                     if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
                         return !$true;
                     }
@@ -298,11 +300,11 @@ const collections_mod = function (keywds) {
                     this.orderedkeys.splice(idx, 1);
                 }
                 return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
-            }
+            },
         },
         methods: {
             pop: {
-                $flags: { NamedArgs: ['key', 'default'], Defaults: [null, undefined] },
+                $flags: { NamedArgs: ["key", "default"], Defaults: [null, undefined] },
                 $meth: function (args) {
                     const key = args[0];
                     const d = args[1];
@@ -312,10 +314,10 @@ const collections_mod = function (keywds) {
                     }
                     // Sk.builtin.dict.prototype.pop.$meth.call(this, key, d);
                     return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]);
-                }
+                },
             },
             popitem: {
-                $flags: { NamedArgs: ['last'], Defaults: [Sk.builtin.bool.true$] },
+                $flags: { NamedArgs: ["last"], Defaults: [Sk.builtin.bool.true$] },
                 $meth: function (last) {
                     let key, val;
                     if (this.orderedkeys.length == 0) {
@@ -327,11 +329,10 @@ const collections_mod = function (keywds) {
                     }
                     val = Sk.misceval.callsimArray(this["pop"], [this, key]);
                     return Sk.builtin.tuple([key, val]);
-                }
-            }
-        }
+                },
+            },
+        },
     });
-
 
     // deque
     collections.deque = function deque(iterable, maxlen) {
@@ -377,7 +378,8 @@ const collections_mod = function (keywds) {
         if (rename) {
             let seen = new Set();
             for (i = 0; i < flds.length; i++) {
-                if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [Sk.ffi.remapToPy(flds[i])])) ||
+                if (
+                    Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [Sk.ffi.remapToPy(flds[i])])) ||
                     startsw2.test(flds[i]) ||
                     !alnum.test(flds[i]) ||
                     !flds[i] ||
@@ -470,7 +472,7 @@ const collections_mod = function (keywds) {
             // check if kwd_dict is empty
             for (let _ in kwd_dict) {
                 // if we're here we got an enexpected kwarg
-                const key_list = Object.keys(kwd_dict).map(x => "'" + x + "'");
+                const key_list = Object.keys(kwd_dict).map((x) => "'" + x + "'");
                 throw new Sk.builtin.ValueError("Got unexpectd field names: [" + key_list + "]");
             }
             return nt_klass.prototype.tp$new(args);
@@ -481,13 +483,13 @@ const collections_mod = function (keywds) {
 
         // Constructor for namedtuple
         const nt_klass = Sk.abstr.buildNativeClass($name, {
-            constructor: function () { },
+            constructor: function () {},
             base: Sk.builtin.tuple,
             slots: {
                 tp$doc: $name + "(" + flds.join(", ") + ")",
                 tp$new: function (args, kwargs) {
                     args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
-                    const named_tuple_instance = new this.constructor;
+                    const named_tuple_instance = new this.constructor();
                     Sk.builtin.tuple.call(named_tuple_instance, args);
                     return named_tuple_instance;
                 },
@@ -503,8 +505,8 @@ const collections_mod = function (keywds) {
             },
             proto: {
                 __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
-                __slots__: new Sk.builtin.tuple,
-                _fields: new Sk.builtin.tuple(flds.map(x => new Sk.builtin.str(x))),
+                __slots__: new Sk.builtin.tuple(),
+                _fields: new Sk.builtin.tuple(flds.map((x) => new Sk.builtin.str(x))),
                 _field_defaults: _field_defaults,
                 _make: _make,
                 _asdict: _asdict,
@@ -519,8 +521,13 @@ const collections_mod = function (keywds) {
                 Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
                 return self.v[i];
             };
-            nt_klass.prototype[fld] = new Sk.builtin.property(new Sk.builtin.func(fget), undefined, undefined, new Sk.builtin.str("Alias for field number " + i));
-        };
+            nt_klass.prototype[fld] = new Sk.builtin.property(
+                new Sk.builtin.func(fget),
+                undefined,
+                undefined,
+                new Sk.builtin.str("Alias for field number " + i)
+            );
+        }
 
         collections.namedtuples[$name] = nt_klass;
         return nt_klass;
