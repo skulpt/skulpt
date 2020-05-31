@@ -403,7 +403,8 @@ Sk.switch_version = function (method_to_map, python3) {
     }
     if (newmeth && oldmeth) {
         Sk.builtin.str[method_to_map] = new Sk.builtin.str(newmeth);
-        Sk.slotToDunder[mapping[4]] = newmeth;
+        // Sk.slotToDunder[mapping[4]] = newmeth;
+        Sk.subSlots.main_slots[mapping[4]] = newmeth; // might need to generalize this
         const slot_to_change = Sk.slots[oldmeth];
         if (slot_to_change) {
             slot_to_change.$name = newmeth;
