@@ -50,6 +50,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         }
     },
     slots: {
+        $tp$as_sequence_or_mapping: true,
         $r: function () {
             let repr = [];
             for (let k in this.v) {
