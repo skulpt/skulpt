@@ -19,6 +19,8 @@ Sk.builtin.dict = function dict(L) {
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
+Sk.builtin.dict.prototype.tp$as_sequence_or_mapping = true;
+
 var kf = Sk.builtin.hash;
 
 Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)";

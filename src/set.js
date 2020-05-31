@@ -20,6 +20,10 @@ Sk.builtin.set = function (S) {
 Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
+Sk.builtin.set.prototype.tp$as_sequence_or_mapping = true;
+Sk.builtin.set.prototype.tp$as_number = true;
+
+
 Sk.builtin.set.prototype.tp$doc = "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.";
 
 Sk.builtin.set.prototype.tp$new = Sk.generic.new(Sk.builtin.set);

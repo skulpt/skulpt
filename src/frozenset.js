@@ -13,6 +13,8 @@ Sk.builtin.frozenset = function (S) {
 
 
 Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
+Sk.builtin.frozenset.prototype.tp$as_sequence_or_mapping = true;
+Sk.builtin.frozenset.prototype.tp$as_number = true;
 
 Sk.builtin.frozenset.prototype.tp$doc = "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.";
 
