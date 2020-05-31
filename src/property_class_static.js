@@ -32,6 +32,8 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 if (!Sk.builtin.checkNone(args[0])) {
                     this.prop$doc = args[0].$doc || args[3];
                 }
+            } else {
+                this.prop$doc = args[3];
             }
             return Sk.builtin.none.none$;
         },
@@ -44,24 +46,24 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             if (this.prop$get === undefined) {
                 throw new Sk.builtin.AttributeError("unreadable attribute");
             }
-            return Sk.misceval.callsimArray(this.prop$get, [obj]);
+            return Sk.misceval.callsimOrSuspendArray(this.prop$get, [obj]);
         },
         tp$descr_set: function (obj, value) {
             let func;
-            if (value === undefined) {
+            if (value == null) {
                 func = this.prop$del;
             } else {
                 func = this.prop$set;
             }
             if (Sk.builtin.checkNone(func)) {
-                const msg = value === undefined ? "delete" : "set";
+                const msg = value == null ? "delete" : "set";
                 throw new Sk.builtin.AttributeError("can't " + msg + " attribute");
             }
             if (!func.tp$call) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable");
             }
 
-            if (value === undefined) {
+            if (value == null) {
                 return func.tp$call([obj]);
             } else {
                 return func.tp$call([obj, value]);
@@ -81,7 +83,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             },
             $flags: { OneArg: true },
         },
-        deletter: {
+        deleter: {
             $meth: function (fdel) {
                 return new Sk.builtin.property(this.prop$get, this.prop$set, fdel, this.prop$doc);
             },
@@ -108,6 +110,9 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             $get: function () {
                 return this.prop$doc;
             },
+            $set: function (value) {
+                this.prop$doc = value;
+            }
         },
     },
 });
