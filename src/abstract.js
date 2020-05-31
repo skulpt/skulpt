@@ -1202,10 +1202,10 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     };
     if (slots === undefined) {
         // make a shallow copy so that we don't accidently consider parent slots
+        // maybe better to use .hasOwnProperty but this allows for more code reuse
         slots = { ...klass.prototype };
     } else {
         for (let slot_name in slots) {
-            // inefficiency of looping twice vs code reuse.
             proto[slot_name] = slots[slot_name];
         }
     }
@@ -1262,11 +1262,21 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
     // as_number_slots
     const number_slots = Sk.subSlots.number_slots;
+    const reflected_slots = Sk.reflectedNumberSlots;
     if (slots.tp$as_number !== undefined) {
-        for (let slot_name in Sk.reflectedNumberSlots) {
+        for (let slot_name in reflected_slots) {
             if (slots[slot_name] !== undefined) {
-                const reflect_name = Sk.reflectedNumberSlots[slot_name];
-                klass.prototype[reflect_name] = slots[reflect_name] = slots[slot_name];
+                const reflect_name = reflected_slots[slot_name].reflected;
+                if (slots[reflect_name] !== undefined) {
+                    continue;
+                }
+                const slot = reflected_slots[slot_name].slot;
+                if (slot == null) {
+                    klass.prototype[reflect_name] = slots[reflect_name] = slots[slot_name];
+                } else {
+                    klass.prototype[reflect_name] = slots[reflect_name] = slot; 
+                }
+                
             }
         }
         for (let slot_name in number_slots) {
@@ -1277,7 +1287,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     // as_sequence_or_mapping slots
-    const seqeunce_and_mapping_slots = Sk.subSlots.seqeunce_and_mapping_slots;
+    const sequence_and_mapping_slots = Sk.subSlots.sequence_and_mapping_slots;
     if (slots.tp$as_sequence_or_mapping !== undefined) {
         for (let slot_name in Sk.sequenceAndMappingSlots) {
             if (slots[slot_name] !== undefined) {
@@ -1288,9 +1298,9 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                 }
             }
         }
-        for (let slot_name in seqeunce_and_mapping_slots) {
+        for (let slot_name in sequence_and_mapping_slots) {
             if (slots[slot_name] !== undefined) {
-                set_up_slot(slot_name, slots, klass, seqeunce_and_mapping_slots);
+                set_up_slot(slot_name, slots, klass, sequence_and_mapping_slots);
             }
         }
     }
@@ -1361,7 +1371,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
 
     // str might not have been created yet
 
-    if (Sk.builtin.str !== undefined && typeobject.prototype.hasOwnProperty("tp$doc")) {
+    if (Sk.builtin.str !== undefined && typeobject.prototype.hasOwnProperty("tp$doc") && !typeobject.prototype.hasOwnProperty("__doc__")) {
         const docstr = typeobject.prototype.tp$doc;
         if (typeof docstr === "string") {
             typeobject.prototype.__doc__ = new Sk.builtin.str(docstr);
