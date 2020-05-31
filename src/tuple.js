@@ -139,7 +139,7 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     return new Sk.builtin.tuple(ret);
 };
 
-Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
+// Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.nb$reflected_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     return new Sk.builtin.tuple_iter_(this);
@@ -227,7 +227,7 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
 
-Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
+// Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
 
 Sk.builtin.tuple.prototype.sq$contains = function (ob) {
     var it, i;
