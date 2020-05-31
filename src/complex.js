@@ -418,7 +418,7 @@ Sk.builtin.complex._c_diff = function (a, b) {
     return new Sk.builtin.complex(r, i);
 };
 
-Sk.builtin.complex.prototype.nb$reflected_add = Sk.builtin.complex.prototype.nb$add;
+// Sk.builtin.complex.prototype.nb$reflected_add = Sk.builtin.complex.prototype.nb$add;
 
 Sk.builtin.complex.prototype.nb$subtract = function (other) {
     var result; // Py_complex
@@ -499,9 +499,13 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     return new Sk.builtin.complex(real, imag);
 };
 
+// Sk.builtin.complex.prototype.nb$reflected_floor_divide = 
 Sk.builtin.complex.prototype.nb$floor_divide = function (other) {
     throw new Sk.builtin.TypeError("can't take floor of complex number.");
 };
+// Sk.builtin.complex.prototype.nb$reflected_floor_divide = function (other) {
+//     throw new Sk.builtin.TypeError("can't take floor of complex number.");
+// };
 
 Sk.builtin.complex.prototype.nb$remainder = function (other) {
     throw new Sk.builtin.TypeError("can't mod complex numbers.");
@@ -615,19 +619,19 @@ Sk.builtin.complex.c_powu = function (x, n) {
 };
 
 
-Sk.builtin.complex.prototype.nb$inplace_add = Sk.builtin.complex.prototype.nb$add;
+// Sk.builtin.complex.prototype.nb$inplace_add = Sk.builtin.complex.prototype.nb$add;
 
-Sk.builtin.complex.prototype.nb$inplace_subtract = Sk.builtin.complex.prototype.nb$subtract;
+// Sk.builtin.complex.prototype.nb$inplace_subtract = Sk.builtin.complex.prototype.nb$subtract;
 
-Sk.builtin.complex.prototype.nb$inplace_multiply = Sk.builtin.complex.prototype.nb$multiply;
+// Sk.builtin.complex.prototype.nb$inplace_multiply = Sk.builtin.complex.prototype.nb$multiply;
 
-Sk.builtin.complex.prototype.nb$inplace_divide = Sk.builtin.complex.prototype.nb$divide;
+// Sk.builtin.complex.prototype.nb$inplace_divide = Sk.builtin.complex.prototype.nb$divide;
 
-Sk.builtin.complex.prototype.nb$inplace_remainder = Sk.builtin.complex.prototype.nb$remainder;
+// Sk.builtin.complex.prototype.nb$inplace_remainder = Sk.builtin.complex.prototype.nb$remainder;
 
-Sk.builtin.complex.prototype.nb$inplace_floor_divide = Sk.builtin.complex.prototype.nb$floor_divide;
+// Sk.builtin.complex.prototype.nb$inplace_floor_divide = Sk.builtin.complex.prototype.nb$floor_divide;
 
-Sk.builtin.complex.prototype.nb$inplace_power = Sk.builtin.complex.prototype.nb$power;
+// Sk.builtin.complex.prototype.nb$inplace_power = Sk.builtin.complex.prototype.nb$power;
 
 Sk.builtin.complex.prototype.nb$negative = function () {
     var real;

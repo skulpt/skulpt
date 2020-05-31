@@ -230,12 +230,12 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.int_.prototype.nb$reflected_add = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    return Sk.builtin.int_.prototype.nb$add.call(this, other);
-};
+// /** @override */
+// Sk.builtin.int_.prototype.nb$reflected_add = function (other) {
+//     // Should not automatically call this.nb$add, as nb$add may have
+//     // been overridden by a subclass
+//     return Sk.builtin.int_.prototype.nb$add.call(this, other);
+// };
 
 /** @override */
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
@@ -533,7 +533,7 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$reflected_and = Sk.builtin.int_.prototype.nb$and;
+// Sk.builtin.int_.prototype.nb$reflected_and = Sk.builtin.int_.prototype.nb$and;
 
 /**
  * Compute the bitwise OR of this instance and a Python object (i.e. this | other).
@@ -569,7 +569,7 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$reflected_or = Sk.builtin.int_.prototype.nb$or;
+// Sk.builtin.int_.prototype.nb$reflected_or = Sk.builtin.int_.prototype.nb$or;
 
 /**
  * Compute the bitwise XOR of this instance and a Python object (i.e. this ^ other).
@@ -605,7 +605,7 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$reflected_xor = Sk.builtin.int_.prototype.nb$xor;
+// Sk.builtin.int_.prototype.nb$reflected_xor = Sk.builtin.int_.prototype.nb$xor;
 
 /**
  * Compute the bitwise left shift of this instance by a Python object (i.e. this << other).
@@ -658,13 +658,13 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$reflected_lshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        return other.nb$lshift(this);
-    }
+// Sk.builtin.int_.prototype.nb$reflected_lshift = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         return other.nb$lshift(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /**
  * Compute the bitwise right shift of this instance by a Python object (i.e. this >> other).
@@ -708,13 +708,13 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$reflected_rshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        return other.nb$rshift(this);
-    }
+// Sk.builtin.int_.prototype.nb$reflected_rshift = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         return other.nb$rshift(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /**
  * Compute the bitwise inverse of this instance (i.e. ~this).
@@ -727,26 +727,26 @@ Sk.builtin.int_.prototype.nb$invert = function () {
     return new Sk.builtin.int_(~this.v);
 };
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$subtract;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$subtract;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$multiply;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$multiply;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divide;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divide;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$remainder;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$remainder;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb$floor_divide;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb$floor_divide;
 
-/** @override */
-Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
+// /** @override */
+// Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 
 /**
  * @function

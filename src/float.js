@@ -266,12 +266,12 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_add = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    return Sk.builtin.float_.prototype.nb$add.call(this, other);
-};
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_add = function (other) {
+//     // Should not automatically call this.nb$add, as nb$add may have
+//     // been overridden by a subclass
+//     return Sk.builtin.float_.prototype.nb$add.call(this, other);
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$subtract = function (other) {
@@ -284,13 +284,13 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    var negative_this = this.nb$negative();
-    return Sk.builtin.float_.prototype.nb$add.call(negative_this, other);
-};
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
+//     // Should not automatically call this.nb$add, as nb$add may have
+//     // been overridden by a subclass
+//     var negative_this = this.nb$negative();
+//     return Sk.builtin.float_.prototype.nb$add.call(negative_this, other);
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$multiply = function (other) {
@@ -303,12 +303,12 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_multiply = function (other) {
-    // Should not automatically call this.nb$multiply, as nb$multiply may have
-    // been overridden by a subclass
-    return Sk.builtin.float_.prototype.nb$multiply.call(this, other);
-};
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_multiply = function (other) {
+//     // Should not automatically call this.nb$multiply, as nb$multiply may have
+//     // been overridden by a subclass
+//     return Sk.builtin.float_.prototype.nb$multiply.call(this, other);
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$divide = function (other) {
@@ -366,19 +366,19 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
-    if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng) {
-        other = new Sk.builtin.float_(other);
-    }
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
+//     if (other instanceof Sk.builtin.int_ ||
+//         other instanceof Sk.builtin.lng) {
+//         other = new Sk.builtin.float_(other);
+//     }
 
-    if (other instanceof Sk.builtin.float_) {
-        return other.nb$divide(this);
-    }
+//     if (other instanceof Sk.builtin.float_) {
+//         return other.nb$divide(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
@@ -426,19 +426,19 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
-    if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng) {
-        other = new Sk.builtin.float_(other);
-    }
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
+//     if (other instanceof Sk.builtin.int_ ||
+//         other instanceof Sk.builtin.lng) {
+//         other = new Sk.builtin.float_(other);
+//     }
 
-    if (other instanceof Sk.builtin.float_) {
-        return other.nb$floor_divide(this);
-    }
+//     if (other instanceof Sk.builtin.float_) {
+//         return other.nb$floor_divide(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$remainder = function (other) {
@@ -523,19 +523,19 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
-    if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng) {
-        other = new Sk.builtin.float_(other);
-    }
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
+//     if (other instanceof Sk.builtin.int_ ||
+//         other instanceof Sk.builtin.lng) {
+//         other = new Sk.builtin.float_(other);
+//     }
 
-    if (other instanceof Sk.builtin.float_) {
-        return other.nb$remainder(this);
-    }
+//     if (other instanceof Sk.builtin.float_) {
+//         return other.nb$remainder(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
@@ -554,22 +554,22 @@ Sk.builtin.float_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
-    if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng) {
-        other = new Sk.builtin.float_(other);
-    }
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
+//     if (other instanceof Sk.builtin.int_ ||
+//         other instanceof Sk.builtin.lng) {
+//         other = new Sk.builtin.float_(other);
+//     }
 
-    if (other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.tuple([
-            other.nb$floor_divide(this),
-            other.nb$remainder(this)
-        ]);
-    }
+//     if (other instanceof Sk.builtin.float_) {
+//         return new Sk.builtin.tuple([
+//             other.nb$floor_divide(this),
+//             other.nb$remainder(this)
+//         ]);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$power = function (other, mod) {
@@ -605,45 +605,45 @@ Sk.builtin.float_.prototype.nb$power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$reflected_power = function (n, mod) {
-    if (n instanceof Sk.builtin.int_ ||
-        n instanceof Sk.builtin.lng) {
-        n = new Sk.builtin.float_(n);
-    }
+// /** @override */
+// Sk.builtin.float_.prototype.nb$reflected_power = function (n, mod) {
+//     if (n instanceof Sk.builtin.int_ ||
+//         n instanceof Sk.builtin.lng) {
+//         n = new Sk.builtin.float_(n);
+//     }
 
-    if (n instanceof Sk.builtin.float_) {
-        return n.nb$power(this, mod);
-    }
+//     if (n instanceof Sk.builtin.float_) {
+//         return n.nb$power(this, mod);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$abs = function () {
     return new Sk.builtin.float_(Math.abs(this.v));
 };
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_add = Sk.builtin.float_.prototype.nb$add;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_add = Sk.builtin.float_.prototype.nb$add;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_subtract = Sk.builtin.float_.prototype.nb$subtract;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_subtract = Sk.builtin.float_.prototype.nb$subtract;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_multiply = Sk.builtin.float_.prototype.nb$multiply;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_multiply = Sk.builtin.float_.prototype.nb$multiply;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_divide = Sk.builtin.float_.prototype.nb$divide;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_divide = Sk.builtin.float_.prototype.nb$divide;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_remainder = Sk.builtin.float_.prototype.nb$remainder;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_remainder = Sk.builtin.float_.prototype.nb$remainder;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_floor_divide = Sk.builtin.float_.prototype.nb$floor_divide;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_floor_divide = Sk.builtin.float_.prototype.nb$floor_divide;
 
-/** @override */
-Sk.builtin.float_.prototype.nb$inplace_power = Sk.builtin.float_.prototype.nb$power;
+// /** @override */
+// Sk.builtin.float_.prototype.nb$inplace_power = Sk.builtin.float_.prototype.nb$power;
 
 /**
  * @override

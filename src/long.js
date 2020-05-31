@@ -59,6 +59,8 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
 
 Sk.abstr.setUpInheritance("long", Sk.builtin.lng);
 
+Sk.builtin.lng.prototype.tp$as_number = true;
+
 Sk.builtin.lng.prototype.tp$new = function (args, kwargs) {
     args = Sk.abstr.copyKeywordsToNamedArgs("long", [null, "base"], args, kwargs);
     let x = args[0];
@@ -126,7 +128,7 @@ Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
 
 Sk.builtin.lng.prototype.__format__ = Sk.formatting.mkNumber__format__(false);
 
-Sk.builtin.lng.prototype.nb$lng_ = function () {
+Sk.builtin.lng.prototype.nb$lng = function () {
     return this;
 };
 
@@ -204,14 +206,14 @@ Sk.builtin.lng.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_add = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    return Sk.builtin.lng.prototype.nb$add.call(this, other);
-};
+// /** @override */
+// Sk.builtin.lng.prototype.nb$reflected_add = function (other) {
+//     // Should not automatically call this.nb$add, as nb$add may have
+//     // been overridden by a subclass
+//     return Sk.builtin.lng.prototype.nb$add.call(this, other);
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
+// Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
 
 Sk.builtin.lng.prototype.nb$subtract = function (other) {
     var thisAsFloat;
@@ -237,15 +239,15 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_subtract = function (other) {
-    // Should not automatically call this.nb$add, as nb$add may have
-    // been overridden by a subclass
-    var negative_this = this.nb$negative();
-    return Sk.builtin.lng.prototype.nb$add.call(negative_this, other);
-};
+// /** @override */
+// Sk.builtin.lng.prototype.nb$reflected_subtract = function (other) {
+//     // Should not automatically call this.nb$add, as nb$add may have
+//     // been overridden by a subclass
+//     var negative_this = this.nb$negative();
+//     return Sk.builtin.lng.prototype.nb$add.call(negative_this, other);
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
+// Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
     var thisAsFloat;
@@ -270,14 +272,14 @@ Sk.builtin.lng.prototype.nb$multiply = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
-Sk.builtin.lng.prototype.nb$reflected_multiply = function (other) {
-    // Should not automatically call this.nb$multiply, as nb$multiply may have
-    // been overridden by a subclass
-    return Sk.builtin.lng.prototype.nb$multiply.call(this, other);
-};
+// /** @override */
+// Sk.builtin.lng.prototype.nb$reflected_multiply = function (other) {
+//     // Should not automatically call this.nb$multiply, as nb$multiply may have
+//     // been overridden by a subclass
+//     return Sk.builtin.lng.prototype.nb$multiply.call(this, other);
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
+// Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
 
 Sk.builtin.lng.prototype.nb$divide = function (other) {
     var thisAsFloat, thisneg, otherneg, result;
@@ -315,21 +317,21 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_divide = function (other) {
-    var thisneg, otherneg, result;
+// Sk.builtin.lng.prototype.nb$reflected_divide = function (other) {
+//     var thisneg, otherneg, result;
 
-    if (other instanceof Sk.builtin.int_) {
-        //  Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
+//     if (other instanceof Sk.builtin.int_) {
+//         //  Promote an int to long
+//         other = new Sk.builtin.lng(other.v);
+//     }
 
-    //    Standard, long result mode
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$divide(this);
-    }
+//     //    Standard, long result mode
+//     if (other instanceof Sk.builtin.lng) {
+//         return other.nb$divide(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
 Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
     var thisAsFloat;
@@ -368,29 +370,29 @@ Sk.builtin.lng.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_divmod = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
+// Sk.builtin.lng.prototype.nb$reflected_divmod = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         // Promote an int to long
+//         other = new Sk.builtin.lng(other.v);
+//     }
 
-    if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.tuple([
-            other.nb$floor_divide(this),
-            other.nb$remainder(this)
-        ]);
-    }
+//     if (other instanceof Sk.builtin.lng) {
+//         return new Sk.builtin.tuple([
+//             other.nb$floor_divide(this),
+//             other.nb$remainder(this)
+//         ]);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
+// Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
 
 Sk.builtin.lng.prototype.nb$floor_divide = Sk.builtin.lng.prototype.nb$divide;
 
-Sk.builtin.lng.prototype.nb$reflected_floor_divide = Sk.builtin.lng.prototype.nb$reflected_divide;
+// Sk.builtin.lng.prototype.nb$reflected_floor_divide = Sk.builtin.lng.prototype.nb$reflected_divide;
 
-Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
+// Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
 
 Sk.builtin.lng.prototype.nb$remainder = function (other) {
     var thisAsFloat, tmp;
@@ -430,19 +432,19 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        other = new Sk.builtin.lng(other.v);
-    }
+// Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         other = new Sk.builtin.lng(other.v);
+//     }
 
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$remainder(this);
-    }
+//     if (other instanceof Sk.builtin.lng) {
+//         return other.nb$remainder(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
+// Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
 Sk.builtin.lng.prototype.nb$divmod = function (other) {
     var thisAsFloat;
@@ -531,20 +533,20 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_power = function (n, mod) {
-    if (n instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        n = new Sk.builtin.lng(n.v);
-    }
+// Sk.builtin.lng.prototype.nb$reflected_power = function (n, mod) {
+//     if (n instanceof Sk.builtin.int_) {
+//         // Promote an int to long
+//         n = new Sk.builtin.lng(n.v);
+//     }
 
-    if (n instanceof Sk.builtin.lng) {
-        return n.nb$power(this, mod);
-    }
+//     if (n instanceof Sk.builtin.lng) {
+//         return n.nb$power(this, mod);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
+// Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
 /**
  * Compute the absolute value of this instance and return.
@@ -580,20 +582,20 @@ Sk.builtin.lng.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_lshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
+// Sk.builtin.lng.prototype.nb$reflected_lshift = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         // Promote an int to long
+//         other = new Sk.builtin.lng(other.v);
+//     }
 
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$lshift(this);
-    }
+//     if (other instanceof Sk.builtin.lng) {
+//         return other.nb$lshift(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
+// Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
 
 Sk.builtin.lng.prototype.nb$rshift = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -617,20 +619,20 @@ Sk.builtin.lng.prototype.nb$rshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_rshift = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        // Promote an int to long
-        other = new Sk.builtin.lng(other.v);
-    }
+// Sk.builtin.lng.prototype.nb$reflected_rshift = function (other) {
+//     if (other instanceof Sk.builtin.int_) {
+//         // Promote an int to long
+//         other = new Sk.builtin.lng(other.v);
+//     }
 
-    if (other instanceof Sk.builtin.lng) {
-        return other.nb$rshift(this);
-    }
+//     if (other instanceof Sk.builtin.lng) {
+//         return other.nb$rshift(this);
+//     }
 
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+//     return Sk.builtin.NotImplemented.NotImplemented$;
+// };
 
-Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
+// Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
 
 Sk.builtin.lng.prototype.nb$and = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -648,9 +650,9 @@ Sk.builtin.lng.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;
+// Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;
 
-Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
+// Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
 
 Sk.builtin.lng.prototype.nb$or = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -669,9 +671,9 @@ Sk.builtin.lng.prototype.nb$or = function (other) {
 };
 
 
-Sk.builtin.lng.prototype.nb$reflected_or = Sk.builtin.lng.prototype.nb$or;
+// Sk.builtin.lng.prototype.nb$reflected_or = Sk.builtin.lng.prototype.nb$or;
 
-Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
+// Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
 
 Sk.builtin.lng.prototype.nb$xor = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -689,9 +691,9 @@ Sk.builtin.lng.prototype.nb$xor = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$reflected_xor = Sk.builtin.lng.prototype.nb$xor;
+// Sk.builtin.lng.prototype.nb$reflected_xor = Sk.builtin.lng.prototype.nb$xor;
 
-Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
+// Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
 
 /**
  * @override
