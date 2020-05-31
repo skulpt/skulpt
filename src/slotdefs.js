@@ -129,16 +129,23 @@ Sk.generic.slotFuncFastCall = function (dunderName) {
     };
 };
 
-Sk.generic.slotFuncSet = function (dunderName, error_msg) {
+Sk.generic.slotFuncSetDelete = function (set_name, del_name, error_msg) {
     return function (pyName, value, canSuspend) {
-        let res;
+        let res, dunderName;
+        if (value == null) {
+            dunderName = del_name;
+            error_msg = null;
+        } else {
+            dunderName = set_name;
+        }
         const func = Sk.abstr.lookupSpecial(this, dunderName);
         if (func instanceof Sk.builtin.wrapper_descriptor) {
             return func.d$wrapped.call(this, pyName, value);
         }
         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
         if (func !== undefined) {
-            res = call_version(func, [this, pyName, value]);
+            debugger;
+            res = value == null ? call_version(func, [this, pyName]) : call_version(func, [this, pyName, value]);
         } else if (error_msg) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
         } else {
@@ -148,51 +155,6 @@ Sk.generic.slotFuncSet = function (dunderName, error_msg) {
     };
 };
 
-Sk.generic.slotFuncDelete = function (dunderName, error_msg) {
-    return function (pyName, value, canSuspend) {
-        //value should be null
-        let res;
-        const func = Sk.abstr.lookupSpecial(this, dunderName);
-        if (func instanceof Sk.builtin.wrapper_descriptor) {
-            return func.d$wrapped.call(this, pyName, value);
-        }
-        const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
-        if (func !== undefined) {
-            res = call_version(func, [this, pyName]);
-        } else if (error_msg) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
-        } else {
-            throw new Sk.builtin.AttributeError(dunderName);
-        }
-        return res;
-    };
-};
-
-// Sk.generic.slotFuncSetDelete = function (set_name, del_name, error_msg) {
-//     return function (obj, value, canSuspend) {
-//         let func, res;
-//         if (value == null) {
-//             // then we're deleting
-//             func = Sk.abstr.lookupSpecial(this, del_name);
-//         } else {
-//             func = Sk.abstr.lookupSpecial(this, set_name);
-//         }
-//         if (func instanceof Sk.builtin.wrapper_descriptor) {
-//             return func.d$wrapped.call(this, value);
-//         }
-//         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
-//         if (func !== undefined) {
-//             res = value == null ? call_version(func, [this, obj]) : call_version(func, [this, obj, value]);
-//         } else if (value == null) {
-//             throw new Sk.builtin.AttributeError(del_name);
-//         } else if (error_msg) {
-//             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
-//         } else {
-//             throw new Sk.builtin.AttributeError(set_name);
-//         }
-//         return res;
-//     };
-// };
 
 Sk.slots = Object.create(null);
 const slots = Sk.slots;
@@ -365,7 +327,7 @@ slots.__getattr__ = {
 slots.__setattr__ = {
     $name: "__setattr__",
     $slot_name: "tp$setattr",
-    $slot_func: Sk.generic.slotFuncSet("__setattr__"),
+    $slot_func: Sk.generic.slotFuncSetDelete("__setattr__", "__delattr__"),
     // not need for an error message setattr is always defined on object
     $wrapper: Sk.generic.wrapperSet,
     $textsig: "($self, name, value, /)",
@@ -376,7 +338,7 @@ slots.__setattr__ = {
 slots.__delattr__ = {
     $name: "__delattr__",
     $slot_name: "tp$setattr",
-    $slot_func: Sk.generic.slotFuncDelete("__delattr__"),
+    $slot_func: slots.__setattr__.$slot_func,
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, name, /)",
     $flags: { OneArg: true },
@@ -428,7 +390,7 @@ slots.__get__ = {
 slots.__set__ = {
     $name: "__set__",
     $slot_name: "tp$descr_set",
-    $slot_func: Sk.generic.slotFuncSet("__set__"),
+    $slot_func: Sk.generic.slotFuncSetDelete("__set__", "__delete__"),
     $wrapper: Sk.generic.wrapperSet,
     $textsig: "($self, instance, value, /)",
     $flags: { MinArgs: 2, MaxArgs: 2 },
@@ -438,7 +400,7 @@ slots.__set__ = {
 slots.__delete__ = {
     $name: "__delete__",
     $slot_name: "tp$descr_set",
-    $slot_func: Sk.generic.slotFuncDelete("__delete__"),
+    $slot_func: slots.__set__.$slot_func,
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, instance, /)",
     $flags: { OneArg: true },
@@ -654,7 +616,7 @@ slots.__getitem__ = {
 slots.__setitem__ = {
     $name: "__setitem__",
     $slot_name: "mp$ass_subscript",
-    $slot_func: Sk.generic.slotFuncSet("__setitem__", "does not support item assignment"),
+    $slot_func: Sk.generic.slotFuncSetDelete("__setitem__", "__delitem__", "does not support item assignment"),
     $wrapper: Sk.generic.wrapperSet,
     $textsig: "($self, key, value, /)",
     $flags: { MinArgs: 2, MaxArgs: 2 },
@@ -664,7 +626,7 @@ slots.__setitem__ = {
 slots.__delitem__ = {
     $name: "__delitem__",
     $slot_name: "mp$ass_subscript",
-    $slot_func: Sk.generic.slotFuncDelete("__delitem__"),
+    $slot_func: slots.__setitem__.$slot_func,
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
@@ -690,6 +652,15 @@ slots.__radd__ = {
     $flags: { OneArg: true },
     $doc: "Return value+self.",
 };
+slots.__iadd__ = {
+    $name: "__iadd__",
+    $slot_name: "nb$inplace_add",
+    $slot_func: Sk.generic.slotFuncOneArg("__iadd__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self+=value.",
+};
 slots.__sub__ = {
     $name: "__sub__",
     $slot_name: "nb$subtract",
@@ -707,6 +678,15 @@ slots.__rsub__ = {
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
     $doc: "Return value-self.",
+};
+slots.__imul__ = {
+    $name: "__imul__",
+    $slot_name: "nb$inplace_multiply",
+    $slot_func: Sk.generic.slotFuncOneArg("__imul__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self*=value.",
 };
 slots.__mul__ = {
     $name: "__mul__",
@@ -726,6 +706,15 @@ slots.__rmul__ = {
     $flags: { OneArg: true },
     $doc: "Return value*self.",
 };
+slots.__isub__ = {
+    $name: "__isub__",
+    $slot_name: "nb$inplace_subtract",
+    $slot_func: Sk.generic.slotFuncOneArg("__isub__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self-=value.",
+};
 slots.__mod__ = {
     $name: "__mod__",
     $slot_name: "nb$remainder",
@@ -743,6 +732,15 @@ slots.__rmod__ = {
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
     $doc: "Return value%self.",
+};
+slots.__imod__ = {
+    $name: "__imod__",
+    $slot_name: "nb$inplace_remainder",
+    $slot_func: Sk.generic.slotFuncOneArg("__imod__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement value%=self.",
 };
 slots.__divmod__ = {
     $name: "__divmod__",
@@ -843,6 +841,24 @@ slots.__rrshift__ = {
     $flags: { OneArg: true },
     $doc: "Return value>>self.",
 };
+slots.__ilshift__ = {
+    $name: "__ilshift__",
+    $slot_name: "nb$inplace_lshift",
+    $slot_func: Sk.generic.slotFuncOneArg("__ilshift__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self<<=value.",
+};
+slots.__irshift__ = {
+    $name: "__irshift__",
+    $slot_name: "nb$inplace_rshift",
+    $slot_func: Sk.generic.slotFuncOneArg("__irshift__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self=>>value.",
+};
 slots.__and__ = {
     $name: "__and__",
     $slot_name: "nb$and",
@@ -860,6 +876,15 @@ slots.__rand__ = {
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
     $doc: "Return value&self.",
+};
+slots.__iand__ = {
+    $name: "__iand__",
+    $slot_name: "nb$and",
+    $slot_func: Sk.generic.slotFuncOneArg("__iand__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self&=value.",
 };
 slots.__xor__ = {
     $name: "__xor__",
@@ -879,6 +904,15 @@ slots.__rxor__ = {
     $flags: { OneArg: true },
     $doc: "Return value^self.",
 };
+slots.__ixor__ = {
+    $name: "__ixor__",
+    $slot_name: "nb$inplace_xor",
+    $slot_func: Sk.generic.slotFuncOneArg("__ixor__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self^=value.",
+};
 slots.__or__ = {
     $name: "__or__",
     $slot_name: "nb$or",
@@ -896,6 +930,15 @@ slots.__ror__ = {
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
     $doc: "Return value|self.",
+};
+slots.__ior__ = {
+    $name: "__ior__",
+    $slot_name: "nb$inplace_or",
+    $slot_func: Sk.generic.slotFuncOneArg("__ior__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self|=value.",
 };
 slots.__int__ = {
     $name: "__int__",
@@ -933,6 +976,15 @@ slots.__rfloordiv__ = {
     $flags: { OneArg: true },
     $doc: "Return value//self.",
 };
+slots.__ifloordiv__ = {
+    $name: "__ifloordiv__",
+    $slot_name: "nb$inplace_floor_divide",
+    $slot_func: Sk.generic.slotFuncOneArg("__ifloordiv__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self//=value.",
+};
 slots.__truediv__ = {
     $name: "__truediv__",
     $slot_name: "nb$true_divide",
@@ -951,6 +1003,16 @@ slots.__rtruediv__ = {
     $flags: { OneArg: true },
     $doc: "Return value/self.",
 };
+slots.__itruediv__ = {
+    $name: "__itruediv__",
+    $slot_name: "nb$inplace_true_divide",
+    $slot_func: Sk.generic.slotFuncOneArg("__itruediv__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self/=value.",
+};
+
 slots.__index__ = {
     $name: "__index__",
     $slot_name: "nb$index",
@@ -959,24 +1021,6 @@ slots.__index__ = {
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",
-};
-slots.__iadd__ = {
-    $name: "__iadd__",
-    $slot_name: "nb$inplace_add",
-    $slot_func: Sk.generic.slotFuncOneArg("__iadd__"),
-    $wrapper: Sk.generic.wrapperCallOneArg,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Implement self+=value.",
-};
-slots.__imul__ = {
-    $name: "__imul__",
-    $slot_name: "nb$inplace_multiply",
-    $slot_func: Sk.generic.slotFuncOneArg("__imul__"),
-    $wrapper: Sk.generic.wrapperCallOneArg,
-    $textsig: "($self, value, /)",
-    $flags: { OneArg: true },
-    $doc: "Implement self*=value.",
 };
 slots.__pow__ = {
     $name: "__pow__",
@@ -997,7 +1041,7 @@ slots.__pow__ = {
         return res;
     },
     $wrapper: Sk.generic.wrapperCallTernary,
-    $textsig: "__pow__($self, value, mod=None, /)",
+    $textsig: "($self, value, mod=None, /)",
     $flags: { MinArgs: 1, MaxArgs: 2 },
     $doc: "Return pow(self, value, mod).",
 };
@@ -1020,15 +1064,34 @@ slots.__rpow__ = {
         return res;
     },
     $wrapper: Sk.generic.wrapperCallTernary,
-    $textsig: "__rpow__($self, value, mod=None, /)",
+    $textsig: "($self, value, mod=None, /)",
     $flags: { MinArgs: 1, MaxArgs: 2 },
     $doc: "Return pow(value, self, mod).",
+};
+slots.__ipow__ = {
+    $name: "__ipow__",
+    $slot_name: "nb$inplace_power",
+    $slot_func: function (value, mod) {
+        let res;
+        const func = Sk.abstr.lookupSpecial(this, "__ipow__");
+        if (func instanceof Sk.builtin.wrapper_descriptor) {
+            return func.d$wrapped.call(this, value);
+        }
+        if (func !== undefined) {
+            res = Sk.misceval.callsimArray(func, [this, value]);
+        }
+        return res;
+    },
+    $wrapper: Sk.generic.wrapperCallTernary,
+    $textsig: "($self, value, mod=None, /)",
+    $flags: { MinArgs: 1, MaxArgs: 2 },
+    $doc: "Implement **=",
 };
 
 // py2 ONLY slots
 slots.__long__ = {
     $name: "__long__",
-    $slot_name: "nb$long",
+    $slot_name: "nb$lng",
     $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__long__", Sk.builtin.checkInt, "int"),
     $wrapper: Sk.generic.wrapperCallNoArgs,
     $textsig: "($self, /)",
@@ -1056,6 +1119,16 @@ slots.__rdiv__ = {
     $doc: "x.__rdiv__(y) <==> x/y",
 };
 
+slots.__idiv__ = {
+    $name: "__idiv__",
+    $slot_name: "nb$inplace_divide",
+    $slot_func: Sk.generic.slotFuncOneArg("__idiv__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, other/)",
+    $flags: { OneArg: true },
+    $doc: "implement self /= other",
+};
+
 slots.__nonzero__ = {
     $name: "__nonzero__",
     $slot_name: "nb$nonzero",
@@ -1066,9 +1139,72 @@ slots.__nonzero__ = {
     $doc: "x.__nonzero__() <==> x != 0",
 };
 
+// Sk.slotToDunder = {
+//     // nb we handle tp$new differently
+//     // tp_slots
+//     tp$init: "__init__",
+//     tp$call: "__call__",
+//     $r: "__repr__",
+//     tp$hash: "__hash__",
+//     tp$str: "__str__",
+
+//     // getattribute, setattr, delattr
+//     tp$getattr: "__getattribute__",
+//     tp$setattr: ["__setattr__", "__delattr__"],
+
+//     // tp$richcompare
+//     ob$eq: "__eq__",
+//     ob$ne: "__ne__",
+//     ob$lt: "__lt__",
+//     ob$le: "__le__",
+//     ob$gt: "__gt__",
+//     ob$ge: "__ge__",
+
+//     // getters and setters
+//     tp$descr_get: "__get__",
+//     tp$descr_set: ["__set__", "__delete__"],
+
+//     // iter
+//     tp$iter: "__iter__",
+//     tp$iternext: "__next__",
+
+//     // sequence and mapping slots
+//     sq$length: "__len__",
+//     sq$contains: "__contains__",
+//     mp$subscript: "__getitem__",
+//     mp$ass_subscript: ["__setitem__", "__delitem__"],
+
+//     // number slots
+//     nb$abs: "__abs__",
+//     nb$negative: "__neg__",
+//     nb$positive: "__pos__",
+//     nb$int_: "__int__",
+//     nb$lng: "__long__",
+//     nb$float_: "__float__",
+//     nb$add: "__add__",
+//     nb$reflected_add: "__radd__",
+//     nb$subtract: "__sub__",
+//     nb$reflected_subtract: "__rsub__",
+//     nb$multiply: "__mul__",
+//     nb$reflected_multiply: "__rmul__",
+//     nb$divide: "__div__",
+//     nb$reflected_divide: "__rdiv__",
+//     nb$floor_divide: "__floordiv__",
+//     nb$reflected_floor_divide: "__rfloordiv__",
+//     nb$invert: "__invert__",
+//     nb$remainder: "__mod__",
+//     nb$reflected_remainder: "__rmod__",
+//     nb$divmod: "__divmod__",
+//     nb$reflected_divmod: "__rdivmod__",
+//     nb$power: "__pow__",
+//     nb$reflected_power: "__rpow__",
+//     nb$true_divide: "__truediv__",
+//     nb$bool: "__bool__",
+//     nb$nonzero: "__nonzero__",
+// };
 
 Sk.subSlots = {
-    main_slots :{
+    main_slots: {
         // nb we handle tp$new differently
         // tp_slots
         tp$init: "__init__",
@@ -1076,11 +1212,11 @@ Sk.subSlots = {
         $r: "__repr__",
         tp$hash: "__hash__",
         tp$str: "__str__",
-    
+
         // getattribute, setattr, delattr
         tp$getattr: "__getattribute__",
         tp$setattr: ["__setattr__", "__delattr__"],
-    
+
         // tp$richcompare
         ob$eq: "__eq__",
         ob$ne: "__ne__",
@@ -1088,11 +1224,11 @@ Sk.subSlots = {
         ob$le: "__le__",
         ob$gt: "__gt__",
         ob$ge: "__ge__",
-    
+
         // getters and setters
         tp$descr_get: "__get__",
         tp$descr_set: ["__set__", "__delete__"],
-    
+
         // iter
         tp$iter: "__iter__",
         tp$iternext: "__next__",
@@ -1123,13 +1259,15 @@ Sk.subSlots = {
         nb$invert: "__invert__",
         nb$remainder: "__mod__",
         nb$reflected_remainder: "__rmod__",
+        nb$inplace_mod: "__imod__",
         nb$divmod: "__divmod__",
         nb$reflected_divmod: "__rdivmod__",
-        nb$inplace_divmod: "__idivmod__",
         nb$power: "__pow__",
         nb$reflected_power: "__rpow__",
         nb$inplace_power: "__ipow__",
-        nb$true_divide: "__truediv__",
+        nb$true_divide: "__truediv__", // TODO: think about py2 vs py3 truediv vs div
+        nb$reflected_true_divide: "__rtruediv__",
+        nb$inplace_true_divide: "__itruediv__",
 
         nb$bool: "__bool__",
         nb$nonzero: "__nonzero__",
@@ -1148,6 +1286,8 @@ Sk.subSlots = {
         nb$reflected_lshift: "__rlshift__",
         nb$rshift: "__rshift__",
         nb$reflected_rshift: "__rrshift__",
+        nb$inplace_lshift: "__ilshift__",
+        nb$inplace_rshift: "__irshift__",
     },
 
     sequence_and_mapping_slots: {
@@ -1157,31 +1297,105 @@ Sk.subSlots = {
         mp$subscript: "__getitem__",
         mp$ass_subscript: ["__setitem__", "__delitem__"],
         nb$add: "__add__",
+        nb$multiply: "__mul__",
+        nb$reflected_multiply: "__rmul__",
         nb$inplace_add: "__iadd__",
         nb$inplace_multiply: "__imul__",
     },
 };
 
 Sk.reflectedNumberSlots = {
-    nb$add: "nb$reflected_add",
-    nb$subtract: "nb$reflected_subtract",
-    nb$multiply: "nb$reflected_multiply",
-    nb$divide: "nb$reflected_divide",
-    nb$floor_divide: "nb$reflected_floor_divide",
-    nb$remainder: "nb$reflected_remainder",
-    nb$divmod: "nb$reflected_divmod",
-    nb$power: "nb$reflected_power",
-    nb$true_divide: "nb$reflected_true_divide",
-    nb$and: "nb$reflected_and",
-    nb$or: "nb$reflected_or",
-    nb$xor: "nb$reflected_xor",
-    nb$and: "nb$reflected_and",
-    nb$lshift: "nb$reflected_lshift",
-    nb$rshift: "nb$reflected_rshift",
+    nb$add: { reflected: "nb$reflected_add" },
+    nb$subtract: {
+        reflected: "nb$reflected_subtract",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$subtract(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$multiply: { reflected: "nb$reflected_multiply" },
+    nb$divide: {
+        reflected: "nb$reflected_divide",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$divide(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$floor_divide: {
+        reflected: "nb$reflected_floor_divide",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$floor_divide(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$remainder: {
+        reflected: "nb$reflected_remainder",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$remainder(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$divmod: {
+        reflected: "nb$reflected_divmod",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$divmod(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$power: {
+        reflected: "nb$reflected_power",
+        slot: function (other, mod) {
+            if (other instanceof this.constructor) {
+                return other.nb$power(this, mod);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$true_divide: {
+        reflected: "nb$reflected_true_divide",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$true_divide(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$and: { reflected: "nb$reflected_and" },
+    nb$or: { reflected: "nb$reflected_or" },
+    nb$xor: { reflected: "nb$reflected_xor" },
+    nb$and: { reflected: "nb$reflected_and" },
+    nb$lshift: {
+        reflected: "nb$reflected_lshift",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$lshift(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
+    nb$rshift: {
+        reflected: "nb$reflected_rshift",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$rshift(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    },
 };
 
 Sk.sequenceAndMappingSlots = {
-    sq$concat: ["nb$add", "nb$reflected_add"],
+    sq$concat: ["nb$add" /* "nb$reflected_add" */],
     sq$repeat: ["nb$multiply", "nb$reflected_multiply"],
     mp$length: ["sq$length"],
 };
@@ -1251,6 +1465,7 @@ Sk.dunderToSkulpt = {
     __len__: "sq$length",
     __get__: "tp$descr_get",
     __set__: "tp$descr_set",
+    __delete__: "tp$descr_set",
 };
 
 Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
