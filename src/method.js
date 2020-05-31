@@ -66,7 +66,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
                     return descr;
                 }
             }
-            return Sk.abstr.gattr(this.im_func, pyName, canSuspend);
+            return this.im_func.tp$getattr(pyName, canSuspend);
         },
     },
     getsets: {
@@ -82,7 +82,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
         },
         __doc__: {
             $get: function () {
-                return Sk.abstr.gattr(this.im_func, Sk.builtin.str.$doc);
+                return this.im_func.tp$getattr(Sk.builtin.str.$doc);
             },
         },
     },
