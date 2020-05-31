@@ -534,6 +534,7 @@ Sk.builtin.dict.prototype.dict_merge = function (b) {
  */
 var update_f = function (kwargs, self, other) {
     // case another dict or obj with keys and getitem has been provided
+    debugger;
     if (other !== undefined && (other.tp$name === "dict" || other["keys"])) {
         self.dict_merge(other); // we merge with override
     } else if (other !== undefined && Sk.builtin.checkIterable(other)) {

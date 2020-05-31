@@ -223,6 +223,16 @@ const collections_mod = function (keywds) {
     });
 
     // OrderedDict
+    const odict_iter_ = Sk.generic.iterator("odict_iterator", {
+        constructor: function (odict) {
+            this.$orig = odict;
+            this.$index = 0;
+            this.$seq = odict.sk$asarray();
+        },
+        iternext: Sk.generic.iterNextWithArrayCheckSize,
+        flags: { sk$acceptable_as_base_class: false },
+    });
+
     collections.OrderedDict = Sk.abstr.buildNativeClass("OrderedDict", {
         constructor: function () {
             this.orderedkeys = [];
@@ -231,10 +241,14 @@ const collections_mod = function (keywds) {
         },
         base: Sk.builtin.dict,
         slots: {
+            tp$as_sequence_or_mapping: true,
             tp$init: function (args, kwargs) {
-                // we take an alternative approach and instead override get and set item
-                // we still override __init__ just because...
-                Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
+                Sk.abstr.checkArgsLen("OrderedDict", args, 0, 1);
+                args.unshift(this);
+                debugger;
+                res = Sk.misceval.callsimArray(this.update, args, kwargs);
+                debugger;
+                return Sk.builtin.none.none$;
             },
             tp$doc: "Dictionary that remembers insertion order",
             $r: function () {
@@ -301,19 +315,23 @@ const collections_mod = function (keywds) {
                 }
                 return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
             },
+            tp$iter: function () {
+                return new odict_iter_(this);
+            },
         },
         methods: {
             pop: {
-                $flags: { NamedArgs: ["key", "default"], Defaults: [null, undefined] },
-                $meth: function (args) {
-                    const key = args[0];
-                    const d = args[1];
+                $flags: { NamedArgs: ["key", "default"], Defaults: [null] },
+                $meth: function (key, d) {
                     const idx = this.orderedkeys.indexOf(key);
                     if (idx != -1) {
                         this.orderedkeys.splice(idx, 1);
                     }
-                    // Sk.builtin.dict.prototype.pop.$meth.call(this, key, d);
-                    return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]);
+                    if (d === null) {
+                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key]);
+                    } else {
+                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]); 
+                    }
                 },
             },
             popitem: {
@@ -328,8 +346,13 @@ const collections_mod = function (keywds) {
                         key = this.orderedkeys[this.orderedkeys.length - 1];
                     }
                     val = Sk.misceval.callsimArray(this["pop"], [this, key]);
-                    return Sk.builtin.tuple([key, val]);
+                    return new Sk.builtin.tuple([key, val]);
                 },
+            },
+        },
+        proto: {
+            sk$asarray: function () {
+                return this.orderedkeys.slice();
             },
         },
     });
