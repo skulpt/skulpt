@@ -144,7 +144,6 @@ Sk.generic.slotFuncSetDelete = function (set_name, del_name, error_msg) {
         }
         const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
         if (func !== undefined) {
-            debugger;
             res = value == null ? call_version(func, [this, pyName]) : call_version(func, [this, pyName, value]);
         } else if (error_msg) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);

@@ -220,7 +220,6 @@ Sk.builtin.complex.check_number_or_complex = function (other) {
     }
 
     /* converting to complex allows us to use always only one formula */
-    debugger;
     if (Sk.builtin.checkNumber(other)) {
         other = Sk.misceval.callsimArray(Sk.builtin.complex, [other]); // create complex
     }
@@ -423,7 +422,6 @@ Sk.builtin.complex._c_diff = function (a, b) {
 Sk.builtin.complex.prototype.nb$subtract = function (other) {
     var result; // Py_complex
     var a, b; // Py_complex
-    debugger;
 
     a = Sk.builtin.complex.check_number_or_complex(this);
     b = Sk.builtin.complex.check_number_or_complex(other);
@@ -674,7 +672,6 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
     var result;
     var equal;
     var i;
-    debugger;
 
     if (op !== "Eq" && op !== "NotEq") {
         if (Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
