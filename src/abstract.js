@@ -231,11 +231,7 @@ Sk.abstr.unary_op_ = function (v, opname) {
     var ret;
     var vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        if (vop.call) {
-            ret = vop.call(v);
-        } else {  // assume that vop is an __xxx__ type method
-            ret = Sk.misceval.callsimArray(vop, [v]); //  added to be like not-in-place... is this okay?
-        }
+        ret = vop.call(v);
         if (ret !== undefined) {
             return ret;
         }
