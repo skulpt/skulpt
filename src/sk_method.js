@@ -75,7 +75,6 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             return this.$meth(args[0]);
         },
         $callNamedArgs: function (args, kwargs) {
-            debugger;
             args = Sk.abstr.copyKeywordsToNamedArgs(this.$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
             return this.$meth(...args);
         },

@@ -117,7 +117,6 @@ Sk.generic.new = function (builtin) {
         if (this === builtin.prototype) {
             return new this.constructor();
         } else {
-            debugger;
             const instance = new this.constructor();
             // now we want to apply instance to the builtin
             builtin.call(instance);

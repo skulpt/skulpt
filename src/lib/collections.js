@@ -245,9 +245,7 @@ const collections_mod = function (keywds) {
             tp$init: function (args, kwargs) {
                 Sk.abstr.checkArgsLen("OrderedDict", args, 0, 1);
                 args.unshift(this);
-                debugger;
                 res = Sk.misceval.callsimArray(this.update, args, kwargs);
-                debugger;
                 return Sk.builtin.none.none$;
             },
             tp$doc: "Dictionary that remembers insertion order",
