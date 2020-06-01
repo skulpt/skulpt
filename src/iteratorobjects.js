@@ -4,7 +4,7 @@
  * @param {number=} start
  * @extends Sk.builtin.object
  */
-Sk.builtin.enumerate = Sk.generic.iterator("enumerate", {
+Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
     constructor: function enumerate(iterable, start) {
         if (!(this instanceof Sk.builtin.enumerate)) {
             return new Sk.builtin.enumerate(iterable, start);
@@ -58,7 +58,7 @@ Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
  * @extends Sk.builtin.object
  */
 
-Sk.builtin.filter_ = Sk.generic.iterator("filter", {
+Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     constructor: function filter_(func, iterable) {
         this.func = func;
         this.iterable = iterable;
@@ -107,7 +107,7 @@ Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
  * @param {Object} seq
  * @extends Sk.builtin.object
  */
-Sk.builtin.reversed = Sk.generic.iterator("reversed", {
+Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
     constructor: function reversed(seq) {
         this.idx = seq.sq$length() - 1;
         this.seq = seq;
@@ -169,7 +169,7 @@ Sk.builtin.reversed = Sk.generic.iterator("reversed", {
  * @param {Array} JS Array of iterator objects
  * @extends Sk.builtin.object
  */
-Sk.builtin.zip_ = Sk.generic.iterator("zip", {
+Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     constructor: function zip_(iters) {
         this.iters = iters;
         return this;
@@ -225,7 +225,7 @@ Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);
  * @param {Array} array of iterators
  * @extends Sk.builtin.object
  */
-Sk.builtin.map_ = Sk.generic.iterator("map", {
+Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     constructor: function map_(func, iters) {
         this.func = func;
         this.iters = iters;

@@ -171,35 +171,6 @@ Sk.generic.newMethodDef = {
     $name: "__new__",
 };
 
-/**
- * @function
- * @param {String} type_name
- * @param {Function} iterator_constructor
- * @param {Object} methods
- * @param {Boolean} acceptable_as_base
- *
- * @description
- * effectively a wrapper for easily defining an iterator
- * tp$iter slot is added and returns self
- *
- * define tp$iternext with using iternext in the object literal
- * mostly as a convenience
- * you can also define tp$iternext in the slots
- *
- * the main benefit of this helper function is to reduce some repetitive code for defining an iter
- *
- * if your iterator is really a js array there are two helper functions to choose from
- * Sk.generic.iterNextWithArray || Sk.generic.iterNextWithArrayCheckSize
- *
- * @returns typeobj
- */
-
-Sk.generic.iterator = function (type_name, iterator) {
-    iterator.slots = iterator.slots || {};
-    iterator.slots.tp$iter = Sk.generic.selfIter;
-    iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
-    return Sk.abstr.buildNativeClass(type_name, iterator);
-};
 
 /**
  * @function

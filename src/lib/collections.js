@@ -223,7 +223,7 @@ const collections_mod = function (keywds) {
     });
 
     // OrderedDict
-    const odict_iter_ = Sk.generic.iterator("odict_iterator", {
+    const odict_iter_ = Sk.abstr.buildIteratorClass("odict_iterator", {
         constructor: function (odict) {
             this.$orig = odict;
             this.$index = 0;

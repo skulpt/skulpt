@@ -50,6 +50,10 @@ Sk.builtin.tuple.prototype.$subtype_new = function (args, kwargs) {
     return instance;
 };
 
+Sk.builtin.tuple.prototype.sk$asarray = function () {
+    return this.v.slice();
+};
+
 Sk.builtin.tuple.prototype.$r = function () {
     var ret;
     var i;

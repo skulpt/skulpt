@@ -1376,6 +1376,49 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     return typeobject;
 };
 
+
+/**
+ * @function
+ * @param {String} type_name
+ * @param {Function} iterator_constructor
+ * @param {Object} methods
+ * @param {Boolean} acceptable_as_base
+ *
+ * @description
+ * effectively a wrapper for easily defining an iterator
+ * tp$iter slot is added and returns self
+ * 
+ * define a constructor in the usual way
+ * if none is provided the default constructor will be used 
+ * which relies on the seq object having an sk$asarary method
+ *
+ * define tp$iternext using iternext in the object literal
+ * mostly as a convenience
+ * you can also define tp$iternext in the slots which will take priority
+ * if no iternext is provided default to Sk.generic.iterNextWithArray
+ *
+ * the main benefit of this helper function is to reduce some repetitive code for defining an iterator class
+ * 
+ * If you want a generic iterator see Sk.generic.iterator
+ *
+ *
+ * @returns typeobj
+ */
+
+Sk.abstr.buildIteratorClass = function (type_name, iterator) {
+    iterator.constructor = iterator.constructor || function (seq) {
+        this.$index = 0;
+        this.$seq = seq.sk$asarray();
+        this.$orig = seq;
+    };
+    iterator.slots = iterator.slots || {};
+    iterator.slots.tp$iter = Sk.generic.selfIter;
+    iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext || Sk.generic.iterNextWithArray;
+    return Sk.abstr.buildNativeClass(type_name, iterator);
+};
+
+
+
 Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
     for (let method_name in method_defs) {
         const method_def = method_defs[method_name];
