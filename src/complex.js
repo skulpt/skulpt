@@ -166,7 +166,7 @@ Sk.builtin.complex.complex_subtype_from_doubles = function (real, imag, type_pro
     if (type_prototype === Sk.builtin.complex.prototype) {
         return new Sk.builtin.complex(real, imag);
     } else {
-        instance = new type_prototype.constructor;
+        const instance = new type_prototype.constructor;
         Sk.builtin.complex.call(instance, real, imag);
         return instance;
     }

@@ -94,7 +94,7 @@ Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
  * @param {Sk.builtin.object} obj
  */
 Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
-    constructor: function (seq) {
+    constructor: function seq_iter (seq) {
         this.$index = 0;
         this.$seq = seq;
     },
@@ -182,7 +182,7 @@ Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
  * 
  */
 Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
-    constructor : function(fn, handlesOwnSuspensions) {
+    constructor : function iterator (fn, handlesOwnSuspensions) {
         this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
             let x = fn();
             if (canSuspend || !x.isSuspension) {

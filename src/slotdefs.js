@@ -1372,7 +1372,6 @@ Sk.reflectedNumberSlots = {
     nb$and: { reflected: "nb$reflected_and" },
     nb$or: { reflected: "nb$reflected_or" },
     nb$xor: { reflected: "nb$reflected_xor" },
-    nb$and: { reflected: "nb$reflected_and" },
     nb$lshift: {
         reflected: "nb$reflected_lshift",
         slot: function (other) {

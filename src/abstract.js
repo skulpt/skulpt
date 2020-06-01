@@ -1329,9 +1329,14 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
 Sk.abstr.buildNativeClass = function (typename, options) {
     options = options || {};
-    const typeobject = options.constructor || function () {
-        this.$d = new Sk.builtin.dict();
-    };
+    let typeobject;
+    if (!options.hasOwnProperty("constructor")) {
+        typeobject = function klass () {
+            this.$d = new Sk.builtin.dict();
+        };
+    } else {
+        typeobject = options.constructor;
+    }
     let mod;
     if (typename.includes(".")) {
         // you should define the module like "collections.defaultdict" for static classes
@@ -1406,11 +1411,13 @@ Sk.abstr.buildNativeClass = function (typename, options) {
  */
 
 Sk.abstr.buildIteratorClass = function (type_name, iterator) {
-    iterator.constructor = iterator.constructor || function (seq) {
-        this.$index = 0;
-        this.$seq = seq.sk$asarray();
-        this.$orig = seq;
-    };
+    if (!iterator.hasOwnProperty("constructor")) {
+        iterator.constructor = function iterator_object (seq) {
+            this.$index = 0;
+            this.$seq = seq.sk$asarray();
+            this.$orig = seq;
+        };
+    }
     iterator.slots = iterator.slots || {};
     iterator.slots.tp$iter = Sk.generic.selfIter;
     iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext || Sk.generic.iterNextWithArray;
