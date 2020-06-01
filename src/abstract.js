@@ -735,7 +735,7 @@ Sk.exportSymbol("Sk.abstr.copyKeywordsToNamedArgs", Sk.abstr.copyKeywordsToNamed
 
 Sk.abstr.checkNoKwargs = function (func_name, kwargs) {
     if (kwargs && kwargs.length) {
-        throw new Sk.builting.TypeError(func_name + "() takes no keyword arguments");
+        throw new Sk.builtin.TypeError(func_name + "() takes no keyword arguments");
     }
 };
 Sk.exportSymbol("Sk.abstr.checkNoKwargs", Sk.abstr.checkNoKwargs);
