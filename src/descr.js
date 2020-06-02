@@ -126,7 +126,7 @@ Sk.builtin.method_descriptor.prototype.tp$call = Sk.generic.functionCallMethod;
 Sk.builtin.method_descriptor.prototype.$methodFastCall = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
-    this.$meth.call(self, args);
+    this.$meth.call(self, args, kwargs);
 };
 Sk.builtin.method_descriptor.prototype.$methodFastCallNoKwargs = function (args, kwargs) {
     const self = args.shift();
