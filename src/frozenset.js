@@ -26,7 +26,20 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         tp$as_sequence_or_mapping: true,
         tp$doc:
             "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.",
-        tp$hash: undefined,  //todo
+        tp$hash: function () {
+            // numbers taken from Cpython 2.7 hash function
+            let hash = 1927868237;
+            const entries = this.sk$asarray();
+            hash *= entries.length + 1;
+            for (i = 0; i < entries.length; i++) {
+                const h = Sk.builtin.hash(entries[i]).v;
+                hash ^= (h ^ (h << 16) ^ 89869747) * 3644798167;
+            }
+            hash = hash * 69069 + 907133923;
+            hash = new Sk.builtin.int_(hash);
+            this.$savedHash_ = hash;
+            return hash;
+        },
         tp$new: function (args, kwargs) {
             if (this !== Sk.builtin.frozenset.prototype) {
                 return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
