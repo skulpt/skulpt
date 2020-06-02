@@ -100,6 +100,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
 Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "method", function (typeobj, method_def) {
 
     this.d$def = method_def;
+    this.$meth = method_def.$meth; //useful for internal fast calls
     this.d$type = typeobj;
     this.d$name = method_def.$name;
     const flags = method_def.$flags || {};
@@ -125,38 +126,38 @@ Sk.builtin.method_descriptor.prototype.tp$call = Sk.generic.functionCallMethod;
 Sk.builtin.method_descriptor.prototype.$methodFastCall = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
-    this.d$def.$meth.call(self, args);
+    this.$meth.call(self, args);
 };
 Sk.builtin.method_descriptor.prototype.$methodFastCallNoKwargs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoKwargs(this.d$name, kwargs);
-    return this.d$def.$meth.call(self, args);
+    return this.$meth.call(self, args);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallNoArgs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoArgs(this.d$name, args, kwargs);
-    return this.d$def.$meth.call(self);
+    return this.$meth.call(self);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallOneArg = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkOneArg(this.d$name, args, kwargs);
-    return this.d$def.$meth.call(self, args[0]);
+    return this.$meth.call(self, args[0]);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallNamedArgs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     args = Sk.abstr.copyKeywordsToNamedArgs(this.d$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
-    return this.d$def.$meth.call(self, ...args);
+    return this.$meth.call(self, ...args);
 };
 Sk.builtin.method_descriptor.prototype.$methodCallMinArgs = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
     Sk.abstr.checkNoKwargs(this.d$name, kwargs);
     Sk.abstr.checkArgsLen(this.d$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
-    return this.d$def.$meth.call(self, ...args);
+    return this.$meth.call(self, ...args);
 };
 Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
     if (self === undefined) {
