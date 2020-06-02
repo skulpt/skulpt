@@ -88,11 +88,11 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
             const func = Sk.builtin.checkNone(args[0]) ? null : args[0];
             const iterable = Sk.abstr.iter(args[1]);
             // in theory you could subclass
-            if (this === Sk.builtin.filter.prototype) {
-                return new Sk.builtin.filter(func, iterable);
+            if (this === Sk.builtin.filter_.prototype) {
+                return new Sk.builtin.filter_(func, iterable);
             } else {
                 const instance = new this.constructor();
-                Sk.builtin.filter.call(instance, func, iterable);
+                Sk.builtin.filter_.call(instance, func, iterable);
                 return instance;
             }
         },
@@ -141,7 +141,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
             const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
             if (special !== undefined) {
                 return Sk.misceval.callsimArray(special, [seq]);
-            } else if (!Sk.builtin.checkSequence(seq)) {
+            } else if (!Sk.builtin.checkSequence(seq) || Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$len) === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
             }
             if (this === Sk.builtin.reversed.prototype) {
