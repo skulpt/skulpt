@@ -13,10 +13,12 @@ const $builtinmodule = function (name) {
 
     // Number-theoretic and representation functions
     methods.ceil = function ceil(x) {
+        Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
+        const _x = Sk.builtin.asnum$(x);
         if (Sk.__future__.ceil_floor_int) {
-            return new Sk.builtin.int_(Math.ceil(Sk.builtin.asnum$(x)));
+            return new Sk.builtin.int_(Math.ceil(_x));
         }
-        return new Sk.builtin.float_(Math.ceil(Sk.builtin.asnum$(x)));
+        return new Sk.builtin.float_(Math.ceil(_x));
     };
 
     methods.comb = function comb(x, y) {
@@ -52,7 +54,7 @@ const $builtinmodule = function (name) {
     methods.fabs = function fabs(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        let _x = Sk.builtin.asnum$(Sk.builtin.float_(x)); //should raise OverflowError for large ints to floats
+        let _x = Sk.builtin.asnum$(new Sk.builtin.float_(x)); //should raise OverflowError for large ints to floats
         _x = Math.abs(_x);
 
         return new Sk.builtin.float_(_x);
@@ -109,12 +111,12 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.floor(Sk.builtin.asnum$(x)));
     };
 
-    methods.fmath = function fmath(x, y) {
+    methods.fmod = function fmod(x, y) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y)); //should raise OverFlow for large ints to floats
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y)); //should raise OverFlow for large ints to floats
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)) {
             return new Sk.builtin.float_(_x);
@@ -125,7 +127,7 @@ const $builtinmodule = function (name) {
                 throw new Sk.builtin.ValueError("math domain error");
             }
         }
-        return Sk.builtin.float_(r);
+        return new Sk.builtin.float_(r);
     };
 
     methods.frexp = function frexp(x) {
@@ -172,7 +174,7 @@ const $builtinmodule = function (name) {
         for (let x = iter.tp$iternext(); x !== undefined; x = iter.tp$iternext()) {
             Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
             i = 0;
-            x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+            x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
             for (let j = 0, len = partials.length; j < len; j++) {
                 let y = partials[j];
                 if (Math.abs(x) < Math.abs(y)) {
@@ -243,7 +245,7 @@ const $builtinmodule = function (name) {
         const a = args[0];
         const b = args[1];
         const rel_tol = rel_abs_vals[0];
-        const abs_tol = rel_abs_vals[0];
+        const abs_tol = rel_abs_vals[1];
 
         Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
         Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
@@ -319,7 +321,7 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
-        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
         const _i = Sk.builtin.asnum$(i);
 
         if (_x == Infinity || _x == -Infinity || _x == 0 || isNaN(_x)) {
@@ -332,18 +334,18 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(res);
     };
 
-    methods.mathf = function mathf(x) {
+    methods.modf = function modf(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
         if (!isFinite(_x)) {
             //special cases
             if (_x == Infinity) {
-                return new Sk.builtin.tuple([Sk.builtin.float_(0.0), Sk.builtin.float_(_x)]);
+                return new Sk.builtin.tuple([new Sk.builtin.float_(0.0), new Sk.builtin.float_(_x)]);
             } else if (_x == -Infinity) {
-                return new Sk.builtin.tuple([Sk.builtin.float_(-0.0), Sk.builtin.float_(_x)]);
+                return new Sk.builtin.tuple([new Sk.builtin.float_(-0.0), new Sk.builtin.float_(_x)]);
             } else if (isNaN(_x)) {
-                return new Sk.builtin.tuple([Sk.builtin.float_(_x), Sk.builtin.float_(_x)]);
+                return new Sk.builtin.tuple([new Sk.builtin.float_(_x), new Sk.builtin.float_(_x)]);
             }
         }
         const sign = get_sign(_x);
@@ -351,7 +353,7 @@ const $builtinmodule = function (name) {
         const i = sign * Math.floor(_x); //integer part
         const d = sign * (_x - Math.floor(_x)); //decimal part
 
-        return new Sk.builtin.tuple([Sk.builtin.float_(d), Sk.builtin.float_(i)]);
+        return new Sk.builtin.tuple([new Sk.builtin.float_(d), new Sk.builtin.float_(i)]);
     };
 
     methods.perm = function perm(x) {
@@ -366,8 +368,8 @@ const $builtinmodule = function (name) {
         // as per cpython algorithm see cpython for details
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y));
 
         // deal with most common cases first
         if (isFinite(_x) && isFinite(_y)) {
@@ -389,7 +391,7 @@ const $builtinmodule = function (name) {
                 }
                 r = m - 2.0 * ((0.5 * (absx - m)) % absy);
             }
-            return Sk.builtin.float_(get_sign(_x) * r);
+            return new Sk.builtin.float_(get_sign(_x) * r);
         }
         /* Special values. */
         if (isNaN(_x)) {
@@ -404,7 +406,7 @@ const $builtinmodule = function (name) {
         if (!(_y == Infinity || _y == -Infinity)) {
             throw new Sk.builtin.AssertionError();
         }
-        return Sk.builtin.float_(x);
+        return new Sk.builtin.float_(x);
     };
 
     methods.trunc = function trunc(x) {
@@ -418,7 +420,7 @@ const $builtinmodule = function (name) {
     // Power and logarithmic functions
     methods.exp = function exp(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
         if (_x == Infinity || _x == -Infinity || isNaN(_x)) {
             return new Sk.builtin.float_(Math.exp(_x));
         }
@@ -439,7 +441,7 @@ const $builtinmodule = function (name) {
         if (Math.abs(_x) < 0.7) {
             const _u = Math.exp(_x);
             if (_u == 1.0) {
-                return Sk.builtin.float_(_x);
+                return new Sk.builtin.float_(_x);
             } else {
                 const res = ((_u - 1.0) * _x) / Math.log(_u);
                 return new Sk.builtin.float_(res);
@@ -549,8 +551,8 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        const _x = Sk.builtin.asnum$(Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(Sk.builtin.float_(y));
+        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y));
 
         if (_x == 0 && _y < 0) {
             throw new Sk.builtin.ValueError("math domain error");
@@ -697,7 +699,7 @@ const $builtinmodule = function (name) {
         const _x = Sk.builtin.asnum$(x);
 
         if (_x === 0) {
-            return Sk.builtin.float_(x);
+            return new Sk.builtin.float_(x);
         }
 
         const e = Math.E;
@@ -875,12 +877,12 @@ const $builtinmodule = function (name) {
             $doc: "Return the floor of x as an Integral.\n\nThis is the largest integer <= x.",
         },
 
-        // fmod: {
-        //     $meth: methods.fmod,
-        //     $flags: {MinArgs:2, MaxArgs:2},
-        //     $textsig: "($module, x, y, /)",
-        //     $doc: "Return fmod(x, y), according to platform C.\n\nx % y may differ."
-        // },
+        fmod: {
+            $meth: methods.fmod,
+            $flags: {MinArgs:2, MaxArgs:2},
+            $textsig: "($module, x, y, /)",
+            $doc: "Return fmod(x, y), according to platform C.\n\nx % y may differ."
+        },
 
         frexp: {
             $meth: methods.frexp,
@@ -990,12 +992,12 @@ const $builtinmodule = function (name) {
             $doc: "Return the base 2 logarithm of x.",
         },
 
-        // modf: {
-        //     $meth: methods.modf,
-        //     $flags: {OneArg: true},
-        //     $textsig: "($module, x, /)",
-        //     $doc: "Return the fractional and integer parts of x.\n\nBoth results carry the sign of x and are floats."
-        // },
+        modf: {
+            $meth: methods.modf,
+            $flags: {OneArg: true},
+            $textsig: "($module, x, /)",
+            $doc: "Return the fractional and integer parts of x.\n\nBoth results carry the sign of x and are floats."
+        },
 
         pow: {
             $meth: methods.pow,
