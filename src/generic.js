@@ -190,7 +190,7 @@ Sk.generic.selfIter = function __iter__() {
 Sk.generic.iterNextWithArrayCheckSize = function __next__() {
     if (this.$index >= this.$seq.length) {
         return undefined;
-    } else if (this.$seq.length !== this.$orig.sq$length()) {
+    } else if (this.$seq.length !== this.$orig_size) {
         const error_name = this.tp$name.split("_")[0];
         throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
     }
