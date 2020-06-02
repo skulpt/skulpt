@@ -1087,6 +1087,37 @@ slots.__ipow__ = {
     $doc: "Implement **=",
 };
 
+slots.__matmul__ = {
+    $name: "__matmul__",
+    $slot_name: "nb$matrix_multiply",
+    $slot_func: Sk.generic.slotFuncOneArg("__matmul__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return self@value.",
+};
+slots.__rmatmul__ = {
+    $name: "__rmatmul__",
+    $slot_name: "nb$reflected_matrix_multiply",
+    $slot_func: Sk.generic.slotFuncOneArg("__rmatmul__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Return value@self.",
+};
+slots.__imatmul__ = {
+    $name: "__imatmul__",
+    $slot_name: "nb$inplace_matrix_multiply",
+    $slot_func: Sk.generic.slotFuncOneArg("__imatmul__"),
+    $wrapper: Sk.generic.wrapperCallOneArg,
+    $textsig: "($self, value, /)",
+    $flags: { OneArg: true },
+    $doc: "Implement self@=value.",
+};
+
+
+
+
 // py2 ONLY slots
 slots.__long__ = {
     $name: "__long__",
@@ -1209,7 +1240,7 @@ Sk.subSlots = {
         tp$init: "__init__",
         tp$call: "__call__",
         $r: "__repr__",
-        tp$hash: "__hash__",
+        // tp$hash: "__hash__", // do tp$hash separately since it could be None
         tp$str: "__str__",
 
         // getattribute, setattr, delattr
@@ -1390,6 +1421,15 @@ Sk.reflectedNumberSlots = {
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
     },
+    nb$matrix_multiply: {
+        reflected: "nb$reflexted_matrix_multiply",
+        slot: function (other) {
+            if (other instanceof this.constructor) {
+                return other.nb$matrix_multiply(this);
+            }
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
+    }
 };
 
 Sk.sequenceAndMappingSlots = {
@@ -1454,6 +1494,9 @@ Sk.dunderToSkulpt = {
     __rdivmod__: "nb$reflected_divmod",
     __pow__: "nb$power",
     __rpow__: "nb$reflected_power",
+    __matmul__: "nb$matrix_multiply",
+    __rmatmul__: "nb$reflected_matrix_multiply",
+    __imatmul__: "nb$inplace_matrix_multiply",
 
     __contains__: "sq$contains",
 
@@ -1470,8 +1513,8 @@ Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 
 Sk.setupDunderMethods = function (py3) {
     if (py3) {
-        Sk.dunderToSkulpt["__matmul__"] = "tp$matmul";
-        Sk.dunderToSkulpt["__rmatmul__"] = "tp$reflected_matmul";
+        Sk.dunderToSkulpt["__matmul__"] = "nb$matrix_multiply";
+        Sk.dunderToSkulpt["__rmatmul__"] = "nb$reflected_matrix_multiply";
     } else {
         if (Sk.dunderToSkulpt["__matmul__"]) {
             delete Sk.dunderToSkulpt["__matmul__"];
