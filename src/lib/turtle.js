@@ -49,7 +49,7 @@ function generateTurtleModule(_target) {
     }
 
     Types.FLOAT = function(value) {
-        return Sk.builtin.float_(value);
+        return new Sk.builtin.float_(value);
     };
     Types.COLOR = function(value) {
         if (typeof value === "string") {
@@ -60,7 +60,7 @@ function generateTurtleModule(_target) {
                 value[i] = Sk.builtin.assk$(value[i]);
             }
             if (value.length === 4) {
-                value[3] = Sk.builtin.float_(value[3]);
+                value[3] = new Sk.builtin.float_(value[3]);
             }
             return new Sk.builtin.tuple(value);
         }
@@ -456,7 +456,7 @@ function generateTurtleModule(_target) {
         this._managers = {};
         this._shape = shape.v;
         if (!SHAPES.hasOwnProperty(this._shape)){
-            throw Sk.builtin.ValueError("Shape:'" + this._shape + "' not in default shape, please check shape again!")
+            throw new Sk.builtin.ValueError("Shape:'" + this._shape + "' not in default shape, please check shape again!")
         }
         this.reset();
     }
@@ -630,8 +630,8 @@ function generateTurtleModule(_target) {
         };
         proto.$position.returnType = function(value) {
             return new Sk.builtin.tuple([
-                    Sk.builtin.float_(value[0]),
-                    Sk.builtin.float_(value[1])
+                    new Sk.builtin.float_(value[0]),
+                    new Sk.builtin.float_(value[1])
             ]);
         };
 
@@ -1069,7 +1069,7 @@ function generateTurtleModule(_target) {
         proto.$colormode.minArgs     = 0;
         proto.$colormode.co_varnames = ["cmode"];
         proto.$colormode.returnType = function(value) {
-            return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
+            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
         };
 
         proto.$window_width = function() {
