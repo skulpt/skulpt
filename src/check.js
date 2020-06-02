@@ -1,9 +1,6 @@
-
-
 /**
  * @namespace Sk.builtin
  */
-
 
 /**
  * Check arguments to Python functions to ensure the correct number of
@@ -32,7 +29,7 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
     if (free) {
         nargs -= 1;
     }
-    if ((nargs < minargs) || (nargs > maxargs)) {
+    if (nargs < minargs || nargs > maxargs) {
         if (minargs === maxargs) {
             msg = name + "() takes exactly " + minargs + " arguments";
         } else if (nargs < minargs) {
@@ -74,7 +71,7 @@ Sk.builtin.pyCheckArgsLen = function (name, nargs, minargs, maxargs, kwargs, fre
     if (free) {
         nargs -= 1;
     }
-    if ((nargs < minargs) || (nargs > maxargs)) {
+    if (nargs < minargs || nargs > maxargs) {
         if (minargs === maxargs) {
             msg = name + "() takes exactly " + minargs + " arguments";
         } else if (nargs < minargs) {
@@ -102,7 +99,10 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
 Sk.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
-    return (arg !== undefined && arg.mp$subscript !== undefined);
+    return (
+        arg != null &&
+        ((arg.sk$prototypical && arg.mp$subscript !== undefined) || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$getitem) !== undefined)
+    );
 };
 Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
@@ -145,10 +145,10 @@ Sk.builtin.checkCallable = function (obj) {
 };
 
 Sk.builtin.checkNumber = function (arg) {
-    return (arg != null && (typeof arg === "number" ||
-        arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.float_ ||
-        arg instanceof Sk.builtin.lng));
+    return (
+        arg != null &&
+        (typeof arg === "number" || arg instanceof Sk.builtin.int_ || arg instanceof Sk.builtin.float_ || arg instanceof Sk.builtin.lng)
+    );
 };
 Sk.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -162,51 +162,49 @@ Sk.builtin.checkComplex = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg != null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.lng);
+    return arg != null && ((typeof arg === "number" && arg === (arg | 0)) || arg instanceof Sk.builtin.int_ || arg instanceof Sk.builtin.lng);
 };
 Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg != null) && (arg instanceof Sk.builtin.float_);
+    return arg != null && arg instanceof Sk.builtin.float_;
 };
 Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 Sk.builtin.checkString = function (arg) {
-    return (arg != null && arg.ob$type == Sk.builtin.str);
+    return arg != null && arg.ob$type == Sk.builtin.str;
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkClass = function (arg) {
-    return (arg != null && arg.sk$type);
+    return arg != null && arg.sk$type;
 };
 Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
 Sk.builtin.checkBool = function (arg) {
-    return (arg instanceof Sk.builtin.bool);
+    return arg instanceof Sk.builtin.bool;
 };
 Sk.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
 Sk.builtin.checkNone = function (arg) {
-    return (arg === Sk.builtin.none.none$);
+    return arg === Sk.builtin.none.none$;
 };
 Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
-    return (arg != null && arg.tp$call !== undefined);
+    return arg != null && arg.tp$call !== undefined;
 };
 Sk.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 Sk.builtin.checkDataDescr = function (arg) {
-    return (arg && arg.tp$descr_set !== undefined);
+    return arg && arg.tp$descr_set !== undefined;
 };
 Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
 
 Sk.builtin.checkType = function (arg) {
-    return (arg != null && arg.sk$type !== undefined);
+    return arg != null && arg.sk$type !== undefined;
 };
 
 Sk.builtin.checkAnySet = function (arg) {
-    return (arg != null && (arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset));
+    return arg != null && (arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset);
 };
