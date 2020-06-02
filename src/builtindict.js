@@ -449,7 +449,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["filter"] = Sk.builtin.filter_;
         Sk.builtins["map"] = Sk.builtin.map_;
         Sk.builtins["zip"] = Sk.builtin.zip_;
-        Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.xrange);
+        Sk.builtins["range"] = Sk.builtin.range_;
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
