@@ -23,12 +23,12 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         // }
         this.args = new Sk.builtin.tuple([new Sk.builtin.str(args[0])]);
         this.traceback = [];
-    
+
         // For errors occurring during normal execution, the line/col/etc
         // of the error are populated by each stack frame of the runtime code,
         // but we can seed it with the supplied parameters.
         if (args.length >= 3) {
-    
+
             // if !this.args[1].v, this is an error, and the exception that causes it
             // probably needs to be fixed, but we mark as "<unknown>" for now
             this.traceback.push({
@@ -403,3 +403,27 @@ Sk.builtin.getExcInfo = function (e) {
 };
 // NOT exported
 
+
+// We inherit from StandardError for backward compatibilaty. 
+// We don't worry about StandardError in __base__ and __bases__ for py2 so we just override it here for py3
+Sk.builtin.TypeError.prototype.tp$base =
+    Sk.builtin.ValueError.prototype.tp$base =
+    Sk.builtin.AssertionError.prototype.tp$base =
+    Sk.builtin.AttributeError.prototype.tp$base =
+    Sk.builtin.ImportError.prototype.tp$base =
+    Sk.builtin.IndentationError.prototype.tp$base =
+    Sk.builtin.IndexError.prototype.tp$base =
+    Sk.builtin.KeyError.prototype.tp$base =
+    Sk.builtin.NameError.prototype.tp$base =
+    Sk.builtin.OverflowError.prototype.tp$base =
+    Sk.builtin.RuntimeError.prototype.tp$base =
+    Sk.builtin.SyntaxError.prototype.tp$base =
+    Sk.builtin.SuspensionError.prototype.tp$base =
+    Sk.builtin.TimeLimitError.prototype.tp$base =
+    Sk.builtin.IOError.prototype.tp$base =
+    Sk.builtin.NotImplementedError.prototype.tp$base =
+    Sk.builtin.ExternalError.prototype.tp$base =
+    Sk.builtin.OperationError.prototype.tp$base =
+    Sk.builtin.SystemError.prototype.tp$base =
+    Sk.builtin.ZeroDivisionError.prototype.tp$base =
+    Sk.builtin.UnboundLocalError.prototype.tp$base = Sk.builtin.Exception;
