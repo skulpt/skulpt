@@ -206,3 +206,7 @@ Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
 Sk.builtin.checkType = function (arg) {
     return (arg != null && arg.sk$type !== undefined);
 };
+
+Sk.builtin.checkAnySet = function (arg) {
+    return (arg != null && (arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset));
+};
