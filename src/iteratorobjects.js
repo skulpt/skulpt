@@ -99,7 +99,6 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     },
 });
 
-Sk.abstr.setUpInheritance("filter", Sk.builtin.filter_, Sk.builtin.object);
 Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
 
 /**
