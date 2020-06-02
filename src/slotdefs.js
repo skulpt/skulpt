@@ -1467,9 +1467,6 @@ Sk.dunderToSkulpt = {
     __rmatmul__: "nb$reflected_matrix_multiply",
     __imatmul__: "nb$inplace_matrix_multiply",
 
-    __bool__: "nb$bool",
-    __nonzero__: "nb$nonzero",
-
     __get__: "tp$descr_get",
     __set__: "tp$descr_set",
     __delete__: "tp$descr_set",

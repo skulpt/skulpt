@@ -440,7 +440,9 @@ Sk.builtins.$method_defs = {
 };
 
 for (let def_name in Sk.builtins.$method_defs) {
-    Sk.builtins[def_name] = new Sk.builtin.sk_method(Sk.builtins.$method_defs[def_name], undefined, "builtins");
+    const method_def = Sk.builtins.$method_defs[def_name];
+    method_def.$name = def_name;
+    Sk.builtins[def_name] = new Sk.builtin.sk_method(method_def, undefined, "builtins");
 }
 
 

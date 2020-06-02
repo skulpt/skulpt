@@ -16,14 +16,6 @@ Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builti
 
 /* Constants used for kwargs */
 
-// // Sk.builtin.int_
-// Sk.builtin.int_.co_varnames = [ "number", "base" ];
-// Sk.builtin.int_.$defaults = [ 0, Sk.builtin.none.none$ ];
-
-// Sk.builtin.lng
-Sk.builtin.lng.co_varnames = [ "number", "base" ];
-Sk.builtin.lng.$defaults = [ 0, Sk.builtin.none.none$ ];
-
 // Sk.builtin.sorted
 Sk.builtin.sorted.co_varnames = ["list", "cmp", "key", "reverse"];
 Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.bool.false$];

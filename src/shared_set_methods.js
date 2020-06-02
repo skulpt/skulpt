@@ -87,7 +87,7 @@ Sk.builtin.setMethodDefs = {
             const discard = Sk.builtin.set.prototype.discard.$meth;
             for (let j = 0; j < vals.length; j++) {
                 const item = vals[j];
-                for (i = 0; i < args.length; i++) {
+                for (let i = 0; i < args.length; i++) {
                     if (!Sk.abstr.sequenceContains(args[i], item)) {
                         discard.call(this, item);
                         break;

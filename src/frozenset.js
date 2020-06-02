@@ -31,7 +31,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             let hash = 1927868237;
             const entries = this.sk$asarray();
             hash *= entries.length + 1;
-            for (i = 0; i < entries.length; i++) {
+            for (let i = 0; i < entries.length; i++) {
                 const h = Sk.builtin.hash(entries[i]).v;
                 hash ^= (h ^ (h << 16) ^ 89869747) * 3644798167;
             }
