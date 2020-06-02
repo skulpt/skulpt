@@ -417,8 +417,6 @@ Sk.builtin.complex._c_diff = function (a, b) {
     return new Sk.builtin.complex(r, i);
 };
 
-// Sk.builtin.complex.prototype.nb$reflected_add = Sk.builtin.complex.prototype.nb$add;
-
 Sk.builtin.complex.prototype.nb$subtract = function (other) {
     var result; // Py_complex
     var a, b; // Py_complex
@@ -497,13 +495,10 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     return new Sk.builtin.complex(real, imag);
 };
 
-// Sk.builtin.complex.prototype.nb$reflected_floor_divide = 
+
 Sk.builtin.complex.prototype.nb$floor_divide = function (other) {
     throw new Sk.builtin.TypeError("can't take floor of complex number.");
 };
-// Sk.builtin.complex.prototype.nb$reflected_floor_divide = function (other) {
-//     throw new Sk.builtin.TypeError("can't take floor of complex number.");
-// };
 
 Sk.builtin.complex.prototype.nb$remainder = function (other) {
     throw new Sk.builtin.TypeError("can't mod complex numbers.");
@@ -615,21 +610,6 @@ Sk.builtin.complex.c_powu = function (x, n) {
 
     return r;
 };
-
-
-// Sk.builtin.complex.prototype.nb$inplace_add = Sk.builtin.complex.prototype.nb$add;
-
-// Sk.builtin.complex.prototype.nb$inplace_subtract = Sk.builtin.complex.prototype.nb$subtract;
-
-// Sk.builtin.complex.prototype.nb$inplace_multiply = Sk.builtin.complex.prototype.nb$multiply;
-
-// Sk.builtin.complex.prototype.nb$inplace_divide = Sk.builtin.complex.prototype.nb$divide;
-
-// Sk.builtin.complex.prototype.nb$inplace_remainder = Sk.builtin.complex.prototype.nb$remainder;
-
-// Sk.builtin.complex.prototype.nb$inplace_floor_divide = Sk.builtin.complex.prototype.nb$floor_divide;
-
-// Sk.builtin.complex.prototype.nb$inplace_power = Sk.builtin.complex.prototype.nb$power;
 
 Sk.builtin.complex.prototype.nb$negative = function () {
     var real;
@@ -888,23 +868,8 @@ Sk.builtin.complex.prototype.int$conjugate.co_name = new Sk.builtin.str("conjuga
 Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(Sk.builtin.complex.prototype.int$conjugate);
 
 // deprecated
-Sk.builtin.complex.prototype.nb$divmod = function __divmod__(other) {
-    var div, mod; // Py_complex
-    var d, m, z; // PyObject
-    var a, b; // Py_complex
-    a = Sk.builtin.complex.check_number_or_complex(this);
-    b = Sk.builtin.complex.check_number_or_complex(other);
-
-    div = a.nb$divide.call(a, b); // the raw divisor value
-
-    div.real = new Sk.builtin.float_(Math.floor(div.real.v));
-    div.imag = new Sk.builtin.float_(0.0);
-
-    mod = a.nb$subtract.call(a, b.nb$multiply.call(b, div));
-
-    z = new Sk.builtin.tuple([div, mod]);
-
-    return z;
+Sk.builtin.complex.prototype.nb$divmod = function (other) {
+    throw new Sk.builtin.TypeError("can't take floor or mod of complex number.");
 };
 Sk.builtin.complex.prototype.int$getnewargs = function __getnewargs__(self) {
     Sk.builtin.pyCheckArgsLen("__getnewargs__", arguments.length, 0, 0, true);
@@ -923,7 +888,6 @@ Sk.builtin.complex.prototype.nb$nonzero = function () {
 };
 
 
-// ToDo: think about inplace methods too
 Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
 
