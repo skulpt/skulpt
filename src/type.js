@@ -211,7 +211,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
 
     // meta types must follow single inheritance - we could change this and do
     // this.ob$type.$typeLookup(jsName)... but doesn't seem much point
-    const descr = this[jsName];
+    const descr = this.ob$type.$typeLookup(jsName);
 
     // if it's a data descriptor then call it
     if (descr !== undefined && descr !== null) {
@@ -238,7 +238,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
 
     this.prototype[jsName] = value;
 
-    if (this.prototype.prototypical && jsName in Sk.dunderToSkulpt) {
+    if (this.prototype.sk$prototypical && jsName in Sk.dunderToSkulpt) {
         this.$allocateSlot(jsName);
     }
 };
