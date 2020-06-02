@@ -225,9 +225,9 @@ const collections_mod = function (keywds) {
     // OrderedDict
     const odict_iter_ = Sk.abstr.buildIteratorClass("odict_iterator", {
         constructor: function (odict) {
-            this.$orig = odict;
             this.$index = 0;
             this.$seq = odict.sk$asarray();
+            this.$orig_size = odict.sq$length();
         },
         iternext: Sk.generic.iterNextWithArrayCheckSize,
         flags: { sk$acceptable_as_base_class: false },
