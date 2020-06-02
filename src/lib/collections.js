@@ -1,6 +1,20 @@
 const collections_mod = function (keywds) {
     const collections = {};
+    
     // defaultdict object
+    const _copy_dd_method_df = {
+        $meth: function () {
+            const L = [];
+            const self = this;
+            Sk.misceval.iterFor(Sk.abstr.iter(self), function (k) {
+                L.push(k);
+                L.push(self.mp$subscript(k));
+            });
+            return new collections.defaultdict(this.default_factory, L);
+        },
+        $flags: { NoArgs: true },
+    };
+
     collections.defaultdict = Sk.abstr.buildNativeClass("collections.defaultdict", {
         constructor: function (default_factory, L) {
             this.default_factory = default_factory;
@@ -8,17 +22,8 @@ const collections_mod = function (keywds) {
         },
         base: Sk.builtin.dict,
         methods: {
-            copy: {
-                $meth: function () {
-                    const L = [];
-                    Sk.misceval.iterFor(Sk.abstr.iter(this), function (k) {
-                        L.push(k);
-                        L.push(this.mp$subscript(k));
-                    });
-                    return new collections.defaultdict(this.default_factory, L);
-                },
-                $flags: { NoArgs: true },
-            },
+            copy: _copy_dd_method_df,
+            __copy__: _copy_dd_method_df, 
             __missing__: {
                 $meth: function (key) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
@@ -328,7 +333,7 @@ const collections_mod = function (keywds) {
                     if (d === null) {
                         return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key]);
                     } else {
-                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]); 
+                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]);
                     }
                 },
             },
