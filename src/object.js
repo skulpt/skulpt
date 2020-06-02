@@ -145,19 +145,14 @@ Sk.builtin.object.prototype.tp$getsets = {
     }
 };
 
-// Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
-// overriding __getattribute__ etc need to be able to call object.__getattribute__ etc from Python
-Sk.builtin.object.prototype["__getattribute__"] = Sk.generic.pythonGetAttr;
-Sk.builtin.object.prototype["__setattr__"] = Sk.generic.pythonSetAttr;
-
 
 Sk.builtin.object.prototype.tp$methods = {
     __dir__: {
         $meth: function __dir__() {
-            const dir = [];
+            let dir = [];
             if (this.$d) {
                 if (this.$d instanceof Sk.builtin.dict) {
-                    dir.concat(this.$d.sk$asarray());
+                    dir = this.$d.sk$asarray();
                 } else {
                     for (let key in this.$d) {
                         dir.push(new Sk.builtin.str(key));
@@ -166,8 +161,9 @@ Sk.builtin.object.prototype.tp$methods = {
             }
             // here we use the type.__dir__ implementation
             const type_dir = Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [this.ob$type]);
-            type_dir.v.push(...dir);
-            type_dir.v.sort((a, b) => a.v.localeCompare(b.v));
+            // put the dict keys before the prototype keys
+            dir.push(...type_dir.v);
+            type_dir.v = dir;
             return type_dir;
         },
         $flags: { NoArgs: true },

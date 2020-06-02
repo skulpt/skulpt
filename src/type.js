@@ -520,7 +520,7 @@ Sk.builtin.type.prototype.tp$methods = {
                     }
                 }
             }
-            return new Sk.builtin.list(dir.sort((a, b) => a.v.localeCompare(b.v)));
+            return new Sk.builtin.list(dir);
         },
         $flags: { NoArgs: true },
         $doc: "Specialized __dir__ implementation for types.",
