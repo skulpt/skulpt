@@ -500,13 +500,13 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey]);
     };
 
-    _groupby_gen.co_name = new Sk.builtins.str("groupby");
+    _groupby_gen.co_name = new Sk.builtin.str("groupby");
     _groupby_gen.co_varnames = ["it", "keyfunc", "currval", "currkey", "tgtkey"];
-    _groupby.co_name = new Sk.builtins.str("groupby");
+    _groupby.co_name = new Sk.builtin.str("groupby");
     _groupby.$defaults = [Sk.builtin.none.none$];
     _groupby.co_varnames = ["iterable", "key"];
 
-    _grouper.co_name = new Sk.builtins.str("_grouper");
+    _grouper.co_name = new Sk.builtin.str("_grouper");
     _grouper.co_varnames = ["groupby_gen", "tgtkey", "id"];
 
     mod.groupby = new Sk.builtin.func(_groupby);
