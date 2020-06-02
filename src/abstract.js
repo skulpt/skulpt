@@ -26,9 +26,9 @@ Sk.abstr.binop_type_error = function (v, w, name) {
 Sk.abstr.unop_type_error = function (v, name) {
     var vtypename = Sk.abstr.typeName(v),
         uop = {
-            "UAdd": "+",
-            "USub": "-",
-            "Invert": "~"
+            UAdd: "+",
+            USub: "-",
+            Invert: "~",
         }[name];
 
     throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
@@ -55,7 +55,7 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
             return obj.nb$multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$matmul;
+                return obj.nb$matrix_multiply;
             }
         case "Div":
             return obj.nb$divide;
@@ -94,7 +94,7 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
             return obj.nb$reflected_multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$reflected_matmul;
+                return obj.nb$reflected_matrix_multiply;
             }
         case "Div":
             return obj.nb$reflected_divide;
@@ -129,7 +129,7 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
             return obj.nb$inplace_multiply || obj.nb$multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
-                return obj.tp$inplace_matmul;
+                return obj.nb$inplace_matrix_multiply;
             }
         case "Div":
             return obj.nb$inplace_divide || obj.nb$divide;
@@ -263,15 +263,12 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 
     if (a.constructor === Sk.builtin.lng) {
         return [a, b];
-    } else if ((a.constructor === Sk.builtin.int_ ||
-        a.constructor === Sk.builtin.float_) &&
-        b.constructor === Sk.builtin.complex) {
+    } else if ((a.constructor === Sk.builtin.int_ || a.constructor === Sk.builtin.float_) && b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
         tmp = new Sk.builtin.complex(a.v);
         return [tmp, b];
-    } else if (a.constructor === Sk.builtin.int_ ||
-        a.constructor === Sk.builtin.float_) {
+    } else if (a.constructor === Sk.builtin.int_ || a.constructor === Sk.builtin.float_) {
         return [a, b];
     } else if (typeof a === "number") {
         tmp = Sk.builtin.assk$(a);
@@ -282,60 +279,60 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 };
 
 Sk.abstr.boNumPromote_ = {
-    "Add": function (a, b) {
+    Add: function (a, b) {
         return a + b;
     },
-    "Sub": function (a, b) {
+    Sub: function (a, b) {
         return a - b;
     },
-    "Mult": function (a, b) {
+    Mult: function (a, b) {
         return a * b;
     },
-    "Mod": function (a, b) {
+    Mod: function (a, b) {
         var m;
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         }
         m = a % b;
-        return ((m * b) < 0 ? (m + b) : m);
+        return m * b < 0 ? m + b : m;
     },
-    "Div": function (a, b) {
+    Div: function (a, b) {
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         } else {
             return a / b;
         }
     },
-    "FloorDiv": function (a, b) {
+    FloorDiv: function (a, b) {
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         } else {
             return Math.floor(a / b);
         } // todo; wrong? neg?
     },
-    "Pow": Math.pow,
-    "BitAnd": function (a, b) {
+    Pow: Math.pow,
+    BitAnd: function (a, b) {
         var m = a & b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "BitOr": function (a, b) {
+    BitOr: function (a, b) {
         var m = a | b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "BitXor": function (a, b) {
+    BitXor: function (a, b) {
         var m = a ^ b;
         if (m < 0) {
             m = m + 4294967296; // convert back to unsigned
         }
         return m;
     },
-    "LShift": function (a, b) {
+    LShift: function (a, b) {
         var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
@@ -348,18 +345,18 @@ Sk.abstr.boNumPromote_ = {
             return a * Math.pow(2, b);
         }
     },
-    "RShift": function (a, b) {
+    RShift: function (a, b) {
         var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
         }
         m = a >> b;
-        if ((a > 0) && (m < 0)) {
+        if (a > 0 && m < 0) {
             // fix incorrect sign extension
             m = m & (Math.pow(2, 32 - b) - 1);
         }
         return m;
-    }
+    },
 };
 
 Sk.abstr.numberBinOp = function (v, w, op) {
@@ -460,33 +457,24 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     var seqtypename;
     var special;
     var r;
-
+    let ret;
     if (seq.sq$contains) {
-        return seq.sq$contains(ob);
-    }
-
-    /**
-     *  Look for special method and call it, we have to distinguish between built-ins and
-     *  python objects
-     */
-    special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$contains);
-    if (special !== undefined) {
-        // method on builtin, provide this arg
-        return Sk.misceval.isTrue(Sk.misceval.callsimArray(special, [seq, ob]));
-    }
-
-    if (!Sk.builtin.checkIterable(seq)) {
-        seqtypename = Sk.abstr.typeName(seq);
-        throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
-    }
-
-    r = Sk.misceval.iterFor(Sk.abstr.iter(seq), function (i) {
-        if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
-            return new Sk.misceval.Break(true);
-        } else {
-            return false;
+        ret =  seq.sq$contains(ob);
+        if (ret !== undefined) {
+            return ret;
         }
-    }, false);
+    } 
+    r = Sk.misceval.iterFor(
+        Sk.abstr.iter(seq),
+        function (i) {
+            if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+                return new Sk.misceval.Break(true);
+            } else {
+                return false;
+            }
+        },
+        false
+    );
 
     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
@@ -509,8 +497,7 @@ Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
     }
     if (Sk.builtin.checkIterable(seq)) {
         index = 0;
-        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
-            i !== undefined; i = it.tp$iternext()) {
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
                 return new Sk.builtin.int_(index);
             }
@@ -532,8 +519,7 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
     }
     if (Sk.builtin.checkIterable(seq)) {
         count = 0;
-        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
-            i !== undefined; i = it.tp$iternext()) {
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
                 count += 1;
             }
@@ -640,9 +626,7 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
-        (i !== undefined) && (res.length < n);
-        i = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined && res.length < n; i = it.tp$iternext()) {
         res.push(i);
     }
 
@@ -664,22 +648,29 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
 // at some point, but in the meantime we have this function to
 // unpack keyword dictionaries into our special format
 Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObject) {
-    return Sk.misceval.chain(pyMapping.tp$getattr(new Sk.builtin.str("items")), function (itemfn) {
-        if (!itemfn) { throw new Sk.builtin.TypeError("Object is not a mapping"); }
-        return Sk.misceval.callsimOrSuspend(itemfn);
-    }, function (items) {
-        return Sk.misceval.iterFor(Sk.abstr.iter(items), function (item) {
-            if (!item || !item.v) { throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples"); }
-            if (!(item.v[0] instanceof Sk.builtin.str)) {
-                throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name + ":" : "") + "keywords must be strings");
+    return Sk.misceval.chain(
+        pyMapping.tp$getattr(new Sk.builtin.str("items")),
+        function (itemfn) {
+            if (!itemfn) {
+                throw new Sk.builtin.TypeError("Object is not a mapping");
             }
-            jsArray.push(item.v[0].v, item.v[1]);
-        });
-    });
+            return Sk.misceval.callsimOrSuspend(itemfn);
+        },
+        function (items) {
+            return Sk.misceval.iterFor(Sk.abstr.iter(items), function (item) {
+                if (!item || !item.v) {
+                    throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples");
+                }
+                if (!(item.v[0] instanceof Sk.builtin.str)) {
+                    throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name + ":" : "") + "keywords must be strings");
+                }
+                jsArray.push(item.v[0].v, item.v[1]);
+            });
+        }
+    );
 };
 
-
-// A helper function for simple cases (mostly internal functions) 
+// A helper function for simple cases (mostly internal functions)
 // When a function uses named arguments that might passed as posargs or keyword args
 // this function returns a copy of the args as positional args or raises an exception if this is not possible
 // similar to the code in func_code tp$call
@@ -722,7 +713,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
                 args[i] = defaults[defaults.length - 1 - (nargs - 1 - i)];
             }
         }
-        const num_missing = args.filter(x => x === undefined).length;
+        const num_missing = args.filter((x) => x === undefined).length;
         if (num_missing) {
             throw new Sk.builtin.TypeError(func_name + "() missing " + num_missing + " positional arguments");
         }
@@ -748,7 +739,6 @@ Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs);
 
-
 Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
     Sk.abstr.checkNoKwargs(func_name, kwargs);
     if (args.length !== 1) {
@@ -757,14 +747,13 @@ Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkOneArg", Sk.abstr.checkOneArg);
 
-
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
     const nargs = args.length;
     let msg;
     if (maxargs === undefined) {
         maxargs = Infinity;
     }
-    if ((nargs < minargs) || (nargs > maxargs)) {
+    if (nargs < minargs || nargs > maxargs) {
         if (minargs === maxargs) {
             msg = func_name + "() takes exactly " + minargs + " arguments";
         } else if (nargs < minargs) {
@@ -777,7 +766,6 @@ Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
     }
 };
 Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
-
 
 //
 // Object
@@ -876,9 +864,7 @@ Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
     if (o !== null) {
-        if (o.tp$getitem) {
-            return o.tp$getitem(key, canSuspend);
-        } else if (o.mp$subscript) {
+        if (o.mp$subscript) {
             return o.mp$subscript(key, canSuspend);
         } else if (Sk.misceval.isIndex(key) && o.sq$item) {
             return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
@@ -906,7 +892,6 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
-
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // TODO is it even valid to pass something this shape in here?
@@ -936,9 +921,10 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
-
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
-    var objname = Sk.abstr.typeName(obj), r, setf;
+    var objname = Sk.abstr.typeName(obj),
+        r,
+        setf;
     var jsName = pyName.$jsstr();
 
     if (obj === null) {
@@ -953,12 +939,10 @@ Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
-
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
 Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
-
 
 /**
  * Get the iterator for a Python object  This iterator could be one of the following.
@@ -978,7 +962,7 @@ Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 Sk.abstr.iter = function (obj) {
     let iter;
     if (obj.sk$prototypical) {
-        // this is the easy case we can just check 
+        // this is the easy case we can just check
         // slots for (tp$iter and then tp$iternext) or mp$subscript
         if (obj.tp$iter) {
             iter = obj.tp$iter();
@@ -990,7 +974,7 @@ Sk.abstr.iter = function (obj) {
             return new Sk.builtin.seq_iter_(obj);
         }
     } else {
-        // in the case of multiple inheritance 
+        // in the case of multiple inheritance
         // we know tp$iter will exist because it has all the slot functions
         iter = obj.tp$iter();
         if (iter !== undefined && Sk.abstr.lookupSpecial(iter, Sk.builtin.str.$next) !== undefined) {
@@ -1005,8 +989,32 @@ Sk.abstr.iter = function (obj) {
 };
 Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
+Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
+    if (iterable == null) {
+        return [];
+    }
+    if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
+        return iterable.sk$asarray();
+    }
+    const L = [];
+    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
+        L.push(i);
+    });
+    if (ret === undefined || !ret.isSuspension) {
+        return L;
+    } else if (canSuspend) {
+        return Sk.misceval.chain(ret, () => {
+            return L;
+        });
+    } else {
+        return Sk.misceval.chain(Sk.misceval.retryOptionalSuspensionOrThrow(ret), () => {
+            return L;
+        });
+    }
+};
+
 /**
- * Special method look up. 
+ * Special method look up.
  * can take a pyName or jsName
  * uses the ob$type.$typeLookup method
  *
@@ -1076,13 +1084,11 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     child.prototype = Object.create(parent.prototype);
     child.prototype.constructor = child;
 
-
     // now some house keeping
     child.prototype.tp$base = parent;
     child.prototype.tp$name = childName;
     child.prototype.ob$type = child;
 };
-
 
 /**
  * Set up inheritance between type and object
@@ -1090,25 +1096,25 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
  * object instanceof type   => true
  * type   instanceof type   => true
  * object instanceof object => true
- * 
+ *
  * type   subclassof object => type.prototype   instanceof object => true
  * object subclassof type   => object.prototype instanceof type   => false
- * 
- * this algorithm achieves the equivalent with the following prototypical chains 
+ *
+ * this algorithm achieves the equivalent with the following prototypical chains
  * using Object.setPrototypeOf
  * type.__proto__             = type   (type instanceof type)
  * type.__proto__.__proto__   = object (type instanceof object)
  * type.prototype.__proto__   = object (type subclassof object)
  * object.__proto__           = type   (object instanceof type)
  * object.__proto__.__proto__ = object (object instanceof object)
- * 
+ *
  * while Object.setPrototypeOf is not considered good practice
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
  * this is a particularly unique use case and creates a lot of prototypical benefits
  * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
  * similarly it makes metclasses that much easier to implement
  * Object.setPrototypeOf is also a feature built into the javascript language
- * 
+ *
  * @function
  */
 Sk.abstr.setUpBaseInheritance = function () {
@@ -1178,10 +1184,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     for (let method_name in methods) {
         const method_def = methods[method_name];
         method_def.$name = method_name;
-        klass.prototype[method_name] = new Sk.builtin.method_descriptor(
-            klass,
-            method_def
-        );
+        klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
     }
     klass.prototype.tp$methods = null;
 };
@@ -1210,9 +1213,11 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     if (slots.tp$richcompare !== undefined) {
         for (let op in op2shortcut) {
             const shortcut = op2shortcut[op];
-            proto[shortcut] = slots[shortcut] = slots[shortcut] || function (other) {
-                return this.tp$richcompare(other, op);
-            };
+            proto[shortcut] = slots[shortcut] =
+                slots[shortcut] ||
+                function (other) {
+                    return this.tp$richcompare(other, op);
+                };
         }
     }
 
@@ -1227,13 +1232,9 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
     function wrap_func(klass, dunder_name, wrapped_func) {
         const slot_def = Sk.slots[dunder_name];
-        // we do this here because in the generic.wrapperCall methods the wrapped_func 
+        // we do this here because in the generic.wrapperCall methods the wrapped_func
         // the wrapped func should have a $name property and a $flags property (for minArgs)
-        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(
-            klass,
-            slot_def,
-            wrapped_func
-        );
+        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
     }
     function set_up_slot(slot_name, slots, klass, slot_mapping) {
         const wrapped_func = slots[slot_name];
@@ -1256,6 +1257,14 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
     }
 
+    // __hash__
+    const hash = slots.tp$hash;
+    if (hash == Sk.builtin.none.none$) {
+        klass.prototype.__hash__ = hash;
+    } else if (hash !== undefined) {
+        wrap_func(klass, "__hash__", hash);
+    }
+
     // as_number_slots
     const number_slots = Sk.subSlots.number_slots;
     const reflected_slots = Sk.reflectedNumberSlots;
@@ -1270,9 +1279,8 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                 if (slot == null) {
                     klass.prototype[reflect_name] = slots[reflect_name] = slots[slot_name];
                 } else {
-                    klass.prototype[reflect_name] = slots[reflect_name] = slot; 
+                    klass.prototype[reflect_name] = slots[reflect_name] = slot;
                 }
-                
             }
         }
         for (let slot_name in number_slots) {
@@ -1331,7 +1339,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     options = options || {};
     let typeobject;
     if (!options.hasOwnProperty("constructor")) {
-        typeobject = function klass () {
+        typeobject = function klass() {
             this.$d = new Sk.builtin.dict();
         };
     } else {
@@ -1381,7 +1389,6 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     return typeobject;
 };
 
-
 /**
  * @function
  * @param {String} type_name
@@ -1392,39 +1399,27 @@ Sk.abstr.buildNativeClass = function (typename, options) {
  * @description
  * effectively a wrapper for easily defining an iterator
  * tp$iter slot is added and returns self
- * 
+ *
  * define a constructor in the usual way
- * if none is provided the default constructor will be used 
- * which relies on the seq object having an sk$asarary method
  *
  * define tp$iternext using iternext in the object literal
  * mostly as a convenience
  * you can also define tp$iternext in the slots which will take priority
- * if no iternext is provided default to Sk.generic.iterNextWithArray
  *
  * the main benefit of this helper function is to reduce some repetitive code for defining an iterator class
- * 
- * If you want a generic iterator see Sk.generic.iterator
  *
+ * If you want a generic iterator see Sk.generic.iterator
  *
  * @returns typeobj
  */
 
 Sk.abstr.buildIteratorClass = function (type_name, iterator) {
-    if (!iterator.hasOwnProperty("constructor")) {
-        iterator.constructor = function iterator_object (seq) {
-            this.$index = 0;
-            this.$seq = seq.sk$asarray();
-            this.$orig = seq;
-        };
-    }
+    Sk.asserts.assert(iterator.hasOwnProperty("constructor"), "must provide a constructor");
     iterator.slots = iterator.slots || {};
     iterator.slots.tp$iter = Sk.generic.selfIter;
-    iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext || Sk.generic.iterNextWithArray;
+    iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
     return Sk.abstr.buildNativeClass(type_name, iterator);
 };
-
-
 
 Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
     for (let method_name in method_defs) {
