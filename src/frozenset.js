@@ -1,378 +1,80 @@
+const set_proto = Sk.builtin.set.prototype;
+const set_methods = Sk.builtin.setMethodDefs;
 /**
  * @constructor
  * @param {Array.<Object>} S
  */
-Sk.builtin.frozenset = function (S) {
-    // internal function S is an Array or undefined
-    Sk.asserts.assert(this instanceof Sk.builtin.frozenset);
-    if (S === undefined) {
-        S = [];
-    }
-    this.v = new Sk.builtin.dict(S);
-};
-
-
-Sk.abstr.setUpInheritance("frozenset", Sk.builtin.frozenset, Sk.builtin.object);
-Sk.builtin.frozenset.prototype.tp$as_sequence_or_mapping = true;
-Sk.builtin.frozenset.prototype.tp$as_number = true;
-
-Sk.builtin.frozenset.prototype.tp$doc = "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.";
-
-Sk.builtin.frozenset.prototype.tp$new = function (args, kwargs) {
-    if (this !== Sk.builtin.frozenset.prototype) {
-        return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
-    }
-    Sk.abstr.checkNoKwargs("frozenset", kwargs);
-    Sk.abstr.checkArgsLen("frozenset", 0, 1);
-    const arg = args[0];
-    const S = [];
-    if (arg.ob$type === Sk.builtin.frozenset) {
-        return arg;
-    }
-    if (arg !== undefined) {
-        Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
-            S.push(i);
-            S.push(true);
-        });
-    }
-    return new Sk.builtin.frozenset(S);
-};
-
-Sk.builtin.frozenset.prototype.$subtype_new = function (args, kwargs) {
-    const instance = new this.constructor;
-    // pass the args but ignore the kwargs for subtyping
-    const frozenset = Sk.builtin.frozenset.prototype.tp$new(args);
-    instance.v = frozenset.v;
-    return instance;
-};
-
-Sk.builtin.frozenset.prototype.frozenset_reset_ = function () {
-    this.v = new Sk.builtin.dict([]);
-};
-
-Sk.builtin.frozenset.prototype["$r"] = function () {
-    var it, i;
-    var ret = [];
-    for (it = Sk.abstr.iter(this), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        ret.push(Sk.misceval.objectRepr(i).v);
-    }
-
-    if (Sk.__future__.python3) {
-        if (ret.length === 0) {
-            return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
-        } else {
-            return new Sk.builtin.str(Sk.abstr.typeName(this) + "({" + ret.join(", ") + "})");
+Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
+    constructor: function (S) {
+        // takes in an array of py objects
+        if (S === undefined) {
+            S = [];
         }
-    } else {
-        return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
-    }
-};
-
-Sk.builtin.frozenset.prototype.ob$eq = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (!(other instanceof Sk.builtin.frozenset)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) !==
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.ob$ne = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (!(other instanceof Sk.builtin.frozenset)) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) !==
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (this["issubset"].func_code(this, other).v) {
-        return Sk.builtin.bool.false$;
-    } else {
-        return Sk.builtin.bool.true$;
-    }
-};
-
-Sk.builtin.frozenset.prototype.ob$lt = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) >=
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.ob$le = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) >
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issubset"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.ob$gt = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.false$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) <=
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issuperset"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.ob$ge = function (other) {
-
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    }
-
-    if (Sk.builtin.frozenset.prototype.sq$length.call(this) <
-        Sk.builtin.frozenset.prototype.sq$length.call(other)) {
-        return Sk.builtin.bool.false$;
-    }
-
-    return this["issuperset"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.nb$and = function (other) {
-    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for &: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
-    }
-
-    return this["intersection"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.nb$or = function (other) {
-    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for |: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
-    }
-
-    return this["union"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.nb$xor = function (other) {
-    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for ^: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
-    }
-
-    return this["symmetric_difference"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype.nb$subtract = function (other) {
-    if (Sk.__future__.python3 && !(other instanceof Sk.builtin.frozenset)) {
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for -: 'frozenset' and '" + Sk.abstr.typeName(other) + "'");
-    }
-
-    return this["difference"].func_code(this, other);
-};
-
-Sk.builtin.frozenset.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
-    return new Sk.builtin.frozenset_iter_(self);
-});
-
-Sk.builtin.frozenset.prototype.tp$iter = function () {
-    return new Sk.builtin.set_iter_(this);
-};
-
-Sk.builtin.frozenset.prototype.sq$length = function () {
-    return this["v"].sq$length();
-};
-
-Sk.builtin.frozenset.prototype.sq$contains = function (ob) {
-    return this["v"].sq$contains(ob);
-};
-
-Sk.builtin.frozenset.prototype["isdisjoint"] = new Sk.builtin.func(function (self, other) {
-    // requires all items in self to not be in other
-    var isIn;
-    var it, item;
-
-    Sk.builtin.pyCheckArgsLen("isdisjoint", arguments.length, 2, 2);
-    if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
-    }
-
-    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        isIn = Sk.abstr.sequenceContains(other, item);
-        if (isIn) {
-            return Sk.builtin.bool.false$;
+        Sk.asserts.assert(
+            Array.isArray(S) && this instanceof Sk.builtin.frozenset,
+            "bad call to frozen set - must be called with an Array and 'new'"
+        );
+        const L = [];
+        for (let i = 0; i < S.length; i++) {
+            L.push(S[i]);
+            L.push(true);
         }
-    }
-    return Sk.builtin.bool.true$;
-});
-
-Sk.builtin.frozenset.prototype["issubset"] = new Sk.builtin.func(function (self, other) {
-    var isIn;
-    var it, item;
-    var selfLength, otherLength;
-
-    Sk.builtin.pyCheckArgsLen("issubset", arguments.length, 2, 2);
-    if (!Sk.builtin.checkIterable(other)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
-    }
-
-    selfLength = self.sq$length();
-    otherLength = other.sq$length();
-
-    if (selfLength > otherLength) {
-        // every item in this set can't be in other if it's shorter!
-        return Sk.builtin.bool.false$;
-    }
-    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        isIn = Sk.abstr.sequenceContains(other, item);
-        if (!isIn) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-});
-
-Sk.builtin.frozenset.prototype["issuperset"] = new Sk.builtin.func(function (self, other) {
-    Sk.builtin.pyCheckArgsLen("issuperset", arguments.length, 2, 2);
-    return Sk.builtin.frozenset.prototype["issubset"].func_code(other, self);
-});
-
-Sk.builtin.frozenset.prototype["union"] = new Sk.builtin.func(function (self) {
-    var S, i, new_args;
-
-    Sk.builtin.pyCheckArgsLen("union", arguments.length, 1);
-
-    S = Sk.builtin.frozenset.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    var i, it, item, arg;
-    for (i = 0; i < new_args.length; i++) {
-        arg = new_args[i];
-        if (!Sk.builtin.checkIterable(arg)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
-        }
-        for (it = Sk.abstr.iter(arg), item = it.tp$iternext();
-            item !== undefined;
-            item = it.tp$iternext()) {
-            S.v.mp$ass_subscript(item, true);
-        }
-    }
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["intersection"] = new Sk.builtin.func(function (self) {
-    var S, i, new_args;
-
-    Sk.builtin.pyCheckArgsLen("intersection", arguments.length, 1);
-
-    S = Sk.builtin.frozenset.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    var i, it, item;
-
-    for (i = 1; i < arguments.length; i++) {
-        if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                "' object is not iterable");
-        }
-    }
-
-    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        for (i = 1; i < arguments.length; i++) {
-            if (!Sk.abstr.sequenceContains(arguments[i], item)) {
-                // discard
-                Sk.builtin.dict.prototype["pop"].func_code(S.v, item, Sk.builtin.none.none$);
-                break;
+        this.v = new Sk.builtin.dict(L);
+    },
+    slots: {
+        tp$as_number: true,
+        tp$as_sequence_or_mapping: true,
+        tp$doc:
+            "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.",
+        tp$hash: undefined,  //todo
+        tp$new: function (args, kwargs) {
+            if (this !== Sk.builtin.frozenset.prototype) {
+                return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
             }
-        }
-    }
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["difference"] = new Sk.builtin.func(function (self, other) {
-    var S, i, new_args;
-
-    Sk.builtin.pyCheckArgsLen("difference", arguments.length, 2);
-
-    S = Sk.builtin.frozenset.prototype["copy"].func_code(self);
-    new_args = [S];
-    for (i = 1; i < arguments.length; i++) {
-        new_args.push(arguments[i]);
-    }
-
-    var i, it, item;
-
-    for (i = 1; i < arguments.length; i++) {
-        if (!Sk.builtin.checkIterable(arguments[i])) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arguments[i]) +
-                "' object is not iterable");
-        }
-    }
-
-    for (it = Sk.abstr.iter(self), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        for (i = 1; i < arguments.length; i++) {
-            if (Sk.abstr.sequenceContains(arguments[i], item)) {
-                // discard
-                Sk.builtin.dict.prototype["pop"].func_code(S.v, item, Sk.builtin.none.none$);
-                break;
+            Sk.abstr.checkNoKwargs("frozenset", kwargs);
+            Sk.abstr.checkArgsLen("frozenset", 0, 1);
+            const arg = args[0];
+            if (arg !== undefined && arg.ob$type === Sk.builtin.frozenset) {
+                return arg;
             }
-        }
-    }
-
-    return S;
-});
-
-
-Sk.builtin.frozenset.prototype["symmetric_difference"] = new Sk.builtin.func(function (self, other) {
-    var it, item, S;
-
-    Sk.builtin.pyCheckArgsLen("symmetric_difference", arguments.length, 2, 2);
-
-    S = Sk.builtin.frozenset.prototype["union"].func_code(self, other);
-    for (it = Sk.abstr.iter(S), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
-        if (Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item)) {
-            // discard
-            Sk.builtin.dict.prototype["pop"].func_code(S.v, item, Sk.builtin.none.none$);
-        }
-    }
-    return S;
-});
-
-Sk.builtin.frozenset.prototype["copy"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("copy", arguments.length, 1, 1);
-    return new Sk.builtin.frozenset(self);
+            const S = Sk.abstr.arrayFromIterable(arg);
+            return new Sk.builtin.frozenset(S);
+        },
+        $r: set_proto.$r,
+        tp$iter: set_proto.tp$iter,
+        tp$richcompare: set_proto.tp$richcompare,
+        // number slots
+        nb$subtract: set_proto.nb$subtract,
+        nb$and: set_proto.nb$and,
+        nb$or: set_proto.nb$or,
+        nb$xor: set_proto.nb$xor,
+        // as mapping
+        sq$length: set_proto.sq$length,
+        sq$contains: set_proto.sq$contains,
+    },
+    methods: {
+        copy: set_methods.copy,
+        difference: set_methods.difference,
+        intersection: set_methods.intersection,
+        isdisjoint: set_methods.isdisjoint,
+        issubset: set_methods.issubset,
+        issuperset: set_methods.issuperset,
+        // __reduce__: set_proto.__reduce__,
+        // __sizeof__: set_proto.__sizeof__,
+        symmetric_difference: set_methods.symmetric_difference,
+        union: set_methods.union,
+    },
+    proto: {
+        $subtype_new: function (args, kwargs) {
+            const instance = new this.constructor();
+            // pass the args but ignore the kwargs for subtyping
+            const frozenset = Sk.builtin.frozenset.prototype.tp$new(args);
+            instance.v = frozenset.v;
+            return instance;
+        },
+        sk$asarray: set_proto.sk$asarray,
+        set$size: set_proto.set$size,
+    },
 });
 
 Sk.exportSymbol("Sk.builtin.frozenset", Sk.builtin.frozenset);
