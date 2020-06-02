@@ -11,7 +11,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
 /**
  * @deprecated Please use Sk.builtin.int_ or Sk.builtin.float_ instead.
  */
-Sk.builtin.nmber.prototype.tp$index = function () {
+Sk.builtin.nmber.prototype.nb$index = function () {
     return this.v;
 };
 

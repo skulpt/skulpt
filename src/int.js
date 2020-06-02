@@ -172,7 +172,7 @@ Sk.builtin.int_.prototype.__format__ = Sk.formatting.mkNumber__format__(false);
  *
  * @return {number} This instance's value.
  */
-Sk.builtin.int_.prototype.tp$index = function () {
+Sk.builtin.int_.prototype.nb$index = function () {
     return this.v;
 };
 

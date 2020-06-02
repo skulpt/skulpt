@@ -216,7 +216,7 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
  *
  * @return {number} This instance's value.
  */
-Sk.builtin.float_.prototype.tp$index = function () {
+Sk.builtin.float_.prototype.nb$index = function () {
     return this.v;
 };
 
