@@ -240,14 +240,17 @@ Sk.builtin.asnum$nofloat = function (a) {
 Sk.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round(number, ndigits) {
-    var special;
-    if (!Sk.builtin.checkNumber(number)) {
-        if (!Sk.builtin.checkFunction(number)) {
-            throw new Sk.builtin.TypeError("a float is required");
+    if (number === undefined) {
+        throw new Sk.builtin.TypeError("a float is required");
+    }
+    if (!Sk.__future__.dunder_round) {
+        if (!Sk.builtin.checkNumber(number)) {
+            throw new Sk.builtin.TypeError("a float is required"); 
+        }
+        if (number.round$) {
+            return number.round$(number, ndigits);
         } else {
-            if (!Sk.__future__.exceptions) {
-                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
-            }
+            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'"); 
         }
     }
 
@@ -255,12 +258,8 @@ Sk.builtin.round = function round(number, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    if (!Sk.__future__.dunder_round && number.round$) {
-        return number.round$(number, ndigits);
-    }
-
     // try calling internal magic method
-    special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
+    const special = Sk.abstr.lookupSpecial(number, Sk.builtin.str.$round);
     if (special !== undefined) {
         // method on builtin, provide this arg
         if (ndigits !== undefined) {
@@ -598,7 +597,9 @@ Sk.builtin.bin = function bin(x) {
 Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
         const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
-        return Sk.misceval.callsimArray(obj_dir_func, [obj]);
+        const dir = Sk.misceval.callsimArray(obj_dir_func, [obj]);
+        return Sk.misceval.callsimOrSuspendArray(Sk.builtin.sorted, [dir]);
+        // now iter through the keys and check they are all stings
     }
     // then we want all the objects in the global scope
     //todo
