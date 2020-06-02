@@ -113,9 +113,9 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
             res = this === other || Sk.builtin.NotImplemented.NotImplemented$;
             break;
         case "NotEq":
-            // us ob$eq rather than tp$richcompare
-            res = this.ob$eq(other);
-            if (res && res !== Sk.builtin.NotImplemented.NotImplemented$) {
+            // use tp$richcompare here... because CPython does. ob$eq breaks some tests for NotEq subclasses
+            res = this.tp$richcompare(other);
+            if (res !== undefined && res !== Sk.builtin.NotImplemented.NotImplemented$) {
                 res = !Sk.misceval.isTrue(res);
             }
             break;
