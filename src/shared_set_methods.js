@@ -47,6 +47,9 @@ Sk.builtin.setMethodDefs = {
     },
     difference_update: {
         $meth: function (...args) {
+            if (!args.length) {
+                return Sk.builtin.none.none$; 
+            }
             // we don't use the iterator since a set shouldn't change size during iteration
             const vals = this.sk$asarray();
             const discard = Sk.builtin.set.prototype.discard.$meth;
@@ -77,6 +80,9 @@ Sk.builtin.setMethodDefs = {
     },
     intersection_update: {
         $meth: function (...args) {
+            if (!args.length) {
+                return Sk.builtin.none.none$; 
+            }
             const vals = this.sk$asarray();
             const discard = Sk.builtin.set.prototype.discard.$meth;
             for (let j = 0; j < vals.length; j++) {
@@ -220,7 +226,6 @@ Sk.builtin.setMethodDefs = {
     update: {
         $meth: function (...args) {
             const add = Sk.builtin.set.prototype.add.$meth;
-
             for (let i = 0; i < args.length; i++) {
                 for (let it = Sk.abstr.iter(args[i]), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext()) {
                     add.call(this, item);
