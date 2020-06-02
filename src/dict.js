@@ -234,8 +234,13 @@ Sk.builtin.dict.prototype["$r"] = function () {
     return new Sk.builtin.str("{" + ret.join(", ") + "}");
 };
 
-Sk.builtin.dict.prototype.sq$length = function () {
+Sk.builtin.dict.prototype.get$size = function () {
+    // can't be overridden by subclasses
     return this.size;
+};
+
+Sk.builtin.dict.prototype.sq$length = function () {
+    return this.get$size();
 };
 
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
@@ -476,13 +481,9 @@ Sk.setupDictIterators = function (python3) {
 
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
-    var k;
-    var iter;
-
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
-        self.mp$del_subscript(k);
+    const keys = self.sk$asarray();
+    for (let i = 0; i < keys.length; i ++) {
+        self.mp$del_subscript(keys[i]);
     }
 });
 
@@ -518,7 +519,7 @@ Sk.builtin.dict.prototype.dict_merge = function (b) {
         // generic slower way
         var keys = Sk.misceval.callsimArray(b["keys"], [b]);
         for (iter = Sk.abstr.iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-            v = b.tp$getitem(k); // get value
+            v = b.mp$subscript(k); // get value
             if (v === undefined) {
                 throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
             }
