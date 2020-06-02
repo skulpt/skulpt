@@ -27,7 +27,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
                 return Sk.misceval.callsimArray(cmp, [a[0], b[0]]);
             };
         }
-        iter = iterable.tp$iter();
+        iter = Sk.abstr.iter(iterable);
         next = iter.tp$iternext();
         arr = [];
         while (next !== undefined) {
@@ -40,7 +40,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             compare_func = cmp;
         }
         arr = [];
-        iter = iterable.tp$iter();
+        iter = Sk.abstr.iter(iterable);
         next = iter.tp$iternext();
         while (next !== undefined) {
             arr.push(next);
