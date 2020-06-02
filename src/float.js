@@ -15,13 +15,10 @@
  * @return {Sk.builtin.float_} Python float
  */
 Sk.builtin.float_ = function (x) {
+    Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float_ use 'new'");
     var tmp;
     if (x === undefined) {
         return new Sk.builtin.float_(0.0);
-    }
-
-    if (!(this instanceof Sk.builtin.float_)) {
-        return new Sk.builtin.float_(x);
     }
 
 
@@ -33,7 +30,7 @@ Sk.builtin.float_ = function (x) {
     if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
         tmp = Sk.builtin.asnum$(x);
         if (typeof tmp === "string") {
-            return Sk.builtin._str_to_float(tmp);
+            return Sk.builtin._str_to_float.call(this, tmp);
         }
         this.v = tmp;
         return this;
