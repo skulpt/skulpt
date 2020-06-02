@@ -44,9 +44,12 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             if ((op != "Eq" && op != "NotEq") || !(other instanceof Sk.builtin.method)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
-            const a = this;
-            const b = other;
-            const eq = Sk.misceval.richCompareBool(a.im_func, b.im_func, "Eq");
+            let eq;
+            try {
+                eq = Sk.misceval.richCompareBool(this.im_self, other.im_self, "Eq", false) && this.im_func == other.im_func;
+            } catch (x) {
+                eq = false;
+            }
             if (op == "Eq") {
                 return eq;
             } else {
