@@ -499,7 +499,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.factorial(0), 1)
         self.assertEqual(math.factorial(0.0), 1)
         total = 1
-        for i in range(1, 1000):
+        for i in range(1, 100): # make the numbers smaller for speed
             total *= i
             self.assertEqual(math.factorial(i), total)
             self.assertEqual(math.factorial(float(i)), total)
