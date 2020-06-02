@@ -1000,16 +1000,15 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
     const ret = Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
         L.push(i);
     });
-    if (ret === undefined || !ret.isSuspension) {
+    if (ret === undefined) {
         return L;
     } else if (canSuspend) {
         return Sk.misceval.chain(ret, () => {
             return L;
         });
     } else {
-        return Sk.misceval.chain(Sk.misceval.retryOptionalSuspensionOrThrow(ret), () => {
-            return L;
-        });
+        Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return L;
     }
 };
 
