@@ -1,6 +1,8 @@
 import math as module
 
-module = list
+
+
+module = frozenset
 meth = type(str.count) 
 for x in module.__dict__: 
     bltin = getattr(module, x) 
@@ -9,7 +11,7 @@ for x in module.__dict__:
 f"{x}: {'{'}\n"
 f"\t$meth: methods.{x},\n" 
 f"\t$flags:{'{}'},\n"
-f"\t$textsig: \"{ bltin.__text_signature__.__repr__()[1:-1] }\",\n"
+f"\t$textsig: { bltin.__text_signature__.__repr__() if bltin.__text_signature__ != None else 'null' },\n"
 f"\t$doc: \"{bltin.__doc__.__repr__()[1:-1]}\" {'}' },")
 
 
