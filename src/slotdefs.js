@@ -1169,70 +1169,6 @@ slots.__nonzero__ = {
     $doc: "x.__nonzero__() <==> x != 0",
 };
 
-// Sk.slotToDunder = {
-//     // nb we handle tp$new differently
-//     // tp_slots
-//     tp$init: "__init__",
-//     tp$call: "__call__",
-//     $r: "__repr__",
-//     tp$hash: "__hash__",
-//     tp$str: "__str__",
-
-//     // getattribute, setattr, delattr
-//     tp$getattr: "__getattribute__",
-//     tp$setattr: ["__setattr__", "__delattr__"],
-
-//     // tp$richcompare
-//     ob$eq: "__eq__",
-//     ob$ne: "__ne__",
-//     ob$lt: "__lt__",
-//     ob$le: "__le__",
-//     ob$gt: "__gt__",
-//     ob$ge: "__ge__",
-
-//     // getters and setters
-//     tp$descr_get: "__get__",
-//     tp$descr_set: ["__set__", "__delete__"],
-
-//     // iter
-//     tp$iter: "__iter__",
-//     tp$iternext: "__next__",
-
-//     // sequence and mapping slots
-//     sq$length: "__len__",
-//     sq$contains: "__contains__",
-//     mp$subscript: "__getitem__",
-//     mp$ass_subscript: ["__setitem__", "__delitem__"],
-
-//     // number slots
-//     nb$abs: "__abs__",
-//     nb$negative: "__neg__",
-//     nb$positive: "__pos__",
-//     nb$int_: "__int__",
-//     nb$lng: "__long__",
-//     nb$float_: "__float__",
-//     nb$add: "__add__",
-//     nb$reflected_add: "__radd__",
-//     nb$subtract: "__sub__",
-//     nb$reflected_subtract: "__rsub__",
-//     nb$multiply: "__mul__",
-//     nb$reflected_multiply: "__rmul__",
-//     nb$divide: "__div__",
-//     nb$reflected_divide: "__rdiv__",
-//     nb$floor_divide: "__floordiv__",
-//     nb$reflected_floor_divide: "__rfloordiv__",
-//     nb$invert: "__invert__",
-//     nb$remainder: "__mod__",
-//     nb$reflected_remainder: "__rmod__",
-//     nb$divmod: "__divmod__",
-//     nb$reflected_divmod: "__rdivmod__",
-//     nb$power: "__pow__",
-//     nb$reflected_power: "__rpow__",
-//     nb$true_divide: "__truediv__",
-//     nb$bool: "__bool__",
-//     nb$nonzero: "__nonzero__",
-// };
-
 Sk.subSlots = {
     main_slots: {
         // nb we handle tp$new differently
@@ -1475,38 +1411,79 @@ Sk.dunderToSkulpt = {
     __neg__: "nb$negative",
     __pos__: "nb$positive",
     __int__: "nb$int_",
-    __long__: "nb$lng",
     __float__: "nb$float_",
+
     __add__: "nb$add",
     __radd__: "nb$reflected_add",
+    __iadd__: "nb$inplace_add",
     __sub__: "nb$subtract",
     __rsub__: "nb$reflected_subtract",
+    __isub__: "nb$inplace_subtract",
     __mul__: "nb$multiply",
     __rmul__: "nb$reflected_multiply",
-    __div__: "nb$divide",
-    __rdiv__: "nb$reflected_divide",
+    __imul__: "nb$inplace_multiply",
+    __truediv__: "nb$true_divide",
+    __rtruediv__: "nb$reflected_true_divide",
+    __itruediv__: "nb$inplace_true_divide",
     __floordiv__: "nb$floor_divide",
     __rfloordiv__: "nb$reflected_floor_divide",
+    __ifloordiv__: "nb$inplace_floor_divide",
     __invert__: "nb$invert",
     __mod__: "nb$remainder",
     __rmod__: "nb$reflected_remainder",
+    __imod__: "nb$inplace_remainder",
     __divmod__: "nb$divmod",
-    __rdivmod__: "nb$reflected_divmod",
+    __rdivmod__: "nb$reflected_divmod", //no inplace divmod
     __pow__: "nb$power",
     __rpow__: "nb$reflected_power",
+    __ipow__: "nb$inplace_power",
+
+    __bool__: "nb$bool",
+    // py2 only
+    __nonzero__: "nb$nonzero",
+    __long__: "nb$lng",
+    __div__: "nb$divide",
+    __rdiv__: "nb$reflected_divide",
+    __idiv__: "nb$inplace_divide",
+
+    __lshift__: "nb$lshift",
+    __rlshift__: "nb$reflected_lshift",
+    __ilshift__: "nb$inplace_lshift",
+    __rshift__: "nb$rshift",
+    __rrshift__: "nb$reflected_rshift",
+    __irshift__: "nb$inplace_rshift",
+
+    __and__: "nb$and",
+    __rand__: "nb$reflected_and",
+    __iand__: "nb$inplace_and",
+    __or__: "nb$or",
+    __ror__: "nb$reflected_or",
+    __ior__: "nb$inplace_or",
+    __xor__: "nb$xor",
+    __rxor__: "nb$reflected_xor",
+    __ixor__: "nb$inplace_xor",
+
     __matmul__: "nb$matrix_multiply",
     __rmatmul__: "nb$reflected_matrix_multiply",
     __imatmul__: "nb$inplace_matrix_multiply",
 
-    __contains__: "sq$contains",
-
     __bool__: "nb$bool",
     __nonzero__: "nb$nonzero",
 
-    __len__: "sq$length",
     __get__: "tp$descr_get",
     __set__: "tp$descr_set",
     __delete__: "tp$descr_set",
+
+    __getattribute__: "tp$getattr",
+    __getattr__: "tp$getattr",
+    __setattr__: "tp$setattr",
+    __delattr__: "tp$setattr",
+
+    __len__: "sq$length",
+    __contains__: "sq$contains",
+    __getitem__: "mp$subscript",
+    __setitem__: "mp$ass_subscript",
+    __delitem__: "mp$ass_subscript",
 };
 
 Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
