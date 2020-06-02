@@ -6,7 +6,7 @@ Sk.builtin.tuple = function (L) {
     if (L === undefined) {
         L = [];
     }
-    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple);
+    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple, "bad call to tuple, use 'new' with an Array");
     this.v = L;
 };
 

@@ -151,7 +151,7 @@ var $builtinmodule = function (name) {
 
         if (initial === undefined) {
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(pool.slice(0, r))];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(pool.slice(0, r))];
         }
         let found = false;
         let i;
@@ -170,19 +170,14 @@ var $builtinmodule = function (name) {
             indices[j] = indices[j - 1] + 1;
         }
         const res = indices.map(i => pool[i]);
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
     };
 
     var _combinations = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
+        pool = Sk.abstr.arrayFromIterable(iterable); // want pool as an array
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
         n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -214,7 +209,7 @@ var $builtinmodule = function (name) {
         if (initial === undefined) {
             const res = indices.map(i => pool[i]);
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         }
         let found = false;
         let i;
@@ -233,19 +228,13 @@ var $builtinmodule = function (name) {
             indices[j] = val;
         }
         const res = indices.map(i => pool[i]);
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
     };
 
     var _combinations_with_replacement = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
+        const pool = Sk.abstr.arrayFromIterable(iterable); // want pool as an array
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
-
-        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
         const n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -485,7 +474,7 @@ var $builtinmodule = function (name) {
         $gen.gi$locals.currval = currval;
 
         const grouper = new Sk.builtin.itertools_gen(_grouper, mod, [$gen, $gen.gi$locals.tgtkey, $gen.gi$locals.id]);
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([currkey, grouper])];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple([currkey, grouper])];
     };
 
     _groupby = function (iterable, key) {
@@ -496,7 +485,7 @@ var $builtinmodule = function (name) {
                 return x;
             });
         }
-        const currval = currkey = tgtkey = Sk.builtin.object();
+        const currval = currkey = tgtkey = new Sk.builtin.object();
         return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey]);
     };
 
@@ -619,7 +608,7 @@ var $builtinmodule = function (name) {
 
         if (initial === undefined) {
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , Sk.builtin.tuple(pool.slice(0, r))];
+            return [ /*resume*/ , new Sk.builtin.tuple(pool.slice(0, r))];
         }
 
         for (let i = r - 1; i >= 0; i--) {
@@ -632,7 +621,7 @@ var $builtinmodule = function (name) {
                 j = cycles[i];
                 [indices[i], indices[n - j]] = [indices[n - j], indices[i]]; //swap elements;
                 const res = indices.map(i => pool[i]).slice(0, r);
-                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+                return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
             }
         }
 
@@ -642,12 +631,7 @@ var $builtinmodule = function (name) {
 
     var _permutations = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 1, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
-        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        const pool = Sk.abstr.arrayFromIterable(iterable); // want pool as an array
         const n = pool.length;
         r = Sk.builtin.checkNone(r) ? new Sk.builtin.int_(n) : r;
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
@@ -683,7 +667,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.n = 0; // at least one pool arguments is an empty iterator
                 return [ /*resume*/ , /*ret*/ ];
             }
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         }
 
         let i = n - 1;
@@ -701,7 +685,7 @@ var $builtinmodule = function (name) {
             return [ /*resume*/ , /*ret*/ ];
         } else {
             const res = indices.map((_, i) => pools[i][indices[i]]);
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         };
 
     };
@@ -716,12 +700,7 @@ var $builtinmodule = function (name) {
         // args is a tuple it's .v property is an array
         args = args.v;
         for (let i = 0; i < args.length; i++) {
-            if (!Sk.builtin.checkIterable(args[i])) {
-                throw new Sk.builtin.TypeError(
-                    "'" + Sk.abstr.typeName(args[i]) + "' object is not iterable"
-                );
-            }
-            args[i] = Sk.builtin.tuple(args[i]).v; // want each arg as an array
+            args[i] = Sk.abstr.arrayFromIterable(args[i]); // want each arg as an array
         }
         const pools = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
         const n = pools.length;
@@ -869,7 +848,7 @@ var $builtinmodule = function (name) {
             }
             values.push(val);
         }
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(values)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(values)];
     };
 
     _zip_longest = function (fillvalue, args) {

@@ -9,7 +9,7 @@ Sk.builtin.list = function (L) {
     if (L === undefined) {
         L = [];
     }
-    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.list);
+    Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.list, "bad call to list, use 'new' with an Array");
     this.v = L;
 };
 
