@@ -48,6 +48,7 @@ require("./number.js");
 require("./long.js");
 require("./complex.js");
 require("./slice.js");
+require("./shared_set_methods.js");
 require("./set.js");
 require("./frozenset.js");
 require("./print.js");
