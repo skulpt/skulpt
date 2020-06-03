@@ -2,17 +2,19 @@
  * @function
  * @param {Sk.builtin.type} type_obj
  * @param {Sk.GetSetDef} gsd
- * 
+ *
  * @returns typeobj
  */
 
 Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
     const descr = {
-        constructor: descr_constructor || function descr(typeobj, d_base) {
-            this.d$def = d_base;
-            this.d$type = typeobj;
-            this.d$name = d_base.$name;
-        },
+        constructor:
+            descr_constructor ||
+            function descr(typeobj, d_base) {
+                this.d$def = d_base;
+                this.d$type = typeobj;
+                this.d$name = d_base.$name;
+            },
         flags: { sk$acceptable_as_base_class: false },
         // we can't use slots/methods/getsets yet since they're not defined!
         proto: {
@@ -21,7 +23,7 @@ Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
             d$set_check: Sk.generic.descriptor.setCheck,
             $r: Sk.generic.descriptor.repr,
             tp$getsets: Sk.generic.descriptor.getsets,
-        }
+        },
     };
     return Sk.abstr.buildNativeClass(type_name, descr);
 };
@@ -30,14 +32,30 @@ Sk.generic.descriptor.check = function (obj) {
     if (obj == null) {
         return this;
     } else if (!obj.ob$type.$isSubType(this.d$type)) {
-        throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' requires a '" + this.d$type.prototype.tp$name + "' object but received a '" + Sk.abstr.typeName(obj) + "' object");
+        throw new Sk.builtin.TypeError(
+            "descriptor '" +
+                this.d$name +
+                "' requires a '" +
+                this.d$type.prototype.tp$name +
+                "' object but received a '" +
+                Sk.abstr.typeName(obj) +
+                "' object"
+        );
     }
     return;
 };
 
 Sk.generic.descriptor.setCheck = function (obj) {
     if (!obj.ob$type.$isSubType(this.d$type)) {
-        throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' requires a '" + this.d$type.prototype.tp$name + "' object but received a '" + Sk.abstr.typeName(obj) + "' object");
+        throw new Sk.builtin.TypeError(
+            "descriptor '" +
+                this.d$name +
+                "' requires a '" +
+                this.d$type.prototype.tp$name +
+                "' object but received a '" +
+                Sk.abstr.typeName(obj) +
+                "' object"
+        );
     }
 };
 
@@ -49,13 +67,17 @@ Sk.generic.descriptor.getsets = {
     __doc__: {
         $get: function () {
             return this.d$def.$doc ? new Sk.builtin.str(this.d$def.$doc) : Sk.builtin.none.none$;
-        }
+        },
     },
     __obj_class__: {
-        $get: function () { return this.d$type; }
+        $get: function () {
+            return this.d$type;
+        },
     },
     __name__: {
-        $get: function () { return new Sk.builtin.str(this.d$name); }
+        $get: function () {
+            return new Sk.builtin.str(this.d$name);
+        },
     },
 };
 
@@ -69,7 +91,7 @@ Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor");
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
-    if (ret = this.d$check(obj)) {
+    if ((ret = this.d$check(obj))) {
         return ret;
     }
     if (this.d$def && this.d$def.$get !== undefined) {
@@ -79,17 +101,16 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     throw new Sk.builtin.AttributeError("getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not readable");
 };
 
-
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
     this.d$set_check(obj);
 
     if (this.d$def.$set !== undefined) {
         return this.d$def.$set.call(obj, value);
     }
-    throw new Sk.builtin.AttributeError("getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not writeable");
+    throw new Sk.builtin.AttributeError(
+        "getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not writeable"
+    );
 };
-
-
 
 /**
  * @constructor
@@ -98,7 +119,6 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
  */
 
 Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "method", function (typeobj, method_def) {
-
     this.d$def = method_def;
     this.$meth = method_def.$meth; //useful for internal fast calls
     this.d$type = typeobj;
@@ -162,17 +182,22 @@ Sk.builtin.method_descriptor.prototype.$methodCallMinArgs = function (args, kwar
 Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
     if (self === undefined) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' object needs an argument");
-    };
+    }
     this.d$check(self);
 };
 
-
 Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
-    if (ret = this.d$check(obj)) {
+    if ((ret = this.d$check(obj))) {
         return ret;
     }
     return new Sk.builtin.sk_method(this.d$def, obj);
+};
+
+Sk.builtin.method_descriptor.prototype.tp$getsets.__text_signature__ = {
+    $get: function () {
+        return this.d$def.$textsig ? new Sk.builtin.str(this.d$def.$textsig) : Sk.builtin.none.none$;
+    },
 };
 
 /**
@@ -181,16 +206,12 @@ Sk.builtin.method_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param {Sk.builtin.SlotDef} wrapper_base
  */
 
-Sk.builtin.wrapper_descriptor = Sk.generic.descriptor(
-    "wrapper_descriptor",
-    "slot wrapper",
-    function wrapper_descriptor(typeobj, slot_def, wrapped) {
-        this.d$def = slot_def;
-        this.d$type = typeobj;
-        this.d$name = wrapped.$name = slot_def.$name;
-        this.d$wrapped = wrapped;
-    }
-);
+Sk.builtin.wrapper_descriptor = Sk.generic.descriptor("wrapper_descriptor", "slot wrapper", function wrapper_descriptor(typeobj, slot_def, wrapped) {
+    this.d$def = slot_def;
+    this.d$type = typeobj;
+    this.d$name = wrapped.$name = slot_def.$name;
+    this.d$wrapped = wrapped;
+});
 
 Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
     // make sure the first argument is acceptable as self
@@ -199,7 +220,15 @@ Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
     }
     const self = args.shift();
     if (!self.ob$type.$isSubType(this.d$type)) {
-        throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' requires a '" + this.d$type.prototype.tp$name + "' object but received a '" + Sk.abstr.typeName(self) + "'");
+        throw new Sk.builtin.TypeError(
+            "descriptor '" +
+                this.d$name +
+                "' requires a '" +
+                this.d$type.prototype.tp$name +
+                "' object but received a '" +
+                Sk.abstr.typeName(self) +
+                "'"
+        );
     }
     return this.raw$call(self, args, kwargs);
 };
@@ -211,12 +240,11 @@ Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs)
 
 Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
-    if (ret = this.d$check(obj)) {
+    if ((ret = this.d$check(obj))) {
         return ret;
     }
     return new Sk.builtin.method_wrapper(this, obj);
 };
-
 
 /**
  * @constructor
@@ -224,17 +252,13 @@ Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param wrapper_base
  */
 
-Sk.builtin.method_wrapper = Sk.generic.descriptor(
-    "method_wrapper",
-    undefined,
-    function method_wrapper(wrapper_descr, self) {
-        this.m$descr = wrapper_descr;
-        this.m$self = self;
-        this.d$def = wrapper_descr.d$def;
-        this.d$name = wrapper_descr.d$name;
-        this.d$type = wrapper_descr.d$type;
-    }
-);
+Sk.builtin.method_wrapper = Sk.generic.descriptor("method_wrapper", undefined, function method_wrapper(wrapper_descr, self) {
+    this.m$descr = wrapper_descr;
+    this.m$self = self;
+    this.d$def = wrapper_descr.d$def;
+    this.d$name = wrapper_descr.d$name;
+    this.d$type = wrapper_descr.d$type;
+});
 Sk.builtin.method_wrapper.prototype.tp$call = function (args, kwargs) {
     return this.m$descr.raw$call(this.m$self, args, kwargs);
 };
@@ -244,6 +268,18 @@ Sk.builtin.method_wrapper.prototype.$r = function () {
 };
 
 Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
-    $get: function () { return this.m$self; }
+    $get: function () {
+        return this.m$self;
+    },
 };
 
+// initialize these classes now that they exist do OneTime initialization only takes care of builtinsdict these are in builtins
+const _to_initialize = [Sk.builtin.method_descriptor, Sk.builtin.getset_descriptor, Sk.builtin.wrapper_descriptor, Sk.builtin.method_wrapper];
+
+for (let i = 0; i < _to_initialize.length; i++) {
+    const cls = _to_initialize[i];
+    Sk.abstr.setUpSlots(cls);
+    Sk.abstr.setUpBuiltinMro(cls);
+    Sk.abstr.setUpMethods(cls);
+    Sk.abstr.setUpGetSets(cls);
+}

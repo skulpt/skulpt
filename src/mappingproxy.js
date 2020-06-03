@@ -90,6 +90,10 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         sk$asarray: function () {
             return Object.keys(this.v).map((x) => new Sk.builtin.str(x));
         },
+        get$size: function() {
+            // useful for using dict key iterators
+            return this.sq$length();
+        },
         keys: Sk.builtin.dict.prototype.keys,
         items: Sk.builtin.dict.prototype.items,
         values: Sk.builtin.dict.prototype.values,
@@ -100,3 +104,5 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
 });
 
 Sk.exportSymbol("Sk.builtin.mappingproxy", Sk.builtin.mappingproxy);
+
+

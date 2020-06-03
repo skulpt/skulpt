@@ -61,7 +61,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * 
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
-    const setUpClass = function (klass) {
+    function setUpClass (klass) {
         const proto = klass.prototype;
         if (!proto.hasOwnProperty("sk$slots")) {
             // sk$slots was set to null during setUpSlots
@@ -79,7 +79,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         }
         if (!proto.hasOwnProperty("__doc__") && proto.hasOwnProperty("tp$doc")) {
             // a few klasses had slots setup before str was initialized so we add them here
-            klass.prototype.__doc__ = new Sk.builtin.str(proto.tp$doc);
+            proto.__doc__ = new Sk.builtin.str(proto.tp$doc);
         } 
     };
     for (let x in Sk.builtins) {
