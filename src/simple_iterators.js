@@ -1,4 +1,36 @@
 /**
+ * 
+ * @constructor
+ * @param {Function} fn
+ * @param {Boolean} handlesOwnSuspensions
+ * 
+ * @description
+ * Create a generic Python iterator that repeatedly calls a given JS function
+ * until it returns 'undefined'
+ * 
+ */
+Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
+    constructor : function iterator (fn, handlesOwnSuspensions) {
+        this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
+            let x = fn();
+            if (canSuspend || !x.isSuspension) {
+                return x;
+            } else {
+                return Sk.misceval.retryOptionalSuspensionOrThrow(x);
+            }
+        };
+    }, 
+    iternext: function (canSuspend) { /* keep slot __next__ happy */
+        return this.tp$iternext(canSuspend);
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});
+
+
+
+
+/**
+ * 
  * @constructor
  * @param {Sk.builtin.func} callable
  * @param {Sk.builtin.object} sentinel - if reached returns undefined
@@ -180,35 +212,6 @@ Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
     iternext: Sk.generic.iterNextWithArray,
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
-
-
-/**
- * 
- * @constructor
- * @param {Function} fn
- * @param {Boolean} handlesOwnSuspensions
- * 
- * @description
- * Create a generic Python iterator that repeatedly calls a given JS function
- * until it returns 'undefined'
- * 
- */
-Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
-    constructor : function iterator (fn, handlesOwnSuspensions) {
-        this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
-            let x = fn();
-            if (canSuspend || !x.isSuspension) {
-                return x;
-            } else {
-                return Sk.misceval.retryOptionalSuspensionOrThrow(x);
-            }
-        };
-    }, 
-    iternext: function (canSuspend) { /* keep slot __next__ happy */
-        return this.tp$iternext(canSuspend);
     },
     flags: { sk$acceptable_as_base_class: false },
 });

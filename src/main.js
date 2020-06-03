@@ -30,7 +30,7 @@ require("./fromcodepoint.js");
 require("./errors.js");
 require("./method.js");
 require("./misceval.js");
-require("./iterators.js");
+require("./simple_iterators.js");
 require("./list.js");
 require("./str.js");
 require("./formatting.js");
