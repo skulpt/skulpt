@@ -26,7 +26,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return new Sk.builtin.str("(" + ret + ")");
         },
         tp$new: function (args, kwargs) {
-            // this will be Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
+            // this = Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
             if (this !== Sk.builtin.tuple.prototype) {
                 return Sk.builtin.tuple.prototype.$subtype_new.call(this, args, kwargs);
             }

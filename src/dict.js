@@ -1,6 +1,10 @@
 /**
  * @constructor
- * @param {Array.<Object>} L
+ * @param {Array|undefined} L
+ *
+ * @description
+ * call with an array of key value pairs
+ *
  */
 Sk.builtin.dict = function dict(L) {
     // calling new Sk.builtin.dict is an internal method that requires an array of key value pairs
@@ -23,18 +27,21 @@ Sk.builtin.dict.prototype.tp$as_sequence_or_mapping = true;
 
 var kf = Sk.builtin.hash;
 
-Sk.builtin.dict.prototype.tp$doc = "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)";
-
+Sk.builtin.dict.prototype.tp$doc =
+    "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)";
 
 Sk.builtin.dict.prototype.tp$new = Sk.generic.new(Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
     Sk.abstr.checkArgsLen("dict", args, 0, 1);
     const arg = args[0];
+    const self = this;
+    // we could use dict_merge or this.mp$ass_subscript ...
+    // but mp$ass_subscript might have been overridden by a subclass and we ignore that in the init method
+    const set_item = Sk.builtin.dict.prototype.mp$ass_subscript;
+    let ret;
     if (arg !== undefined) {
         if (arg instanceof Sk.builtin.dict) {
-            // we could use dict_merge but mp$ass_subscript might have been overridden by a subclass 
-            const set_item = Sk.builtin.dict.prototype.mp$ass_subscript;
             for (let iter = arg.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                 const v = arg.mp$subscript(k);
                 if (v === undefined) {
@@ -43,31 +50,37 @@ Sk.builtin.dict.prototype.tp$init = function (args, kwargs) {
                 set_item.call(this, k, v);
             }
         } else {
-            let self = this;
             let idx = 0;
-            Sk.misceval.iterFor(Sk.abstr.iter(arg), function (i) {
-                if (Sk.builtin.checkSequence(i)) {
-                    // should also check that the sq length is not longer than 2.
-                    const len = i.sq$length(); //this can't currently suspend
-                    if (len !== 2) {
-                        throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + len + "; 2 is required");
+            ret = Sk.misceval.iterFor(Sk.abstr.iter(arg), (i) => {
+                try {
+                    // this should really just be a tuple/list of length 2 so no suspension to get the sequence
+                    const seq = Sk.abstr.arrayFromIterable(i);
+                    if (seq.length !== 2) {
+                        throw new Sk.builtin.ValueError(
+                            "dictionary update sequence element #" + idx + " has length " + seq.length + "; 2 is required"
+                        );
                     }
-                    self.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
-                    idx++;
-                } else {
-                    throw new Sk.builtin.TypeError("element " + idx + " is not a sequence");
+                    set_item.call(self, seq[0], seq[1]);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.TypeError) {
+                        throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + idx + " to a sequence");
+                    } else {
+                        throw e;
+                    }
                 }
+                idx++;
             });
         }
     }
-    if (kwargs) {
-        for (let i = 0; i < kwargs.length; i += 2) {
-            this.mp$ass_subscript(new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
+    return Sk.misceval.chain(ret, () => {
+        if (kwargs) {
+            for (let i = 0; i < kwargs.length; i += 2) {
+                set_item.call(self, new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
+            }
         }
-    }
-    return Sk.builtin.none.none$;
+        return Sk.builtin.none.none$;
+    });
 };
-
 
 Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {
     var item;
@@ -150,7 +163,7 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
 Sk.builtin.dict.prototype.sq$contains = function (ob) {
     var res = this.mp$lookup(ob);
 
-    return (res !== undefined);
+    return res !== undefined;
 };
 
 Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
@@ -165,9 +178,8 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         }
         // New bucket
         bucket = {
-            $hash: k, items: [
-                { lhs: key, rhs: w }
-            ]
+            $hash: k,
+            items: [{ lhs: key, rhs: w }],
         };
         this.buckets[k.v] = bucket;
         this.size += 1;
@@ -214,9 +226,7 @@ Sk.builtin.dict.prototype["$r"] = function () {
     var ret = [];
     // for subclassing we make sure we use the dict get_item method and subclass method;
     const get_item = Sk.builtin.dict.prototype.mp$subscript;
-    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         v = get_item.call(this, k);
         if (v === undefined) {
             //print(k, "had undefined v");
@@ -291,12 +301,12 @@ Sk.builtin.dict.prototype.haskey$ = function (self, k) {
 const dict$views = {
     KEYS: "keys",
     VALUES: "values",
-    ITEMS: "items"
+    ITEMS: "items",
 };
 
 Sk.builtin.dictview = function (type, dict) {
     this.dict = dict;
-    this.type = type;  // from dict$views
+    this.type = type; // from dict$views
 
     return this;
 };
@@ -307,9 +317,7 @@ Sk.builtin.dictview.prototype.$r = function () {
     var rep = "dict_" + this.type + "([";
     var iter, key, value;
     var empty = true;
-    for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext();
-        key !== undefined;
-        key = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext(); key !== undefined; key = iter.tp$iternext()) {
         empty = false;
         if (this.type === dict$views.KEYS) {
             rep += Sk.misceval.objectRepr(key).v + ", ";
@@ -341,9 +349,7 @@ Sk.builtin.dictview.prototype.sq$contains = function (item) {
     if (this.type === dict$views.KEYS) {
         return this.dict.sq$contains(item);
     } else if (this.type === dict$views.VALUES) {
-        for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext();
-            key !== undefined;
-            key = iter.tp$iternext()) {
+        for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext(); key !== undefined; key = iter.tp$iternext()) {
             value = this.dict.mp$subscript(key);
             if (value === undefined) {
                 value = null;
@@ -355,7 +361,7 @@ Sk.builtin.dictview.prototype.sq$contains = function (item) {
 
         return false;
     } else if (this.type === dict$views.ITEMS) {
-        if (item.mp$subscript && item.sq$length && (item.sq$length() === 2)) {
+        if (item.mp$subscript && item.sq$length && item.sq$length() === 2) {
             key = item.mp$subscript(new Sk.builtin.int_(0));
             value = this.dict.mp$lookup(key);
             if (value !== undefined) {
@@ -392,16 +398,13 @@ Sk.builtin.dictview.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return self.tp$iter();
 });
 
-
 Sk.builtin.dict.prototype.py2$items = function (self) {
     Sk.builtin.pyCheckArgsLen("items", arguments.length, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             //print(k, "had undefined v");
@@ -425,9 +428,7 @@ Sk.builtin.dict.prototype.py2$keys = function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         ret.push(k);
     }
     return new Sk.builtin.list(ret);
@@ -447,9 +448,7 @@ Sk.builtin.dict.prototype.py2$values = function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             v = null;
@@ -482,7 +481,7 @@ Sk.setupDictIterators = function (python3) {
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
     const keys = self.sk$asarray();
-    for (let i = 0; i < keys.length; i ++) {
+    for (let i = 0; i < keys.length; i++) {
         self.mp$del_subscript(keys[i]);
     }
 });
@@ -577,7 +576,6 @@ var update_f = function (kwargs, self, other) {
 update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
-
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
     // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -587,10 +585,8 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     return new Sk.builtin.dict_iter_(this);
 };
 
-
 /* python3 recommends implementing simple ops */
 Sk.builtin.dict.prototype.ob$eq = function (other) {
-
     var iter, k, v, otherv;
 
     if (this === other) {
@@ -605,9 +601,7 @@ Sk.builtin.dict.prototype.ob$eq = function (other) {
         return Sk.builtin.bool.false$;
     }
 
-    for (iter = this.tp$iter(), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         v = this.mp$lookup(k);
         otherv = other.mp$lookup(k);
 
@@ -624,7 +618,6 @@ Sk.builtin.dict.prototype.ob$eq = function (other) {
 };
 
 Sk.builtin.dict.prototype.ob$ne = function (other) {
-
     var isEqual = this.ob$eq(other);
 
     if (isEqual instanceof Sk.builtin.NotImplemented) {
@@ -634,7 +627,6 @@ Sk.builtin.dict.prototype.ob$ne = function (other) {
     } else {
         return Sk.builtin.bool.true$;
     }
-
 };
 
 Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
@@ -645,9 +637,7 @@ Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
     var v; // Value of dict item
     var newCopy = new Sk.builtin.dict([]);
 
-    for (it = Sk.abstr.iter(self), k = it.tp$iternext();
-        k !== undefined;
-        k = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(self), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         v = self.mp$subscript(k);
         if (v === undefined) {
             v = null;
@@ -681,9 +671,7 @@ Sk.builtin.dict.$fromkeys = function fromkeys(self, seq, value) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
 
-    for (iter = Sk.abstr.iter(iterable), k = iter.tp$iternext();
-        k !== undefined;
-        k = iter.tp$iternext()) {
+    for (iter = Sk.abstr.iter(iterable), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
         res.mp$ass_subscript(k, val);
     }
 
@@ -737,4 +725,3 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
-
