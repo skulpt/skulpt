@@ -28,23 +28,12 @@ Sk.builtin.list.prototype.tp$init = function (args, kwargs) {
     // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
     Sk.abstr.checkNoKwargs("list", kwargs);
     Sk.abstr.checkArgsLen("list", args, 0, 1);
-    const arg = args[0];
-    if (arg === undefined) {
-        return Sk.builtin.none.none$;
-    }
-    if (arg.sk$asarray && !arg.hp$type) {
-        this.v = arg.sk$asarray();
-        return Sk.builtin.none.none$;
-    }
     const self = this;
-    return Sk.misceval.chain(
-        Sk.misceval.iterFor(Sk.abstr.iter(arg), (i) => {
-            self.v.push(i);
-        }),
-        () => {
-            return Sk.builtin.none.none$;
-        }
-    );
+    let L = Sk.abstr.arrayFromIterable(args[0], true);
+    return Sk.misceval.chain(L, (l) => {
+        self.v = l;
+        return Sk.builtin.none.none;
+    });
 };
 
 Sk.builtin.list.prototype.$r = function () {
