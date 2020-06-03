@@ -93,23 +93,6 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
 };
 Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
 
-Sk.generic.pythonGetAttr = function (self, pyName) {
-    if (!Sk.builtin.checkString(pyName)) {
-        throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
-    }
-    var r = Sk.generic.getAttr.call(self, pyName, true);
-    if (r === undefined) {
-        throw new Sk.builtin.AttributeError(pyName);
-    }
-    return r;
-};
-
-Sk.generic.pythonSetAttr = function (self, pyName, value) {
-    if (!Sk.builtin.checkString(pyName)) {
-        throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
-    }
-    return Sk.generic.setAttr.call(self, pyName, value, true);
-};
 
 Sk.generic.new = function (builtin) {
     const genericNew = function __new__(args, kwargs) {
