@@ -80,17 +80,16 @@ Sk.ffi.remapToJs = function (obj) {
     var i;
     var kAsJs;
     var v;
-    var iter, k;
+    var k;
     var ret;
     if (obj instanceof Sk.builtin.dict) {
         ret = {};
-        for (iter = obj.tp$iter(), k = iter.tp$iternext();
-            k !== undefined;
-            k = iter.tp$iternext()) {
-            v = obj.mp$subscript(k);
-            if (v === undefined) {
-                v = null;
-            }
+        const buckets = obj.buckets;
+        let item;
+        for (let keyhash in buckets) {
+            item = buckets[keyhash];
+            k = item.lhs;
+            v = item.rhs;
             kAsJs = Sk.ffi.remapToJs(k);
             // todo; assert that this is a reasonble lhs?
             ret[kAsJs] = Sk.ffi.remapToJs(v);
