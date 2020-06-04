@@ -138,7 +138,6 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
             }
             Sk.abstr.checkArgsLen("reversed", args, 1, 1);
             let seq = args[0];
-            debugger;
             const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
             if (special !== undefined) {
                 return Sk.misceval.callsimArray(special, [seq]);

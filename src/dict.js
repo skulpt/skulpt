@@ -258,6 +258,28 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /**
+ * 
+ * this is effectively a builtin staticmethod for dict
+ * We create this separately
+ * 
+ */
+Sk.builtin.dict.prototype.fromkeys = new Sk.builtin.sk_method({
+    $name: "fromkeys",
+    $flags: {MinArgs: 1, MaxArgs: 2},
+    $textsig: "($type, iterable, value=None, /)",
+    $meth: function fromkeys(seq, value) {
+        const keys = Sk.abstr.arrayFromIterable(seq);
+        const dict = new Sk.builtin.dict([]);
+        value = value || Sk.builtin.none.none$;
+        for (let i = 0; i<keys.length; i++) {
+            dict.set$item(keys[i], value);
+        }
+        return dict;
+    },
+    $doc: "Create a new dictionary with keys from iterable and values set to value.",
+}, Sk.builtin.dict);
+
+/**
  * NB:
  * We could put the following methods on the proto in the above object literal
  * but they're quite long so we keep them below for readability
@@ -657,7 +679,6 @@ Sk.setupDictIterators = function (python3) {
             dict_view.$name = dict_view_name;
             proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
         }
-        delete proto.fromkeys;
         delete proto.haskey$;
     } else {
         dict_views = dict.py2_dictviews;
@@ -666,7 +687,6 @@ Sk.setupDictIterators = function (python3) {
             dict_view.$name = dict_view_name;
             proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
         }
-        proto.fromkeys = new Sk.builtin.sk_method(proto.fromkeys$);
         proto.has_key = new Sk.builtin.method_descriptor(dict, proto.haskey$);
     }
 };
@@ -674,21 +694,6 @@ Sk.setupDictIterators = function (python3) {
 /**
  * Py2 methods
  */
-
-Sk.builtin.dict.prototype.fromkeys$ = {
-    $name: "fromkeys",
-    $flags: {MinArgs: 1, MaxArgs: 2},
-    $meth: function fromkeys(seq, value) {
-        const keys = Sk.abstr.arrayFromIterable(seq);
-        const dict = new Sk.builtin.dict([]);
-        value = value || Sk.builtin.none.none$;
-        for (let i = 0; i<keys.length; i++) {
-            dict.set$item(keys[i], value);
-        }
-        return dict;
-    },
-    $doc: "dict.fromkeys(S[,v]) -> New dict with keys from S and values equal to v.\nv defaults to None.",
-};
 
 Sk.builtin.dict.prototype.haskey$ = {
     $name: "has_key",

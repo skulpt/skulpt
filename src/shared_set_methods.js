@@ -173,7 +173,6 @@ Sk.builtin.setMethodDefs = {
     //     $doc: "Return state information for pickling." },
     remove: {
         $meth: function (item) {
-            debugger;
             return this.v.mp$ass_subscript(item);
         },
         $flags: { OneArg: true },
