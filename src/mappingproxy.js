@@ -77,6 +77,12 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             return new Sk.builtin.dict_iter_(this);
         },
     },
+    methods: {
+        get: Sk.builtin.dict.prototype.get.d$def, // just use the descriptor defn for get
+        keys: Sk.builtin.dict.py3_dictviews.keys,
+        items: Sk.builtin.dict.py3_dictviews.items,
+        values: Sk.builtin.dict.py3_dictviews.values,
+    },
     proto: {
         mp$lookup: function (key) {
             if (typeof key === "string") {
@@ -94,9 +100,6 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             // useful for using dict key iterators
             return this.sq$length();
         },
-        keys: Sk.builtin.dict.prototype.keys,
-        items: Sk.builtin.dict.prototype.items,
-        values: Sk.builtin.dict.prototype.values,
     },
     flags: {
         sk$acceptable_as_base_type: false,
