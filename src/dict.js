@@ -77,7 +77,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 } else if (this.size !== other.size) {
                     res = false;
                 } else {
-                    let item, k, v;
+                    let item, k, v, otherv;
                     const buckets = this.buckets;
                     for (let key_hash in buckets) {
                         item = buckets[key_hash];
@@ -435,8 +435,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 Sk.builtin.dict.prototype.dict$merge = function (b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
     // so use this.set$item instead which can't be overridden by a subclass
-    let iter;
-    let k, v;
+    let k, v, item;
     if (b.tp$iter === Sk.builtin.dict.prototype.tp$iter) {
         // fast way used
         const buckets = b.buckets;
