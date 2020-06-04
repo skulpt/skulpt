@@ -95,7 +95,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                     }
                     res = res === undefined;
                 }
-                if (res == "NotEq") {
+                if (op == "NotEq") {
                     res = !res;
                 }
             } else {
@@ -161,7 +161,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         setdefault: {
             $meth: function (key, default_) {
-                const res = mp$lookup(key);
+                const res = this.mp$lookup(key);
                 if (res !== undefined) {
                     return res;
                 }

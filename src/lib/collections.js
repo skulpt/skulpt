@@ -275,10 +275,9 @@ const collections_mod = function (keywds) {
                 if (op != "Eq" && op != "Ne") {
                     return Sk.builtin.NotImplemented.NotImplemented$;
                 }
-                const shortcut = op == "Eq" ? "ob$eq" : "ob$ne";
                 const $true = op == "Eq" ? true : false;
                 if (!(other instanceof collections.OrderedDict)) {
-                    return Sk.builtin.dict.prototype[shortcut].call(this, other);
+                    return Sk.builtin.dict.prototype.tp$richcompare.call(this, other, op);
                 }
                 const l = this.size;
                 const otherl = other.size;
@@ -363,7 +362,7 @@ const collections_mod = function (keywds) {
                 if (idx != -1) {
                     this.orderedkeys.splice(idx, 1);
                 }
-                rSk.builtin.dict.prototype.del$item.call(this, key);
+                Sk.builtin.dict.prototype.del$item.call(this, key);
             },
         },
     });

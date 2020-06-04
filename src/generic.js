@@ -76,7 +76,7 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
             try {
                 dict.mp$ass_subscript(pyName, value);
             } catch (e) {
-                if (e instanceof Sk.builtin.AttributeError) {
+                if (e instanceof Sk.builtin.KeyError) {
                     throw new Sk.builtin.AttributeError(
                         "'" + Sk.abstr.typeName(this) + "' object has no attribute '" + Sk.unfixReserved(pyName.$jsstr()) + "'"
                     );
