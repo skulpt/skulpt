@@ -2,7 +2,7 @@ import math as module
 
 
 
-module = frozenset
+module = type({}.keys())
 meth = type(str.count) 
 for x in module.__dict__: 
     bltin = getattr(module, x) 

@@ -836,28 +836,20 @@ Sk.abstr.objectPositive = function (obj) {
 };
 
 Sk.abstr.objectDelItem = function (o, key) {
-    var otypename;
-    var keytypename;
-    var keyValue;
-    if (o !== null) {
-        if (o.mp$del_subscript) {
-            o.mp$del_subscript(key);
-            return;
-        }
-        if (o.sq$ass_item) {
-            keyValue = Sk.misceval.asIndex(key);
-            if (keyValue === undefined) {
-                keytypename = Sk.abstr.typeName(key);
-                throw new Sk.builtin.TypeError("sequence index must be integer, not '" + keytypename + "'");
-            }
-            Sk.abstr.sequenceDelItem(o, keyValue);
-            return;
-        }
-        // if o is a slice do something else...
+    let res;
+    if (o.mp$del_subscript) {
+        o.mp$del_subscript(key);
+        return;
     }
-
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
+    if (o != null && o.mp$ass_subscript) {
+        res = o.mp$ass_subscript(key);
+    }
+    // should return None
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
+    }
+    return res;
+    
 };
 Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
@@ -1383,6 +1375,8 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         const docstr = typeobject.prototype.tp$doc;
         if (typeof docstr === "string") {
             typeobject.prototype.__doc__ = new Sk.builtin.str(docstr);
+        } else {
+            typeobject.prototype.__doc__ = Sk.builtin.none.none$;
         }
     }
     return typeobject;

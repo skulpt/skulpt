@@ -28,7 +28,7 @@ Sk.builtin.setMethodDefs = {
     },
     discard: {
         $meth: function (item) {
-            this.v.pop.func_code.call(null, this.v, item, Sk.builtin.none.none$);
+            Sk.misceval.callsimArray(this.v.pop, [this.v, item, Sk.builtin.none.none$]);
             return Sk.builtin.none.none$;
         },
         $flags: { OneArg: true },
@@ -173,8 +173,8 @@ Sk.builtin.setMethodDefs = {
     //     $doc: "Return state information for pickling." },
     remove: {
         $meth: function (item) {
-            this.v.mp$del_subscript(item);
-            return Sk.builtin.none.none$;
+            debugger;
+            return this.v.mp$ass_subscript(item);
         },
         $flags: { OneArg: true },
         $textsig: null,

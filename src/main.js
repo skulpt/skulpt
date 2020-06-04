@@ -36,6 +36,7 @@ require("./str.js");
 require("./formatting.js");
 require("./tuple.js");
 require("./dict.js");
+require("./dictviews.js");
 require("./mappingproxy.js");
 require("./property_class_static.js");
 require("./biginteger.js");

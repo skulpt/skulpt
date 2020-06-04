@@ -117,7 +117,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
             return undefined;
         }
         try {
-            const i = Sk.misceval.asIndex(this.idx);
+            const i = new Sk.builtin.int_(this.idx);
             const next = Sk.abstr.sequenceGetItem(this.seq, i);
             this.idx--;
             return next;
@@ -138,6 +138,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
             }
             Sk.abstr.checkArgsLen("reversed", args, 1, 1);
             let seq = args[0];
+            debugger;
             const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
             if (special !== undefined) {
                 return Sk.misceval.callsimArray(special, [seq]);

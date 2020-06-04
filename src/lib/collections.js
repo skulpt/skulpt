@@ -1,6 +1,6 @@
 const collections_mod = function (keywds) {
     const collections = {};
-    
+
     // defaultdict object
     const _copy_dd_method_df = {
         $meth: function () {
@@ -23,7 +23,7 @@ const collections_mod = function (keywds) {
         base: Sk.builtin.dict,
         methods: {
             copy: _copy_dd_method_df,
-            __copy__: _copy_dd_method_df, 
+            __copy__: _copy_dd_method_df,
             __missing__: {
                 $meth: function (key) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
@@ -304,19 +304,12 @@ const collections_mod = function (keywds) {
                 return $true;
             },
             mp$ass_subscript: function (key, w) {
-                var idx = this.orderedkeys.indexOf(key);
-                if (idx == -1) {
-                    this.orderedkeys.push(key);
+                if (w === undefined) {
+                    this.del$item(key);
+                } else {
+                    this.set$item(key, w);
                 }
-                return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
-            },
-            mp$del_subscript: function (key) {
-                // oops need to edit this as it really doesn't ever get called... or maybe it does by dict;
-                var idx = this.orderedkeys.indexOf(key);
-                if (idx != -1) {
-                    this.orderedkeys.splice(idx, 1);
-                }
-                return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
+                return Sk.builtin.none.none$;
             },
             tp$iter: function () {
                 return new odict_iter_(this);
@@ -356,6 +349,21 @@ const collections_mod = function (keywds) {
         proto: {
             sk$asarray: function () {
                 return this.orderedkeys.slice();
+            },
+            set$item: function (key, w) {
+                const idx = this.orderedkeys.indexOf(key);
+                if (idx == -1) {
+                    this.orderedkeys.push(key);
+                }
+                Sk.builtin.dict.prototype.set$item.call(this, key, w);
+            },
+            del$item: function (key) {
+                // oops need to edit this as it really doesn't ever get called... or maybe it does by dict;
+                var idx = this.orderedkeys.indexOf(key);
+                if (idx != -1) {
+                    this.orderedkeys.splice(idx, 1);
+                }
+                rSk.builtin.dict.prototype.del$item.call(this, key);
             },
         },
     });
@@ -547,6 +555,7 @@ const collections_mod = function (keywds) {
                 Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
                 return self.v[i];
             };
+            fget.co_name = new Sk.builtin.str(fld);
             nt_klass.prototype[fld] = new Sk.builtin.property(
                 new Sk.builtin.func(fget),
                 undefined,

@@ -20,10 +20,6 @@ Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builti
 Sk.builtin.sorted.co_varnames = ["list", "cmp", "key", "reverse"];
 Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.bool.false$];
 
-// Sk.builtin.dict.fromkeys
-Sk.builtin.dict.$fromkeys.co_name = new Sk.builtin.str("fromkeys");
-Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(Sk.builtin.dict.$fromkeys);
-
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
 

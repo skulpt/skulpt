@@ -367,7 +367,7 @@ Sk.setup_method_mappings = function () {
             4: "tp$iternext"
         },
         "haskey$": {
-            "classes": [Sk.builtin.dict],
+            "classes": [],
             2: "has_key",
             3: null
         },
@@ -375,6 +375,7 @@ Sk.setup_method_mappings = function () {
 };
 
 Sk.switch_version = function (method_to_map, python3) {
+
     var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
 
     mappings = Sk.setup_method_mappings();
