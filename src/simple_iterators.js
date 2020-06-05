@@ -114,6 +114,33 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
+
+/**
+ * @constructor
+ * @param {Sk.builtin.list} lst
+ */
+Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
+    constructor: function (lst) {
+        this.$index = lst.v.length - 1;
+        this.$seq = lst.v;
+    },
+    iternext: function () {
+        if (this.$index < 0) {
+            return undefined;
+        }
+        return this.$seq[this.$index--];
+    },
+    methods: {
+        __length_hint__: {
+            $meth: function () {
+                return this.$index;
+            },
+            $flags: {NoArgs:true},
+        },
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});
+
 /**
  * @constructor
  * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
