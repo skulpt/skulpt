@@ -549,7 +549,7 @@ const collections_mod = function (keywds) {
 
         // create the field properties
         for (let i = 0; i < flds.length; i++) {
-            const fld = Sk.fixReservedNames(flds[i]);
+            const fld = Sk.fixReserved(flds[i]);
             const fget = function (self) {
                 Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
                 return self.v[i];
