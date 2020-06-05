@@ -903,17 +903,6 @@ Sk.builtin.int_.prototype["$r"] = function () {
 };
 
 /**
- * Return the string representation of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.str} The Python string representation of this instance.
- */
-Sk.builtin.int_.prototype.tp$str = function () {
-    return new Sk.builtin.str(this.str$(10, true));
-};
-
-/**
  * Convert this instance's value to a Javascript string.
  *
  * Javascript function, returns Javascript object.
