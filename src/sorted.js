@@ -50,13 +50,13 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
     }
 
     if (compare_func !== undefined) {
-        list.$list_sort(list, compare_func);
+        list.$list_sort(compare_func);
     } else {
-        list.$list_sort(list);
+        list.$list_sort();
     }
 
     if (rev) {
-        list.$list_reverse(list);
+        list.$list_reverse();
     }
 
     if (key !== undefined && !(key instanceof Sk.builtin.none)) {
