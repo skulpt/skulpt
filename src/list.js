@@ -525,7 +525,7 @@ Sk.builtin.list.prototype.$list_sort = function sort(cmp, key, reverse) {
 };
 
 /**
- * @this {Sk.builtin.list=}
+ * @this {Sk.builtin.list}
  **/
 Sk.builtin.list.prototype.$list_reverse = function () {
     this.v.reverse();
