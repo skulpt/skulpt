@@ -678,7 +678,7 @@ Sk.setupDictIterators = function (python3) {
             dict_view.$name = dict_view_name;
             proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
         }
-        delete proto.haskey$;
+        delete proto.has_key;
     } else {
         dict_views = dict.py2_dictviews;
         for (let dict_view_name in dict_views) {
