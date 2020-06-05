@@ -117,19 +117,6 @@ Sk.misceval.asIndex = function (o) {
  * return u[v:w]
  */
 Sk.misceval.applySlice = function (u, v, w, canSuspend) {
-    var ihigh;
-    var ilow;
-    if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v);
-        if (ilow === undefined) {
-            ilow = 0;
-        }
-        ihigh = Sk.misceval.asIndex(w);
-        if (ihigh === undefined) {
-            ihigh = 1e100;
-        }
-        return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
-    }
     return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
 };
 Sk.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
@@ -138,24 +125,11 @@ Sk.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
  * u[v:w] = x
  */
 Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
-    var slice;
-    var ihigh;
-    var ilow;
-    if (u.sq$ass_slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v) || 0;
-        ihigh = Sk.misceval.asIndex(w) || 1e100;
-        if (x === null) {
-            Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
-        } else {
-            Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
-        }
+    const slice = new Sk.builtin.slice(v, w);
+    if (x === null) {
+        return Sk.abstr.objectDelItem(u, slice);
     } else {
-        slice = new Sk.builtin.slice(v, w);
-        if (x === null) {
-            return Sk.abstr.objectDelItem(u, slice);
-        } else {
-            return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
-        }
+        return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
     }
 };
 Sk.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
@@ -409,51 +383,16 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         "LtE"  : "ob$le"
     };
 
+    // tp richcompare and all respective shortcuts guaranteed because we inherit from object
     shortcut = op2shortcut[op];
-    if (v[shortcut] !== undefined) {
-        if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
+    if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        return Sk.misceval.isTrue(ret); // let's guaranteee that this is a js object in the slots
     }
 
     swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-    if (w[swapped_shortcut] !== undefined) {
-        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(ret);
-        }
+    if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        return Sk.misceval.isTrue(ret);
     }
-
-    // // use comparison methods if they are given for either object
-    // if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
-    //     if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-    //         return Sk.misceval.isTrue(ret);
-    //     }
-    // }
-
-    // if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-    //     if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
-    //         return Sk.misceval.isTrue(ret);
-    //     }
-    // }
-
-
-    // // depending on the op, try left:op:right, and if not, then
-    // // right:reversed-top:left
-    // method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
-    // if (method && !v_has_shortcut) {
-    //     ret = Sk.misceval.callsimArray(method, [v, w]);
-    //     if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-    //         return Sk.misceval.isTrue(ret);
-    //     }
-    // }
-
-    // swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
-    // if (swapped_method && !w_has_shortcut) {
-    //     ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
-    //     if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-    //         return Sk.misceval.isTrue(ret);
-    //     }
-    // }
 
     if (!Sk.__future__.python3) {
         vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
