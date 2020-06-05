@@ -454,9 +454,6 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
  * @param {boolean=} canSuspend
  */
 Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
-    var seqtypename;
-    var special;
-    var r;
     let ret;
     if (seq.sq$contains) {
         ret =  seq.sq$contains(ob);
@@ -464,7 +461,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
             return ret;
         }
     } 
-    r = Sk.misceval.iterFor(
+    const r = Sk.misceval.iterFor(
         Sk.abstr.iter(seq),
         function (i) {
             if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
@@ -475,168 +472,86 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
         },
         false
     );
-
     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
-    var seq1typename;
+    let res;
     if (seq1.sq$concat) {
-        return seq1.sq$concat(seq2);
+        res = seq1.sq$concat(seq2);
     }
-    seq1typename = Sk.abstr.typeName(seq1);
-    throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq1) + "' object can't be concatenated");
+    }
+    return res;
 };
 
 Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
-    var seqtypename;
-    var i, it;
-    var index;
     if (seq.index) {
         return Sk.misceval.callsimArray(seq.index, [seq, ob]);
     }
-    if (Sk.builtin.checkIterable(seq)) {
-        index = 0;
-        for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
-                return new Sk.builtin.int_(index);
-            }
-            index += 1;
+    let index = 0;
+    for (let it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+            return new Sk.builtin.int_(index);
         }
-        throw new Sk.builtin.ValueError("sequence.index(x): x not in sequence");
+        index += 1;
     }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+    throw new Sk.builtin.ValueError("sequence.index(x): x not in sequence");
 };
 
 Sk.abstr.sequenceGetCountOf = function (seq, ob) {
-    var seqtypename;
-    var i, it;
-    var count;
     if (seq.count) {
         return Sk.misceval.callsimArray(seq.count, [seq, ob]);
     }
-    if (Sk.builtin.checkIterable(seq)) {
-        count = 0;
-        for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
-                count += 1;
-            }
+    let count = 0;
+    for (let it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+            count += 1;
         }
-        return new Sk.builtin.int_(count);
     }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+    return new Sk.builtin.int_(count);
 };
 
 Sk.abstr.sequenceGetItem = function (seq, i, canSuspend) {
-    var seqtypename;
-    if (seq.mp$subscript) {
-        return seq.mp$subscript(i);
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
+    return Sk.abstr.objectGetItem(seq, i, canSuspend);
 };
 
 Sk.abstr.sequenceSetItem = function (seq, i, x, canSuspend) {
-    var seqtypename;
-    if (seq.mp$ass_subscript) {
-        return seq.mp$ass_subscript(i, x);
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
+    return Sk.abstr.objectSetItem(seq, i, x, canSuspend);
 };
 
 Sk.abstr.sequenceDelItem = function (seq, i) {
-    var seqtypename;
-    if (seq.sq$del_item) {
-        i = Sk.abstr.fixSeqIndex_(seq, i);
-        seq.sq$del_item(i);
-        return;
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item deletion");
-};
-
-Sk.abstr.sequenceRepeat = function (f, seq, n) {
-    var ntypename;
-    var count;
-    n = Sk.builtin.asnum$(n);
-    count = Sk.misceval.asIndex(n);
-    if (count === undefined) {
-        ntypename = Sk.abstr.typeName(n);
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
-    }
-    return f.call(seq, n);
+    return Sk.abstr.objectDelItem(seq, i);
 };
 
 Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
-    var seqtypename;
-    if (seq.sq$slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        return seq.sq$slice(i1, i2);
-    } else if (seq.mp$subscript) {
-        return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsliceable");
+    return Sk.abstr.objectGetItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
 Sk.abstr.sequenceDelSlice = function (seq, i1, i2) {
-    var seqtypename;
-    if (seq.sq$del_slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        seq.sq$del_slice(i1, i2);
-        return;
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' doesn't support slice deletion");
+    return Sk.abstr.objectDelItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
 Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
-    var seqtypename;
-    if (seq.sq$ass_slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        seq.sq$ass_slice(i1, i2, x);
-    } else if (seq.mp$ass_subscript) {
-        seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
-    } else {
-        seqtypename = Sk.abstr.typeName(seq);
-        throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
-    }
+    return Sk.abstr.objectSetItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
 // seq - Python object to unpack
 // n   - JavaScript number of items to unpack
 Sk.abstr.sequenceUnpack = function (seq, n) {
-    var res = [];
-    var it, i;
-
-    if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
-    }
-
-    for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined && res.length < n; i = it.tp$iternext()) {
+    const res = [];
+    const it = Sk.abstr.iter(seq);
+    let i;
+    for (i = it.tp$iternext(); i !== undefined && res.length < n; i = it.tp$iternext()) {
         res.push(i);
     }
-
     if (res.length < n) {
         throw new Sk.builtin.ValueError("need more than " + res.length + " values to unpack");
     }
     if (i !== undefined) {
         throw new Sk.builtin.ValueError("too many values to unpack");
     }
-
     // Return Javascript array of items
     return res;
 };
@@ -767,80 +682,55 @@ Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
-//
-// Object
-//
+
 
 Sk.abstr.objectFormat = function (obj, format_spec) {
-    var meth; // PyObject
-    var result; // PyObject
-
-    // Find the (unbound!) __format__ method (a borrowed reference)
-    meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format);
-    if (meth === undefined) {
-        return Sk.misceval.callsimArray(Sk.builtin.object.prototype["__format__"], [obj, format_spec]);
-    }
-
-    // And call it
-    result = Sk.misceval.callsimArray(meth, [obj, format_spec]);
+    const meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format); // inherited from object so guaranteed to exist
+    const result = Sk.misceval.callsimArray(meth, [obj, format_spec]);
     if (!Sk.builtin.checkString(result)) {
         throw new Sk.builtin.TypeError("__format__ must return a str, not " + Sk.abstr.typeName(result));
     }
-
     return result;
 };
 
 Sk.abstr.objectAdd = function (a, b) {
-    var btypename;
-    var atypename;
+    let res;
     if (a.nb$add) {
-        return a.nb$add(b);
+        res = a.nb$add(b);
     }
-
-    atypename = Sk.abstr.typeName(a);
-    btypename = Sk.abstr.typeName(b);
-    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
+    if (res === undefined) {
+        const atypename = Sk.abstr.typeName(a);
+        const btypename = Sk.abstr.typeName(b);
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
+    }
+    return res;
 };
 
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectNegative = function (obj) {
-    var objtypename;
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
-
-    if (obj instanceof Sk.builtin.bool) {
-        obj = new Sk.builtin.int_(obj_asnum);
-    }
-
+    let res;
     if (obj.nb$negative) {
-        return obj.nb$negative();
+        res = obj.nb$negative();
     }
-
-    objtypename = Sk.abstr.typeName(obj);
-    throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
+    }
+    return res;
 };
 
-// in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectPositive = function (obj) {
-    var objtypename = Sk.abstr.typeName(obj);
-    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
-
-    if (obj instanceof Sk.builtin.bool) {
-        obj = new Sk.builtin.int_(obj_asnum);
+    let res;
+    if (obj.nb$positive) {
+        res = obj.nb$positive();
     }
-
-    if (obj.nb$negative) {
-        return obj.nb$positive();
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
     }
-
-    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");
+    return res;
 };
 
 Sk.abstr.objectDelItem = function (o, key) {
     let res;
-    if (o.mp$del_subscript) {
-        o.mp$del_subscript(key);
-        return;
-    }
     if (o != null && o.mp$ass_subscript) {
         res = o.mp$ass_subscript(key);
     }
@@ -849,61 +739,45 @@ Sk.abstr.objectDelItem = function (o, key) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
     }
     return res;
-    
 };
 Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
-    var otypename;
-    if (o !== null) {
-        if (o.mp$subscript) {
-            return o.mp$subscript(key, canSuspend);
-        } else if (Sk.misceval.isIndex(key) && o.sq$item) {
-            return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
-        }
+    let res;
+    if (o != null && o.mp$subscript) {
+        res = o.mp$subscript(key, canSuspend);
     }
-
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support indexing");
+    }
+    return res;
 };
 Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
-    var otypename;
-    if (o !== null) {
-        if (o.tp$setitem) {
-            return o.tp$setitem(key, v, canSuspend);
-        } else if (o.mp$ass_subscript) {
-            return o.mp$ass_subscript(key, v, canSuspend);
-        } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
-            return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
-        }
+    let res;
+    if (o != null && o.mp$ass_subscript) {
+        res = o.mp$ass_subscript(key, v, canSuspend);
     }
-
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
+    if (res === undefined) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support item assignment");
+    }
+    return res;
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
-    // TODO is it even valid to pass something this shape in here?
-    // Should this be an assert?
-    if (obj === null || !obj.tp$getattr) {
-        let objname = Sk.abstr.typeName(obj);
-        let jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-    }
-
-    // This function is so hot that we do our own inline suspension checks
-
-    let ret = obj.tp$getattr(pyName, canSuspend);
-
+    Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to gattr");
+    // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
+    const ret = obj.tp$getattr(pyName, canSuspend);
     if (ret === undefined) {
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+        const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName + "' object";
+        throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr());
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function (r) {
             if (r === undefined) {
-                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+                const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName + "' object";
+                throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr());
             }
             return r;
         });
@@ -914,20 +788,8 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
-    var objname = Sk.abstr.typeName(obj),
-        r,
-        setf;
-    var jsName = pyName.$jsstr();
-
-    if (obj === null) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-    }
-
-    if (obj.tp$setattr !== undefined) {
-        return obj.tp$setattr(pyName, data, canSuspend);
-    } else {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-    }
+    Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to sattr");
+    return obj.tp$setattr(pyName, data, canSuspend);
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
@@ -998,10 +860,9 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
         return Sk.misceval.chain(ret, () => {
             return L;
         });
-    } else {
-        Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-        return L;
-    }
+    } 
+    Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    return L;
 };
 
 /**
@@ -1011,8 +872,8 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
  *
  * @returns {undefined | Object} Return undefined if not found or the function
  */
-Sk.abstr.lookupSpecial = function (obj, pyOrJsName) {
-    return obj.ob$type.$typeLookup(pyOrJsName);
+Sk.abstr.lookupSpecial = function (obj, pyOrJsName, toMangle) {
+    return obj.ob$type.$typeLookup(pyOrJsName, toMangle);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
@@ -1022,24 +883,9 @@ Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
  * @return {undefined}
  */
 Sk.abstr.markUnhashable = function (thisClass) {
-    var proto = thisClass.prototype;
+    const proto = thisClass.prototype;
     proto.__hash__ = Sk.builtin.none.none$;
     proto.tp$hash = Sk.builtin.none.none$;
-};
-
-/**
- * Code taken from goog.inherits
- *
- * Newer versions of the closure library add a "base"attribute,
- * which we don't want/need.  So, this code is the remainder of
- * the goog.inherits function.
- */
-Sk.abstr.inherits = function (childCtor, parentCtor) {
-    /** @constructor */
-    childCtor.superClass_ = parentCtor.prototype;
-    childCtor.prototype = Object.create(parentCtor.prototype);
-    /** @override */
-    childCtor.prototype.constructor = childCtor;
 };
 
 /**
