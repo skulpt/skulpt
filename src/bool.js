@@ -21,6 +21,7 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
             return Sk.builtin.bool.false$;
         }
     },
+    base: Sk.builtin.int_,
     slots: {
         tp$doc:
             "bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed.",
@@ -44,10 +45,16 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
     flags: {
         sk$acceptable_as_base_class: false,
     },
+    methods: {
+        __format__: {
+            $meth: function () {
+                return this.$r();
+            },
+            $flags: {OneArg: true},
+        }
+    }
 });
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
-
-Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
 /**
  * Python bool True constant.

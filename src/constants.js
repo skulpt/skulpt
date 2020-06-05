@@ -8,6 +8,7 @@ Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.
 
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
+Sk.builtin.str.$emptystr = Sk.builtin.str.$empty;
 
 Sk.builtin.str.$default_factory = new Sk.builtin.str("default_factory");
 Sk.builtin.str.$imag = new Sk.builtin.str("imag");
