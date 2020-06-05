@@ -688,36 +688,25 @@ Sk.builtin.hash = function hash(value) {
 };
 
 Sk.builtin.getattr = function getattr(obj, pyName, default_) {
-    var ret, mangledName, jsName;
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-
-    jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReservedWords(jsName));
-    ret = obj.tp$getattr(mangledName);
-    if (ret === undefined) {
+    const res = obj.tp$getattr(pyName);
+    if (res === undefined) {
         if (default_ !== undefined) {
             return default_;
-        } else {
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
         }
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has now attribute " + pyName.$jsstr());
     }
-    return ret;
+    return res;
 };
 
 Sk.builtin.setattr = function setattr(obj, pyName, value) {
-    var jsName;
     // cannot set or del attr from builtin type
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    jsName = pyName.$jsstr();
-    if (obj.tp$setattr) {
-        obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
-    } else {
-        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
-    }
+    obj.tp$setattr(pyName, value);
     return Sk.builtin.none.none$;
 };
 
@@ -921,20 +910,14 @@ Sk.builtin.filter = function filter(fun, iterable) {
 };
 
 Sk.builtin.hasattr = function hasattr(obj, attr) {
-    var special, ret;
     if (!Sk.builtin.checkString(attr)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
-
-    if (obj.tp$getattr) {
-        if (obj.tp$getattr(attr)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    } else {
-        throw new Sk.builtin.AttributeError("Object has no tp$getattr method");
+    const res = obj.tp$getattr(attr);
+    if (res === undefined) {
+        return Sk.builtin.bool.false$;
     }
+    return Sk.builtin.bool.true$;
 };
 
 Sk.builtin.pow = function pow(a, b, c) {
