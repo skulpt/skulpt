@@ -118,7 +118,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
         }
         try {
             const i = new Sk.builtin.int_(this.idx);
-            const next = Sk.abstr.sequenceGetItem(this.seq, i);
+            const next = Sk.abstr.objectGetItem(this.seq, i);
             this.idx--;
             return next;
         } catch (e) {
