@@ -23,9 +23,11 @@ Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(obje
 Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
     if (this === Sk.builtin.type) {
         // check the args are 1 - only interested in the 1 argument form if
-        // if the nargs and nkewords != 1or3 and zero raise an error
-        if (args.length == 1) {
+        // if the nargs and nkeywords != 1 or 3 and zero raise an error
+        if (args.length === 1 && (kwargs === undefined || !kwargs.length)) {
             return args[0].ob$type;
+        } else if (args.length !== 3) {
+            throw new Sk.builtin.TypeError("type() takes 1 or 3 arguments");
         }
     }
     let obj,
@@ -54,8 +56,11 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
 Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     // currently skulpt does not support metatypes...
     // metatype.prototype = this
-    if (args.length != 1 && args.length != 3) {
-        throw new Sk.builtin.AttributeError("type() takes 1 or 3 arguments");
+    if (args.length !== 3) {
+        if (args.length === 1 && (kwargs === undefined || !kwargs.length)) {
+            return args[0].ob$type;
+        }
+        throw new Sk.builtin.TypeError("type() takes 1 or 3 arguments");
     }
 
     let $name, bases, dict;
@@ -120,11 +125,8 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     // copy properties from dict into klass.prototype
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
-        if (v !== undefined) {
-            klass.prototype[k.v] = v;
-        }
+        klass.prototype[k.v] = v;
     }
-
     klass.$allocateSlots();
 
     return klass;
@@ -158,12 +160,10 @@ Sk.builtin.type.prototype.$r = function () {
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // first check that the pyName is indeed a string
     let res;
-    const jsName = pyName.$jsstr();
-
     const metatype = this.ob$type;
-
     // now check whether there is a descriptor on the metatype
-    const meta_attribute = metatype.$typeLookup(jsName);
+    const mangled = Sk.fixReserved(pyName.$jsstr());
+    const meta_attribute = metatype.$typeLookup(mangled);
 
     let meta_get;
     if (meta_attribute !== undefined) {
@@ -173,7 +173,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
             return res;
         }
     }
-    const attribute = this.$typeLookup(jsName);
+    const attribute = this.$typeLookup(mangled);
 
     if (attribute !== undefined) {
         const local_get = attribute.tp$descr_get;
@@ -184,7 +184,6 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
         }
         return attribute;
     }
-
     // attribute was not found so use the meta_get if any
     if (meta_get !== undefined) {
         res = meta_get.call(meta_attribute, this, metatype, canSuspend);
@@ -194,8 +193,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     if (meta_attribute !== undefined) {
         return meta_attribute;
     }
-
-    return undefined;
+    return;
 };
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
@@ -206,12 +204,11 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
             throw new Sk.builtin.TypeError("can't delete attributes on type object '" + this.prototype.tp$name + "'");
         }
     }
-
     const jsName = pyName.$jsstr();
-
+    const mangled = Sk.fixReserved(jsName);
     // meta types must follow single inheritance - we could change this and do
     // this.ob$type.$typeLookup(jsName)... but doesn't seem much point
-    const descr = this.ob$type.$typeLookup(jsName);
+    const descr = this.ob$type.$typeLookup(mangled);
 
     // if it's a data descriptor then call it
     if (descr !== undefined && descr !== null) {
@@ -220,67 +217,54 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
             return f.call(descr, this, value, canSuspend);
         }
     }
-
     // for delattr
+
     if (value === undefined) {
-        if (!this.prototype.hasOwnProperty(jsName)) {
-            throw new Sk.builtin.AttributeError("type objet '" + this.prototype.tp$name + "' has no attribute '" + jsName + "'");
+        if (!this.prototype.hasOwnProperty(mangled)) {
+            throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + jsName + "'");
         } else {
-            delete this.prototype[jsName];
+            delete this.prototype[mangled];
             // delete the slot_func if this object follows protypical inheritance
-            const slot_name = Sk.dunderToSkulpt[jsName];
+            const slot_name = Sk.dunderToSkulpt[mangled];
             if (this.prototype.prototypical && slot_name !== undefined) {
                 delete this.prototype[slot_name];
             }
             return;
         }
     }
-
-    this.prototype[jsName] = value;
-
-    if (this.prototype.sk$prototypical && jsName in Sk.dunderToSkulpt) {
-        this.$allocateSlot(jsName);
+    this.prototype[mangled] = value;
+    if (this.prototype.sk$prototypical && mangled in Sk.dunderToSkulpt) {
+        this.$allocateSlot(mangled);
     }
 };
 
-Sk.builtin.type.prototype.$typeLookup = function (pyName) {
-    const jsName = pyName.$jsstr ? pyName.$jsstr() : pyName;
-
-    if (this.prototype.sk$prototypical) {
-        return this.prototype[jsName];
+Sk.builtin.type.prototype.$typeLookup = function (pyOrJsName, toMangle) {
+    if (toMangle !== undefined) {
+        if (pyOrJsName.$jsstr) {
+            pyOrJsName = pyOrJsName.$jsstr();
+        }
+        pyOrJsName = Sk.fixReserved(pyOrJsName);
+    } else if (pyOrJsName.$jsstr) {
+        pyOrJsName = pyOrJsName.$jsstr();
     }
-
+    if (this.prototype.sk$prototypical) {
+        return this.prototype[pyOrJsName];
+    }
     const mro = this.prototype.tp$mro;
 
     for (let i = 0; i < mro.length; ++i) {
         const base = mro[i];
-        if (base.prototype.hasOwnProperty(jsName)) {
-            return base.prototype[jsName];
+        if (base.prototype.hasOwnProperty(pyOrJsName)) {
+            return base.prototype[pyOrJsName];
         }
     }
-
     return undefined;
 };
 
 Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
-    /*
-     var tmp = [];
-     for (var i = 0; i < seqs.length; ++i)
-     {
-     tmp.push(new Sk.builtin.list(seqs[i]));
-     }
-     print(Sk.builtin.repr(new Sk.builtin.list(tmp)).v);
-     */
     this.prototype.sk$prototypical = true; // assume true to start with
-    let seq,
-        i,
-        next,
-        k,
-        sseq,
-        j,
-        cand,
-        cands,
-        res = [];
+    let seq, i, j;
+    const res = [];
     for (;;) {
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
@@ -292,18 +276,18 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
             // all empty
             return res;
         }
-        cands = [];
+        const cands = [];
         for (i = 0; i < seqs.length; ++i) {
             seq = seqs[i];
             //print("XXX", Sk.builtin.repr(new Sk.builtin.list(seq)).v);
             if (seq.length !== 0) {
-                cand = seq[0];
+                const cand = seq[0];
                 //print("CAND", Sk.builtin.repr(cand).v);
 
                 /* eslint-disable */
                 OUTER: for (j = 0; j < seqs.length; ++j) {
-                    sseq = seqs[j];
-                    for (k = 1; k < sseq.length; ++k) {
+                    const sseq = seqs[j];
+                    for (let k = 1; k < sseq.length; ++k) {
                         if (sseq[k] === cand) {
                             break OUTER;
                         }
@@ -322,7 +306,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
             throw new Sk.builtin.TypeError("Inconsistent precedences in type hierarchy");
         }
 
-        next = cands[0];
+        const next = cands[0];
 
         // check prototypical mro
         if (res.length && this.prototype.sk$prototypical) {
@@ -372,19 +356,15 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
  */
 Sk.builtin.type.prototype.$buildMRO = function () {
     // MERGE(klass + mro(bases) + bases)
-    let i;
     const all = [[this]];
-
-    //Sk.debugout("buildMRO for", klass.tp$name);
-
     const kbases = this.prototype.tp$bases;
 
-    for (i = 0; i < kbases.length; ++i) {
+    for (let i = 0; i < kbases.length; ++i) {
         all.push([...kbases[i].prototype.tp$mro]);
     }
 
     const bases = [];
-    for (i = 0; i < kbases.length; ++i) {
+    for (let i = 0; i < kbases.length; ++i) {
         bases.push(kbases[i]);
     }
     all.push(bases);

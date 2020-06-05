@@ -60,7 +60,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return this;
         },
         tp$getattr: function (pyName, canSuspend) {
-            const descr = Sk.abstr.lookupSpecial(this, pyName);
+            const descr = Sk.abstr.lookupSpecial(this, pyName, true); // true means we should mangle this pyName
             if (descr !== undefined) {
                 const f = descr.tp$descr_get;
                 if (f !== undefined) {
