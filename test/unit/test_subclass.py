@@ -217,7 +217,7 @@ class SubclassTest(unittest.TestCase):
         class Ancestor:
             def __hash__(self):
                 return 15
-            def __str__(self):
+            def __repr__(self): # changed from __str__ to repr to reflect removing tp$str from int/float/complex
                 return "Ancestor"
             def test(self):
                 return "Hello world"
