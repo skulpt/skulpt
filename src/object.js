@@ -9,7 +9,7 @@
  * @return {Sk.builtin.object} Python object
  */
 Sk.builtin.object = function object() {
-    Sk.asserts.assert(this instanceof Sk.builtin.object);
+    Sk.asserts.assert(this instanceof Sk.builtin.object, "bad call to object, use 'new'");
 };
 
 // now that object has been created we setup the base inheritances
@@ -17,14 +17,16 @@ Sk.builtin.object = function object() {
 Sk.abstr.setUpBaseInheritance();
 
 /**
- * worth noting that don't use the new api for object since descr_objects are not yet initialized
- * slot_wrappers, methods and getsets will be created in the import one time initialization
+ * worth noting that we don't use the new api for object since descr_objects are not yet initialized
+ * object, type, NoneType, NotImplemented, 
+ * slot_wrapper, methods_descriptor, getsets_desciptor, class_descriptor
+ * will be fully initialized in the import.js doOneTimeInitialization
  */
 
 Sk.builtin.object.prototype.tp$doc = "The most base type";
 
 Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
-    // see cypthon object_new for algorithm details
+    // see cypthon object_new for algorithm details we do two versions one for prototypical and one for not
     if ((args && args.length) || (kwargs && kwargs.length)) {
         if (this.sk$prototypical) {
             if (this.tp$new !== Sk.builtin.object.prototype.tp$new) {
@@ -44,7 +46,7 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
             }
         }
     }
-    return new this.constructor;
+    return new this.constructor();
 };
 
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
@@ -71,20 +73,17 @@ Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     return Sk.builtin.none.none$;
 };
 
-
 Sk.builtin.object.prototype.tp$getattr = Sk.generic.getAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.generic.setAttr;
 
 Sk.builtin.object.prototype.$r = function () {
-    const mod = this.ob$type.$typeLookup("__module__");
+    const mod = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$module);
     let cname = "";
     if (mod && Sk.builtin.checkString(mod)) {
         cname = mod.v + ".";
     }
     return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + " object>");
-
 };
-
 
 Sk.builtin.object.prototype.tp$str = function () {
     // if we're calling this function then the object has no __str__ or tp$str defined
@@ -98,7 +97,6 @@ Sk.builtin.object.prototype.tp$str = function () {
  *
  * @return {Sk.builtin.int_} The hash value
  */
-
 Sk.builtin.object.prototype.tp$hash = function () {
     if (!this.$savedHash_) {
         this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
@@ -125,7 +123,6 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
     return res;
 };
 
-
 Sk.builtin.object.prototype.tp$getsets = {
     __class__: {
         $get: function () {
@@ -141,10 +138,9 @@ Sk.builtin.object.prototype.tp$getsets = {
             Object.setPrototypeOf(this, value.prototype);
             return;
         },
-        $doc: "the object's class"
-    }
+        $doc: "the object's class",
+    },
 };
-
 
 Sk.builtin.object.prototype.tp$methods = {
     __dir__: {
@@ -167,7 +163,7 @@ Sk.builtin.object.prototype.tp$methods = {
             return type_dir;
         },
         $flags: { NoArgs: true },
-        $doc: "Default dir() implementation."
+        $doc: "Default dir() implementation.",
     },
     __format__: {
         $meth: function (format_spec) {
@@ -184,24 +180,12 @@ Sk.builtin.object.prototype.tp$methods = {
                     throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
                 }
             }
-            return new Sk.builtin.str(this);
+            return this.tp$str();
         },
         $flags: { OneArg: true },
-        $doc: "Default object formatter."
-    }
+        $doc: "Default object formatter.",
+    },
 };
-
-/** Default implementations of Javascript functions used in dunder methods */
-
-/**
- * Return the string representation of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @name  $r
- * @memberOf Sk.builtin.object.prototype
- * @return {Sk.builtin.str} The Python string representation of this instance.
- */
 
 Sk.builtin.hashCount = 1;
 Sk.builtin.idCount = 1;
@@ -217,13 +201,14 @@ Sk.builtin.none = function () {
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
 /** @override */
-Sk.builtin.none.prototype.$r = function () { return new Sk.builtin.str("None"); };
+Sk.builtin.none.prototype.$r = function () {
+    return new Sk.builtin.str("None");
+};
 
 /** @override */
 Sk.builtin.none.prototype.tp$hash = function () {
     return new Sk.builtin.int_(0);
 };
-
 
 Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
     Sk.abstr.checkNoArgs("NoneType", args, kwargs);
@@ -234,7 +219,9 @@ Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
  * Python None value.
  * @type {Sk.builtin.none}
  */
-Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, { v: { value: null, enumerable: true } });
+Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {
+    v: { value: null, enumerable: true },
+});
 
 /**
  * @constructor
@@ -243,13 +230,15 @@ Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, { v: { value: n
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.NotImplemented = function () {
-    return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object 
+    return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object
 };
 
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
 /** @override */
-Sk.builtin.NotImplemented.prototype.$r = function () { return new Sk.builtin.str("NotImplemented"); };
+Sk.builtin.NotImplemented.prototype.$r = function () {
+    return new Sk.builtin.str("NotImplemented");
+};
 
 Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
     Sk.abstr.checkNoArgs("NotImplementedType", args, kwargs);
@@ -259,8 +248,9 @@ Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, { v: { value: null, enumerable: true } });
-
+Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {
+    v: { value: null, enumerable: true },
+});
 
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);
