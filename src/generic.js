@@ -8,11 +8,7 @@ Sk.generic = {};
  */
 Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     let f, res;
-
-    Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
-
-    const descr = this.ob$type.$typeLookup(pyName);
-
+    const descr = this.ob$type.$typeLookup(pyName, true);
     // look in the type for a descriptor
     if (descr != null) {
         f = descr.tp$descr_get;
@@ -37,16 +33,13 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
             return res;
         }
     }
-
     if (f) {
         return f.call(descr, this, this.ob$type, canSuspend);
     }
-
     if (descr != null) {
         return descr;
     }
-
-    return undefined;
+    return;
 };
 Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
 
@@ -57,9 +50,7 @@ Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
  * @return {undefined}
  */
 Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
-    Sk.asserts.assert(this.ob$type !== undefined, "object has no ob$type!");
-
-    const descr = this.ob$type.$typeLookup(pyName);
+    const descr = this.ob$type.$typeLookup(pyName, true); // typelookup should mangle this name
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
@@ -71,28 +62,34 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
     }
 
     const dict = this.$d;
-    if (dict) {
+    if (dict !== undefined) {
         if (dict.mp$ass_subscript) {
-            try {
-                dict.mp$ass_subscript(pyName, value);
-            } catch (e) {
-                if (e instanceof Sk.builtin.KeyError) {
-                    throw new Sk.builtin.AttributeError(
-                        "'" + Sk.abstr.typeName(this) + "' object has no attribute '" + Sk.unfixReserved(pyName.$jsstr()) + "'"
-                    );
-                } else {
+            if (value != null) {
+                return dict.mp$ass_subscript(pyName, value);
+            } else {
+                try {
+                    return dict.mp$ass_subscript(pyName);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.KeyError) {
+                        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + pyName.$jsstr() + "'");
+                    }
                     throw e;
                 }
             }
         } else if (typeof dict === "object") {
-            dict[pyName.$jsstr()] = value;
+            const mangled = Sk.fixReserved(pyName.$jsstr());
+            if (value != null) {
+                dict[mangled] = value;
+                return;
+            } else if (dict[mangled] !== undefined) {
+                delete dict[mangled];
+                return;
+            }
         }
-    } else {
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + Sk.unfixReserved(pyName.$jsstr()) + "'");
     }
+    throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + pyName.$jsstr() + "'");
 };
 Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
-
 
 Sk.generic.new = function (builtin) {
     const genericNew = function __new__(args, kwargs) {
@@ -153,7 +150,6 @@ Sk.generic.newMethodDef = {
     $textsig: "($type, *args, **kwargs)",
     $name: "__new__",
 };
-
 
 /**
  * @function
