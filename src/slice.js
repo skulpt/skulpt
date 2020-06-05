@@ -59,18 +59,23 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
 
             return t1.tp$richcompare(t2, op);
         },
-
     },
     getsets: {
         start: {
-            $get: function () { return this.start; }
+            $get: function () {
+                return this.start;
+            },
         },
         step: {
-            $get: function () { return this.step; }
+            $get: function () {
+                return this.step;
+            },
         },
         stop: {
-            $get: function () { return this.stop; }
-        }
+            $get: function () {
+                return this.stop;
+            },
+        },
     },
     methods: {
         indices: {
@@ -78,22 +83,19 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
                 length = Sk.builtin.asnum$(length);
                 const sss = this.$slice_indices(length);
 
-                return new Sk.builtin.tuple([
-                    new Sk.builtin.int_(sss[0]),
-                    new Sk.builtin.int_(sss[1]),
-                    new Sk.builtin.int_(sss[2])
-                ]);
+                return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), new Sk.builtin.int_(sss[1]), new Sk.builtin.int_(sss[2])]);
             },
-            $doc: "S.indices(len) -> (start, stop, stride)\n\nAssuming a sequence of length len, calculate the start and stop\nindices, and the stride length of the extended slice described by\nS. Out of bounds indices are clipped in a manner consistent with the\nhandling of normal slices.",
+            $doc:
+                "S.indices(len) -> (start, stop, stride)\n\nAssuming a sequence of length len, calculate the start and stop\nindices, and the stride length of the extended slice described by\nS. Out of bounds indices are clipped in a manner consistent with the\nhandling of normal slices.",
             $textsig: null,
-            $flags: { OneArg: true }
-        }
+            $flags: { OneArg: true },
+        },
     },
     proto: {
         $slice_indices: function (length) {
             var start, stop, step;
 
-            if (Sk.misceval.isIndex(this.step) && (Sk.misceval.asIndex(this.step) === 0)) {
+            if (Sk.misceval.isIndex(this.step) && Sk.misceval.asIndex(this.step) === 0) {
                 // technically a pure slice object can have a zero step...
                 throw new Sk.builtin.ValueError("slice step cannot be zero");
             }
@@ -176,19 +178,17 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
                     if (f(i, wrtv) === false) {
                         return;
                     }
-                }	//	wrt or wrtv? RNL
+                } //	wrt or wrtv? RNL
             } else {
                 for (i = sss[0]; i > sss[1]; i += sss[2]) {
                     if (f(i, wrtv) === false) {
                         return;
                     }
-                }	//	wrt or wrtv? RNL
-
+                } //	wrt or wrtv? RNL
             }
-        }
-
+        },
     },
     flags: {
-        sk$acceptable_as_base_class: false
-    }
+        sk$acceptable_as_base_class: false,
+    },
 });

@@ -39,7 +39,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             if (arg.ob$type === Sk.builtin.tuple) {
                 return arg;
             }
-            // make tuples suspendable
+            // make tuples suspendible
             let L = Sk.abstr.arrayFromIterable(arg, true);
             return Sk.misceval.chain(L, (l) => new Sk.builtin.tuple(l));
         },
