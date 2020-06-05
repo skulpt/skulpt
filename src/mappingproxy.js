@@ -1,7 +1,5 @@
 /**
  *
- * @namespace Sk.builtin
- *
  * @constructor
  *
  * @param {Object} d
@@ -11,40 +9,32 @@
  * It returns a mapping proxy
  * useful for when we do typeobject.__dict__
  * or module.__dict__ since a module $d is an object literal
+ * 
+ * In Python this can technically be called with a dict
+ * but we don't implement this feature. If you tried to call this in Skulpt
+ * You would get an error because object's new property won't allow any arguments
+ * 
+ * Technically we can also have any hashable item as a key - we also ignore this implementation detail
  *
  */
-
 Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
-    constructor: function mappingproxy (d) {
+    constructor: function mappingproxy(d) {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
-        if (d === undefined) {
-            d = {};
+        this.mapping = Object.create(null); // create from null to avoid name conflicts or prototype issues
+        d = d || {};
+        const d_copy = { ...d }; // we make a shallow copy in order to ignore inherited attributes from the prototype
+        delete d_copy["constructor"];
+        if (d === Sk.builtin.type.prototype) {
+            delete d_copy["call"]; // we added these on type's prototype to allow type objects to be callable
+            delete d_copy["apply"];
         }
-        // mappingproxy's v is a javascript object
-        this.v = Object.create(null);
-        // might be passed a dict but dict may not have been implemented yet!
-        if (d instanceof Sk.builtin.dict) {
-            for (let it = d.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
-                let v = d.mp$subscript(k);
-                this.v[k.$jsstr()] = v;
+        this.size = 0;
+        for (let key in d_copy) {
+            const k = Sk.unfixReserved(key);
+            if (!k.includes("$")) {
+                this.mapping[k] = d_copy[key];
+                this.size++;
             }
-        } else {
-            let d_copy = { ...d }; // we make a shallow copy in order to ignore inherited attibutes from the prototype
-            delete d_copy["constructor"];
-
-            if (d === Sk.builtin.type.prototype) {
-                delete d_copy["call"];
-                delete d_copy["apply"];
-            }
-
-            for (let key in d_copy) {
-                let k = Sk.unfixReserved(key);
-                if (!k.includes("$")) {
-                    this.v[k] = d_copy[key];
-                }
-            }
-
-            return this;
         }
     },
     slots: {
@@ -52,8 +42,8 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         tp$hash: Sk.builtin.none.none$,
         $r: function () {
             const bits = [];
-            for (let k in this.v) {
-                bits.push("'" + k + "' : " + Sk.misceval.objectRepr(this.v[k]).$jsstr());
+            for (let k in this.mapping) {
+                bits.push("'" + k + "': " + Sk.misceval.objectRepr(this.mapping[k]).$jsstr());
             }
             const repr = "mappingproxy({" + bits.join(", ") + "}";
             return new Sk.builtin.str(repr);
@@ -67,11 +57,10 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             }
         },
         sq$contains: function (key) {
-            const res = this.mp$lookup(key);
-            return res !== undefined;
+            return this.mp$lookup(key) !== undefined;
         },
         sq$length: function () {
-            return Object.keys(this.v).length;
+            return this.get$size();
         },
         tp$iter: function () {
             return new Sk.builtin.dict_iter_(this);
@@ -85,20 +74,18 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
     },
     proto: {
         mp$lookup: function (key) {
-            if (typeof key === "string") {
-                return this.v[Sk.unfixReserved(key)];
-            } else if (Sk.builtin.checkString(key)) {
-                return this.v[key.$jsstr()];
+            if (Sk.builtin.checkString(key)) {
+                return this.mapping[key.$jsstr()];
             } else {
                 return undefined;
             }
         },
         sk$asarray: function () {
-            return Object.keys(this.v).map((x) => new Sk.builtin.str(x));
+            return Object.keys(this.mapping).map((key) => new Sk.builtin.str(key));
         },
-        get$size: function() {
+        get$size: function () {
             // useful for using dict key iterators
-            return this.sq$length();
+            return this.size;
         },
     },
     flags: {
@@ -107,5 +94,3 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
 });
 
 Sk.exportSymbol("Sk.builtin.mappingproxy", Sk.builtin.mappingproxy);
-
-
