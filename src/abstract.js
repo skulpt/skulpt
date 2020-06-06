@@ -175,9 +175,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     // subclass of v's type
     const w_type = w.constructor;
     const v_type = v.constructor;
-    // consider having a base class flag like !w_type.sk$base_class (weird case for bool and int)
-    // otherwise would use && !w.hp$type
-    const w_is_subclass = w_type !== v_type &&  w instanceof v_type;
+    const w_is_subclass = w_type !== v_type && !w_type.sk$basetype &&  w instanceof v_type;
 
     // From the Python 2.7 docs:
     //
@@ -972,7 +970,8 @@ Sk.abstr.setUpBaseInheritance = function () {
 
     Sk.builtin.type.prototype.tp$name = "type";
     Sk.builtin.object.prototype.tp$name = "object";
-
+    Sk.builtin.object.sk$basetype = true;
+    Sk.builtin.type.sk$basetype = true;
     Sk.builtin.type.prototype.ob$type = Sk.builtin.type;
     Sk.builtin.object.prototype.ob$type = Sk.builtin.object;
 
@@ -995,6 +994,9 @@ Sk.abstr.setUpBaseInheritance = function () {
 Sk.abstr.setUpBuiltinMro = function (child) {
     let parent = child.prototype.tp$base;
     const bases = parent === undefined ? [] : [parent];
+    if (parent === Sk.builtin.object) {
+        child.sk$basetype = true;
+    }
     const mro = [child];
     for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
         if (!base.sk$abstract) {
