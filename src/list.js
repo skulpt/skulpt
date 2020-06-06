@@ -588,7 +588,7 @@ Sk.builtin.list.py2$sort = {
     $doc: "Stable sort *IN PLACE*.",
 };
 
-Sk.setupListSort = function (python3) {
+Sk.builtin.list.setupListSort = function (python3) {
     if (python3) {
         if (Sk.builtin.list.py3$sort === undefined) {
             return;
