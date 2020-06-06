@@ -544,28 +544,23 @@ Sk.misceval.isTrue = function (x) {
     if (x === false) {
         return false;
     }
-    if (x === null) {
+    if (x == null) {
         return false;
     }
-    if (x === undefined) {
-        return false;
+    if (x.constructor === Sk.builtin.bool) {
+        return x.v;
     }
     if (x.constructor === Sk.builtin.none) {
         return false;
     }
-
     if (x.constructor === Sk.builtin.NotImplemented) {
         return false;
-    }
-
-    if (x.constructor === Sk.builtin.bool) {
-        return x.v;
     }
     if (typeof x === "number") {
         return x !== 0;
     }
     if (x instanceof Sk.builtin.lng) {
-        return x.nb$nonzero();
+        return x.nb$bool();
     }
     if (x.constructor === Sk.builtin.int_) {
         return x.v !== 0;
@@ -573,35 +568,17 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.float_) {
         return x.v !== 0;
     }
-    if (Sk.__future__.python3) {
-        if (x.nb$bool) {
-            ret = x.nb$bool();
-            if (!(ret instanceof Sk.builtin.bool)) {
-                throw new Sk.builtin.TypeError("__bool__ should return bool, returned " + Sk.abstr.typeName(ret));
-            }
-            return ret.v;
+    if (x.nb$bool) {
+        ret = x.nb$bool(); // the slot wrapper takes care of the error message
+        if (ret !== undefined) {
+            return ret.v !== 0;
         }
-    } else {
-        if (x.nb$nonzero) {
-            ret = x.nb$nonzero();
-            if (!Sk.builtin.checkInt(ret)) {
-                throw new Sk.builtin.TypeError("__nonzero__ should return an int");
-            }
+    }
+    if (x.sq$length) {
+        ret = x.sq$length(); // the slot wrapper takes care of the error message
+        if (ret !== undefined) {
             return Sk.builtin.asnum$(ret) !== 0;
         }
-    }
-    if (x.sq$length) {
-        ret = x.sq$length();
-        if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__len__ should return an int");
-        }
-        return Sk.builtin.asnum$(ret) !== 0;
-    }
-    if (x.mp$length) {
-        return Sk.builtin.asnum$(x.mp$length()) !== 0;
-    }
-    if (x.sq$length) {
-        return Sk.builtin.asnum$(x.sq$length()) !== 0;
     }
     return true;
 };
