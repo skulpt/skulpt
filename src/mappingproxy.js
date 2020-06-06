@@ -68,9 +68,9 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
     },
     methods: {
         get: Sk.builtin.dict.prototype.get.d$def, // just use the descriptor defn for get
-        keys: Sk.builtin.dict.py3_dictviews.keys,
-        items: Sk.builtin.dict.py3_dictviews.items,
-        values: Sk.builtin.dict.py3_dictviews.values,
+        keys: Sk.builtin.dict.prototype.keys.d$def,
+        items: Sk.builtin.dict.prototype.items.d$def,
+        values: Sk.builtin.dict.prototype.values.d$def,
     },
     proto: {
         mp$lookup: function (key) {

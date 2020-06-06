@@ -284,6 +284,21 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             $textsig: "($self, value, /)",
             $doc: "Remove first occurrence of value.\n\nRaises ValueError if the value is not present.",
         },
+        sort: {
+            $meth: function (args, kwargs) {
+                Sk.abstr.checkNoArgs("sort", args);
+                const key_reverse = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], [], kwargs, [
+                    Sk.builtin.none.none$,
+                    Sk.builtin.bool.false$,
+                ]);
+                const key = key_reverse[0];
+                const reverse = key_reverse[1];
+                return this.$list_sort(undefined, key, reverse);
+            },
+            $flags: {FastCall: true},
+            $textsig: "($self, /, *, key=None, reverse=False)",
+            $doc: "Stable sort *IN PLACE*.",
+        },
         index: {
             $meth: function (value, start, stop) {
                 return this.$index(value, start, stop);
@@ -561,22 +576,6 @@ Sk.builtin.list.prototype.$index = function (item, start, stop) {
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
 };
 
-Sk.builtin.list.py3$sort = {
-    $meth: function (args, kwargs) {
-        Sk.abstr.checkNoArgs("sort", args);
-        const key_reverse = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], [], kwargs, [
-            Sk.builtin.none.none$,
-            Sk.builtin.bool.false$,
-        ]);
-        const key = key_reverse[0];
-        const reverse = key_reverse[1];
-        return this.$list_sort(undefined, key, reverse);
-    },
-    $flags: {FastCall: true},
-    $textsig: "($self, /, *, key=None, reverse=False)",
-    $doc: "Stable sort *IN PLACE*.",
-};
-
 Sk.builtin.list.py2$sort = {
     $meth: function (cmp, key, reverse) {
         return this.$list_sort(cmp, key, reverse);
@@ -591,8 +590,14 @@ Sk.builtin.list.py2$sort = {
 
 Sk.setupListSort = function (python3) {
     if (python3) {
+        if (Sk.builtin.list.py3$sort === undefined) {
+            return;
+        }
         Sk.builtin.list.prototype.sort = new Sk.builtin.method_descriptor(Sk.builtin.list, Sk.builtin.list.py3$sort);
     } else {
+        if (Sk.builtin.list.py3$sort === undefined) {
+            Sk.builtin.list.py3$sort = Sk.builtin.list.prototype.sort.d$def;
+        }
         Sk.builtin.list.prototype.sort = new Sk.builtin.method_descriptor(Sk.builtin.list, Sk.builtin.list.py2$sort);
     }
 };

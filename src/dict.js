@@ -221,8 +221,30 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $textsig: null,
             $doc: "D.popitem() -> (k, v), remove and return some (key, value) pair as a\n2-tuple; but raise KeyError if D is empty.",
         },
-        /* keys items values are defined later when we switch versions */
-
+        keys: {
+            $meth: function () {
+                return new Sk.builtin.dict_keys(this);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "D.keys() -> a set-like object providing a view on D's keys",
+        },
+        items: {
+            $meth: function () {
+                return new Sk.builtin.dict_items(this);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "D.items() -> a set-like object providing a view on D's items",
+        },
+        values: {
+            $meth: function () {
+                return new Sk.builtin.dict_values(this);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "D.values() -> an object providing a view on D's values",
+        },
         update: {
             $meth: function (args, kwargs) {
                 return this.update$common(args, kwargs, "update");
@@ -258,26 +280,29 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /**
- * 
+ *
  * this is effectively a builtin staticmethod for dict
  * We create this separately
- * 
+ *
  */
-Sk.builtin.dict.prototype.fromkeys = new Sk.builtin.sk_method({
-    $name: "fromkeys",
-    $flags: {MinArgs: 1, MaxArgs: 2},
-    $textsig: "($type, iterable, value=None, /)",
-    $meth: function fromkeys(seq, value) {
-        const keys = Sk.abstr.arrayFromIterable(seq);
-        const dict = new Sk.builtin.dict([]);
-        value = value || Sk.builtin.none.none$;
-        for (let i = 0; i<keys.length; i++) {
-            dict.set$item(keys[i], value);
-        }
-        return dict;
+Sk.builtin.dict.prototype.fromkeys = new Sk.builtin.sk_method(
+    {
+        $name: "fromkeys",
+        $flags: { MinArgs: 1, MaxArgs: 2 },
+        $textsig: "($type, iterable, value=None, /)",
+        $meth: function fromkeys(seq, value) {
+            const keys = Sk.abstr.arrayFromIterable(seq);
+            const dict = new Sk.builtin.dict([]);
+            value = value || Sk.builtin.none.none$;
+            for (let i = 0; i < keys.length; i++) {
+                dict.set$item(keys[i], value);
+            }
+            return dict;
+        },
+        $doc: "Create a new dictionary with keys from iterable and values set to value.",
     },
-    $doc: "Create a new dictionary with keys from iterable and values set to value.",
-}, Sk.builtin.dict);
+    Sk.builtin.dict
+);
 
 /**
  * NB:
@@ -600,34 +625,6 @@ Sk.builtin.dict.prototype.del$item = function (key) {
  * Py3 and Py2 dict views are different
  * Py2 just returns a List object
  */
-
-Sk.builtin.dict.py3_dictviews = {
-    keys: {
-        $meth: function () {
-            return new Sk.builtin.dict_keys(this);
-        },
-        $flags: { NoArgs: true },
-        $textsig: null,
-        $doc: "D.keys() -> a set-like object providing a view on D's keys",
-    },
-    items: {
-        $meth: function () {
-            return new Sk.builtin.dict_items(this);
-        },
-        $flags: { NoArgs: true },
-        $textsig: null,
-        $doc: "D.items() -> a set-like object providing a view on D's items",
-    },
-    values: {
-        $meth: function () {
-            return new Sk.builtin.dict_values(this);
-        },
-        $flags: { NoArgs: true },
-        $textsig: null,
-        $doc: "D.values() -> an object providing a view on D's values",
-    },
-};
-
 Sk.builtin.dict.py2_dictviews = {
     keys: {
         $meth: function () {
@@ -669,6 +666,9 @@ Sk.builtin.dict.py2_dictviews = {
 
 Sk.setupDictIterators = function (python3) {
     const dict = Sk.builtin.dict;
+    if (python3 && dict.py3_dictviews === undefined) {
+        return;
+    }
     const proto = dict.prototype;
     let dict_view, dict_views;
     if (python3) {
@@ -680,6 +680,12 @@ Sk.setupDictIterators = function (python3) {
         }
         delete proto.has_key;
     } else {
+        if (dict.py3_dictviews === undefined) {
+            dict.py3_dictviews = {};
+            dict.py3_dictviews.keys = proto.keys.d$def;
+            dict.py3_dictviews.items = proto.items.d$def;
+            dict.py3_dictviews.values = proto.values.d$def;
+        }
         dict_views = dict.py2_dictviews;
         for (let dict_view_name in dict_views) {
             dict_view = dict_views[dict_view_name];
@@ -693,10 +699,9 @@ Sk.setupDictIterators = function (python3) {
 /**
  * Py2 methods
  */
-
 Sk.builtin.dict.prototype.haskey$ = {
     $name: "has_key",
-    $flags: {OneArg: true},
+    $flags: { OneArg: true },
     $meth: function (k) {
         return new Sk.builtin.bool(this.sq$contains(k));
     },

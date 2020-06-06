@@ -751,7 +751,7 @@ Sk.builtin.int_.prototype.nb$positive = function () {
 };
 
 /** @override */
-Sk.builtin.int_.prototype.nb$nonzero = function () {
+Sk.builtin.int_.prototype.nb$bool = function () {
     return this.v !== 0;
 };
 

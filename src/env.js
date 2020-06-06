@@ -202,7 +202,6 @@ Sk.configure = function (options) {
     Sk.misceval.softspace_ = false;
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
-    Sk.switch_version("$next", Sk.__future__.dunder_next);
     Sk.switch_version("haskey$", Sk.__future__.python3);
     Sk.switch_version("clear$", Sk.__future__.python3);
     Sk.switch_version("copy$", Sk.__future__.python3);
@@ -334,7 +333,7 @@ Sk.setup_method_mappings = function () {
             "classes": [
                 Sk.builtin.float_,
                 Sk.builtin.int_,
-                Sk.builtin.nmber],
+            ],
             2: null,
             3: "__round__"
         },
@@ -347,25 +346,6 @@ Sk.setup_method_mappings = function () {
             "classes": [Sk.builtin.list],
             2: null,
             3: "copy"
-        },
-        "$next": {
-            "classes": [
-                Sk.builtin.dict_iter_,
-                Sk.builtin.list_iter_,
-                Sk.builtin.set_iter_,
-                Sk.builtin.str_iter_,
-                Sk.builtin.tuple_iter_,
-                Sk.builtin.generator,
-                Sk.builtin.enumerate,
-                Sk.builtin.filter_,
-                Sk.builtin.zip_,
-                Sk.builtin.map_,
-                Sk.builtin.seq_iter_,
-                Sk.builtin.callable_iter_
-            ],
-            2: "next",
-            3: "__next__",
-            4: "tp$iternext"
         },
         "haskey$": {
             "classes": [],
@@ -404,49 +384,8 @@ Sk.switch_version = function (method_to_map, python3) {
             klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
         }
     }
-    if (newmeth && oldmeth) {
-        Sk.builtin.str[method_to_map] = new Sk.builtin.str(newmeth);
-        // Sk.slotToDunder[mapping[4]] = newmeth;
-        Sk.subSlots.main_slots[mapping[4]] = newmeth; // might need to generalize this
-        const slot_to_change = Sk.slots[oldmeth];
-        if (slot_to_change) {
-            slot_to_change.$name = newmeth;
-            Sk.slots[newmeth] = slot_to_change;
-            delete Sk.slots[oldmeth];
-        }
-    } 
 };
 
-
-//     var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
-
-//     mappings = Sk.setup_method_mappings();
-
-//     mapping = mappings[method_to_map];
-
-//     // lets assume python 3 and then adjust to python 2
-//     if (!python3) {
-
-//         newmeth = mapping[2];
-//         oldmeth = mapping[3];
-//         classes = mapping["classes"];
-//         len = classes.length;
-//         for (idx = 0; idx < len; idx++) {
-//             klass = classes[idx];
-//             if (newmeth !== null && klass.prototype[newmeth] === undefined) {
-//                 klass.prototype[newmeth] = klass.prototype[oldmeth];
-//                 Sk.builtin.str[method_to_map] = new Sk.builtin.str(newmeth);
-//                 if (oldmeth !== null) {
-//                     const slot_to_change = Sk.slots[oldmeth];
-//                     slot_to_change.$name = newmeth;
-//                     Sk.slots[newmeth] = slot_to_change;
-//                     Sk.slotToDunder[mapping[4]] = newmeth;
-//                 }
-//             }
-//             delete klass.prototype[oldmeth];
-//         }
-//     }
-// };
 
 Sk.exportSymbol("Sk.__future__", Sk.__future__);
 Sk.exportSymbol("Sk.inputfun", Sk.inputfun);

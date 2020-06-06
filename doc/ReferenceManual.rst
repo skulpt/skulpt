@@ -245,7 +245,7 @@ Misc
     Slot("__pos__", "nb$positive", "unary",
          opcode="UNARY_POSITIVE"),
     Slot("__abs__", "nb$abs", "unary"),
-    Slot("__nonzero__", "nb$nonzero", "inquiry"),  # inverse of UNARY_NOT opcode
+    Slot("__nonzero__", "nb$bool", "inquiry"),  # inverse of UNARY_NOT opcode
     Slot("__invert__", "nb$invert", "unary",
          opcode="UNARY_INVERT"),
     Slot("__coerce__", "nb$coerce", "coercion"),  # not needed

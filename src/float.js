@@ -366,7 +366,7 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
             }
         }
         if (other.v === -Infinity) {
-            if (this.nb$isnegative() || !this.nb$nonzero()) {
+            if (this.nb$isnegative() || !this.nb$bool()) {
                 return new Sk.builtin.float_(0);
             } else {
                 return new Sk.builtin.float_(-1);
@@ -550,7 +550,7 @@ Sk.builtin.float_.prototype.nb$positive = function () {
 };
 
 /** @override */
-Sk.builtin.float_.prototype.nb$nonzero = function () {
+Sk.builtin.float_.prototype.nb$bool = function () {
     return this.v !== 0;
 };
 

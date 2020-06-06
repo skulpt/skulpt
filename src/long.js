@@ -357,11 +357,11 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
 
         tmp = new Sk.builtin.lng(this.biginteger.remainder(other.biginteger));
         if (this.nb$isnegative()) {
-            if (other.nb$ispositive() && tmp.nb$nonzero()) {
+            if (other.nb$ispositive() && tmp.nb$bool()) {
                 tmp = tmp.nb$add(other).nb$remainder(other);
             }
         } else {
-            if (other.nb$isnegative() && tmp.nb$nonzero()) {
+            if (other.nb$isnegative() && tmp.nb$bool()) {
                 tmp = tmp.nb$add(other);
             }
         }
@@ -583,7 +583,7 @@ Sk.builtin.lng.prototype.nb$positive = function () {
     return this.clone();
 };
 
-Sk.builtin.lng.prototype.nb$nonzero = function () {
+Sk.builtin.lng.prototype.nb$bool = function () {
     return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) !== 0;
 };
 

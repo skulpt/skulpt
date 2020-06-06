@@ -883,7 +883,7 @@ Sk.builtin.complex.prototype.nb$bool = function () {
     return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
 };
 
-Sk.builtin.complex.prototype.nb$nonzero = function () {
+Sk.builtin.complex.prototype.nb$bool = function () {
     return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
 };
 

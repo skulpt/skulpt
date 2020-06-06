@@ -154,7 +154,6 @@ Sk.generic.slotFuncSetDelete = function (set_name, del_name, error_msg) {
     };
 };
 
-
 Sk.slots = Object.create(null);
 const slots = Sk.slots;
 
@@ -986,7 +985,7 @@ slots.__ifloordiv__ = {
 };
 slots.__truediv__ = {
     $name: "__truediv__",
-    $slot_name: "nb$true_divide",
+    $slot_name: "nb$divide",
     $slot_func: Sk.generic.slotFuncOneArg("__truediv__"),
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
@@ -995,7 +994,7 @@ slots.__truediv__ = {
 };
 slots.__rtruediv__ = {
     $name: "__rtruediv__",
-    $slot_name: "nb$reflected_true_divide",
+    $slot_name: "nb$reflected_divide",
     $slot_func: Sk.generic.slotFuncOneArg("__rtruediv__"),
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
@@ -1004,7 +1003,7 @@ slots.__rtruediv__ = {
 };
 slots.__itruediv__ = {
     $name: "__itruediv__",
-    $slot_name: "nb$inplace_true_divide",
+    $slot_name: "nb$inplace_divide",
     $slot_func: Sk.generic.slotFuncOneArg("__itruediv__"),
     $wrapper: Sk.generic.wrapperCallOneArg,
     $textsig: "($self, value, /)",
@@ -1115,9 +1114,6 @@ slots.__imatmul__ = {
     $doc: "Implement self@=value.",
 };
 
-
-
-
 // py2 ONLY slots
 slots.__long__ = {
     $name: "__long__",
@@ -1129,44 +1125,51 @@ slots.__long__ = {
     $doc: "int(self)",
 };
 
-slots.__div__ = {
-    $name: "__div__",
-    $slot_name: "nb$divide",
-    $slot_func: Sk.generic.slotFuncOneArg("__div__"),
-    $wrapper: Sk.generic.wrapperCallOneArg,
-    $textsig: "($self, other/)",
-    $flags: { OneArg: true },
-    $doc: "x.__div__(y) <==> x/y",
-};
-
-slots.__rdiv__ = {
-    $name: "__rdiv__",
-    $slot_name: "nb$reflected_divide",
-    $slot_func: Sk.generic.slotFuncOneArg("__rdiv__"),
-    $wrapper: Sk.generic.wrapperCallOneArg,
-    $textsig: "($self, other/)",
-    $flags: { OneArg: true },
-    $doc: "x.__rdiv__(y) <==> x/y",
-};
-
-slots.__idiv__ = {
-    $name: "__idiv__",
-    $slot_name: "nb$inplace_divide",
-    $slot_func: Sk.generic.slotFuncOneArg("__idiv__"),
-    $wrapper: Sk.generic.wrapperCallOneArg,
-    $textsig: "($self, other/)",
-    $flags: { OneArg: true },
-    $doc: "implement self /= other",
-};
-
-slots.__nonzero__ = {
-    $name: "__nonzero__",
-    $slot_name: "nb$nonzero",
-    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__nonzero__", Sk.builtin.checkInt, "int"),
-    $wrapper: Sk.generic.wrapperCallNoArgs,
-    $textsig: "($self, /)",
-    $flags: { NoArgs: true },
-    $doc: "x.__nonzero__() <==> x != 0",
+slots.py2$slots = {
+    next: {
+        $name: "next",
+        $slot_name: "tp$iternext",
+        $slot_func: slots.__next__.$slot_func,
+        $wrapper: slots.__next__.$wrapper,
+        $textsig: slots.__next__.$textsig,
+        $flags: slots.__next__.$flags,
+    },
+    __nonzero__: {
+        $name: "__nonzero__",
+        $slot_name: "nb$bool",
+        $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__nonzero__", Sk.builtin.checkInt, "int"),
+        $wrapper: Sk.generic.wrapperCallNoArgs,
+        $textsig: "($self, /)",
+        $flags: { NoArgs: true },
+        $doc: "x.__nonzero__() <==> x != 0",
+    },
+    __div__: {
+        $name: "__div__",
+        $slot_name: "nb$divide",
+        $slot_func: Sk.generic.slotFuncOneArg("__div__"),
+        $wrapper: Sk.generic.wrapperCallOneArg,
+        $textsig: "($self, other/)",
+        $flags: { OneArg: true },
+        $doc: "x.__div__(y) <==> x/y",
+    },
+    __rdiv__: {
+        $name: "__rdiv__",
+        $slot_name: "nb$reflected_divide",
+        $slot_func: Sk.generic.slotFuncOneArg("__rdiv__"),
+        $wrapper: Sk.generic.wrapperCallOneArg,
+        $textsig: "($self, other/)",
+        $flags: { OneArg: true },
+        $doc: "x.__rdiv__(y) <==> x/y",
+    },
+    __idiv__: {
+        $name: "__idiv__",
+        $slot_name: "nb$inplace_divide",
+        $slot_func: Sk.generic.slotFuncOneArg("__idiv__"),
+        $wrapper: Sk.generic.wrapperCallOneArg,
+        $textsig: "($self, other/)",
+        $flags: { OneArg: true },
+        $doc: "implement self /= other",
+    },
 };
 
 Sk.subSlots = {
@@ -1216,9 +1219,6 @@ Sk.subSlots = {
         nb$multiply: "__mul__",
         nb$reflected_multiply: "__rmul__",
         nb$inplace_multiply: "__imul__",
-        nb$divide: "__div__",
-        nb$reflected_divide: "__rdiv__",
-        nb$inplace_divide: "__idiv__",
         nb$floor_divide: "__floordiv__",
         nb$reflected_floor_divide: "__rfloordiv__",
         nb$inplace_floor_divide: "__ifloordiv__",
@@ -1231,12 +1231,11 @@ Sk.subSlots = {
         nb$power: "__pow__",
         nb$reflected_power: "__rpow__",
         nb$inplace_power: "__ipow__",
-        nb$true_divide: "__truediv__", // TODO: think about py2 vs py3 truediv vs div
-        nb$reflected_true_divide: "__rtruediv__",
-        nb$inplace_true_divide: "__itruediv__",
+        nb$divide: "__truediv__", // TODO: think about py2 vs py3 truediv vs div
+        nb$reflected_divide: "__rtruediv__",
+        nb$inplace_divide: "__itruediv__",
 
         nb$bool: "__bool__",
-        nb$nonzero: "__nonzero__",
 
         nb$and: "__and__",
         nb$reflected_and: "__rand__",
@@ -1327,15 +1326,6 @@ Sk.reflectedNumberSlots = {
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
     },
-    nb$true_divide: {
-        reflected: "nb$reflected_true_divide",
-        slot: function (other) {
-            if (other instanceof this.constructor) {
-                return other.nb$true_divide(this);
-            }
-            return Sk.builtin.NotImplemented.NotImplemented$;
-        },
-    },
     nb$and: { reflected: "nb$reflected_and" },
     nb$or: { reflected: "nb$reflected_or" },
     nb$xor: { reflected: "nb$reflected_xor" },
@@ -1365,11 +1355,11 @@ Sk.reflectedNumberSlots = {
             }
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
-    }
+    },
 };
 
 Sk.sequenceAndMappingSlots = {
-    sq$concat: ["nb$add" /* "nb$reflected_add" */],
+    sq$concat: ["nb$add"],
     sq$repeat: ["nb$multiply", "nb$reflected_multiply"],
     mp$length: ["sq$length"],
 };
@@ -1422,9 +1412,9 @@ Sk.dunderToSkulpt = {
     __mul__: "nb$multiply",
     __rmul__: "nb$reflected_multiply",
     __imul__: "nb$inplace_multiply",
-    __truediv__: "nb$true_divide",
-    __rtruediv__: "nb$reflected_true_divide",
-    __itruediv__: "nb$inplace_true_divide",
+    __truediv__: "nb$divide",
+    __rtruediv__: "nb$reflected_divide",
+    __itruediv__: "nb$inplace_divide",
     __floordiv__: "nb$floor_divide",
     __rfloordiv__: "nb$reflected_floor_divide",
     __ifloordiv__: "nb$inplace_floor_divide",
@@ -1440,11 +1430,7 @@ Sk.dunderToSkulpt = {
 
     __bool__: "nb$bool",
     // py2 only
-    __nonzero__: "nb$nonzero",
     __long__: "nb$lng",
-    __div__: "nb$divide",
-    __rdiv__: "nb$reflected_divide",
-    __idiv__: "nb$inplace_divide",
 
     __lshift__: "nb$lshift",
     __rlshift__: "nb$reflected_lshift",
@@ -1486,15 +1472,114 @@ Sk.dunderToSkulpt = {
 Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 
 Sk.setupDunderMethods = function (py3) {
-    if (py3) {
-        Sk.dunderToSkulpt["__matmul__"] = "nb$matrix_multiply";
-        Sk.dunderToSkulpt["__rmatmul__"] = "nb$reflected_matrix_multiply";
-    } else {
-        if (Sk.dunderToSkulpt["__matmul__"]) {
-            delete Sk.dunderToSkulpt["__matmul__"];
+    const slots = Sk.slots;
+    if (py3 & (slots.py3$slots === undefined)) {
+        // assume python3 switch version if we have to
+        return;
+    }
+    const classes_with_next = [
+        Sk.builtin.dict_iter_,
+        Sk.builtin.list_iter_,
+        Sk.builtin.set_iter_,
+        Sk.builtin.str_iter_,
+        Sk.builtin.tuple_iter_,
+        Sk.builtin.generator,
+        Sk.builtin.enumerate,
+        Sk.builtin.filter_,
+        Sk.builtin.zip_,
+        Sk.builtin.reversed,
+        Sk.builtin.map_,
+        Sk.builtin.seq_iter_,
+        Sk.builtin.callable_iter_,
+        Sk.builtin.reverselist_iter_,
+        Sk.generic.iterator,
+    ];
+    const classes_with_bool = [Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.float_, Sk.builtin.complex];
+    const classes_with_divide = classes_with_bool;
+    const number_slots = Sk.subSlots.number_slots;
+    const main_slots = Sk.subSlots.main_slots;
+    const dunderToSkulpt = Sk.dunderToSkulpt;
+    let py3$slots = slots.py3$slots;
+    const py2$slots = slots.py2$slots;
+
+    function switch_version(classes_with, old_meth, new_meth) {
+        for (let i = 0; i < classes_with.length; i++) {
+            const cls_proto = classes_with[i].prototype;
+            if (cls_proto.hasOwnProperty(new_meth)) {
+                continue;
+            }
+            cls_proto[new_meth] = cls_proto[old_meth];
+            delete cls_proto[old_meth];
         }
-        if (Sk.dunderToSkulpt["__rmatmul__"]) {
-            delete Sk.dunderToSkulpt["__rmatmul__"];
+    }
+
+    if (py3) {
+        Sk.builtin.str.$next = new Sk.builtin.str("__next__");
+        dunderToSkulpt.__bool__ = "nb$bool";
+        dunderToSkulpt.__next__ = "tp$iternext";
+
+        delete dunderToSkulpt.__nonzero__;
+        delete dunderToSkulpt.__div__;
+        delete dunderToSkulpt.__rdiv__;
+        delete dunderToSkulpt.__idiv__;
+        delete dunderToSkulpt.next;
+
+        for (let slot_name in py3$slots) {
+            slots[slot_name] = py3$slots[slot_name];
+        }
+        for (let slot_name in py2$slots) {
+            delete slots[slot_name];
+        }
+        for (let i = 0; i < classes_with_divide.length; i++) {
+            const cls_proto = classes_with_divide[i].prototype;
+            delete cls_proto.__div__;
+            delete cls_proto.__rdiv__;
+        }
+
+        main_slots.tp$iternext = "__next__";
+        number_slots.nb$bool = "__bool__";
+        switch_version(classes_with_next, "next", "__next__");
+        switch_version(classes_with_bool, "__bool__", "__nonzero__");
+
+
+
+    } else {
+        if (py3$slots === undefined) {
+            slots.py3$slots = {
+                __next__: slots.__next__,
+            };
+            py3$slots = slots.py3$slots;
+        }
+        Sk.builtin.str.$next = new Sk.builtin.str("next");
+        dunderToSkulpt.next = "tp$iternext";
+        dunderToSkulpt.__nonzero__ = "nb$bool";
+        dunderToSkulpt.__div__ = "nb$divide";
+        dunderToSkulpt.__rdiv__ = "nb$reflected_divide";
+        dunderToSkulpt.__idiv__ = "nb$inplace_divide";
+        delete dunderToSkulpt.__bool__;
+        delete dunderToSkulpt.__next__;
+
+
+        for (let slot_name in py2$slots) {
+            slots[slot_name] = py2$slots[slot_name];
+        }
+        for (let slot_name in py3$slots) {
+            delete slots[slot_name];
+        }
+
+        main_slots.tp$iternext = "next";
+        number_slots.nb$bool = "__nonzero__";
+        switch_version(classes_with_next, "__next__", "next");
+        switch_version(classes_with_bool, "__nonzero__", "__bool__");
+
+        for (let i = 0; i < classes_with_divide.length; i++) {
+            const cls = classes_with_divide[i];
+            const cls_proto = cls.prototype;
+            if (cls_proto.hasOwnProperty("__div__")) {
+                continue;
+            }
+            cls_proto.__div__ = new Sk.builtin.wrapper_descriptor(cls, py2$slots.__div__, cls_proto.nb$divide);
+            cls_proto.__rdiv__ = new Sk.builtin.wrapper_descriptor(cls, py2$slots.__rdiv__, Sk.reflectedNumberSlots.nb$divide.slot);
         }
     }
 };
