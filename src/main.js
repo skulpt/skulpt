@@ -43,7 +43,7 @@ require("./biginteger.js");
 require("./int.js");
 require("./bool.js");
 require("./float.js");
-require("./number.js");
+// require("./number.js");
 require("./long.js");
 require("./complex.js");
 require("./slice.js");

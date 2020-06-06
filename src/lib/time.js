@@ -261,7 +261,7 @@ var $builtinmodule = function (name) {
     */
     mod.tzname = new Sk.builtin.tuple(timeZoneNames());
 
-    mod.accept2dyear = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+    mod.accept2dyear = Sk.builtin.assk$(1);
 
     mod.clock = new Sk.builtin.func(function() {
         var res = 0.0;
