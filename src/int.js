@@ -41,7 +41,7 @@ Sk.builtin.int_ = function (x) {
 
 Sk.builtin.int_.$shiftconsts = [0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248, 4503599627370496, 9007199254740992];
 
-Sk.abstr.setUpInheritance("int", Sk.builtin.int_); 
+Sk.abstr.setUpInheritance("int", Sk.builtin.int_);
 Sk.builtin.int_.prototype.tp$as_number = true;
 
 /* NOTE: See constants used for kwargs in constants.js */
@@ -230,7 +230,6 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /** @override */
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
     var thisAsLong, thisAsFloat;
@@ -257,7 +256,6 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
-
 
 /** @override */
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
@@ -287,7 +285,6 @@ Sk.builtin.int_.prototype.nb$multiply = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /** @override */
 Sk.builtin.int_.prototype.nb$divide = function (other) {
     var thisAsLong, thisAsFloat;
@@ -313,7 +310,6 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /** @override */
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     var thisAsLong, thisAsFloat;
@@ -338,7 +334,6 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
-
 
 /** @override */
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
@@ -375,7 +370,6 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /** @override */
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong, thisAsFloat;
@@ -396,7 +390,6 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
-
 
 /** @override */
 Sk.builtin.int_.prototype.nb$power = function (other, mod) {
@@ -438,7 +431,6 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /** @override */
 Sk.builtin.int_.prototype.nb$abs = function () {
     return new Sk.builtin.int_(Math.abs(this.v));
@@ -478,7 +470,6 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /**
  * Compute the bitwise OR of this instance and a Python object (i.e. this | other).
  *
@@ -513,7 +504,6 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /**
  * Compute the bitwise XOR of this instance and a Python object (i.e. this ^ other).
  *
@@ -547,7 +537,6 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
-
 
 /**
  * Compute the bitwise left shift of this instance by a Python object (i.e. this << other).
@@ -600,7 +589,6 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /**
  * Compute the bitwise right shift of this instance by a Python object (i.e. this >> other).
  *
@@ -643,7 +631,6 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
 /**
  * Compute the bitwise inverse of this instance (i.e. ~this).
  *
@@ -654,7 +641,6 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
 Sk.builtin.int_.prototype.nb$invert = function () {
     return new Sk.builtin.int_(~this.v);
 };
-
 
 /**
  * @function
@@ -863,32 +849,27 @@ Sk.builtin.int_.prototype.ob$ge = function (other) {
  * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
  * @return {Sk.builtin.int_} The rounded integer.
  */
-Sk.builtin.int_.prototype.round$ = function (self, ndigits) {
-    Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
-
-    var result, multiplier, number, num10, rounded, bankRound, ndigs;
-
+Sk.builtin.int_.prototype.round$ = function (ndigits) {        
+    let result;
     if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
-
-    number = Sk.builtin.asnum$(self);
+    const number = Sk.builtin.asnum$(this);
+    let ndigs;
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
         ndigs = Sk.misceval.asIndex(ndigits);
     }
-
     if (Sk.__future__.bankers_rounding) {
-        num10 = number * Math.pow(10, ndigs);
-        rounded = Math.round(num10);
-        bankRound = (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
+        const num10 = number * Math.pow(10, ndigs);
+        const rounded = Math.round(num10);
+        const bankRound = (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
         result = bankRound / Math.pow(10, ndigs);
         return new Sk.builtin.int_(result);
     } else {
-        multiplier = Math.pow(10, ndigs);
+        const multiplier = Math.pow(10, ndigs);
         result = Math.round(number * multiplier) / multiplier;
-
         return new Sk.builtin.int_(result);
     }
 };
@@ -1043,16 +1024,60 @@ Sk.str2number = function (s, base, parser, negater, fname) {
 
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
 
-
 Sk.builtin.int_.prototype.tp$getsets = {
     real: {
         $get: function () {
             return this;
-        }
+        },
     },
     imag: {
         $get: function () {
             return new Sk.builtin.int_(0);
-        }
-    }
+        },
+    },
 };
+
+Sk.builtin.int_.prototype.tp$methods = {
+    // __trunc__: {
+    //     $meth: methods.__trunc__,
+    //     $flags: {NoArgs: true},
+    //     $textsig: null,
+    //     $doc: "Truncating an Integral returns itself.",
+    // },
+    // __floor__: {
+    //     $meth: methods.__floor__,
+    //     $flags: {NoArgs: true},
+    //     $textsig: null,
+    //     $doc: "Flooring an Integral returns itself.",
+    // },
+    // __ceil__: {
+    //     $meth: methods.__ceil__,
+    //     $flags: {NoArgs: true},
+    //     $textsig: null,
+    //     $doc: "Ceiling of an Integral returns itself.",
+    // },
+    __round__: {
+        $meth: function(ndigits) {
+            return this.round$(ndigits);
+        },
+        $flags: {MinArgs: 0, MaxArgs:1},
+        $textsig: null,
+        $doc: "Rounding an Integral returns itself.\nRounding with an ndigits argument also returns an integer.",
+    },
+    // __getnewargs__: {
+    //     $meth: methods.__getnewargs__,
+    //     $flags: {NoArgs: true},
+    //     $textsig: "($self, /)",
+    //     $doc: Sk.builtin.none.none$,
+    // },
+    // __format__: {
+    //     $meth: methods.__format__,
+    //     $flags: {OneArg: true},
+    //     $textsig: "($self, format_spec, /)",
+    //     $doc: Sk.builtin.none.none$,
+    // },
+};
+
+Sk.abstr.setUpMethods(Sk.builtin.int_);
+
+Sk.builtin.int_.py2$methods = {};

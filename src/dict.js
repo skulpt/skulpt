@@ -678,7 +678,6 @@ Sk.setupDictIterators = function (python3) {
             dict_view.$name = dict_view_name;
             proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
         }
-        delete proto.has_key;
     } else {
         if (dict.py3_dictviews === undefined) {
             dict.py3_dictviews = {};
@@ -692,7 +691,6 @@ Sk.setupDictIterators = function (python3) {
             dict_view.$name = dict_view_name;
             proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
         }
-        proto.has_key = new Sk.builtin.method_descriptor(dict, proto.haskey$);
     }
 };
 

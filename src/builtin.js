@@ -248,7 +248,7 @@ Sk.builtin.round = function round(number, ndigits) {
             throw new Sk.builtin.TypeError("a float is required"); 
         }
         if (number.round$) {
-            return number.round$(number, ndigits);
+            return number.round$(ndigits);
         } else {
             throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'"); 
         }

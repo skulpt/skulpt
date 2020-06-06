@@ -122,7 +122,7 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
     this.d$def = method_def;
     this.$meth = method_def.$meth; //useful for internal fast calls
     this.d$type = typeobj;
-    this.d$name = method_def.$name;
+    this.d$name = method_def.$name || "<native JS>";
     const flags = method_def.$flags || {};
     this.$flags = flags;
     if (flags.FastCall && flags.NoKwargs) {

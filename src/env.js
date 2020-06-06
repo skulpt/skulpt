@@ -200,11 +200,17 @@ Sk.configure = function (options) {
     }
 
     Sk.misceval.softspace_ = false;
+    // Sk.switch_version(Sk.__future__.python3);
 
-    Sk.switch_version("round$", Sk.__future__.dunder_round);
-    Sk.switch_version("haskey$", Sk.__future__.python3);
-    Sk.switch_version("clear$", Sk.__future__.python3);
-    Sk.switch_version("copy$", Sk.__future__.python3);
+    Sk.switch_version("__round__", Sk.__future__.dunder_round);
+    Sk.switch_version("has_key", Sk.__future__.python3);
+    Sk.switch_version("clear", Sk.__future__.python3);
+    Sk.switch_version("copy", Sk.__future__.python3);
+    Sk.switch_version("sort", Sk.__future__.python3);
+    // Sk.switch_version("keys", Sk.__future__.python3);
+    // Sk.switch_version("items", Sk.__future__.python3);
+    // Sk.switch_version("values", Sk.__future__.python3);
+
 
     Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
     Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
@@ -212,8 +218,8 @@ Sk.configure = function (options) {
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
     Sk.setupDictIterators(Sk.__future__.python3);
+    
     Sk.setupObjects(Sk.__future__.python3);
-    Sk.builtin.list.setupListSort(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
@@ -329,59 +335,77 @@ Sk.inputfun = function (args) {
 
 Sk.setup_method_mappings = function () {
     return {
-        "round$": {
-            "classes": [
-                Sk.builtin.float_,
-                Sk.builtin.int_,
-            ],
-            2: null,
-            3: "__round__"
+        __round__: {
+            classes: [Sk.builtin.float_, Sk.builtin.int_,],
+            2: false,
+            3: true,
         },
-        "clear$": {
-            "classes": [Sk.builtin.list],
-            2: null,
-            3: "clear"
+        clear: {
+            classes: [Sk.builtin.list],
+            2: false,
+            3: true,
         },
-        "copy$": {
-            "classes": [Sk.builtin.list],
-            2: null,
-            3: "copy"
+        copy: {
+            classes: [Sk.builtin.list],
+            2: false,
+            3: true,
         },
-        "haskey$": {
-            "classes": [],
-            2: "has_key",
-            3: null
+        has_key: {
+            classes: [Sk.builtin.dict],
+            2: true,
+            3: false,
         },
+        sort: { // sort has different defn in py2/3
+            classes: [Sk.builtin.list],
+            2: true,
+            3: true,
+        },
+        keys: {
+            classes: [Sk.builtin.dict],
+            2: true,
+            3: true,
+        },
+        items: {
+            classes: [Sk.builtin.dict],
+            2: true,
+            3: true,
+        },
+        values: {
+            classes: [Sk.builtin.dict],
+            2: true,
+            3: true,
+        }
     };
 };
 
 Sk.switch_version = function (method_to_map, python3) {
+    const mapping = Sk.setup_method_mappings()[method_to_map];
+    const classes = mapping["classes"];
+    const in_py3 = mapping[3];
+    const in_py2 = mapping[2];
+    for (let idx = 0; idx < classes.length; idx++) {
+        const klass = classes[idx];
+        let py3$methods = klass.py3$methods;
+        if (python3 && py3$methods === undefined) {
+            continue;
+        } else if (py3$methods === undefined) {
+            // we don't have py3$method definitons stored yet so create a place holder for them.
+            klass.py3$methods = py3$methods = {};
+        }
+        const py2$methods = klass.py2$methods;
+        const klass_proto = klass.prototype;
+        const py2_method_def = py2$methods[method_to_map];
+        let py3_method_def = py3$methods[method_to_map];
 
-    var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
-
-    mappings = Sk.setup_method_mappings();
-
-    mapping = mappings[method_to_map];
-
-    if (python3) {
-        newmeth = mapping[3];
-        oldmeth = mapping[2];
-    } else {
-        newmeth = mapping[2];
-        oldmeth = mapping[3];
-    }
-
-    classes = mapping["classes"];
-    len = classes.length;
-    for (idx = 0; idx < len; idx++) {
-        klass = classes[idx];
-        if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
-            if (newmeth) {
-                klass.prototype[newmeth] = klass.prototype[oldmeth];
-            }
-            delete klass.prototype[oldmeth];
-        } else if (newmeth && klass.prototype.hasOwnProperty(method_to_map)) {
-            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
+        if (in_py3 && py3_method_def == undefined) {
+            // we haven't stored this method yet so add it now before it's too late!
+            py3$methods[method_to_map] = py3_method_def = klass_proto[method_to_map].d$def;
+        }
+        delete klass_proto[method_to_map];
+        if (python3 && in_py3) {    
+            klass_proto[method_to_map] = new Sk.builtin.method_descriptor(klass, py3_method_def);
+        } else if (!python3 && in_py2) {
+            klass_proto[method_to_map] = new Sk.builtin.method_descriptor(klass, py2_method_def);
         }
     }
 };

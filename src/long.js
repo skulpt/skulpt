@@ -92,7 +92,7 @@ Sk.builtin.lng.prototype.nb$int_ = function() {
     return new Sk.builtin.int_(this.toInt$());
 };
 
-Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
+Sk.builtin.lng.prototype.round$ = function (ndigits) {
     Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
 
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
@@ -101,7 +101,7 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
 
-    number = Sk.builtin.asnum$(self);
+    number = Sk.builtin.asnum$(this);
     if (ndigits === undefined) {
         ndigs = 0;
     } else {

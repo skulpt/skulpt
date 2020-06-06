@@ -295,7 +295,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 const reverse = key_reverse[1];
                 return this.$list_sort(undefined, key, reverse);
             },
-            $flags: {FastCall: true},
+            $flags: { FastCall: true },
             $textsig: "($self, /, *, key=None, reverse=False)",
             $doc: "Stable sort *IN PLACE*.",
         },
@@ -576,28 +576,17 @@ Sk.builtin.list.prototype.$index = function (item, start, stop) {
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
 };
 
-Sk.builtin.list.py2$sort = {
-    $meth: function (cmp, key, reverse) {
-        return this.$list_sort(cmp, key, reverse);
+Sk.builtin.list.py2$methods = {
+    sort: {
+        $name: "sort",
+        $meth: function (cmp, key, reverse) {
+            return this.$list_sort(cmp, key, reverse);
+        },
+        $flags: {
+            NamedArgs: ["cmp", "key", "reverse"],
+            Defaults: [Sk.builtin.none.none$, Sk.builtin.none.none$, false], //use false since bool not defined yet
+        },
+        $textsig: "($self, cmp=None, key=None, reverse=False)",
+        $doc: "Stable sort *IN PLACE*.",
     },
-    $flags: {
-        NamedArgs: ["cmp", "key", "reverse"],
-        Defaults: [Sk.builtin.none.none$, Sk.builtin.none.none$, false], //use false since bool not defined yet
-    },
-    $textsig: "($self, cmp=None, key=None, reverse=False)",
-    $doc: "Stable sort *IN PLACE*.",
-};
-
-Sk.builtin.list.setupListSort = function (python3) {
-    if (python3) {
-        if (Sk.builtin.list.py3$sort === undefined) {
-            return;
-        }
-        Sk.builtin.list.prototype.sort = new Sk.builtin.method_descriptor(Sk.builtin.list, Sk.builtin.list.py3$sort);
-    } else {
-        if (Sk.builtin.list.py3$sort === undefined) {
-            Sk.builtin.list.py3$sort = Sk.builtin.list.prototype.sort.d$def;
-        }
-        Sk.builtin.list.prototype.sort = new Sk.builtin.method_descriptor(Sk.builtin.list, Sk.builtin.list.py2$sort);
-    }
 };
