@@ -33,14 +33,26 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
         $r: function () {
             return this.v ? new Sk.builtin.str("True") : new Sk.builtin.str("False");
         },
-        // TODO: these should return bools if both bools else pass up to int/Long
-        // tp$as_number: true,
-        // nb$and: function () {
-        // },
-        // nb$or: function () {
-        // },
-        // nb$xor: function () {
-        // },
+
+        tp$as_number: true,
+        nb$and: function (other) {
+            if (other.ob$type === Sk.builtin.bool) {
+                return new Sk.builtin.bool(this.v & other.v);
+            } 
+            return Sk.builtin.int_.prototype.nb$and.call(this, other);
+        },
+        nb$or: function (other) {
+            if (other.ob$type === Sk.builtin.bool) {
+                return new Sk.builtin.bool(this.v | other.v);
+            } 
+            return Sk.builtin.int_.prototype.nb$or.call(this, other);
+        },
+        nb$xor: function (other) {
+            if (other.ob$type === Sk.builtin.bool) {
+                return new Sk.builtin.bool(this.v ^ other.v);
+            } 
+            return Sk.builtin.int_.prototype.nb$xor.call(this, other);
+        },
     },
     flags: {
         sk$acceptable_as_base_class: false,

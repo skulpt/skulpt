@@ -1,17 +1,3 @@
-function get_dict_hash(key) {
-    let key_hash;
-    if (key.$savedKeyHash_) {
-        return key.$savedKeyHash_;
-    }
-    if (key.ob$type === Sk.builtin.str) {
-        key_hash = "_" + key.$jsstr();
-        key.$savedKeyHash_ = key_hash;
-        return key_hash;
-    }
-    key_hash = "#_" + Sk.builtin.hash(key).v;
-    key.$savedKeyHash_ = key_hash; // this is a base key hash
-    return key_hash;
-}
 
 /**
  * @constructor
@@ -134,6 +120,20 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
         },
+        get_dict_hash: function get_dict_hash(key) {
+            if (key.$savedKeyHash_ !== undefined) {
+                return key.$savedKeyHash_;
+            }
+            let key_hash;
+            if (key.ob$type === Sk.builtin.str) {
+                key_hash = "_" + key.$jsstr();
+                key.$savedKeyHash_ = key_hash;
+                return key_hash;
+            }
+            key_hash = "#_" + Sk.builtin.hash(key).v;
+            key.$savedKeyHash_ = key_hash; // this is a base key hash
+            return key_hash;
+        },
     },
     methods: {
         __reversed__: {
@@ -176,7 +176,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         pop: {
             $meth: function (key, d) {
-                const hash = get_dict_hash(key);
+                const hash = this.get_dict_hash(key);
                 let item, value, s;
                 if (hash[0] === "_") {
                     item = this.buckets[hash];
@@ -431,7 +431,7 @@ Sk.builtin.dict.prototype.insert$item_from_base_hash = function (key, base_hash)
  */
 Sk.builtin.dict.prototype.mp$lookup = function (key) {
     let item;
-    const hash = get_dict_hash(key);
+    const hash = this.get_dict_hash(key);
     if (hash[0] === "_") {
         item = this.buckets[hash];
     } else {
@@ -576,7 +576,7 @@ Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
  *
  */
 Sk.builtin.dict.prototype.set$item = function (key, value) {
-    const hash = get_dict_hash(key);
+    const hash = this.get_dict_hash(key);
     if (hash[0] === "_") {
         // we have a string so pass it to the dictionary
         if (this.buckets[hash] === undefined) {
@@ -605,7 +605,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
  *
  */
 Sk.builtin.dict.prototype.del$item = function (key) {
-    const hash = get_dict_hash(key);
+    const hash = this.get_dict_hash(key);
     let item;
     if (hash[0] === "_") {
         item = this.buckets[hash];
@@ -622,11 +622,19 @@ Sk.builtin.dict.prototype.del$item = function (key) {
 };
 
 /**
- * Py3 and Py2 dict views are different
- * Py2 just returns a List object
+ * Py2 methods
  */
-Sk.builtin.dict.py2_dictviews = {
+Sk.builtin.dict.py2$methods = {
+    has_key: {
+        $name: "has_key",
+        $flags: { OneArg: true },
+        $meth: function (k) {
+            return new Sk.builtin.bool(this.sq$contains(k));
+        },
+        $doc: "D.has_key(k) -> True if D has a key k, else False",
+    },
     keys: {
+        $name: "keys",
         $meth: function () {
             return new Sk.builtin.list(this.sk$asarray());
         },
@@ -635,6 +643,7 @@ Sk.builtin.dict.py2_dictviews = {
         $doc: "D.keys() -> a set-like object providing a view on D's keys",
     },
     items: {
+        $name: "items",
         $meth: function () {
             const L = [];
             const buckets = this.buckets;
@@ -650,6 +659,7 @@ Sk.builtin.dict.py2_dictviews = {
         $doc: "D.items() -> a set-like object providing a view on D's items",
     },
     values: {
+        $name: "values",
         $meth: function () {
             const L = [];
             const buckets = this.buckets;
@@ -662,46 +672,4 @@ Sk.builtin.dict.py2_dictviews = {
         $textsig: null,
         $doc: "D.values() -> an object providing a view on D's values",
     },
-};
-
-Sk.setupDictIterators = function (python3) {
-    const dict = Sk.builtin.dict;
-    if (python3 && dict.py3_dictviews === undefined) {
-        return;
-    }
-    const proto = dict.prototype;
-    let dict_view, dict_views;
-    if (python3) {
-        dict_views = dict.py3_dictviews;
-        for (let dict_view_name in dict_views) {
-            dict_view = dict_views[dict_view_name];
-            dict_view.$name = dict_view_name;
-            proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
-        }
-    } else {
-        if (dict.py3_dictviews === undefined) {
-            dict.py3_dictviews = {};
-            dict.py3_dictviews.keys = proto.keys.d$def;
-            dict.py3_dictviews.items = proto.items.d$def;
-            dict.py3_dictviews.values = proto.values.d$def;
-        }
-        dict_views = dict.py2_dictviews;
-        for (let dict_view_name in dict_views) {
-            dict_view = dict_views[dict_view_name];
-            dict_view.$name = dict_view_name;
-            proto[dict_view_name] = new Sk.builtin.method_descriptor(dict, dict_view);
-        }
-    }
-};
-
-/**
- * Py2 methods
- */
-Sk.builtin.dict.prototype.haskey$ = {
-    $name: "has_key",
-    $flags: { OneArg: true },
-    $meth: function (k) {
-        return new Sk.builtin.bool(this.sq$contains(k));
-    },
-    $doc: "D.has_key(k) -> True if D has a key k, else False",
 };

@@ -210,8 +210,7 @@ Sk.misceval.opSymbols = {
 Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
-    Sk.asserts.assert(v.sk$object);
-    Sk.asserts.assert(w.sk$object);
+    Sk.asserts.assert(v.sk$object  && w.sk$object, "JS object passed to richCompareBool");
     var wname,
         vname,
         ret,
@@ -233,8 +232,6 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         w_type,
         v_type;
 
-    Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
-    Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
     v_type = v.ob$type;
     w_type = w.ob$type;
@@ -246,18 +243,18 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         (v_type !== w_type) &&
         (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
-        numeric_types = [Sk.builtin.float_.prototype.ob$type,
-                         Sk.builtin.int_.prototype.ob$type,
-                         Sk.builtin.lng.prototype.ob$type,
-                         Sk.builtin.bool.prototype.ob$type];
-        sequence_types = [Sk.builtin.dict.prototype.ob$type,
-                          Sk.builtin.enumerate.prototype.ob$type,
-                          Sk.builtin.filter_.prototype.ob$type,
-                          Sk.builtin.list.prototype.ob$type,
-                          Sk.builtin.map_.prototype.ob$type,
-                          Sk.builtin.str.prototype.ob$type,
-                          Sk.builtin.tuple.prototype.ob$type,
-                          Sk.builtin.zip_.prototype.ob$type];
+        numeric_types = [Sk.builtin.float_,
+                         Sk.builtin.int_,
+                         Sk.builtin.lng,
+                         Sk.builtin.bool];
+        sequence_types = [Sk.builtin.dict,
+                          Sk.builtin.enumerate,
+                          Sk.builtin.filter_,
+                          Sk.builtin.list,
+                          Sk.builtin.map_,
+                          Sk.builtin.str,
+                          Sk.builtin.tuple,
+                          Sk.builtin.zip_];
 
         v_num_type = numeric_types.indexOf(v_type);
         v_seq_type = sequence_types.indexOf(v_type);
@@ -267,7 +264,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         // NoneTypes are considered less than any other type in Python
         // note: this only handles comparing NoneType with any non-NoneType.
         // Comparing NoneType with NoneType is handled further down.
-        if (v_type === Sk.builtin.none.prototype.ob$type) {
+        if (v === Sk.builtin.none.none$) {
             switch (op) {
                 case "Lt":
                     return true;
@@ -280,7 +277,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             }
         }
 
-        if (w_type === Sk.builtin.none.prototype.ob$type) {
+        if (w === Sk.builtin.none.none$) {
             switch (op) {
                 case "Lt":
                     return false;
@@ -339,26 +336,26 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // handle identity and membership comparisons
     if (op === "Is") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
-            return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
-            return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
-            return v.longCompare(w) === 0;
+        if (v_type === w_type) {
+            if (v === w) {
+                return true;
+            } else if (v_type === Sk.builtin.int_ || v_type === Sk.builtin.float_ ) {
+                return v.numberCompare(w) === 0;
+            } else if (v_type === Sk.builtin.lng) {
+                return v.longCompare(w) === 0;
+            }
         }
-
-        return v === w;
+        return false;
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+        if (v_type !== w_type) {
+            return true;
+        } else if (v_type === Sk.builtin.int_ || v_type === Sk.builtin.float_ ) {
             return v.numberCompare(w) !== 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
-            return v.numberCompare(w) !== 0;
-        }else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        } else if (v_type === Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
-
         return v !== w;
     }
 

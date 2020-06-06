@@ -173,7 +173,11 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     // All Python inheritance is now enforced with Javascript inheritance
     // (see Sk.abstr.setUpInheritance). This checks if w's type is a strict
     // subclass of v's type
-    var w_is_subclass = w.constructor.prototype instanceof v.constructor;
+    const w_type = w.constructor;
+    const v_type = v.constructor;
+    // consider having a base class flag like !w_type.sk$base_class (weird case for bool and int)
+    // otherwise would use && !w.hp$type
+    const w_is_subclass = w_type !== v_type &&  w instanceof v_type;
 
     // From the Python 2.7 docs:
     //
@@ -576,7 +580,7 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObj
                 if (!item || !item.v) {
                     throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples");
                 }
-                if (!(item.v[0] instanceof Sk.builtin.str)) {
+                if (!(item.v[0].ob$type === Sk.builtin.str)) {
                     throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name + ":" : "") + "keywords must be strings");
                 }
                 jsArray.push(item.v[0].v, item.v[1]);
@@ -602,7 +606,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     if (!kwargs.length && defaults === undefined) {
         return args;
     }
-    args = [...args]; // make a shallow copy of args
+    args = args.slice();//[...args]; // make a shallow copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
         const name = kwargs[i]; // JS string

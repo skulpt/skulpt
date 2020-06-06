@@ -445,7 +445,7 @@ Sk.builtin.type.prototype.tp$getsets = {
     __module__: {
         $get: function () {
             let mod = this.prototype.__module__;
-            if (mod && !(mod instanceof Sk.builtin.getset_descriptor)) {
+            if (mod && !(mod.ob$type === Sk.builtin.getset_descriptor)) {
                 return mod;
             }
             return new Sk.builtin.str("builtins");

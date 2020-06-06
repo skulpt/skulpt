@@ -50,7 +50,7 @@ Sk.python2 = {
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false,
-    silent_octal_literal: true
+    silent_octal_literal: true,
 };
 
 Sk.python3 = {
@@ -71,7 +71,7 @@ Sk.python3 = {
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true,
-    silent_octal_literal: false
+    silent_octal_literal: false,
 };
 
 Sk.configure = function (options) {
@@ -162,22 +162,30 @@ Sk.configure = function (options) {
                 for (var i = 0; i < Sk.signals.listeners.length; i++) {
                     Sk.signals.listeners[i].call(null, signal, data);
                 }
-            }
+            },
         };
     } else {
         Sk.signals = null;
     }
     Sk.asserts.assert(typeof Sk.signals === "object");
 
-    Sk.breakpoints = options["breakpoints"] || function () { return true; };
+    Sk.breakpoints =
+        options["breakpoints"] ||
+        function () {
+            return true;
+        };
     Sk.asserts.assert(typeof Sk.breakpoints === "function");
 
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
         if (typeof setTimeout === "function") {
-            Sk.setTimeout = function (func, delay) { setTimeout(func, delay); };
+            Sk.setTimeout = function (func, delay) {
+                setTimeout(func, delay);
+            };
         } else {
-            Sk.setTimeout = function (func, delay) { func(); };
+            Sk.setTimeout = function (func, delay) {
+                func();
+            };
         }
     }
     Sk.asserts.assert(typeof Sk.setTimeout === "function");
@@ -200,33 +208,22 @@ Sk.configure = function (options) {
     }
 
     Sk.misceval.softspace_ = false;
-    // Sk.switch_version(Sk.__future__.python3);
 
-    Sk.switch_version("__round__", Sk.__future__.dunder_round);
-    Sk.switch_version("has_key", Sk.__future__.python3);
-    Sk.switch_version("clear", Sk.__future__.python3);
-    Sk.switch_version("copy", Sk.__future__.python3);
-    Sk.switch_version("sort", Sk.__future__.python3);
-    // Sk.switch_version("keys", Sk.__future__.python3);
-    // Sk.switch_version("items", Sk.__future__.python3);
-    // Sk.switch_version("values", Sk.__future__.python3);
-
-
+    Sk.switch_version(Sk.__future__.python3);
     Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
     Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
-    Sk.setupDictIterators(Sk.__future__.python3);
-    
+
     Sk.setupObjects(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
 
 /*
-* Replaceable handler for uncaught exceptions
-*/
+ * Replaceable handler for uncaught exceptions
+ */
 Sk.uncaughtException = function (err) {
     throw err;
 };
@@ -260,8 +257,7 @@ Sk.yieldLimit = Number.POSITIVE_INFINITY;
 /*
  * Replacable output redirection (called from print, etc).
  */
-Sk.output = function (x) {
-};
+Sk.output = function (x) {};
 
 /*
  * Replacable function to load modules with (called via import, etc.)
@@ -282,7 +278,6 @@ Sk.getSysArgv = function () {
 };
 Sk.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
 
-
 /**
  * Setable to emulate PYTHONPATH environment variable (for finding modules).
  * Should be an array of JS strings.
@@ -295,8 +290,7 @@ Sk.inBrowser = Sk.global["document"] !== undefined;
  * Internal function used for debug output.
  * @param {...} args
  */
-Sk.debugout = function (args) {
-};
+Sk.debugout = function (args) {};
 
 (function () {
     // set up some sane defaults based on availability
@@ -316,100 +310,77 @@ Sk.debugout = function (args) {
     } else if (Sk.global["print"] !== undefined) {
         Sk.debugout = Sk.global["print"];
     }
-}());
+})();
 
 Sk.inputfun = function (args) {
     return window.prompt(args);
 };
 
-// Information about method names and their internal functions for
-// methods that differ (in visibility or name) between Python 2 and 3.
-//
-// Format:
-//   internal function: {
-//     "classes" : <array of affected classes>,
-//     2 : <visible Python 2 method name> or null if none
-//     3 : <visible Python 3 method name> or null if none
-//   },
-//   ...
-
 Sk.setup_method_mappings = function () {
-    return {
-        __round__: {
-            classes: [Sk.builtin.float_, Sk.builtin.int_,],
-            2: false,
-            3: true,
-        },
-        clear: {
-            classes: [Sk.builtin.list],
-            2: false,
-            3: true,
-        },
-        copy: {
-            classes: [Sk.builtin.list],
-            2: false,
-            3: true,
-        },
-        has_key: {
-            classes: [Sk.builtin.dict],
-            2: true,
-            3: false,
-        },
-        sort: { // sort has different defn in py2/3
-            classes: [Sk.builtin.list],
-            2: true,
-            3: true,
-        },
-        keys: {
-            classes: [Sk.builtin.dict],
-            2: true,
-            3: true,
-        },
-        items: {
-            classes: [Sk.builtin.dict],
-            2: true,
-            3: true,
-        },
-        values: {
-            classes: [Sk.builtin.dict],
-            2: true,
-            3: true,
-        }
-    };
+};
+Sk.setupDictIterators = function (python3) {
 };
 
-Sk.switch_version = function (method_to_map, python3) {
-    const mapping = Sk.setup_method_mappings()[method_to_map];
-    const classes = mapping["classes"];
-    const in_py3 = mapping[3];
-    const in_py2 = mapping[2];
-    for (let idx = 0; idx < classes.length; idx++) {
-        const klass = classes[idx];
-        let py3$methods = klass.py3$methods;
-        if (python3 && py3$methods === undefined) {
-            continue;
-        } else if (py3$methods === undefined) {
-            // we don't have py3$method definitons stored yet so create a place holder for them.
-            klass.py3$methods = py3$methods = {};
-        }
-        const py2$methods = klass.py2$methods;
-        const klass_proto = klass.prototype;
-        const py2_method_def = py2$methods[method_to_map];
-        let py3_method_def = py3$methods[method_to_map];
+Sk.switch_version = function (py3) {
+    const methods_to_map = {
+        float_: {
+            method_names: ["__round__"],
+            2: [false],
+            3: [true],
+        },
+        int_: {
+            method_names: ["__round__"],
+            2: [false],
+            3: [true],
+        },
+        list: {
+            method_names: ["clear", "copy", "sort"],
+            2: [false, false, true],
+            3: [true, true, true],
+        },
+        dict: {
+            method_names: ["has_key", "keys", "items", "values"],
+            2: [true, true, true, true],
+            3: [false, true, true, true],
+        },
+    };
 
-        if (in_py3 && py3_method_def == undefined) {
-            // we haven't stored this method yet so add it now before it's too late!
-            py3$methods[method_to_map] = py3_method_def = klass_proto[method_to_map].d$def;
+    for (let klass_name in methods_to_map) {
+        const klass = Sk.builtin[klass_name];
+        const method_names = methods_to_map[klass_name].method_names;
+        const in_py3 = methods_to_map[klass_name][3];
+
+        // if we're not changing to py2 and we have no py3$methods then don't continue since these methods exist by default
+        if (py3 && klass.py3$methods === undefined) {
+            return;
+        } else if (klass.py3$methods === undefined) {
+            // Set up py3$methods if we haven't done so already
+            klass.py3$methods = {};
+            for (let i = 0; i < method_names.length; i++) {
+                const method_name = method_names[i];
+                if (!in_py3[i]) {
+                    continue;
+                }
+                klass.py3$methods[method_name] = klass.prototype[method_name].d$def;
+            }
         }
-        delete klass_proto[method_to_map];
-        if (python3 && in_py3) {    
-            klass_proto[method_to_map] = new Sk.builtin.method_descriptor(klass, py3_method_def);
-        } else if (!python3 && in_py2) {
-            klass_proto[method_to_map] = new Sk.builtin.method_descriptor(klass, py2_method_def);
+        let in_version, new_methods;
+        if (py3) {
+            in_version = in_py3;
+            new_methods = klass.py3$methods;
+        } else {
+            in_version = methods_to_map[klass_name][2];
+            new_methods = klass.py2$methods;
+        }
+        for (let i = 0; i < method_names.length; i++) {
+            const method_name = method_names[i];
+            delete klass.prototype[method_name];
+            if (in_version[i]) {
+                klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, new_methods[method_name]);
+            }
         }
     }
 };
-
 
 Sk.exportSymbol("Sk.__future__", Sk.__future__);
 Sk.exportSymbol("Sk.inputfun", Sk.inputfun);

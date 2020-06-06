@@ -13,7 +13,7 @@ Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
     constructor : function iterator (fn, handlesOwnSuspensions) {
         this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
             let x = fn();
-            if (canSuspend || !x.isSuspension) {
+            if (canSuspend || !x.$isSuspension) {
                 return x;
             } else {
                 return Sk.misceval.retryOptionalSuspensionOrThrow(x);
