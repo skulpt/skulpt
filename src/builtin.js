@@ -691,14 +691,17 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const res = obj.tp$getattr(pyName);
-    if (res === undefined) {
-        if (default_ !== undefined) {
-            return default_;
+    const jsName = pyName.$jsstr();
+    const res = obj.tp$getattr(pyName, true, Sk.fixReserved(jsName));
+    return Sk.misceval.chain(res, (r) => {
+        if (r === undefined) {
+            if (default_ !== undefined) {
+                return default_;
+            }
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute " + jsName);
         }
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has now attribute " + pyName.$jsstr());
-    }
-    return res;
+        return r;
+    });
 };
 
 Sk.builtin.setattr = function setattr(obj, pyName, value) {
@@ -706,8 +709,11 @@ Sk.builtin.setattr = function setattr(obj, pyName, value) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    obj.tp$setattr(pyName, value);
-    return Sk.builtin.none.none$;
+    const jsMangled = Sk.fixReserved(pyName.$jsstr());
+    const res = obj.tp$setattr(pyName, value, true, jsMangled);
+    return Sk.misceval.chain(res, ()=>{
+        return Sk.builtin.none.none$;
+    });
 };
 
 Sk.builtin.raw_input = function (prompt) {
@@ -909,15 +915,18 @@ Sk.builtin.filter = function filter(fun, iterable) {
     return ret(retval);
 };
 
-Sk.builtin.hasattr = function hasattr(obj, attr) {
-    if (!Sk.builtin.checkString(attr)) {
+Sk.builtin.hasattr = function hasattr(obj, pyName) {
+    if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
-    const res = obj.tp$getattr(attr);
-    if (res === undefined) {
-        return Sk.builtin.bool.false$;
-    }
-    return Sk.builtin.bool.true$;
+    const jsMangled = Sk.fixReserved(pyName.$jsstr());
+    const res = obj.tp$getattr(pyName, true, jsMangled);
+    return Sk.misceval.chain(res, (r) => {
+        if (r === undefined) {
+            return Sk.builtin.bool.false$;
+        }
+        return Sk.builtin.bool.true$;
+    });
 };
 
 Sk.builtin.pow = function pow(a, b, c) {

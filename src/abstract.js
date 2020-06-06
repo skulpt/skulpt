@@ -766,10 +766,10 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
-Sk.abstr.gattr = function (obj, pyName, canSuspend) {
+Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
     Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to gattr");
     // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
-    const ret = obj.tp$getattr(pyName, canSuspend);
+    const ret = obj.tp$getattr(pyName, canSuspend, jsMangled);
     if (ret === undefined) {
         const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
         throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr());
@@ -787,9 +787,9 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
-Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
+Sk.abstr.sattr = function (obj, pyName, data, canSuspend, jsMangled) {
     Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to sattr");
-    return obj.tp$setattr(pyName, data, canSuspend);
+    return obj.tp$setattr(pyName, data, canSuspend, jsMangled);
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 

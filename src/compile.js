@@ -831,7 +831,7 @@ Compiler.prototype.cformattedvalue = function(e) {
  *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
  */
 Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
-    var mangled, mname;
+    var mangled, mname, jsMangled;
     var val;
     var result;
     var nStr; // used for preserving signs for floats (zeros)
@@ -898,15 +898,15 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            // mangled = fixReserved(mangled);
+            jsMangled = "'" + fixReserved(mangled) + "'";
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
-                    out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true);");
+                    out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true, ",jsMangled,");");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.Load:
-                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
+                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true, ",jsMangled,");");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.AugStore:
@@ -915,12 +915,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
                     out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("$ret = Sk.abstr.sattr(", augvar, ",", mname, ",", data, ", true);");
+                    out("$ret = Sk.abstr.sattr(", augvar, ",", mname, ",", data, ", true, ",jsMangled,");");;
                     out("}");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Store:
-                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true);");
+                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true, ",jsMangled,");");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Del:
@@ -1745,6 +1745,7 @@ Compiler.prototype.cfromimport = function (s) {
     var got;
     var alias;
     var aliasOut;
+    var jsMangled;
     var mod;
     var i;
     var n = s.names.length;
@@ -1765,7 +1766,7 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        // aliasOut = "'" + fixReservedWords(alias.name.v) + "'";
+        jsMangled = "'" + fixReservedWords(alias.name.v) + "'";
         aliasOut = "'" + alias.name.v + "'";
         if (i === 0 && alias.name.v === "*") {
             Sk.asserts.assert(n === 1);
@@ -1774,7 +1775,8 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "))");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined, ", jsMangled, ")");
+        // got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined, ", jsMangled,"))");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {

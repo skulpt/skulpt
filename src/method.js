@@ -59,8 +59,9 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
         tp$descr_get: function (obj, obtype) {
             return this;
         },
-        tp$getattr: function (pyName, canSuspend) {
-            const descr = Sk.abstr.lookupSpecial(this, pyName, true); // true means we should mangle this pyName
+        tp$getattr: function (pyName, canSuspend, jsMangled) {
+            jsMangled = jsMangled || pyName.$jsstr();
+            const descr = Sk.abstr.lookupSpecial(this, jsMangled); // true means we should mangle this pyName
             if (descr !== undefined) {
                 const f = descr.tp$descr_get;
                 if (f !== undefined) {
@@ -69,7 +70,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
                     return descr;
                 }
             }
-            return this.im_func.tp$getattr(pyName, canSuspend);
+            return this.im_func.tp$getattr(pyName, canSuspend, jsMangled);
         },
     },
     getsets: {

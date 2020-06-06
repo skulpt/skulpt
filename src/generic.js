@@ -6,9 +6,10 @@ Sk.generic = {};
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
+Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
     let f, res;
-    const descr = this.ob$type.$typeLookup(pyName, true);
+    jsMangled = jsMangled || pyName.$jsstr();
+    const descr = this.ob$type.$typeLookup(jsMangled);
     // look in the type for a descriptor
     if (descr != null) {
         f = descr.tp$descr_get;
@@ -49,9 +50,9 @@ Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
-Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
-    const descr = this.ob$type.$typeLookup(pyName, true); // typelookup should mangle this name
-
+Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend, jsMangled) {
+    jsMangled = jsMangled || pyName.$jsstr();
+    const descr = this.ob$type.$typeLookup(jsMangled); 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
         const f = descr.tp$descr_set;
@@ -77,12 +78,11 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
                 }
             }
         } else if (typeof dict === "object") {
-            const mangled = Sk.fixReserved(pyName.$jsstr());
             if (value != null) {
-                dict[mangled] = value;
+                dict[jsMangled] = value;
                 return;
-            } else if (dict[mangled] !== undefined) {
-                delete dict[mangled];
+            } else if (dict[jsMangled] !== undefined) {
+                delete dict[jsMangled];
                 return;
             }
         }

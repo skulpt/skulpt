@@ -157,13 +157,14 @@ Sk.builtin.type.prototype.$r = function () {
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
 
-Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
+Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) {
     // first check that the pyName is indeed a string
     let res;
     const metatype = this.ob$type;
+    jsMangled = jsMangled || pyName.$jsstr();
     // now check whether there is a descriptor on the metatype
-    const mangled = Sk.fixReserved(pyName.$jsstr());
-    const meta_attribute = metatype.$typeLookup(mangled);
+    // const mangled = Sk.fixReserved(pyName.$jsstr());
+    const meta_attribute = metatype.$typeLookup(jsMangled);
 
     let meta_get;
     if (meta_attribute !== undefined) {
@@ -173,7 +174,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
             return res;
         }
     }
-    const attribute = this.$typeLookup(mangled);
+    const attribute = this.$typeLookup(jsMangled);
 
     if (attribute !== undefined) {
         const local_get = attribute.tp$descr_get;
@@ -196,7 +197,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     return;
 };
 
-Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
+Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMangled) {
     if (!this.sk$klass) {
         if (value !== undefined) {
             throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
@@ -204,11 +205,10 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
             throw new Sk.builtin.TypeError("can't delete attributes on type object '" + this.prototype.tp$name + "'");
         }
     }
-    const jsName = pyName.$jsstr();
-    const mangled = Sk.fixReserved(jsName);
+    jsMangled = jsMangled || pyName.$jsstr();
     // meta types must follow single inheritance - we could change this and do
-    // this.ob$type.$typeLookup(jsName)... but doesn't seem much point
-    const descr = this.ob$type.$typeLookup(mangled);
+    // this.ob$type.$typeLookup(jsMangled)... but doesn't seem much point
+    const descr = this.ob$type.$typeLookup(jsMangled);
 
     // if it's a data descriptor then call it
     if (descr !== undefined && descr !== null) {
@@ -220,42 +220,36 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     // for delattr
 
     if (value === undefined) {
-        if (!this.prototype.hasOwnProperty(mangled)) {
-            throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + jsName + "'");
+        if (!this.prototype.hasOwnProperty(jsMangled)) {
+            throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + pyName.$jsstr() + "'");
         } else {
-            delete this.prototype[mangled];
+            delete this.prototype[jsMangled];
             // delete the slot_func if this object follows protypical inheritance
-            const slot_name = Sk.dunderToSkulpt[mangled];
+            const slot_name = Sk.dunderToSkulpt[jsMangled];
             if (this.prototype.prototypical && slot_name !== undefined) {
                 delete this.prototype[slot_name];
             }
             return;
         }
     }
-    this.prototype[mangled] = value;
-    if (this.prototype.sk$prototypical && mangled in Sk.dunderToSkulpt) {
-        this.$allocateSlot(mangled);
+    this.prototype[jsMangled] = value;
+    if (this.prototype.sk$prototypical && jsMangled in Sk.dunderToSkulpt) {
+        this.$allocateSlot(jsMangled);
     }
 };
 
-Sk.builtin.type.prototype.$typeLookup = function (pyOrJsName, toMangle) {
-    if (toMangle !== undefined) {
-        if (pyOrJsName.$jsstr) {
-            pyOrJsName = pyOrJsName.$jsstr();
-        }
-        pyOrJsName = Sk.fixReserved(pyOrJsName);
-    } else if (pyOrJsName.$jsstr) {
-        pyOrJsName = pyOrJsName.$jsstr();
+Sk.builtin.type.prototype.$typeLookup = function (pyOrJsName) {
+    pyOrJsName = pyOrJsName.v === undefined ? pyOrJsName : pyOrJsName.v;
+    const proto = this.prototype;
+    if (proto.sk$prototypical) {
+        return proto[pyOrJsName];
     }
-    if (this.prototype.sk$prototypical) {
-        return this.prototype[pyOrJsName];
-    }
-    const mro = this.prototype.tp$mro;
+    const mro = proto.tp$mro;
 
     for (let i = 0; i < mro.length; ++i) {
-        const base = mro[i];
-        if (base.prototype.hasOwnProperty(pyOrJsName)) {
-            return base.prototype[pyOrJsName];
+        const base_proto = mro[i].prototype;
+        if (base_proto.hasOwnProperty(pyOrJsName)) {
+            return base_proto[pyOrJsName];
         }
     }
     return undefined;
