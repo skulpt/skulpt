@@ -41,11 +41,10 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
             obj = o;
             if (!obj.ob$type.$isSubType(self)) {
                 // don't initialize an obj if it's type is not a subtype of this!
+                // typically obj$obtype === self so this check is fast
                 return undefined;
             }
-            if (obj.tp$init !== undefined) {
-                return obj.tp$init(args, kwargs);
-            }
+            return obj.tp$init(args, kwargs);
         },
         function () {
             return obj;
