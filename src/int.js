@@ -137,35 +137,6 @@ Sk.builtin.int_.prototype.nb$lng = function () {
 };
 
 /**
- * Python wrapper of `__trunc__` dunder method.
- *
- * @instance
- */
-Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function (self) {
-    return self;
-});
-
-/**
- * Python wrapper of `__index__` dunder method.
- *
- * @instance
- */
-Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function (self) {
-    return self;
-});
-
-/**
- * Python wrapper of `__complex__` dunder method.
- *
- * @instance
- */
-Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function (self) {
-    return Sk.builtin.NotImplemented.NotImplemented$;
-});
-
-Sk.builtin.int_.prototype.__format__ = Sk.formatting.mkNumber__format__(false);
-
-/**
  * Return this instance's Javascript value.
  *
  * Javascript function, returns Javascript object.
@@ -643,86 +614,6 @@ Sk.builtin.int_.prototype.nb$invert = function () {
 };
 
 /**
- * @function
- * @name  nb$inplace_and
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Compute the bitwise AND of this instance and a Python object (i.e. this &= other).
- *
- * Returns NotImplemented if inplace bitwise AND operation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Sk.builtin.object} other The Python object to AND with this one
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the conjunction
- */
-Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
-
-/**
- * @function
- * @name  nb$inplace_or
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Compute the bitwise OR of this instance and a Python object (i.e. this |= other).
- *
- * Returns NotImplemented if inplace bitwise OR operation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Sk.builtin.object} other The Python object to OR with this one
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the disjunction
- */
-Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
-
-/**
- * @function
- * @name  nb$inplace_xor
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Compute the bitwise XOR of this instance and a Python object (i.e. this ^= other).
- *
- * Returns NotImplemented if inplace bitwise XOR operation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Sk.builtin.object} other The Python object to XOR with this one
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the exclusive disjunction
- */
-Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
-
-/**
- * @function
- * @name  nb$inplace_lshift
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Compute the bitwise left shift of this instance by a Python object (i.e. this <<= other).
- *
- * Returns NotImplemented if inplace bitwise left shift operation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Sk.builtin.object} other The Python object by which to left shift
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the left shift
- */
-Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshift;
-
-/**
- * @function
- * @name  nb$inplace_rshift
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Compute the bitwise right shift of this instance by a Python object (i.e. this >>= other).
- *
- * Returns NotImplemented if inplace bitwise right shift operation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Sk.builtin.object} other The Python object by which to right shift
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the right shift
- */
-Sk.builtin.int_.prototype.nb$inplace_rshift = Sk.builtin.int_.prototype.nb$rshift;
-
-/**
  * @override
  *
  * @return {Sk.builtin.int_} A copy of this instance with the value negated.
@@ -849,7 +740,7 @@ Sk.builtin.int_.prototype.ob$ge = function (other) {
  * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
  * @return {Sk.builtin.int_} The rounded integer.
  */
-Sk.builtin.int_.prototype.round$ = function (ndigits) {        
+Sk.builtin.int_.prototype.round$ = function (ndigits) {
     let result;
     if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
@@ -879,7 +770,7 @@ Sk.builtin.int_.prototype.conjugate = new Sk.builtin.func(function (self) {
 });
 
 /** @override */
-Sk.builtin.int_.prototype["$r"] = function () {
+Sk.builtin.int_.prototype.$r = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
@@ -1038,29 +929,35 @@ Sk.builtin.int_.prototype.tp$getsets = {
 };
 
 Sk.builtin.int_.prototype.tp$methods = {
-    // __trunc__: {
-    //     $meth: methods.__trunc__,
-    //     $flags: {NoArgs: true},
-    //     $textsig: null,
-    //     $doc: "Truncating an Integral returns itself.",
-    // },
-    // __floor__: {
-    //     $meth: methods.__floor__,
-    //     $flags: {NoArgs: true},
-    //     $textsig: null,
-    //     $doc: "Flooring an Integral returns itself.",
-    // },
-    // __ceil__: {
-    //     $meth: methods.__ceil__,
-    //     $flags: {NoArgs: true},
-    //     $textsig: null,
-    //     $doc: "Ceiling of an Integral returns itself.",
-    // },
+    __trunc__: {
+        $meth: function () {
+            return new Sk.builtin.int_(this.v);
+        },
+        $flags: { NoArgs: true },
+        $textsig: null,
+        $doc: "Truncating an Integral returns itself.",
+    },
+    __floor__: {
+        $meth: function () {
+            return new Sk.builtin.int_(this.v);
+        },
+        $flags: {NoArgs: true},
+        $textsig: null,
+        $doc: "Flooring an Integral returns itself.",
+    },
+    __ceil__: {
+        $meth: function () {
+            return new Sk.builtin.int_(this.v);
+        },
+        $flags: {NoArgs: true},
+        $textsig: null,
+        $doc: "Ceiling of an Integral returns itself.",
+    },
     __round__: {
-        $meth: function(ndigits) {
+        $meth: function (ndigits) {
             return this.round$(ndigits);
         },
-        $flags: {MinArgs: 0, MaxArgs:1},
+        $flags: { MinArgs: 0, MaxArgs: 1 },
         $textsig: null,
         $doc: "Rounding an Integral returns itself.\nRounding with an ndigits argument also returns an integer.",
     },
@@ -1071,7 +968,12 @@ Sk.builtin.int_.prototype.tp$methods = {
     //     $doc: Sk.builtin.none.none$,
     // },
     // __format__: {
-    //     $meth: methods.__format__,
+    //     $meth: function () {
+    //         if (!Sk.builtin.checkString(format_spec)) {
+    //             throw new Sk.builtin.TypeError("format() argument must be str, not " + Sk.abstr.typeName(format_spec));
+    //         }
+    //         return new Sk.builtin.str(formatNumber(this, format_spec.$jsstr(), false));
+    //     },
     //     $flags: {OneArg: true},
     //     $textsig: "($self, format_spec, /)",
     //     $doc: Sk.builtin.none.none$,
@@ -1081,3 +983,15 @@ Sk.builtin.int_.prototype.tp$methods = {
 Sk.abstr.setUpMethods(Sk.builtin.int_);
 
 Sk.builtin.int_.py2$methods = {};
+
+
+/**
+ * Python wrapper of `__complex__` dunder method.
+ *
+ * @instance
+ */
+Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function (self) {
+    return Sk.builtin.NotImplemented.NotImplemented$;
+});
+
+Sk.builtin.int_.prototype.__format__ = Sk.formatting.mkNumber__format__(false);

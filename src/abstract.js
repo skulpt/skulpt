@@ -604,7 +604,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     if (!kwargs.length && defaults === undefined) {
         return args;
     }
-    args = args.slice();//[...args]; // make a shallow copy of args
+    args = args.slice(0);//[...args]; // make a shallow copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
         const name = kwargs[i]; // JS string

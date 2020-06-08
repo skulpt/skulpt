@@ -198,13 +198,13 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return instance;
         },
         sk$asarray: function () {
-            return this.v.slice();
+            return this.v.slice(0);
         },
     },
     methods: {
         __getnewargs__: {
             $meth: function () {
-                return new Sk.builtin.tuple(this.v.slice());
+                return new Sk.builtin.tuple(this.v.slice(0));
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",

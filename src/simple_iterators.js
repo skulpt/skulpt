@@ -212,7 +212,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
 Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     constructor: function (str) {
         this.$index = 0;
-        this.$seq = str.v.slice();
+        this.$seq = str.v.slice(0);
         this.$length = str.sq$length();
     },
     iternext: function () {

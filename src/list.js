@@ -206,7 +206,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         copy: {
             $meth: function () {
-                return new Sk.builtin.list(this.v.slice());
+                return new Sk.builtin.list(this.v.slice(0));
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -334,7 +334,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
     },
     proto: {
         sk$asarray: function () {
-            return this.v.slice();
+            return this.v.slice(0);
         },
     },
 });

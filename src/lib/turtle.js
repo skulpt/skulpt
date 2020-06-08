@@ -2190,7 +2190,7 @@ function generateTurtleModule(_target) {
             // filter out undefines in a previous implementation of function calls
             // non required args were not specified, where as now they are filled with
             // default values of None which are translated to null's
-            var tmp_args = args.slice();
+            var tmp_args = args.slice(0);
             args = [];
             for (i = tmp_args.length; i >= 0; --i) {
                 if (tmp_args[i] === null) {
