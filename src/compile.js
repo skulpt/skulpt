@@ -840,7 +840,6 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         this.u.linenoSet = false;
     }
     //this.annotateSource(e);
-    debugger;
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:
             return this.cboolop(e);
@@ -872,17 +871,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             this.annotateSource(e);
             return result;
         case Sk.astnodes.Num:
+            debugger;
             if (typeof e.n === "number") {
                 return e.n;
             } else if (e.n instanceof Sk.builtin.int_) {
-                return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
+                if (typeof e.n.v === "number") {
+                    return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
+                }
+                return this.makeConstant("new Sk.builtin.int_('" + e.n.v.toString() + "')"); 
             } else if (e.n instanceof Sk.builtin.float_) {
                 // Preserve sign of zero for floats
                 nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
                 return this.makeConstant("new Sk.builtin.float_(" + nStr + ")");
-            } else if (e.n instanceof Sk.builtin.lng) {
-                // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
-                return this.makeConstant("Sk.longFromStr('" + e.n.tp$str().v + "')");
             } else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
                 var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;

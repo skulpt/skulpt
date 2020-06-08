@@ -46,9 +46,7 @@ Sk.builtin.range = function range(start, stop, step) {
         }
     } else {
         // This is going to be slow, really needs to be a generator!
-        var startlng = new Sk.builtin.lng(start);
-        var stoplng = new Sk.builtin.lng(stop);
-        var steplng = new Sk.builtin.lng(step);
+        
 
         if (steplng.nb$ispositive()) {
             i = startlng;
@@ -97,27 +95,14 @@ Sk.builtin.asnum$ = function (a) {
         return a;
     }
     if (a instanceof Sk.builtin.int_) {
-        return a.v;
+        if (typeof a.v === "number") {
+            return a.v;
+        } 
+        return a.v.toString();
     }
     if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
-    if (a instanceof Sk.builtin.lng) {
-        if (a.cantBeInt()) {
-            return a.str$(10, true);
-        }
-        return a.toInt$();
-    }
-    if (a.constructor === Sk.builtin.biginteger) {
-        if (
-            a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.int_.threshold$)) > 0 ||
-            a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.int_.threshold$)) < 0
-        ) {
-            return a.toString();
-        }
-        return a.intValue();
-    }
-
     return a;
 };
 

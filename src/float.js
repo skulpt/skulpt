@@ -241,90 +241,71 @@ Sk.builtin.float_.prototype.toFixed = function (x) {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$add = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(this.v + other.v);
-    } else if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.float_(this.v + parseFloat(other.str$(10, true)));
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return new Sk.builtin.float(v + w);
+    } else if (w instanceof JSBI) {
+        return new Sk.builtin.float(v + w.toNumber());
     }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
 Sk.builtin.float_.prototype.nb$subtract = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(this.v - other.v);
-    } else if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.float_(this.v - parseFloat(other.str$(10, true)));
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return new Sk.builtin.float(v - w);
+    } else if (w instanceof JSBI) {
+        return new Sk.builtin.float(v - w.toNumber());
     }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/** @override */
 Sk.builtin.float_.prototype.nb$multiply = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(this.v * other.v);
-    } else if (other instanceof Sk.builtin.lng) {
-        return new Sk.builtin.float_(this.v * parseFloat(other.str$(10, true)));
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return new Sk.builtin.float(v * w);
+    } else if (w instanceof JSBI) {
+        return new Sk.builtin.float(v * w.toNumber());
     }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$divide = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        if (other.v === 0) {
+    const v = this.v;
+    const w = other.v;
+    if (w instanceof JSBI) {
+        w = new Sk.builtin.float(w.toString()).v; // this will throw an overflow error. 
+    }
+    if (typeof w === "number") {
+        if (w === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
-
-        if (this.v === Infinity) {
-            if (other.v === Infinity || other.v === -Infinity) {
+        if (v === Infinity) {
+            if (w === Infinity || v === -Infinity) {
                 return new Sk.builtin.float_(NaN);
-            } else if (other.nb$isnegative()) {
+            } else if (w < 0) {
                 return new Sk.builtin.float_(-Infinity);
             } else {
                 return new Sk.builtin.float_(Infinity);
             }
-        }
-        if (this.v === -Infinity) {
-            if (other.v === Infinity || other.v === -Infinity) {
+        }  
+        if (v === -Infinity) {
+            if (w === Infinity || v === -Infinity) {
                 return new Sk.builtin.float_(NaN);
-            } else if (other.nb$isnegative()) {
+            } else if (w < 0) {
                 return new Sk.builtin.float_(Infinity);
             } else {
                 return new Sk.builtin.float_(-Infinity);
             }
         }
-
-        return new Sk.builtin.float_(this.v / other.v);
+        return new Sk.builtin.float(v / w);
     }
-
-    if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-
-        if (this.v === Infinity) {
-            if (other.nb$isnegative()) {
-                return new Sk.builtin.float_(-Infinity);
-            } else {
-                return new Sk.builtin.float_(Infinity);
-            }
-        }
-        if (this.v === -Infinity) {
-            if (other.nb$isnegative()) {
-                return new Sk.builtin.float_(Infinity);
-            } else {
-                return new Sk.builtin.float_(-Infinity);
-            }
-        }
-
-        return new Sk.builtin.float_(this.v / parseFloat(other.str$(10, true)));
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
+
 };
 
 /** @override */

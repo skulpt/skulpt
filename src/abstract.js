@@ -245,6 +245,7 @@ Sk.abstr.unary_op_ = function (v, opname) {
 // handle upconverting a/b from number to long if op causes too big/small a
 // result, or if either of the ops are already longs
 Sk.abstr.numOpAndPromote = function (a, b, opfn) {
+
     var tmp;
     var ans;
     if (a === null || b === null) {
@@ -252,6 +253,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     }
 
     if (typeof a === "number" && typeof b === "number") {
+
         ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
         if ((ans > Sk.builtin.int_.threshold$ || ans < -Sk.builtin.int_.threshold$) && Math.floor(ans) === ans) {
@@ -362,24 +364,9 @@ Sk.abstr.boNumPromote_ = {
 };
 
 Sk.abstr.numberBinOp = function (v, w, op) {
-    var tmp;
-    var numPromoteFunc = Sk.abstr.boNumPromote_[op];
-    if (numPromoteFunc !== undefined) {
-        tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
-        if (typeof tmp === "number") {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
-            return tmp;
-        } else if (tmp !== undefined) {
-            v = tmp[0];
-            w = tmp[1];
-        }
+    if (v.ob$type !== w.ob$type) {
+        tmp_v, tmp_w = Sk.abstr.numOpAndPromote(v, w);
     }
-
     return Sk.abstr.binary_op_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);

@@ -2716,7 +2716,7 @@ function parsenumber (c, s, lineno) {
     }
 
     // Convert to long
-    if (val > Sk.builtin.int_.threshold$ &&
+    if (val > Number.MAX_SAFE_INTEGER &&
         Math.floor(val) === val &&
         (s.indexOf("e") === -1 && s.indexOf("E") === -1)) {
         return Sk.longFromStr(s, 0);
@@ -3347,9 +3347,9 @@ Sk.astDump = function (node) {
             else if (node === false) {
                 ret = "False";
             }
-            else if (node instanceof Sk.builtin.lng) {
-                ret = node.tp$str().v;
-            }
+            // else if (node instanceof Sk.builtin.lng) {
+            //     ret = node.tp$str().v;
+            // }
             else if (node instanceof Sk.builtin.str) {
                 ret = node["$r"]().v;
             }
