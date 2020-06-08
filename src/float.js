@@ -208,17 +208,6 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     return val;
 };
 
-/**
- * Return this instance's Javascript value.
- *
- * Javascript function, returns Javascript object.
- *
- * @return {number} This instance's value.
- */
-Sk.builtin.float_.prototype.nb$index = function () {
-    return this.v;
-};
-
 /** @override */
 Sk.builtin.float_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really

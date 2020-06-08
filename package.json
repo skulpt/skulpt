@@ -71,5 +71,7 @@
   "engines": {
     "node": ">=10.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "jsbi": "^3.1.3"
+  }
 }

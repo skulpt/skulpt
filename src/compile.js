@@ -840,6 +840,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         this.u.linenoSet = false;
     }
     //this.annotateSource(e);
+    debugger;
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:
             return this.cboolop(e);

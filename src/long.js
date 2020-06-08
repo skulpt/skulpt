@@ -22,6 +22,7 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         return new Sk.builtin.lng(x, base);
     }
 
+    debugger;
 
     if (x === undefined) {
         this.biginteger = new Sk.builtin.biginteger(0);
@@ -152,23 +153,29 @@ Sk.builtin.lng.fromInt$ = function (ival) {
 
 // js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
-Sk.longFromStr = function (s, base) {
-    // l/L are valid digits with base >= 22
-    // Sk.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
+// Sk.longFromStr = function (s, base) {
+//     // l/L are valid digits with base >= 22
+//     // Sk.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
 
-    var parser = function (s, base) {
-            if (base === 10) {
-                return new Sk.builtin.biginteger(s);
-            }
-            return new Sk.builtin.biginteger(s, base);
-        },
-        biginteger = Sk.str2number(s, base, parser, function (x) {
-            return x.negate();
-        }, "long");
+//     const parser = function (s, base) {
+//         if (base === 10) {
+//             return new Sk.builtin.biginteger(s);
+//         }
+//         return new Sk.builtin.biginteger(s, base);
+//     };
+//     const biginteger = Sk.str2number(
+//         s,
+//         base,
+//         parser,
+//         function (x) {
+//             return x.negate();
+//         },
+//         "long"
+//     );
 
-    return new Sk.builtin.lng(biginteger);
-};
-Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
+//     return new Sk.builtin.lng(biginteger);
+// };
+// Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
     return this.biginteger.intValue();
