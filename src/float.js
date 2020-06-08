@@ -17,8 +17,19 @@
 Sk.builtin.float_ = function (x) {
     Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float_ use 'new'");
     var tmp;
-    if (x === undefined) {
-        return new Sk.builtin.float_(0.0);
+    if (typeof x === "number") {
+        this.v = x;
+    } else if (typeof x === "string") {
+        this.v = parseFloat(x);
+        if (this.v == Infinity || this.v == -Infinity) {
+            //trying to convert a large js string to a float
+            throw new Sk.builtin.OverflowError("int too large to convert to float");
+        }
+        return this;
+    } else if (x === undefined) {
+        this.v = 0.0;
+    } else {
+        Sk.asserts.fail("bad argument to float_ constructor");
     }
 
     if (x instanceof Sk.builtin.str) {
@@ -41,19 +52,14 @@ Sk.builtin.float_ = function (x) {
         return this;
     }
 
-    // this is a special internal case
+    // this is a special internal case (when????)
     if (typeof x === "boolean") {
         this.v = x ? 1.0 : 0.0;
         return this;
     }
 
     if (typeof x === "string") {
-        this.v = parseFloat(x);
-        if (this.v == Infinity || this.v == -Infinity) {
-            //trying to convert a large js string to a float
-            throw new Sk.builtin.OverflowError("int too large to convert to float");
-        }
-        return this;
+
     }
 
     // try calling __float__
