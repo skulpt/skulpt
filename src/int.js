@@ -8,7 +8,7 @@
  */
 Sk.builtin.int_ = function (x) {
     // internal function called with a javascript int/float/str
-    Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
+    // Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
     if (typeof x === "number" || x instanceof JSBI) {
         this.v = x;
     } else if (typeof x === "string") {
@@ -29,10 +29,15 @@ Sk.builtin.int_.prototype.tp$doc =
     "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4";
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
-    args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [new Sk.builtin.int_(0), Sk.builtin.none.none$]);
-
-    const x = args[0];
-    const base = args[1];
+    let x, base;
+    if (args.length + (kwargs ? kwargs.length: 0) === 1) {
+        x = args[0];
+        base = Sk.builtin.none.none$;
+    } else {
+        args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [new Sk.builtin.int_(0), Sk.builtin.none.none$]);
+        x = args[0];
+        base = args[1];
+    }
     const jsInt = getJsInt(x, base);
 
     if (this === Sk.builtin.int_.prototype) {
@@ -53,10 +58,16 @@ Sk.builtin.int_.prototype.nb$int_ = function () {
 };
 
 Sk.builtin.int_.prototype.nb$float_ = function () {
-    if (typeof x.v === "number") {
-        return new Sk.builtin.float_(this.v);
+    const v = this.v;
+    if (typeof v === "number") {
+        return new Sk.builtin.float_(v);
     } else {
-        return new Sk.builtin.float_(this.v.toString()); 
+        const x = parseFloat(JSBI.toNumber(v));
+        if (x == Infinity || x == -Infinity) {
+            //trying to convert a large js string to a float
+            throw new Sk.builtin.OverflowError("int too large to convert to float");
+        }
+        return new Sk.builtin.float_(x); 
     }
 };
 
@@ -104,10 +115,6 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
         w = bigUp(w);
         return new Sk.builtin.int_(convertIfSafe(JSBI.add(v, w)));
     }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$add(other);
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -126,9 +133,6 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
         v = bigUp(v);
         w = bigUp(w);
         return new Sk.builtin.int_(convertIfSafe(JSBI.subtract(v, w)));
-    }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$subtract(other);
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
@@ -153,9 +157,6 @@ Sk.builtin.int_.prototype.nb$multiply = function (other) {
         w = bigUp(w);
         return new Sk.builtin.int_(JSBI.multiply(v, w));
     }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$multiply(other);
-    }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -167,10 +168,6 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return this.nb$floor_divide(other);
     }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$divide(other);
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -194,10 +191,6 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
         }
         return new Sk.builtin.int_(convertIfSafe(JSBI.divide(v, w)));
     }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$floor_divide(other);
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -218,10 +211,6 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
         return new Sk.builtin.int_(convertIfSafe(JSBI.remainder(v, w)));
     }
 
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$remainder(other);
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -230,10 +219,6 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.tuple([this.nb$floor_divide(other), this.nb$remainder(other)]);
     }
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$divmod(other);
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -264,10 +249,6 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
         } else {
             return ret;
         }
-    }
-
-    if (other instanceof Sk.builtin.float_) {
-        return this.nb$float_().nb$power(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -519,7 +500,6 @@ Sk.builtin.int_.prototype.conjugate = new Sk.builtin.func(function (self) {
 
 /** @override */
 Sk.builtin.int_.prototype.$r = function () {
-    debugger;
     return new Sk.builtin.str(this.v.toString());
 };
 
@@ -875,6 +855,8 @@ function getJsInt (x, base) {
         if (!Sk.builtin.checkInt(x)) {
             throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
         }
+        return res.v;
+    } else {
         return res.v;
     }
 

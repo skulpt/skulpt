@@ -42,10 +42,6 @@ Sk.abstr.unop_type_error = function (v, name) {
  * @private
  */
 Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
-    if (obj === null) {
-        return undefined;
-    }
-
     switch (name) {
         case "Add":
             return obj.nb$add;
@@ -81,10 +77,6 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
 };
 
 Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
-    if (obj === null) {
-        return undefined;
-    }
-
     switch (name) {
         case "Add":
             return obj.nb$reflected_add;
@@ -122,39 +114,36 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
 Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
     switch (name) {
         case "Add":
-            return obj.nb$inplace_add || obj.nb$add;
+            return obj.nb$inplace_add;
         case "Sub":
-            return obj.nb$inplace_subtract || obj.nb$subtract;
+            return obj.nb$inplace_subtract;
         case "Mult":
-            return obj.nb$inplace_multiply || obj.nb$multiply;
+            return obj.nb$inplace_multiply;
         case "MatMult":
             if (Sk.__future__.python3) {
                 return obj.nb$inplace_matrix_multiply;
             }
         case "Div":
-            return obj.nb$inplace_divide || obj.nb$divide;
+            return obj.nb$inplace_divide;
         case "FloorDiv":
-            return obj.nb$inplace_floor_divide || obj.nb$floor_divide;
+            return obj.nb$inplace_floor_divide;
         case "Mod":
-            return obj.nb$inplace_remainder || obj.nb$remainder;
+            return obj.nb$inplace_remainder;
         case "Pow":
-            return obj.nb$inplace_power || obj.nb$power;
+            return obj.nb$inplace_power;
         case "LShift":
-            return obj.nb$inplace_lshift || obj.nb$lshift;
+            return obj.nb$inplace_lshift;
         case "RShift":
-            return obj.nb$inplace_rshift || obj.nb$rshift;
+            return obj.nb$inplace_rshift;
         case "BitAnd":
-            return obj.nb$inplace_and || obj.nb$and;
+            return obj.nb$inplace_and;
         case "BitOr":
-            return obj.nb$inplace_or || obj.nb$or;
+            return obj.nb$inplace_or;
         case "BitXor":
-            return obj.nb$inplace_xor || obj.nb$xor;
+            return obj.nb$inplace_xor;
     }
 };
 Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
-    if (obj === null) {
-        return undefined;
-    }
     switch (name) {
         case "USub":
             return obj.nb$negative;
@@ -166,10 +155,6 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
 };
 
 Sk.abstr.binary_op_ = function (v, w, opname) {
-    var wop;
-    var ret;
-    var vop;
-
     // All Python inheritance is now enforced with Javascript inheritance
     // (see Sk.abstr.setUpInheritance). This checks if w's type is a strict
     // subclass of v's type
@@ -186,20 +171,22 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     //
     // -- https://docs.python.org/2/reference/datamodel.html#index-92
 
+    let wop;
+    let ret;
     if (w_is_subclass) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
             ret = wop.call(w, v);
-            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
             }
         }
     }
 
-    vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
+    const vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
         ret = vop.call(v, w);
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -208,7 +195,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
             ret = wop.call(w, v);
-            if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
             }
         }
@@ -217,12 +204,10 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
 };
 
 Sk.abstr.binary_iop_ = function (v, w, opname) {
-    var wop;
-    var ret;
-    var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
+    const vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        ret = vop.call(v, w);
-        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+        const ret = vop.call(v, w);
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -230,197 +215,30 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
     return Sk.abstr.binary_op_(v, w, opname);
 };
 Sk.abstr.unary_op_ = function (v, opname) {
-    var ret;
-    var vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
+    const vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        ret = vop.call(v);
-        if (ret !== undefined) {
+        const ret = vop.call(v);
+        if (ret !== undefined) { // should this be not implemented?
             return ret;
         }
     }
     Sk.abstr.unop_type_error(v, opname);
 };
 
-//
-// handle upconverting a/b from number to long if op causes too big/small a
-// result, or if either of the ops are already longs
-Sk.abstr.numOpAndPromote = function (a, b, opfn) {
-
-    var tmp;
-    var ans;
-    if (a === null || b === null) {
-        return undefined;
-    }
-
-    if (typeof a === "number" && typeof b === "number") {
-
-        ans = opfn(a, b);
-        // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
-        if ((ans > Sk.builtin.int_.threshold$ || ans < -Sk.builtin.int_.threshold$) && Math.floor(ans) === ans) {
-            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
-        } else {
-            return ans;
-        }
-    } else if (a === undefined || b === undefined) {
-        throw new Sk.builtin.NameError("Undefined variable in expression");
-    }
-
-    if (a.constructor === Sk.builtin.lng) {
-        return [a, b];
-    } else if ((a.constructor === Sk.builtin.int_ || a.constructor === Sk.builtin.float_) && b.constructor === Sk.builtin.complex) {
-        // special case of upconverting nmber and complex
-        // can we use here the Sk.builtin.checkComplex() method?
-        tmp = new Sk.builtin.complex(a.v);
-        return [tmp, b];
-    } else if (a.constructor === Sk.builtin.int_ || a.constructor === Sk.builtin.float_) {
-        return [a, b];
-    } else if (typeof a === "number") {
-        tmp = Sk.builtin.assk$(a);
-        return [tmp, b];
-    } else {
-        return undefined;
-    }
-};
-
-Sk.abstr.boNumPromote_ = {
-    Add: function (a, b) {
-        return a + b;
-    },
-    Sub: function (a, b) {
-        return a - b;
-    },
-    Mult: function (a, b) {
-        return a * b;
-    },
-    Mod: function (a, b) {
-        var m;
-        if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
-        }
-        m = a % b;
-        return m * b < 0 ? m + b : m;
-    },
-    Div: function (a, b) {
-        if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
-        } else {
-            return a / b;
-        }
-    },
-    FloorDiv: function (a, b) {
-        if (b === 0) {
-            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
-        } else {
-            return Math.floor(a / b);
-        } // todo; wrong? neg?
-    },
-    Pow: Math.pow,
-    BitAnd: function (a, b) {
-        var m = a & b;
-        if (m < 0) {
-            m = m + 4294967296; // convert back to unsigned
-        }
-        return m;
-    },
-    BitOr: function (a, b) {
-        var m = a | b;
-        if (m < 0) {
-            m = m + 4294967296; // convert back to unsigned
-        }
-        return m;
-    },
-    BitXor: function (a, b) {
-        var m = a ^ b;
-        if (m < 0) {
-            m = m + 4294967296; // convert back to unsigned
-        }
-        return m;
-    },
-    LShift: function (a, b) {
-        var m;
-        if (b < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
-        }
-        m = a << b;
-        if (m > a) {
-            return m;
-        } else {
-            // Fail, this will get recomputed with longs
-            return a * Math.pow(2, b);
-        }
-    },
-    RShift: function (a, b) {
-        var m;
-        if (b < 0) {
-            throw new Sk.builtin.ValueError("negative shift count");
-        }
-        m = a >> b;
-        if (a > 0 && m < 0) {
-            // fix incorrect sign extension
-            m = m & (Math.pow(2, 32 - b) - 1);
-        }
-        return m;
-    },
-};
 
 Sk.abstr.numberBinOp = function (v, w, op) {
-    if (v.ob$type !== w.ob$type) {
-        tmp_v, tmp_w = Sk.abstr.numOpAndPromote(v, w);
-    }
     return Sk.abstr.binary_op_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
-Sk.abstr.numberInplaceBinOp = function (v, w, op) {
-    var tmp;
-    var numPromoteFunc = Sk.abstr.boNumPromote_[op];
-    if (numPromoteFunc !== undefined) {
-        tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
-        if (typeof tmp === "number") {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
-            return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
-            return tmp;
-        } else if (tmp !== undefined) {
-            v = tmp[0];
-            w = tmp[1];
-        }
-    }
 
+Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     return Sk.abstr.binary_iop_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
-Sk.abstr.numberUnaryOp = function (v, op) {
-    var value;
-    if (op === "Not") {
-        return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    } else if (v instanceof Sk.builtin.bool) {
-        value = Sk.builtin.asnum$(v);
-        if (op === "USub") {
-            return new Sk.builtin.int_(-value);
-        }
-        if (op === "UAdd") {
-            return new Sk.builtin.int_(value);
-        }
-        if (op === "Invert") {
-            return new Sk.builtin.int_(~value);
-        }
-    } else {
-        if (op === "USub" && v.nb$negative) {
-            return v.nb$negative();
-        }
-        if (op === "UAdd" && v.nb$positive) {
-            return v.nb$positive();
-        }
-        if (op === "Invert" && v.nb$invert) {
-            return v.nb$invert();
-        }
-    }
 
+Sk.abstr.numberUnaryOp = function (v, op) {
     return Sk.abstr.unary_op_(v, op);
 };
 Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
@@ -756,7 +574,6 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
-    Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to gattr");
     // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
     const ret = obj.tp$getattr(pyName, canSuspend, jsMangled);
     if (ret === undefined) {
@@ -777,7 +594,6 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend, jsMangled) {
-    Sk.asserts.assert(obj != null && obj.sk$object, "invalid object passed to sattr");
     return obj.tp$setattr(pyName, data, canSuspend, jsMangled);
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);

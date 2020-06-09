@@ -15,61 +15,17 @@
  * @return {Sk.builtin.float_} Python float
  */
 Sk.builtin.float_ = function (x) {
-    Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float_ use 'new'");
-    var tmp;
+    Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
     if (typeof x === "number") {
         this.v = x;
     } else if (typeof x === "string") {
+        // be careful with converting a string as it could result in infinity
         this.v = parseFloat(x);
-        if (this.v == Infinity || this.v == -Infinity) {
-            //trying to convert a large js string to a float
-            throw new Sk.builtin.OverflowError("int too large to convert to float");
-        }
-        return this;
     } else if (x === undefined) {
         this.v = 0.0;
     } else {
-        Sk.asserts.fail("bad argument to float_ constructor");
+        Sk.asserts.fail("bad argument to float constructor");
     }
-
-    if (x instanceof Sk.builtin.str) {
-        return Sk.builtin._str_to_float.call(this, x.v);
-    }
-
-    // Floats are just numbers
-    if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
-        tmp = Sk.builtin.asnum$(x);
-        if (typeof tmp === "string") {
-            return Sk.builtin._str_to_float.call(this, tmp);
-        }
-        this.v = tmp;
-        return this;
-    }
-
-    // Convert booleans
-    if (x instanceof Sk.builtin.bool) {
-        this.v = Sk.builtin.asnum$(x);
-        return this;
-    }
-
-    // this is a special internal case (when????)
-    if (typeof x === "boolean") {
-        this.v = x ? 1.0 : 0.0;
-        return this;
-    }
-
-    if (typeof x === "string") {
-
-    }
-
-    // try calling __float__
-    var special = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$float_);
-    if (special !== undefined) {
-        // method on builtin, provide this arg
-        return Sk.misceval.callsimArray(special, [x]);
-    }
-
-    throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_);
@@ -84,39 +40,43 @@ Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
     } else if (args && args.length > 1) {
         throw new Sk.builtin.TypeError("float expected at most 1 arguments, got " + args.length);
     }
+    const arg = args[0];
+    let x;
     // is args always an empty list?
+    if (arg.nb$float_) {
+        x = arg.nb$float_();
+    } else if (Sk.builtin.checkString(arg)) {
+        x = _str_to_float(arg);
+    }
+    if (x === undefined) {
+        throw new Sk.builtin.TypeError("float() argument must be a string or a number");
+    }
+
     if (this === Sk.builtin.float_.prototype) {
-        return new Sk.builtin.float_(args[0]);
+        return new Sk.builtin.float_(x);
     } else {
         const instance = new this.constructor();
-        Sk.builtin.float_.call(instance, args[0]);
+        Sk.builtin.float_.call(instance, x);
         return instance;
     }
 };
 
-Sk.builtin._str_to_float = function (str) {
-    var tmp;
-
+function _str_to_float(str) {
     if (str.match(/^-inf$/i)) {
-        tmp = -Infinity;
+        return -Infinity;
     } else if (str.match(/^[+]?inf$/i)) {
-        tmp = Infinity;
+        return Infinity;
     } else if (str.match(/^[-+]?nan$/i)) {
-        tmp = NaN;
+        return NaN;
     } else if (!isNaN(str)) {
-        tmp = parseFloat(str);
-        if (tmp === Infinity || tmp === -Infinity) {
-            throw new Sk.builtin.OverflowError("int too large to convert to float");
-        }
+        return parseFloat(str);
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
     }
-    return Sk.builtin.float_.call(this, tmp);
-};
+}
 
 Sk.builtin.float_.prototype.nb$int_ = function () {
-    var v = this.v;
-
+    let v = this.v;
     if (v < 0) {
         v = Math.ceil(v);
     } else {
@@ -134,9 +94,9 @@ Sk.builtin.float_.prototype.nb$float_ = function () {
     return this;
 };
 
-Sk.builtin.float_.prototype.nb$lng = function () {
-    return new Sk.builtin.lng(this.v);
-};
+// Sk.builtin.float_.prototype.nb$lng = function () {
+//     return new Sk.builtin.lng(this.v);
+// };
 
 /**
  * Checks for float subtypes, though skulpt does not allow to
@@ -222,17 +182,6 @@ Sk.builtin.float_.prototype.tp$hash = function () {
 };
 
 /**
- * Returns a copy of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.float_} The copy
- */
-Sk.builtin.float_.prototype.clone = function () {
-    return new Sk.builtin.float_(this.v);
-};
-
-/**
  * Returns this instance's value as a string formatted using fixed-point notation.
  *
  * Javascript function, returns Javascript object.
@@ -250,9 +199,9 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
     const v = this.v;
     const w = other.v;
     if (typeof w === "number") {
-        return new Sk.builtin.float(v + w);
+        return new Sk.builtin.float_(v + w);
     } else if (w instanceof JSBI) {
-        return new Sk.builtin.float(v + w.toNumber());
+        return new Sk.builtin.float_(v + fromBigIntToNumberOrOverflow(w));
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
@@ -261,9 +210,20 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
     const v = this.v;
     const w = other.v;
     if (typeof w === "number") {
-        return new Sk.builtin.float(v - w);
+        return new Sk.builtin.float_(v - w);
     } else if (w instanceof JSBI) {
-        return new Sk.builtin.float(v - w.toNumber());
+        return new Sk.builtin.float_(v - fromBigIntToNumberOrOverflow(w));
+    }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return new Sk.builtin.float_(w - v);
+    } else if (w instanceof JSBI) {
+        return new Sk.builtin.float_(fromBigIntToNumberOrOverflow(w) - v);
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
@@ -272,99 +232,113 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
     const v = this.v;
     const w = other.v;
     if (typeof w === "number") {
-        return new Sk.builtin.float(v * w);
+        return new Sk.builtin.float_(v * w);
     } else if (w instanceof JSBI) {
-        return new Sk.builtin.float(v * w.toNumber());
+        return new Sk.builtin.float_(v * fromBigIntToNumberOrOverflow(w));
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+function divide(v, w) {
+    if (w === 0) {
+        throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+    }
+    if (v === Infinity) {
+        if (w === Infinity || v === -Infinity) {
+            return new Sk.builtin.float_(NaN);
+        } else if (w < 0) {
+            return new Sk.builtin.float_(-Infinity);
+        } else {
+            return new Sk.builtin.float_(Infinity);
+        }
+    }
+    if (v === -Infinity) {
+        if (w === Infinity || v === -Infinity) {
+            return new Sk.builtin.float_(NaN);
+        } else if (w < 0) {
+            return new Sk.builtin.float_(Infinity);
+        } else {
+            return new Sk.builtin.float_(-Infinity);
+        }
+    }
+    return new Sk.builtin.float_(v / w);
+}
 
 /** @override */
 Sk.builtin.float_.prototype.nb$divide = function (other) {
     const v = this.v;
     const w = other.v;
-    if (w instanceof JSBI) {
-        w = new Sk.builtin.float(w.toString()).v; // this will throw an overflow error. 
-    }
     if (typeof w === "number") {
-        if (w === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-        if (v === Infinity) {
-            if (w === Infinity || v === -Infinity) {
-                return new Sk.builtin.float_(NaN);
-            } else if (w < 0) {
-                return new Sk.builtin.float_(-Infinity);
-            } else {
-                return new Sk.builtin.float_(Infinity);
-            }
-        }  
-        if (v === -Infinity) {
-            if (w === Infinity || v === -Infinity) {
-                return new Sk.builtin.float_(NaN);
-            } else if (w < 0) {
-                return new Sk.builtin.float_(Infinity);
-            } else {
-                return new Sk.builtin.float_(-Infinity);
-            }
-        }
-        return new Sk.builtin.float(v / w);
+        return divide(v, w);
+    } else if (w instanceof JSBI) {
+        return divide(v, fromBigIntToNumberOrOverflow(w));
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
-
 };
+
+Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return divide(w, v);
+    } else if (w instanceof JSBI) {
+        return divide(fromBigIntToNumberOrOverflow(w), v);
+    }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+function floordivide(v, w) {
+    if (v === Infinity || v === -Infinity) {
+        return new Sk.builtin.float_(NaN);
+    }
+    if (w === 0) {
+        throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+    }
+
+    if (w === Infinity) {
+        if (v < 0) {
+            return new Sk.builtin.float_(-1);
+        } else {
+            return new Sk.builtin.float_(0);
+        }
+    }
+    if (w === -Infinity) {
+        if (v < 0 || v !== 0) {
+            return new Sk.builtin.float_(0);
+        } else {
+            return new Sk.builtin.float_(-1);
+        }
+    }
+    return new Sk.builtin.float_(Math.floor(v / w));
+}
 
 /** @override */
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        if (this.v === Infinity || this.v === -Infinity) {
-            return new Sk.builtin.float_(NaN);
-        }
-
-        if (other.v === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-
-        if (other.v === Infinity) {
-            if (this.nb$isnegative()) {
-                return new Sk.builtin.float_(-1);
-            } else {
-                return new Sk.builtin.float_(0);
-            }
-        }
-        if (other.v === -Infinity) {
-            if (this.nb$isnegative() || !this.nb$bool()) {
-                return new Sk.builtin.float_(0);
-            } else {
-                return new Sk.builtin.float_(-1);
-            }
-        }
-
-        return new Sk.builtin.float_(Math.floor(this.v / other.v));
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return floordivide(v, w);
+    } else if (w instanceof JSBI) {
+        return floordivide(v, fromBigIntToNumberOrOverflow(w));
     }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
 
-    if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-
-        if (this.v === Infinity || this.v === -Infinity) {
-            return new Sk.builtin.float_(NaN);
-        }
-
-        return new Sk.builtin.float_(Math.floor(this.v / parseFloat(other.str$(10, true))));
+Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return floordivide(w, v);
+    } else if (w instanceof JSBI) {
+        return floordivide(fromBigIntToNumberOrOverflow(w), v);
     }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$remainder = function (other) {
-    var thisAsLong;
     var op2;
     var tmp;
-    var result;
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         if (other.v === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
@@ -802,7 +776,7 @@ Sk.builtin.float_.prototype.tp$methods = {
     //     $doc: "Return the Integral closest to x between 0 and x.",
     // },
     __round__: {
-        $meth: function(ndigits) {
+        $meth: function (ndigits) {
             return this.round$(ndigits);
         },
         $flags: { MinArgs: 0, MaxArgs: 1 },
@@ -845,3 +819,13 @@ Sk.builtin.float_.prototype.tp$methods = {
 Sk.abstr.setUpMethods(Sk.builtin.float_);
 
 Sk.builtin.float_.py2$methods = {};
+
+
+function fromBigIntToNumberOrOverflow(big) {
+    const x = parseFloat(JSBI.toNumber(big));
+    if (x == Infinity || x == -Infinity) {
+        //trying to convert a large js string to a float
+        throw new Sk.builtin.OverflowError("int too large to convert to float");
+    }
+    return x;
+};

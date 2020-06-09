@@ -871,7 +871,6 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             this.annotateSource(e);
             return result;
         case Sk.astnodes.Num:
-            debugger;
             if (typeof e.n === "number") {
                 return e.n;
             } else if (e.n instanceof Sk.builtin.int_) {
