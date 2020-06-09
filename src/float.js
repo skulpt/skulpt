@@ -48,31 +48,34 @@ Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
     } else if (Sk.builtin.checkString(arg)) {
         x = _str_to_float(arg);
     }
+
     if (x === undefined) {
         throw new Sk.builtin.TypeError("float() argument must be a string or a number");
     }
 
     if (this === Sk.builtin.float_.prototype) {
-        return new Sk.builtin.float_(x);
+        return x;
     } else {
         const instance = new this.constructor();
-        Sk.builtin.float_.call(instance, x);
+        instance.v = x.v;
         return instance;
     }
 };
 
 function _str_to_float(str) {
+    let ret;
     if (str.match(/^-inf$/i)) {
-        return -Infinity;
+        ret = -Infinity;
     } else if (str.match(/^[+]?inf$/i)) {
-        return Infinity;
+        ret = Infinity;
     } else if (str.match(/^[-+]?nan$/i)) {
-        return NaN;
+        ret = NaN;
     } else if (!isNaN(str)) {
-        return parseFloat(str);
+        ret = parseFloat(str);
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
     }
+    return new Sk.builtin.float_(ret);
 }
 
 Sk.builtin.float_.prototype.nb$int_ = function () {
@@ -86,8 +89,11 @@ Sk.builtin.float_.prototype.nb$int_ = function () {
     if (!Number.isInteger(v)) {
         throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
     }
-    // this should take care of int/long fitting
-    return new Sk.builtin.int_(v);
+    if (Sk.builtin.int_.withingThreshold(v)) {
+        return new Sk.builtin.int_(v);
+    } else {
+        return new Sk.builtin.int_(JSBI.BigInt(v));
+    }
 };
 
 Sk.builtin.float_.prototype.nb$float_ = function () {

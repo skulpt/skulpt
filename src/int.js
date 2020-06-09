@@ -1,4 +1,3 @@
-
 /**
  * @constructor
  * Sk.builtin.int_
@@ -30,7 +29,7 @@ Sk.builtin.int_.prototype.tp$doc =
 
 Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
     let x, base;
-    if (args.length + (kwargs ? kwargs.length: 0) === 1) {
+    if (args.length + (kwargs ? kwargs.length : 0) === 1) {
         x = args[0];
         base = Sk.builtin.none.none$;
     } else {
@@ -38,13 +37,13 @@ Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
         x = args[0];
         base = args[1];
     }
-    const jsInt = getJsInt(x, base);
+    x = getInt(x, base);
 
     if (this === Sk.builtin.int_.prototype) {
-        return new Sk.builtin.int_(jsInt);
+        return x;
     } else {
         const instance = new this.constructor();
-        Sk.builtin.int_.call(instance, jsInt);
+        instance.v = x.v;
         return instance;
     }
 };
@@ -67,10 +66,9 @@ Sk.builtin.int_.prototype.nb$float_ = function () {
             //trying to convert a large js string to a float
             throw new Sk.builtin.OverflowError("int too large to convert to float");
         }
-        return new Sk.builtin.float_(x); 
+        return new Sk.builtin.float_(x);
     }
 };
-
 
 /**
  * Return this instance's Javascript value.
@@ -88,7 +86,7 @@ Sk.builtin.int_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really
     //care every number can be an int.
     return this;
-    // todo we shouldn't really have hashes so big for longs... 
+    // todo we shouldn't really have hashes so big for longs...
 };
 
 /**
@@ -667,7 +665,7 @@ Sk.builtin.int_.prototype.tp$methods = {
         $meth: function () {
             return this;
         },
-        $flags: {OneArg: true},
+        $flags: { OneArg: true },
         $textsig: null,
         $doc: "Returns self, the complex conjugate of any int.",
     },
@@ -675,7 +673,7 @@ Sk.builtin.int_.prototype.tp$methods = {
         $meth: function () {
             throw new Sk.builtin.NotImplementedError("Not yet implemented in Skulpt");
         },
-        $flags: {NoArgs: true},
+        $flags: { NoArgs: true },
         $textsig: "($self, /)",
         $doc: "Number of bits necessary to represent self in binary.\n\n>>> bin(37)\n'0b100101'\n>>> (37).bit_length()\n6",
     },
@@ -683,7 +681,7 @@ Sk.builtin.int_.prototype.tp$methods = {
         $meth: function () {
             throw new Sk.builtin.NotImplementedError("Not yet implemented in Skulpt");
         },
-        $flags: {FastCall: true},
+        $flags: { FastCall: true },
         $textsig: "($self, /, length, byteorder, *, signed=False)",
         $doc:
             "Return an array of bytes representing an integer.\n\n  length\n    Length of bytes object to use.  An OverflowError is raised if the\n    integer is not representable with the given number of bytes.\n  byteorder\n    The byte order used to represent the integer.  If byteorder is 'big',\n    the most significant byte is at the beginning of the byte array.  If\n    byteorder is 'little', the most significant byte is at the end of the\n    byte array.  To request the native byte order of the host system, use\n    `sys.byteorder' as the byte order value.\n  signed\n    Determines whether two's complement is used to represent the integer.\n    If signed is False and a negative integer is given, an OverflowError\n    is raised.",
@@ -759,8 +757,6 @@ Sk.longFromStr = function (s) {
 };
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
-
-
 /* jslint nomen: true, bitwise: true */
 /* global Sk: true */
 
@@ -770,6 +766,8 @@ function withinThreshold(v) {
     }
     return v <= Number.MAX_SAFE_INTEGER && v >= -Number.MAX_SAFE_INTEGER;
 }
+
+Sk.builtin.int_.withingThreshold = withinThreshold;
 
 function convertIfSafe(v) {
     const s = v.toString();
@@ -826,7 +824,7 @@ function bigIntCompare(v, w, op) {
     }
 }
 
-function getJsInt (x, base) {
+function getInt(x, base) {
     let func, res;
     // if base is not of type int, try calling .__index__
     if (base !== Sk.builtin.none.none$) {
@@ -840,25 +838,26 @@ function getJsInt (x, base) {
         if (base === null) {
             base = 10;
         }
-        return Sk.str2number(x.v, base);
+        return new Sk.builtin.int_(Sk.str2number(x.v, base));
     } else if (base !== null) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     } else if (x.nb$int_) {
         // nb$int_ slot_wrapper takes care of checking nb$int
         // but it might be undefined if it's multiple inheritance
         res = x.nb$int_();
+        if (res !== undefined) {
+            return res;
+        }
     }
 
-    if (res === undefined && (func = x.tp$getattr(Sk.builtin.str.$trunc))) {
+    if ((func = x.tp$getattr(Sk.builtin.str.$trunc))) {
         res = Sk.misceval.callsimArray(func);
         // check return type of magic methods
         if (!Sk.builtin.checkInt(x)) {
             throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
         }
-        return res.v;
-    } else {
-        return res.v;
+        return res;
     }
 
     throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '" + Sk.abstr.typeName(x) + "'");
-};
+}
