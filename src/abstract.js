@@ -408,6 +408,9 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     }
     if (!kwargs.length && defaults === undefined) {
         return args;
+    } else if (nargs === 0) {
+        // a fast case
+        return defaults || [];
     }
     args = args.slice(0);//[...args]; // make a shallow copy of args
 

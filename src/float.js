@@ -335,128 +335,139 @@ Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+function remainder(v, w) {
+    if (w === 0) {
+        throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+    }
+    if (v === 0) {
+        return new Sk.builtin.float_(0);
+    }
+    if (w === Infinity) {
+        if (v === Infinity || this.v === -Infinity) {
+            return new Sk.builtin.float_(NaN);
+        } else if (v > 0) {
+            return new Sk.builtin.float_(v);
+        } else {
+            return new Sk.builtin.float_(Infinity);
+        }
+    }
+
+    //  Javacript logic on negatives doesn't work for Python... do this instead
+    tmp = v % w;
+
+    if (v < 0) {
+        if (w > 0 && tmp < 0) {
+            tmp = tmp + w;
+        }
+    } else {
+        if (w < 0 && tmp !== 0) {
+            tmp = tmp + w;
+        }
+    }
+    if (tmp === 0) {
+        if (w < 0) {
+            tmp = -0.0; // otherwise the sign gets lost by javascript modulo
+        } else if (Infinity / tmp === -Infinity) {
+            tmp = 0.0;
+        }
+    }
+    return new Sk.builtin.float_(tmp);
+}
+
 /** @override */
 Sk.builtin.float_.prototype.nb$remainder = function (other) {
-    var op2;
-    var tmp;
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        if (other.v === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-
-        if (this.v === 0) {
-            return new Sk.builtin.float_(0);
-        }
-
-        if (other.v === Infinity) {
-            if (this.v === Infinity || this.v === -Infinity) {
-                return new Sk.builtin.float_(NaN);
-            } else if (this.nb$ispositive()) {
-                return new Sk.builtin.float_(this.v);
-            } else {
-                return new Sk.builtin.float_(Infinity);
-            }
-        }
-
-        //  Javacript logic on negatives doesn't work for Python... do this instead
-        tmp = this.v % other.v;
-
-        if (this.v < 0) {
-            if (other.v > 0 && tmp < 0) {
-                tmp = tmp + other.v;
-            }
-        } else {
-            if (other.v < 0 && tmp !== 0) {
-                tmp = tmp + other.v;
-            }
-        }
-
-        if (other.v < 0 && tmp === 0) {
-            tmp = -0.0; // otherwise the sign gets lost by javascript modulo
-        } else if (tmp === 0 && Infinity / tmp === -Infinity) {
-            tmp = 0.0;
-        }
-
-        return new Sk.builtin.float_(tmp);
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return remainder(v, w);
+    } else if (w instanceof JSBI) {
+        return remainder(v, fromBigIntToNumberOrOverflow(w));
     }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
 
-    if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-        }
-
-        if (this.v === 0) {
-            return new Sk.builtin.float_(0);
-        }
-
-        op2 = parseFloat(other.str$(10, true));
-        tmp = this.v % op2;
-
-        if (tmp < 0) {
-            if (op2 > 0 && tmp !== 0) {
-                tmp = tmp + op2;
-            }
-        } else {
-            if (op2 < 0 && tmp !== 0) {
-                tmp = tmp + op2;
-            }
-        }
-
-        if (other.nb$isnegative() && tmp === 0) {
-            tmp = -0.0; // otherwise the sign gets lost by javascript modulo
-        } else if (tmp === 0 && Infinity / tmp === -Infinity) {
-            tmp = 0.0;
-        }
-
-        return new Sk.builtin.float_(tmp);
+Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        return remainder(w, v);
+    } else if (w instanceof JSBI) {
+        return remainder(fromBigIntToNumberOrOverflow(w), v);
     }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng) {
-        other = new Sk.builtin.float_(other);
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        // pass
+    } else if (w instanceof JSBI) {
+        w = fromBigIntToNumberOrOverflow(w);
+    } else {
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
-
-    if (other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.tuple([this.nb$floor_divide(other), this.nb$remainder(other)]);
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
+    return new Sk.builtin.tuple([floordivide(v,w), remainder(v,w)]);
 };
+
+
+
+Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        // pass
+    } else if (w instanceof JSBI) {
+        w = fromBigIntToNumberOrOverflow(w);
+    } else {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    return new Sk.builtin.tuple([floordivide(w,v), remainder(w,v)]);
+};
+
+function power (v, w) {
+    if (v < 0 && w % 1 !== 0) {
+        throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
+    }
+    if (v === 0 && w < 0) {
+        throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
+    }
+
+    result = Math.pow(v,w);
+
+    if (Math.abs(result) === Infinity && Math.abs(v) !== Infinity && Math.abs(w) !== Infinity) {
+        throw new Sk.builtin.OverflowError("Numerical result out of range");
+    }
+    return new Sk.builtin.float_(result); 
+}
 
 /** @override */
 Sk.builtin.float_.prototype.nb$power = function (other, mod) {
-    var thisAsLong;
-    var result;
-
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        if (this.v < 0 && other.v % 1 !== 0) {
-            throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
-        }
-        if (this.v === 0 && other.v < 0) {
-            throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
-        }
-
-        result = new Sk.builtin.float_(Math.pow(this.v, other.v));
-
-        if (Math.abs(result.v) === Infinity && Math.abs(this.v) !== Infinity && Math.abs(other.v) !== Infinity) {
-            throw new Sk.builtin.OverflowError("Numerical result out of range");
-        }
-        return result;
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        // pass
+    } else if (w instanceof JSBI) {
+        w = fromBigIntToNumberOrOverflow(w);
+    } else {
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
+    return power(v, w);
+};
 
-    if (other instanceof Sk.builtin.lng) {
-        if (this.v === 0 && other.longCompare(Sk.builtin.biginteger.ZERO) < 0) {
-            throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
-        }
 
-        return new Sk.builtin.float_(Math.pow(this.v, parseFloat(other.str$(10, true))));
+Sk.builtin.float_.prototype.nb$reflected_power = function (other, mod) {
+    const v = this.v;
+    const w = other.v;
+    if (typeof w === "number") {
+        // pass
+    } else if (w instanceof JSBI) {
+        w = fromBigIntToNumberOrOverflow(w);
+    } else {
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
+    return power(w, v);
 };
 
 /** @override */
@@ -475,7 +486,7 @@ Sk.builtin.float_.prototype.nb$negative = function () {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$positive = function () {
-    return this.clone();
+    return this;
 };
 
 /** @override */
@@ -820,7 +831,6 @@ Sk.abstr.setUpMethods(Sk.builtin.float_);
 
 Sk.builtin.float_.py2$methods = {};
 
-
 function fromBigIntToNumberOrOverflow(big) {
     const x = parseFloat(JSBI.toNumber(big));
     if (x == Infinity || x == -Infinity) {
@@ -828,4 +838,4 @@ function fromBigIntToNumberOrOverflow(big) {
         throw new Sk.builtin.OverflowError("int too large to convert to float");
     }
     return x;
-};
+}
