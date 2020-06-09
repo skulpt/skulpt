@@ -194,50 +194,37 @@ Sk.builtin.float_.prototype.toFixed = function (x) {
     return this.v.toFixed(x);
 };
 
+function numberSlot(f) {
+    return function (other) {
+        const v = this.v;
+        const w = other.v;
+        if (typeof w === "number") {
+            // pass
+        } else if (w instanceof JSBI) {
+            w = fromBigIntToNumberOrOverflow(w);
+        } else {
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        }
+        return f(v, w);
+    };
+}
+
 /** @override */
-Sk.builtin.float_.prototype.nb$add = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return new Sk.builtin.float_(v + w);
-    } else if (w instanceof JSBI) {
-        return new Sk.builtin.float_(v + fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$add = numberSlot((v, w) => {
+    return new Sk.builtin.float_(v + w);
+});
 
-Sk.builtin.float_.prototype.nb$subtract = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return new Sk.builtin.float_(v - w);
-    } else if (w instanceof JSBI) {
-        return new Sk.builtin.float_(v - fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$subtract = numberSlot((v, w) => {
+    return new Sk.builtin.float_(v - w);
+});
 
-Sk.builtin.float_.prototype.nb$reflected_subtract = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return new Sk.builtin.float_(w - v);
-    } else if (w instanceof JSBI) {
-        return new Sk.builtin.float_(fromBigIntToNumberOrOverflow(w) - v);
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$reflected_subtract = numberSlot((v, w) => {
+    return new Sk.builtin.float_(w - v);
+});
 
-Sk.builtin.float_.prototype.nb$multiply = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return new Sk.builtin.float_(v * w);
-    } else if (w instanceof JSBI) {
-        return new Sk.builtin.float_(v * fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$multiply = numberSlot((v, w) => {
+    return new Sk.builtin.float_(v * w);
+});
 
 function divide(v, w) {
     if (w === 0) {
@@ -265,27 +252,11 @@ function divide(v, w) {
 }
 
 /** @override */
-Sk.builtin.float_.prototype.nb$divide = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return divide(v, w);
-    } else if (w instanceof JSBI) {
-        return divide(v, fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$divide = numberSlot(divide);
 
-Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return divide(w, v);
-    } else if (w instanceof JSBI) {
-        return divide(fromBigIntToNumberOrOverflow(w), v);
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$reflected_divide = numberSlot((v, w) => {
+    return divide(w, v);
+});
 
 function floordivide(v, w) {
     if (v === Infinity || v === -Infinity) {
@@ -313,27 +284,11 @@ function floordivide(v, w) {
 }
 
 /** @override */
-Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return floordivide(v, w);
-    } else if (w instanceof JSBI) {
-        return floordivide(v, fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$floor_divide = numberSlot(floordivide);
 
-Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return floordivide(w, v);
-    } else if (w instanceof JSBI) {
-        return floordivide(fromBigIntToNumberOrOverflow(w), v);
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$reflected_floor_divide = numberSlot((v, w) => {
+    return floordivide(w, v);
+});
 
 function remainder(v, w) {
     if (w === 0) {
@@ -375,58 +330,22 @@ function remainder(v, w) {
 }
 
 /** @override */
-Sk.builtin.float_.prototype.nb$remainder = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return remainder(v, w);
-    } else if (w instanceof JSBI) {
-        return remainder(v, fromBigIntToNumberOrOverflow(w));
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$remainder = numberSlot(remainder);
 
-Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        return remainder(w, v);
-    } else if (w instanceof JSBI) {
-        return remainder(fromBigIntToNumberOrOverflow(w), v);
-    }
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
+Sk.builtin.float_.prototype.nb$reflected_remainder = numberSlot((v, w) => {
+    return remainder(w, v);
+});
 
 /** @override */
-Sk.builtin.float_.prototype.nb$divmod = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        // pass
-    } else if (w instanceof JSBI) {
-        w = fromBigIntToNumberOrOverflow(w);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-    return new Sk.builtin.tuple([floordivide(v,w), remainder(v,w)]);
-};
+Sk.builtin.float_.prototype.nb$divmod = numberSlot((v, w) => {
+    return new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)]);
+});
 
+Sk.builtin.float_.prototype.nb$reflected_divmod = Sk.builtin.float_.prototype.nb$divmod = numberSlot((v, w) => {
+    return new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)]);
+});
 
-
-Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        // pass
-    } else if (w instanceof JSBI) {
-        w = fromBigIntToNumberOrOverflow(w);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-    return new Sk.builtin.tuple([floordivide(w,v), remainder(w,v)]);
-};
-
-function power (v, w) {
+function power(v, w) {
     if (v < 0 && w % 1 !== 0) {
         throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
     }
@@ -434,41 +353,21 @@ function power (v, w) {
         throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
     }
 
-    result = Math.pow(v,w);
+    result = Math.pow(v, w);
 
     if (Math.abs(result) === Infinity && Math.abs(v) !== Infinity && Math.abs(w) !== Infinity) {
         throw new Sk.builtin.OverflowError("Numerical result out of range");
     }
-    return new Sk.builtin.float_(result); 
+    return new Sk.builtin.float_(result);
 }
 
 /** @override */
-Sk.builtin.float_.prototype.nb$power = function (other, mod) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        // pass
-    } else if (w instanceof JSBI) {
-        w = fromBigIntToNumberOrOverflow(w);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-    return power(v, w);
-};
+// currently doesn't support mod
+Sk.builtin.float_.prototype.nb$power = numberSlot(power);
 
-
-Sk.builtin.float_.prototype.nb$reflected_power = function (other, mod) {
-    const v = this.v;
-    const w = other.v;
-    if (typeof w === "number") {
-        // pass
-    } else if (w instanceof JSBI) {
-        w = fromBigIntToNumberOrOverflow(w);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
+Sk.builtin.float_.prototype.nb$reflected_power = numberSlot((v, w) => {
     return power(w, v);
-};
+});
 
 /** @override */
 Sk.builtin.float_.prototype.nb$abs = function () {
