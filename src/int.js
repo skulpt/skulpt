@@ -53,7 +53,7 @@ Sk.builtin.int_.prototype.tp$new = function (args, kwargs) {
  */
 
 Sk.builtin.int_.prototype.nb$int_ = function () {
-    return this;
+    return new Sk.builtin.int_(this.v);
 };
 
 Sk.builtin.int_.prototype.nb$float_ = function () {
@@ -78,14 +78,14 @@ Sk.builtin.int_.prototype.nb$float_ = function () {
  * @return {number} This instance's value.
  */
 Sk.builtin.int_.prototype.nb$index = function () {
-    return this.v;
+    return new Sk.builtin.int_(this.v);
 };
 
 /** @override */
 Sk.builtin.int_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really
     //care every number can be an int.
-    return this;
+    return new Sk.builtin.int_(this.v);
     // todo we shouldn't really have hashes so big for longs...
 };
 
@@ -354,11 +354,12 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
         let v = this.v;
         let w = other.v;
         if (v === 0) {
-            return this;
+            return new Sk.builtin.int_(this.v);
         }
         if (typeof v === "number") {
             v = JSBI.BigInt(v);
-        } else if (typeof w === "number") {
+        } 
+        if (typeof w === "number") {
             w = JSBI.BigInt(w);
         }
         return new Sk.builtin.int_(convertIfSafe(JSBI.leftShift(v, w)));
@@ -382,7 +383,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
         let w = other.v;
         if (v === 0) {
             // we don't need to check bigInt here because we will always have a number as zero
-            return this;
+            return new Sk.builtin.int_(v);
         }
         if (typeof v === "number" && typeof w === "number") {
             let tmp = v >> w;
@@ -396,7 +397,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
         }
         v = bigUp(v);
         w = bigUp(w);
-        return new Sk.builtin.int_(convertIfSafe(JSBI.rightShift(v, w)));
+        return new Sk.builtin.int_(convertIfSafe(JSBI.signedRightShift(v, w)));
     }
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
@@ -436,7 +437,7 @@ Sk.builtin.int_.prototype.nb$positive = function () {
 
 /** @override */
 Sk.builtin.int_.prototype.nb$bool = function () {
-    return this.v !== 0; // should be fine not to check BigInt here
+    return new Sk.builtin.bool(this.v !== 0); // should be fine not to check BigInt here
 };
 
 /** @override */
@@ -464,7 +465,7 @@ Sk.builtin.int_.prototype.tp$richcompare = function (other, op) {
     let v = this.v;
     let w = other.v;
     if (v === w) {
-        res = 0;
+        return numberCompare(0, 0, op);
     } else if (typeof v === "number" && typeof w === "number") {
         return numberCompare(v - w, 0, op);
     } else {
@@ -489,12 +490,8 @@ Sk.builtin.int_.prototype.round$ = function (ndigits) {
     if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
-    return this;
+    return new Sk.builtin.int_(this.v);
 };
-
-Sk.builtin.int_.prototype.conjugate = new Sk.builtin.func(function (self) {
-    return this;
-});
 
 /** @override */
 Sk.builtin.int_.prototype.$r = function () {
@@ -548,7 +545,6 @@ Sk.str2number = function (s, base) {
         i,
         ch,
         val;
-
     // strip whitespace from ends
     // s = s.trim();
     s = s.replace(/^\s+|\s+$/g, "");
@@ -637,12 +633,11 @@ Sk.str2number = function (s, base) {
     if (neg) {
         s = "-" + s;
     }
-    val = JSBI.BigInt(s);
-    val = val.toString(base);
+    val = parseInt(s, base);
     if (withinThreshold(val)) {
-        return +val; // will convert our string to a number
+        return val; // will convert our string to a number
     }
-    return JSBI.BigInt(val);
+    return fromStrToBigWithBase(s, base);
 };
 
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
@@ -650,7 +645,7 @@ Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
 Sk.builtin.int_.prototype.tp$getsets = {
     real: {
         $get: function () {
-            return this;
+            return new Sk.builtin.int_(this.v);
         },
     },
     imag: {
@@ -663,9 +658,9 @@ Sk.builtin.int_.prototype.tp$getsets = {
 Sk.builtin.int_.prototype.tp$methods = {
     conjugate: {
         $meth: function () {
-            return this;
+            return new Sk.builtin.int_(this.v);
         },
-        $flags: { OneArg: true },
+        $flags: { NoArgs: true },
         $textsig: null,
         $doc: "Returns self, the complex conjugate of any int.",
     },
@@ -688,7 +683,7 @@ Sk.builtin.int_.prototype.tp$methods = {
     },
     __trunc__: {
         $meth: function () {
-            return this;
+            return new Sk.builtin.int_(this.v);
         },
         $flags: { NoArgs: true },
         $textsig: null,
@@ -696,7 +691,7 @@ Sk.builtin.int_.prototype.tp$methods = {
     },
     __floor__: {
         $meth: function () {
-            return this;
+            return new Sk.builtin.int_(this.v);
         },
         $flags: { NoArgs: true },
         $textsig: null,
@@ -704,7 +699,7 @@ Sk.builtin.int_.prototype.tp$methods = {
     },
     __ceil__: {
         $meth: function () {
-            return this;
+            return new Sk.builtin.int_(this.v);
         },
         $flags: { NoArgs: true },
         $textsig: null,
@@ -767,7 +762,7 @@ function withinThreshold(v) {
     return v <= Number.MAX_SAFE_INTEGER && v >= -Number.MAX_SAFE_INTEGER;
 }
 
-Sk.builtin.int_.withingThreshold = withinThreshold;
+Sk.builtin.int_.withinThreshold = withinThreshold;
 
 function convertIfSafe(v) {
     const s = v.toString();
@@ -828,13 +823,12 @@ function getInt(x, base) {
     let func, res;
     // if base is not of type int, try calling .__index__
     if (base !== Sk.builtin.none.none$) {
-        Sk.misceval.asIndexOrThrow(base);
+        base = Sk.misceval.asIndexOrThrow(base);
     } else {
         base = null;
     }
 
     if (x instanceof Sk.builtin.str) {
-        base = Sk.builtin.asnum$(base);
         if (base === null) {
             base = 10;
         }
@@ -853,11 +847,38 @@ function getInt(x, base) {
     if ((func = x.tp$getattr(Sk.builtin.str.$trunc))) {
         res = Sk.misceval.callsimArray(func);
         // check return type of magic methods
-        if (!Sk.builtin.checkInt(x)) {
+        if (!Sk.builtin.checkInt(res)) {
             throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
         }
-        return res;
+        return new Sk.builtin.int_(res.v);
     }
 
     throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '" + Sk.abstr.typeName(x) + "'");
+}
+
+/**
+ *
+ * We don't need to check the string here since str2number did that for us
+ * @param {*} s
+ * @param {*} base
+ */
+function fromStrToBigWithBase(s, base) {
+    let neg = false;
+    if (s[0] === "-") {
+        neg = true;
+        s = s.substring(1);
+    }
+    base = JSBI.BigInt(base);
+    let power = JSBI.BigInt(1);
+    let num = JSBI.BigInt(0);
+    let toadd;
+    for (let i = s.length - 1; i >= 0; i--) {
+        toadd = JSBI.multiply(JSBI.BigInt(s[i]), power);
+        num = JSBI.add(num, toadd);
+        power = JSBI.multiply(power, base);
+    }
+    if (neg) {
+        return JSBI.BigInt("-" + num.toString());
+    }
+    return num;
 }

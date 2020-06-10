@@ -71,6 +71,30 @@ Sk.misceval.isIndex = function (o) {
 };
 Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
+/**
+ * @function
+ * 
+ * @description
+ * requires a pyObject - returns a string or integer depending on the size. 
+ * throws a generic error that the object cannot be interpreted as an index
+ */
+Sk.misceval.asIndexOrThrow = function (obj) {
+    let res;
+    if (obj.nb$index) {
+        res = obj.nb$index();
+    }
+    if (res !== undefined) {
+        const v = res.v;
+        if (typeof v === "number") {
+            return v;
+        } 
+        return v.toString(); // then we definitely have a JSBI.BigInt so return it as a string. 
+    }
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index");
+};
+
+
+
 Sk.misceval.asIndex = function (o) {
     var idxfn, ret;
 
@@ -339,10 +363,13 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         if (v_type === w_type) {
             if (v === w) {
                 return true;
-            } else if (v_type === Sk.builtin.int_ || v_type === Sk.builtin.float_ ) {
-                return v.numberCompare(w) === 0;
-            } else if (v_type === Sk.builtin.lng) {
-                return v.longCompare(w) === 0;
+            } else if (v_type === Sk.builtin.float_) {
+                return v.v - w.v === 0;
+            } else if (v_type === Sk.builtin.int_) {
+                if (typeof v.v === "number" && typeof v.v === "number") {
+                    return v.v === w.v;
+                }
+                return JSBI.equal(JSBI.BigInt(v.v), JSBI.BigInt(w.v));
             }
         }
         return false;
@@ -351,10 +378,13 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     if (op === "IsNot") {
         if (v_type !== w_type) {
             return true;
-        } else if (v_type === Sk.builtin.int_ || v_type === Sk.builtin.float_ ) {
-            return v.numberCompare(w) !== 0;
-        } else if (v_type === Sk.builtin.lng) {
-            return v.longCompare(w) !== 0;
+        } else if (v_type === Sk.builtin.float_) {
+            return v.v - w.v !== 0;
+        } else if (v_type === Sk.builtin.int_) {
+            if (typeof v.v === "number" && typeof v.v === "number") {
+                return v.v !== w.v;
+            }
+            return JSBI.notEqual(JSBI.BigInt(v.v), JSBI.BigInt(w.v));
         }
         return v !== w;
     }

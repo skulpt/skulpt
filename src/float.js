@@ -46,7 +46,7 @@ Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
     if (arg.nb$float_) {
         x = arg.nb$float_();
     } else if (Sk.builtin.checkString(arg)) {
-        x = _str_to_float(arg);
+        x = _str_to_float(arg.v);
     }
 
     if (x === undefined) {
@@ -89,7 +89,7 @@ Sk.builtin.float_.prototype.nb$int_ = function () {
     if (!Number.isInteger(v)) {
         throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
     }
-    if (Sk.builtin.int_.withingThreshold(v)) {
+    if (Sk.builtin.int_.withinThreshold(v)) {
         return new Sk.builtin.int_(v);
     } else {
         return new Sk.builtin.int_(JSBI.BigInt(v));
@@ -97,7 +97,7 @@ Sk.builtin.float_.prototype.nb$int_ = function () {
 };
 
 Sk.builtin.float_.prototype.nb$float_ = function () {
-    return this;
+    return new Sk.builtin.float_(this.v);
 };
 
 // Sk.builtin.float_.prototype.nb$lng = function () {
@@ -147,8 +147,8 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     let v = op.v;
     if (typeof v === "number") {
         return v;
-    } else if (op.nb$float) {
-        v = op.nb$float();
+    } else if (op.nb$float_) {
+        v = op.nb$float_();
     }
     if (v === undefined) {
         throw new Sk.builtin.TypeError("a float is required");
@@ -367,12 +367,12 @@ Sk.builtin.float_.prototype.nb$negative = function () {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$positive = function () {
-    return this;
+    return new Sk.builtin.float_(this.v);
 };
 
 /** @override */
 Sk.builtin.float_.prototype.nb$bool = function () {
-    return this.v !== 0;
+    return new Sk.builtin.bool(this.v !== 0);
 };
 
 /** @override */
@@ -644,7 +644,7 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 Sk.builtin.float_.prototype.tp$getsets = {
     real: {
         $get: function () {
-            return this;
+            return new Sk.builtin.float_(this.v);
         },
     },
     imag: {

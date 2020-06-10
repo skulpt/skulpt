@@ -884,8 +884,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return this.makeConstant("new Sk.builtin.float_(" + nStr + ")");
             } else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
-                var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
-                var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
+                var real_val = e.n.real === 0 && 1/e.n.real === -Infinity ? "-0" : e.n.real;
+                var imag_val = e.n.imag === 0 && 1/e.n.imag === -Infinity ? "-0" : e.n.imag;
                 return this.makeConstant("new Sk.builtin.complex(" + real_val + ", " + imag_val + ")");
             }
             Sk.asserts.fail("unhandled Num type");

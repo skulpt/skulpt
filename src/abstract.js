@@ -239,6 +239,9 @@ Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 
 Sk.abstr.numberUnaryOp = function (v, op) {
+    if (op === "Not") {
+        return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+    }
     return Sk.abstr.unary_op_(v, op);
 };
 Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);

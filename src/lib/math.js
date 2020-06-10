@@ -46,9 +46,9 @@ const $builtinmodule = function (name) {
         const _x = Sk.builtin.asnum$(x);
         const sign_x = get_sign(_x);
         const sign_y = get_sign(_y);
-        const sign = new Sk.builtin.int_(sign_x * sign_y);
+        const sign = sign_x * sign_y;
 
-        return new Sk.builtin.float_(Sk.abstr.numberBinOp(x, sign, "Mult"));
+        return new Sk.builtin.float_(_x*sign);
     };
 
     methods.fabs = function fabs(x) {

@@ -19,7 +19,11 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.",
         tp$hash: function () {
             // _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
-            return new Sk.builtin.int_(this.imag * 1000003 + this.real);
+            const v = this.imag * 1000003 + this.real;
+            if (Sk.builtin.int_.withinThreshold(v)) {
+                return new Sk.builtin.int_(parseInt(v));
+            }
+            return new Sk.builtin.int_(JSBI.BigInt(v));
         },
         tp$new: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs("complex", ["real", "imag"], args, kwargs, [null, null]);
@@ -32,10 +36,10 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
                 }
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
-            return numberSlot((a_real, a_imag, b_real, b_imag) => {
-                const equal = a_real === b_real && a_imag === b_imag;
+            return complexNumberSlot(function(a_real, a_imag, b_real, b_imag){
+                const equal = a_real == b_real && a_imag == b_imag;
                 return op === "Eq" ? equal : !equal;
-            })(w);
+            }, true).call(this, w);
         },
         $r: function () {
             return complex_format(this, null, "g");
@@ -49,7 +53,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             throw new Sk.builtin.TypeError("can't convert complex to float");
         },
         nb$positive: function () {
-            return this;
+            return new Sk.builtin.complex(this.real, this.imag);
         },
         nb$negative: function () {
             return new Sk.builtin.complex(-this.real, -this.imag);
@@ -57,20 +61,20 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         nb$bool: function () {
             return new Sk.builtin.bool(this.real || this.imag);
         },
-        nb$add: numberSlot((a_real, a_imag, b_real, b_imag) => {
+        nb$add: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return new Sk.builtin.complex(a_real + b_real, a_imag + b_imag);
         }),
-        nb$subtract: numberSlot((a_real, a_imag, b_real, b_imag) => {
+        nb$subtract: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return new Sk.builtin.complex(a_real - b_real, a_imag - b_imag);
         }),
-        nb$reflected_subtract: numberSlot((a_real, a_imag, b_real, b_imag) => {
+        nb$reflected_subtract: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return new Sk.builtin.complex(b_real - a_real, b_imag - a_imag);
         }),
-        nb$multiply: numberSlot((a_real, a_imag, b_real, b_imag) => {
+        nb$multiply: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return new Sk.builtin.complex(b_real * a_real - b_imag * a_imag, a_real * b_imag + a_imag * b_real);
         }),
-        nb$divide: numberSlot(divide),
-        nb$reflected_divide: numberSlot((a_real, a_imag, b_real, b_imag) => {
+        nb$divide: complexNumberSlot(divide),
+        nb$reflected_divide: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return divide(b_real, b_imag, a_real, a_imag);
         }),
         nb$floor_divide: function (other) {
@@ -92,7 +96,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             if (z != null && !Sk.builtin.checkNone(z)) {
                 throw new Sk.builtin.ValueError("complex modulo");
             }
-            return power(other);
+            return power.call(this, other);
         },
 
         nb$abs: function () {
@@ -134,7 +138,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
     methods: {
         conjugate: {
             $meth: function () {
-                new Sk.builtin.complex(this.real, -this.imag);
+                return new Sk.builtin.complex(this.real, -this.imag);
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -142,7 +146,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         },
         __getnewargs__: {
             $meth: function () {
-                new Sk.builtin.tuple([this.real, this.imag]);
+                return new Sk.builtin.tuple([new Sk.builtin.float_(this.real), new Sk.builtin.float_(this.imag)]);
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -156,7 +160,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
                 }
                 throw new Sk.builtin.TypeError("__format__ requires str");
             },
-            $flags: {OneArg: true},
+            $flags: { OneArg: true },
             $textsig: null,
             $doc: "complex.__format__() -> str\n\nConvert to a string according to format_spec.",
         },
@@ -183,40 +187,39 @@ Math.hypot =
         return Math.sqrt(y);
     };
 
-
 /**
  * @function
- * 
+ *
  * @description
  * returns a Number if the object passed as a __float__ method
  * Otherwise throws an error
- * 
- * @param {Sk.builtin.object} op 
+ *
+ * @param {Sk.builtin.object} op
  */
 function PyFloat_AsDouble(op) {
     let v = op.v;
     if (typeof v === "number") {
         return v;
-    } else if (op.nb$float) {
-        v = op.nb$float();
+    } else if (op.nb$float_) {
+        v = op.nb$float_();
     }
     if (v === undefined) {
         throw new Sk.builtin.TypeError("a float is required");
     }
-    return v;
+    return v.v;
 }
 
 /**
  * @function
- * 
+ *
  * @description
  * checks and tries the __complex__ method
  * throws an error if this returns a non complex object
  * returns null if that function does not exist
- * 
+ *
  * @return {null|Sk.builtin.complex}
- * 
- * @param {Sk.builtin.object} op 
+ *
+ * @param {Sk.builtin.object} op
  */
 function try_complex_special_method(op) {
     // the lookup special method does already all the magic
@@ -234,30 +237,29 @@ function try_complex_special_method(op) {
 
 /**
  * @function
- * 
+ *
  * @description
  * copied here for easy access
  * checks whether the argument is an instance of Sk.builtin.complex
- * 
+ *
  * @return {Boolean}
- * 
- * @param {Sk.builtin.object} op 
+ *
+ * @param {Sk.builtin.object} op
  */
-_complex_check = Sk.builtin.checkComplex;
-
+const _complex_check = Sk.builtin.checkComplex;
 
 /**
  * @function
- * 
+ *
  * @description
  * this is the logic for tp$new
- * 
+ *
  * @this {Sk.builtin.complex.prototype}
- * 
+ *
  * @return {Sk.builtin.complex}
- * 
+ *
  * @param {Sk.builtin.object|null} real
- * @param {Sk.builtin.object|null} imag 
+ * @param {Sk.builtin.object|null} imag
  */
 function complex_from_py(real, imag) {
     let tmp; // PyObject
@@ -332,8 +334,8 @@ function complex_from_py(real, imag) {
         /* Note that if r is of a complex subtype, we're only
         retaining its real & imag parts here, and the return
         value is (properly) of the builtin complex type. */
-        cr.real = r.real.v;
-        cr.imag = r.imag.v;
+        cr.real = r.real;
+        cr.imag = r.imag;
         cr_is_complex = true;
     } else {
         /* The "real" part really is entirely real, and contributes
@@ -347,8 +349,8 @@ function complex_from_py(real, imag) {
         ci.real = 0.0;
         ci.imag = 0.0;
     } else if (_complex_check(i)) {
-        ci.real = i.real.v;
-        ci.imag = i.imag.v;
+        ci.real = i.real;
+        ci.imag = i.imag;
         ci_is_complex = true;
     } else {
         /* The "imag" part really is entirely imaginary, and
@@ -374,12 +376,12 @@ function complex_from_py(real, imag) {
 
 /**
  * @function
- * 
+ *
  * @return {Sk.builtin.complex} an instance of complex - could be a subtype's instance
- * 
+ *
  * @param {Sk.builtin.object|null} real
  * @param {Sk.builtin.object|null} imag
- * @param {Sk.builtin.complex.prototype} type_prototype  
+ * @param {Sk.builtin.complex.prototype} type_prototype
  */
 function complex_subtype_from_doubles(real, imag, type_prototype) {
     if (type_prototype === Sk.builtin.complex.prototype) {
@@ -392,7 +394,7 @@ function complex_subtype_from_doubles(real, imag, type_prototype) {
 }
 
 /**
- * 
+ *
  * @function
  * @description Parses a string repr of a complex number
  *
@@ -559,10 +561,10 @@ Sk.builtin.complex.complex_subtype_from_string = function (val, type_prototype) 
 };
 
 /**
- * 
+ *
  * @function
- * @description 
- * 
+ * @description
+ *
  * A helper function for converting a big int to a number or throwing OverFlow
  */
 function fromBigIntToNumberOrOverflow(big) {
@@ -575,14 +577,14 @@ function fromBigIntToNumberOrOverflow(big) {
 }
 
 /**
- * 
+ *
  * @function
- * @description 
+ * @description
  * A wrapper to do the checks before passing the this.real, this.imag, other.real, other.imag
  * to the number function
  */
-function numberSlot(f) {
-    return (other) => {
+function complexNumberSlot(f, suppressOverflow) {
+    return function(other) {
         const a_real = this.real;
         const a_imag = this.imag;
         let b_real = other.real;
@@ -594,7 +596,11 @@ function numberSlot(f) {
             b_real = other_v;
             b_imag = 0.0;
         } else if (other_v instanceof JSBI) {
-            b_real = fromBigIntToNumberOrOverflow(other_v);
+            if (suppressOverflow === undefined) {
+                b_real = fromBigIntToNumberOrOverflow(other_v);
+            } else {
+                b_real = other_v.toString(); // weird case for tp_richcompare
+            }
             b_imag = 0.0;
         } else {
             return Sk.builtin.NotImplemented.NotImplemented$;
@@ -634,17 +640,17 @@ function divide(a_real, a_imag, b_real, b_imag) {
     return new Sk.builtin.complex(real, imag);
 }
 
-power = numberSlot((a_real, a_imag, b_real, b_imag) => {
+const power = complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
     int_exponent = b_real | 0; // js convert to int
     if (b_imag === 0.0 && b_real === int_exponent) {
-        return c_powi(a_real, a_imag, b_real, b_imag);
+        return c_powi(a_real, a_imag, int_exponent);
     } else {
-        return c_pow(a_real, a_imag, int_exponent);
+        return c_pow(a_real, a_imag, b_real, b_imag);
     }
 });
 
 // power of complex a and complex exponent b
-c_pow = function (a_real, a_imag, b_real, b_imag) {
+function c_pow(a_real, a_imag, b_real, b_imag) {
     let len, phase, real, imag;
 
     if (b_real === 0.0 && b_imag === 0.0) {
@@ -671,12 +677,11 @@ c_pow = function (a_real, a_imag, b_real, b_imag) {
         real = len * Math.cos(phase);
         imag = len * Math.sin(phase);
     }
-
     return new Sk.builtin.complex(real, imag);
-};
+}
 
 // power of complex x and integer exponent n
-c_powi = function (a_real, a_imag, n) {
+function c_powi(a_real, a_imag, n) {
     if (n > 100 || n < -100) {
         return c_pow(a_real, a_imag, n, 0.0);
     } else if (n > 0) {
@@ -686,17 +691,17 @@ c_powi = function (a_real, a_imag, n) {
         const r = c_powu(a_real, a_imag, -n);
         return divide(1.0, 0.0, r.real, r.imag);
     }
-};
+}
 
-c_powu = function (a_real, a_imag, n) {
+function c_powu(a_real, a_imag, n) {
     var r, p; // Py_complex
     let mask = 1;
     r = new Sk.builtin.complex(1.0, 0.0);
-    p = new Sk.builtin.complex(a_real, b_real);
+    p = new Sk.builtin.complex(a_real, a_imag);
 
     while (mask > 0 && n >= mask) {
         if (n & mask) {
-            r = divide(r.real, r.imag, p.real, p.imag);
+            r = new Sk.builtin.complex(r.real * p.real - r.imag * p.imag, r.real*p.imag + p.real * r.imag);
         }
 
         mask <<= 1;
@@ -704,7 +709,7 @@ c_powu = function (a_real, a_imag, n) {
     }
 
     return r;
-};
+}
 
 /**
  * Internal format function for repr and str
@@ -712,7 +717,7 @@ c_powu = function (a_real, a_imag, n) {
  *
  * This functions assumes, that v is always instance of Sk.builtin.complex
  */
-complex_format = function (v, precision, format_code) {
+function complex_format(v, precision, format_code) {
     function copysign(a, b) {
         let sign;
         if (b) {
@@ -753,17 +758,16 @@ complex_format = function (v, precision, format_code) {
     }
 
     result = "" + lead + re + im + "j" + tail; // concat all parts
-
     return new Sk.builtin.str(result);
-};
+}
 
 /**
  * https://hg.python.org/cpython/file/3cf2990d19ab/Objects/complexobject.c#l907
  * also see _PyComplex_FormatAdvanced
  */
-_PyComplex_FormatAdvanced = function (self, format_spec) {
+function _PyComplex_FormatAdvanced(self, format_spec) {
     throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex type.");
-};
+}
 
 /**
     Return true if float or double are is neither infinite nor NAN, else false
@@ -790,13 +794,10 @@ function _is_infinity(val) {
  * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
  * infinite number, or not a number, respectively.
  */
-PyOS_double_to_string = function (val, format_code, precision, flags, type) {
-    var format;
-    var buf;
-    var t;
-    var exp;
-    var upper = false;
-
+function PyOS_double_to_string(val, format_code, precision, flags, type) {
+    let buf,
+        t,
+        upper = false;
     // Validate format code, and map upper and lower case
     switch (format_code) {
         case "e": /* exponent */
@@ -816,7 +817,6 @@ PyOS_double_to_string = function (val, format_code, precision, flags, type) {
             if (precision !== 0) {
                 throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
             }
-
             // repr() precision is 17 significant decimal digits
             precision = 17;
             format_code = "g";
@@ -824,9 +824,7 @@ PyOS_double_to_string = function (val, format_code, precision, flags, type) {
         default:
             throw new Error("Bad internall call");
     }
-
     // no need for buffer size calculation like in cpython
-
     // Handle nan and inf
     if (isNaN(val)) {
         buf = "nan";
@@ -842,7 +840,6 @@ PyOS_double_to_string = function (val, format_code, precision, flags, type) {
         if (flags & PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
             format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
         }
-
         // ToDo: call snprintf here
         // ToDo: call ascii_formatd
         var format_str = "%";
@@ -855,16 +852,14 @@ PyOS_double_to_string = function (val, format_code, precision, flags, type) {
 
         format_str += format_code;
         format_str = new Sk.builtin.str(format_str);
-
         /**
-         * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
+         * We can call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
          * already a javascript number. If we do not pass a float, we can't distinguish between ints and floats
          * and therefore we can't adjust the sign of the zero accordingly
          */
         buf = format_str.nb$remainder(new Sk.builtin.float_(val));
         buf = buf.v; // get javascript string
     }
-
     /**
      * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
      * include sign even for inf and nan.
@@ -872,14 +867,12 @@ PyOS_double_to_string = function (val, format_code, precision, flags, type) {
     if (flags & PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
         buf = "+" + buf;
     }
-
     if (upper) {
         // Convert to upper case
         buf = buf.toUpperCase();
     }
-
     return buf;
-};
+}
 
 /* PyOS_double_to_string's "flags" parameter can be set to 0 or more of: */
 PyOS_double_to_string.Py_DTSF_SIGN = 0x01; // always add the sign
