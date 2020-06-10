@@ -157,7 +157,7 @@ Sk.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
  * Most skulpt users would search here!
  */
 Sk.builtin.checkComplex = function (arg) {
-    return Sk.builtin.complex._complex_check(arg);
+    return arg instanceof Sk.builtin.complex;
 };
 Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 

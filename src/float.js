@@ -143,41 +143,17 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
  * @param {Object} op The object to check.
  * @return {boolean} true if op is an instance of Sk.builtin.float_, false otherwise
  */
-Sk.builtin.float_.PyFloat_Check_Exact = function (op) {
-    return Sk.builtin.checkFloat(op);
-};
-
 Sk.builtin.float_.PyFloat_AsDouble = function (op) {
-    var f; // nb_float;
-    var fo; // PyFloatObject *fo;
-    var val;
-
-    // it is a subclass or direct float
-    if (op && Sk.builtin.float_.PyFloat_Check(op)) {
-        return Sk.ffi.remapToJs(op);
+    let v = op.v;
+    if (typeof v === "number") {
+        return v;
+    } else if (op.nb$float) {
+        v = op.nb$float();
     }
-
-    if (op == null) {
-        throw new Error("bad argument for internal PyFloat_AsDouble function");
-    }
-
-    // check if special method exists (nb_float is not implemented in skulpt, hence we use __float__)
-    f = Sk.abstr.lookupSpecial(op, Sk.builtin.str.$float_);
-    if (f == null) {
+    if (v === undefined) {
         throw new Sk.builtin.TypeError("a float is required");
     }
-
-    // call internal float method
-    fo = Sk.misceval.callsimArray(f, [op]);
-
-    // return value of __float__ must be a python float
-    if (!Sk.builtin.float_.PyFloat_Check(fo)) {
-        throw new Sk.builtin.TypeError("nb_float should return float object");
-    }
-
-    val = Sk.ffi.remapToJs(fo);
-
-    return val;
+    return v;
 };
 
 /** @override */
