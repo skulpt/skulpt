@@ -571,16 +571,19 @@ Sk.misceval.isTrue = function (x) {
     if (x === false) {
         return false;
     }
-    if (x == null) {
+    if (x === null) {
+        return false;
+    } 
+    if (x === undefined) {
         return false;
     }
     if (x.constructor === Sk.builtin.bool) {
-        return x.v;
+        return x.v !== 0;
     }
-    if (x.constructor === Sk.builtin.none) {
+    if (x === Sk.builtin.none.none$) {
         return false;
     }
-    if (x.constructor === Sk.builtin.NotImplemented) {
+    if (x === Sk.builtin.NotImplemented.NotImplemented$) {
         return false;
     }
     if (typeof x === "number") {

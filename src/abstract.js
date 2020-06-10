@@ -160,7 +160,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     // subclass of v's type
     const w_type = w.constructor;
     const v_type = v.constructor;
-    const w_is_subclass = w_type !== v_type && !w_type.sk$basetype &&  w instanceof v_type;
+    const w_is_subclass = w_type !== v_type && w_type.sk$basetype === undefined &&  w instanceof v_type;
 
     // From the Python 2.7 docs:
     //

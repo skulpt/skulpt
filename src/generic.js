@@ -7,11 +7,11 @@ Sk.generic = {};
  * @return {undefined}
  */
 Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
-    let f, res;
+    let f;
     jsMangled = jsMangled || pyName.$jsstr();
     const descr = this.ob$type.$typeLookup(jsMangled);
     // look in the type for a descriptor
-    if (descr != null) {
+    if (descr !== undefined) {
         f = descr.tp$descr_get;
         if (f && Sk.builtin.checkDataDescr(descr)) {
             return f.call(descr, this, this.ob$type, canSuspend);
@@ -20,16 +20,8 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
 
     const dict = this.$d;
 
-    if (dict) {
-        if (dict.mp$lookup) {
-            res = dict.mp$lookup(pyName);
-        } else if (dict.mp$subscript) {
-            try {
-                res = dict.mp$subscript(pyName);
-            } catch {}
-        } else if (typeof dict === "object") {
-            res = dict[pyName.$jsstr()];
-        }
+    if (dict !== undefined) {
+        const res = dict.mp$lookup(pyName);
         if (res !== undefined) {
             return res;
         }
