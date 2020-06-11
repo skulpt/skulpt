@@ -63,7 +63,9 @@ Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryO
  * @returns {boolean}
  */
 Sk.misceval.isIndex = function (o) {
-    if (o.constructor === Sk.builtin.int_) {
+    if (typeof o === "number") {
+        return true;
+    } else if (o.constructor === Sk.builtin.int_) {
         return true;
     } else if (o.sk$prototypical) {
         return o.nb$index !== undefined;
@@ -81,7 +83,9 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
  */
 Sk.misceval.asIndexOrThrow = function (obj) {
     let res;
-    if (obj.constructor === Sk.builtin.int_) {
+    if (typeof obj === "number") {
+        return obj;
+    } else if (obj.constructor === Sk.builtin.int_) {
         // the fast case
         res = obj.v;
     } else if (obj.nb$index) {
