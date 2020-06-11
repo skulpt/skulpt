@@ -528,10 +528,11 @@ function numberOrStringWithinThreshold(v) {
 
 Sk.builtin.int_.withinThreshold = numberOrStringWithinThreshold;
 
+const MaxSafeBig = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
+const MaxSafeBigNeg = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
 function convertIfSafe(v) {
-    const s = v.toString();
-    if (s <= Number.MAX_SAFE_INTEGER && s >= -Number.MAX_SAFE_INTEGER) {
-        return +s;
+    if (JSBI.lessThan(v, MaxSafeBig) && JSBI.greaterThan(v, MaxSafeBigNeg)) {
+        return JSBI.toNumber(v);
     }
     return v;
 }
