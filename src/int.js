@@ -50,6 +50,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 return instance;
             }
         },
+        tp$gettar: Sk.generic.getAttr, 
 
         tp$richcompare: function (other, op) {
             if (!(other instanceof Sk.builtin.int_)) {
@@ -254,13 +255,13 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             $meth: function () {
                 return new Sk.builtin.tuple([new Sk.builtin.int_(this.v)]);
             },
-            $flags: {NoArgs: true},
+            $flags: { NoArgs: true },
             $textsig: "($self, /)",
             $doc: Sk.builtin.none.none$,
         },
         __format__: {
-            $meth:  Sk.formatting.mkNumber__format__(false),
-            $flags: {OneArg: true},
+            $meth: Sk.formatting.mkNumber__format__(false),
+            $flags: { OneArg: true },
             $textsig: "($self, format_spec, /)",
             $doc: Sk.builtin.none.none$,
         },
@@ -268,7 +269,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     proto: {
         str$: function (base, sign) {
             let tmp;
-            if (base === undefined || base ===10) {
+            if (base === undefined || base === 10) {
                 tmp = this.v.toString();
             } else {
                 tmp = this.v.toString(base);
@@ -285,9 +286,8 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
             }
             return new Sk.builtin.int_(this.v);
-        }
-
-    }
+        },
+    },
 });
 
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
@@ -395,7 +395,6 @@ function numberBitSlot(number_func, bigint_func) {
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
 }
-
 
 /**
  * Takes a JavaScript string and returns a number using the parser and negater
@@ -511,9 +510,7 @@ Sk.str2number = function (s, base) {
     return fromStrToBigWithBase(s, base);
 };
 
-
 Sk.builtin.int_.py2$methods = {};
-
 
 Sk.longFromStr = function (s) {
     return new Sk.builtin.int_(stringToNumberOrBig(s));
@@ -608,7 +605,7 @@ function getInt(x, base) {
         }
     }
 
-    if ((func = x.tp$getattr(Sk.builtin.str.$trunc))) {
+    if ((func = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$trunc))) {
         res = Sk.misceval.callsimArray(func);
         // check return type of magic methods
         if (!Sk.builtin.checkInt(res)) {

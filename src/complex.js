@@ -25,6 +25,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             }
             return new Sk.builtin.int_(JSBI.BigInt(v));
         },
+        tp$getattr: Sk.generic.getAttr,
         tp$new: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs("complex", ["real", "imag"], args, kwargs, [null, null]);
             return complex_from_py.call(this, args[0], args[1]);
