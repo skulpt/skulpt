@@ -44,7 +44,9 @@ Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
     const arg = args[0];
     let x;
     // is args always an empty list?
-    if (arg.nb$float_) {
+    if (arg === undefined) {
+        x = new Sk.builtin.float_(0.0);
+    } else if (arg.nb$float_) {
         x = arg.nb$float_();
     } else if (Sk.builtin.checkString(arg)) {
         x = _str_to_float(arg.v);
@@ -534,7 +536,6 @@ Sk.builtin.float_.prototype.round$ = function (ndigits) {
     }
 };
 
-Sk.builtin.float_.prototype.__format__ = Sk.formatting.mkNumber__format__(true);
 
 Sk.builtin.float_.prototype.conjugate = new Sk.builtin.func(function (self) {
     return new Sk.builtin.float_(self.v);
@@ -702,12 +703,12 @@ Sk.builtin.float_.prototype.tp$methods = {
     //     $textsig: "($self, /)",
     //     $doc: Sk.builtin.none.none$,
     // },
-    // __format__: {
-    //     $meth: methods.__format__,
-    //     $flags: { OneArg: true },
-    //     $textsig: "($self, format_spec, /)",
-    //     $doc: "Formats the float according to format_spec.",
-    // },
+    __format__: {
+        $meth: Sk.formatting.mkNumber__format__(true),
+        $flags: { OneArg: true },
+        $textsig: "($self, format_spec, /)",
+        $doc: Sk.builtin.none.none$,
+    },
 };
 Sk.abstr.setUpMethods(Sk.builtin.float_);
 
