@@ -447,20 +447,26 @@ var $builtinmodule = function (name) {
     mod.shuffle = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("shuffle", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "sequence", Sk.builtin.checkSequence(x));
-
-        if (x.sq$length !== undefined) {
+        // make this faster we kow that it's a list so just use the array
+        if (x.constructor === Sk.builtin.list) {
+            const L = x.v;
+            for (var i = L.length - 1; i > 0; i -= 1) {
+                var r = toInt(myGenerator.genrand_res53() * (i + 1));
+                var tmp = L[r];
+                L[r] = L[i];
+                L[i] = tmp;
+            }
+        } else if (x.sq$length !== undefined) {
             if (x.mp$ass_subscript !== undefined) {
                 for (var i = x.sq$length() - 1; i > 0; i -= 1) {
                     var r = toInt(myGenerator.genrand_res53() * (i + 1));
                     var tmp = x.mp$subscript(r);
                     x.mp$ass_subscript(r, x.mp$subscript(i));
                     x.mp$ass_subscript(i, tmp);
-                }
-                ;
+                };
             } else {
                 throw new Sk.builtin.TypeError("object is immutable");
-            }
-            ;
+            };
         } else {
             throw new Sk.builtin.TypeError("object has no length");
         }
