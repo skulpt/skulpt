@@ -50,7 +50,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 return instance;
             }
         },
-        tp$gettar: Sk.generic.getAttr, 
+        tp$gettar: Sk.generic.getAttr,
 
         tp$richcompare: function (other, op) {
             if (!(other instanceof Sk.builtin.int_) && !(other instanceof Sk.builtin.float_)) {
@@ -141,7 +141,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return v ^ w;
         }, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, function (v){
+        nb$abs: numberUnarySlot(Math.abs, function (v) {
             v.sign = false;
             return v;
         }),
@@ -155,13 +155,18 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 return;
             }
         }, JSBI.leftShift),
-        nb$rshift: numberShiftSlot(function (v, w) {
-            const tmp = v >> w;
-            if (w > 0 && tmp < 0) {
-                return tmp & (Math.pow(2, 32 - w) - 1);
+        nb$rshift: numberShiftSlot(
+            function (v, w) {
+                const tmp = v >> w;
+                if (w > 0 && tmp < 0) {
+                    return tmp & (Math.pow(2, 32 - w) - 1);
+                }
+                return;
+            },
+            function (v, w) {
+                convertIfSafe(JSBI.signedRightShift(v, w));
             }
-            return;
-        }, JSBI.signedRightShift),
+        ),
 
         nb$invert: numberUnarySlot(function (v) {
             return ~v;
@@ -373,7 +378,7 @@ function numberShiftSlot(number_func, bigint_func) {
                 throw new Sk.builtin.ValueError("negative shift count");
             }
             v = bigUp(v);
-            return new Sk.builtin.int_(convertIfSafe(bigint_func(v, w)));
+            return new Sk.builtin.int_(bigint_func(v, w)); // con't convert if safe for leftshift
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
@@ -643,7 +648,7 @@ function fromStrToBigWithBase(s, base) {
         power = JSBI.multiply(power, base);
     }
     if (neg) {
-        return JSBI.BigInt("-" + num.toString());
+        num.sign = true;
     }
     return num;
 }
