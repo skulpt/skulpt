@@ -141,7 +141,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return v ^ w;
         }, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, JSBI.abs),
+        nb$abs: numberUnarySlot(Math.abs, function (v){
+            v.sign = false;
+            return v;
+        }),
 
         nb$lshift: numberShiftSlot(function (v, w) {
             if (w < 53) {
