@@ -230,15 +230,12 @@ let formatNumber = function(num, formatSpec, isFractional) {
     }
 };
 
-Sk.formatting.mkNumber__format__ = (isFractional) => new Sk.builtin.func(function (self, format_spec) {
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
+Sk.formatting.mkNumber__format__ = (isFractional) => function (format_spec) {
     if (!Sk.builtin.checkString(format_spec)) {
         throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
     }
-
-    return new Sk.builtin.str(formatNumber(self, format_spec.$jsstr(), isFractional));
-});
+    return new Sk.builtin.str(formatNumber(this, format_spec.$jsstr(), isFractional));
+};
 
 let formatString = function (self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
