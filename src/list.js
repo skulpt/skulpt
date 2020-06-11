@@ -135,7 +135,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             return new Sk.builtin.list(ret);
         },
         mp$subscript: function (index) {
-            if (index.nb$index) {
+            if (Sk.misceval.isIndex(index)) {
                 let i = Sk.misceval.asIndexOrThrow(index);
                 if (typeof i !== "number") {
                     throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
