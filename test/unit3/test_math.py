@@ -665,7 +665,7 @@ class MathTests(unittest.TestCase):
 
         from random import random, gauss, shuffle, seed
         seed(0)
-        for j in range(100):
+        for j in range(20):
             vals = [7, 1e100, -7, -1e100, -9e-20, 8e-20] * 10
             s = 0
             for i in range(200):
