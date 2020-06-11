@@ -53,8 +53,10 @@ const $builtinmodule = function (name) {
 
     methods.fabs = function fabs(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        let _x = Sk.builtin.asnum$(new Sk.builtin.float_(x)); //should raise OverflowError for large ints to floats
+        let _x = x.v;
+        if (_x instanceof JSBI) {
+            _x = x.nb$float().v; //should raise OverflowError for large ints to floats
+        }
         _x = Math.abs(_x);
 
         return new Sk.builtin.float_(_x);
@@ -81,23 +83,11 @@ const $builtinmodule = function (name) {
         if (x <= MAX_SAFE_INTEGER_FACTORIAL) {
             return new Sk.builtin.int_(r);
         } else {
-            // for big numbers (19 and larger) we first calculate 18! above
-            // and then use bigintegers to continue the process.
-
-            // This is inefficient as hell, but it produces correct answers.
-
-            // promotes an integer to a biginteger
-            function bigup(number) {
-                const n = Sk.builtin.asnum$nofloat(number);
-                return new Sk.builtin.biginteger(n);
-            }
-
-            r = bigup(r);
+            r = JSBI.BigInt(r);
             for (let i = MAX_SAFE_INTEGER_FACTORIAL + 1; i <= x; i++) {
-                const i_bigup = bigup(i);
-                r = r.multiply(i_bigup);
+                r = JSBI.multiply(r, JSBI.BigInt(i));
             }
-            return new Sk.builtin.lng(r);
+            return new Sk.builtin.int_(r);
         }
     };
 
@@ -114,9 +104,14 @@ const $builtinmodule = function (name) {
     methods.fmod = function fmod(x, y) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y)); //should raise OverFlow for large ints to floats
+        let _x = x.v;
+        let _y = y.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        }
+        if (typeof _y !== "number") {
+            _y = y.nb$float_().v;
+        }
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)) {
             return new Sk.builtin.float_(_x);
@@ -174,7 +169,11 @@ const $builtinmodule = function (name) {
         for (let x = iter.tp$iternext(); x !== undefined; x = iter.tp$iternext()) {
             Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
             i = 0;
-            x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+            let _x = x.v;
+            if (typeof _x !== "number") {
+                _x = x.nb$float_().v;
+            }
+            x = _x;
             for (let j = 0, len = partials.length; j < len; j++) {
                 let y = partials[j];
                 if (Math.abs(x) < Math.abs(y)) {
@@ -210,28 +209,29 @@ const $builtinmodule = function (name) {
             }
             return _gcd(b, a % b);
         }
-
+        
+        const BigZero = JSBI.BigInt(0);
         function _biggcd(a, b) {
-            if (b.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
+            if (JSBI.equal(b, BigZero)) {
                 return a;
             }
-            return _biggcd(b, a.remainder(b));
+            return _biggcd(b, JSBI.remainder(a, b));
         }
-
-        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng) {
-            let _a = Sk.builtin.lng(a).biginteger;
-            let _b = Sk.builtin.lng(b).biginteger;
-            let res = _biggcd(_a, _b);
-            res = res.abs(); // python only returns positive gcds
-
-            return new Sk.builtin.lng(res);
-        } else {
-            let _a = Math.abs(Sk.builtin.asnum$(a));
-            let _b = Math.abs(Sk.builtin.asnum$(b));
-            let res = _gcd(_a, _b);
+        let _a = Sk.builtin.asnum$(a);
+        let _b = Sk.builtin.asnum$(b);
+        let res;
+        if (typeof _a === "number" && typeof _b === "number") {
+            _a = Math.abs(_a);
+            _b = Math.abs(_b);
+            res = _gcd(_a, _b);
             res = res < 0 ? -res : res; // python only returns positive gcds
-
             return new Sk.builtin.int_(res);
+        } else {
+            _a = JSBI.BigInt(_a);
+            _b = JSBI.BigInt(_b);
+            res = _biggcd(_a, _b);
+            res.sign = false;
+            return new Sk.builtin.int_(res.toString()); // int will convert strings
         }
     };
 
@@ -321,7 +321,10 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        let _x = x.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        } 
         const _i = Sk.builtin.asnum$(i);
 
         if (_x == Infinity || _x == -Infinity || _x == 0 || isNaN(_x)) {
@@ -368,8 +371,15 @@ const $builtinmodule = function (name) {
         // as per cpython algorithm see cpython for details
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y));
+
+        let _x = x.v;
+        let _y = y.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        }
+        if (typeof _y !== "number") {
+            _y = y.nb$float_().v;
+        }
 
         // deal with most common cases first
         if (isFinite(_x) && isFinite(_y)) {
@@ -420,7 +430,10 @@ const $builtinmodule = function (name) {
     // Power and logarithmic functions
     methods.exp = function exp(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        let _x = x.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        }
         if (_x == Infinity || _x == -Infinity || isNaN(_x)) {
             return new Sk.builtin.float_(Math.exp(_x));
         }
@@ -488,7 +501,10 @@ const $builtinmodule = function (name) {
         // designed to be more accurate close to 0
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
+        let _x = x.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        }
 
         if (_x <= -1.0) {
             throw new Sk.builtin.ValueError("math domain error");
@@ -551,8 +567,14 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
 
-        const _x = Sk.builtin.asnum$(new Sk.builtin.float_(x));
-        const _y = Sk.builtin.asnum$(new Sk.builtin.float_(y));
+        let _x = x.v;
+        let _y = y.v;
+        if (typeof _x !== "number") {
+            _x = x.nb$float_().v;
+        }
+        if (typeof _y !== "number") {
+            _y = y.nb$float_().v;
+        }
 
         if (_x == 0 && _y < 0) {
             throw new Sk.builtin.ValueError("math domain error");
