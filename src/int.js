@@ -53,7 +53,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         tp$gettar: Sk.generic.getAttr, 
 
         tp$richcompare: function (other, op) {
-            if (!(other instanceof Sk.builtin.int_)) {
+            if (!(other instanceof Sk.builtin.int_) && !(other instanceof Sk.builtin.float_)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             let v = this.v;
@@ -337,7 +337,7 @@ function numberDivisionSlot(number_func, bigint_func) {
             }
             if (typeof v === "number" && typeof w === "number") {
                 // it's integer division so no need to check if the number got bigger!
-                return number_func(v, w);
+                return new Sk.builtin.int_(number_func(v, w));
             }
             v = bigUp(v);
             w = bigUp(w);
@@ -606,7 +606,7 @@ function getInt(x, base) {
     }
 
     if ((func = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$trunc))) {
-        res = Sk.misceval.callsimArray(func);
+        res = Sk.misceval.callsimArray(func, [x]);
         // check return type of magic methods
         if (!Sk.builtin.checkInt(res)) {
             throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
