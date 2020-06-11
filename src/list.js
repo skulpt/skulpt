@@ -135,8 +135,8 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             return new Sk.builtin.list(ret);
         },
         mp$subscript: function (index) {
-            if (Sk.misceval.isIndex(index)) {
-                let i = Sk.misceval.asIndex(index);
+            if (index.nb$index) {
+                let i = Sk.misceval.asIndexOrThrow(index);
                 if (typeof i !== "number") {
                     throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
                 }
@@ -147,7 +147,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                     throw new Sk.builtin.IndexError("list index out of range");
                 }
                 return this.v[i];
-            } else if (index instanceof Sk.builtin.slice) {
+            } else if (index.constructor === Sk.builtin.slice) {
                 const ret = [];
                 index.sssiter$(this, function (i, wrt) {
                     ret.push(wrt.v[i]);
@@ -352,7 +352,7 @@ Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);
  */
 Sk.builtin.list.prototype.ass$subscript = function (index, value) {
     if (Sk.misceval.isIndex(index)) {
-        let i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndexOrThrow(index);
         if (typeof i !== "number") {
             throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
         }
