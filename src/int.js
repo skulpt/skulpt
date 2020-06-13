@@ -50,7 +50,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 return instance;
             }
         },
-        tp$gettar: Sk.generic.getAttr,
+        tp$getattr: Sk.generic.getAttr,
 
         tp$richcompare: function (other, op) {
             if (!(other instanceof Sk.builtin.int_) && !(other instanceof Sk.builtin.float_)) {
@@ -65,7 +65,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             } else {
                 v = bigUp(v);
                 w = bigUp(w);
-                return bigIntCompare(JSBI.subtract(w, v), JSBI.BigInt(0), op);
+                return bigIntCompare(JSBI.subtract(v, w), JSBI.BigInt(0), op);
             }
         },
 
@@ -88,14 +88,14 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             if (typeof v === "number") {
                 return v < 0;
             }
-            return JSBI.lessThan(v, JSBI.BigInt(0));
+            return v.sign;
         },
         nb$ispositive: function () {
             const v = this.v;
             if (typeof v === "number") {
-                return v > 0;
+                return v >= 0;
             }
-            return JSBI.greaterThan(v, JSBI.BigInt(0));
+            return !v.sign;
         },
         nb$bool: function () {
             return new Sk.builtin.bool(this.v !== 0); // should be fine not to check BigInt here
@@ -107,12 +107,28 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return -v;
         }, JSBI.unaryMinus),
 
-        nb$add: numberSlot(function (w, v) {
-            return v + w;
-        }, JSBI.add),
-        nb$subtract: numberSlot(function (v, w) {
-            return v - w;
-        }, JSBI.subtract),
+        nb$add: numberSlot(
+            function (v, w) {
+                return v + w;
+            },
+            function (v, w) {
+                if (!(v.sign ^ w.sign)) {
+                    return JSBI.add(v, w);
+                }
+                return convertIfSafe(JSBI.add(v, w)); // if the signs are different then see if we can convert to number safely.
+            }
+        ),
+        nb$subtract: numberSlot(
+            function (v, w) {
+                return v - w;
+            },
+            function (v, w) {
+                if (v.sign ^ w.sign) {
+                    return JSBI.subtract(v, w);
+                }
+                return convertIfSafe(JSBI.subtract(v, w)); // if the signs are the same then see if we can convert to number safely.
+            }
+        ),
         nb$multiply: numberSlot(function (v, w) {
             return v * w;
         }, JSBI.multiply),
@@ -158,13 +174,13 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$rshift: numberShiftSlot(
             function (v, w) {
                 const tmp = v >> w;
-                if (w > 0 && tmp < 0) {
+                if (v > 0 && tmp < 0) {
                     return tmp & (Math.pow(2, 32 - w) - 1);
                 }
-                return;
+                return tmp;
             },
             function (v, w) {
-                convertIfSafe(JSBI.signedRightShift(v, w));
+                return convertIfSafe(JSBI.signedRightShift(v, w));
             }
         ),
 
@@ -293,7 +309,36 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
             }
-            return new Sk.builtin.int_(this.v);
+            if (ndigits === undefined) {
+                ndigits = 0;
+            } else {
+                ndigits = Sk.misceval.asIndex(ndigits);
+            }
+            const v = this.v;
+            const multiplier = Math.pow(10, -ndigits);
+            let tmp;
+            if (ndigits > 0) {
+                return new Sk.builtin.int_(v);
+            }
+            if (typeof v === "number") {
+                const num10 = v / multiplier;
+                const rounded = Math.round(num10);
+                const bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+                const result = bankRound * multiplier;
+                return new Sk.builtin.int_(result);
+            } else {
+                const BigMultiplier = JSBI.BigInt(multiplier * 10);
+                const ten = JSBI.BigInt(10);
+                tmp = JSBI.divide(v, BigMultiplier);
+                const undecided = JSBI.divide(tmp, ten);
+                const pt5 = JSBI.subtract(tmp, JSBI.multiply(ten, undecided));
+                if (JSBI.toNumber(pt5) < 5) {
+                    tmp = JSBI.multiply(JSBI.multiply(undecided, ten), BigMultiplier);
+                } else {
+                    JSBI.multiply(JSBI.multiply(JSBI.add(undecided, JSBI.BigInt(1), ten), BigMultiplier));
+                }
+                return new Sk.builtin.int_(tmp);
+            }
         },
     },
 });
@@ -315,7 +360,7 @@ function numberSlot(number_func, bigint_func) {
             }
             v = bigUp(v);
             w = bigUp(w);
-            return new Sk.builtin.int_(convertIfSafe(bigint_func(v, w)));
+            return new Sk.builtin.int_(bigint_func(v, w));
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
@@ -357,6 +402,7 @@ function numberDivisionSlot(number_func, bigint_func) {
 
 function numberShiftSlot(number_func, bigint_func) {
     return function (other) {
+        debugger;
         if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
