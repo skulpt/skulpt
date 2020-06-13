@@ -236,7 +236,7 @@ function divide(v, w) {
     return new Sk.builtin.float_(v / w);
 }
 
-/** @override */
+
 Sk.builtin.float_.prototype.nb$divide = numberSlot(divide);
 
 Sk.builtin.float_.prototype.nb$reflected_divide = numberSlot((v, w) => {
@@ -326,7 +326,7 @@ Sk.builtin.float_.prototype.nb$divmod = numberSlot((v, w) => {
     return new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)]);
 });
 
-Sk.builtin.float_.prototype.nb$reflected_divmod = Sk.builtin.float_.prototype.nb$divmod = numberSlot((v, w) => {
+Sk.builtin.float_.prototype.nb$reflected_divmod = numberSlot((v, w) => {
     return new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)]);
 });
 
