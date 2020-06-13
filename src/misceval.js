@@ -104,44 +104,27 @@ Sk.misceval.asIndexOrThrow = function (obj) {
 };
 
 Sk.misceval.asIndex = function (o) {
-    var idxfn, ret;
-
-    if (!Sk.misceval.isIndex(o)) {
+    if (o===null || o=== undefined) {
         return undefined;
-    }
-    if (o === null) {
-        return undefined;
-    }
-    if (o === true) {
-        return 1;
-    }
-    if (o === false) {
-        return 0;
     }
     if (typeof o === "number") {
         return o;
     }
+    let res;
     if (o.constructor === Sk.builtin.int_) {
-        return o.v;
-    }
-    if (o.constructor === Sk.builtin.lng) {
-        if (o.cantBeInt()) {
-            return o.str$(10, true);
+        res = o.v;
+    } else if (o.nb$index) {
+        res = o.nb$index(); // this slot will check the return value is an int. 
+        if (res !== undefined) {
+            res = res.v;
         }
-        return o.toInt$();
     }
-    if (o.constructor === Sk.builtin.bool) {
-        return Sk.builtin.asnum$(o);
+    if (typeof res === "number") {
+        return res;
+    } else if (res instanceof JSBI) {
+        return res.toString();
     }
-    idxfn = Sk.abstr.lookupSpecial(o, Sk.builtin.str.$index);
-    if (idxfn) {
-        ret = Sk.misceval.callsimArray(idxfn, [o]);
-        if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + Sk.abstr.typeName(ret) + ")");
-        }
-        return Sk.builtin.asnum$(ret);
-    }
-    Sk.asserts.fail("todo asIndex;");
+    return res;
 };
 
 /**
