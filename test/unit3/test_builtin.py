@@ -1298,7 +1298,7 @@ class BuiltinTest(unittest.TestCase):
                     raise IndexError
                 else:
                     return i
-        self.assertEqual(list(zip(SequenceWithoutALength(), range(2**23))), list(enumerate(range(5))))
+        self.assertEqual(list(zip(SequenceWithoutALength(), range(2**10))), list(enumerate(range(5))))
         a = zip([1], [2])
         self.assertEqual(type(a), zip)
         l = [1,2,3,4]
