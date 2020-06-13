@@ -45,9 +45,10 @@ Sk.builtin.range = function range(start, stop, step) {
             }
         }
     } else {
-        // This is going to be slow, really needs to be a generator!
-        
-
+        // This is going to be slow, really needs to be a generator
+        startlng = new Sk.builtin.int_(start);
+        steplng = new Sk.builtin.int_(step);
+        stoplng = new Sk.builtin.int_(stop);
         if (steplng.nb$ispositive()) {
             i = startlng;
             while (Sk.misceval.isTrue(i.ob$lt(stoplng))) {
