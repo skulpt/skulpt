@@ -33,5 +33,5 @@ Sk.builtin.module.prototype.tp$getsets = {
 
 
 Sk.builtin.module.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) {
-    return this.$d[jsMangled];
+    return this.$d[jsMangled || pyName.v];
 };
