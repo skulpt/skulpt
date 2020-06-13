@@ -10,8 +10,6 @@ Sk.builtin.range_ = function (start, stop, step, lst) {
     this.$start = start;
     this.$stop = stop;
     this.$step = step;
-
-    return this;
 };
 
 Sk.abstr.setUpInheritance("range", Sk.builtin.range_, Sk.builtin.object);

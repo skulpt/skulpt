@@ -416,7 +416,7 @@ const $builtinmodule = function (name) {
         if (!(_y == Infinity || _y == -Infinity)) {
             throw new Sk.builtin.AssertionError();
         }
-        return new Sk.builtin.float_(x);
+        return new Sk.builtin.float_(_x);
     };
 
     methods.trunc = function trunc(x) {
@@ -721,7 +721,7 @@ const $builtinmodule = function (name) {
         const _x = Sk.builtin.asnum$(x);
 
         if (_x === 0) {
-            return new Sk.builtin.float_(x);
+            return new Sk.builtin.float_(_x);
         }
 
         const e = Math.E;
