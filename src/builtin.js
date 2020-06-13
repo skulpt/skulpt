@@ -532,27 +532,27 @@ Sk.builtin.unichr = function unichr(x) {
     }
 };
 
+/**
+ * This is a helper function and we already know that x is an int or has an nb$index slot
+ */
 Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
-    var suffix;
-    var str = "";
-    if (x instanceof Sk.builtin.lng) {
-        suffix = "";
-        if (radix !== 2 && !Sk.__future__.python3) {
-            suffix = "L";
-        }
-        str = x.str$(radix, false);
-        if (x.nb$isnegative()) {
-            return new Sk.builtin.str("-" + prefix + str + suffix);
-        }
-        return new Sk.builtin.str(prefix + str + suffix);
+    let v;
+    if (x.constructor === Sk.builtin.int_) {
+        v = x.v; // we don't use asnum$ because it returns a str rather than a bigint. 
     } else {
-        x = Sk.misceval.asIndex(x);
-        str = x.toString(radix);
-        if (x < 0) {
-            return new Sk.builtin.str("-" + prefix + str.slice(1));
-        }
-        return new Sk.builtin.str(prefix + str);
+        x = x.nb$index();
+        v = x.v;
     }
+    let str = v.toString(radix);
+    if (x.nb$isnegative()) {
+        str = "-" + prefix + str.slice(1);
+    } else {
+        str = prefix + str;
+    }
+    if (radix !== 2 && !Sk.__future__.python3 && x instanceof JSBI) {
+        str += "L";
+    }
+    return new Sk.builtin.str(str);
 };
 
 Sk.builtin.hex = function hex(x) {
