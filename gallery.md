@@ -13,8 +13,8 @@ Ideally it would choose one each time the page loads but I haven't dug into that
 <div class="row">
 {% for post in site.posts %}
     <div class="small-12 medium-6 large-4 columns">
-        <img src="{{ post.screenshot }}">
-        <h4>{{ post.title }}</h4>
+        <a href="{{ post.link }}"><img src="{{ post.screenshot }}"></a>
+        <h4><a href="{{ post.link }}">{{ post.title }}</a></h4>
         <p> {{ post.blurb }}
         </p>
     </div>
