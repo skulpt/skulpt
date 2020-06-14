@@ -279,6 +279,18 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
+Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
+    const key_hash = pyName.$savedKeyHash_;
+    if (key_hash === undefined) {
+        return;
+    }
+    const item = this.buckets[key_hash];
+    if (item !== undefined) {
+        return item.rhs;
+    }
+    return;
+};
+
 /**
  *
  * this is effectively a builtin staticmethod for dict

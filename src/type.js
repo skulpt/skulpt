@@ -127,7 +127,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         klass.prototype[k.v] = v;
     }
     klass.$allocateSlots();
-
+    debugger;
     return klass;
 };
 
@@ -237,18 +237,17 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
     }
 };
 
-Sk.builtin.type.prototype.$typeLookup = function (pyOrJsName) {
-    pyOrJsName = pyOrJsName.v === undefined ? pyOrJsName : pyOrJsName.v;
+Sk.builtin.type.prototype.$typeLookup = function (jsName) {
     const proto = this.prototype;
-    if (proto.sk$prototypical) {
-        return proto[pyOrJsName];
+    if (proto.sk$prototypical === true) {
+        return proto[jsName];
     }
     const mro = proto.tp$mro;
 
     for (let i = 0; i < mro.length; ++i) {
         const base_proto = mro[i].prototype;
-        if (base_proto.hasOwnProperty(pyOrJsName)) {
-            return base_proto[pyOrJsName];
+        if (base_proto.hasOwnProperty(jsName)) {
+            return base_proto[jsName];
         }
     }
     return undefined;
@@ -370,18 +369,20 @@ Sk.builtin.type.prototype.$isSubType = function (other) {
 };
 
 Sk.builtin.type.prototype.$allocateSlots = function () {
-    if (this.prototype.sk$prototypical) {
-        // only allocate certain slots
-        const proto = { ...this.prototype };
-        for (let dunder in proto) {
-            if (dunder in Sk.slots) {
-                this.$allocateSlot(dunder);
-            }
+    // only allocate certain slots
+    const proto = { ...this.prototype };
+    for (let dunder in proto) {
+        if (dunder in Sk.slots) {
+            this.$allocateSlot(dunder);
         }
-    } else {
+    }
+    debugger;
+    if (!proto.sk$prototypical) {
         // then just allocate all the slots
         for (let dunder in Sk.slots) {
-            this.$allocateSlot(dunder);
+            if (!proto.hasOwnProperty(dunder)) {
+                this.$allocateGetterSlot(dunder);
+            }
         }
     }
 };
@@ -389,6 +390,24 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
     const slot_def = Sk.slots[dunder];
     this.prototype[slot_def.$slot_name] = slot_def.$slot_func;
+};
+
+Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
+    const slot_def = Sk.slots[dunder];
+    const slot_name = slot_def.$slot_name;
+    this.prototype[slot_name] = undefined;
+    Object.defineProperty(this.prototype, slot_name, {
+        get() {
+            const mro = this.tp$mro;
+            for (let i = 0; i < mro.length; i++) {
+                const base = mro[i];
+                if (base.prototype.hasOwnProperty(dunder)) {
+                    debugger;
+                    return base.prototype[slot_name];
+                }
+            }
+        },
+    });
 };
 
 Sk.builtin.type.prototype.tp$getsets = {

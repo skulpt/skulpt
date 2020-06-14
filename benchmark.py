@@ -95,12 +95,13 @@ for i in range(100000):
     a[0] = i
 benchmark['set_list_item'][branch] = int(1000*(time.time()-t0))
 
+import time
 t0 = time.time()
 a = [1,2,3]
 
-for i in range(100000):
+for i in range(10000):
     a = a[:]
-benchmark['get_list_slice'][branch] = int(1000*(time.time()-t0))
+print(int(1000*(time.time()-t0)))
 
 
 

@@ -684,7 +684,10 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
  * @returns {undefined | Object} Return undefined if not found or the function
  */
 Sk.abstr.lookupSpecial = function (obj, pyOrJsName, toMangle) {
-    return obj.ob$type.$typeLookup(pyOrJsName, toMangle);
+    if (pyOrJsName.v) {
+        pyOrJsName = pyOrJsName.v;
+    }
+    return obj.ob$type.$typeLookup(pyOrJsName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 

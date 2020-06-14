@@ -21,7 +21,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
     const dict = this.$d;
 
     if (dict !== undefined) {
-        const res = dict.mp$lookup(pyName);
+        const res = dict.quick$lookup(pyName);
         if (res !== undefined) {
             return res;
         }
