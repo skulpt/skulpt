@@ -1,3 +1,5 @@
+const JSBI = require("jsbi");
+
 /**
  * @namespace Sk.builtin
  */
@@ -182,7 +184,7 @@ Sk.builtin.float_.prototype.toFixed = function (x) {
 function numberSlot(f) {
     return function (other) {
         const v = this.v;
-        const w = other.v;
+        let w = other.v;
         if (typeof w === "number") {
             // pass
         } else if (w instanceof JSBI) {
@@ -293,7 +295,7 @@ function remainder(v, w) {
     }
 
     //  Javacript logic on negatives doesn't work for Python... do this instead
-    tmp = v % w;
+    let tmp = v % w;
 
     if (v < 0) {
         if (w > 0 && tmp < 0) {
@@ -338,7 +340,7 @@ function power(v, w) {
         throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
     }
 
-    result = Math.pow(v, w);
+    const result = Math.pow(v, w);
 
     if (Math.abs(result) === Infinity && Math.abs(v) !== Infinity && Math.abs(w) !== Infinity) {
         throw new Sk.builtin.OverflowError("Numerical result out of range");
