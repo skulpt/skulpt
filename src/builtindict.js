@@ -462,6 +462,7 @@ Sk.setupObjects = function (py3) {
             return new Sk.builtin.str(this.v.toString());
         };
         delete Sk.builtin.int_.prototype.tp$str;
+        delete Sk.builtin.bool.prototype.tp$str;
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
@@ -470,8 +471,9 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
-        Sk.longFromStr = function (s) {
-            return new Sk.builtin.lng(Sk.builtin.int_.stringToNumberOrBig(s));
+        Sk.longFromStr = function (s, base) {
+            const num = Sk.str2number(s,base);
+            return new Sk.builtin.lng(num);
         };
         Sk.builtin.int_.prototype.$r = function () {
             const v = this.v;
@@ -484,6 +486,9 @@ Sk.setupObjects = function (py3) {
         };
         Sk.builtin.int_.prototype.tp$str = function () {
             return new Sk.builtin.str(this.v.toString());
+        };
+        Sk.builtin.bool.prototype.tp$str = function () {
+            return this.$r();
         };
     }
 };
