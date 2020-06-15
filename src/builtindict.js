@@ -482,7 +482,6 @@ Sk.setupObjects = function (py3) {
             } else {
                 return new Sk.builtin.str(v.toString() + "L");
             }
-            
         };
         Sk.builtin.int_.prototype.tp$str = function () {
             return new Sk.builtin.str(this.v.toString());

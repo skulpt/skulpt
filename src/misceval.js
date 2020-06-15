@@ -558,26 +558,12 @@ Sk.misceval.isTrue = function (x) {
     if (typeof x === "number") {
         return x !== 0;
     }
-    if (x instanceof Sk.builtin.lng) {
-        return x.nb$bool();
-    }
-    if (x.constructor === Sk.builtin.int_) {
-        return x.v !== 0;
-    }
-    if (x.constructor === Sk.builtin.float_) {
-        return x.v !== 0;
-    }
     if (x.nb$bool) {
-        ret = x.nb$bool(); // the slot wrapper takes care of the error message
-        if (ret !== undefined) {
-            return ret.v !== 0;
-        }
+        return  x.nb$bool().v !== 0;
     }
     if (x.sq$length) {
         ret = x.sq$length(); // the slot wrapper takes care of the error message
-        if (ret !== undefined) {
-            return Sk.builtin.asnum$(ret) !== 0;
-        }
+        return Sk.builtin.asnum$(ret) !== 0;
     }
     return true;
 };

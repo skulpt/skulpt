@@ -11,16 +11,8 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function (x) {
         // internal function called with a javascript int/float/str
         // Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
-        if (typeof x === "number") {
+        if (typeof x === "number" || x instanceof JSBI) {
             this.v = x;
-        } else if (x instanceof JSBI) {
-            if (Sk.__future__.python3) {
-                this.v = x;
-            } else if (this.constructor === Sk.builtin.lng) {
-                this.v = x;
-            } else {
-                return new Sk.builtin.lng(x);
-            }
         } else if (typeof x === "string") {
             this.v = stringToNumberOrBig(x);
         } else if (x === undefined) {
@@ -338,12 +330,14 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             if (ndigits > 0) {
                 return new Sk.builtin.int_(v);
             }
-            if (typeof v === "number") {
+            if (typeof v === "number" && Sk.__future__.bankers_rounding) {
                 const num10 = v / multiplier;
                 const rounded = Math.round(num10);
                 const bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
                 const result = bankRound * multiplier;
                 return new Sk.builtin.int_(result);
+            } else if (typeof v === "number") {
+                return new Sk.builtin.int_(Math.round(v / multiplier) * multiplier);
             } else {
                 const BigMultiplier = JSBI.BigInt(multiplier * 10);
                 const ten = JSBI.BigInt(10);

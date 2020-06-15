@@ -538,7 +538,7 @@ Sk.builtin.unichr = function unichr(x) {
  */
 Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
     let v;
-    if (x.constructor === Sk.builtin.int_) {
+    if (x.constructor === Sk.builtin.int_ || x instanceof Sk.builtin.int_) {
         v = x.v; // we don't use asnum$ because it returns a str rather than a bigint. 
     } else {
         x = x.nb$index();
@@ -550,7 +550,7 @@ Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
     } else {
         str = prefix + str;
     }
-    if (radix !== 2 && !Sk.__future__.python3 && v instanceof JSBI) {
+    if (radix !== 2 && !Sk.__future__.python3 && (x instanceof Sk.builtin.lng || v instanceof JSBI)) {
         str += "L";
     }
     return new Sk.builtin.str(str);
@@ -956,15 +956,9 @@ Sk.builtin.pow = function pow(a, b, c) {
         if (a instanceof Sk.builtin.float_ || b instanceof Sk.builtin.float_ || b_num < 0) {
             return new Sk.builtin.float_(Math.pow(a_num, b_num));
         }
-
         left = new Sk.builtin.int_(a_num);
         right = new Sk.builtin.int_(b_num);
         res = left.nb$power(right);
-
-        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng) {
-            return new Sk.builtin.lng(res);
-        }
-
         return res;
     } else {
         if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
