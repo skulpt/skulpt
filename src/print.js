@@ -74,6 +74,7 @@ Sk.builtin.print = function print(args, kwargs) {
         Sk.misceval.callsimArray(kw_list.file.write, [kw_list.file, new Sk.builtin.str(s)]); // callsim to write function
     } else {
         if (Sk.globals.sys !== undefined) {
+            const sys = Sk.globals.sys;
             return Sk.misceval.callsimOrSuspendArray(sys.$d.stdout.write, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
         }
         return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {

@@ -4,6 +4,7 @@
  * todo; these should all be func objects too, otherwise str() of them won't
  * work, etc.
  */
+const JSBI = require("jsbi");
 
 Sk.builtin.range = function range(start, stop, step) {
     var ret = [];
@@ -46,9 +47,9 @@ Sk.builtin.range = function range(start, stop, step) {
         }
     } else {
         // This is going to be slow, really needs to be a generator
-        startlng = new Sk.builtin.int_(start);
-        steplng = new Sk.builtin.int_(step);
-        stoplng = new Sk.builtin.int_(stop);
+        const startlng = new Sk.builtin.int_(start);
+        const steplng = new Sk.builtin.int_(step);
+        const stoplng = new Sk.builtin.int_(stop);
         if (steplng.nb$ispositive()) {
             i = startlng;
             while (Sk.misceval.isTrue(i.ob$lt(stoplng))) {
@@ -549,7 +550,7 @@ Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
     } else {
         str = prefix + str;
     }
-    if (radix !== 2 && !Sk.__future__.python3 && x instanceof JSBI) {
+    if (radix !== 2 && !Sk.__future__.python3 && v instanceof JSBI) {
         str += "L";
     }
     return new Sk.builtin.str(str);

@@ -3,6 +3,7 @@
  *
  */
 Sk.misceval = {};
+const JSBI = require("jsbi");
 
 /*
   Suspension object format:

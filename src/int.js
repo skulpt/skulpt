@@ -1,3 +1,5 @@
+const JSBI = require("jsbi");
+
 /**
  * @constructor
  * Sk.builtin.int_
@@ -53,7 +55,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         tp$getattr: Sk.generic.getAttr,
 
         tp$richcompare: function (other, op) {
-            if (!(other instanceof Sk.builtin.int_) && !(other instanceof Sk.builtin.float_)) {
+            if (!(other instanceof Sk.builtin.int_)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             let v = this.v;
