@@ -105,47 +105,25 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 
         nb$positive: cloneSelf,
 
-        nb$negative: numberUnarySlot(function (v, w) {
-            return -v;
-        }, JSBI.unaryMinus),
+        nb$negative: numberUnarySlot((v) => -v, JSBI.unaryMinus),
 
         nb$add: numberSlot(
-            function (v, w) {
-                return v + w;
-            },
-            function (v, w) {
-                if (!(v.sign ^ w.sign)) {
-                    return JSBI.add(v, w);
-                }
-                return convertIfSafe(JSBI.add(v, w)); // if the signs are different then see if we can convert to number safely.
-            }
+            (v, w) => v + w,
+            (v, w) => (!(v.sign ^ w.sign) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
         ),
         nb$subtract: numberSlot(
-            function (v, w) {
-                return v - w;
-            },
-            function (v, w) {
-                if (v.sign ^ w.sign) {
-                    return JSBI.subtract(v, w);
-                }
-                return convertIfSafe(JSBI.subtract(v, w)); // if the signs are the same then see if we can convert to number safely.
-            }
+            (v, w) => v - w,
+            (v, w) => (v.sign ^ w.sign ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
         ),
-        nb$multiply: numberSlot(function (v, w) {
-            return v * w;
-        }, JSBI.multiply),
+        nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
         nb$divide: function (other) {
             if (Sk.__future__.division) {
                 return this.nb$float_().nb$divide(other);
             }
             return this.nb$floor_divide(other);
         },
-        nb$floor_divide: numberDivisionSlot(function (v, w) {
-            return Math.floor(v / w);
-        }, JSBI.divide),
-        nb$remainder: numberDivisionSlot(function (v, w) {
-            return v - Math.floor(v / w) * w;
-        }, JSBI.remainder),
+        nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), JSBI.divide),
+        nb$remainder: numberDivisionSlot((v, w) => v - Math.floor(v / w) * w, JSBI.remainder),
         nb$divmod: function (other) {
             const floor = this.nb$floor_divide(other);
             const remainder = this.nb$remainder(other);
@@ -154,22 +132,13 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
             return new Sk.builtin.tuple([floor, remainder]);
         },
-        nb$and: numberBitSlot(function (v, w) {
-            return v & w;
-        }, JSBI.bitwiseAnd),
-        nb$or: numberBitSlot(function (v, w) {
-            return v | w;
-        }, JSBI.bitwiseOr),
-        nb$xor: numberBitSlot(function (v, w) {
-            return v ^ w;
-        }, JSBI.bitwiseXor),
+        nb$and: numberBitSlot((v, w) => v & w, JSBI.bitwiseAnd),
+        nb$or: numberBitSlot((v, w) => v | w, JSBI.bitwiseOr),
+        nb$xor: numberBitSlot((v, w) => v ^ w, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, function (v) {
-            v.sign = false;
-            return v;
-        }),
+        nb$abs: numberUnarySlot(Math.abs, (v) => (v.sign ? JSBI.unaryMinus(v) : v)),
 
-        nb$lshift: numberShiftSlot(function (v, w) {
+        nb$lshift: numberShiftSlot((v, w) => {
             if (w < 53) {
                 const tmp = v * 2 * shiftconsts[w];
                 if (numberOrStringWithinThreshold(tmp)) {
@@ -179,21 +148,17 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
         }, JSBI.leftShift),
         nb$rshift: numberShiftSlot(
-            function (v, w) {
+            (v, w) => {
                 const tmp = v >> w;
                 if (v > 0 && tmp < 0) {
                     return tmp & (Math.pow(2, 32 - w) - 1);
                 }
                 return tmp;
             },
-            function (v, w) {
-                return convertIfSafe(JSBI.signedRightShift(v, w));
-            }
+            (v, w) => convertIfSafe(JSBI.signedRightShift(v, w))
         ),
 
-        nb$invert: numberUnarySlot(function (v) {
-            return ~v;
-        }, JSBI.bitwiseNot),
+        nb$invert: numberUnarySlot((v) => ~v, JSBI.bitwiseNot),
         nb$power: function (other, mod) {
             let ret;
             if (other instanceof Sk.builtin.int_ && (mod === undefined || mod instanceof Sk.builtin.int_)) {
@@ -223,7 +188,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         nb$lng: function () {
             return new Sk.builtin.long(this.v);
-        }
+        },
     },
     getsets: {
         real: {
@@ -244,7 +209,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         bit_length: {
             $meth: function () {
-                return new Sk.builtin.int_(Sk.builtin.bin(this).sq$length()-2);
+                return new Sk.builtin.int_(Sk.builtin.bin(this).sq$length() - 2);
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -333,7 +298,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             if (typeof v === "number" && Sk.__future__.bankers_rounding) {
                 const num10 = v / multiplier;
                 const rounded = Math.round(num10);
-                const bankRound = (((((num10>0)?num10:(-num10))%1)===0.5)?(((0===(rounded%2)))?rounded:(rounded-1)):rounded);
+                const bankRound = (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
                 const result = bankRound * multiplier;
                 return new Sk.builtin.int_(result);
             } else if (typeof v === "number") {
@@ -681,7 +646,7 @@ function getInt(x, base) {
 
 /**
  *
- * We don't need to check the string here since str2number did that for us
+ * We don't need to check the string has valid digits since str2number did that for us
  * @param {*} s
  * @param {*} base
  */
