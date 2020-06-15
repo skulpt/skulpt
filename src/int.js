@@ -11,8 +11,16 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function (x) {
         // internal function called with a javascript int/float/str
         // Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
-        if (typeof x === "number" || x instanceof JSBI) {
+        if (typeof x === "number") {
             this.v = x;
+        } else if (x instanceof JSBI) {
+            if (Sk.__future__.python3) {
+                this.v = x;
+            } else if (this.constructor === Sk.builtin.lng) {
+                this.v = x;
+            } else {
+                return new Sk.builtin.lng(x);
+            }
         } else if (typeof x === "string") {
             this.v = stringToNumberOrBig(x);
         } else if (x === undefined) {
@@ -692,9 +700,20 @@ function fromStrToBigWithBase(s, base) {
     base = JSBI.BigInt(base);
     let power = JSBI.BigInt(1);
     let num = JSBI.BigInt(0);
-    let toadd;
+    let toadd, val;
     for (let i = s.length - 1; i >= 0; i--) {
-        toadd = JSBI.multiply(JSBI.BigInt(s[i]), power);
+        val = s.charCodeAt(i);
+        if (val >= 48 && val <= 57) {
+            // 0-9
+            val = val - 48;
+        } else if (val >= 65 && val <= 90) {
+            // A-Z
+            val = val - 65 + 10;
+        } else if (val >= 97 && val <= 122) {
+            // a-z
+            val = val - 97 + 10;
+        }
+        toadd = JSBI.multiply(JSBI.BigInt(val), power);
         num = JSBI.add(num, toadd);
         power = JSBI.multiply(power, base);
     }
