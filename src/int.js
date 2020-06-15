@@ -100,7 +100,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return !v.sign;
         },
         nb$bool: function () {
-            return new Sk.builtin.bool(this.v !== 0); // should be fine not to check BigInt here
+            return this.v !== 0; // should be fine not to check BigInt here
         },
 
         nb$positive: cloneSelf,

@@ -78,7 +78,7 @@ Sk.generic.slotFuncNoArgs = function (dunderName) {
     };
 };
 
-Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) {
+Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg, f) {
     return function () {
         let res;
         const func = Sk.abstr.lookupSpecial(this, dunderName);
@@ -89,6 +89,9 @@ Sk.generic.slotFuncNoArgsWithCheck = function (dunderName, checkFunc, checkMsg) 
             if (!checkFunc(res)) {
                 throw new Sk.builtin.TypeError(dunderName + " should return " + checkMsg + " (returned " + Sk.abstr.typeName(res) + ")");
             }
+        }
+        if (f !== undefined) {
+            return f(res);
         }
         return res;
     };
@@ -788,7 +791,7 @@ slots.__abs__ = {
 slots.__bool__ = {
     $name: "__bool__",
     $slot_name: "nb$bool",
-    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__bool__", Sk.builtin.checkBool, "bool"),
+    $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__bool__", Sk.builtin.checkBool, "bool", (res) => res.v !==0),
     $wrapper: Sk.generic.wrapperCallNoArgs,
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
@@ -1137,7 +1140,7 @@ slots.py2$slots = {
     __nonzero__: {
         $name: "__nonzero__",
         $slot_name: "nb$bool",
-        $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__nonzero__", Sk.builtin.checkInt, "int"),
+        $slot_func: Sk.generic.slotFuncNoArgsWithCheck("__nonzero__", Sk.builtin.checkInt, "int", (res) => res.v !==0),
         $wrapper: Sk.generic.wrapperCallNoArgs,
         $textsig: "($self, /)",
         $flags: { NoArgs: true },

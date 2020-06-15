@@ -377,7 +377,7 @@ Sk.builtin.float_.prototype.nb$positive = function () {
 
 /** @override */
 Sk.builtin.float_.prototype.nb$bool = function () {
-    return new Sk.builtin.bool(this.v !== 0);
+    return this.v !== 0;
 };
 
 /** @override */

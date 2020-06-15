@@ -65,7 +65,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             return new Sk.builtin.complex(-this.real, -this.imag);
         },
         nb$bool: function () {
-            return new Sk.builtin.bool(this.real || this.imag);
+            return this.real || this.imag;
         },
         nb$add: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return new Sk.builtin.complex(a_real + b_real, a_imag + b_imag);

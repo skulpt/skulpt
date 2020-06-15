@@ -559,7 +559,7 @@ Sk.misceval.isTrue = function (x) {
         return x !== 0;
     }
     if (x.nb$bool) {
-        return  x.nb$bool().v !== 0;
+        return  x.nb$bool();
     }
     if (x.sq$length) {
         ret = x.sq$length(); // the slot wrapper takes care of the error message
