@@ -224,6 +224,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
         } else {
             delete proto[jsMangled];
             // delete the slot_func
+            // TODO what about slot funcs that are dual slots... 
             const slot_name = Sk.dunderToSkulpt[jsMangled];
             if (slot_name !== undefined) {
                 delete this.prototype[slot_name];
@@ -402,8 +403,11 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
 Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
     const slot_name = Sk.slots[dunder].$slot_name;
     const proto = this.prototype;
-    proto[slot_name] = undefined; // required otherwise we will try to override an already defined func
+    if (proto.hasOwnProperty(slot_name)) {
+        return; // double slots can be problematic
+    }
     Object.defineProperty(proto, slot_name, {
+        configurable: true,
         get() {
             const mro = proto.tp$mro;
             for (let i = 1; i < mro.length; i++) {
@@ -413,10 +417,6 @@ Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
                 }
             }
         },
-        set (slot_func) {
-            delete proto[slot_name];
-            proto[slot_name] = slot_func;
-        }
     });
 };
 
