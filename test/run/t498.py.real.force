@@ -30,12 +30,12 @@ floating point
 29.6741325364
 
 integers and long integers
-8 <type 'long'>
--8 <type 'long'>
-0.125 <type 'float'>
--0.125 <type 'float'>
-3 <type 'long'>
-3 <type 'long'>
+8
+-8
+0.125
+-0.125
+3
+3
 
 integers and floating point
 15.625 <type 'float'>

@@ -17,15 +17,23 @@
  * @return {Sk.builtin.lng} Python long
  */
 
-Sk.builtin.lng = function (x) {
-    Sk.builtin.int_.call(this, x);
-};
-Sk.abstr.setUpInheritance("long", Sk.builtin.lng, Sk.builtin.int_);
+const intProto = Sk.builtin.int_.prototype;
 
-Sk.builtin.lng.prototype.nb$negative = function () {
-    return new Sk.builtin.lng(Sk.builtin.int_.prototype.nb$negative.call(this).v);
-};
-
-Sk.builtin.lng.prototype.$r = function () {
-    return new Sk.builtin.str(this.v.toString() + "L");
-};
+Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
+    base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
+    constructor: function (x) {
+        Sk.builtin.int_.call(this, x);
+    },
+    slots: {
+        $r: function () {
+            return new Sk.builtin.str(this.v.toString() + "L");
+        },
+        tp$as_number: true,
+        nb$negative: function () {
+            return new Sk.builtin.lng(intProto.nb$negative.call(this).v);
+        },
+        nb$positive: function () {
+            return new Sk.builtin.lng(intProto.nb$positive.call(this).v);
+        },
+    },
+});

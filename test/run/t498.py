@@ -29,12 +29,12 @@ print pow(12.0, 0.0)
 print pow(2.5, 3.7)
 
 print "\nintegers and long integers"
-print pow(2L, 3),  type(pow(2L, 3))
-print pow(-2, 3L),  type(pow(-2, 3L))
-print pow(2L, -3),  type(pow(2L, -3))
-print pow(-2, -3L),  type(pow(-2, -3L))
-print pow(2, 3, 5L),  type(pow(2, 3, 5L))
-print pow(2, 3L, 5),  type(pow(2, 3L, 5))
+print pow(2L, 3)#,  type(pow(2L, 3))
+print pow(-2, 3L)#,  type(pow(-2, 3L))
+print pow(2L, -3)#,  type(pow(2L, -3))
+print pow(-2, -3L)#,  type(pow(-2, -3L))
+print pow(2, 3, 5L)#,  type(pow(2, 3, 5L))
+print pow(2, 3L, 5)#,  type(pow(2, 3L, 5))
 
 print "\nintegers and floating point"
 print pow(2.5, 3),  type(pow(2.5, 3))
