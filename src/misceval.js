@@ -67,10 +67,8 @@ Sk.misceval.isIndex = function (o) {
         return true;
     } else if (o.constructor === Sk.builtin.int_) {
         return true;
-    } else if (o.sk$prototypical) {
-        return o.nb$index !== undefined;
     }
-    return Sk.abstr.lookupSpecial(o, Sk.builtin.str.$index) !== undefined;
+    return o.nb$index !== undefined;
 };
 Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
@@ -104,7 +102,7 @@ Sk.misceval.asIndexOrThrow = function (obj) {
 };
 
 Sk.misceval.asIndex = function (o) {
-    if (o===null || o=== undefined) {
+    if (o === null || o === undefined) {
         return undefined;
     }
     if (typeof o === "number") {
@@ -114,10 +112,7 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.int_) {
         res = o.v;
     } else if (o.nb$index) {
-        res = o.nb$index(); // this slot will check the return value is an int. 
-        if (res !== undefined) {
-            res = res.v;
-        }
+        res = o.nb$index().v; // this slot will check the return value is an int.
     }
     if (typeof res === "number") {
         return res;
@@ -175,8 +170,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     } else if (Sk.builtin.checkIterable(arg)) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
-        for (it = Sk.abstr.iter(arg), i = it.tp$iternext();
-            i !== undefined; i = it.tp$iternext()) {
+        for (it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             res.push(i);
         }
         return res;
@@ -252,9 +246,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
-    if (!Sk.__future__.python3 &&
-        (v_type !== w_type) &&
-        (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
+    if (!Sk.__future__.python3 && v_type !== w_type && (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
         numeric_types = [Sk.builtin.float_, Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.bool];
         sequence_types = [
@@ -380,10 +372,9 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend), Sk.misceval.isTrue);
     }
     if (op === "NotIn") {
-        return Sk.misceval.chain(
-            Sk.abstr.sequenceContains(w, v, canSuspend),
-            function(x) { return !Sk.misceval.isTrue(x); }
-        );
+        return Sk.misceval.chain(Sk.abstr.sequenceContains(w, v, canSuspend), function (x) {
+            return !Sk.misceval.isTrue(x);
+        });
     }
 
     // Call Javascript shortcut method if exists for either object
@@ -613,13 +604,17 @@ Sk.misceval.print_ = function (x) {
 
     s = new Sk.builtin.str(x);
 
-    return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
-        return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
-    }, function () {
-        if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
-            Sk.misceval.softspace_ = true;
+    return Sk.misceval.chain(
+        Sk.importModule("sys", false, true),
+        function (sys) {
+            return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], s]);
+        },
+        function () {
+            if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === " ") {
+                Sk.misceval.softspace_ = true;
+            }
         }
-    });
+    );
 };
 Sk.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 
@@ -974,7 +969,10 @@ Sk.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
 
 Sk.misceval.chain = function (initialValue, chainedFns) {
     // We try to minimse overhead when nothing suspends (the common case)
-    var i = 1, value = initialValue, j, fs;
+    var i = 1,
+        value = initialValue,
+        j,
+        fs;
 
     while (true) {
         if (i == arguments.length) {

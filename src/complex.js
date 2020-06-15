@@ -37,7 +37,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
                 }
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
-            return complexNumberSlot(function(a_real, a_imag, b_real, b_imag){
+            return complexNumberSlot(function (a_real, a_imag, b_real, b_imag) {
                 const equal = a_real == b_real && a_imag == b_imag;
                 return op === "Eq" ? equal : !equal;
             }, true).call(this, w);
@@ -301,12 +301,7 @@ function complex_from_py(real, imag) {
 
     // just a temporary function to match cpython
     function check_number(nb) {
-        if (nb.sk$prototypical) {
-            return nb.nb$float_;
-        } else {
-            // multiple inheritance
-            return Sk.abstr.lookupSpecial(nb, "__float__");
-        }
+        return nb.nb$float_ !== undefined;
     }
 
     if (r != null) {
@@ -585,7 +580,7 @@ function fromBigIntToNumberOrOverflow(big) {
  * to the number function
  */
 function complexNumberSlot(f, suppressOverflow) {
-    return function(other) {
+    return function (other) {
         const a_real = this.real;
         const a_imag = this.imag;
         let b_real = other.real;
@@ -702,7 +697,7 @@ function c_powu(a_real, a_imag, n) {
 
     while (mask > 0 && n >= mask) {
         if (n & mask) {
-            r = new Sk.builtin.complex(r.real * p.real - r.imag * p.imag, r.real*p.imag + p.real * r.imag);
+            r = new Sk.builtin.complex(r.real * p.real - r.imag * p.imag, r.real * p.imag + p.real * r.imag);
         }
 
         mask <<= 1;

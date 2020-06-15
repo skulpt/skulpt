@@ -18,7 +18,7 @@ Sk.abstr.setUpBaseInheritance();
 
 /**
  * worth noting that we don't use the new api for object since descr_objects are not yet initialized
- * object, type, NoneType, NotImplemented, 
+ * object, type, NoneType, NotImplemented,
  * slot_wrapper, methods_descriptor, getsets_desciptor, class_descriptor
  * will be fully initialized in the import.js doOneTimeInitialization
  */
@@ -28,22 +28,11 @@ Sk.builtin.object.prototype.tp$doc = "The most base type";
 Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
     // see cypthon object_new for algorithm details we do two versions one for prototypical and one for not
     if ((args && args.length) || (kwargs && kwargs.length)) {
-        if (this.sk$prototypical) {
-            if (this.tp$new !== Sk.builtin.object.prototype.tp$new) {
-                throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
-            }
-            if (this.tp$init === Sk.builtin.object.prototype.tp$init) {
-                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
-            }
-        } else {
-            const new_meth = Sk.abstr.lookupSpecial(this, "__new__");
-            const init_meth = Sk.abstr.lookupSpecial(this, "__init__");
-            if (new_meth !== Sk.builtin.object.prototype.__new__) {
-                throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
-            }
-            if (init_meth === Sk.builtin.object.prototype.__init__) {
-                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
-            }
+        if (this.tp$new !== Sk.builtin.object.prototype.tp$new) {
+            throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
+        }
+        if (this.tp$init === Sk.builtin.object.prototype.tp$init) {
+            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + "() takes no arguments");
         }
     }
     return new this.constructor();
@@ -52,22 +41,11 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     // see cypthon object_init for algorithm details
     if ((args && args.length) || (kwargs && kwargs.length)) {
-        if (this.sk$prototypical) {
-            if (this.tp$init !== Sk.builtin.object.prototype.tp$init) {
-                throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
-            }
-            if (this.tp$new === Sk.builtin.object.prototype.tp$new) {
-                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
-            }
-        } else {
-            const new_meth = Sk.abstr.lookupSpecial(this, "__new__");
-            const init_meth = Sk.abstr.lookupSpecial(this, "__init__");
-            if (init_meth !== Sk.builtin.object.prototype.__init__) {
-                throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
-            }
-            if (new_meth === Sk.builtin.object.prototype.__new__) {
-                throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
-            }
+        if (this.tp$init !== Sk.builtin.object.prototype.tp$init) {
+            throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
+        }
+        if (this.tp$new === Sk.builtin.object.prototype.tp$new) {
+            throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
         }
     }
     return Sk.builtin.none.none$;
@@ -113,7 +91,7 @@ Sk.builtin.object.prototype.tp$richcompare = function (other, op) {
         case "NotEq":
             // use tp$richcompare here... because CPython does. ob$eq breaks some tests for NotEq subclasses
             res = this.tp$richcompare(other);
-            if (res !== undefined && res !== Sk.builtin.NotImplemented.NotImplemented$) {
+            if (res !== Sk.builtin.NotImplemented.NotImplemented$) {
                 res = !Sk.misceval.isTrue(res);
             }
             break;

@@ -127,7 +127,6 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         klass.prototype[k.v] = v;
     }
     klass.$allocateSlots();
-    debugger;
     return klass;
 };
 
@@ -219,20 +218,26 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
     // for delattr
 
     if (value === undefined) {
-        if (!this.prototype.hasOwnProperty(jsMangled)) {
+        const proto = this.prototype;
+        if (!proto.hasOwnProperty(jsMangled)) {
             throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + pyName.$jsstr() + "'");
         } else {
-            delete this.prototype[jsMangled];
-            // delete the slot_func if this object follows protypical inheritance
+            delete proto[jsMangled];
+            // delete the slot_func
             const slot_name = Sk.dunderToSkulpt[jsMangled];
-            if (this.prototype.prototypical && slot_name !== undefined) {
+            if (slot_name !== undefined) {
                 delete this.prototype[slot_name];
+                if (!proto.sk$prototypical) {
+                    this.$allocateGetterSlot(jsMangled); 
+                    // if this was a slot func and we are not prototypical
+                    // allocate a getter slot in it's place
+                }
             }
             return;
         }
     }
     this.prototype[jsMangled] = value;
-    if (this.prototype.sk$prototypical && jsMangled in Sk.dunderToSkulpt) {
+    if (jsMangled in Sk.dunderToSkulpt) {
         this.$allocateSlot(jsMangled);
     }
 };
@@ -376,9 +381,9 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
             this.$allocateSlot(dunder);
         }
     }
-    debugger;
     if (!proto.sk$prototypical) {
-        // then just allocate all the slots
+        // we allocate getter slots on non-prototypical klasses that walk the MRO 
+        // and who don't have the dunder already declared
         for (let dunder in Sk.slots) {
             if (!proto.hasOwnProperty(dunder)) {
                 this.$allocateGetterSlot(dunder);
@@ -389,24 +394,29 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
 
 Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
     const slot_def = Sk.slots[dunder];
-    this.prototype[slot_def.$slot_name] = slot_def.$slot_func;
+    const slot_name = slot_def.$slot_name;
+    const proto = this.prototype;
+    proto[slot_name] = slot_def.$slot_func;
 };
 
 Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
-    const slot_def = Sk.slots[dunder];
-    const slot_name = slot_def.$slot_name;
-    this.prototype[slot_name] = undefined;
-    Object.defineProperty(this.prototype, slot_name, {
+    const slot_name = Sk.slots[dunder].$slot_name;
+    const proto = this.prototype;
+    proto[slot_name] = undefined; // required otherwise we will try to override an already defined func
+    Object.defineProperty(proto, slot_name, {
         get() {
-            const mro = this.tp$mro;
-            for (let i = 0; i < mro.length; i++) {
-                const base = mro[i];
-                if (base.prototype.hasOwnProperty(dunder)) {
-                    debugger;
-                    return base.prototype[slot_name];
+            const mro = proto.tp$mro;
+            for (let i = 1; i < mro.length; i++) {
+                const base_proto = mro[i].prototype;
+                if (base_proto.hasOwnProperty(dunder)) {
+                    return base_proto[slot_name];
                 }
             }
         },
+        set (slot_func) {
+            delete proto[slot_name];
+            proto[slot_name] = slot_func;
+        }
     });
 };
 

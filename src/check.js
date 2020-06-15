@@ -99,10 +99,7 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
 Sk.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
-    return (
-        arg != null &&
-        ((arg.sk$prototypical && arg.mp$subscript !== undefined) || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$getitem) !== undefined)
-    );
+    return arg != null && arg.mp$subscript !== undefined;
 };
 Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
@@ -138,10 +135,7 @@ Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (obj) {
     // takes care of builtin functions and methods, builtins
-    if (obj.sk$prototypical) {
-        return obj.tp$call !== undefined;
-    }
-    return Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$call) != null;
+    return obj.tp$call !== undefined;
 };
 
 Sk.builtin.checkNumber = function (arg) {

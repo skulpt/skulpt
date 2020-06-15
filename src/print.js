@@ -5,18 +5,17 @@
 
 */
 Sk.builtin.print = function print(args, kwargs) {
-    const kwarg_vals = Sk.abstr.copyKeywordsToNamedArgs(
-        "print",
-        ["sep", "end", "file"],
-        [],
-        kwargs,
-        [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.none.none$]);
-    
+    const kwarg_vals = Sk.abstr.copyKeywordsToNamedArgs("print", ["sep", "end", "file"], [], kwargs, [
+        Sk.builtin.none.none$,
+        Sk.builtin.none.none$,
+        Sk.builtin.none.none$,
+    ]);
+
     // defaults, null for None
     var kw_list = {
-        "sep": " ",
-        "end": "\n",
-        "file": null
+        sep: " ",
+        end: "\n",
+        file: null,
     };
 
     var remap_val;
@@ -74,10 +73,13 @@ Sk.builtin.print = function print(args, kwargs) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
         Sk.misceval.callsimArray(kw_list.file.write, [kw_list.file, new Sk.builtin.str(s)]); // callsim to write function
     } else {
+        if (Sk.globals.sys !== undefined) {
+            return Sk.misceval.callsimOrSuspendArray(sys.$d.stdout.write, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+        }
         return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
-            return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+            return Sk.misceval.callsimOrSuspendArray(sys.$d.stdout.write, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
         });
     }
     // ToDo:
-    // cpython print function may receive another flush kwarg that flushes the output stream immediatelly
+    // cpython print function may receive another flush kwarg that flushes the output stream immediately
 };

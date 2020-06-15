@@ -402,7 +402,6 @@ function numberDivisionSlot(number_func, bigint_func) {
 
 function numberShiftSlot(number_func, bigint_func) {
     return function (other) {
-        debugger;
         if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
@@ -652,12 +651,7 @@ function getInt(x, base) {
     } else if (base !== null) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     } else if (x.nb$int_) {
-        // nb$int_ slot_wrapper takes care of checking nb$int
-        // but it might be undefined if it's multiple inheritance
-        res = x.nb$int_();
-        if (res !== undefined) {
-            return res;
-        }
+        return x.nb$int_();
     }
 
     if ((func = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$trunc))) {

@@ -160,7 +160,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     // subclass of v's type
     const w_type = w.constructor;
     const v_type = v.constructor;
-    const w_is_subclass = w_type !== v_type && w_type.sk$basetype === undefined &&  w instanceof v_type;
+    const w_is_subclass = w_type !== v_type && w_type.sk$basetype === undefined && w instanceof v_type;
 
     // From the Python 2.7 docs:
     //
@@ -217,26 +217,20 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
 Sk.abstr.unary_op_ = function (v, opname) {
     const vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
-        const ret = vop.call(v);
-        if (ret !== undefined) { // should this be not implemented?
-            return ret;
-        }
+        return vop.call(v);
     }
     Sk.abstr.unop_type_error(v, opname);
 };
-
 
 Sk.abstr.numberBinOp = function (v, w, op) {
     return Sk.abstr.binary_op_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
-
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     return Sk.abstr.binary_iop_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
-
 
 Sk.abstr.numberUnaryOp = function (v, op) {
     if (op === "Not") {
@@ -264,13 +258,9 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
  * @param {boolean=} canSuspend
  */
 Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
-    let ret;
     if (seq.sq$contains) {
-        ret =  seq.sq$contains(ob);
-        if (ret !== undefined) {
-            return ret;
-        }
-    } 
+        return seq.sq$contains(ob, canSuspend);
+    }
     const r = Sk.misceval.iterFor(
         Sk.abstr.iter(seq),
         function (i) {
@@ -286,14 +276,10 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
 };
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
-    let res;
     if (seq1.sq$concat) {
-        res = seq1.sq$concat(seq2);
+        return seq1.sq$concat(seq2);
     }
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq1) + "' object can't be concatenated");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq1) + "' object can't be concatenated");
 };
 
 Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
@@ -415,7 +401,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
         // a fast case
         return defaults || [];
     }
-    args = args.slice(0);//[...args]; // make a shallow copy of args
+    args = args.slice(0); //[...args]; // make a shallow copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
         const name = kwargs[i]; // JS string
@@ -495,8 +481,6 @@ Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
-
-
 Sk.abstr.objectFormat = function (obj, format_spec) {
     const meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format); // inherited from object so guaranteed to exist
     const result = Sk.misceval.callsimArray(meth, [obj, format_spec]);
@@ -507,75 +491,50 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
 };
 
 Sk.abstr.objectAdd = function (a, b) {
-    let res;
     if (a.nb$add) {
-        res = a.nb$add(b);
+        return a.nb$add(b);
     }
-    if (res === undefined) {
-        const atypename = Sk.abstr.typeName(a);
-        const btypename = Sk.abstr.typeName(b);
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
-    }
-    return res;
+    const atypename = Sk.abstr.typeName(a);
+    const btypename = Sk.abstr.typeName(b);
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
 };
 
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectNegative = function (obj) {
-    let res;
     if (obj.nb$negative) {
-        res = obj.nb$negative();
+        return obj.nb$negative();
     }
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
 };
 
 Sk.abstr.objectPositive = function (obj) {
-    let res;
     if (obj.nb$positive) {
-        res = obj.nb$positive();
+        return obj.nb$positive();
     }
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
 };
 
 Sk.abstr.objectDelItem = function (o, key) {
-    let res;
-    if (o != null && o.mp$ass_subscript) {
-        res = o.mp$ass_subscript(key);
+    if (o.mp$ass_subscript) {
+        return o.mp$ass_subscript(key);
     }
-    // should return None
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
 };
 Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
-    let res;
-    if (o != null && o.mp$subscript) {
-        res = o.mp$subscript(key, canSuspend);
+    if (o.mp$subscript) {
+        return o.mp$subscript(key, canSuspend);
     }
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support indexing");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support indexing");
 };
 Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
-    let res;
-    if (o != null && o.mp$ass_subscript) {
-        res = o.mp$ass_subscript(key, v, canSuspend);
+    if (o.mp$ass_subscript) {
+        return o.mp$ass_subscript(key, v, canSuspend);
     }
-    if (res === undefined) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support item assignment");
-    }
-    return res;
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support item assignment");
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
@@ -625,37 +584,22 @@ Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
  */
 
 Sk.abstr.iter = function (obj) {
-    let iter;
-    if (obj.sk$prototypical) {
-        // this is the easy case we can just check
-        // slots for (tp$iter and then tp$iternext) or mp$subscript
-        if (obj.tp$iter) {
-            iter = obj.tp$iter();
-            if (iter !== undefined && iter.tp$iternext) {
-                return iter;
-            }
-        }
-        if (obj.mp$subscript) {
-            return new Sk.builtin.seq_iter_(obj);
-        }
-    } else {
-        // in the case of multiple inheritance
-        // we know tp$iter will exist because it has all the slot functions
-        iter = obj.tp$iter();
-        if (iter !== undefined && Sk.abstr.lookupSpecial(iter, Sk.builtin.str.$next) !== undefined) {
+    if (obj.tp$iter) {
+        const iter = obj.tp$iter();
+        if (iter.tp$iternext) {// only a valid iterator if there is a tp$iternext
             return iter;
         }
-        if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem)) {
-            // then we have an object that supports __getitem__ so return a seq iterator
-            return new Sk.builtin.seq_iter_(obj);
-        }
     }
+    if (obj.mp$subscript) {
+        return new Sk.builtin.seq_iter_(obj);
+    }
+
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
 Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
-    if (iterable == null) {
+    if (iterable === undefined) {
         return [];
     }
     if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
@@ -671,7 +615,7 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
         return Sk.misceval.chain(ret, () => {
             return L;
         });
-    } 
+    }
     Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     return L;
 };

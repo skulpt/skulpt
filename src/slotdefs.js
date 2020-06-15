@@ -1389,6 +1389,7 @@ Sk.dunderToSkulpt = {
     __init__: "tp$init",
     __new__: "tp$new",
     __hash__: "tp$hash",
+    __call__: "tp$call",
 
     __eq__: "ob$eq",
     __ne__: "ob$ne",
