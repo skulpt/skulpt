@@ -873,6 +873,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Num:
             if (typeof e.n === "number") {
                 return e.n;
+            } else if (e.n instanceof Sk.builtin.lng) {
+                return this.makeConstant("new Sk.builtin.lng('" + e.n.v.toString() + "')"); 
             } else if (e.n instanceof Sk.builtin.int_) {
                 if (typeof e.n.v === "number") {
                     return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");

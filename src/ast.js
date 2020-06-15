@@ -3347,9 +3347,9 @@ Sk.astDump = function (node) {
             else if (node === false) {
                 ret = "False";
             }
-            // else if (node instanceof Sk.builtin.lng) {
-            //     ret = node.tp$str().v;
-            // }
+            else if (node instanceof Sk.builtin.lng) {
+                ret = node.tp$str().v;
+            }
             else if (node instanceof Sk.builtin.str) {
                 ret = node["$r"]().v;
             }
