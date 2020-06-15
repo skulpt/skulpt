@@ -981,8 +981,6 @@ Sk.builtin.pow = function pow(a, b, c) {
             throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
         }
         if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng || Math.pow(a_num, b_num) === Infinity) {
-            // convert a to a long so that we can use biginteger's modPowInt method
-            a = new Sk.builtin.lng(a);
             return a.nb$power(b, c);
         } else {
             ret = new Sk.builtin.int_(Math.pow(a_num, b_num));
