@@ -437,7 +437,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
 
         if (seq.sq$length !== undefined) {
-            var r = toInt(myGenerator.genrand_res53() * seq.sq$length());
+            var r = new Sk.builtin.int_(toInt(myGenerator.genrand_res53() * seq.sq$length()));
             return seq.mp$subscript(r);
         } else {
             throw new Sk.builtin.TypeError("object has no length");
@@ -459,7 +459,8 @@ var $builtinmodule = function (name) {
         } else if (x.sq$length !== undefined) {
             if (x.mp$ass_subscript !== undefined) {
                 for (var i = x.sq$length() - 1; i > 0; i -= 1) {
-                    var r = toInt(myGenerator.genrand_res53() * (i + 1));
+                    var r = new Sk.builtin.int_(toInt(myGenerator.genrand_res53() * (i + 1)));
+                    i = new Sk.builtin.int_(i);
                     var tmp = x.mp$subscript(r);
                     x.mp$ass_subscript(r, x.mp$subscript(i));
                     x.mp$ass_subscript(i, tmp);

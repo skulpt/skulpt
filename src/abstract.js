@@ -310,10 +310,16 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
 };
 
 Sk.abstr.sequenceGetItem = function (seq, i, canSuspend) {
+    if (typeof i === "number") {
+        i = new Sk.builtin.int_(i);
+    }
     return Sk.abstr.objectGetItem(seq, i, canSuspend);
 };
 
 Sk.abstr.sequenceSetItem = function (seq, i, x, canSuspend) {
+    if (typeof i === "number") {
+        i = new Sk.builtin.int_(i);
+    }
     return Sk.abstr.objectSetItem(seq, i, x, canSuspend);
 };
 
@@ -543,7 +549,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
     const ret = obj.tp$getattr(pyName, canSuspend, jsMangled);
     if (ret === undefined) {
         const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
-        throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr());
+        throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function (r) {
             if (r === undefined) {
