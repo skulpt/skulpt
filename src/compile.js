@@ -902,11 +902,19 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
-                    out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true, ",jsMangled,");");
+                    out("$ret = ", augvar, ".tp$getattr(", mname, ", true, ",jsMangled,");");
+                    out("\nif ($ret === undefined) {");
+                    out("\nconst error_name =", augvar,".sk$type ? \"type object '\" +", augvar,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",augvar,") + \"' object\";");
+                    out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\n};");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.Load:
-                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true, ",jsMangled,");");
+                    out("$ret = ", val, ".tp$getattr(", mname, ", true, ",jsMangled,");");
+                    out("\nif ($ret === undefined) {");
+                    out("\nconst error_name =", val,".sk$type ? \"type object '\" +", val,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",val,") + \"' object\";");
+                    out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\n};");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.AugStore:
@@ -915,12 +923,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
                     out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("$ret = Sk.abstr.sattr(", augvar, ",", mname, ",", data, ", true, ",jsMangled,");");;
+                    out("$ret = ",augvar, ".tp$setattr(", mname, ",", data, ", true, ",jsMangled,");");
                     out("}");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Store:
-                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true, ",jsMangled,");");
+                    out("$ret = ", val, ".tp$setattr(", mname, ",", data, ", true, ",jsMangled,");");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Del:
