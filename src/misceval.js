@@ -64,11 +64,6 @@ Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryO
  * @returns {boolean}
  */
 Sk.misceval.isIndex = function (o) {
-    if (typeof o === "number") {
-        return true;
-    } else if (o.constructor === Sk.builtin.int_) {
-        return true;
-    }
     return o.nb$index !== undefined;
 };
 Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
@@ -82,11 +77,11 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
  */
 Sk.misceval.asIndexOrThrow = function (obj) {
     let res;
-    if (typeof obj === "number") {
-        return obj;
-    } else if (obj.constructor === Sk.builtin.int_) {
+    if (obj.constructor === Sk.builtin.int_) {
         // the fast case
         res = obj.v;
+    } else if (typeof obj === "number") {
+        return obj;
     } else if (obj.nb$index) {
         res = obj.nb$index();
         if (res === undefined) {
@@ -627,9 +622,9 @@ Sk.misceval.loadname = function (name, other) {
     var bi;
     var v = other[name];
     if (v !== undefined) {
-        if (typeof v === "function" && v["$d"] === undefined && v["tp$name"] === undefined) {
-            return v();
-        }
+        // if (typeof v === "function" && v["$d"] === undefined && v["tp$name"] === undefined) {
+        //     return v();
+        // }
         return v;
     }
 
