@@ -1,3 +1,5 @@
+const JSBI = require("jsbi");
+
 /**
  * complex_new see https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911
  * @constructor
@@ -230,8 +232,7 @@ function try_complex_special_method(op) {
     const f = Sk.abstr.lookupSpecial(op, Sk.builtin.str.$complex);
     if (f !== undefined) {
         // method on builtin, provide this arg
-        res = Sk.misceval.callsimArray(f, [op]);
-        return res;
+        return Sk.misceval.callsimArray(f, [op]);
     }
     return null;
 }
@@ -305,13 +306,13 @@ function complex_from_py(real, imag) {
     }
 
     if (r != null) {
-        if (check_number(r) === undefined) {
+        if (!check_number(r)) {
             throw new Sk.builtin.TypeError("complex() first argument must be a string or a number, not '" + Sk.abstr.typeName(r) + "'");
         }
     }
 
     if (i != null) {
-        if (check_number(i) === undefined) {
+        if (!check_number(i)) {
             throw new Sk.builtin.TypeError("complex() second argument must be a number, not '" + Sk.abstr.typeName(r) + "'");
         }
     }
@@ -585,7 +586,7 @@ function complexNumberSlot(f, suppressOverflow) {
         const a_imag = this.imag;
         let b_real = other.real;
         let b_imag;
-        other_v = other.v;
+        const other_v = other.v;
         if (typeof b_real === "number") {
             b_imag = other.imag;
         } else if (typeof other_v === "number") {
@@ -637,7 +638,7 @@ function divide(a_real, a_imag, b_real, b_imag) {
 }
 
 const power = complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
-    int_exponent = b_real | 0; // js convert to int
+    const int_exponent = b_real | 0; // js convert to int
     if (b_imag === 0.0 && b_real === int_exponent) {
         return c_powi(a_real, a_imag, int_exponent);
     } else {
