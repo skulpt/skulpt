@@ -105,9 +105,9 @@ Sk.builtin.float_.prototype.nb$float_ = function () {
     return new Sk.builtin.float_(this.v);
 };
 
-// Sk.builtin.float_.prototype.nb$lng = function () {
-//     return new Sk.builtin.lng(this.v);
-// };
+Sk.builtin.float_.prototype.nb$lng = function () {
+    return new Sk.builtin.lng(JSBI.BigInt(this.v));
+};
 
 /**
  * Checks for float subtypes, though skulpt does not allow to

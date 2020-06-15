@@ -52,6 +52,9 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         nb$int_: function () {
             throw new Sk.builtin.TypeError("can't convert complex to int");
         },
+        nb$lng: function () {
+            throw new Sk.builtin.TypeError("can't convert complex to long");
+        },
         nb$float_: function () {
             throw new Sk.builtin.TypeError("can't convert complex to float");
         },

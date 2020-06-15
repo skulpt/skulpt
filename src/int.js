@@ -147,7 +147,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return v - Math.floor(v / w) * w;
         }, JSBI.remainder),
         nb$divmod: function (other) {
-            return new Sk.builtin.tuple([this.nb$floor_divide(other), this.nb$remainder(other)]);
+            const floor = this.nb$floor_divide(other);
+            const remainder = this.nb$remainder(other);
+            if (floor === Sk.builtin.NotImplemented.NotImplemented$ || remainder === Sk.builtin.NotImplemented.NotImplemented$) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            return new Sk.builtin.tuple([floor, remainder]);
         },
         nb$and: numberBitSlot(function (v, w) {
             return v & w;
@@ -216,6 +221,9 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
+        nb$lng: function () {
+            return new Sk.builtin.long(this.v);
+        }
     },
     getsets: {
         real: {
@@ -236,7 +244,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         bit_length: {
             $meth: function () {
-                throw new Sk.builtin.NotImplementedError("Not yet implemented in Skulpt");
+                return new Sk.builtin.int_(Sk.builtin.bin(this).sq$length()-2);
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -595,6 +603,7 @@ function stringToNumberOrBig(s) {
     return JSBI.BigInt(s);
 }
 
+Sk.builtin.int_.stringToNumberOrBig = stringToNumberOrBig;
 function bigUp(v) {
     if (typeof v === "number") {
         return JSBI.BigInt(v);
