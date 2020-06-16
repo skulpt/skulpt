@@ -573,7 +573,7 @@ Sk.builtin.dir = function dir(obj) {
 };
 
 Sk.builtin.repr = function repr(x) {
-    return Sk.misceval.objectRepr(x);
+    return x.$r();
 };
 
 Sk.builtin.open = function open(filename, mode, bufsize) {

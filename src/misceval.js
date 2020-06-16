@@ -499,17 +499,17 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 };
 Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
-Sk.misceval.objectRepr = function (v) {
-    Sk.asserts.assert(v !== undefined, "trying to repr undefined");
-    if (v !== null && v.$r) {
-        return v.$r();
+Sk.misceval.objectRepr = function (obj) {
+    Sk.asserts.assert(obj !== undefined, "trying to repr undefined");
+    if (obj !== null && obj.$r) {
+        return obj.$r().v;
     } else {
         try {
             // str goes through the common javascript cases or throws a TypeError;
-            return new Sk.builtin.str(v);
+            return new Sk.builtin.str(obj).v;
         } catch (e) {
             if (e instanceof Sk.builtin.TypeError) {
-                return new Sk.builtin.str("<unknown>");
+                return "<unknown>";
             } else {
                 throw e;
             }

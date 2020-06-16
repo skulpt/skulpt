@@ -63,7 +63,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += Sk.misceval.objectRepr(e).v + "\n";
+        got += Sk.misceval.objectRepr(e) + "\n";
     }
     if (expect !== got)
     {
@@ -241,7 +241,7 @@ function testRun(name, nocatch, debugMode)
             }
             else
             {
-                got = "EXCEPTION: " + Sk.misceval.objectRepr(e).v + "\n";
+                got = "EXCEPTION: " + Sk.misceval.objectRepr(e) + "\n";
             }
         });
 

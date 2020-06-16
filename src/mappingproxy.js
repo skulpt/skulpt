@@ -44,7 +44,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         $r: function () {
             const bits = [];
             for (let k in this.mapping) {
-                bits.push("'" + k + "': " + Sk.misceval.objectRepr(this.mapping[k]).$jsstr());
+                bits.push("'" + k + "': " + Sk.misceval.objectRepr(this.mapping[k]));
             }
             const repr = "mappingproxy({" + bits.join(", ") + "}";
             return new Sk.builtin.str(repr);
@@ -54,7 +54,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             if (res !== undefined) {
                 return res;
             } else {
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).$jsstr());
+                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
             }
         },
         sq$contains: function (key) {

@@ -21,7 +21,7 @@ function buildDictView(typename) {
             }
             this.$entered_repr = true;
             const L = Sk.abstr.arrayFromIterable(this);
-            const res = Sk.misceval.objectRepr(new Sk.builtin.list(L)).$jsstr();
+            const res = Sk.misceval.objectRepr(new Sk.builtin.list(L));
             this.$entered_repr = undefined;
             return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + res + ")");
         },
@@ -157,7 +157,7 @@ function dict_iter_get_value_or_throw() {
         return res;
     }
     // some what of a hack since we don't dynamically get keys unlike Python
-    throw new Sk.builtin.RuntimeError(Sk.misceval.objectRepr(key).$jsstr() + " removed during iteration");
+    throw new Sk.builtin.RuntimeError(Sk.misceval.objectRepr(key) + " removed during iteration");
 }
 
 /**

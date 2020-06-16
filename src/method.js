@@ -16,7 +16,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             const def_name = "?";
             const func = this.im_func;
             const self = this.im_self;
-            return new Sk.builtin.str("<bound method " + (func.$qualname || def_name) + " of " + Sk.misceval.objectRepr(self).v + ">");
+            return new Sk.builtin.str("<bound method " + (func.$qualname || def_name) + " of " + Sk.misceval.objectRepr(self) + ">");
         },
         tp$hash: function () {
             const selfhash = Sk.builtin.asnum$(Sk.builtin.hash(this.im_self));

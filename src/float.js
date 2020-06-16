@@ -75,7 +75,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
                 v = Math.floor(v);
             }
             if (!Number.isInteger(v)) {
-                throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
+                throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this) + " to integer");
             }
             if (Sk.builtin.int_.withinThreshold(v)) {
                 return new Sk.builtin.int_(v);

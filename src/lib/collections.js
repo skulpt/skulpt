@@ -27,7 +27,7 @@ const collections_mod = function (keywds) {
             __missing__: {
                 $meth: function (key) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
-                        throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).v);
+                        throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
                     } else {
                         const ret = Sk.misceval.callsimArray(this.default_factory, []);
                         this.mp$ass_subscript(key, ret);
@@ -62,7 +62,7 @@ const collections_mod = function (keywds) {
                 Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
             },
             $r: function () {
-                const def_str = Sk.misceval.objectRepr(this.default_factory).v;
+                const def_str = Sk.misceval.objectRepr(this.default_factory);
                 const dict_str = Sk.builtin.dict.prototype.$r.call(this).v;
                 return new Sk.builtin.str("defaultdict(" + def_str + ", " + dict_str + ")");
             },
@@ -263,7 +263,7 @@ const collections_mod = function (keywds) {
                         //print(k, "had undefined v");
                         v = null;
                     }
-                    ret.push("(" + Sk.misceval.objectRepr(k).v + ", " + Sk.misceval.objectRepr(v).v + ")");
+                    ret.push("(" + Sk.misceval.objectRepr(k) + ", " + Sk.misceval.objectRepr(v) + ")");
                 }
                 pairstr = ret.join(", ");
                 if (ret.length > 0) {
@@ -529,7 +529,7 @@ const collections_mod = function (keywds) {
                 $r: function () {
                     const bits = [];
                     for (let i = 0; i < this.v.length; ++i) {
-                        bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]).v;
+                        bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]);
                     }
                     const pairs = bits.join(", ");
                     cls = Sk.abstr.typeName(this);

@@ -55,7 +55,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 }
                 bits = [];
                 for (i = 0; i < this.v.length; ++i) {
-                    bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]).v;
+                    bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]);
                 }
                 ret = bits.join(", ");
                 if (this.v.length === 1) {

@@ -30,9 +30,9 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             return new Sk.builtin.slice(...args);
         },
         $r: function () {
-            const a = Sk.misceval.objectRepr(this.start).v;
-            const b = Sk.misceval.objectRepr(this.stop).v;
-            const c = Sk.misceval.objectRepr(this.step).v;
+            const a = Sk.misceval.objectRepr(this.start);
+            const b = Sk.misceval.objectRepr(this.stop);
+            const c = Sk.misceval.objectRepr(this.step);
             return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
         },
         tp$richcompare: function (w, op) {
@@ -138,6 +138,11 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
 
             return [start, stop, step];
         },
+        /**
+         * used by objects like str, list, tuple that can return a slice
+         * @param {Number} len 
+         * @param {Function} f 
+         */
         sssiter$: function (len, f) {
             const sss = this.$slice_indices(len);
             const start = sss[0];

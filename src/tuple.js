@@ -18,7 +18,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         $r: function () {
             const bits = [];
             for (let i = 0; i < this.v.length; ++i) {
-                bits[i] = Sk.misceval.objectRepr(this.v[i]).v;
+                bits[i] = Sk.misceval.objectRepr(this.v[i]);
             }
             let ret = bits.join(", ");
             if (this.v.length === 1) {

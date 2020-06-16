@@ -312,6 +312,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
 /**
  * A function that will return either a number or a BigInt
+ * 
+ * There are two functions passed to this slot the quick function where both int values are number
+ * and the JSBI.BigInt version of the same function
+ * The fall through case where one or both of the int values is a bigint
+ * 
  */
 function numberSlot(number_func, bigint_func) {
     return function (other) {

@@ -35,7 +35,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 return new Sk.builtin.str("[...]");
             }
             this.$entered_repr = true;
-            const ret = new Sk.builtin.str("[" + this.v.map((x) => Sk.misceval.objectRepr(x).v).join(", ") + "]");
+            const ret = new Sk.builtin.str("[" + this.v.map((x) => Sk.misceval.objectRepr(x)).join(", ") + "]");
             this.$entered_repr = undefined;
             return ret;
         },

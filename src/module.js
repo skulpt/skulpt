@@ -10,7 +10,7 @@ Sk.abstr.setUpInheritance("module", Sk.builtin.module, Sk.builtin.object);
 Sk.builtin.module.prototype.$r = function () {
     let get = (s) => {
         let v = this.tp$getattr(new Sk.builtin.str(s));
-        return Sk.builtin.repr(v || Sk.builtin.str.$emptystr).$jsstr();
+        return Sk.misceval.objectRepr(v || Sk.builtin.str.$emptystr);
     };
     const _name = get("__name__");
     let _file = get("__file__");

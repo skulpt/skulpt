@@ -42,7 +42,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 item = entries[key_hash];
                 k = item.lhs;
                 v = item.rhs;
-                ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
+                ret.push(Sk.misceval.objectRepr(k) + ": " + Sk.misceval.objectRepr(v));
             }
             this.$entered_repr = undefined;
             return new Sk.builtin.str("{" + ret.join(", ") + "}");
@@ -104,7 +104,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 return res;
             } else {
                 // Not found in dictionary
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).$jsstr());
+                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
             }
         },
         mp$ass_subscript: function (key, value) {
@@ -199,7 +199,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 if (d !== undefined) {
                     return d;
                 }
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(s).$jsstr());
+                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(s));
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: null,
@@ -494,7 +494,7 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
         return Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) => {
             v = b.mp$subscript(key); // get value (no suspension for keylookup... todo?)
             if (v === undefined) {
-                throw new Sk.builtin.AttributeError("cannot get item for key: " + Sk.misceval.objectRepr(key).$jsstr());
+                throw new Sk.builtin.AttributeError("cannot get item for key: " + Sk.misceval.objectRepr(key));
             }
             self.set$item(key, v);
         });
@@ -634,7 +634,7 @@ Sk.builtin.dict.prototype.del$item = function (key) {
         return;
     }
     // Not found in dictionary
-    throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key).$jsstr());
+    throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
 };
 
 /**

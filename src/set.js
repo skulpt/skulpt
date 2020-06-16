@@ -274,7 +274,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         tp$new: Sk.generic.new,
         $r: function () {
-            const ret = this.sk$asarray().map((x) => Sk.misceval.objectRepr(x).v);
+            const ret = this.sk$asarray().map((x) => Sk.misceval.objectRepr(x));
             if (Sk.__future__.python3) {
                 if (ret.length === 0) {
                     return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
