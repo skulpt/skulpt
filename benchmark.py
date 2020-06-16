@@ -1,11 +1,15 @@
-branch = 'this_branch'
+branch = '_branch'
+branches = ['master', '_branch', 'this_branch', 'Cpython', 'brython', 'brython_chrome']
 
 
-benchmark = {'assignment': {'this_branch': 178, 'Cpython': 14, 'master': 234, 'brython': 6}, 'augm_assign': {'this_branch': 242, 'Cpython': 17, 'master': 396, 'brython': 13}, 'assign_float': {'this_branch': 179, 'Cpython': 8, 'master': 217, 'brython': 19}, 'build_dict': {'this_branch': 324, 'Cpython': 23, 'master': 566, 'brython': 107}, 'set_dict_item': {'this_branch': 352, 'Cpython': 20, 'master': 443, 'brython': 26}, 'set_dict_item_str': {'this_branch': 276, 'Cpython': 16, 'master': 331, 'brython': 37}, 'build_list': {'this_branch': 297, 'Cpython': 18, 'master': 377, 'brython': 15}, 'set_list_item': {'this_branch': 381, 'Cpython': 14, 'master': 390, 'brython': 15}, 'get_list_slice': {'this_branch': 459, 'Cpython': 29, 'master': 1122, 'brython': 9448}, 'add_integers': {'this_branch': 400, 'Cpython': 26, 'master': 669, 'brython': 28}, 'add_strings': {'this_branch': 468, 'Cpython': 31, 'master': 711, 'brython': 43}, 'add_int_float': {'this_branch': 420, 'Cpython': 24, 'master': 674, 'brython': 96}, 'compare_int_int': {'this_branch': 400, 'Cpython': 17, 'master': 599, 'brython': 15}, 'compare_int_float': {'this_branch': 448, 'Cpython': 14, 'master': 634, 'brython': 42}, 'str_of_int': {'this_branch': 83, 'Cpython': 3, 'master': 115, 'brython': 6}, 'create_function': {'this_branch': 475, 'Cpython': 18, 'master': 564, 'brython': 256}, 'function_call': {'this_branch': 511, 'Cpython': 30, 'master': 560, 'brython': 274}, 'create_class': {'this_branch': 863, 'Cpython': 145, 'master': 875, 'brython': 689}, 'descr_class': {'this_branch': 526, 'Cpython': 12, 'master': 610, 'brython': 29}, 'get_class_attr': {'this_branch': 538, 'Cpython': 16, 'master': 653, 'brython': 59}, 'init_class': {'this_branch': 881, 'Cpython': 56, 'master': 1679, 'brython': 808}, 'set_instance_attr': {'this_branch': 531, 'Cpython': 14, 'master': 990, 'brython': 60}, 'Total': {'this_branch': 9245, 'Cpython': 578, 'master': 13426, 'brython': 12117}, 'fields': {'Cpython': 225, 'master': 4500, 'brython': 14568, 'this_branch': 1982}}
+
+benchmark = {'range_no_ops': {'Cpython': 5, 'brython_chrome': 141, 'brython': 5}, 'assignment': {'this_branch': 178, 'Cpython': 12, 'master': 234, 'brython_chrome': 170, 'brython': 6}, 'augm_assign': {'this_branch': 242, 'Cpython': 24, 'master': 396, 'brython_chrome': 388, 'brython': 12}, 'assign_float': {'this_branch': 179, 'Cpython': 9, 'master': 217, 'brython_chrome': 210, 'brython': 16}, 'build_dict': {'this_branch': 324, 'Cpython': 20, 'master': 566, 'brython_chrome': 371, 'brython': 65}, 'set_dict_item': {'this_branch': 352, 'Cpython': 21, 'master': 443, 'brython_chrome': 319, 'brython': 26}, 'set_dict_item_str': {'this_branch': 276, 'Cpython': 17, 'master': 331, 'brython_chrome': 332, 'brython': 46}, 'build_list': {'this_branch': 297, 'Cpython': 28, 'master': 377, 'brython_chrome': 180, 'brython': 15}, 'set_list_item': {'this_branch': 381, 'Cpython': 17, 'master': 390, 'brython_chrome': 272, 'brython': 16}, 'get_list_slice': {'this_branch': 459, 'Cpython': 28, 'master': 1122, 'brython_chrome': 14846, 'brython': 10789}, 'add_integers': {'this_branch': 400, 'Cpython': 23, 'master': 669, 'brython_chrome': 234, 'brython': 26}, 'add_strings': {'this_branch': 468, 'Cpython': 31, 'master': 711, 'brython_chrome': 225, 'brython': 42}, 'add_int_float': {'this_branch': 420, 'Cpython': 28, 'master': 674, 'brython_chrome': 279, 'brython': 103}, 'compare_int_int': {'this_branch': 400, 'Cpython': 14, 'master': 599, 'brython_chrome': 258, 'brython': 11}, 'compare_int_float': {'this_branch': 448, 'Cpython': 19, 'master': 634, 'brython_chrome': 401, 'brython': 32}, 'str_of_int': {'this_branch': 83, 'Cpython': 3, 'master': 115, 'brython_chrome': 52, 'brython': 6}, 'create_function': {'this_branch': 475, 'Cpython': 18, 'master': 564, 'brython_chrome': 524, 'brython': 347}, 'function_call': {'this_branch': 511, 'Cpython': 19, 'master': 560, 'brython_chrome': 996, 'brython': 286}, 'create_class': {'this_branch': 863, 'Cpython': 130, 'master': 875, 'brython_chrome': 907, 'brython': 946}, 'descr_class': {'this_branch': 526, 'Cpython': 9, 'master': 610, 'brython_chrome': 325, 'brython': 34}, 'get_class_attr': {'this_branch': 538, 'Cpython': 13, 'master': 653, 'brython_chrome': 496, 'brython': 70}, 'init_class': {'this_branch': 881, 'Cpython': 48, 'master': 1679, 'brython_chrome': 1283, 'brython': 718}, 'set_instance_attr': {'this_branch': 531, 'Cpython': 16, 'master': 990, 'brython_chrome': 576, 'brython': 56}, 'Total': {'this_branch': 9245, 'Cpython': 564, 'master': 13426, 'brython_chrome': 23807, 'brython': 13703}, 'fields': {'Cpython': 255, 'master': 4500, 'this_branch': 1982, 'brython_chrome': 23685, 'brython': 17996}}
+
 
 
 
 tests = [
+    "range_no_ops",
     "assignment",
     "augm_assign",
     "assign_float",
@@ -39,6 +43,11 @@ benchmark = tmp
 import time
 
 tstart = time.time()
+
+t0 = time.time()
+for i in range(100000):
+    pass
+benchmark['range_no_ops'][branch] = int(1000*(time.time()-t0))
 
 t0 = time.time()
 for i in range(100000):
@@ -99,9 +108,9 @@ import time
 t0 = time.time()
 a = [1,2,3]
 
-for i in range(10000):
+for i in range(100000):
     a = a[:]
-print(int(1000*(time.time()-t0)))
+benchmark['get_list_slice'][branch] = int(1000*(time.time()-t0))
 
 
 
@@ -297,7 +306,7 @@ benchmark['fields'][branch] = int(1000*(time.time()-t0))
 
 
 
-branches = ['master', 'this_branch', 'Cpython', 'brython']
+
 headers = f"{'Test':>18}|" + '|'.join(f"{branch:>14}" for branch in branches)
 rows = []
 for test, performance in list(benchmark.items())[:-2]:

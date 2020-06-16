@@ -315,7 +315,7 @@ Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
  */
 function numberSlot(number_func, bigint_func) {
     return function (other) {
-        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+        if (other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
             if (typeof v === "number" && typeof w === "number") {
@@ -334,7 +334,7 @@ function numberSlot(number_func, bigint_func) {
 
 function compareSlot(number_func, bigint_func) {
     return function (other) {
-        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+        if (other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
             if (typeof v === "number" && typeof w === "number") {
@@ -364,7 +364,7 @@ function cloneSelf() {
 
 function numberDivisionSlot(number_func, bigint_func) {
     return function (other) {
-        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+        if (other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
             if (w === 0) {
@@ -384,7 +384,7 @@ function numberDivisionSlot(number_func, bigint_func) {
 
 function numberShiftSlot(number_func, bigint_func) {
     return function (other) {
-        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+        if (other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
             if (v === 0) {
@@ -413,7 +413,7 @@ function numberShiftSlot(number_func, bigint_func) {
 
 function numberBitSlot(number_func, bigint_func) {
     return function (other) {
-        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+        if (other instanceof Sk.builtin.int_) {
             let v = this.v;
             let w = other.v;
             if (typeof v === "number" && typeof w === "number") {
