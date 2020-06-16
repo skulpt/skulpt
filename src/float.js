@@ -8,64 +8,203 @@ const JSBI = require("jsbi");
  * @constructor
  * Sk.builtin.float_
  *
- * @description
- * Constructor for Python float. Also used for builtin float().
  *
- * @extends {Sk.builtin.numtype}
  *
- * @param {!(Object|number|string)} x Object or number to convert to Python float.
  * @return {Sk.builtin.float_} Python float
  */
-Sk.builtin.float_ = function (x) {
-    Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
-    if (typeof x === "number") {
-        this.v = x;
-    } else if (typeof x === "string") {
-        // be careful with converting a string as it could result in infinity
-        this.v = parseFloat(x);
-    } else if (x === undefined) {
-        this.v = 0.0;
-    } else {
-        Sk.asserts.fail("bad argument to float constructor");
+
+Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
+    constructor: function (x) {
+        Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
+        if (typeof x === "number") {
+            this.v = x;
+        } else if (typeof x === "string") {
+            // be careful with converting a string as it could result in infinity
+            this.v = parseFloat(x);
+        } else if (x === undefined) {
+            this.v = 0.0;
+        } else {
+            Sk.asserts.fail("bad argument to float constructor");
+        }
+    },
+    slots: {
+        tp$gettattr: Sk.generic.getAttr,
+        tp$as_number: true,
+        tp$doc: "Convert a string or number to a floating point number, if possible.",
+        tp$hash: function () {
+            //todo - this hash function causes a lot of collisions - Cpython implementation is different
+            return this.nb$int_();
+        },
+        $r: function () {
+            return new Sk.builtin.str(this.str$(10, true));
+        },
+        tp$new: function (args, kwargs) {
+            if (kwargs && kwargs.length) {
+                throw new Sk.builtin.TypeError("float() takes no keyword arguments");
+            } else if (args && args.length > 1) {
+                throw new Sk.builtin.TypeError("float expected at most 1 arguments, got " + args.length);
+            }
+            const arg = args[0];
+            let x;
+            // is args always an empty list?
+            if (arg === undefined) {
+                x = new Sk.builtin.float_(0.0);
+            } else if (arg.nb$float_) {
+                x = arg.nb$float_();
+            } else if (Sk.builtin.checkString(arg)) {
+                x = _str_to_float(arg.v);
+            }
+            if (x === undefined) {
+                throw new Sk.builtin.TypeError("float() argument must be a string or a number");
+            }
+            if (this === Sk.builtin.float_.prototype) {
+                return x;
+            } else {
+                const instance = new this.constructor();
+                instance.v = x.v;
+                return instance;
+            }
+        },
+
+        // number slots
+        nb$int_: function () {
+            let v = this.v;
+            if (v < 0) {
+                v = Math.ceil(v);
+            } else {
+                v = Math.floor(v);
+            }
+            if (!Number.isInteger(v)) {
+                throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
+            }
+            if (Sk.builtin.int_.withinThreshold(v)) {
+                return new Sk.builtin.int_(v);
+            } else {
+                return new Sk.builtin.int_(JSBI.BigInt(v));
+            }
+        },
+        nb$float_: cloneSelf,
+        nb$lng: function () {
+            return new Sk.builtin.lng(this.nb$int_().v);
+        },
+        nb$add: numberSlot((v, w) => new Sk.builtin.float_(v + w)),
+        
+        nb$subtract: numberSlot((v, w) => new Sk.builtin.float_(v - w)),
+        nb$reflected_subtract: numberSlot((v, w) => new Sk.builtin.float_(w - v)),
+        
+        nb$multiply: numberSlot((v, w) => new Sk.builtin.float_(v * w)),
+        
+        nb$divide: numberSlot(divide),
+        nb$reflected_divide: numberSlot((v, w) => divide(w, v)),
+        
+        nb$floor_divide: numberSlot(floordivide),
+        nb$reflected_floor_divide: numberSlot((v, w) => floordivide(w, v)),
+
+        nb$remainder: numberSlot(remainder),
+        nb$reflected_remainder: numberSlot((v, w) => remainder(w, v)),
+        
+        nb$divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)])),
+        nb$reflected_divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)])),
+        
+        nb$power: numberSlot(power),
+        nb$reflected_power: numberSlot((v, w) => power(w, v)),
+        
+        nb$abs: function () {
+            return new Sk.builtin.float_(Math.abs(this.v));
+        },
+        nb$negative: function () {
+            return new Sk.builtin.float_(-this.v);
+        },
+        nb$positive: function () {
+            return new Sk.builtin.float_(this.v);
+        },
+        nb$bool: function () {
+            return this.v !== 0;
+        },
+        nb$isnegative: function () {
+            return this.v < 0;
+        },
+        nb$ispositive: function () {
+            return this.v >= 0;
+        },
+        ob$eq: numberSlot((v, w) => v == w),
+        ob$ne: numberSlot((v, w) => v != w),
+        ob$gt: numberSlot((v, w) => v > w),
+        ob$ge: numberSlot((v, w) => v >= w),
+        ob$lt: numberSlot((v, w) => v < w),
+        ob$le: numberSlot((v, w) => v <= w),
+    },
+    getsets: {
+        real: {
+            $get: cloneSelf,
+        },
+        imag: {
+            $get: function () {
+                return new Sk.builtin.float_(0.0);
+            },
+        },
+    },
+    methods: {
+        conjugate: {
+            $meth: cloneSelf,
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc: "Return self, the complex conjugate of any float.",
+        },
+        __trunc__: {
+            $meth: function () {
+                return this.nb$int_();
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc: "Return the Integral closest to x between 0 and x.",
+        },
+        __round__: {
+            $meth: function (ndigits) {
+                return this.round$(ndigits);
+            },
+            $flags: { MinArgs: 0, MaxArgs: 1 },
+            $textsig: "($self, ndigits=None, /)",
+            $doc: "Return the Integral closest to x, rounding half toward even.\n\nWhen an argument is passed, work like built-in round(x, ndigits).",
+        },
+        // as_integer_ratio: {
+        //     $meth: methods.as_integer_ratio,
+        //     $flags: { NoArgs: true },
+        //     $textsig: "($self, /)",
+        //     $doc:
+        //         "Return integer ratio.\n\nReturn a pair of integers, whose ratio is exactly equal to the original float\nand with a positive denominator.\n\nRaise OverflowError on infinities and a ValueError on NaNs.\n\n>>> (10.0).as_integer_ratio()\n(10, 1)\n>>> (0.0).as_integer_ratio()\n(0, 1)\n>>> (-.25).as_integer_ratio()\n(-1, 4)",
+        // },
+        // hex: {
+        //     $meth: methods.hex,
+        //     $flags: { NoArgs: true },
+        //     $textsig: "($self, /)",
+        //     $doc:
+        //         "Return a hexadecimal representation of a floating-point number.\n\n>>> (-0.1).hex()\n'-0x1.999999999999ap-4'\n>>> 3.14159.hex()\n'0x1.921f9f01b866ep+1'",
+        // },
+        is_integer: {
+            $meth: function () {
+                return new Sk.builtin.bool(Number.isInteger(this.v));
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc: "Return True if the float is an integer.",
+        },
+        __getnewargs__: {
+            $meth: function () {
+                return new Sk.builtin.tuple([this]);
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc: Sk.builtin.none.none$,
+        },
+        __format__: {
+            $meth: Sk.formatting.mkNumber__format__(true),
+            $flags: { OneArg: true },
+            $textsig: "($self, format_spec, /)",
+            $doc: Sk.builtin.none.none$,
+        },
     }
-};
-
-Sk.abstr.setUpInheritance("float", Sk.builtin.float_);
-
-Sk.builtin.float_.prototype.tp$gettattr = Sk.generic.getAttr;
-Sk.builtin.float_.prototype.tp$as_number = true;
-
-Sk.builtin.float_.prototype.tp$doc = "Convert a string or number to a floating point number, if possible.";
-
-Sk.builtin.float_.prototype.tp$new = function (args, kwargs) {
-    if (kwargs && kwargs.length) {
-        throw new Sk.builtin.TypeError("float() takes no keyword arguments");
-    } else if (args && args.length > 1) {
-        throw new Sk.builtin.TypeError("float expected at most 1 arguments, got " + args.length);
-    }
-    const arg = args[0];
-    let x;
-    // is args always an empty list?
-    if (arg === undefined) {
-        x = new Sk.builtin.float_(0.0);
-    } else if (arg.nb$float_) {
-        x = arg.nb$float_();
-    } else if (Sk.builtin.checkString(arg)) {
-        x = _str_to_float(arg.v);
-    }
-
-    if (x === undefined) {
-        throw new Sk.builtin.TypeError("float() argument must be a string or a number");
-    }
-
-    if (this === Sk.builtin.float_.prototype) {
-        return x;
-    } else {
-        const instance = new this.constructor();
-        instance.v = x.v;
-        return instance;
-    }
-};
+});
 
 function _str_to_float(str) {
     let ret;
@@ -83,31 +222,9 @@ function _str_to_float(str) {
     return new Sk.builtin.float_(ret);
 }
 
-Sk.builtin.float_.prototype.nb$int_ = function () {
-    let v = this.v;
-    if (v < 0) {
-        v = Math.ceil(v);
-    } else {
-        v = Math.floor(v);
-    }
-
-    if (!Number.isInteger(v)) {
-        throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this).v + " to integer");
-    }
-    if (Sk.builtin.int_.withinThreshold(v)) {
-        return new Sk.builtin.int_(v);
-    } else {
-        return new Sk.builtin.int_(JSBI.BigInt(v));
-    }
-};
-
-Sk.builtin.float_.prototype.nb$float_ = function () {
+function cloneSelf() {
     return new Sk.builtin.float_(this.v);
-};
-
-Sk.builtin.float_.prototype.nb$lng = function () {
-    return new Sk.builtin.lng(JSBI.BigInt(this.v));
-};
+}
 
 /**
  * Checks for float subtypes, though skulpt does not allow to
@@ -121,21 +238,17 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
     if (op === undefined) {
         return false;
     }
-
     // this is a little bit hacky
     // ToDo: subclassable builtins do not require this
     if (Sk.builtin.checkNumber(op)) {
         return true;
     }
-
     if (Sk.builtin.checkFloat(op)) {
         return true;
     }
-
     if (op.ob$type.$isSubType(Sk.builtin.float_)) {
         return true;
     }
-
     return false;
 };
 
@@ -159,13 +272,6 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
         throw new Sk.builtin.TypeError("a float is required");
     }
     return v;
-};
-
-/** @override */
-Sk.builtin.float_.prototype.tp$hash = function () {
-    //the hash of all numbers should be an int and since javascript doesn't really
-    //care every number can be an int.
-    return this.nb$int_();
 };
 
 /**
@@ -196,23 +302,6 @@ function numberSlot(f) {
     };
 }
 
-/** @override */
-Sk.builtin.float_.prototype.nb$add = numberSlot((v, w) => {
-    return new Sk.builtin.float_(v + w);
-});
-
-Sk.builtin.float_.prototype.nb$subtract = numberSlot((v, w) => {
-    return new Sk.builtin.float_(v - w);
-});
-
-Sk.builtin.float_.prototype.nb$reflected_subtract = numberSlot((v, w) => {
-    return new Sk.builtin.float_(w - v);
-});
-
-Sk.builtin.float_.prototype.nb$multiply = numberSlot((v, w) => {
-    return new Sk.builtin.float_(v * w);
-});
-
 function divide(v, w) {
     if (w === 0) {
         throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
@@ -238,13 +327,6 @@ function divide(v, w) {
     return new Sk.builtin.float_(v / w);
 }
 
-
-Sk.builtin.float_.prototype.nb$divide = numberSlot(divide);
-
-Sk.builtin.float_.prototype.nb$reflected_divide = numberSlot((v, w) => {
-    return divide(w, v);
-});
-
 function floordivide(v, w) {
     if (v === Infinity || v === -Infinity) {
         return new Sk.builtin.float_(NaN);
@@ -269,13 +351,6 @@ function floordivide(v, w) {
     }
     return new Sk.builtin.float_(Math.floor(v / w));
 }
-
-/** @override */
-Sk.builtin.float_.prototype.nb$floor_divide = numberSlot(floordivide);
-
-Sk.builtin.float_.prototype.nb$reflected_floor_divide = numberSlot((v, w) => {
-    return floordivide(w, v);
-});
 
 function remainder(v, w) {
     if (w === 0) {
@@ -316,22 +391,6 @@ function remainder(v, w) {
     return new Sk.builtin.float_(tmp);
 }
 
-/** @override */
-Sk.builtin.float_.prototype.nb$remainder = numberSlot(remainder);
-
-Sk.builtin.float_.prototype.nb$reflected_remainder = numberSlot((v, w) => {
-    return remainder(w, v);
-});
-
-/** @override */
-Sk.builtin.float_.prototype.nb$divmod = numberSlot((v, w) => {
-    return new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)]);
-});
-
-Sk.builtin.float_.prototype.nb$reflected_divmod = numberSlot((v, w) => {
-    return new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)]);
-});
-
 function power(v, w) {
     if (v < 0 && w % 1 !== 0) {
         throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
@@ -348,151 +407,6 @@ function power(v, w) {
     return new Sk.builtin.float_(result);
 }
 
-/** @override */
-// currently doesn't support mod
-Sk.builtin.float_.prototype.nb$power = numberSlot(power);
-
-Sk.builtin.float_.prototype.nb$reflected_power = numberSlot((v, w) => {
-    return power(w, v);
-});
-
-/** @override */
-Sk.builtin.float_.prototype.nb$abs = function () {
-    return new Sk.builtin.float_(Math.abs(this.v));
-};
-
-/**
- * @override
- *
- * @return {Sk.builtin.float_} A copy of this instance with the value negated.
- */
-Sk.builtin.float_.prototype.nb$negative = function () {
-    return new Sk.builtin.float_(-this.v);
-};
-
-/** @override */
-Sk.builtin.float_.prototype.nb$positive = function () {
-    return new Sk.builtin.float_(this.v);
-};
-
-/** @override */
-Sk.builtin.float_.prototype.nb$bool = function () {
-    return this.v !== 0;
-};
-
-/** @override */
-Sk.builtin.float_.prototype.nb$isnegative = function () {
-    return this.v < 0;
-};
-
-/** @override */
-Sk.builtin.float_.prototype.nb$ispositive = function () {
-    return this.v >= 0;
-};
-
-/**
- * Compare this instance's value to another Python object's value.
- *
- * Returns NotImplemented if comparison between float and other type is unsupported.
- *
- * Javscript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @return {(number|Sk.builtin.NotImplemented)} negative if this < other, zero if this == other, positive if this > other
- */
-Sk.builtin.float_.prototype.numberCompare = function (other) {
-    var diff;
-    var tmp;
-    var thisAsLong;
-
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
-        if (this.v == Infinity && other.v == Infinity) {
-            return 0;
-        }
-        if (this.v == -Infinity && other.v == -Infinity) {
-            return 0;
-        }
-        return this.v - other.v;
-    }
-
-    if (other instanceof Sk.builtin.lng) {
-        if (this.v % 1 === 0) {
-            thisAsLong = new Sk.builtin.lng(this.v);
-            tmp = thisAsLong.longCompare(other);
-            return tmp;
-        }
-        diff = this.nb$subtract(other);
-        if (diff instanceof Sk.builtin.float_) {
-            return diff.v;
-        } else if (diff instanceof Sk.builtin.lng) {
-            return diff.longCompare(Sk.builtin.biginteger.ZERO);
-        }
-    }
-
-    return Sk.builtin.NotImplemented.NotImplemented$;
-};
-
-// Despite what jshint may want us to do, these two  functions need to remain
-// as == and !=  Unless you modify the logic of numberCompare do not change
-// these.
-
-/** @override */
-Sk.builtin.float_.prototype.ob$eq = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) == 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
-        return Sk.builtin.bool.false$;
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-/** @override */
-Sk.builtin.float_.prototype.ob$ne = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) != 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
-        return Sk.builtin.bool.true$;
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-/** @override */
-Sk.builtin.float_.prototype.ob$lt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) < 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-/** @override */
-Sk.builtin.float_.prototype.ob$le = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) <= 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-/** @override */
-Sk.builtin.float_.prototype.ob$gt = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) > 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
-/** @override */
-Sk.builtin.float_.prototype.ob$ge = function (other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
-        return new Sk.builtin.bool(this.numberCompare(other) >= 0);
-    } else {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    }
-};
-
 /**
  * Round this instance to a given number of digits, or zero if omitted.
  *
@@ -505,14 +419,10 @@ Sk.builtin.float_.prototype.ob$ge = function (other) {
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
  */
 Sk.builtin.float_.prototype.round$ = function (ndigits) {
-    Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
-
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
-
     if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     }
-
     number = Sk.builtin.asnum$(this);
     if (ndigits === undefined) {
         ndigs = 0;
@@ -536,27 +446,6 @@ Sk.builtin.float_.prototype.round$ = function (ndigits) {
 
         return new Sk.builtin.float_(result);
     }
-};
-
-
-Sk.builtin.float_.prototype.conjugate = new Sk.builtin.func(function (self) {
-    return new Sk.builtin.float_(self.v);
-});
-
-/** @override */
-Sk.builtin.float_.prototype["$r"] = function () {
-    return new Sk.builtin.str(this.str$(10, true));
-};
-
-/**
- * Return the string representation of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.str} The Python string representation of this instance.
- */
-Sk.builtin.float_.prototype.tp$str = function () {
-    return new Sk.builtin.str(this.str$(10, true));
 };
 
 /**
@@ -645,74 +534,6 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
     return tmp;
 };
 
-Sk.builtin.float_.prototype.tp$getsets = {
-    real: {
-        $get: function () {
-            return new Sk.builtin.float_(this.v);
-        },
-    },
-    imag: {
-        $get: function () {
-            return new Sk.builtin.float_(0.0);
-        },
-    },
-};
-
-Sk.builtin.float_.prototype.tp$methods = {
-    // conjugate: {
-    //     $meth: methods.conjugate,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc: "Return self, the complex conjugate of any float.",
-    // },
-    // __trunc__: {
-    //     $meth: methods.__trunc__,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc: "Return the Integral closest to x between 0 and x.",
-    // },
-    __round__: {
-        $meth: function (ndigits) {
-            return this.round$(ndigits);
-        },
-        $flags: { MinArgs: 0, MaxArgs: 1 },
-        $textsig: "($self, ndigits=None, /)",
-        $doc: "Return the Integral closest to x, rounding half toward even.\n\nWhen an argument is passed, work like built-in round(x, ndigits).",
-    },
-    // as_integer_ratio: {
-    //     $meth: methods.as_integer_ratio,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc:
-    //         "Return integer ratio.\n\nReturn a pair of integers, whose ratio is exactly equal to the original float\nand with a positive denominator.\n\nRaise OverflowError on infinities and a ValueError on NaNs.\n\n>>> (10.0).as_integer_ratio()\n(10, 1)\n>>> (0.0).as_integer_ratio()\n(0, 1)\n>>> (-.25).as_integer_ratio()\n(-1, 4)",
-    // },
-    // hex: {
-    //     $meth: methods.hex,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc:
-    //         "Return a hexadecimal representation of a floating-point number.\n\n>>> (-0.1).hex()\n'-0x1.999999999999ap-4'\n>>> 3.14159.hex()\n'0x1.921f9f01b866ep+1'",
-    // },
-    // is_integer: {
-    //     $meth: methods.is_integer,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc: "Return True if the float is an integer.",
-    // },
-    // __getnewargs__: {
-    //     $meth: methods.__getnewargs__,
-    //     $flags: { NoArgs: true },
-    //     $textsig: "($self, /)",
-    //     $doc: Sk.builtin.none.none$,
-    // },
-    __format__: {
-        $meth: Sk.formatting.mkNumber__format__(true),
-        $flags: { OneArg: true },
-        $textsig: "($self, format_spec, /)",
-        $doc: Sk.builtin.none.none$,
-    },
-};
-Sk.abstr.setUpMethods(Sk.builtin.float_);
 
 Sk.builtin.float_.py2$methods = {};
 
