@@ -75,7 +75,7 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
  * requires a pyObject - returns a string or integer depending on the size.
  * throws a generic error that the object cannot be interpreted as an index
  */
-Sk.misceval.asIndexOrThrow = function (obj) {
+Sk.misceval.asIndexOrThrow = function (obj, msg) {
     let res;
     if (obj.constructor === Sk.builtin.int_) {
         // the fast case
@@ -83,13 +83,10 @@ Sk.misceval.asIndexOrThrow = function (obj) {
     } else if (typeof obj === "number") {
         return obj;
     } else if (obj.nb$index) {
-        res = obj.nb$index();
-        if (res === undefined) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index");
-        }
-        res = res.v;
+        res = obj.nb$index().v;
     } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index");
+        msg = msg || "'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index";
+        throw new Sk.builtin.TypeError(msg);
     }
     if (typeof res === "number") {
         return res;
