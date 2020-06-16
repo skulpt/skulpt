@@ -11,6 +11,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         this.v = L;
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$doc:
             "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.",

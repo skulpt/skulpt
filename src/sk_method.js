@@ -85,6 +85,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
     },
     flags: { sk$acceptable_as_base_class: false },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         $r: function () {
             if (this.$self === undefined) {
                 return new Sk.builtin.str("<built-in function " + this.$name + ">");

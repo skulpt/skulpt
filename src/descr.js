@@ -23,6 +23,7 @@ Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
             d$set_check: Sk.generic.descriptor.setCheck,
             $r: Sk.generic.descriptor.repr,
             tp$getsets: Sk.generic.descriptor.getsets,
+            tp$getattr: Sk.generic.getAttr,
         },
     };
     return Sk.abstr.buildNativeClass(type_name, descr);

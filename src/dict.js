@@ -13,7 +13,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         if (L === undefined) {
             L = [];
         }
-        Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.dict);
+        Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.dict, "bad call to dict constructor");
 
         this.size = 0;
         this.entries = {};
@@ -23,6 +23,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         }
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         tp$doc:

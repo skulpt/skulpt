@@ -1025,6 +1025,7 @@ Sk.abstr.buildIteratorClass = function (type_name, iterator) {
     iterator.slots = iterator.slots || {};
     iterator.slots.tp$iter = Sk.generic.selfIter;
     iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
+    iterator.slots.tp$getattr = iterator.slots.tp$getattr || Sk.generic.getAttr;
     return Sk.abstr.buildNativeClass(type_name, iterator);
 };
 

@@ -13,6 +13,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         this.v = L;
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         tp$doc:

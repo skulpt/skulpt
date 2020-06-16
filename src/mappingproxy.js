@@ -38,6 +38,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         }
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         $r: function () {

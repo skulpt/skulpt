@@ -38,6 +38,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         }
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$doc: "Common base class for all exceptions",
         tp$new: function (args, kwargs) {
             if (!this.hp$type) {

@@ -22,6 +22,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         this.v = new Sk.builtin.dict(L);
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$as_sequence_or_mapping: true,
         tp$doc:

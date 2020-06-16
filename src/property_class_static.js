@@ -15,6 +15,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
         this.prop$doc = doc || (fget && fget.$doc) || Sk.builtin.none.none$;
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$new: Sk.generic.new,
         tp$init: function (args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs(
@@ -130,6 +131,7 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
         this.$d = new Sk.builtin.dict();
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$new: Sk.generic.new,
         tp$init: function (args, kwargs) {
             Sk.abstr.checkNoKwargs("classmethod", kwargs);
@@ -176,6 +178,7 @@ Sk.builtin.staticmethod = Sk.abstr.buildNativeClass("staticmethod", {
         this.$d = new Sk.builtin.dict();
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$new: Sk.generic.new,
         tp$init: function (args, kwargs) {
             Sk.abstr.checkNoKwargs("staticmethod", kwargs);

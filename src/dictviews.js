@@ -10,6 +10,7 @@ function buildDictView(typename) {
         this.dict = dict;
     };
     dict_view_options.slots = {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
@@ -24,7 +25,9 @@ function buildDictView(typename) {
             this.$entered_repr = undefined;
             return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + res + ")");
         },
-        tp$richcompare: function () {},
+        tp$richcompare: function () {
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        },
         tp$iter: function () {
             if (this.tp$name === dict$views.KEYS) {
                 return new Sk.builtin.dict_iter_(this.dict);

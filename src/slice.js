@@ -23,6 +23,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         return this;
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$doc: "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2]).",
         tp$hash: Sk.builtin.none.none$,
         tp$new: function (args, kwargs) {

@@ -19,6 +19,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         this.v = new Sk.builtin.dict(L);
     },
     slots: {
+        tp$getattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$, 
