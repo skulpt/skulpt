@@ -13,8 +13,8 @@ Ideally it would choose one each time the page loads but I haven't dug into that
 <div class="row">
 {% for post in site.posts %}
     <div class="small-12 medium-6 large-4 columns">
-        <img src="{{ post.screenshot }}">
-        <h4>{{ post.title }}</h4>
+        <a href="{{ post.link }}"><img src="{{ post.screenshot }}"></a>
+        <h4><a href="{{ post.link }}">{{ post.title }}</a></h4>
         <p> {{ post.blurb }}
         </p>
     </div>
@@ -34,6 +34,7 @@ Ideally it would choose one each time the page loads but I haven't dug into that
             <li><a href="https://py3.codeskulptor.org">CodeSkulptor</a></li>
             <li><a href="https://trinket.io/">trinket</a></li>
             <li><a href="https://shrew.app">Code Shrew</a></li>
+            <li><a href="https://mathtocode.com">Math to Code</a> An interactive Python tutorial to teach engineers how to read and implement math using the NumPy library</li>
         </ul>
     </p>
     <p>If you have a project that uses skulpt and would like me to link to it here, let me know on our github page.</p>
