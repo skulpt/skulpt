@@ -150,8 +150,9 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 return this.v[i];
             } else if (index.constructor === Sk.builtin.slice) {
                 const ret = [];
-                index.sssiter$(this, function (i, wrt) {
-                    ret.push(wrt.v[i]);
+                const lst = this.v;
+                index.sssiter$(lst.length, (i) => {
+                    ret.push(lst[i]);
                 });
                 return new Sk.builtin.list(ret);
             }
@@ -370,7 +371,7 @@ Sk.builtin.list.prototype.ass$subscript = function (index, value) {
             this.ass$slice(indices[0], indices[1], value);
         } else {
             const tosub = [];
-            index.sssiter$(this, function (i, wrt) {
+            index.sssiter$(this.v.length, (i) => {
                 tosub.push(i);
             });
             let j = 0;
@@ -412,11 +413,11 @@ Sk.builtin.list.prototype.del$subscript = function (index) {
         if (indices[2] === 1) {
             this.del$slice(indices[0], indices[1]);
         } else {
-            const self = this;
+            const lst = this.v;
             let dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
             const offdir = indices[2] > 0 ? 1 : 0;
-            index.sssiter$(this, function (i, wrt) {
-                self.v.splice(i - dec, 1);
+            index.sssiter$(lst.length, (i) => {
+                lst.splice(i - dec, 1);
                 dec += offdir;
             });
         }

@@ -88,10 +88,9 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
         return new Sk.builtin.str(this.v.charAt(index));
     } else if (index instanceof Sk.builtin.slice) {
         ret = "";
-        index.sssiter$(this, function (i, wrt) {
-            if (i >= 0 && i < wrt.v.length) {
-                ret += wrt.v.charAt(i);
-            }
+        str = this.v;
+        index.sssiter$(str.length, (i) => {
+            ret += str.charAt(i);
         });
         return new Sk.builtin.str(ret);
     } else {

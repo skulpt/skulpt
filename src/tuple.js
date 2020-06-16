@@ -87,8 +87,9 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                 }
             } else if (index instanceof Sk.builtin.slice) {
                 const ret = [];
-                index.sssiter$(this, function (i, wrt) {
-                    ret.push(wrt.v[i]);
+                const lst = this.v;
+                index.sssiter$(lst.length, (i) => {
+                    ret.push(lst[i]);
                 });
                 return new Sk.builtin.tuple(ret);
             }

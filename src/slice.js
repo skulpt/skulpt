@@ -138,18 +138,18 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
 
             return [start, stop, step];
         },
-        sssiter$: function (wrt, f) {
-            const sss = this.$slice_indices(wrt.v.length);
+        sssiter$: function (len, f) {
+            const sss = this.$slice_indices(len);
             const start = sss[0];
             const stop = sss[1];
             const step = sss[2];
             if (step > 0) {
                 for (let i = start; i < stop; i += step) {
-                    f(i, wrt);
+                    f(i);
                 }
             } else {
                 for (let i = start; i > stop; i += step) {
-                    f(i, wrt);
+                    f(i);
                 }
             }
         },
