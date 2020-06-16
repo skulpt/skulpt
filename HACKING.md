@@ -95,7 +95,6 @@ by javascript. The runtime files roughly correspond to all of the major
 object types in Python plus builtins:
 
 -   abstract.js -- contains lots of abstract function defs
--   biginteger.js -- implements Python's long integer type
 -   bool.js
 -   skulpt-stdlib.js -- builtin functions: range, min, max, etc. are
     defined here

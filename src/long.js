@@ -1,24 +1,13 @@
-/* global Sk: true, goog:true */
-
-// long aka "bignumber" implementation
-//
-//  Using javascript BigInteger by Tom Wu
 /**
  * @constructor
  * Sk.builtin.lng
  *
  * @description
- * Constructor for Python long. Also used for builtin long().
+ * This is only for backward compatibility with py2. 
+ * We take the approach of using a trivial subclass with int and overriding a few methods
  *
- * @extends {Sk.builtin.numtype}
- *
- * @param {*} x Object or number to convert to Python long.
- * @param {number=} base Optional base.
- * @return {Sk.builtin.lng} Python long
+ * @param {Number|String|BigInt} x 
  */
-
-const intProto = Sk.builtin.int_.prototype;
-
 Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
     base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
     constructor: function (x) {
@@ -37,3 +26,5 @@ Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
         },
     },
 });
+
+const intProto = Sk.builtin.int_.prototype;

@@ -53,23 +53,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
         },
         tp$getattr: Sk.generic.getAttr,
-
-        tp$richcompare: function (other, op) {
-            if (!(other instanceof Sk.builtin.int_)) {
-                return Sk.builtin.NotImplemented.NotImplemented$;
-            }
-            let v = this.v;
-            let w = other.v;
-            if (v === w) {
-                return numberCompare(0, 0, op);
-            } else if (typeof v === "number" && typeof w === "number") {
-                return numberCompare(v - w, 0, op);
-            } else {
-                v = bigUp(v);
-                w = bigUp(w);
-                return bigIntCompare(JSBI.subtract(v, w), JSBI.BigInt(0), op);
-            }
-        },
+        ob$eq: compareSlot((v, w) => v == w, JSBI.equal),
+        ob$ne: compareSlot((v, w) => v != w, JSBI.notEqual),
+        ob$gt: compareSlot((v, w) => v > w, JSBI.greaterThan),
+        ob$ge: compareSlot((v, w) => v >= w, JSBI.greaterThanOrEqual),
+        ob$lt: compareSlot((v, w) => v < w, JSBI.lessThan),
+        ob$le: compareSlot((v, w) => v <= w, JSBI.lessThanOrEqual),
 
         nb$int_: cloneSelf,
         nb$index: cloneSelf,
@@ -343,6 +332,22 @@ function numberSlot(number_func, bigint_func) {
     };
 }
 
+function compareSlot(number_func, bigint_func) {
+    return function (other) {
+        if (other.constructor === Sk.builtin.int_ || other instanceof Sk.builtin.int_) {
+            let v = this.v;
+            let w = other.v;
+            if (typeof v === "number" && typeof w === "number") {
+                return number_func(v, w);
+            }
+            v = bigUp(v);
+            w = bigUp(w);
+            return bigint_func(v, w);
+        }
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    };
+}
+
 function numberUnarySlot(number_func, bigint_func) {
     return function () {
         const v = this.v;
@@ -431,13 +436,6 @@ function numberBitSlot(number_func, bigint_func) {
  *  functions (for int/long right now)
  * @param  {string} s       Javascript string to convert to a number.
  * @param  {(number)} base    The base of the number.
- * @param  {function(*, (number|undefined)): number} parser  Function which should take
- *  a string that is a postive number which only contains characters that are
- *  valid in the given base and a base and return a number.
- * @param  {function((number|Sk.builtin.biginteger)): number} negater Function which should take a
- *  number and return its negation
- * @param  {string} fname   The name of the calling function, to be used in error messages
- * @return {number}         The number equivalent of the string in the given base
  */
 Sk.str2number = function (s, base) {
     var origs = s,
@@ -578,39 +576,6 @@ function bigUp(v) {
     return v;
 }
 
-function numberCompare(v, w, op) {
-    switch (op) {
-        case "Eq":
-            return v == w;
-        case "NotEq":
-            return v != w;
-        case "GtE":
-            return v >= w;
-        case "Gt":
-            return v > w;
-        case "Lt":
-            return v < w;
-        case "LtE":
-            return v <= w;
-    }
-}
-
-function bigIntCompare(v, w, op) {
-    switch (op) {
-        case "Eq":
-            return JSBI.equal(v, w);
-        case "NotEq":
-            return JSBI.notEqual(v, w);
-        case "GtE":
-            return JSBI.greaterThanOrEqual(v, w);
-        case "Gt":
-            return JSBI.greaterThan(v, w);
-        case "Lt":
-            return JSBI.lessThan(v, w);
-        case "LtE":
-            return JSBI.lessThanOrEqual(v, w);
-    }
-}
 
 function getInt(x, base) {
     let func, res;

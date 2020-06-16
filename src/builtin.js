@@ -81,29 +81,23 @@ Sk.builtin.asnum$ = function (a) {
     if (a === null) {
         return a;
     }
-    if (a instanceof Sk.builtin.none) {
-        return null;
-    }
-    if (a instanceof Sk.builtin.bool) {
-        if (a.v) {
-            return 1;
-        }
-        return 0;
-    }
     if (typeof a === "number") {
-        return a;
-    }
-    if (typeof a === "string") {
         return a;
     }
     if (a instanceof Sk.builtin.int_) {
         if (typeof a.v === "number") {
             return a.v;
         } 
-        return a.v.toString();
+        return a.v.toString(); // then we have a BigInt
     }
     if (a instanceof Sk.builtin.float_) {
         return a.v;
+    }
+    if (a === Sk.builtin.none.none$) {
+        return null;
+    }
+    if (typeof a === "string") {
+        return a;
     }
     return a;
 };
@@ -133,33 +127,18 @@ Sk.builtin.asnum$nofloat = function (a) {
     var expon;
     if (a === undefined) {
         return a;
-    }
-    if (a === null) {
+    } else if (a === null) {
         return a;
-    }
-    if (a.constructor === Sk.builtin.none) {
+    } else if (typeof a === "number") {
+        a = a.toString();
+    } else if (a instanceof Sk.builtin.int_) {
+        a = a.v.toString();
+    } else if (a instanceof Sk.builtin.float_) {
+        a = a.v.toString();
+    } else if (a === Sk.builtin.none.none$) {
         return null;
-    }
-    if (a.constructor === Sk.builtin.bool) {
-        if (a.v) {
-            return 1;
-        }
-        return 0;
-    }
-    if (typeof a === "number") {
-        a = a.toString();
-    }
-    if (a.constructor === Sk.builtin.int_) {
-        a = a.v.toString();
-    }
-    if (a.constructor === Sk.builtin.float_) {
-        a = a.v.toString();
-    }
-    if (a.constructor === Sk.builtin.lng) {
-        a = a.str$(10, true);
-    }
-    if (a.constructor === Sk.builtin.biginteger) {
-        a = a.toString();
+    } else {
+        return undefined;
     }
 
     //  Sk.debugout("INITIAL: " + a);
