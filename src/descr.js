@@ -274,8 +274,78 @@ Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
     },
 };
 
+/**
+ *
+ * @constructor
+ *
+ * @description
+ * This is for classmethods in Native Js Classes, not for "f = classmethod(f)" in Python
+ * See dict.fromkeys for a native example
+ *
+ */
+Sk.builtin.classmethod_descriptor = Sk.generic.descriptor("classmethod_descriptor", "method", function classmethod_descriptor(typeobj, method_def) {
+    this.d$def = method_def;
+    this.$meth = method_def.$meth; //useful for internal fast calls
+    this.d$type = typeobj;
+    this.d$name = method_def.$name || "<native JS>";
+});
+
+Sk.builtin.classmethod_descriptor.prototype.tp$getsets.__text_signature__ = Sk.builtin.method_descriptor.prototype.tp$getsets.__text_signature__;
+
+Sk.builtin.classmethod_descriptor.prototype.tp$call = function (args, kwargs) {
+    if (args.length < 1) {
+        throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' object needs an argument");
+    };
+    const self = args.shift();
+    const bound = this.tp$descr_get(null, self);
+    return bound.tp$call(args, kwargs);
+};
+
+
+Sk.builtin.classmethod_descriptor.prototype.tp$descr_get = function (obj, type, canSuspend) {
+    if (type === undefined) {
+        if (obj !== null) {
+            type = type || obj.ob$type;
+        } else {
+            throw new Sk.builtin.TypeError(
+                "descriptor '" + this.d$name + "' for type '" + this.d$type.prototype.tp$name + "' needs an object or a type"
+            );
+        }
+    }
+    if (type.ob$type !== Sk.builtin.type) {
+        throw new Sk.builtin.TypeError(
+            "descriptor '" +
+                this.d$name +
+                "' for type '" +
+                this.d$type.prototype.tp$name +
+                "' needs a type not a '" +
+                Sk.abstr.typeName(type) +
+                "' as arg 2"
+        );
+    }
+
+    if (!type.$isSubType(this.d$type)) {
+        throw new Sk.builtin.TypeError(
+            "descriptor '" +
+                this.d$name +
+                "' requires a '" +
+                this.d$type.prototype.tp$name +
+                "' object but received a '" +
+                Sk.abstr.typeName(type) +
+                "' object"
+        );
+    }
+    return new Sk.builtin.sk_method(this.d$def, obj);
+};
+
 // initialize these classes now that they exist do OneTime initialization only takes care of builtinsdict these are in builtins
-const _to_initialize = [Sk.builtin.method_descriptor, Sk.builtin.getset_descriptor, Sk.builtin.wrapper_descriptor, Sk.builtin.method_wrapper];
+const _to_initialize = [
+    Sk.builtin.method_descriptor,
+    Sk.builtin.getset_descriptor,
+    Sk.builtin.wrapper_descriptor,
+    Sk.builtin.method_wrapper,
+    Sk.builtin.classmethod_descriptor,
+];
 
 for (let i = 0; i < _to_initialize.length; i++) {
     const cls = _to_initialize[i];

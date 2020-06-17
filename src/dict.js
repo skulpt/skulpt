@@ -1,4 +1,3 @@
-
 /**
  * @constructor
  * @param {Array} L
@@ -276,6 +275,22 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.copy() -> a shallow copy of D",
         },
     },
+    classmethods: {
+        fromkeys: {
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: "($type, iterable, value=None, /)",
+            $meth: function fromkeys(seq, value) {
+                const keys = Sk.abstr.arrayFromIterable(seq);
+                const dict = new Sk.builtin.dict([]);
+                value = value || Sk.builtin.none.none$;
+                for (let i = 0; i < keys.length; i++) {
+                    dict.set$item(keys[i], value);
+                }
+                return dict;
+            },
+            $doc: "Create a new dictionary with keys from iterable and values set to value.",
+        },
+    },
 });
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
@@ -292,30 +307,6 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
     return;
 };
 
-/**
- *
- * this is effectively a builtin staticmethod for dict
- * We create this separately
- *
- */
-Sk.builtin.dict.prototype.fromkeys = new Sk.builtin.sk_method(
-    {
-        $name: "fromkeys",
-        $flags: { MinArgs: 1, MaxArgs: 2 },
-        $textsig: "($type, iterable, value=None, /)",
-        $meth: function fromkeys(seq, value) {
-            const keys = Sk.abstr.arrayFromIterable(seq);
-            const dict = new Sk.builtin.dict([]);
-            value = value || Sk.builtin.none.none$;
-            for (let i = 0; i < keys.length; i++) {
-                dict.set$item(keys[i], value);
-            }
-            return dict;
-        },
-        $doc: "Create a new dictionary with keys from iterable and values set to value.",
-    },
-    Sk.builtin.dict
-);
 
 /**
  * NB:
@@ -417,7 +408,7 @@ Sk.builtin.dict.prototype.pop$item_from_bucket = function (key, base_hash) {
 Sk.builtin.dict.prototype.insert$item_from_bucket = function (key, value, base_hash) {
     let key_hash,
         bucket = this.buckets[base_hash];
-    const item = {lhs: key, rhs: value};
+    const item = { lhs: key, rhs: value };
     if (bucket === undefined) {
         bucket = this.buckets[base_hash] = [];
         key_hash = "#" + 0 + base_hash.slice(1);

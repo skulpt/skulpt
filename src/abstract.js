@@ -794,6 +794,16 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     klass.prototype.tp$methods = null;
 };
 
+Sk.abstr.setUpClassMethods = function (klass, methods) {
+    methods = methods || {};
+    for (let method_name in methods) {
+        const method_def = methods[method_name];
+        method_def.$name = method_name;
+        klass.prototype[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
+    }
+};
+
+
 Sk.abstr.setUpSlots = function (klass, slots) {
     const proto = klass.prototype;
     const op2shortcut = {
@@ -970,6 +980,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
 
     Sk.abstr.setUpMethods(typeobject, options.methods || {});
     Sk.abstr.setUpGetSets(typeobject, options.getsets || {});
+    Sk.abstr.setUpClassMethods(typeobject, options.classmethods || {});
 
     if (mod !== undefined) {
         typeobject.prototype.__module__ = new Sk.builtin.str(mod);
