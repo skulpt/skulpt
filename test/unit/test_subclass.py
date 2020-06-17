@@ -277,7 +277,7 @@ class SubclassTest(unittest.TestCase):
             raise TestFailed("test")
             self.fail("Should never get here")
         except TestFailed as e:
-            self.assertIn("TestFailed: test", repr(e))
+            self.assertIn("TestFailed('test')", repr(e))
 
         class MyTypeError(TypeError): pass
 

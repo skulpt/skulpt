@@ -59,33 +59,8 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
             return Sk.builtin.none.none$;
         },
         $r: function () {
-            let ret = "";
-
-            ret += this.tp$name;
-            if (this.args) {
-                ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
-            }
-            if (this.traceback.length !== 0) {
-                ret += " on line " + this.traceback[0].lineno;
-            } else {
-                ret += " at <unknown>";
-            }
-
-            if (this.args.v.length > 4) {
-                ret += "\n" + this.args.v[4].v + "\n";
-                for (let i = 0; i < this.args.v[3]; ++i) {
-                    ret += " ";
-                }
-                ret += "^\n";
-            }
-
-            /*for (i = 0; i < this.traceback.length; i++) {
-                ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
-                if ("colno" in this.traceback[i]) {
-                    ret += " column " + this.traceback[i].colno;
-                }
-            }*/
-
+            let ret = this.tp$name;
+            ret += "(" + this.args.v.map((x) => Sk.misceval.objectRepr(x)).join(", ") + ")";
             return new Sk.builtin.str(ret);
         },
         tp$str: function () {
@@ -101,7 +76,33 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         }
     },
     proto: {
-        toString: function () { return this.$r().v; }
+        toString: function () { 
+            let ret = this.tp$name;
+            ret += ": " + this.tp$str().v;
+
+            if (this.traceback.length !== 0) {
+                ret += " on line " + this.traceback[0].lineno;
+            } else {
+                ret += " at <unknown>";
+            }
+
+            // if (this.args.v.length > 4) {
+            //     ret += "\n" + this.args.v[4].v + "\n";
+            //     for (let i = 0; i < this.args.v[3]; ++i) {
+            //         ret += " ";
+            //     }
+            //     ret += "^\n";
+            // }
+
+            /*for (i = 0; i < this.traceback.length; i++) {
+                ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
+                if ("colno" in this.traceback[i]) {
+                    ret += " column " + this.traceback[i].colno;
+                }
+            }*/
+
+            return ret;
+        }
     }
 });
 

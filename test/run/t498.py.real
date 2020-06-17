@@ -50,8 +50,8 @@ floating point and long integers
 0.0883883476483 <type 'float'>
 
 ERROR CHECKING:
-TypeError: unsupported operand type(s) for pow(): 'list' and 'str' on line 53
-TypeError: unsupported operand type(s) for pow(): 'list', 'str', 'int' on line 59
-ValueError: negative number cannot be raised to a fractional power on line 65
-TypeError: pow() 3rd argument not allowed unless all arguments are integers on line 71
-TypeError: pow() 2nd argument cannot be negative when 3rd argument specified on line 77
+TypeError("unsupported operand type(s) for pow(): 'list' and 'str'")
+TypeError("unsupported operand type(s) for pow(): 'list', 'str', 'int'")
+ValueError('negative number cannot be raised to a fractional power')
+TypeError('pow() 3rd argument not allowed unless all arguments are integers')
+TypeError('pow() 2nd argument cannot be negative when 3rd argument specified')

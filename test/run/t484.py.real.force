@@ -1,5 +1,5 @@
 10
 ZeroDivisionError: can't divide by zero
-TypeError: unsupported operand type(s) for Div: 'str' and 'str' on line 7
+TypeError("unsupported operand type(s) for Div: 'str' and 'str'")
 ERROR
-NameError: name 'x' is not defined on line 31
+NameError("name 'x' is not defined")

@@ -68,7 +68,7 @@ class ExceptionTest(unittest.TestCase):
 				return 42
 			finally:
 				finally_ran[0] = True
-		self.assertEqual(r4(), 42);
+		self.assertEqual(r4(), 42)
 		self.assertTrue(finally_ran[0], "'finally' block did not run")
 
 		def r5():

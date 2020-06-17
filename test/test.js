@@ -241,7 +241,7 @@ function testRun(name, nocatch, debugMode)
             }
             else
             {
-                got = "EXCEPTION: " + Sk.misceval.objectRepr(e) + "\n";
+                got = "EXCEPTION: " + e.toString() + "\n";
             }
         });
 
