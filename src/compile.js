@@ -1910,12 +1910,24 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
         }
     }
+    // Are we using the new fast-call mechanism, where the
+    // function we define implements the tp$call interface?
+    // (Right now we haven't migrated generators because they're
+    // a mess, but if this works we can move everything over)
+    let fastCall = !isGenerator;
+
     if (hasFree) {
-        funcArgs.push("$free");
+        if (!fastCall) {
+            funcArgs.push("$free");
+        }
         this.u.tempsToSave.push("$free");
     }
 
-    this.u.prefixCode += funcArgs.join(",");
+    if (fastCall) {
+        this.u.prefixCode += "$posargs,$kwargs";
+    } else {
+        this.u.prefixCode += funcArgs.join(",");
+    }
 
     this.u.prefixCode += "){";
 
@@ -1927,6 +1939,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (hasCell) {
         this.u.prefixCode += "\n// has cell\n";
+    }
+
+    if (fastCall) {
+        this.u.prefixCode += "\n// fast call\n";
     }
 
     //
@@ -1946,7 +1962,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    // (fastcall doesn't need to do this, as 'this' is the func object)
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -1959,6 +1976,22 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // parameters appropriately.
     //
     this.u.varDeclsCode += "if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
+
+    if (fastCall) {
+        // Resolve our arguments from $posargs+$kwargs.
+        // If we're posargs-only, we can handle the fast path
+        // without even calling out
+        if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
+            this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
+        } else {
+            this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
+        }
+        for (let i=0; i < funcArgs.length; i++) {
+            this.u.varDeclsCode += ","+funcArgs[i]+"=$args["+i+"]";
+        }
+        this.u.varDeclsCode += ";\n";
+    }
+
 
     // TODO update generators to do their arg checks in outside generated code,
     // like functions do
@@ -2015,8 +2048,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.varDeclsCode += "}";
 
     // inject __class__ cell when running python3
-    if (Sk.__future__.python3 && class_for_super) {
-        this.u.varDeclsCode += "$gbl.__class__=this." + class_for_super.v + ";";
+    if (Sk.python3 && class_for_super) {
+        this.u.varDeclsCode += "$gbl.__class__=$gbl." + class_for_super.v + ";";
     }
 
     // finally, set up the block switch that the jump code expects
@@ -2090,6 +2123,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (vararg) {
         out(scopename, ".co_varargs=1;");
+    }
+    if (!isGenerator) {
+        out(scopename, ".co_fastcall=1;");
     }
 
     //
