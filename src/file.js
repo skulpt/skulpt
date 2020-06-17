@@ -1,37 +1,37 @@
 /**
  * @constructor
- * @param {Sk.builtin.str} _name
+ * @param {Sk.builtin.str} name
  * @param {Sk.builtin.str} mode
  * @param {Object} buffering
  */
-Sk.builtin.file = function (_name, mode, buffering) {
+Sk.builtin.file = function (name, mode, buffering) {
     var i;
     var elem;
 
     if (!(this instanceof Sk.builtin.file)) {
-        return new Sk.builtin.file(_name, mode, buffering);
+        return new Sk.builtin.file(name, mode, buffering);
     }
 
     this.mode = mode;
-    this._name = Sk.ffi.remapToJs(_name);
+    this.name = Sk.ffi.remapToJs(name);
     this.closed = false;
 
-    if (this._name === "/dev/stdout") {
+    if (this.name === "/dev/stdout") {
         this.data$ = Sk.builtin.none.none$;
         this.fileno = 1;
-    } else if (this._name === "/dev/stdin") {
+    } else if (this.name === "/dev/stdin") {
         this.fileno = 0;
-    } else if (this._name === "/dev/stderr") {
+    } else if (this.name === "/dev/stderr") {
         this.fileno = 2;
     } else {
         if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
             this.fileno = 10;
-            elem = document.getElementById(_name.v);
+            elem = document.getElementById(name.v);
             if (elem == null) {
                 if (mode.v == "w" || mode.v == "a") {
                     this.data$ = "";
                 } else {
-                    throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + _name.v + "'");
+                    throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
                 }
             } else {
                 if (elem.nodeName.toLowerCase() == "textarea") {
@@ -42,7 +42,7 @@ Sk.builtin.file = function (_name, mode, buffering) {
             }
         } else {
             this.fileno = 11;
-            this.data$ = Sk.read(_name.v);
+            this.data$ = Sk.read(name.v);
         }
 
         this.lineList = this.data$.split("\n");
@@ -69,7 +69,7 @@ Sk.builtin.file.prototype["$r"] = function () {
     return new Sk.builtin.str("<" +
         (this.closed ? "closed" : "open") +
         "file '" +
-        this._name +
+        this.name +
         "', mode '" +
         Sk.ffi.remapToJs(this.mode) +
         "'>");
