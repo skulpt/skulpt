@@ -226,9 +226,9 @@ Sk.builtin.min = function min(args, kwargs) {
             }
         }
     } else {
-        let lowest_compare = Sk.misceval.callsimOrSuspendArray(key, [lowest]);
+        let lowest_compare = Sk.misceval.callsimArray(key, [lowest]);
         for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            let i_compare = Sk.misceval.callsimArray(key, [i]);
             if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
                 lowest = i;
                 lowest_compare = i_compare;
@@ -280,9 +280,9 @@ Sk.builtin.max = function max(args, kwargs) {
             }
         }
     } else {
-        let highest_compare = Sk.misceval.callsimOrSuspendArray(key, [highest]);
+        let highest_compare = Sk.misceval.callsimArray(key, [highest]);
         for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            let i_compare = Sk.misceval.callsimArray(key, [i]);
             if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
                 highest = i;
                 highest_compare = i_compare;
