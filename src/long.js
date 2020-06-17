@@ -10,7 +10,7 @@
  */
 Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
     base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
-    constructor: function (x) {
+    constructor: function lng (x) {
         Sk.builtin.int_.call(this, x);
     },
     slots: {

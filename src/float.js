@@ -14,7 +14,7 @@ const JSBI = require("jsbi");
  */
 
 Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
-    constructor: function (x) {
+    constructor: function float_ (x) {
         Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
         if (typeof x === "number") {
             this.v = x;

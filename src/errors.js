@@ -13,7 +13,7 @@
  * @param {String|Array} args
  */
 Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
-    constructor: function (...args) {
+    constructor: function Exception (...args) {
         // internally args is either a string
         Sk.asserts.assert(this instanceof Sk.builtin.BaseException);
         // hackage to allow shorter throws

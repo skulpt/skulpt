@@ -16,7 +16,7 @@ const collections_mod = function (keywds) {
     };
 
     collections.defaultdict = Sk.abstr.buildNativeClass("collections.defaultdict", {
-        constructor: function (default_factory, L) {
+        constructor: function defaultdict (default_factory, L) {
             this.default_factory = default_factory;
             Sk.builtin.dict.call(this, L);
         },
@@ -73,7 +73,7 @@ const collections_mod = function (keywds) {
     });
 
     collections.Counter = Sk.abstr.buildNativeClass("Counter", {
-        constructor: function () {
+        constructor: function Counter() {
             this.$d = new Sk.builtin.dict();
         },
         base: Sk.builtin.dict,
@@ -229,7 +229,7 @@ const collections_mod = function (keywds) {
 
     // OrderedDict
     const odict_iter_ = Sk.abstr.buildIteratorClass("odict_iterator", {
-        constructor: function (odict) {
+        constructor: function odict_iter_ (odict) {
             this.$index = 0;
             this.$seq = odict.sk$asarray();
             this.$orig_size = odict.sq$length();
@@ -239,7 +239,7 @@ const collections_mod = function (keywds) {
     });
 
     collections.OrderedDict = Sk.abstr.buildNativeClass("OrderedDict", {
-        constructor: function () {
+        constructor: function OrderedDict () {
             this.orderedkeys = [];
             Sk.builtin.dict.call(this);
             return this;
@@ -516,7 +516,7 @@ const collections_mod = function (keywds) {
 
         // Constructor for namedtuple
         const nt_klass = Sk.abstr.buildNativeClass($name, {
-            constructor: function () {},
+            constructor: function NamedTuple () {},
             base: Sk.builtin.tuple,
             slots: {
                 tp$doc: $name + "(" + flds.join(", ") + ")",

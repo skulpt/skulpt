@@ -9,7 +9,7 @@ const int_ = Sk.builtin.int_;
  * @param {Object} lst
  */
 Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
-    constructor: function (start, stop, step, lst) {
+    constructor: function range (start, stop, step, lst) {
         this.start = start;
         this.stop = stop;
         this.step = step;
@@ -209,7 +209,7 @@ function rangeFromPy(start, stop, step) {
 }
 
 Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
-    constructor: function (lst) {
+    constructor: function range_iter_ (lst) {
         this.$index = 0;
         this.$seq = lst;
     },
@@ -225,7 +225,7 @@ Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
 });
 
 Sk.builtin.revereserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
-    constructor: function (lst) {
+    constructor: function range_iter (lst) {
         this.$index = lst.length - 1;
         this.$seq = lst;
     },

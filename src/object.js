@@ -27,7 +27,7 @@ Sk.builtin.object.prototype.tp$doc = "The most base type";
 
 Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
     // see cypthon object_new for algorithm details we do two versions one for prototypical and one for not
-    if ((args && args.length) || (kwargs && kwargs.length)) {
+    if (args.length || (kwargs && kwargs.length)) {
         if (this.tp$new !== Sk.builtin.object.prototype.tp$new) {
             throw new Sk.builtin.TypeError("object.__new__() takes exactly one argument (the type to instantiate)");
         }
@@ -40,7 +40,7 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
 
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     // see cypthon object_init for algorithm details
-    if ((args && args.length) || (kwargs && kwargs.length)) {
+    if (args.length || (kwargs && kwargs.length)) {
         if (this.tp$init !== Sk.builtin.object.prototype.tp$init) {
             throw new Sk.builtin.TypeError("object.__init__() takes exactly one argument (the instance to initialize)");
         }

@@ -6,7 +6,7 @@
  *
  */
 Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
-    constructor: function (func, self) {
+    constructor: function method (func, self) {
         Sk.asserts.assert(this instanceof Sk.builtin.method, "bad call to method constructor, use 'new'");
         this.im_func = func;
         this.im_self = self;

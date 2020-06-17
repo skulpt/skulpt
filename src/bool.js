@@ -14,7 +14,7 @@
  * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
  */
 Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
-    constructor: function (x) {
+    constructor: function bool (x) {
         if (Sk.misceval.isTrue(x)) {
             return Sk.builtin.bool.true$;
         } else {

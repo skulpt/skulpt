@@ -249,7 +249,7 @@ const set_methods = {
  * internally call new Sk.builtin.set with an array of python objects
  */
 Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
-    constructor: function (S) {
+    constructor: function set (S) {
         if (S === undefined) {
             S = [];
         }
@@ -385,7 +385,7 @@ const set_proto = Sk.builtin.set.prototype;
  * @param {Array.<Object>} S
  */
 Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
-    constructor: function (S) {
+    constructor: function frozenset (S) {
         // takes in an array of py objects
         if (S === undefined) {
             S = [];

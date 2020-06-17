@@ -8,7 +8,7 @@ const JSBI = require("jsbi");
  *
  */
 Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
-    constructor: function (x) {
+    constructor: function int_ (x) {
         // internal function called with a javascript int/float/str
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         if (typeof x === "number" || x instanceof JSBI) {

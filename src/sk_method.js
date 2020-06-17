@@ -29,7 +29,7 @@
  *
  */
 Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
-    constructor: function (method_def, self, module) {
+    constructor: function builtin_function_or_method (method_def, self, module) {
         // here we set this.$meth binding it's call signature to self
         this.$meth = method_def.$meth.bind(self);
         this.$doc = method_def.$doc;

@@ -36,7 +36,7 @@ Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
  * @param {Sk.builtin.object} sentinel - if reached returns undefined
  */
 Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
-    constructor: function (callable, sentinel) {
+    constructor: function callable_iter (callable, sentinel) {
         if (!Sk.builtin.checkCallable(callable)) {
             throw new Sk.builtin.TypeError("iter(v, w): v must be callable");
         }
@@ -79,7 +79,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
  * @param {Sk.builtin.dict} dict
  */
 Sk.builtin.dict_iter_ = Sk.abstr.buildIteratorClass("dict_keyiterator", {
-    constructor: function (dict) {
+    constructor: function dict_iter (dict) {
         this.$index = 0;
         this.$seq = dict.sk$asarray();
         this.$orig_size = dict.get$size();
@@ -96,7 +96,7 @@ Sk.builtin.dict_iter_ = Sk.abstr.buildIteratorClass("dict_keyiterator", {
  * @param {Sk.builtin.list} lst
  */
 Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
-    constructor: function (lst) {
+    constructor: function list_iter_ (lst) {
         this.$index = 0;
         this.$seq = lst.v;
         this.$done = false; // the list can change size but once we've consumed the iterator we must stop
@@ -120,7 +120,7 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
  * @param {Sk.builtin.list} lst
  */
 Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
-    constructor: function (lst) {
+    constructor: function reverselist_iter_ (lst) {
         this.$index = lst.v.length - 1;
         this.$seq = lst.v;
     },
@@ -146,7 +146,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
  * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
  */
 Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
-    constructor: function (set) {
+    constructor: function set_iter_ (set) {
         this.$index = 0;
         this.$seq = set.sk$asarray();
         this.$orig_size = set.set$size();
@@ -210,7 +210,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
  * @param {Sk.builtin.str} str
  */
 Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
-    constructor: function (str) {
+    constructor: function str_iter_(str) {
         this.$index = 0;
         this.$seq = str.v.slice(0);
         this.$length = str.sq$length();
@@ -232,7 +232,7 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
  * @param {Sk.builtin.tuple} tuple
  */
 Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
-    constructor: function (tuple) {
+    constructor: function tuple_iter_(tuple) {
         this.$index = 0;
         this.$seq = tuple.sk$asarray();
     },

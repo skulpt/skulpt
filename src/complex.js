@@ -10,7 +10,7 @@ const JSBI = require("jsbi");
  *
  */
 Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
-    constructor: function (real, imag) {
+    constructor: function complex (real, imag) {
         Sk.asserts.assert(this instanceof Sk.builtin.complex, "bad call to complex constructor, use 'new'");
         this.real = real;
         this.imag = imag;
