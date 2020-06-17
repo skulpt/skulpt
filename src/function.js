@@ -163,13 +163,13 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
         let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
         args[totalArgs] = new Sk.builtin.tuple(vararg);
     } else if (nposargs > co_argcount) {
-        throw new Sk.builtin.TypeError(this.tp$getname() + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+        throw new Sk.builtin.TypeError(this.$name + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
     }
 
     /* Handle keyword arguments */
     if (kw) {
         if (this.func_code["no_kw"]) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+            throw new Sk.builtin.TypeError(this.$name + "() takes no keyword arguments");
         }
 
         for (let i = 0; i < kw.length; i += 2) {
@@ -179,13 +179,13 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
 
             if (idx >= 0) {
                 if (args[idx] !== undefined) {
-                    throw new Sk.builtin.TypeError(this.tp$getname() + "() got multiple values for argument '" + name + "'");
+                    throw new Sk.builtin.TypeError(this.$name + "() got multiple values for argument '" + name + "'");
                 }
                 args[idx] = value;
             } else if (kwargs) {
                 kwargs.push(new Sk.builtin.str(name), value);
             } else {
-                throw new Sk.builtin.TypeError(this.tp$getname() + "() got an unexpected keyword argument '" + name + "'");
+                throw new Sk.builtin.TypeError(this.$name + "() got an unexpected keyword argument '" + name + "'");
             }
         }
     }
@@ -209,7 +209,7 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
             }
         }
         if (missing.length != 0 && (this.co_argcount || this.co_varnames)) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
+            throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
         }
         for (; i < co_argcount; i++) {
             if (args[i] === undefined) {
@@ -234,7 +234,7 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
             }
         }
         if (missing.length !== 0) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required keyword argument" + (missing.length==1?"":"s") + ": " + missing.join(", "));
+            throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required keyword argument" + (missing.length==1?"":"s") + ": " + missing.join(", "));
         }
     }
 
@@ -274,7 +274,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
         // It's a JS function with no type info, don't hang around
         // resolving anything.
         if (kw && kw.length !== 0) {
-            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+            throw new Sk.builtin.TypeError(this.$name + "() takes no keyword arguments");
         }
         return this.func_code.apply(this.func_globals, posargs);
     }
