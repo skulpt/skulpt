@@ -76,7 +76,6 @@ Sk.builtin.str.prototype.$jsstr = function () {
 };
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
-    var ret;
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
         if (index < 0) {
@@ -87,8 +86,8 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
         }
         return new Sk.builtin.str(this.v.charAt(index));
     } else if (index instanceof Sk.builtin.slice) {
-        ret = "";
-        str = this.v;
+        let ret = "";
+        const str = this.v;
         index.sssiter$(str.length, (i) => {
             ret += str.charAt(i);
         });

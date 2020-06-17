@@ -583,16 +583,18 @@ Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
  */
 Sk.builtin.dict.prototype.set$item = function (key, value) {
     const hash = this.get_dict_hash(key);
+    let item;
     if (hash[0] === "_") {
         // we have a string so pass it to the dictionary
-        if (this.entries[hash] === undefined) {
+        item = this.entries[hash];
+        if (item === undefined) {
             this.size += 1;
-            this.entries[hash] = { lhs: key };
+            item = this.entries[hash] = { lhs: key };
         }
-        this.entries[hash].rhs = value;
+        item.rhs = value;
         return;
     }
-    let item = this.get$item_from_bucket(key, hash);
+    item = this.get$item_from_bucket(key, hash);
     if (item === undefined) {
         item = this.insert$item_from_bucket(key, value, hash);
         this.size += 1;

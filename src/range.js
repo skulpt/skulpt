@@ -176,11 +176,11 @@ function rangeFromPy(start, stop, step) {
     const ret = [];
     if (typeof start === "number" && typeof stop === "number" && typeof step === "number") {
         if (step > 0) {
-            for (i = start; i < stop; i += step) {
+            for (let i = start; i < stop; i += step) {
                 ret.push(new int_(i));
             }
         } else {
-            for (i = start; i > stop; i += step) {
+            for (let i = start; i > stop; i += step) {
                 ret.push(new int_(i));
             }
         }
@@ -265,6 +265,6 @@ function convertIfSafe(v) {
  * @param {*} step
  */
 Sk.builtin.range = Sk.builtin.xrange = function range(start, stop, step) {
-    ret = rangeFromPy(start, stop, step);
+    const ret = rangeFromPy(start, stop, step);
     return new Sk.builtin.list(ret.v);
 };
