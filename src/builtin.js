@@ -4,75 +4,8 @@
  * todo; these should all be func objects too, otherwise str() of them won't
  * work, etc.
  */
+
 const JSBI = require("jsbi");
-
-Sk.builtin.range = function range(start, stop, step) {
-    var ret = [];
-    var lst;
-    var i;
-
-    Sk.builtin.pyCheckArgsLen("range", arguments.length, 1, 3);
-    Sk.builtin.pyCheckType("start", "integer", Sk.misceval.isIndex(start));
-    start = Sk.misceval.asIndex(start);
-    if (stop !== undefined) {
-        Sk.builtin.pyCheckType("stop", "integer", Sk.misceval.isIndex(stop));
-        stop = Sk.misceval.asIndex(stop);
-    }
-    if (step !== undefined) {
-        Sk.builtin.pyCheckType("step", "integer", Sk.misceval.isIndex(step));
-        step = Sk.misceval.asIndex(step);
-    }
-
-    if (stop === undefined && step === undefined) {
-        stop = start;
-        start = 0;
-        step = 1;
-    } else if (step === undefined) {
-        step = 1;
-    }
-
-    if (step === 0) {
-        throw new Sk.builtin.ValueError("range() step argument must not be zero");
-    }
-
-    if (typeof start === "number" && typeof stop === "number" && typeof step === "number") {
-        if (step > 0) {
-            for (i = start; i < stop; i += step) {
-                ret.push(new Sk.builtin.int_(i));
-            }
-        } else {
-            for (i = start; i > stop; i += step) {
-                ret.push(new Sk.builtin.int_(i));
-            }
-        }
-    } else {
-        // This is going to be slow, really needs to be a generator
-        const startlng = new Sk.builtin.int_(start);
-        const steplng = new Sk.builtin.int_(step);
-        const stoplng = new Sk.builtin.int_(stop);
-        if (steplng.nb$ispositive()) {
-            i = startlng;
-            while (Sk.misceval.isTrue(i.ob$lt(stoplng))) {
-                ret.push(i);
-                i = i.nb$add(steplng);
-            }
-        } else {
-            i = startlng;
-            while (Sk.misceval.isTrue(i.ob$gt(stoplng))) {
-                ret.push(i);
-                i = i.nb$add(steplng);
-            }
-        }
-    }
-
-    lst = new Sk.builtin.list(ret);
-
-    if (Sk.__future__.python3) {
-        return new Sk.builtin.range_(start, stop, step, lst);
-    }
-
-    return lst;
-};
 
 Sk.builtin.asnum$ = function (a) {
     if (a === undefined) {
@@ -1084,7 +1017,7 @@ Sk.builtin.reload = function reload() {
 Sk.builtin.vars = function vars() {
     throw new Sk.builtin.NotImplementedError("vars is not yet implemented");
 };
-Sk.builtin.xrange = Sk.builtin.range;
+
 Sk.builtin.apply_ = function apply_() {
     throw new Sk.builtin.NotImplementedError("apply is not yet implemented");
 };

@@ -464,11 +464,20 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtin.int_.prototype.tp$str;
         delete Sk.builtin.bool.prototype.tp$str;
     } else {
+        Sk.builtins["range"] = new Sk.builtin.sk_method({
+            $meth: Sk.builtin.range,
+            $name: "range",
+            $flags: {MinArgs: 1, MaxArgs: 3}
+        }, undefined, "builtins");
+        Sk.builtins["xrange"] = new Sk.builtin.sk_method({
+            $meth: Sk.builtin.xrange,
+            $name: "xrange",
+            $flags: {MinArgs: 1, MaxArgs: 3}
+        }, undefined, "builtins");
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
-        Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
-        Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
+        
         Sk.builtins["StandardError"] = Sk.builtin.StandardError;
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.longFromStr = function (s, base) {
