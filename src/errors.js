@@ -118,142 +118,130 @@ Sk.builtin.Exception = function () {
 Sk.abstr.setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
 Sk.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
 
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
-Sk.builtin.StandardError = function () {
+Sk.builtin.AssertionError = function () {
     Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("StandardError", Sk.builtin.StandardError, Sk.builtin.Exception);
-// error is not used in py3
-Sk.builtin.StandardError.sk$abstract = true;
-Sk.exportSymbol("Sk.builtin.StandardError", Sk.builtin.StandardError);
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {String|Array} args
- */
-Sk.builtin.AssertionError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.AttributeError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.ImportError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.IndentationError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.IndexError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.KeyError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.NameError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.UnboundLocalError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.OverflowError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.Exception);
 
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.SyntaxError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.RuntimeError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
 
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.SuspensionError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
 
 
@@ -271,114 +259,114 @@ Sk.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.TypeError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.ValueError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.ZeroDivisionError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.TimeLimitError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.IOError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
 
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.NotImplementedError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.NegativePowerError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {*} nativeError
  * @param {String|Array} args
  */
 Sk.builtin.ExternalError = function (args) {
     this.nativeError = args;
     const msg = args.toString();
-    Sk.builtin.StandardError.call(this, msg);
+    Sk.builtin.Exception.call(this, msg);
 };
-Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.OperationError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {String|Array} args
  */
 Sk.builtin.SystemError = function () {
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
@@ -403,28 +391,3 @@ Sk.builtin.getExcInfo = function (e) {
     return new Sk.builtin.tuple(v);
 };
 // NOT exported
-
-
-// We inherit from StandardError for backward compatibilaty. 
-// We don't worry about StandardError in __base__ and __bases__ for py2 so we just override it here for py3
-Sk.builtin.TypeError.prototype.tp$base =
-    Sk.builtin.ValueError.prototype.tp$base =
-    Sk.builtin.AssertionError.prototype.tp$base =
-    Sk.builtin.AttributeError.prototype.tp$base =
-    Sk.builtin.ImportError.prototype.tp$base =
-    Sk.builtin.IndentationError.prototype.tp$base =
-    Sk.builtin.IndexError.prototype.tp$base =
-    Sk.builtin.KeyError.prototype.tp$base =
-    Sk.builtin.NameError.prototype.tp$base =
-    Sk.builtin.OverflowError.prototype.tp$base =
-    Sk.builtin.RuntimeError.prototype.tp$base =
-    Sk.builtin.SyntaxError.prototype.tp$base =
-    Sk.builtin.SuspensionError.prototype.tp$base =
-    Sk.builtin.TimeLimitError.prototype.tp$base =
-    Sk.builtin.IOError.prototype.tp$base =
-    Sk.builtin.NotImplementedError.prototype.tp$base =
-    Sk.builtin.ExternalError.prototype.tp$base =
-    Sk.builtin.OperationError.prototype.tp$base =
-    Sk.builtin.SystemError.prototype.tp$base =
-    Sk.builtin.ZeroDivisionError.prototype.tp$base =
-    Sk.builtin.UnboundLocalError.prototype.tp$base = Sk.builtin.Exception;

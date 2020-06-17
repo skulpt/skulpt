@@ -478,7 +478,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
         
-        Sk.builtins["StandardError"] = Sk.builtin.StandardError;
+        Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.longFromStr = function (s, base) {
             const num = Sk.str2number(s,base);
