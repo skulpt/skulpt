@@ -59,7 +59,7 @@ const collections_mod = function (keywds) {
                 } else {
                     this.default_factory = default_;
                 }
-                Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
+                return Sk.builtin.dict.prototype.tp$init.call(this, args, kwargs);
             },
             $r: function () {
                 const def_str = Sk.misceval.objectRepr(this.default_factory);
@@ -214,8 +214,7 @@ const collections_mod = function (keywds) {
                 "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
             tp$init: function (args, kwargs) {
                 Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
-                args = [this].concat(args);
-                return Sk.misceval.callsimArray(this.update, args, kwargs);
+                return Sk.misceval.callsimArray(this.update, [this, ...args], kwargs);
             },
             $r: function () {
                 var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : "";

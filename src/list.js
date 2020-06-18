@@ -27,7 +27,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             let L = Sk.abstr.arrayFromIterable(args[0], true);
             return Sk.misceval.chain(L, (l) => {
                 self.v = l;
-                return Sk.builtin.none.none;
+                return Sk.builtin.none.none$;
             });
         },
         $r: function () {

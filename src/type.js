@@ -35,21 +35,30 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
 
     obj = this.prototype.tp$new(args, kwargs);
 
-    return Sk.misceval.chain(
-        obj,
-        function (o) {
-            obj = o;
-            if (!obj.ob$type.$isSubType(self)) {
-                // don't initialize an obj if it's type is not a subtype of this!
-                // typically obj$obtype === self so this check is fast
-                return undefined;
-            }
-            return obj.tp$init(args, kwargs);
-        },
-        function () {
-            return obj;
+    if (obj.$isSuspension) {
+        return Sk.misceval.chain(
+            obj,
+            function (o) {
+                obj = o;
+                if (!obj.ob$type.$isSubType(self)) {
+                    // don't initialize an obj if it's type is not a subtype of this!
+                    // typically obj$obtype === self so this check is fast
+                    return;
+                }
+                return obj.tp$init(args, kwargs);
+            },
+            () => obj
+        );
+    } else if (!obj.ob$type.$isSubType(self)) {
+        return obj;
+    } else {
+        const res = obj.tp$init(args, kwargs);
+        Sk.asserts.assert(res !== undefined, "should return None in init method for " + obj.tp$name);
+        if (res.$isSuspension) {
+            return Sk.misceval.chain(res, () => obj);
         }
-    );
+        return obj;
+    }
 };
 
 Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
@@ -125,6 +134,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
         klass.prototype[k.v] = v;
+        klass[k.v] = v;
     }
     klass.$allocateSlots();
     return klass;
@@ -224,12 +234,12 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
         } else {
             delete proto[jsMangled];
             // delete the slot_func
-            // TODO what about slot funcs that are dual slots... 
+            // TODO what about slot funcs that are dual slots...
             const slot_name = Sk.dunderToSkulpt[jsMangled];
             if (slot_name !== undefined) {
                 delete this.prototype[slot_name];
                 if (!proto.sk$prototypical) {
-                    this.$allocateGetterSlot(jsMangled); 
+                    this.$allocateGetterSlot(jsMangled);
                     // if this was a slot func and we are not prototypical
                     // allocate a getter slot in it's place
                 }
@@ -384,7 +394,7 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
         }
     }
     if (!proto.sk$prototypical) {
-        // we allocate getter slots on non-prototypical klasses that walk the MRO 
+        // we allocate getter slots on non-prototypical klasses that walk the MRO
         // and who don't have the dunder already declared
         for (let dunder in Sk.slots) {
             if (!proto.hasOwnProperty(dunder)) {
