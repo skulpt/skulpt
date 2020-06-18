@@ -5,7 +5,7 @@
     },
     "source": {
        "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js", "src/import.js",
-       "src/int.js", "src/float.js", "src/bool.js", "src/constants.js", "src/object.js", "src/seqtype.js", "src/numtype.js"]
+       "src/int.js", "src/float.js", "src/bool.js", "src/constants.js", "src/object.js", "src/generic.js"]
     },
     "plugins": ["plugins/markdown"],
     "templates": {
