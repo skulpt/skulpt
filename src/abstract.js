@@ -439,7 +439,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
                 func_name +
                     "() missing " +
                     missing.length +
-                    "required positional arguments: " +
+                    " required positional arguments: " +
                     missing.join(", ")
             );
         }
@@ -848,6 +848,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             // this is a bit of a work around since we can't call the Sk.generic.new as a wrapper until we have created the class.
             slots.tp$new = proto.tp$new = Sk.generic.new(klass);
         }
+        proto.tp$new.sk$static_new = true;
         proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
     }
 

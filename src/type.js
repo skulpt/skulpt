@@ -239,7 +239,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
     }
     this.prototype[jsMangled] = value;
     if (jsMangled in Sk.dunderToSkulpt) {
-        this.$allocateSlot(jsMangled);
+        this.$allocateSlot(jsMangled, value);
     }
 };
 
@@ -379,7 +379,8 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
     const proto = { ...this.prototype };
     for (let dunder in proto) {
         if (dunder in Sk.slots) {
-            this.$allocateSlot(dunder);
+            const dunderFunc = proto[dunder];
+            this.$allocateSlot(dunder, dunderFunc);
         }
     }
     if (!proto.sk$prototypical) {
@@ -393,11 +394,11 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
     }
 };
 
-Sk.builtin.type.prototype.$allocateSlot = function (dunder) {
+Sk.builtin.type.prototype.$allocateSlot = function (dunder, dunderFunc) {
     const slot_def = Sk.slots[dunder];
     const slot_name = slot_def.$slot_name;
     const proto = this.prototype;
-    proto[slot_name] = slot_def.$slot_func;
+    proto[slot_name] = slot_def.$slot_func(dunderFunc);
 };
 
 Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
@@ -412,8 +413,9 @@ Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
             const mro = proto.tp$mro;
             for (let i = 1; i < mro.length; i++) {
                 const base_proto = mro[i].prototype;
-                if (base_proto.hasOwnProperty(dunder)) {
-                    return base_proto[slot_name];
+                const property = Object.getOwnPropertyDescriptor(base_proto, slot_name);
+                if (property !== undefined && property.value) {
+                    return property.value;
                 }
             }
         },

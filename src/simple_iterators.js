@@ -131,12 +131,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
         return this.$seq[this.$index--];
     },
     methods: {
-        __length_hint__: {
-            $meth: function () {
-                return this.$index;
-            },
-            $flags: {NoArgs:true},
-        },
+        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef
     },
     flags: { sk$acceptable_as_base_class: false },
 });

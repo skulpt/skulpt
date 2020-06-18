@@ -615,13 +615,10 @@ const collections_mod = function (keywds) {
             },
             count: {
                 $meth: function (x) {
-                    const head = this.head;
                     const size = (this.tail - this.head) & this.mask;
-                    const mask = this.mask;
-                    const list = this.v;
                     let count = 0;
                     for (let i = 0; i < size; i++) {
-                        if (Sk.misceval.richCompareBool(list[(head + i) & mask], x, "Eq")) {
+                        if (Sk.misceval.richCompareBool(this.v[(this.head + i) & this.mask], x, "Eq")) {
                             count++;
                         }
                     }
@@ -757,7 +754,7 @@ const collections_mod = function (keywds) {
                     const tail = this.tail;
                     const mask = this.mask;
                     const size = (this.tail - this.head) & this.mask;
-                    for (var i = 0; i < ~~(size / 2); i++) {
+                    for (let i = 0; i < ~~(size / 2); i++) {
                         const a = (tail - i - 1) & mask;
                         const b = (head + i) & mask;
                         const temp = this.v[a];
@@ -783,7 +780,7 @@ const collections_mod = function (keywds) {
                     this.head = (head - n) & this.mask;
                     this.tail = (tail - n) & this.mask;
                     if (n > 0) {
-                        for (var i = 1; i <= n; i++) {
+                        for (let i = 1; i <= n; i++) {
                             const a = (head - i) & this.mask;
                             const b = (tail - i) & this.mask;
                             this.v[a] = this.v[b];
@@ -962,6 +959,14 @@ const collections_mod = function (keywds) {
             this.$index++;
             return this.dq[pos];
         },
+        methods: {
+            __length_hint__: {
+                $meth: function __length_hint__() {
+                    return new Sk.builtin.int_(this.$length - this.$index);
+                },
+                $flags: { NoArgs: true },
+            },
+        }
     });
 
     const _deque_reverse_iterator_iter_ = Sk.abstr.buildIteratorClass("_collections._deque_reverse_iterator", {
@@ -979,6 +984,9 @@ const collections_mod = function (keywds) {
             this.$index--;
             return this.dq[pos];
         },
+        methods: {
+            __length_hint__: Sk.generic.iterReverseLengthHintMethodDef
+        }
     });
 
     // deque end

@@ -41,7 +41,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
             return new Sk.builtin.list(this.v).tp$richcompare(w, op);
         },
         tp$iter: function () {
-            return new Sk.builtin.range_iter_(this.v);
+            return new Sk.builtin.range_iter_(this);
         },
         nb$bool: function () {
             return this.v.length !== 0;
@@ -109,7 +109,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
     methods: {
         __reversed__: {
             $meth: function () {
-                return new Sk.builtin.revereserange_iter_(this.v);
+                return new Sk.builtin.revereserange_iter_(this);
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -209,9 +209,9 @@ function rangeFromPy(start, stop, step) {
 }
 
 Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
-    constructor: function range_iter_ (lst) {
+    constructor: function range_iter_ (range_obj) {
         this.$index = 0;
-        this.$seq = lst;
+        this.$seq = range_obj.v;
     },
     iternext: function () {
         return this.$seq[this.$index++];
@@ -225,9 +225,9 @@ Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
 });
 
 Sk.builtin.revereserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
-    constructor: function range_iter (lst) {
-        this.$index = lst.length - 1;
-        this.$seq = lst;
+    constructor: function range_iter (range_obj) {
+        this.$seq = range_obj.v;
+        this.$index = this.$seq.length - 1;
     },
     iternext: function () {
         if (this.$index < 0) {
@@ -236,12 +236,7 @@ Sk.builtin.revereserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseitera
         return this.$seq[this.$index--];
     },
     methods: {
-        __length_hint__: {
-            $meth: function () {
-                return this.$index;
-            },
-            $flags: { NoArgs: true },
-        },
+        __length_hint__:  Sk.generic.iterReverseLengthHintMethodDef
     },
     flags: { sk$acceptable_as_base_class: false },
 });

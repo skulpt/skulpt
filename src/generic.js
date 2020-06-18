@@ -102,41 +102,41 @@ Sk.generic.newMethodDef = {
     $meth: function (args, kwargs) {
         // this = a type object
         let this_name, subs_name;
+        const native_type_proto = this.prototype; 
 
         if (args.length < 1) {
-            this_name = this.prototype.tp$name;
+            this_name = native_type_proto.tp$name;
             throw new Sk.builtin.TypeError(this_name + ".__new__(): not enough arguments");
         }
 
         const subtype = args.shift();
 
         if (subtype.sk$type === undefined) {
-            this_name = this.prototype.tp$name;
+            this_name = native_type_proto.tp$name;
             throw new Sk.builtin.TypeError(this_name + "__new__(X): X is not a type object (" + Sk.abst.typeName(subtype) + ")");
         }
 
         if (!subtype.$isSubType(this)) {
-            this_name = this.prototype.tp$name;
+            this_name = native_type_proto.tp$name;
             subs_name = subtype.prototype.tp$name;
             throw new Sk.builtin.TypeError(this_name + ".__new__(" + subs_name + "): " + subs_name + " is not a subtype of " + this_name);
         }
         /* from CPython: Check that the use doesn't do something silly and unsafe like
        object.__new__(dict).  To do this, we check that the
        most derived base that's not a heap type is this type. */
-        const slot_new = Sk.slots.__new__.$slot_func;
-        let staticbase = subtype;
-        let static_new = staticbase.prototype.hasOwnProperty("tp$new") ? staticbase.prototype.tp$new : null;
-        while (staticbase && (static_new === null || static_new === slot_new)) {
-            staticbase = staticbase.prototype.tp$base;
-            static_new = staticbase.prototype.hasOwnProperty("tp$new") ? staticbase.prototype.tp$new : null;
+        let static_proto = subtype.prototype;
+        let is_static_new = static_proto.hasOwnProperty("tp$new") ? static_proto.tp$new.sk$static_new : false;
+        while (!is_static_new) {
+            static_proto = static_proto.tp$base.prototype;
+            is_static_new = static_proto.hasOwnProperty("tp$new") ? static_proto.tp$new.sk$static_new : false;
         }
-        if (staticbase && staticbase.prototype.tp$new !== this.prototype.tp$new) {
-            this_name = this.prototype.tp$name;
+        if (static_proto.tp$new !== native_type_proto.tp$new) {
+            this_name = native_type_proto.tp$name;
             subs_name = subtype.prototype.tp$name;
-            const suitable = staticbase.prototype.tp$name;
+            const suitable = static_proto.tp$name;
             throw new Sk.builtin.TypeError(this_name + ".__new__(" + subs_name + ") is not safe, use " + suitable + ".__new__()");
         }
-        return this.prototype.tp$new.call(subtype.prototype, args, kwargs);
+        return native_type_proto.tp$new.call(subtype.prototype, args, kwargs);
     },
     $flags: { FastCall: true },
     $textsig: "($type, *args, **kwargs)",
@@ -189,6 +189,13 @@ Sk.generic.iterNextWithArray = function __next__() {
 Sk.generic.iterLengthHintWithArrayMethodDef = {
     $meth: function __length_hint__() {
         return new Sk.builtin.int_(this.$seq.length - this.$index);
+    },
+    $flags: { NoArgs: true },
+};
+
+Sk.generic.iterReverseLengthHintMethodDef = {
+    $meth: function __length_hint__() {
+        return new Sk.builtin.int_(this.$index);
     },
     $flags: { NoArgs: true },
 };
