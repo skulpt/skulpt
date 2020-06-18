@@ -403,9 +403,9 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     }
     if (!kwargs.length && defaults === undefined) {
         return args;
-    } else if (nargs === 0) {
+    } else if (nargs === 0 && varnames.length === (defaults ? defaults.length : defaults)) {
         // a fast case
-        return defaults || [];
+        return defaults;
     }
     args = args.slice(0); //[...args]; // make a shallow copy of args
 
@@ -433,9 +433,15 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
                 args[i] = defaults[defaults.length - 1 - (nargs - 1 - i)];
             }
         }
-        const num_missing = args.filter((x) => x === undefined).length;
-        if (num_missing) {
-            throw new Sk.builtin.TypeError(func_name + "() missing " + num_missing + " positional arguments");
+        const missing = varnames.filter((x, i) => args[i] === undefined);
+        if (missing.length) {
+            throw new Sk.builtin.TypeError(
+                func_name +
+                    "() missing " +
+                    missing.length +
+                    "required positional arguments: " +
+                    missing.join(", ")
+            );
         }
     }
 
@@ -592,7 +598,8 @@ Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 Sk.abstr.iter = function (obj) {
     if (obj.tp$iter) {
         const iter = obj.tp$iter();
-        if (iter.tp$iternext) {// only a valid iterator if there is a tp$iternext
+        if (iter.tp$iternext) {
+            // only a valid iterator if there is a tp$iternext
             return iter;
         }
     }
@@ -802,7 +809,6 @@ Sk.abstr.setUpClassMethods = function (klass, methods) {
         klass.prototype[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
     }
 };
-
 
 Sk.abstr.setUpSlots = function (klass, slots) {
     const proto = klass.prototype;
