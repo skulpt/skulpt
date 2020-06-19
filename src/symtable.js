@@ -357,7 +357,7 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
 
 SymbolTable.prototype.enterBlock = function (name, blockType, ast, lineno) {
     var prev;
-    name = Sk.fixReservedNames(name);
+    name = Sk.fixReserved(name);
     //print("enterBlock:", name);
     prev = null;
     if (this.cur) {
@@ -423,7 +423,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
     var fromGlobal;
     var val;
     var mangled = Sk.mangleName(this.curClass, name).v;
-    mangled = Sk.fixReservedNames(mangled);
+    mangled = Sk.fixReserved(mangled);
     val = this.cur.symFlags[mangled];
     if (val !== undefined) {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM)) {
@@ -529,7 +529,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             if (s.target.constructor == Sk.astnodes.Name) {
                 e_name = s.target;
                 name = Sk.mangleName(this.curClass, e_name.id).v;
-                name = Sk.fixReservedNames(name);
+                name = Sk.fixReserved(name);
                 cur = this.cur.symFlags[name];
                 if ((cur & (DEF_GLOBAL | DEF_NONLOCAL) )
                     && (this.global != this.cur.symFlags) // TODO
@@ -611,7 +611,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             nameslen = s.names.length;
             for (i = 0; i < nameslen; ++i) {
                 name = Sk.mangleName(this.curClass, s.names[i]).v;
-                name = Sk.fixReservedNames(name);
+                name = Sk.fixReserved(name);
                 cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE)) {
                     if (cur & DEF_LOCAL) {

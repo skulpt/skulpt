@@ -1765,7 +1765,7 @@ Compiler.prototype.cfromimport = function (s) {
         level = -1;
     }
     for (i = 0; i < n; ++i) {
-        names[i] = "'" + fixReservedWords(s.names[i].name.v) + "'";
+        names[i] = "'" + fixReserved(s.names[i].name.v) + "'";
     }
     out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "],",level,");");
 
@@ -1776,7 +1776,7 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        jsMangled = "'" + fixReservedWords(alias.name.v) + "'";
+        jsMangled = "'" + fixReserved(alias.name.v) + "'";
         aliasOut = "'" + alias.name.v + "'";
         if (i === 0 && alias.name.v === "*") {
             Sk.asserts.assert(n === 1);
@@ -2018,17 +2018,20 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     for (i = 0; args && i < args.args.length; ++i) {
         id = args.args[i].arg;
         if (this.isCell(id)) {
-            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, id).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
     for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
         id = args.kwonlyargs[i].arg;
         if (this.isCell(id)) {
-            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, id).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
     if (vararg && this.isCell(vararg.arg)) {
-        this.u.varDeclsCode += "$cell." + vararg.arg.v + "=" + vararg.arg.v + ";";
+        let mangled = fixReserved(mangleName(this.u.private_, vararg.arg).v);
+        this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
     }
 
     //
@@ -2038,7 +2041,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.localnames.push(kwarg.arg.v);
         this.u.varDeclsCode += kwarg.arg.v + "=new Sk.builtins['dict']($kwa);";
         if (this.isCell(kwarg.arg)) {
-            this.u.varDeclsCode += "$cell." + kwarg.arg.v + "=" + kwarg.arg.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, kwarg.arg).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
 
@@ -2510,7 +2514,7 @@ var D_FREEVARS = 1;
 var D_CELLVARS = 2;
 
 Compiler.prototype.isCell = function (name) {
-    var mangled = mangleName(this.u.private_, name).v;
+    var mangled = fixReserved(mangleName(this.u.private_, name).v);
     var scope = this.u.ste.getScope(mangled);
     var dict = null;
     return scope === Sk.SYMTAB_CONSTS.CELL;
@@ -2541,7 +2545,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
 
     mangled = mangleName(this.u.private_, name).v;
     // Have to do this before looking it up in the scope
-    mangled = fixReservedNames(mangled);
+    mangled = fixReserved(mangled);
     op = 0;
     optype = OP_NAME;
     scope = this.u.ste.getScope(mangled);
@@ -2572,8 +2576,6 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
     }
 
-    // have to do this after looking it up in the scope
-    mangled = fixReservedWords(mangled);
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here

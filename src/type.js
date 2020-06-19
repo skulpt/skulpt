@@ -188,7 +188,6 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) 
     const metatype = this.ob$type;
     jsMangled = jsMangled || pyName.$jsstr();
     // now check whether there is a descriptor on the metatype
-    // const mangled = Sk.fixReserved(pyName.$jsstr());
     const meta_attribute = metatype.$typeLookup(jsMangled);
 
     let meta_get;
