@@ -88,15 +88,21 @@ Sk.generic.descriptor.getsets = {
  * @param {Sk.GetSetDef} gsd
  */
 
-Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor");
+Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor", undefined, function descr(typeobj, d_base) {
+    this.d$def = d_base;
+    this.$get = d_base.$get;
+    this.$set = d_base.$set;
+    this.d$type = typeobj;
+    this.d$name = d_base.$name;
+},);
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
     if ((ret = this.d$check(obj))) {
         return ret;
     }
-    if (this.d$def && this.d$def.$get !== undefined) {
-        return this.d$def.$get.call(obj);
+    if (this.$get !== undefined) {
+        return this.$get.call(obj);
     }
 
     throw new Sk.builtin.AttributeError("getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not readable");
@@ -105,8 +111,8 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
 Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
     this.d$set_check(obj);
 
-    if (this.d$def.$set !== undefined) {
-        return this.d$def.$set.call(obj, value);
+    if (this.$set !== undefined) {
+        return this.$set.call(obj, value);
     }
     throw new Sk.builtin.AttributeError(
         "getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not writeable"
