@@ -2,10 +2,6 @@
 
 /* Constants used for kwargs */
 
-// Sk.builtin.sorted
-Sk.builtin.sorted.co_varnames = ["list", "cmp", "key", "reverse"];
-Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.bool.false$];
-
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
 Sk.builtin.str.$emptystr = Sk.builtin.str.$empty;

@@ -134,9 +134,26 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
         klass.prototype[k.v] = v;
-        klass[k.v] = v;
     }
     klass.$allocateSlots();
+
+    if (klass.prototype.sk$prototypical) {
+        klass.$typeLookup = function (jsName) {
+            return this.prototype[jsName];
+        };
+    } else {
+        klass.$typeLookup = function (jsName) {
+            const mro = this.prototype.tp$mro;
+            for (let i = 0; i < mro.length; ++i) {
+                const base_proto = mro[i].prototype;
+                if (base_proto.hasOwnProperty(jsName)) {
+                    return base_proto[jsName];
+                }
+            }
+            return undefined;
+        };
+    }
+
     return klass;
 };
 

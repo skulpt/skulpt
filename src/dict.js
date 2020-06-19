@@ -589,7 +589,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
         item = this.entries[hash];
         if (item === undefined) {
             this.size += 1;
-            item = this.entries[hash] = { lhs: key };
+            item = this.entries[hash] = { lhs: key , rhs: undefined};
         }
         item.rhs = value;
         return;

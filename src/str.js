@@ -43,6 +43,8 @@ Sk.builtin.str = function (x) {
     };
 
     this.v = ret;
+    // quicker set_dict for strings by preallocating the $savedKeyHash
+    this.$savedKeyHash_ = "_" + ret;
     Sk.builtin.interned["1" + ret] = this;
 };
 

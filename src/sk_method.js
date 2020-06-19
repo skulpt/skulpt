@@ -57,7 +57,8 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         } else if (flags.MinArgs !== undefined) {
             this.tp$call = this.$callMinArgs;
         } else {
-            this.func_code = method_def.$meth;
+            this.func_code = this.$meth;
+            this.tp$call = this.$defaultCallMethod;
         }
     },
     proto: {
@@ -82,6 +83,16 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
             return this.$meth(...args);
         },
+        $defaultCallMethod: function (args, kwargs) {
+            // default implementation for all currently created functions that have yet to be be converted
+            // and don't utilise flagged calls
+            if (this.$self !== undefined) {
+                return Sk.builtin.func.prototype.tp$call.call(this, [this.$self, ...args], kwargs);
+            }
+            return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
+        },
+        $memoiseFlags: Sk.builtin.func.prototype.$memoiseFlags,
+        $resolveArgs: Sk.builtin.func.prototype.$resolveArgs,
     },
     flags: { sk$acceptable_as_base_class: false },
     slots: {
@@ -93,12 +104,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>");
         },
         tp$call: function (args, kwargs) {
-            // default implementation for all currently created functions that have yet to be be converted
-            // and don't utilise flagged calls
-            if (this.$self !== undefined) {
-                args.unshift(this.$self);
-            }
-            return Sk.generic.functionCallMethod.call(this, args, kwargs);
+            return this.tp$call(args, kwargs);
         },
     },
     getsets: {

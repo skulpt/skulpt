@@ -24,8 +24,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return new Sk.builtin.int_(selfhash + funchash);
         },
         tp$call: function (args, kwargs) {
-            args.unshift(this.im_self);
-            return this.im_func.tp$call(args, kwargs);
+            return this.im_func.tp$call([this.im_self, ...args], kwargs);
         },
         tp$new: function (args, kwargs) {
             Sk.abstr.checkNoKwargs("method", kwargs);
