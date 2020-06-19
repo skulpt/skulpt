@@ -63,7 +63,37 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         $r: function () {
             return new Sk.builtin.str("<function " + this.$qualname + ">");
         },
-        tp$call: Sk.generic.functionCallMethod,
+        tp$call: function (posargs, kw) {
+            // Property reads from func_code are slooow, but
+            // the existing external API allows setup first, so as a
+            // hack we delay this initialisation.
+            // TODO change the external API to require all the co_vars
+            // to be supplied at construction time!
+            if (!this.memoised) {
+                this.$memoiseFlags();
+                this.memoised = true;
+            }
+            
+            // Fast path for JS-native functions (which should be implemented
+            // in a separate tp$call, really)
+            if (this.co_argcount === undefined && this.co_varnames === undefined  && !this.co_kwargs && !this.func_closure) {
+                // It's a JS function with no type info, don't hang around
+                // resolving anything.
+                if (kw && kw.length !== 0) {
+                    throw new Sk.builtin.TypeError(this.$name + "() takes no keyword arguments");
+                }
+                return this.func_code.apply(this.func_globals, posargs);
+            }
+            // end js fast path
+        
+            let args = this.$resolveArgs(posargs, kw);
+            if (this.func_closure) {
+                args.push(this.func_closure);
+            }
+            // note: functions expect 'this' to be globals to avoid having to
+            // slice/unshift onto the main args
+            return this.func_code.apply(this.func_globals, args);
+        },
     },
     getsets: {
         __name__: {
@@ -100,20 +130,22 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             },
         },
     },
-});
+    proto: {
+        $memoiseFlags: function() {
+            this.co_varnames = this.func_code.co_varnames;
+            this.co_argcount = this.func_code.co_argcount;
+            if (this.co_argcount === undefined && this.co_varnames) {
+                this.co_argcount = this.co_argcount = this.co_varnames.length;
+            }
+            this.co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+            this.co_varargs = this.func_code.co_varargs;
+            this.co_kwargs = this.func_code.co_kwargs;
+            this.$defaults = this.func_code.$defaults || [];
+            this.$kwdefs = this.func_code.$kwdefs || [];
+        },
 
-Sk.builtin.func.prototype.$memoiseFlags = function() {
-    this.co_varnames = this.func_code.co_varnames;
-    this.co_argcount = this.func_code.co_argcount;
-    if (this.co_argcount === undefined && this.co_varnames) {
-        this.co_argcount = this.co_argcount = this.co_varnames.length;
     }
-    this.co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
-    this.co_varargs = this.func_code.co_varargs;
-    this.co_kwargs = this.func_code.co_kwargs;
-    this.$defaults = this.func_code.$defaults || [];
-    this.$kwdefs = this.func_code.$kwdefs || [];
-};
+});
 
 
 Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
@@ -255,36 +287,3 @@ Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
     return args;
 };
 
-Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
-    //console.log("Legacy tp$call for", this.tp$getname());
-
-    // Property reads from func_code are slooow, but
-    // the existing external API allows setup first, so as a
-    // hack we delay this initialisation.
-    // TODO change the external API to require all the co_ vars
-    // to be supplied at construction time!
-    if (!this.memoised) {
-        this.$memoiseFlags();
-        this.memoised = true;
-    }
-    
-    // Fast path for JS-native functions (which should be implemented
-    // in a separate tp$call, really)
-    if (this.co_argcount === undefined && this.co_varnames === undefined  && !this.co_kwargs && !this.func_closure) {
-        // It's a JS function with no type info, don't hang around
-        // resolving anything.
-        if (kw && kw.length !== 0) {
-            throw new Sk.builtin.TypeError(this.$name + "() takes no keyword arguments");
-        }
-        return this.func_code.apply(this.func_globals, posargs);
-    }
-    // end js fast path
-
-    let args = this.$resolveArgs(posargs, kw);
-    if (this.func_closure) {
-        args.push(this.func_closure);
-    }
-    // note: functions expect 'this' to be globals to avoid having to
-    // slice/unshift onto the main args
-    return this.func_code.apply(this.func_globals, args);
-};

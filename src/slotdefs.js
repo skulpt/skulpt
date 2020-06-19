@@ -46,17 +46,6 @@ function wrapperSet(self, args, kwargs) {
     return Sk.builtin.none.none$;
 }
 
-// wrapperSetDelete () {};
-
-// wrapperDelete (set_name) {
-//     return function (self, args, kwargs) {
-//         const $name = this.$name;
-//         Sk.abstr.checkNoKwargs(this.$name, kwargs);
-//         Sk.abstr.checkOneArg($name, args, kwargs);
-//         this.call(self, args[0], args[1]);
-//         return Sk.builtin.none.none$;
-//     };
-// };
 
 function wrapperRichCompare(self, args, kwargs) {
     const res = wrapperCallOneArg.call(this, self, args, kwargs);

@@ -1,35 +1,27 @@
 /**
  * @function
- * @param {Sk.builtin.type} type_obj
- * @param {Sk.GetSetDef} gsd
  *
- * @returns typeobj
+ * @returns descriptor type object
  */
 
-Sk.generic.descriptor = function (type_name, repr_name, descr_constructor) {
+function buildDescriptor(type_name, repr_name, descr_constructor) {
     const descr = {
-        constructor:
-            descr_constructor ||
-            function descr(typeobj, d_base) {
-                this.d$def = d_base;
-                this.d$type = typeobj;
-                this.d$name = d_base.$name;
-            },
+        constructor: descr_constructor,
         flags: { sk$acceptable_as_base_class: false },
         // we can't use slots/methods/getsets yet since they're not defined!
         proto: {
             d$repr_name: repr_name || type_name,
-            d$check: Sk.generic.descriptor.check,
-            d$set_check: Sk.generic.descriptor.setCheck,
-            $r: Sk.generic.descriptor.repr,
-            tp$getsets: Sk.generic.descriptor.getsets,
+            d$check: descriptorCheck,
+            d$set_check: descriptorSetCheck,
+            $r: descriptorRepr,
+            tp$getsets: descriptorGetsets,
             tp$getattr: Sk.generic.getAttr,
         },
     };
     return Sk.abstr.buildNativeClass(type_name, descr);
 };
 
-Sk.generic.descriptor.check = function (obj) {
+function descriptorCheck(obj) {
     if (obj == null) {
         return this;
     } else if (!obj.ob$type.$isSubType(this.d$type)) {
@@ -46,7 +38,7 @@ Sk.generic.descriptor.check = function (obj) {
     return;
 };
 
-Sk.generic.descriptor.setCheck = function (obj) {
+function descriptorSetCheck(obj) {
     if (!obj.ob$type.$isSubType(this.d$type)) {
         throw new Sk.builtin.TypeError(
             "descriptor '" +
@@ -60,11 +52,11 @@ Sk.generic.descriptor.setCheck = function (obj) {
     }
 };
 
-Sk.generic.descriptor.repr = function () {
+function descriptorRepr () {
     return new Sk.builtin.str("<" + this.d$repr_name + " '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects>");
 };
 
-Sk.generic.descriptor.getsets = {
+const descriptorGetsets = {
     __doc__: {
         $get: function () {
             return this.d$def.$doc ? new Sk.builtin.str(this.d$def.$doc) : Sk.builtin.none.none$;
@@ -88,7 +80,7 @@ Sk.generic.descriptor.getsets = {
  * @param {Sk.GetSetDef} gsd
  */
 
-Sk.builtin.getset_descriptor = Sk.generic.descriptor("getset_descriptor", undefined, function descr(typeobj, d_base) {
+Sk.builtin.getset_descriptor = buildDescriptor("getset_descriptor", undefined, function getset_descr(typeobj, d_base) {
     this.d$def = d_base;
     this.$get = d_base.$get;
     this.$set = d_base.$set;
@@ -125,7 +117,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
  * @param {Sk.MethodDef} method
  */
 
-Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "method", function (typeobj, method_def) {
+Sk.builtin.method_descriptor = buildDescriptor("method_descriptor", "method", function (typeobj, method_def) {
     this.d$def = method_def;
     this.$meth = method_def.$meth; //useful for internal fast calls
     this.d$type = typeobj;
@@ -145,11 +137,17 @@ Sk.builtin.method_descriptor = Sk.generic.descriptor("method_descriptor", "metho
     } else if (flags.MinArgs !== undefined) {
         this.tp$call = this.$methodCallMinArgs;
     } else {
+        // for legacy methods that haven't defined flags yet
         this.func_code = method_def.$meth;
+        this.tp$call = this.$defaultCall;
+        this.$memoiseFlags = Sk.builtin.func.prototype.$memoiseFlags;
+        this.$resolveArgs = Sk.builtin.func.prototype.$resolveArgs;
     }
 });
 
-Sk.builtin.method_descriptor.prototype.tp$call = Sk.generic.functionCallMethod;
+Sk.builtin.method_descriptor.prototype.tp$call = function (args, kwargs) {
+    return this.tp$call(args, kwargs);
+};
 Sk.builtin.method_descriptor.prototype.$methodFastCall = function (args, kwargs) {
     const self = args.shift();
     this.m$checkself(self);
@@ -186,6 +184,11 @@ Sk.builtin.method_descriptor.prototype.$methodCallMinArgs = function (args, kwar
     Sk.abstr.checkArgsLen(this.d$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
     return this.$meth.call(self, ...args);
 };
+Sk.builtin.method_descriptor.prototype.$defaultCall = function (args, kwargs) {
+    this.m$checkself(args[0]);
+    return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
+};
+
 Sk.builtin.method_descriptor.prototype.m$checkself = function (self) {
     if (self === undefined) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' object needs an argument");
@@ -213,7 +216,7 @@ Sk.builtin.method_descriptor.prototype.tp$getsets.__text_signature__ = {
  * @param {Sk.builtin.SlotDef} wrapper_base
  */
 
-Sk.builtin.wrapper_descriptor = Sk.generic.descriptor("wrapper_descriptor", "slot wrapper", function wrapper_descriptor(typeobj, slot_def, wrapped) {
+Sk.builtin.wrapper_descriptor = buildDescriptor("wrapper_descriptor", "slot wrapper", function wrapper_descriptor(typeobj, slot_def, wrapped) {
     this.d$def = slot_def;
     this.d$type = typeobj;
     this.d$name = wrapped.$name = slot_def.$name;
@@ -259,7 +262,7 @@ Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
  * @param wrapper_base
  */
 
-Sk.builtin.method_wrapper = Sk.generic.descriptor("method_wrapper", undefined, function method_wrapper(wrapper_descr, self) {
+Sk.builtin.method_wrapper = buildDescriptor("method_wrapper", undefined, function method_wrapper(wrapper_descr, self) {
     this.m$descr = wrapper_descr;
     this.m$self = self;
     this.d$def = wrapper_descr.d$def;
@@ -289,7 +292,7 @@ Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
  * See dict.fromkeys for a native example
  *
  */
-Sk.builtin.classmethod_descriptor = Sk.generic.descriptor("classmethod_descriptor", "method", function classmethod_descriptor(typeobj, method_def) {
+Sk.builtin.classmethod_descriptor = buildDescriptor("classmethod_descriptor", "method", function classmethod_descriptor(typeobj, method_def) {
     this.d$def = method_def;
     this.$meth = method_def.$meth; //useful for internal fast calls
     this.d$type = typeobj;
