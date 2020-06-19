@@ -212,37 +212,20 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
     Sk.asserts.assert(v.sk$object && w.sk$object, "JS object passed to richCompareBool");
-    var wname,
-        vname,
-        ret,
-        swapped_method,
-        method,
+    var ret,
         swapped_shortcut,
-        shortcut,
-        v_has_shortcut,
-        w_has_shortcut,
-        op2shortcut,
-        vcmp,
-        wcmp,
-        w_seq_type,
-        w_num_type,
-        v_seq_type,
-        v_num_type,
-        sequence_types,
-        numeric_types,
-        w_type,
-        v_type;
+        shortcut;
 
-    v_type = v.ob$type;
-    w_type = w.ob$type;
+    const v_type = v.ob$type;
+    const w_type = w.ob$type;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
     if (!Sk.__future__.python3 && v_type !== w_type && (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
-        numeric_types = [Sk.builtin.float_, Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.bool];
-        sequence_types = [
+        const numeric_types = [Sk.builtin.float_, Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.bool];
+        const sequence_types = [
             Sk.builtin.dict,
             Sk.builtin.enumerate,
             Sk.builtin.filter_,
@@ -253,10 +236,10 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             Sk.builtin.zip_,
         ];
 
-        v_num_type = numeric_types.indexOf(v_type);
-        v_seq_type = sequence_types.indexOf(v_type);
-        w_num_type = numeric_types.indexOf(w_type);
-        w_seq_type = sequence_types.indexOf(w_type);
+        const v_num_type = numeric_types.indexOf(v_type);
+        const v_seq_type = sequence_types.indexOf(v_type);
+        const w_num_type = numeric_types.indexOf(w_type);
+        const w_seq_type = sequence_types.indexOf(w_type);
 
         // NoneTypes are considered less than any other type in Python
         // note: this only handles comparing NoneType with any non-NoneType.
@@ -384,7 +367,9 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // tp richcompare and all respective shortcuts guaranteed because we inherit from object
     shortcut = op2shortcut[op];
     if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-        return Sk.misceval.isTrue(ret); // let's guaranteee that this is a js object in the slots
+        return Sk.misceval.isTrue(ret); 
+        // techincally this is not correct along with the compile code 
+        // richcompare slots could return any pyObject ToDo - would require changing compile code
     }
 
     swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
@@ -393,7 +378,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     }
 
     if (!Sk.__future__.python3) {
-        vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
+        const vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
         if (vcmp) {
             try {
                 ret = Sk.misceval.callsimArray(vcmp, [v, w]);
@@ -421,7 +406,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
         }
-        wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
+        const wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
         if (wcmp) {
             // note, flipped on return value and call
             try {
@@ -450,50 +435,42 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
         }
-    }
-
-    // handle special cases for comparing None with None or Bool with Bool
-    if ((v instanceof Sk.builtin.none && w instanceof Sk.builtin.none) || (v instanceof Sk.builtin.bool && w instanceof Sk.builtin.bool)) {
-        // Javascript happens to return the same values when comparing null
-        // with null or true/false with true/false as Python does when
-        // comparing None with None or True/False with True/False
-
-        if (op === "Eq") {
-            return v.v === w.v;
-        }
-        if (op === "NotEq") {
-            return v.v !== w.v;
-        }
-        if (op === "Gt") {
-            return v.v > w.v;
-        }
-        if (op === "GtE") {
-            return v.v >= w.v;
-        }
-        if (op === "Lt") {
-            return v.v < w.v;
-        }
-        if (op === "LtE") {
-            return v.v <= w.v;
+        if ((v instanceof Sk.builtin.none && w instanceof Sk.builtin.none)) {
+            // Javascript happens to return the same values when comparing null
+            // with null or true/false with true/false as Python does when
+            // comparing None with None or True/False with True/False
+    
+            if (op === "Eq") {
+                return v.v === w.v;
+            }
+            if (op === "NotEq") {
+                return v.v !== w.v;
+            }
+            if (op === "Gt") {
+                return v.v > w.v;
+            }
+            if (op === "GtE") {
+                return v.v >= w.v;
+            }
+            if (op === "Lt") {
+                return v.v < w.v;
+            }
+            if (op === "LtE") {
+                return v.v <= w.v;
+            }
         }
     }
 
     // handle equality comparisons for any remaining objects
     if (op === "Eq") {
-        if (v instanceof Sk.builtin.str && w instanceof Sk.builtin.str) {
-            return v.v === w.v;
-        }
         return v === w;
     }
     if (op === "NotEq") {
-        if (v instanceof Sk.builtin.str && w instanceof Sk.builtin.str) {
-            return v.v !== w.v;
-        }
         return v !== w;
     }
 
-    vname = Sk.abstr.typeName(v);
-    wname = Sk.abstr.typeName(w);
+    const vname = Sk.abstr.typeName(v);
+    const wname = Sk.abstr.typeName(w);
     throw new Sk.builtin.TypeError("'" + Sk.misceval.opSymbols[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
     //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
