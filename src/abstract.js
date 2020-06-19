@@ -602,6 +602,7 @@ Sk.abstr.iter = function (obj) {
             // only a valid iterator if there is a tp$iternext
             return iter;
         }
+        throw new Sk.builtin.TypeError("iter() returned non-iterator of type '" + Sk.abstr.typeName(iter) + "'"); 
     }
     if (obj.mp$subscript) {
         return new Sk.builtin.seq_iter_(obj);
