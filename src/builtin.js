@@ -497,7 +497,7 @@ Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
         const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
         const dir = Sk.misceval.callsimArray(obj_dir_func, [obj]);
-        return Sk.misceval.callsimOrSuspendArray(Sk.builtin.sorted, [dir]);
+        return Sk.builtin.sorted(dir);
         // now iter through the keys and check they are all stings
     }
     // then we want all the objects in the global scope
@@ -620,7 +620,7 @@ Sk.builtin.raw_input = function (prompt) {
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
         if (Sk.inputfunTakesPrompt) {
-            return Sk.misceval.callsimOrSuspendArray(Sk.builtin.file.$readline, [sys["$d"]["stdin"], null, lprompt]);
+            return Sk.builtin.file.$readline(sys["$d"]["stdin"], null, lprompt);
         } else {
             return Sk.misceval.chain(
                 undefined,
@@ -725,7 +725,7 @@ Sk.builtin.map = function map(fun, seq) {
                     item = [item];
                 }
 
-                return Sk.misceval.chain(Sk.misceval.applyOrSuspend(fun, undefined, undefined, undefined, item), function (result) {
+                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(fun, item), function (result) {
                     retval.push(result);
                 });
             }
