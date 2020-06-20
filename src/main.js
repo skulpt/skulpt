@@ -67,7 +67,6 @@ require("./symtable.js");
 require("./compile.js");
 require("./import.js");
 require("./timsort.js");
-require("./sorted.js");
 require("./super.js");
 require("./builtindict.js");
 require("./constants.js");

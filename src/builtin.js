@@ -759,6 +759,17 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
     return accum_value;
 };
 
+
+Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
+    const lst = Sk.abstr.arrayFromIterable(iterable, true);
+    return Sk.misceval.chain(lst, (L)=>{
+        L = new Sk.builtin.list(L);
+        L.$list_sort(cmp, key, reverse);
+        return L;
+    });
+};
+
+
 Sk.builtin.filter = function filter(fun, iterable) {
     var result;
     var iter, item;
