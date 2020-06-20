@@ -316,6 +316,9 @@ Sk.inputfun = function (args) {
     return window.prompt(args);
 };
 
+/**
+ * currently can't seem to remove these functions without a serious slow down of 2x
+ */
 Sk.setup_method_mappings = function () {
 };
 Sk.setupDictIterators = function (python3) {

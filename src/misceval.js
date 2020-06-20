@@ -355,7 +355,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // Call Javascript shortcut method if exists for either object
 
-    op2shortcut = {
+    var op2shortcut = {
         Eq: "ob$eq",
         NotEq: "ob$ne",
         Gt: "ob$gt",
