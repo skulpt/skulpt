@@ -97,7 +97,7 @@ Sk.builtins = {
     // "bytearray" : Sk.builtin.bytearray,
     // "callable"  : Sk.builtin.callable,
     // "delattr"   : Sk.builtin.delattr,
-    // "eval_$rn$" : Sk.builtin.eval_,
+    // "eval_$rw$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,
     
     "help"      : Sk.builtin.help,
@@ -106,10 +106,10 @@ Sk.builtins = {
     // "next"      : Sk.builtin.next_,
     // "pow"       : Sk.builtin.pow,
     "reload"    : Sk.builtin.reload,
-    "super"     : Sk.builtin.super_,
+    "super_$rw$"     : Sk.builtin.super_,
     "unichr"    : Sk.builtin.unichr,
     "vars"      : Sk.builtin.vars,
-    "apply_$rn$": Sk.builtin.apply_,
+    "apply_$rw$": Sk.builtin.apply_,
     "buffer"    : Sk.builtin.buffer,
     "coerce"    : Sk.builtin.coerce,
     "intern"    : Sk.builtin.intern,
@@ -222,7 +222,7 @@ Sk.builtins.$method_defs = {
         $doc: "Return the tuple (x//y, x%y).  Invariant: div*y + mod == x.",
     },
 
-    eval_$rn$: {
+    eval_$rw$: {
         $name: "eval",
         $meth: Sk.builtin.eval_,
         $flags: { MinArgs: 1, MaxArgs: 3 },

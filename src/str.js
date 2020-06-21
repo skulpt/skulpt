@@ -1561,6 +1561,7 @@ function fixReserved(name) {
     if (reservedWords_[name] === undefined) {
         return name;
     }
+    return name + "_$rw$";
 }
 
 function unfixReserved(name) {

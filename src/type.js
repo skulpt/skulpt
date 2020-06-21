@@ -526,7 +526,7 @@ Sk.builtin.type.prototype.tp$methods = {
             const seen = new Set();
             const dir = [];
             function push_or_continue(attr) {
-                if (attr in Sk.reservedNames_) {
+                if (attr in Sk.reservedWords_) {
                     return;
                 }
                 attr = Sk.unfixReserved(attr);
