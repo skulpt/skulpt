@@ -126,123 +126,24 @@ Compiler.prototype.niceName = function (roughName) {
     return this.gensym(roughName.replace("<", "").replace(">", "").replace(" ", "_"));
 };
 
-var reservedWords_ = {
-    "abstract": true,
-    "as": true,
-    "boolean": true,
-    "break": true,
-    "byte": true,
-    "case": true,
-    "catch": true,
-    "char": true,
-    "class": true,
-    "continue": true,
-    "const": true,
-    "debugger": true,
-    "default": true,
-    "delete": true,
-    "do": true,
-    "double": true,
-    "else": true,
-    "enum": true,
-    "export": true,
-    "extends": true,
-    "false": true,
-    "final": true,
-    "finally": true,
-    "float": true,
-    "for": true,
-    "function": true,
-    "goto": true,
-    "if": true,
-    "implements": true,
-    "import": true,
-    "in": true,
-    "instanceof": true,
-    "int": true,
-    "interface": true,
-    "is": true,
-    "long": true,
-    "namespace": true,
-    "native": true,
-    "new": true,
-    "null": true,
-    "package": true,
-    "private": true,
-    "protected": true,
-    "public": true,
-    "return": true,
-    "short": true,
-    "static": true,
-    "super": false,
-    "switch": true,
-    "synchronized": true,
-    "this": true,
-    "throw": true,
-    "throws": true,
-    "transient": true,
-    "true": true,
-    "try": true,
-    "typeof": true,
-    "use": true,
-    "var": true,
-    "void": true,
-    "volatile": true,
-    "while": true,
-    "with": true
-};
+var reservedWords_ = Sk.builtin.str.reservedWords_; // defined in str.js
 
 /**
  * Fix reserved words
  *
  * @param {string} name
  */
-function fixReservedWords(name) {
-    if (reservedWords_[name] !== true) {
+var reservedNames_ = Object.create(null);
+
+function fixReserved(name) {
+    if (reservedWords_[name] === undefined) {
         return name;
     }
     return name + "_$rw$";
 }
 
-var reservedNames_ = {
-    "__defineGetter__": true,
-    "__defineSetter__": true,
-    "apply": true,
-    "arguments": true,
-    "call": true,
-    "caller": true, 
-    "eval": true,
-    "hasOwnProperty": true,
-    "isPrototypeOf": true,
-    "__lookupGetter__": true,
-    "__lookupSetter__": true,
-    "__noSuchMethod__": true,
-    "propertyIsEnumerable": true,
-    "prototype": true,
-    "toSource": true,
-    "toLocaleString": true,
-    "toString": true,
-    "unwatch": true,
-    "valueOf": true,
-    "watch": true,
-    "length": true,
-    "name": true,
-};
-
-function fixReservedNames (name) {
-    if (reservedNames_[name]) {
-        return name + "_$rn$";
-    }
-    return name;
-}
-
-function fixReserved (name) {
-    name = fixReservedNames(fixReservedWords(name));
-    return name;
-}
-
 function unfixReserved(name) {
-    return name.replace(/_\$r[wn]\$$/, "");
+    return name.replace(/_\$rw\$$/, "");
 }
 
 function mangleName (priv, ident) {
@@ -831,7 +732,7 @@ Compiler.prototype.cformattedvalue = function(e) {
  *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
  */
 Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
-    var mangled, mname, jsMangled;
+    var mangled, mname;
     var val;
     var result;
     var nStr; // used for preserving signs for floats (zeros)
@@ -900,11 +801,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            jsMangled = "'" + fixReserved(mangled) + "'";
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
-                    out("$ret = ", augvar, ".tp$getattr(", mname, ", true, ",jsMangled,");");
+                    out("$ret = ", augvar, ".tp$getattr(", mname, ", true);");
                     out("\nif ($ret === undefined) {");
                     out("\nconst error_name =", augvar,".sk$type ? \"type object '\" +", augvar,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",augvar,") + \"' object\";");
                     out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
@@ -912,7 +812,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.Load:
-                    out("$ret = ", val, ".tp$getattr(", mname, ", true, ",jsMangled,");");
+                    out("$ret = ", val, ".tp$getattr(", mname, ", true);");
                     out("\nif ($ret === undefined) {");
                     out("\nconst error_name =", val,".sk$type ? \"type object '\" +", val,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",val,") + \"' object\";");
                     out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
@@ -925,12 +825,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
                     out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("$ret = ",augvar, ".tp$setattr(", mname, ",", data, ", true, ",jsMangled,");");
+                    out("$ret = ",augvar, ".tp$setattr(", mname, ",", data, ", true);");
                     out("}");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Store:
-                    out("$ret = ", val, ".tp$setattr(", mname, ",", data, ", true, ",jsMangled,");");
+                    out("$ret = ", val, ".tp$setattr(", mname, ",", data, ", true);");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Del:
@@ -1755,7 +1655,6 @@ Compiler.prototype.cfromimport = function (s) {
     var got;
     var alias;
     var aliasOut;
-    var jsMangled;
     var mod;
     var i;
     var n = s.names.length;
@@ -1776,7 +1675,6 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        jsMangled = "'" + fixReserved(alias.name.v) + "'";
         aliasOut = "'" + alias.name.v + "'";
         if (i === 0 && alias.name.v === "*") {
             Sk.asserts.assert(n === 1);
@@ -1785,8 +1683,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined, ", jsMangled, ")");
-        // got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined, ", jsMangled,"))");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined)");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
@@ -2866,11 +2763,11 @@ Sk.resetCompiler = function () {
 
 Sk.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
 
-Sk.fixReservedWords = fixReservedWords;
-Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
+// Sk.fixReservedWords = fixReservedWords;
+// Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
-Sk.fixReservedNames = fixReservedNames;
-Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+// Sk.fixReservedNames = fixReservedNames;
+// Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
 
 Sk.fixReserved = fixReserved;
 Sk.exportSymbol("Sk.fixReserved", Sk.fixReserved);
@@ -2881,5 +2778,5 @@ Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
 Sk.mangleName = mangleName;
 Sk.exportSymbol("Sk.mangleName", Sk.mangleName);
 
-Sk.reservedNames_ = reservedNames_;
 Sk.reservedWords_ = reservedWords_;
+Sk.exportSymbol("Sk.reservedWords_", Sk.reservedWords_);

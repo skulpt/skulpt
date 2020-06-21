@@ -86,7 +86,7 @@ function slotFuncOneArg(dunderFunc) {
 }
 
 function slotFuncGetAttribute(pyName, canSuspend) {
-    const func = Sk.abstr.lookupSpecial(this, "__getattribute__");
+    const func = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$getattribute);
     let res;
     if (func instanceof Sk.builtin.wrapper_descriptor) {
         return func.d$wrapped.call(this, pyName, canSuspend);
@@ -119,7 +119,7 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
             } else {
                 dunderName = set_name;
             }
-            const func = Sk.abstr.lookupSpecial(this, dunderName);
+            const func = Sk.abstr.lookupSpecial(this, new Sk.builtin.str(dunderName));
             if (func instanceof Sk.builtin.wrapper_descriptor) {
                 return func.d$wrapped.call(this, pyName, value);
             }
@@ -228,13 +228,13 @@ slots.__getattribute__ = {
     $slot_name: "tp$getattr",
     $slot_func: function (dunderFunc) {
         return function tp$getattr(pyName, canSuspend) {
-            const getattrFn = Sk.abstr.lookupSpecial(this, "__getattr__");
+            const getattrFn = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$getattr);
             if (getattrFn === undefined) {
                 // we don't support dynamically created __getattr__ but hey...
                 this.constructor.prototype.tp$getattr = slotFuncGetAttribute;
                 return slotFuncGetAttribute.call(this, pyName, canSuspend);
             }
-            const getattributeFn = Sk.abstr.lookupSpecial(this, "__getattribute__");
+            const getattributeFn = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$getattribute);
             const self = this;
 
             let r = Sk.misceval.chain(

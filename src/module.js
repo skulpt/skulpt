@@ -6,15 +6,15 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     constructor: function module () {},
     slots: {
         tp$doc: "Create a module object.\n\nThe name must be a string; the optional doc argument can have any type.",
-        tp$getattr: function (pyName, canSuspend, jsMangled) {
-            jsMangled = jsMangled || pyName.v;
+        tp$getattr: function (pyName, canSuspend) {
+            var jsMangled = pyName.$mangled;
             const ret = this.$d[jsMangled];
             if (ret !== undefined) {
                 return ret;
             }
             // technically this is the wrong way round but its seems performance wise better 
             // to just return the module elements before checking for descriptors
-            const descr = this.ob$type.$typeLookup(jsMangled);
+            const descr = this.ob$type.$typeLookup(pyName);
             if (descr !== undefined) {
                 const f = descr.tp$descr_get;
                 if (f) {

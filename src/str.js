@@ -1,4 +1,14 @@
-Sk.builtin.interned = {};
+Sk.builtin.interned = Object.create(null);
+
+// var interned = Object.create(null);
+
+function getInterned(x) {
+    return Sk.builtin.interned[x];
+}
+
+function setInterned(x, pyStr) {
+    Sk.builtin.interned[x] = pyStr;
+}
 
 /**
  * @constructor
@@ -10,9 +20,9 @@ Sk.builtin.str = function (x) {
     // occasionally called with a python object and returns tp$str() or $r();
     Sk.asserts.assert(this instanceof Sk.builtin.str, "bad call to str - use 'new'");
     // Temporary
-    Sk.asserts.assert(typeof this === "string" || this === undefined || this.sk$object, "str called with an invalid JS object");
+    // Sk.asserts.assert(typeof this === "string" || this === undefined || this.sk$object, "str called with an invalid JS object");
 
-    let ret;
+    let ret, interned;
     if (typeof x === "string") {
         // the common case
         ret = x;
@@ -37,15 +47,19 @@ Sk.builtin.str = function (x) {
     } else {
         throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
     }
+    interned = getInterned(ret);
     // interning required for strings in py
-    if (Sk.builtin.interned["1" + ret]) {
-        return Sk.builtin.interned["1" + ret];
-    };
 
+    if (interned !== undefined) {
+        return interned;
+    } else {
+        setInterned(ret, this);
+    }
+
+    this.$mangled = fixReserved(ret);
     this.v = ret;
     // quicker set_dict for strings by preallocating the $savedKeyHash
     this.$savedKeyHash_ = "_" + ret;
-    Sk.builtin.interned["1" + ret] = this;
 };
 
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
@@ -54,19 +68,20 @@ Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.object);
 Sk.builtin.str.prototype.tp$as_sequence_or_mapping = true;
 // Sk.builtin.str.prototype.tp$as_number = true; // we currently don't support nb$mod
 
-Sk.builtin.str.prototype.tp$doc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.";
+Sk.builtin.str.prototype.tp$doc =
+    "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.";
 
 Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.str.prototype) {
         return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
     }
-    args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs, [Sk.builtin.str.$empty]);
+    args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs);
     const x = args[0];
     return new Sk.builtin.str(x);
 };
 
 Sk.builtin.str.prototype.$subtype_new = function (args, kwargs) {
-    const instance = new this.constructor;
+    const instance = new this.constructor();
     // we call str new method with all the args and kwargs
     const str_instance = Sk.builtin.str.prototype.tp$new(args, kwargs);
     instance.v = str_instance.v;
@@ -128,7 +143,7 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
     }
     return new Sk.builtin.str(ret);
 };
-// Sk.builtin.str.prototype.nb$multiply = 
+// Sk.builtin.str.prototype.nb$multiply =
 // Sk.builtin.str.prototype.nb$reflected_multiply =
 // Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.sq$item = function () {
@@ -224,7 +239,6 @@ Sk.builtin.str.prototype.tp$str = function () {
     }
 };
 
-
 Sk.builtin.str.$re_escape = function (s) {
     var c;
     var i;
@@ -301,16 +315,16 @@ Sk.builtin.str.methods["split"] = function (self, on, howmany) {
     var str;
     var regex;
     Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
+    if (on === undefined || on instanceof Sk.builtin.none) {
         on = null;
     }
-    if ((on !== null) && !Sk.builtin.checkString(on)) {
+    if (on !== null && !Sk.builtin.checkString(on)) {
         throw new Sk.builtin.TypeError("expected a string");
     }
-    if ((on !== null) && on.v === "") {
+    if (on !== null && on.v === "") {
         throw new Sk.builtin.ValueError("empty separator");
     }
-    if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
+    if (howmany !== undefined && !Sk.builtin.checkInt(howmany)) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
 
@@ -340,12 +354,12 @@ Sk.builtin.str.methods["split"] = function (self, on, howmany) {
         result.push(new Sk.builtin.str(str.substring(index, match.index)));
         index = regex.lastIndex;
         splits += 1;
-        if (howmany && (splits >= howmany)) {
+        if (howmany && splits >= howmany) {
             break;
         }
     }
     str = str.substring(index);
-    if (on !== null || (str.length > 0)) {
+    if (on !== null || str.length > 0) {
         result.push(new Sk.builtin.str(str));
     }
 
@@ -356,7 +370,7 @@ Sk.builtin.str.methods["strip"] = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("strip", arguments.length, 1, 2);
-    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+    if (chars !== undefined && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("strip arg must be None or str");
     }
     if (chars === undefined) {
@@ -372,7 +386,7 @@ Sk.builtin.str.methods["lstrip"] = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("lstrip", arguments.length, 1, 2);
-    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+    if (chars !== undefined && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("lstrip arg must be None or str");
     }
     if (chars === undefined) {
@@ -388,7 +402,7 @@ Sk.builtin.str.methods["rstrip"] = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("rstrip", arguments.length, 1, 2);
-    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+    if (chars !== undefined && !Sk.builtin.checkString(chars)) {
         throw new Sk.builtin.TypeError("rstrip arg must be None or str");
     }
     if (chars === undefined) {
@@ -411,10 +425,7 @@ Sk.builtin.str.methods["partition"] = function (self, sep) {
         return new Sk.builtin.tuple([self, Sk.builtin.str.$emptystr, Sk.builtin.str.$emptystr]);
     }
 
-    return new Sk.builtin.tuple([
-        new Sk.builtin.str(self.v.substring(0, pos)),
-        sepStr,
-        new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
+    return new Sk.builtin.tuple([new Sk.builtin.str(self.v.substring(0, pos)), sepStr, new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 };
 
 Sk.builtin.str.methods["rpartition"] = function (self, sep) {
@@ -428,10 +439,7 @@ Sk.builtin.str.methods["rpartition"] = function (self, sep) {
         return new Sk.builtin.tuple([Sk.builtin.str.$emptystr, Sk.builtin.str.$emptystr, self]);
     }
 
-    return new Sk.builtin.tuple([
-        new Sk.builtin.str(self.v.substring(0, pos)),
-        sepStr,
-        new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
+    return new Sk.builtin.tuple([new Sk.builtin.str(self.v.substring(0, pos)), sepStr, new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 };
 
 Sk.builtin.str.methods["count"] = function (self, pat, start, end) {
@@ -443,10 +451,10 @@ Sk.builtin.str.methods["count"] = function (self, pat, start, end) {
     if (!Sk.builtin.checkString(pat)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if (end !== undefined && !Sk.builtin.checkInt(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
@@ -473,7 +481,6 @@ Sk.builtin.str.methods["count"] = function (self, pat, start, end) {
     } else {
         return new Sk.builtin.int_(ctl.length);
     }
-
 };
 
 Sk.builtin.str.methods["ljust"] = function (self, len, fillchar) {
@@ -482,7 +489,7 @@ Sk.builtin.str.methods["ljust"] = function (self, len, fillchar) {
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
-    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+    if (fillchar !== undefined && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
         throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
     }
     if (fillchar === undefined) {
@@ -505,7 +512,7 @@ Sk.builtin.str.methods["rjust"] = function (self, len, fillchar) {
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
-    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+    if (fillchar !== undefined && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
         throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
     }
     if (fillchar === undefined) {
@@ -520,7 +527,6 @@ Sk.builtin.str.methods["rjust"] = function (self, len, fillchar) {
         newstr = Array.prototype.join.call({ length: Math.floor(len - self.v.length) + 1 }, fillchar);
         return new Sk.builtin.str(newstr + self.v);
     }
-
 };
 
 Sk.builtin.str.methods["center"] = function (self, len, fillchar) {
@@ -530,7 +536,7 @@ Sk.builtin.str.methods["center"] = function (self, len, fillchar) {
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
-    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
+    if (fillchar !== undefined && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1)) {
         throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
     }
     if (fillchar === undefined) {
@@ -549,7 +555,6 @@ Sk.builtin.str.methods["center"] = function (self, len, fillchar) {
         }
         return new Sk.builtin.str(newstr);
     }
-
 };
 
 Sk.builtin.str.methods["find"] = function (self, tgt, start, end) {
@@ -558,10 +563,10 @@ Sk.builtin.str.methods["find"] = function (self, tgt, start, end) {
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if (end !== undefined && !Sk.builtin.checkInt(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
@@ -580,7 +585,7 @@ Sk.builtin.str.methods["find"] = function (self, tgt, start, end) {
     }
 
     idx = self.v.indexOf(tgt.v, start);
-    idx = ((idx >= start) && (idx < end)) ? idx : -1;
+    idx = idx >= start && idx < end ? idx : -1;
 
     return new Sk.builtin.int_(idx);
 };
@@ -601,10 +606,10 @@ Sk.builtin.str.methods["rfind"] = function (self, tgt, start, end) {
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+    if (start !== undefined && !Sk.builtin.checkInt(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+    if (end !== undefined && !Sk.builtin.checkInt(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
@@ -623,8 +628,8 @@ Sk.builtin.str.methods["rfind"] = function (self, tgt, start, end) {
     }
 
     idx = self.v.lastIndexOf(tgt.v, end);
-    idx = (idx !== end) ? idx : self.v.lastIndexOf(tgt.v, end - 1);
-    idx = ((idx >= start) && (idx < end)) ? idx : -1;
+    idx = idx !== end ? idx : self.v.lastIndexOf(tgt.v, end - 1);
+    idx = idx >= start && idx < end ? idx : -1;
 
     return new Sk.builtin.int_(idx);
 };
@@ -658,14 +663,13 @@ Sk.builtin.str.methods["replace"] = function (self, oldS, newS, count) {
     Sk.builtin.pyCheckArgsLen("replace", arguments.length, 3, 4);
     Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
     Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
-    if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
-        throw new Sk.builtin.TypeError("integer argument expected, got " +
-            Sk.abstr.typeName(count));
+    if (count !== undefined && !Sk.builtin.checkInt(count)) {
+        throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(count));
     }
     count = Sk.builtin.asnum$(count);
     patt = new RegExp(Sk.builtin.str.$re_escape(oldS.v), "g");
 
-    if ((count === undefined) || (count < 0)) {
+    if (count === undefined || count < 0) {
         return new Sk.builtin.str(self.v.replace(patt, newS.v));
     }
 
@@ -697,15 +701,13 @@ Sk.builtin.str.methods["zfill"] = function (self, len) {
     // figure out how many zeroes are needed to make the proper length
     zeroes = len.v - str.length;
     // offset by 1 if there is a +/- at the beginning of the string
-    offset = (str[0] === "+" || str[0] === "-") ? 1 : 0;
+    offset = str[0] === "+" || str[0] === "-" ? 1 : 0;
     for (var i = 0; i < zeroes; i++) {
         pad += "0";
     }
     // combine the string and the zeroes
     ret = str.substr(0, offset) + pad + str.substr(offset);
     return new Sk.builtin.str(ret);
-
-
 };
 
 Sk.builtin.str.methods["isdigit"] = function (self) {
@@ -718,7 +720,6 @@ Sk.builtin.str.methods["isspace"] = function (self) {
     return new Sk.builtin.bool(/^\s+$/.test(self.v));
 };
 
-
 Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
     // var input = self.v;
     // var expanded = "";
@@ -726,14 +727,12 @@ Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
     // var spacestr = "";
     // var spacerem;
 
-
     var spaces;
     var expanded;
 
     Sk.builtin.pyCheckArgsLen("expandtabs", arguments.length, 1, 2);
 
-
-    if ((tabsize !== undefined) && !Sk.builtin.checkInt(tabsize)) {
+    if (tabsize !== undefined && !Sk.builtin.checkInt(tabsize)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
     }
     if (tabsize === undefined) {
@@ -742,7 +741,7 @@ Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
         tabsize = Sk.builtin.asnum$(tabsize);
     }
 
-    spaces = (new Array(tabsize + 1)).join(" ");
+    spaces = new Array(tabsize + 1).join(" ");
     expanded = self.v.replace(/([^\r\n\t]*)\t/g, function (a, b) {
         return b + spaces.slice(b.length % tabsize);
     });
@@ -752,7 +751,6 @@ Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
 Sk.builtin.str.methods["swapcase"] = function (self) {
     var ret;
     Sk.builtin.pyCheckArgsLen("swapcase", arguments.length, 1, 1);
-
 
     ret = self.v.replace(/[a-z]/gi, function (c) {
         var lc = c.toLowerCase();
@@ -773,7 +771,7 @@ Sk.builtin.str.methods["splitlines"] = function (self, keepends) {
     var sol = 0;
     var slice;
     Sk.builtin.pyCheckArgsLen("splitlines", arguments.length, 1, 2);
-    if ((keepends !== undefined) && !Sk.builtin.checkBool(keepends)) {
+    if (keepends !== undefined && !Sk.builtin.checkBool(keepends)) {
         throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
     }
     if (keepends === undefined) {
@@ -781,7 +779,6 @@ Sk.builtin.str.methods["splitlines"] = function (self, keepends) {
     } else {
         keepends = keepends.v;
     }
-
 
     for (i = 0; i < selflen; i++) {
         ch = data.charAt(i);
@@ -802,7 +799,6 @@ Sk.builtin.str.methods["splitlines"] = function (self, keepends) {
             strs_w.push(new Sk.builtin.str(slice));
             sol = eol;
         }
-
     }
     if (sol < selflen) {
         eol = selflen;
@@ -864,13 +860,13 @@ Sk.builtin.str.methods["istitle"] = function (self) {
     Sk.builtin.pyCheckArgsLen("istitle", arguments.length, 1, 1);
     for (pos = 0; pos < input.length; pos++) {
         ch = input.charAt(pos);
-        if (! /[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
+        if (!/[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
             if (previous_is_cased) {
                 return new Sk.builtin.bool(false);
             }
             previous_is_cased = true;
             cased = true;
-        } else if (/[a-z]/.test(ch) && ! /[A-Z]/.test(ch)) {
+        } else if (/[a-z]/.test(ch) && !/[A-Z]/.test(ch)) {
             if (!previous_is_cased) {
                 return new Sk.builtin.bool(false);
             }
@@ -934,7 +930,8 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             i = index++;
         } // ff passes '' not undef for some reason
 
-        if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
+        if (precision === "") {
+            // ff passes '' here aswell causing problems with G,g, etc.
             precision = undefined;
         }
 
@@ -1074,7 +1071,14 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             return handleWidth(formatNumber(value, 16));
         } else if (conversionType === "X") {
             return handleWidth(formatNumber(value, 16)).toUpperCase();
-        } else if (conversionType === "f" || conversionType === "F" || conversionType === "e" || conversionType === "E" || conversionType === "g" || conversionType === "G") {
+        } else if (
+            conversionType === "f" ||
+            conversionType === "F" ||
+            conversionType === "e" ||
+            conversionType === "E" ||
+            conversionType === "g" ||
+            conversionType === "G"
+        ) {
             convValue = Sk.builtin.asnum$(value);
             if (typeof convValue === "string") {
                 convValue = Number(convValue);
@@ -1090,7 +1094,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
             if (precision === undefined || precision === "") {
-
                 if (conversionType === "e" || conversionType === "E") {
                     precision = 6;
                 } else if (conversionType === "f" || conversionType === "F") {
@@ -1101,7 +1104,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     }
                 }
             }
-            result = (convValue)[convName](precision); // possible loose of negative zero sign
+            result = convValue[convName](precision); // possible loose of negative zero sign
 
             // apply sign to negative zeros, floats only!
             if (Sk.builtin.checkFloat(value)) {
@@ -1110,8 +1113,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 }
             }
             if (Sk.__future__.python3) {
-                if ((result.length >= 7) && (result.slice(0, 6) == "0.0000")) {
-
+                if (result.length >= 7 && result.slice(0, 6) == "0.0000") {
                     val = parseFloat(result);
                     result = val.toExponential();
                 }
@@ -1161,7 +1163,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     return new Sk.builtin.str(ret);
 };
 
-
 Sk.builtin.str.prototype.tp$methods = {
     // encode: {
     //     $meth: Sk.builtin.str.methods.encode,
@@ -1172,13 +1173,15 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.replace,
         $flags: {},
         $textsig: "($self, old, new, count=-1, /)",
-        $doc: "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced."
+        $doc:
+            "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.",
     },
     split: {
         $meth: Sk.builtin.str.methods.split,
         $flags: {},
         $textsig: "($self, /, sep=None, maxsplit=-1)",
-        $doc: "Return a list of the words in the string, using sep as the delimiter string.\n\n  sep\n    The delimiter according which to split the string.\n    None (the default value) means split according to any whitespace,\n    and discard empty strings from the result.\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit."
+        $doc:
+            "Return a list of the words in the string, using sep as the delimiter string.\n\n  sep\n    The delimiter according which to split the string.\n    None (the default value) means split according to any whitespace,\n    and discard empty strings from the result.\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.",
     },
     // rsplit: {
     //     $meth: Sk.builtin.str.methods.rsplit,
@@ -1189,13 +1192,14 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.join,
         $flags: {},
         $textsig: "($self, iterable, /)",
-        $doc: "Concatenate any number of strings.\n\nThe string whose method is called is inserted in between each given string.\nThe result is returned as a new string.\n\nExample: '.'.join(['ab', 'pq', 'rs']) -> 'ab.pq.rs'"
+        $doc:
+            "Concatenate any number of strings.\n\nThe string whose method is called is inserted in between each given string.\nThe result is returned as a new string.\n\nExample: '.'.join(['ab', 'pq', 'rs']) -> 'ab.pq.rs'",
     },
     capitalize: {
         $meth: Sk.builtin.str.methods.capitalize,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return a capitalized version of the string.\n\nMore specifically, make the first character have upper case and the rest lower\ncase."
+        $doc: "Return a capitalized version of the string.\n\nMore specifically, make the first character have upper case and the rest lower\ncase.",
     },
     // casefold: {
     //     $meth: Sk.builtin.str.methods.casefold,
@@ -1206,133 +1210,146 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.title,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return a version of the string where each word is titlecased.\n\nMore specifically, words start with uppercased characters and all remaining\ncased characters have lower case."
+        $doc:
+            "Return a version of the string where each word is titlecased.\n\nMore specifically, words start with uppercased characters and all remaining\ncased characters have lower case.",
     },
     center: {
         $meth: Sk.builtin.str.methods.center,
         $flags: {},
         $textsig: "($self, width, fillchar=' ', /)",
-        $doc: "Return a centered string of length width.\n\nPadding is done using the specified fill character (default is a space)."
+        $doc: "Return a centered string of length width.\n\nPadding is done using the specified fill character (default is a space).",
     },
     count: {
         $meth: Sk.builtin.str.methods.count,
         $flags: {},
         $textsig: null,
-        $doc: "S.count(sub[, start[, end]]) -> int\n\nReturn the number of non-overlapping occurrences of substring sub in\nstring S[start:end].  Optional arguments start and end are\ninterpreted as in slice notation."
+        $doc:
+            "S.count(sub[, start[, end]]) -> int\n\nReturn the number of non-overlapping occurrences of substring sub in\nstring S[start:end].  Optional arguments start and end are\ninterpreted as in slice notation.",
     },
     expandtabs: {
         $meth: Sk.builtin.str.methods.expandtabs,
         $flags: {},
         $textsig: "($self, /, tabsize=8)",
-        $doc: "Return a copy where all tab characters are expanded using spaces.\n\nIf tabsize is not given, a tab size of 8 characters is assumed."
+        $doc: "Return a copy where all tab characters are expanded using spaces.\n\nIf tabsize is not given, a tab size of 8 characters is assumed.",
     },
     find: {
         $meth: Sk.builtin.str.methods.find,
         $flags: {},
         $textsig: null,
-        $doc: "S.find(sub[, start[, end]]) -> int\n\nReturn the lowest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure."
+        $doc:
+            "S.find(sub[, start[, end]]) -> int\n\nReturn the lowest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure.",
     },
     partition: {
         $meth: Sk.builtin.str.methods.partition,
         $flags: {},
         $textsig: "($self, sep, /)",
-        $doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string.  If the separator is found,\nreturns a 3-tuple containing the part before the separator, the separator\nitself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing the original string\nand two empty strings."
+        $doc:
+            "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string.  If the separator is found,\nreturns a 3-tuple containing the part before the separator, the separator\nitself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing the original string\nand two empty strings.",
     },
     index: {
         $meth: Sk.builtin.str.methods.index,
         $flags: {},
         $textsig: null,
-        $doc: "S.index(sub[, start[, end]]) -> int\n\nReturn the lowest index in S where substring sub is found, \nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaises ValueError when the substring is not found."
+        $doc:
+            "S.index(sub[, start[, end]]) -> int\n\nReturn the lowest index in S where substring sub is found, \nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaises ValueError when the substring is not found.",
     },
     ljust: {
         $meth: Sk.builtin.str.methods.ljust,
         $flags: {},
         $textsig: "($self, width, fillchar=' ', /)",
-        $doc: "Return a left-justified string of length width.\n\nPadding is done using the specified fill character (default is a space)."
+        $doc: "Return a left-justified string of length width.\n\nPadding is done using the specified fill character (default is a space).",
     },
     lower: {
         $meth: Sk.builtin.str.methods.lower,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return a copy of the string converted to lowercase."
+        $doc: "Return a copy of the string converted to lowercase.",
     },
     lstrip: {
         $meth: Sk.builtin.str.methods.lstrip,
         $flags: {},
         $textsig: "($self, chars=None, /)",
-        $doc: "Return a copy of the string with leading whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead."
+        $doc: "Return a copy of the string with leading whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.",
     },
     rfind: {
         $meth: Sk.builtin.str.methods.rfind,
         $flags: {},
         $textsig: null,
-        $doc: "S.rfind(sub[, start[, end]]) -> int\n\nReturn the highest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure."
+        $doc:
+            "S.rfind(sub[, start[, end]]) -> int\n\nReturn the highest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure.",
     },
     rindex: {
         $meth: Sk.builtin.str.methods.rindex,
         $flags: {},
         $textsig: null,
-        $doc: "S.rindex(sub[, start[, end]]) -> int\n\nReturn the highest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaises ValueError when the substring is not found."
+        $doc:
+            "S.rindex(sub[, start[, end]]) -> int\n\nReturn the highest index in S where substring sub is found,\nsuch that sub is contained within S[start:end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaises ValueError when the substring is not found.",
     },
     rjust: {
         $meth: Sk.builtin.str.methods.rjust,
         $flags: {},
         $textsig: "($self, width, fillchar=' ', /)",
-        $doc: "Return a right-justified string of length width.\n\nPadding is done using the specified fill character (default is a space)."
+        $doc: "Return a right-justified string of length width.\n\nPadding is done using the specified fill character (default is a space).",
     },
     rstrip: {
         $meth: Sk.builtin.str.methods.rstrip,
         $flags: {},
         $textsig: "($self, chars=None, /)",
-        $doc: "Return a copy of the string with trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead."
+        $doc: "Return a copy of the string with trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.",
     },
     rpartition: {
         $meth: Sk.builtin.str.methods.rpartition,
         $flags: {},
         $textsig: "($self, sep, /)",
-        $doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string, starting at the end. If\nthe separator is found, returns a 3-tuple containing the part before the\nseparator, the separator itself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing two empty strings\nand the original string."
+        $doc:
+            "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string, starting at the end. If\nthe separator is found, returns a 3-tuple containing the part before the\nseparator, the separator itself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing two empty strings\nand the original string.",
     },
     splitlines: {
         $meth: Sk.builtin.str.methods.splitlines,
         $flags: {},
         $textsig: "($self, /, keepends=False)",
-        $doc: "Return a list of the lines in the string, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends is given and\ntrue."
+        $doc:
+            "Return a list of the lines in the string, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends is given and\ntrue.",
     },
     strip: {
         $meth: Sk.builtin.str.methods.strip,
         $flags: {},
         $textsig: "($self, chars=None, /)",
-        $doc: "Return a copy of the string with leading and trailing whitespace remove.\n\nIf chars is given and not None, remove characters in chars instead."
+        $doc:
+            "Return a copy of the string with leading and trailing whitespace remove.\n\nIf chars is given and not None, remove characters in chars instead.",
     },
     swapcase: {
         $meth: Sk.builtin.str.methods.swapcase,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Convert uppercase characters to lowercase and lowercase characters to uppercase."
+        $doc: "Convert uppercase characters to lowercase and lowercase characters to uppercase.",
     },
     translate: {
         $meth: Sk.builtin.str.methods.translate,
         $flags: {},
         $textsig: "($self, table, /)",
-        $doc: "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals to\n    Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for instance a\ndictionary or list.  If this operation raises LookupError, the character is\nleft untouched.  Characters mapped to None are deleted."
+        $doc:
+            "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals to\n    Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for instance a\ndictionary or list.  If this operation raises LookupError, the character is\nleft untouched.  Characters mapped to None are deleted.",
     },
     upper: {
         $meth: Sk.builtin.str.methods.upper,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return a copy of the string converted to uppercase."
+        $doc: "Return a copy of the string converted to uppercase.",
     },
     startswith: {
         $meth: Sk.builtin.str.methods.startswith,
         $flags: {},
         $textsig: null,
-        $doc: "S.startswith(prefix[, start[, end]]) -> bool\n\nReturn True if S starts with the specified prefix, False otherwise.\nWith optional start, test S beginning at that position.\nWith optional end, stop comparing S at that position.\nprefix can also be a tuple of strings to try."
+        $doc:
+            "S.startswith(prefix[, start[, end]]) -> bool\n\nReturn True if S starts with the specified prefix, False otherwise.\nWith optional start, test S beginning at that position.\nWith optional end, stop comparing S at that position.\nprefix can also be a tuple of strings to try.",
     },
     endswith: {
         $meth: Sk.builtin.str.methods.endswith,
         $flags: {},
         $textsig: null,
-        $doc: "S.endswith(suffix[, start[, end]]) -> bool\n\nReturn True if S ends with the specified suffix, False otherwise.\nWith optional start, test S beginning at that position.\nWith optional end, stop comparing S at that position.\nsuffix can also be a tuple of strings to try."
+        $doc:
+            "S.endswith(suffix[, start[, end]]) -> bool\n\nReturn True if S ends with the specified suffix, False otherwise.\nWith optional start, test S beginning at that position.\nWith optional end, stop comparing S at that position.\nsuffix can also be a tuple of strings to try.",
     },
     // isascii: {
     //     $meth: Sk.builtin.str.methods.isascii,
@@ -1343,25 +1360,29 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.islower,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is a lowercase string, False otherwise.\n\nA string is lowercase if all cased characters in the string are lowercase and\nthere is at least one cased character in the string."
+        $doc:
+            "Return True if the string is a lowercase string, False otherwise.\n\nA string is lowercase if all cased characters in the string are lowercase and\nthere is at least one cased character in the string.",
     },
     isupper: {
         $meth: Sk.builtin.str.methods.isupper,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is an uppercase string, False otherwise.\n\nA string is uppercase if all cased characters in the string are uppercase and\nthere is at least one cased character in the string."
+        $doc:
+            "Return True if the string is an uppercase string, False otherwise.\n\nA string is uppercase if all cased characters in the string are uppercase and\nthere is at least one cased character in the string.",
     },
     istitle: {
         $meth: Sk.builtin.str.methods.istitle,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is a title-cased string, False otherwise.\n\nIn a title-cased string, upper- and title-case characters may only\nfollow uncased characters and lowercase characters only cased ones."
+        $doc:
+            "Return True if the string is a title-cased string, False otherwise.\n\nIn a title-cased string, upper- and title-case characters may only\nfollow uncased characters and lowercase characters only cased ones.",
     },
     isspace: {
         $meth: Sk.builtin.str.methods.isspace,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is a whitespace string, False otherwise.\n\nA string is whitespace if all characters in the string are whitespace and there\nis at least one character in the string."
+        $doc:
+            "Return True if the string is a whitespace string, False otherwise.\n\nA string is whitespace if all characters in the string are whitespace and there\nis at least one character in the string.",
     },
     // isdecimal: {
     //     $meth: Sk.builtin.str.methods.isdecimal,
@@ -1372,25 +1393,29 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.isdigit,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is a digit string, False otherwise.\n\nA string is a digit string if all characters in the string are digits and there\nis at least one character in the string."
+        $doc:
+            "Return True if the string is a digit string, False otherwise.\n\nA string is a digit string if all characters in the string are digits and there\nis at least one character in the string.",
     },
     isnumeric: {
         $meth: Sk.builtin.str.methods.isnumeric,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is a numeric string, False otherwise.\n\nA string is numeric if all characters in the string are numeric and there is at\nleast one character in the string."
+        $doc:
+            "Return True if the string is a numeric string, False otherwise.\n\nA string is numeric if all characters in the string are numeric and there is at\nleast one character in the string.",
     },
     isalpha: {
         $meth: Sk.builtin.str.methods.isalpha,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is an alphabetic string, False otherwise.\n\nA string is alphabetic if all characters in the string are alphabetic and there\nis at least one character in the string."
+        $doc:
+            "Return True if the string is an alphabetic string, False otherwise.\n\nA string is alphabetic if all characters in the string are alphabetic and there\nis at least one character in the string.",
     },
     isalnum: {
         $meth: Sk.builtin.str.methods.isalnum,
         $flags: {},
         $textsig: "($self, /)",
-        $doc: "Return True if the string is an alpha-numeric string, False otherwise.\n\nA string is alpha-numeric if all characters in the string are alpha-numeric and\nthere is at least one character in the string."
+        $doc:
+            "Return True if the string is an alpha-numeric string, False otherwise.\n\nA string is alpha-numeric if all characters in the string are alpha-numeric and\nthere is at least one character in the string.",
     },
     // isidentifier: {
     //     $meth: Sk.builtin.str.methods.isidentifier,
@@ -1406,13 +1431,14 @@ Sk.builtin.str.prototype.tp$methods = {
         $meth: Sk.builtin.str.methods.zfill,
         $flags: {},
         $textsig: "($self, width, /)",
-        $doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated."
+        $doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated.",
     },
     format: {
         $meth: Sk.builtin.str.methods.format,
         $flags: {},
         $textsig: null,
-        $doc: "S.format(*args, **kwargs) -> str\n\nReturn a formatted version of S, using substitutions from args and kwargs.\nThe substitutions are identified by braces ('{' and '}')."
+        $doc:
+            "S.format(*args, **kwargs) -> str\n\nReturn a formatted version of S, using substitutions from args and kwargs.\nThe substitutions are identified by braces ('{' and '}').",
     },
     // format_map: {
     //     $meth: Sk.builtin.str.methods.format_map,
@@ -1436,8 +1462,110 @@ Sk.builtin.str.prototype.tp$methods = {
     //     $doc: null },
 };
 
-
 Sk.abstr.setUpSlots(Sk.builtin.str);
 Sk.abstr.setUpMethods(Sk.builtin.str);
 
 delete Sk.builtin.str.methods;
+
+var reservedWords_ = Object.create(null, {
+    abstract: { value: true },
+    as: { value: true },
+    boolean: { value: true },
+    break: { value: true },
+    byte: { value: true },
+    case: { value: true },
+    catch: { value: true },
+    char: { value: true },
+    class: { value: true },
+    continue: { value: true },
+    const: { value: true },
+    debugger: { value: true },
+    default: { value: true },
+    delete: { value: true },
+    do: { value: true },
+    double: { value: true },
+    else: { value: true },
+    enum: { value: true },
+    export: { value: true },
+    extends: { value: true },
+    false: { value: true },
+    final: { value: true },
+    finally: { value: true },
+    float: { value: true },
+    for: { value: true },
+    function: { value: true },
+    goto: { value: true },
+    if: { value: true },
+    implements: { value: true },
+    import: { value: true },
+    in: { value: true },
+    instanceof: { value: true },
+    int: { value: true },
+    interface: { value: true },
+    is: { value: true },
+    long: { value: true },
+    namespace: { value: true },
+    native: { value: true },
+    new: { value: true },
+    null: { value: true },
+    package: { value: true },
+    private: { value: true },
+    protected: { value: true },
+    public: { value: true },
+    return: { value: true },
+    short: { value: true },
+    static: { value: true },
+    super: { value: true },
+    switch: { value: true },
+    synchronized: { value: true },
+    this: { value: true },
+    throw: { value: true },
+    throws: { value: true },
+    transient: { value: true },
+    true: { value: true },
+    try: { value: true },
+    typeof: { value: true },
+    use: { value: true },
+    var: { value: true },
+    void: { value: true },
+    volatile: { value: true },
+    while: { value: true },
+    with: { value: true },
+    // resereved Names
+    constructor: {value: true},
+    __defineGetter__: { value: true },
+    __defineSetter__: { value: true },
+    apply: { value: true },
+    arguments: { value: true },
+    call: { value: true },
+    caller: { value: true },
+    eval: { value: true },
+    hasOwnProperty: { value: true },
+    isPrototypeOf: { value: true },
+    __lookupGetter__: { value: true },
+    __lookupSetter__: { value: true },
+    __noSuchMethod__: { value: true },
+    propertyIsEnumerable: { value: true },
+    prototype: { value: true },
+    toSource: { value: true },
+    toLocaleString: { value: true },
+    toString: { value: true },
+    unwatch: { value: true },
+    valueOf: { value: true },
+    watch: { value: true },
+    length: { value: true },
+    name: { value: true },
+});
+
+function fixReserved(name) {
+    if (reservedWords_[name] === undefined) {
+        return name;
+    }
+}
+
+function unfixReserved(name) {
+    return name.replace(/_\$rw\$$/, "");
+}
+
+
+Sk.builtin.str.reservedWords_ = reservedWords_;

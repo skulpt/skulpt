@@ -590,14 +590,13 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const jsName = pyName.$jsstr();
-    const res = obj.tp$getattr(pyName, true, Sk.fixReserved(jsName));
+    const res = obj.tp$getattr(pyName, true);
     return Sk.misceval.chain(res, (r) => {
         if (r === undefined) {
             if (default_ !== undefined) {
                 return default_;
             }
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute " + jsName);
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute " + pyName.$jsstr());
         }
         return r;
     });
@@ -608,8 +607,7 @@ Sk.builtin.setattr = function setattr(obj, pyName, value) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const jsMangled = Sk.fixReserved(pyName.$jsstr());
-    const res = obj.tp$setattr(pyName, value, true, jsMangled);
+    const res = obj.tp$setattr(pyName, value, true);
     return Sk.misceval.chain(res, ()=>{
         return Sk.builtin.none.none$;
     });
@@ -829,8 +827,7 @@ Sk.builtin.hasattr = function hasattr(obj, pyName) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
-    const jsMangled = Sk.fixReserved(pyName.$jsstr());
-    const res = obj.tp$getattr(pyName, true, jsMangled);
+    const res = obj.tp$getattr(pyName, true);
     return Sk.misceval.chain(res, (r) => {
         if (r === undefined) {
             return Sk.builtin.bool.false$;

@@ -403,6 +403,8 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     }
     if (!kwargs.length && defaults === undefined) {
         return args;
+    } else if (nargs === varnames.length && !kwargs.length) {
+        return args;
     } else if (nargs === 0 && varnames.length === (defaults ? defaults.length : defaults)) {
         // a fast case
         return defaults;
@@ -550,9 +552,9 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
-Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
+Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
-    const ret = obj.tp$getattr(pyName, canSuspend, jsMangled);
+    const ret = obj.tp$getattr(pyName, canSuspend);
     if (ret === undefined) {
         const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
         throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
@@ -570,8 +572,8 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend, jsMangled) {
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
-Sk.abstr.sattr = function (obj, pyName, data, canSuspend, jsMangled) {
-    return obj.tp$setattr(pyName, data, canSuspend, jsMangled);
+Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
+    return obj.tp$setattr(pyName, data, canSuspend);
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
@@ -641,11 +643,8 @@ Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
  *
  * @returns {undefined | Object} Return undefined if not found or the function
  */
-Sk.abstr.lookupSpecial = function (obj, pyOrJsName, toMangle) {
-    if (pyOrJsName.v) {
-        pyOrJsName = pyOrJsName.v;
-    }
-    return obj.ob$type.$typeLookup(pyOrJsName);
+Sk.abstr.lookupSpecial = function (obj, pyName) {
+    return obj.ob$type.$typeLookup(pyName);
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 

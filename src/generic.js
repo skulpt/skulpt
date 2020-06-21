@@ -6,15 +6,15 @@ Sk.generic = {};
  * @param {boolean=} canSuspend Can we return a suspension?
  * @return {undefined}
  */
-Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
+Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     let f;
-    jsMangled = jsMangled || pyName.$jsstr();
-    const descr = this.ob$type.$typeLookup(jsMangled);
+    const type = this.ob$type;
+    const descr = type.$typeLookup(pyName);
     // look in the type for a descriptor
     if (descr !== undefined) {
         f = descr.tp$descr_get;
         if (f && Sk.builtin.checkDataDescr(descr)) {
-            return f.call(descr, this, this.ob$type, canSuspend);
+            return f.call(descr, this, type, canSuspend);
         }
     }
 
@@ -27,7 +27,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend, jsMangled) {
         }
     }
     if (f) {
-        return f.call(descr, this, this.ob$type, canSuspend);
+        return f.call(descr, this, type, canSuspend);
     }
     if (descr != null) {
         return descr;
@@ -42,9 +42,8 @@ Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
  * @param {boolean=} canSuspend
  * @return {undefined}
  */
-Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend, jsMangled) {
-    jsMangled = jsMangled || pyName.$jsstr();
-    const descr = this.ob$type.$typeLookup(jsMangled); 
+Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
+    const descr = this.ob$type.$typeLookup(pyName); 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
         const f = descr.tp$descr_set;
@@ -70,6 +69,7 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend, jsMangled) 
                 }
             }
         } else if (typeof dict === "object") {
+            const jsMangled = pyName.$mangled;
             if (value != null) {
                 dict[jsMangled] = value;
                 return;

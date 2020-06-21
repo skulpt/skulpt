@@ -522,7 +522,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
     if (arg !== undefined) {
         if (arg instanceof Sk.builtin.dict) {
             ret = this.dict$merge(arg);
-        } else if (Sk.abstr.lookupSpecial(arg, "keys") !== undefined) {
+        } else if (Sk.abstr.lookupSpecial(arg, new Sk.builtin.str("keys")) !== undefined) {
             ret = this.dict$merge(arg);
         } else {
             ret = this.dict$merge_from_seq(arg);

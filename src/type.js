@@ -126,7 +126,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.prototype.__doc__ = Sk.builtin.none.none$;
 
     // set __dict__ if not already on the prototype
-    if (klass.$typeLookup("__dict__") === undefined) {
+    if (klass.$typeLookup(Sk.builtin.str.$dict) === undefined) {
         klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
 
@@ -138,11 +138,13 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.$allocateSlots();
 
     if (klass.prototype.sk$prototypical) {
-        klass.$typeLookup = function (jsName) {
+        klass.$typeLookup = function (pyName) {
+            var jsName = pyName.$mangled;
             return this.prototype[jsName];
         };
     } else {
-        klass.$typeLookup = function (jsName) {
+        klass.$typeLookup = function (pyName) {
+            var jsName = pyName.$mangled;
             const mro = this.prototype.tp$mro;
             for (let i = 0; i < mro.length; ++i) {
                 const base_proto = mro[i].prototype;
@@ -182,13 +184,12 @@ Sk.builtin.type.prototype.$r = function () {
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
 
-Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) {
+Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // first check that the pyName is indeed a string
     let res;
     const metatype = this.ob$type;
-    jsMangled = jsMangled || pyName.$jsstr();
     // now check whether there is a descriptor on the metatype
-    const meta_attribute = metatype.$typeLookup(jsMangled);
+    const meta_attribute = metatype.$typeLookup(pyName);
 
     let meta_get;
     if (meta_attribute !== undefined) {
@@ -198,7 +199,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) 
             return res;
         }
     }
-    const attribute = this.$typeLookup(jsMangled);
+    const attribute = this.$typeLookup(pyName);
 
     if (attribute !== undefined) {
         const local_get = attribute.tp$descr_get;
@@ -221,7 +222,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend, jsMangled) 
     return;
 };
 
-Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMangled) {
+Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     if (!this.sk$klass) {
         if (value !== undefined) {
             throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
@@ -229,10 +230,8 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
             throw new Sk.builtin.TypeError("can't delete attributes on type object '" + this.prototype.tp$name + "'");
         }
     }
-    jsMangled = jsMangled || pyName.$jsstr();
     // meta types must follow single inheritance - we could change this and do
-    // this.ob$type.$typeLookup(jsMangled)... but doesn't seem much point
-    const descr = this.ob$type.$typeLookup(jsMangled);
+    const descr = this.ob$type.$typeLookup(pyName);
 
     // if it's a data descriptor then call it
     if (descr !== undefined && descr !== null) {
@@ -242,20 +241,21 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
         }
     }
     // for delattr
+    const jsName = pyName.$mangled;
 
     if (value === undefined) {
         const proto = this.prototype;
-        if (!proto.hasOwnProperty(jsMangled)) {
+        if (!proto.hasOwnProperty(jsName)) {
             throw new Sk.builtin.AttributeError("type object '" + this.prototype.tp$name + "' has no attribute '" + pyName.$jsstr() + "'");
         } else {
-            delete proto[jsMangled];
+            delete proto[jsName];
             // delete the slot_func
             // TODO what about slot funcs that are dual slots...
-            const slot_name = Sk.dunderToSkulpt[jsMangled];
+            const slot_name = Sk.dunderToSkulpt[jsName];
             if (slot_name !== undefined) {
                 delete this.prototype[slot_name];
                 if (!proto.sk$prototypical) {
-                    this.$allocateGetterSlot(jsMangled);
+                    this.$allocateGetterSlot(jsName);
                     // if this was a slot func and we are not prototypical
                     // allocate a getter slot in it's place
                 }
@@ -263,14 +263,15 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend, jsMa
             return;
         }
     }
-    this.prototype[jsMangled] = value;
-    if (jsMangled in Sk.dunderToSkulpt) {
-        this.$allocateSlot(jsMangled, value);
+    this.prototype[jsName] = value;
+    if (jsName in Sk.dunderToSkulpt) {
+        this.$allocateSlot(jsName, value);
     }
 };
 
-Sk.builtin.type.prototype.$typeLookup = function (jsName) {
+Sk.builtin.type.prototype.$typeLookup = function (pyName) {
     const proto = this.prototype;
+    const jsName = pyName.$mangled;
     if (proto.sk$prototypical === true) {
         return proto[jsName];
     }
