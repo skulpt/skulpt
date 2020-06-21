@@ -57,9 +57,9 @@ Sk.builtin.str = function (x) {
     }
 
     this.$mangled = fixReserved(ret);
-    this.v = ret;
     // quicker set_dict for strings by preallocating the $savedKeyHash
     this.$savedKeyHash_ = "_" + ret;
+    this.v = ret;
 };
 
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
@@ -73,7 +73,7 @@ Sk.builtin.str.prototype.tp$doc =
 
 Sk.builtin.str.prototype.tp$new = function (args, kwargs) {
     if (this !== Sk.builtin.str.prototype) {
-        return Sk.builtin.str.prototype.$subtype_new.call(this, args, kwargs);
+        return this.$subtype_new(args, kwargs);
     }
     args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs);
     const x = args[0];

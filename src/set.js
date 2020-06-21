@@ -423,7 +423,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         },
         tp$new: function (args, kwargs) {
             if (this !== Sk.builtin.frozenset.prototype) {
-                return Sk.builtin.frozenset.prototype.$subtype_new.call(this, args, kwargs);
+                return this.$subtype_new(args, kwargs);
             }
             Sk.abstr.checkNoKwargs("frozenset", kwargs);
             Sk.abstr.checkArgsLen("frozenset", 0, 1);

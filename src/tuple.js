@@ -29,7 +29,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         tp$new: function (args, kwargs) {
             // this = Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
             if (this !== Sk.builtin.tuple.prototype) {
-                return Sk.builtin.tuple.prototype.$subtype_new.call(this, args, kwargs);
+                return this.$subtype_new(args, kwargs);
             }
             Sk.abstr.checkNoKwargs("tuple", kwargs);
             Sk.abstr.checkArgsLen("tuple", args, 0, 1);
