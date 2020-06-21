@@ -17,7 +17,7 @@ NoneType = type(None)
 TypeType = type
 ObjectType = object
 IntType = int
-LongType = long
+# LongType = long
 FloatType = float
 BooleanType = bool
 try:

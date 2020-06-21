@@ -210,8 +210,6 @@ Sk.configure = function (options) {
     Sk.misceval.softspace_ = false;
 
     Sk.switch_version(Sk.__future__.python3);
-    Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
-    Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);

@@ -17,7 +17,7 @@ def copy(x):
     copier = getattr(cls, "__copy__", None)
     if copier:
         return copier(x)
-    if cls in (type(None), int, float, bool, long, str, tuple, type):
+    if cls in (type(None), int, float, bool, str, tuple, type):
         return x
     if (cls == list) or (cls == dict) or (cls == set) or (cls == slice):
         return cls(x)
