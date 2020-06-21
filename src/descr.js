@@ -359,7 +359,6 @@ const _to_initialize = [
 for (let i = 0; i < _to_initialize.length; i++) {
     const cls = _to_initialize[i];
     Sk.abstr.setUpSlots(cls);
-    Sk.abstr.setUpBuiltinMro(cls);
     Sk.abstr.setUpMethods(cls);
     Sk.abstr.setUpGetSets(cls);
 }

@@ -22,12 +22,10 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
         this.mapping = Object.create(null); // create from null to avoid name conflicts or prototype issues
         d = d || {};
-        const d_copy = { ...d }; // we make a shallow copy in order to ignore inherited attributes from the prototype
-        delete d_copy["constructor"];
-        if (d === Sk.builtin.type.prototype) {
-            delete d_copy["call"]; // we added these on type's prototype to allow type objects to be callable
-            delete d_copy["apply"];
-        }
+        const d_copy = { ...d }; 
+        // we make a shallow copy in order to ignore inherited attributes from the prototype
+        // a lot of the $ properties are enumerable so won't be copied here 
+        // also constructor is enumerable so no need to worry about that
         this.size = 0;
         for (let key in d_copy) {
             const k = Sk.unfixReserved(key);
