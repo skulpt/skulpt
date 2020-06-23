@@ -1,3 +1,17 @@
+/**
+ * @description
+ * Wrappers and slot functions
+ * 
+ * A wrapper function wrapper a slot defined on the prototype of a builtin type object
+ * typically a a slot wrapper will be called with a self argument and args and kwargs
+ * 
+ * self becomes this in when the slot wrapper is called
+ * the slot wrapper_descriptor object takes care of checking that self is an instance of the type object
+ * @param {*} self 
+ * @param {*} args 
+ * @param {*} kwargs 
+ */
+
 function wrapperCallNoArgs(self, args, kwargs) {
     // this = the wrapped function
     Sk.abstr.checkNoArgs(this.$name, args, kwargs);
@@ -55,8 +69,19 @@ function wrapperRichCompare(self, args, kwargs) {
     return new Sk.builtin.bool(res);
 }
 
-// taking the approach that if you have this slotFunc wrapper then you have the dunderFunc
-// different to python
+
+/**
+ * @description
+ * Slot functions are wrappers around an Sk.builtin.func
+ * if skulpt calls tp$init on a type object the slotFunc will call the Sk.builtin.func
+ * 
+ * with most slots we take the approach that we know which dunderFunc will be called
+ * However some slots currently double up
+ * e.g. mp$ass_subscript is called by both __setitem__ and __delitem__
+ * for these dual slots we need to do a typelookup 
+ * 
+ * __getattr__ is another complicated case and the algorithm largely follows Cpython's algorithm
+ */
 function slotFuncNoArgs(dunderFunc) {
     return function () {
         return Sk.misceval.callsimArray(dunderFunc, [this]);
@@ -139,7 +164,6 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
 Sk.slots = Object.create(null);
 const slots = Sk.slots;
 
-// tp slots
 slots.__init__ = {
     $name: "__init__",
     $slot_name: "tp$init",

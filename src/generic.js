@@ -1,10 +1,24 @@
+/**
+ * @namespace generic
+ * 
+ * @description
+ * various generic functions and type objects
+ */
 Sk.generic = {};
 
 /**
+ * @method
  * Get an attribute
- * @param {Object} pyName Python string name of the attribute
+ * @param {Sk.builtin.str} pyName Python string name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
- * @return {undefined}
+ * 
+ * @description
+ * The default implementation of __getattribute__. This is used by most instances and will be inherited from object
+ * if undefined is returned by this method then the object has no attribute
+ * It is the responsibility of the user to throw the error. 
+ * Currently this is thrown in Sk.abstr.gattr or directly in compile code
+ * 
+ * @return {Sk.builtin.object|undefined}
  */
 Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     let f;
@@ -37,9 +51,18 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
 Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
 
 /**
- * @param {Object} pyName
- * @param {Object} value
- * @param {boolean=} canSuspend
+ * @method
+ * 
+ * @description
+ * The default implementation of __setattr__/__delattr__ used by most instance objects
+ * There is no return value for this function
+ * An error will be thrown if no attribute exists
+ * 
+ * A value=undefined signifies that the attribute is to be deleted
+ * 
+ * @param {Sk.builtin.str} pyName
+ * @param {Sk.builtin.object|undefined} value
+ * @param {boolean=} canSuspend ? can this function suspend
  * @return {undefined}
  */
 Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
@@ -83,6 +106,19 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
 };
 Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
 
+
+/**
+ * @method
+ * 
+ * @description
+ * The default implementation of tp$new for builtin type objects that are mutable
+ * args and kwargs are ignored
+ * either a new instance of the builtin is returned or an instance of a subtype
+ * 
+ * @see {Sk.builtin.type.prototype.tp$new}
+ * 
+ * @param {Sk.builtin.type} builtin 
+ */
 Sk.generic.new = function (builtin) {
     const genericNew = function __new__(args, kwargs) {
         // this = prototype of an sk$type object.
@@ -98,6 +134,18 @@ Sk.generic.new = function (builtin) {
     return genericNew;
 };
 
+/**
+ * @method
+ * 
+ * @description
+ * method definitaion for __new__ that wraps tp$new
+ * typically called by subtypes using super().__new__(args, kwargs)
+ * 
+ * the algorithm follows Cpython
+ * 
+ * @see {Sk.slots.__new__}
+ * 
+ */
 Sk.generic.newMethodDef = {
     $meth: function (args, kwargs) {
         // this = a type object
@@ -144,6 +192,9 @@ Sk.generic.newMethodDef = {
 };
 
 /**
+ * @description
+ * used by most iterators that return self
+ * 
  * @function
  * @returns {self}
  */
@@ -172,8 +223,7 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
 };
 
 /**
- * @function
- *
+ * @method
  *
  * @description
  * the $seq of the iterator must be an array
@@ -186,6 +236,8 @@ Sk.generic.iterNextWithArray = function __next__() {
 };
 
 /**
+ * @method
+ * 
  * @description
  * compares the $seq.length to the $index
  */
@@ -196,6 +248,12 @@ Sk.generic.iterLengthHintWithArrayMethodDef = {
     $flags: { NoArgs: true },
 };
 
+/**
+ * @method
+ * 
+ * @description
+ * returns the current index
+ */
 Sk.generic.iterReverseLengthHintMethodDef = {
     $meth: function __length_hint__() {
         return new Sk.builtin.int_(this.$index);
@@ -203,6 +261,11 @@ Sk.generic.iterReverseLengthHintMethodDef = {
     $flags: { NoArgs: true },
 };
 
+
+/**
+ * @description
+ * typical implementation of __dict__ for type objects that support it
+ */
 Sk.generic.getSetDict = {
     $get: function () {
         return this.$d;
