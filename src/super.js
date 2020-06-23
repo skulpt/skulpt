@@ -83,7 +83,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
             }
         },
         tp$descr_get: function (obj, obtype) {
-            if (obj == null || this.obj != null) {
+            if (obj === null || this.obj != null) {
                 return this;
             }
             if (this.ob$type !== Sk.builtin.super_) {

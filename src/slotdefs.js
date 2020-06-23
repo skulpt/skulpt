@@ -329,7 +329,7 @@ slots.__get__ = {
     $slot_func: function (dunderFunc) {
         return function tp$descr_get(obj, obtype, canSuspend) {
             const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
-            if (obj == null) {
+            if (obj === null) {
                 obj = Sk.builtin.none.none$;
             }
             if (obtype == null) {
@@ -349,7 +349,7 @@ slots.__get__ = {
         if (obtype === Sk.builtin.none.none$) {
             obtype = null;
         }
-        if (obtype == null && obj == null) {
+        if (obtype === null && obj === null) {
             throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
         }
         return this.call(self, obj, obtype);

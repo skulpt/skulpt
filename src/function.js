@@ -55,7 +55,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
     slots: {
         tp$getattr: Sk.generic.getAttr,
         tp$descr_get: function (obj, objtype) {
-            if (obj == null) {
+            if (obj === null) {
                 return this;
             }
             return new Sk.builtin.method(this, obj);
