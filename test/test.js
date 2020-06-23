@@ -213,6 +213,7 @@ function testRun(name, nocatch, debugMode)
         sysargv: [ name + '.py' ],
         read: (fname) => { return fs.readFileSync(fname, "utf8"); },
         debugging: debugMode,
+        __future__: Sk.python2,
         syspath: [ justpath ]
     });
 

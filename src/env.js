@@ -104,7 +104,7 @@ Sk.configure = function (options) {
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     Sk.asserts.assert(Sk.isArrayLike(Sk.sysargv));
 
-    Sk.__future__ = options["__future__"] || Sk.python2;
+    Sk.__future__ = options["__future__"] || Sk.python3;
 
     Sk.bool_check(Sk.__future__.print_function, "Sk.__future__.print_function");
     Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
