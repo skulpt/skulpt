@@ -152,16 +152,19 @@ Sk.generic.selfIter = function __iter__() {
 };
 
 /**
- * @function
+ * @method
  *
  * @description
  * the $seq of the iterator must be an array
- * $orig must be provided and must have a valid sq$length
+ * $orig must be provided and must have a get$size private method
+ * note we do not use sq$length since this can be override by subclasses
+ * 
+ * typically used by mutable iterators like dict_iter_ and set_iter_
  */
 Sk.generic.iterNextWithArrayCheckSize = function __next__() {
     if (this.$index >= this.$seq.length) {
         return undefined;
-    } else if (this.$seq.length !== this.$orig_size) {
+    } else if (this.$seq.length !== this.$orig.get$size()) {
         const error_name = this.tp$name.split("_")[0];
         throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
     }

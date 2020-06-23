@@ -32,11 +32,7 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
             const iterable = Sk.abstr.iter(args[0]);
             let start = args[1];
             if (start !== undefined) {
-                if (!Sk.misceval.isIndex(start)) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
-                } else {
-                    start = Sk.misceval.asIndex(start);
-                }
+                start = Sk.misceval.asIndexOrThrow(start);
             } else {
                 start = 0;
             }

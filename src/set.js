@@ -125,8 +125,8 @@ const set_methods = {
                 other = new Sk.builtin.set(Sk.abstr.arrayFromIterable(other));
             }
             let isIn;
-            const thisLength = this.set$size();
-            const otherLength = this.set$size();
+            const thisLength = this.get$size();
+            const otherLength = this.get$size();
             if (thisLength > otherLength) {
                 // every item in this set can't be in other if it's shorter!
                 return Sk.builtin.bool.false$;
@@ -156,7 +156,7 @@ const set_methods = {
     },
     pop: {
         $meth: function () {
-            if (this.set$size() === 0) {
+            if (this.get$size() === 0) {
                 throw new Sk.builtin.KeyError("pop from an empty set");
             }
             const vals = this.sk$asarray();
@@ -297,7 +297,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             }
             switch (op) {
                 case "Eq":
-                    if (this.set$size() !== other.set$size()) {
+                    if (this.get$size() !== other.get$size()) {
                         return false;
                     }
                     if (this === other) {
@@ -321,12 +321,12 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                     }
                     return Sk.misceval.isTrue(this.issuperset.$meth.call(this, other));
                 case "Lt":
-                    if (this.set$size() >= other.set$size()) {
+                    if (this.get$size() >= other.get$size()) {
                         return false;
                     }
                     return Sk.misceval.isTrue(this.issubset.$meth.call(this, other));
                 case "Gt":
-                    if (this.set$size() <= other.set$size()) {
+                    if (this.get$size() <= other.get$size()) {
                         return false;
                     }
                     return Sk.misceval.isTrue(this.issuperset.$meth.call(this, other));
@@ -359,7 +359,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         }),
         // sequence or mapping slots
         sq$length: function () {
-            return this.set$size();
+            return this.get$size();
         },
         sq$contains: function (ob) {
             return this.v.sq$contains(ob);
@@ -370,7 +370,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         sk$asarray: function () {
             return this.v.sk$asarray();
         },
-        set$size: function () {
+        get$size: function () {
             // this method cannot be overriden by subclasses
             return this.v.sq$length();
         },
@@ -467,7 +467,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             return instance;
         },
         sk$asarray: set_proto.sk$asarray,
-        set$size: set_proto.set$size,
+        get$size: set_proto.get$size,
     },
 });
 

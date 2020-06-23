@@ -74,22 +74,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-/**
- * @constructor
- * @param {Sk.builtin.dict} dict
- */
-Sk.builtin.dict_iter_ = Sk.abstr.buildIteratorClass("dict_keyiterator", {
-    constructor: function dict_iter (dict) {
-        this.$index = 0;
-        this.$seq = dict.sk$asarray();
-        this.$orig_size = dict.get$size();
-    },
-    iternext: Sk.generic.iterNextWithArrayCheckSize,
-    methods: {
-        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
+
 
 /**
  * @constructor
@@ -144,7 +129,7 @@ Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
     constructor: function set_iter_ (set) {
         this.$index = 0;
         this.$seq = set.sk$asarray();
-        this.$orig_size = set.set$size();
+        this.$orig = set;
     },
     iternext: Sk.generic.iterNextWithArrayCheckSize,
     methods: {

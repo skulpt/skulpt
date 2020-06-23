@@ -122,8 +122,7 @@ Sk.builtin.dict_items = buildDictView("dict_items");
 function dict_iter_constructor(dict) {
     this.$index = 0;
     this.$seq = dict.sk$asarray();
-    this.$dict = dict;
-    this.$orig_size = dict.get$size();
+    this.$orig = dict;
 }
 
 function buildDictIterClass(typename, iternext, constructor) {
@@ -152,7 +151,7 @@ function dict_iter_get_value_or_throw() {
     if (key === undefined) {
         return key;
     }
-    const res = this.$dict.mp$lookup(key);
+    const res = this.$orig.mp$lookup(key);
     if (res !== undefined) {
         return res;
     }

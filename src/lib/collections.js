@@ -231,7 +231,7 @@ const collections_mod = function (keywds) {
         constructor: function odict_iter_(odict) {
             this.$index = 0;
             this.$seq = odict.sk$asarray();
-            this.$orig_size = odict.sq$length();
+            this.$orig = odict;
         },
         iternext: Sk.generic.iterNextWithArrayCheckSize,
         flags: { sk$acceptable_as_base_class: false },
