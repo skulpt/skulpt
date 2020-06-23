@@ -1,5 +1,4 @@
 const JSBI = require("jsbi");
-const int_ = Sk.builtin.int_;
 
 /**
  * @constructor
@@ -92,17 +91,17 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
     getsets: {
         start: {
             $get: function () {
-                return new int_(this.start);
+                return new Sk.builtin.int_(this.start);
             },
         },
         step: {
             $get: function () {
-                return new int_(this.step);
+                return new Sk.builtin.int_(this.step);
             },
         },
         stop: {
             $get: function () {
-                return new int_(this.stop);
+                return new Sk.builtin.int_(this.stop);
             },
         },
     },
@@ -129,7 +128,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
                         count++;
                     }
                 }
-                return new int_(count);
+                return new Sk.builtin.int_(count);
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -140,7 +139,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
                 const lst = this.v;
                 for (let i = 0; i < lst.length; i++) {
                     if (Sk.misceval.richCompareBool(item, lst[i], "Eq")) {
-                        return new int_(i);
+                        return new Sk.builtin.int_(i);
                     }
                 }
                 throw new Sk.builtin.ValueError(Sk.misceval.objectRepr(item) + "is not in range");
@@ -151,7 +150,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         },
     },
     proto: {
-        sq$asarray: function () {
+        sk$asarray: function () {
             return this.v.slice(0);
         },
     },
@@ -177,11 +176,11 @@ function rangeFromPy(start, stop, step) {
     if (typeof start === "number" && typeof stop === "number" && typeof step === "number") {
         if (step > 0) {
             for (let i = start; i < stop; i += step) {
-                ret.push(new int_(i));
+                ret.push(new Sk.builtin.int_(i));
             }
         } else {
             for (let i = start; i > stop; i += step) {
-                ret.push(new int_(i));
+                ret.push(new Sk.builtin.int_(i));
             }
         }
     } else {
@@ -192,12 +191,12 @@ function rangeFromPy(start, stop, step) {
         stop = JSBI.BigInt(stop);
         if (!step.sign) {
             while (JSBI.lessThan(i, stop)) {
-                ret.push(new int_(convertIfSafe(i)));
+                ret.push(new Sk.builtin.int_(convertIfSafe(i)));
                 i = JSBI.add(i, step);
             }
         } else {
             while (JSBI.greaterThan(i, stop)) {
-                ret.push(new int_(convertIfSafe(i)));
+                ret.push(new Sk.builtin.int_(convertIfSafe(i)));
                 i = JSBI.add(i, step);
             }
         }
