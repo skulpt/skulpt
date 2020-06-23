@@ -1,6 +1,4 @@
-Sk.builtin.interned = Object.create(null);
-
-// var interned = Object.create(null);
+Sk.builtin.interned = Object.create(null); // avoid name conflicts with Object.prototype
 
 function getInterned(x) {
     return Sk.builtin.interned[x];
@@ -1563,6 +1561,5 @@ function fixReserved(name) {
     }
     return name + "_$rw$";
 }
-
 
 Sk.builtin.str.reservedWords_ = reservedWords_;

@@ -1053,7 +1053,8 @@ slots.__long__ = {
     $doc: "int(self)",
 };
 
-slots.py2$slots = {
+var py3$slots;
+var py2$slots = {
     next: {
         $name: "next",
         $slot_name: "tp$iternext",
@@ -1402,12 +1403,11 @@ Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
 
 Sk.setupDunderMethods = function (py3) {
     const slots = Sk.slots;
-    if (py3 & (slots.py3$slots === undefined)) {
+    if (py3 && py3$slots === undefined) {
         // assume python3 switch version if we have to
         return;
     }
     const classes_with_next = [
-        Sk.builtin.dict_iter_,
         Sk.builtin.list_iter_,
         Sk.builtin.set_iter_,
         Sk.builtin.str_iter_,
@@ -1421,6 +1421,14 @@ Sk.setupDunderMethods = function (py3) {
         Sk.builtin.seq_iter_,
         Sk.builtin.callable_iter_,
         Sk.builtin.reverselist_iter_,
+        Sk.builtin.dict_iter_,
+        Sk.builtin.dict_itemiter_,
+        Sk.builtin.dict_valueiter_,
+        Sk.builtin.dict_reverse_iter_,
+        Sk.builtin.dict_reverse_itemiter_,
+        Sk.builtin.dict_reverse_valueiter_,
+        Sk.builtin.range_iter_,
+        Sk.builtin.revereserange_iter_,
         Sk.generic.iterator,
     ];
     const classes_with_bool = [Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.float_, Sk.builtin.complex];
@@ -1428,8 +1436,6 @@ Sk.setupDunderMethods = function (py3) {
     const number_slots = Sk.subSlots.number_slots;
     const main_slots = Sk.subSlots.main_slots;
     const dunderToSkulpt = Sk.dunderToSkulpt;
-    let py3$slots = slots.py3$slots;
-    const py2$slots = slots.py2$slots;
 
     function switch_version(classes_with, old_meth, new_meth) {
         for (let i = 0; i < classes_with.length; i++) {
