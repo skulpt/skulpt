@@ -15,8 +15,18 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
     },
     iternext: function (canSuspend) {
         const next = this.$iterable.tp$iternext(canSuspend);
+        const self = this;
         if (next === undefined) {
             return undefined;
+        }
+        if (next.$isSuspension) {
+            return Sk.misceval.chain(next, (n) => {
+                if (n === undefined) {
+                    return undefined;
+                }
+                const idx = new Sk.builtin.int_(self.$index++);
+                return new Sk.builtin.tuple([idx, n]);
+            });
         }
         const idx = new Sk.builtin.int_(this.$index++);
         return new Sk.builtin.tuple([idx, next]);
