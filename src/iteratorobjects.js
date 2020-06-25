@@ -69,16 +69,15 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         this.iterable = iterable;
     },
     iternext: function () {
-        const next = this.iterable.tp$iternext();
-        if (next === undefined) {
-            return undefined;
+        let res, item;
+        while (res === undefined) {
+            item = this.iterable.tp$iternext();
+            if (item === undefined) {
+                return undefined;
+            }
+            res = this.check$filter(item);
         }
-        const res = this.func === null ? next : Sk.misceval.callsimArray(this.func, [next]);
-        if (Sk.misceval.isTrue(res)) {
-            return next;
-        } else {
-            return this.tp$iternext();
-        }
+        return item;
     },
     slots: {
         tp$doc:
@@ -102,6 +101,21 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
             }
         },
     },
+    proto: {
+        check$filter: function (item) {
+            let res;
+            if (this.func === null) {
+                res = item;
+            } else {
+                res = Sk.misceval.callsimArray(this.func, [item]);
+            }
+    
+            if (Sk.misceval.isTrue(res)) {
+                return res;
+            }
+            return undefined;
+        }
+    }
 });
 
 Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
