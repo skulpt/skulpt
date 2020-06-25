@@ -21,7 +21,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
             Sk.abstr.checkArgsLen("super", args, 1, 2);
             const a_type = args[0];
             const other_self = args[1];
-            if (!Sk.builtin.checkType(a_type)) {
+            if (!Sk.builtin.checkClass(a_type)) {
                 throw new Sk.builtin.TypeError("must be type, not " + Sk.abstr.typeName(a_type));
             }
             this.obj = other_self;
@@ -134,7 +134,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
                 the normal case; the return value is obj.__class__.
 
             /* Check for first bullet above (special case) */
-            if (Sk.builtin.checkType(obj) && obj.ob$type.$isSubType(type)) {
+            if (Sk.builtin.checkClass(obj) && obj.ob$type.$isSubType(type)) {
                 return obj;
             }
             /* Normal case */

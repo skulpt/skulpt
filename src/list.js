@@ -24,7 +24,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             Sk.abstr.checkNoKwargs("list", kwargs);
             Sk.abstr.checkArgsLen("list", args, 0, 1);
             const self = this;
-            let L = Sk.abstr.arrayFromIterable(args[0], true);
+            let L = Sk.misceval.arrayFromIterable(args[0], true);
             return Sk.misceval.chain(L, (l) => {
                 self.v = l;
                 return Sk.builtin.none.none$;
@@ -159,7 +159,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
         },
         mp$ass_subscript: function (index, value) {
-            if (value == null) {
+            if (value === undefined) {
                 this.del$subscript(index);
             } else {
                 this.ass$subscript(index, value);
@@ -167,7 +167,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             return Sk.builtin.none.none$;
         },
         nb$inplace_add: function (other) {
-            other = Sk.abstr.arrayFromIterable(other);
+            other = Sk.misceval.arrayFromIterable(other);
             this.v.push(...other);
             return this;
         },

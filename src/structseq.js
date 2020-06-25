@@ -30,11 +30,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         base: Sk.builtin.tuple,
         slots: {
             tp$new: function (args, kwargs) {
-                if (kwargs && kwargs.length) {
-                    throw new Sk.builtin.TypeError(nm + "() takes no keyword arguments");
-                } else if (args.length !== 1) {
-                    throw new Sk.builtin.TypeError(nm + "() takes at most 1 argument (" + args.length + " given)");
-                }
+                Sk.abstr.checkOneArg(nm, args, kwargs);
                 const v = [];
                 const arg = args[0];
                 for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {

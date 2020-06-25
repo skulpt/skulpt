@@ -20,7 +20,7 @@ function buildDictView(typename) {
                 return new Sk.builtin.str("...");
             }
             this.$entered_repr = true;
-            const L = Sk.abstr.arrayFromIterable(this);
+            const L = Sk.misceval.arrayFromIterable(this);
             const res = Sk.misceval.objectRepr(new Sk.builtin.list(L));
             this.$entered_repr = undefined;
             return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + res + ")");

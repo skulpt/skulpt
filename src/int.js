@@ -1,25 +1,36 @@
 const JSBI = require("jsbi");
 
 /**
+ * 
  * @constructor
- * Sk.builtin.int_
- *
- * @param  {Number|BigInt|String} x
- *
+ * @extends {Sk.builtin.object}
+ * @this {Sk.builtin.int_}
+ * @description
+ * Function should only be called with a JS number|BigInt|String
+ * If the number is a string then the size will be checked to determined whether it should be a number or BigInt
+ * It assumed that a number passed it is within `Number.MaxSafeInteger`
+ * Similarly if a BigInt is passed it is assumed that this is larger than `Number.MaxSafeInteger`
+ * Internal code like `float.nb$int_` checks the resulting JS instance before calling `new Sk.builtin.int_`
+ * 
+ * @param  {number|JSBI|string|undefined} x
+ * 
  */
 Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
+    /**@this {Sk.builtin.int_} */
     constructor: function int_ (x) {
-        // internal function called with a javascript int/float/str
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
+        let v;
         if (typeof x === "number" || x instanceof JSBI) {
-            this.v = x;
+            v = x;
         } else if (typeof x === "string") {
-            this.v = stringToNumberOrBig(x);
+            v = stringToNumberOrBig(x);
         } else if (x === undefined) {
-            this.v = 0;
+            v = 0;
         } else {
             Sk.asserts.fail("bad argument to int constructor");
         }
+        /**@type {number|JSBI} */
+        this.v = v;
     },
     slots: {
         tp$as_number: true,
@@ -316,12 +327,25 @@ Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
  * There are two functions passed to this slot the quick function where both int values are number
  * and the JSBI.BigInt version of the same function
  * The fall through case where one or both of the int values is a bigint
+ * @ignore
  * 
+ * @private
+ * 
+ * @param {function(number,number): number} number_func
+ * @param {function(JSBI, JSBI): JSBI|number} bigint_func
  */
 function numberSlot(number_func, bigint_func) {
-    return function (other) {
+    /**
+    * @this {Sk.builtin.int_}
+    * @return {Sk.builtin.int_}
+    * 
+    * @param {Sk.builtin.int_|Sk.builtin.object} other 
+    */
+    function doNumberSlot(other) {
         if (other instanceof Sk.builtin.int_) {
+            /**@type {number|JSBI} */
             let v = this.v;
+            /**@type {number|JSBI} */
             let w = other.v;
             if (typeof v === "number" && typeof w === "number") {
                 const res = number_func(v, w);
@@ -335,6 +359,7 @@ function numberSlot(number_func, bigint_func) {
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
+    return doNumberSlot;
 }
 
 function compareSlot(number_func, bigint_func) {
@@ -353,14 +378,25 @@ function compareSlot(number_func, bigint_func) {
     };
 }
 
+/**
+ * 
+ * @param {function(number): number} number_func 
+ * @param {function(JSBI): JSBI} bigint_func 
+ * 
+ */
 function numberUnarySlot(number_func, bigint_func) {
-    return function () {
+    /**
+     * @this {Sk.builtin.int_}
+     * @return {Sk.builtin.int_}
+     */
+    function doUnarySlot () {
         const v = this.v;
         if (typeof v === "number") {
             return new Sk.builtin.int_(number_func(v));
         }
         return new Sk.builtin.int_(bigint_func(v));
     };
+    return doUnarySlot;
 }
 
 function cloneSelf() {
@@ -550,8 +586,7 @@ Sk.longFromStr = function (s) {
 };
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
-/* jslint nomen: true, bitwise: true */
-/* global Sk: true */
+
 function numberOrStringWithinThreshold(v) {
     return v <= Number.MAX_SAFE_INTEGER && v >= -Number.MAX_SAFE_INTEGER;
 }
@@ -619,6 +654,7 @@ function getInt(x, base) {
  * We don't need to check the string has valid digits since str2number did that for us
  * @param {*} s
  * @param {*} base
+ * @ignore
  */
 function fromStrToBigWithBase(s, base) {
     let neg = false;

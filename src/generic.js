@@ -1,20 +1,22 @@
 /**
- * @namespace generic
+ * @namespace Sk.generic
  * 
  * @description
- * various generic functions and type objects
+ * Some useful default methods for native classes
+ * 
  */
 Sk.generic = {};
 
 /**
  * @method
- * Get an attribute
+ * 
  * @param {Sk.builtin.str} pyName Python string name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
  * 
  * @description
- * The default implementation of __getattribute__. This is used by most instances and will be inherited from object
- * if undefined is returned by this method then the object has no attribute
+ * The default implementation of __getattribute__. This is used by most instances and will be inherited from object.
+ * 
+ * If undefined is returned by this method then the object has no attribute
  * It is the responsibility of the user to throw the error. 
  * Currently this is thrown in Sk.abstr.gattr or directly in compile code
  * 
@@ -79,7 +81,7 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
     const dict = this.$d;
     if (dict !== undefined) {
         if (dict.mp$ass_subscript) {
-            if (value != null) {
+            if (value !== undefined) {
                 return dict.mp$ass_subscript(pyName, value);
             } else {
                 try {
@@ -93,7 +95,7 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
             }
         } else if (typeof dict === "object") {
             const jsMangled = pyName.$mangled;
-            if (value != null) {
+            if (value !== undefined) {
                 dict[jsMangled] = value;
                 return;
             } else if (dict[jsMangled] !== undefined) {
@@ -264,7 +266,7 @@ Sk.generic.iterReverseLengthHintMethodDef = {
 
 /**
  * @description
- * typical implementation of __dict__ for type objects that support it
+ * typical implementation of `__dict__` for type objects that support it
  */
 Sk.generic.getSetDict = {
     $get: function () {

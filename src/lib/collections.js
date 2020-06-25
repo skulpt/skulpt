@@ -530,7 +530,7 @@ const collections_mod = function (keywds) {
                 if (index >= size || index < -size) {
                     throw new Sk.builtin.IndexError("deque index out of range");
                 }
-                if (val == null) {
+                if (val === undefined) {
                     this.del$item(index);
                 } else {
                     this.set$item(index, val);

@@ -1,8 +1,8 @@
 /**
  * @constructor
- * @param {Object} start
- * @param {Object=} stop
- * @param {Object=} step
+ * @param {PyObject} start
+ * @param {PyObject=} stop
+ * @param {PyObject=} step
  */
 Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     constructor: function slice(start, stop, step) {

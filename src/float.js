@@ -1,18 +1,15 @@
 const JSBI = require("jsbi");
 
-/**
- * @namespace Sk.builtin
- */
+
 
 /**
  * @constructor
  * Sk.builtin.float_
  *
- *
+ * @param {number} x only be called with a JS number
  *
  * @return {Sk.builtin.float_} Python float
  */
-
 Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
     constructor: function float_ (x) {
         Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");

@@ -1,13 +1,22 @@
 /**
  * @namespace Sk.abstr
  *
+ * @description
+ * A collection of functions that can be used to interact with Skulpt Python Objects
  */
 Sk.abstr = {};
 
-//
-// Number
-//
-
+/**
+ * @function
+ * @description
+ * Typically used withing error messages
+ *
+ * @example
+ * throw new Sk.builtin.TypeError("expected an 'int' (got '" + Sk.abstr.typeName(i) + "'");
+ *
+ * @param {*} obj
+ * @returns {string} - returns the typeName of any PyObject or `<invaid type>` if a JS object was passed
+ */
 Sk.abstr.typeName = function (obj) {
     if (obj != null && obj.tp$name !== undefined) {
         return obj.tp$name;
@@ -35,10 +44,13 @@ Sk.abstr.unop_type_error = function (v, name) {
 };
 
 /**
- * lookup and return the LHS object slot function method.  This coudl be either a builtin slot function or a dunder method defined by the user.
+ * lookup and return the LHS object slot function method.  This could be either a builtin slot function or a dunder method defined by the user.
+ * 
  * @param obj
  * @param name
- * @returns {Object|null|undefined}
+ * 
+ * @returns {Function|undefined}
+ * 
  * @private
  */
 Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
@@ -143,6 +155,7 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
             return obj.nb$inplace_xor;
     }
 };
+
 Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     switch (name) {
         case "USub":
@@ -214,6 +227,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
     // If there wasn't an in-place operation, fall back to the binop
     return Sk.abstr.binary_op_(v, w, opname);
 };
+
 Sk.abstr.unary_op_ = function (v, opname) {
     const vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
@@ -222,16 +236,45 @@ Sk.abstr.unary_op_ = function (v, opname) {
     Sk.abstr.unop_type_error(v, opname);
 };
 
+/**
+ * @function
+ * @description
+ * Perform a binary operation with any PyObjects that support the operation
+ * @param {Sk.builtin.object} v
+ * @param {Sk.builtin.object} w
+ * @param {string} op - `Add`, `Sub`, `Mult`, `Divide`, ...
+ *
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.numberBinOp = function (v, w, op) {
     return Sk.abstr.binary_op_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
+/**
+ * @function
+ * @description
+ * Perform an inplace operation with any PyObjects that support the operation
+ * @param {Sk.builtin.object} v
+ * @param {Sk.builtin.object} w
+ * @param {string} op - `Add`, `Sub`, `Mult`, `Divide`, ...
+ *
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     return Sk.abstr.binary_iop_(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
+/**
+ * @function
+ * @description
+ * Perform a unary operation with any PyObjects that support the operation
+ * @param {Sk.builtin.object} v
+ * @param {string} op - `UAdd`, `USub`
+ *
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.numberUnaryOp = function (v, op) {
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
@@ -240,10 +283,9 @@ Sk.abstr.numberUnaryOp = function (v, op) {
 };
 Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
-//
-// Sequence
-//
-
+/**
+ * @deprecated
+ */
 Sk.abstr.fixSeqIndex_ = function (seq, i) {
     i = Sk.builtin.asnum$(i);
     if (i < 0 && seq.sq$length) {
@@ -256,6 +298,7 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
  * @param {*} seq
  * @param {*} ob
  * @param {boolean=} canSuspend
+ * 
  */
 Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     if (seq.sq$contains) {
@@ -387,12 +430,28 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObj
     );
 };
 
-// A helper function for simple cases (mostly internal functions)
-// When a function uses named arguments that might passed as posargs or keyword args
-// this function returns a copy of the args as positional args or raises an exception if this is not possible
-// similar to the code in func_code tp$call
-// see property.prototype.tp$init for a use case
-
+/**
+ *
+ * @function
+ * @description
+ * A helper function used by native js functions whose call method is FastCall i.e. the args and kwargs are provided as Array objects.
+ *
+ * @param {string} func_name - used for error messages
+ * @param {Array<null|string>} varnames - Argument names to map to. For position only arguments use null
+ * @param {Array} args - typically provided by the `tp$call` method
+ * @param {Array|undefined} kwargs - typically provided the `tp$call` method
+ * @param {(Array|undefined)} defaults
+ * @throws {Sk.builtin.TypeError}
+ *
+ * @example
+ * // base is a possible keyword argument for int_ and x is a position only argument
+ * Sk.builtin.int_.prototype.tp$new = function(args, kwargs) {
+ *     args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [
+ *         new Sk.builtin.int_(0),
+ *         Sk.builtin.none.none$
+ *     ]);
+ * }
+ */
 Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, defaults) {
     // args is an array, kwargs is an array or undefined
     kwargs = kwargs || [];
@@ -443,9 +502,14 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
 
     return args;
 };
-
 Sk.exportSymbol("Sk.abstr.copyKeywordsToNamedArgs", Sk.abstr.copyKeywordsToNamedArgs);
 
+/**
+ * @function
+ * @param {string} func_name
+ * @param {Array} kwargs
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.checkNoKwargs = function (func_name, kwargs) {
     if (kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError(func_name + "() takes no keyword arguments");
@@ -453,6 +517,14 @@ Sk.abstr.checkNoKwargs = function (func_name, kwargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkNoKwargs", Sk.abstr.checkNoKwargs);
 
+/**
+ * @function
+ * @param {string} func_name
+ * @param {Array} args
+ * @param {Array} kwargs
+ *
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
     const nargs = args.length + (kwargs ? kwargs.length : 0);
     if (nargs) {
@@ -461,6 +533,13 @@ Sk.abstr.checkNoArgs = function (func_name, args, kwargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkNoArgs", Sk.abstr.checkNoArgs);
 
+/**
+ * @function
+ * @param {string} func_name
+ * @param {Array} args
+ * @param {Array} kwargs
+ * @throws {Sk.builtin.TypeError}
+ */
 Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
     Sk.abstr.checkNoKwargs(func_name, kwargs);
     if (args.length !== 1) {
@@ -469,6 +548,15 @@ Sk.abstr.checkOneArg = function (func_name, args, kwargs) {
 };
 Sk.exportSymbol("Sk.abstr.checkOneArg", Sk.abstr.checkOneArg);
 
+/**
+ * @function
+ * @param {string} func_name
+ * @param {Array} args
+ * @param {number} minargs
+ * @param {number} [maxargs=Infinity]
+ * @throws {Sk.builtin.TypeError}
+ *
+ */
 Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
     const nargs = args.length;
     let msg;
@@ -577,20 +665,22 @@ Sk.abstr.iternext = function (it, canSuspend) {
 Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 
 /**
+ * @function
+ *
+ * @description
  * Get the iterator for a Python object  This iterator could be one of the following.
  * This is the preferred mechanism for consistently getting the correct iterator.  You should
  * not just use tp$iter because that could lead to incorrect behavior of a user created class.
  *
- * - tp$iter
+ * - `tp$iter`
  * - A user defined `__iter__` method
  * - A user defined `__getitem__` method
  *
- * @param obj
+ * @param {Sk.builtin.object} obj
  *
- * @throws {Sk.builtin.TypeError}
+ * @throws {Sk.builtin.TypeError} If the object passed is not iterable
  * @returns {Object}
  */
-
 Sk.abstr.iter = function (obj) {
     if (obj.tp$iter) {
         const iter = obj.tp$iter();
@@ -608,34 +698,16 @@ Sk.abstr.iter = function (obj) {
 };
 Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
-Sk.abstr.arrayFromIterable = function (iterable, canSuspend) {
-    if (iterable === undefined) {
-        return [];
-    }
-    if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
-        return iterable.sk$asarray();
-    }
-    const L = [];
-    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
-        L.push(i);
-    });
-    if (ret === undefined) {
-        return L;
-    } else if (canSuspend) {
-        return Sk.misceval.chain(ret, () => {
-            return L;
-        });
-    }
-    Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-    return L;
-};
 
 /**
+ * @description
  * Special method look up.
- * can take a pyName or jsName
- * uses the ob$type.$typeLookup method
+ * Checks whether the attribute is defined on object type's prototype
  *
  * @returns {undefined | Object} Return undefined if not found or the function
+ *
+ * @param {PyObject} obj
+ * @param {Sk.builtin.str} pyName
  */
 Sk.abstr.lookupSpecial = function (obj, pyName) {
     return obj.ob$type.$typeLookup(pyName);
@@ -654,6 +726,7 @@ Sk.abstr.markUnhashable = function (thisClass) {
 };
 
 /**
+ * @description
  * Set up inheritance between two Python classes. This allows only for single
  * inheritance -- multiple inheritance is not supported by Javascript.
  * multiple inheritance is dealt with by tp$getattr implementations
@@ -673,10 +746,9 @@ Sk.abstr.markUnhashable = function (thisClass) {
  * builtins should inherit from Sk.builtin.object.
  *
  * @param {string} childName The Python name of the child (subclass).
- * @param {*} child     The subclass.
- * @param {*} parent    The base of child.
- * @param {*} metaclass    The metaclass - if none set use Sk.builtin.type.
- * @return {undefined}
+ * @param {PyObject} child     The subclass.
+ * @param {PyObject} [parent=Sk.builtin.object]    The base of child.
+ * @param {PyObject} [metaclass=Sk.builtin.type]
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     metaclass = metaclass || Sk.builtin.type;
@@ -685,14 +757,18 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
 
     child.prototype = Object.create(parent.prototype, {
         constructor: { value: child, writable: true },
-        ob$type: { value: child , writable: true},
+        ob$type: { value: child, writable: true },
         tp$name: { value: childName, writable: true },
         tp$base: { value: parent, writable: true },
     });
 };
 
 /**
+ * @summary
  * Set up inheritance between type and object
+ *
+ * @description
+ * ```text
  * type   instanceof object => true
  * object instanceof type   => true
  * type   instanceof type   => true
@@ -700,23 +776,26 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
  *
  * type   subclassof object => type.prototype   instanceof object => true
  * object subclassof type   => object.prototype instanceof type   => false
- *
+ * ```
  * this algorithm achieves the equivalent with the following prototypical chains
- * using Object.setPrototypeOf
+ * using `Object.setPrototypeOf`
+ *
+ * ```
  * type.__proto__             = type   (type instanceof type)
  * type.__proto__.__proto__   = object (type instanceof object)
  * type.prototype.__proto__   = object (type subclassof object)
  * object.__proto__           = type   (object instanceof type)
  * object.__proto__.__proto__ = object (object instanceof object)
+ * ```
  *
- * while Object.setPrototypeOf is not considered good practice
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
+ * while `Object.setPrototypeOf` is not considered [good practice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
  * this is a particularly unique use case and creates a lot of prototypical benefits
  * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
  * similarly it makes metclasses that much easier to implement
  * Object.setPrototypeOf is also a feature built into the javascript language
  *
  * @function
+ *
  */
 Sk.abstr.setUpBaseInheritance = function () {
     Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
@@ -727,15 +806,15 @@ Sk.abstr.setUpBaseInheritance = function () {
     Object.defineProperties(Sk.builtin.type.prototype, {
         call: { value: Function.prototype.call },
         apply: { value: Function.prototype.apply },
-        ob$type: { value: Sk.builtin.type , writable: true},
-        tp$name: { value: "type", writable: true},
-        tp$base: { value: Sk.builtin.object, writable: true},
+        ob$type: { value: Sk.builtin.type, writable: true },
+        tp$name: { value: "type", writable: true },
+        tp$base: { value: Sk.builtin.object, writable: true },
         sk$type: { value: true },
     });
     Object.defineProperties(Sk.builtin.object.prototype, {
-        ob$type: { value: Sk.builtin.object , writable: true},
-        tp$name: { value: "object" , writable: true},
-        tp$base: { value: undefined , writable: true},
+        ob$type: { value: Sk.builtin.object, writable: true },
+        tp$name: { value: "object", writable: true },
+        tp$base: { value: undefined, writable: true },
         sk$object: { value: true },
     });
 
@@ -748,12 +827,13 @@ Sk.abstr.setUpBaseInheritance = function () {
 
 /**
  * This function is called in {@link Sk.doOneTimeInitialization}
- * builtins should inherit from Sk.builtin.object.
+ * and {@link Sk.abstr.buildNativeClass}
+ *
  *
  * @param  {Sk.builtin.type} child
  * @return {undefined}
+ *
  */
-
 Sk.abstr.setUpBuiltinMro = function (child) {
     let parent = child.prototype.tp$base;
     const bases = parent === undefined ? [] : [parent];
@@ -769,9 +849,9 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     // internally we keep the mro and bases as array objects
     // the wrapper descripor returns the tuple of the array
     Object.defineProperties(child.prototype, {
-        sk$prototypical: { value: true , writable: true},
-        tp$mro: { value: mro , writable: true},
-        tp$bases: { value: bases , writable: true},
+        sk$prototypical: { value: true, writable: true },
+        tp$mro: { value: mro, writable: true },
+        tp$bases: { value: bases, writable: true },
     });
 };
 
@@ -912,17 +992,17 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                 const slot = reflected_slots[slot_name].slot;
                 if (slot == null) {
                     // then the reflected slot is the same as non reflected slot - like nb$add
-                    slots[reflect_name] = slots[slot_name], 
+                    (slots[reflect_name] = slots[slot_name]),
                     Object.defineProperty(proto, reflect_name, {
                         value: slots[slot_name],
-                        writable: true, 
+                        writable: true,
                         enumerable: false,
                     });
                 } else {
-                    slots[reflect_name] = slot, 
+                    (slots[reflect_name] = slot),
                     Object.defineProperty(proto, reflect_name, {
                         value: slot,
-                        writable: true, 
+                        writable: true,
                         enumerable: false,
                     });
                 }
@@ -946,7 +1026,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                     slots[equiv_slot] = slots[slot_name];
                     Object.defineProperty(proto, equiv_slot, {
                         value: slots[slot_name],
-                        writable: true, 
+                        writable: true,
                         enumerable: false,
                     });
                 }
@@ -960,34 +1040,35 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
     // a flag to check during doOneTimeInitialization
     Object.defineProperty(proto, "sk$slots", {
-        value: null, 
+        value: null,
         writeable: true,
     });
 };
 
 /**
  * @function
- * @param {String} typename
- * @param {Object} options
+ * @param {string} typename
+ * @param {Object} options An object literal that provides the functionality of the typobject
  *
  *
  * @description
- * this can be called to create a typeobj
+ * this can be called to create a native typeobj
  * options include
- * {
- * base: default to Sk.builtin.object
- * meta: default to Sk.builtin.type
+ * ```
+ * - base: default to {@link Sk.builtin.object}
+ * - meta: default to {@link Sk.builtin.type}
  *
- * slots: skulpt slot functions that will be allocated slot wrappers
- * methods: method objects {$meth: Function, $flags: callmethod, $doc: String},
- * getsets: getset objects {$get: Function, $set: Function, $doc, String},
+ * - slots: skulpt slot functions that will be allocated slot wrappers
+ * - methods: method objects `{$meth: Function, $flags: callmethod, $doc: string, $textsic: string|null}`,
+ * - getsets: getset objects `{$get: Function, $set: Function, $doc: string}`,
+ * - classmethods: classmethod objects `{$meth: Function, $flags: callmethod, $doc: string, $textsic: string|null}`,
  *
- * flags: Object allocated directly onto class like klass.sk$acceptable_as_base_class
- * proto: Object allocated onto the prototype useful for private methods
- * }
- * tp$methods, tp$getsets and tp$mro are set up at runtime if not setup here
+ * - flags: Object allocated directly onto class like `klass.sk$acceptable_as_base_class`
+ * - proto: Object allocated onto the prototype useful for private methods
+ * ```
+ * See most builtin type objects for examples
+ *
  */
-
 Sk.abstr.buildNativeClass = function (typename, options) {
     options = options || {};
     let typeobject;
@@ -1028,7 +1109,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     for (let p in proto) {
         Object.defineProperty(type_proto, p, {
             value: proto[p],
-            writable: true, 
+            writable: true,
             enumerable: false,
         });
     }
@@ -1052,35 +1133,51 @@ Sk.abstr.buildNativeClass = function (typename, options) {
 
 /**
  * @function
- * @param {String} type_name
- * @param {Function} iterator_constructor
- * @param {Object} methods
- * @param {Boolean} acceptable_as_base
+ * 
+ * @param {string} typename e.g. "itertools.chain"
+ * @param {Object
+ * } iterator minimum options `{constructor: function, iternext: function}`
  *
  * @description
  * effectively a wrapper for easily defining an iterator
- * tp$iter slot is added and returns self
+ * `tp$iter` slot is added and returns self
  *
  * define a constructor in the usual way
  *
- * define tp$iternext using iternext in the object literal
+ * define `tp$iternext` using iternext in the object literal
  * mostly as a convenience
- * you can also define tp$iternext in the slots which will take priority
+ * you can also define `tp$iternext` in the slots which will take priority
  *
  * the main benefit of this helper function is to reduce some repetitive code for defining an iterator class
  *
- * If you want a generic iterator see Sk.generic.iterator
+ * If you want a generic iterator see {@link Sk.generic.iterator}
  *
- * @returns typeobj
+ * @returns {Sk.builtin.type}
+ * 
+ * @example
+ * Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
+    constructor: function tuple_iter_(tuple) {
+        this.$index = 0;
+        this.$seq = tuple.sk$asarray();
+    },
+    iternext: function () {
+        if (this.$index >= this.$seq.length) {
+            return undefined;
+        }
+        return this.$seq[this.$index++];
+    }
+});
+ * 
+ *
  */
 
-Sk.abstr.buildIteratorClass = function (type_name, iterator) {
+Sk.abstr.buildIteratorClass = function (typename, iterator) {
     Sk.asserts.assert(iterator.hasOwnProperty("constructor"), "must provide a constructor");
     iterator.slots = iterator.slots || {};
     iterator.slots.tp$iter = Sk.generic.selfIter;
     iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
     iterator.slots.tp$getattr = iterator.slots.tp$getattr || Sk.generic.getAttr;
-    return Sk.abstr.buildNativeClass(type_name, iterator);
+    return Sk.abstr.buildNativeClass(typename, iterator);
 };
 
 Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
@@ -1100,6 +1197,7 @@ Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
  * @param  {Object} self      The instance of the subclas.
  * @param  {...?} args Arguments to pass to the constructor.
  * @return {undefined}
+ * @deprecated
  */
 Sk.abstr.superConstructor = function (thisClass, self, args) {
     var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);

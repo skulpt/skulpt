@@ -1,5 +1,6 @@
 /**
  * Here we define the shared set methods that might be used by set or frozenset
+ * @ignore
  */
 const set_methods = {
     add: {
@@ -106,7 +107,7 @@ const set_methods = {
         $meth: function (other) {
             // requires all items in this to not be in other
             let isIn;
-            other = Sk.abstr.arrayFromIterable(other);
+            other = Sk.misceval.arrayFromIterable(other);
             for (let i = 0; i < other.length; i++) {
                 isIn = this.sq$contains(other[i]);
                 if (isIn) {
@@ -122,7 +123,7 @@ const set_methods = {
     issubset: {
         $meth: function (other) {
             if (!Sk.builtin.checkAnySet(other)) {
-                other = new Sk.builtin.set(Sk.abstr.arrayFromIterable(other));
+                other = new Sk.builtin.set(Sk.misceval.arrayFromIterable(other));
             }
             let isIn;
             const thisLength = this.get$size();
@@ -146,7 +147,7 @@ const set_methods = {
     issuperset: {
         $meth: function (other) {
             if (!Sk.builtin.checkAnySet(other)) {
-                other = new Sk.builtin.set(Sk.abstr.arrayFromIterable(other));
+                other = new Sk.builtin.set(Sk.misceval.arrayFromIterable(other));
             }
             return other.issubset.$meth.call(other, this);
         },
@@ -431,7 +432,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             if (arg !== undefined && arg.ob$type === Sk.builtin.frozenset) {
                 return arg;
             }
-            const S = Sk.abstr.arrayFromIterable(arg);
+            const S = Sk.misceval.arrayFromIterable(arg);
             return new Sk.builtin.frozenset(S);
         },
         $r: set_proto.$r,

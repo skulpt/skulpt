@@ -63,7 +63,6 @@ Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
  * @param {Object} iterable
  * @extends Sk.builtin.object
  */
-
 Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     constructor: function filter_(func, iterable) {
         this.func = func;

@@ -1,12 +1,22 @@
 /**
  * 
  * @constructor
+ * 
  * @param {Function} fn
- * @param {Boolean} handlesOwnSuspensions
+ * @param {Boolean} [handlesOwnSuspensions=false] - Does it handle its own suspension?
  * 
  * @description
  * Create a generic Python iterator that repeatedly calls a given JS function
- * until it returns 'undefined'
+ * until it returns 'undefined'. This function is useful for user defined Native classes
+ * 
+ * @example
+ * // some immutable tuple like class where the v property is an array
+ * MyClass.prototype.tp$iter = function() {
+ *   let i = 0;
+ *   const len = this.v.length;
+ *   const self = this;
+ *   return new Sk.generic.iterator(() => i >= len ? self.v[i++] : undefined);
+ * }
  * 
  */
 Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
@@ -34,6 +44,7 @@ Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
  * @constructor
  * @param {Sk.builtin.func} callable
  * @param {Sk.builtin.object} sentinel - if reached returns undefined
+ * @private
  */
 Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
     constructor: function callable_iter (callable, sentinel) {
@@ -79,6 +90,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
 /**
  * @constructor
  * @param {Sk.builtin.list} lst
+ * @private
  */
 Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
     constructor: function list_iter_ (lst) {
@@ -103,6 +115,7 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
 /**
  * @constructor
  * @param {Sk.builtin.list} lst
+ * @private
  */
 Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
     constructor: function reverselist_iter_ (lst) {
@@ -124,6 +137,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
 /**
  * @constructor
  * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
+ * @private
  */
 Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
     constructor: function set_iter_ (set) {
@@ -141,6 +155,7 @@ Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
 /**
  * @constructor
  * @param {Sk.builtin.object} obj
+ * @private
  */
 Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
     constructor: function seq_iter (seq) {
@@ -188,6 +203,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
 /**
  * @constructor
  * @param {Sk.builtin.str} str
+ * @private
  */
 Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     constructor: function str_iter_(str) {
@@ -210,6 +226,7 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
 /**
  * @constructor
  * @param {Sk.builtin.tuple} tuple
+ * @private
  */
 Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
     constructor: function tuple_iter_(tuple) {

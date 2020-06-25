@@ -10,6 +10,7 @@
  * @param {*} self 
  * @param {*} args 
  * @param {*} kwargs 
+ * @ignore
  */
 
 function wrapperCallNoArgs(self, args, kwargs) {
@@ -81,6 +82,7 @@ function wrapperRichCompare(self, args, kwargs) {
  * for these dual slots we need to do a typelookup 
  * 
  * __getattr__ is another complicated case and the algorithm largely follows Cpython's algorithm
+ * @ignore
  */
 function slotFuncNoArgs(dunderFunc) {
     return function () {
@@ -133,12 +135,13 @@ function slotFuncFastCall(dunderFunc) {
  * this is currently a bit of a hack
  * in attempting to maintain dual slots like mp$ass_subscript for assigning and deleting
  * this function has to do a type lookup... since it doesn't know in advance if it is being asked to set or delete
+ * @ignore
  */
 function slotFuncSetDelete(set_name, del_name, error_msg) {
     return function (dunderFunc) {
-        return function (pyName, value, canSuspend) {
+        return function (pyObject, value, canSuspend) {
             let res, dunderName;
-            if (value == null) {
+            if (value === undefined) {
                 dunderName = del_name;
                 error_msg = null;
             } else {
@@ -146,11 +149,11 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
             }
             const func = Sk.abstr.lookupSpecial(this, new Sk.builtin.str(dunderName));
             if (func instanceof Sk.builtin.wrapper_descriptor) {
-                return func.d$wrapped.call(this, pyName, value);
+                return func.d$wrapped.call(this, pyObject, value);
             }
             const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
             if (func !== undefined) {
-                res = value == null ? call_version(func, [this, pyName]) : call_version(func, [this, pyName, value]);
+                res = value === undefined ? call_version(func, [this, pyObject]) : call_version(func, [this, pyObject, value]);
             } else if (error_msg) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
             } else {
@@ -161,10 +164,45 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
     };
 }
 
+/**
+ * @namespace
+ * 
+ * @description
+ * If you want to build a skulpt native class you need to understand slots
+ * Each dunder method in python is matched to a slot in skulpt {@link Sk.dunderToSkulpt} which is closely aligned to a Cpython slot
+ * 
+ * Plenty examples exist in {@link  Sk.builtin}
+ * 
+ * If a user builds a `nativeClass` using {@link Sk.abstr.buildNativeClass } they define slots as javascript function
+ * Dunder Methods will be created as `slot_wrappers` 
+ * 
+ * If a user defines a class in Python or using {@link Sk.misceval.buildClass}
+ * Dunder Functions should be defined and slot funcs will be added
+ * 
+ * Below is information about each slot function, should you decide to build a native class
+ * 
+ * For mappings of slots to dunders see source code for {@link Sk.dunderToSkulpt} or [Sk.subSlots]{@link Sk.slots.subSlots}
+ * 
+ */
 Sk.slots = Object.create(null);
 const slots = Sk.slots;
 
-slots.__init__ = {
+/**
+ * @memberof Sk.slots
+ * @member tp$doc
+ * @implements __doc__
+ * @type {string}
+ */
+
+/**
+ * @memberof Sk.slots
+ * @method tp$init
+ * @implements __init__
+ * @param {Array} args
+ * @param {Array|undefined} kwargs
+ * @returns {Sk.builtin.none.none$}
+ */
+Sk.slots.__init__ = {
     $name: "__init__",
     $slot_name: "tp$init",
     $slot_func: function (dunderFunc) {
@@ -189,6 +227,19 @@ slots.__init__ = {
     $doc: "Initialize self.  See help(type(self)) for accurate signature.",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$new
+ * @implements __new__
+ * @returns {PyObject}
+ * @this typeobject.prototype
+ * @param {Array} args
+ * @param {Array|undefined} kwargs
+ * @description
+ * {@link Sk.generic.new} {@link Sk.generic.newMethodDef} are related implementations of `tp$mew` and `__new__`
+ * unusually `this = typeobject.prototype` since it is typically called like `typeobj.prototype.tp$new` and must 
+ * be taken into when writing an implementation of `tp$new`
+ */
 slots.__new__ = {
     $name: "__new__",
     $slot_name: "tp$new",
@@ -205,6 +256,14 @@ slots.__new__ = {
     $doc: "Create and return a new object.",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$call
+ * @implements __call__
+ * @param {Array} args
+ * @param {Array|undefined} kwargs
+ * 
+ */
 slots.__call__ = {
     $name: "__call__",
     $slot_name: "tp$call",
@@ -215,6 +274,12 @@ slots.__call__ = {
     $doc: "Call self as a function.",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method $r
+ * @implements __repr__
+ * @returns {Sk.builtin.str}
+ */
 slots.__repr__ = {
     $name: "__repr__",
     $slot_name: "$r",
@@ -225,6 +290,12 @@ slots.__repr__ = {
     $doc: "Return repr(self).",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$str
+ * @implements `__str__`
+ * @returns {Sk.builtin.str}
+ */
 slots.__str__ = {
     $name: "__str__",
     $slot_name: "tp$str",
@@ -235,6 +306,14 @@ slots.__str__ = {
     $doc: "Return str(self).",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$hash
+ * @implements __hash__
+ * @returns {Sk.builtin.int_}
+ * @description
+ * To be unhashable set this slot to {@link Sk.builtin.none.none$} or call {@link Sk.abstr.markUnhashable}
+ */
 slots.__hash__ = {
     $name: "__hash__",
     $slot_name: "tp$hash",
@@ -247,6 +326,18 @@ slots.__hash__ = {
 
 // getters/setters/deletters
 
+/**
+ * @memberof Sk.slots
+ * @method tp$getattr
+ * @implements __getattribute__
+ * 
+ * @param {Sk.builtin.str} pyName
+ * @param {boolean=} canSuspend
+ * 
+ * @returns {PyObject|undefined}
+ * @description
+ * This slot will also be given to a PyObject which defines `__getattr__`
+ */
 slots.__getattribute__ = {
     $name: "__getattribute__",
     $slot_name: "tp$getattr",
@@ -325,7 +416,16 @@ slots.__getattr__ = {
     $flags: { OneArg: true },
     $doc: "Return getattr(self, name).",
 };
-
+/**
+ * @memberof Sk.slots
+ * @method tp$setattr
+ * @implements __setattr__/__delattr__
+ * @param {Sk.builtin.str} pyName
+ * @param {pyObject|undefined} value undefined indicates the attribute is to be deleted
+ * @param {boolean=} canSuspend
+ * @description 
+ * `tp$setattr` is responsible for throwing its own exceptions
+ */
 slots.__setattr__ = {
     $name: "__setattr__",
     $slot_name: "tp$setattr",
@@ -347,6 +447,14 @@ slots.__delattr__ = {
     $doc: "Implement delattr(self, name).",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$descr_get
+ * @implements __get__
+ * @param {pyObject} obj
+ * @param {typeObject=} obtype
+ * @param {boolean=} canSuspend
+ */
 slots.__get__ = {
     $name: "__get__",
     $slot_name: "tp$descr_get",
@@ -382,7 +490,14 @@ slots.__get__ = {
     $flags: { MinArgs: 2, MaxArgs: 2 },
     $doc: "Return an attribute of instance, which is of type owner.",
 };
-
+/**
+ * @memberof Sk.slots
+ * @method tp$descr_set
+ * @implements __set__/__delete__
+ * @param {pyObject} obj
+ * @param {pyObject|undefined} value undefined will signals __delete__
+ * @param {boolean=} canSuspend
+*/
 slots.__set__ = {
     $name: "__set__",
     $slot_name: "tp$descr_set",
@@ -403,16 +518,25 @@ slots.__delete__ = {
     $doc: "Delete an attribute of instance.",
 };
 
-// slots.__del__ = {
-// 	$name: "__del__",
-// 	$slot_func: function tp$finalize () { },
-// 	$wrapper: function __del__ () { },
-// 	$textsig: null,
-// 	$doc: "",
-// };
 
-// tp richcompare
+/**
+ * @memberof Sk.slots
+ * @method tp$richcompare
+ * @implements __eq__/__ne__/__lt__/__le__/__gt__/__ge__
+ * @param {pyObject} other
+ * @param {string} opname "Eq", "NotEq", "Lt", "LtE", "Gt", "GtE" 
+ * @returns {boolean}
+ * @description 
+ * Either define tp$richcompare or any of the `ob$*` slots
+ * If `tp$richcompare` is defined then the `nativeClass` will get wrapper functions into each `ob$*` slot
+*/
 {
+    /**
+     * @memberof Sk.slots
+     * @method ob$eq
+     * @implements __eq__
+     * @returns {boolean}
+     */
     slots.__eq__ = {
         $name: "__eq__",
         $slot_name: "ob$eq",
@@ -423,6 +547,12 @@ slots.__delete__ = {
         $doc: "Return self==value.",
     };
 
+    /**
+     * @memberof Sk.slots
+     * @method ob$ge
+     * @implements __ge__
+     * @returns {boolean}
+     */
     slots.__ge__ = {
         $name: "__ge__",
         $slot_name: "ob$ge",
@@ -432,7 +562,12 @@ slots.__delete__ = {
         $flags: { OneArg: true },
         $doc: "Return self>=value.",
     };
-
+    /**
+     * @memberof Sk.slots
+     * @method ob$gt
+     * @implements __gt__
+     * @returns {boolean}
+     */
     slots.__gt__ = {
         $name: "__gt__",
         $slot_name: "ob$gt",
@@ -442,7 +577,12 @@ slots.__delete__ = {
         $flags: { OneArg: true },
         $doc: "Return self>value.",
     };
-
+    /**
+     * @memberof Sk.slots
+     * @method ob$le
+     * @implements __le__
+     * @returns {boolean}
+     */
     slots.__le__ = {
         $name: "__le__",
         $slot_name: "ob$le",
@@ -452,7 +592,12 @@ slots.__delete__ = {
         $flags: { OneArg: true },
         $doc: "Return self<=value.",
     };
-
+    /**
+     * @memberof Sk.slots
+     * @method ob$lt
+     * @implements __lt__
+     * @returns {boolean}
+     */
     slots.__lt__ = {
         $name: "__lt__",
         $slot_name: "ob$lt",
@@ -462,7 +607,12 @@ slots.__delete__ = {
         $flags: { OneArg: true },
         $doc: "Return self<value.",
     };
-
+    /**
+     * @memberof Sk.slots
+     * @method ob$ne
+     * @implements __ne__
+     * @returns {boolean}
+     */
     slots.__ne__ = {
         $name: "__ne__",
         $slot_name: "ob$ne",
@@ -475,6 +625,13 @@ slots.__delete__ = {
 }
 // iters
 
+/**
+ * @memberof Sk.slots
+ * @method tp$iter
+ * @implements __iter__
+ * @returns {pyObject} must have a valid `tp$iternext` slot
+ * See {@link Sk.abstr.buildIteratorClass} and {@link Sk.generic.iterator}
+*/
 slots.__iter__ = {
     $name: "__iter__",
     $slot_name: "tp$iter",
@@ -485,6 +642,13 @@ slots.__iter__ = {
     $doc: "Implement iter(self).",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method tp$iternext
+ * @param {boolean=} canSuspend
+ * @implements __next__
+ * @returns {pyObject|undefined} Do not raise a StopIteration error instead return undefined
+*/
 slots.__next__ = {
     $name: "__next__",
     $slot_name: "tp$iternext",
@@ -530,6 +694,46 @@ slots.__next__ = {
 };
 
 // sequence and mapping
+/**
+ * @memberof Sk.slots
+ * @member tp$as_sequence_or_mapping
+ * @type {boolean}
+ * @description
+ * set `tp$as_sequence_or_mapping` to `true` in order for for {@link Sk.abstr.buildNativeClass}
+ * to acquire appropriate `slot_wrappers` for the slots 
+ * - [sq$length]{@link Sk.slots.sq$length}
+ * - [sq$concat]{@link Sk.slots.sq$concat}
+ * - [sq$contains]{@link Sk.slots.sq$contains}
+ * - [sq$repeat]{@link Sk.slots.sq$repeat}
+ * - [mp$subscript]{@link Sk.slots.mp$subscript}
+ * - [mp$ass_subscript]{@link Sk.slots.mp$ass_subscript}
+*/
+
+/**
+ * @memberof Sk.slots
+ * @method sq$concat
+ * @implements __add__ 
+ * @description defining `sq$concat` along with {@link Sk.slots.tp$as_sequence_or_mapping} will gain the slot
+ * `__add__`.
+ * note that this slot will be equivalent to the [nb$add]{@link Sk.slots.nb$add} slot
+*/
+
+/**
+ * @memberof Sk.slots
+ * @method sq$repeat
+ * @implements __mul__/__rmul__
+ * @description defining `sq$repeat` along with {@link Sk.slots.tp$as_sequence_or_mapping} will gain the slots
+ * `__mul__` and `__rmul__` 
+ * note that this slot will be equivalent to the [nb$multiply]{@link Sk.slots.nb$multiply} slot
+*/
+
+/**
+ * @memberof Sk.slots
+ * @method sq$length
+ * @param {boolean=} canSuspend
+ * @implements __len__
+ * @returns {number}
+*/
 slots.__len__ = {
     $name: "__len__",
     $slot_name: "sq$length",
@@ -549,13 +753,23 @@ slots.__len__ = {
     },
     $wrapper: function __len__(self, args, kwargs) {
         Sk.abstr.checkNoArgs("__len__", args, kwargs);
-        return new Sk.builtin.int_(self.sq$length());
+        return new Sk.builtin.int_(self.sq$length(true));
     },
     $flags: { NoArgs: true },
     $textsig: "($self, /)",
     $doc: "Return len(self).",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method sq$contains
+ * 
+ * @param {pyObject} key
+ * @param {boolean=} canSuspend
+ * 
+ * @implements __contains__
+ * @returns {boolean}
+*/
 slots.__contains__ = {
     $name: "__contains__",
     $slot_name: "sq$contains",
@@ -571,13 +785,22 @@ slots.__contains__ = {
     },
     $wrapper: function __contains__(self, args, kwargs) {
         Sk.abstr.checkOneArg("__contains__", args, kwargs);
-        return new Sk.builtin.bool(this.call(self, args[0]));
+        return new Sk.builtin.bool(this.call(self, args[0], true));
     },
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return key in self.",
 };
 
+/**
+ * @memberof Sk.slots
+ * @method mp$subscript
+ * @param {pyObject} key - might be a pyStr, pyInt or pySlice
+ * @param {boolean=} canSuspend
+ * @implements __getitem__
+ * @returns {pyObject}
+ * @throws {Sk.builtin.TypeError}
+*/
 slots.__getitem__ = {
     $name: "__getitem__",
     $slot_name: "mp$subscript",
@@ -593,6 +816,17 @@ slots.__getitem__ = {
     $doc: "Return self[key].",
 };
 
+
+/**
+ * @memberof Sk.slots
+ * @method mp$ass_subscript
+ * @param {pyObject} item - might be a pyStr, pyInt or pySlice
+ * @param {pyObject|undefined} value - undefined indicates the item should be deleted
+ * @param {boolean=} canSuspend
+ * @implements __setitem__/__delitem__
+ * @returns {pyObject}
+ * @throws {Sk.builtin.TypeError}
+*/
 slots.__setitem__ = {
     $name: "__setitem__",
     $slot_name: "mp$ass_subscript",
@@ -613,7 +847,35 @@ slots.__delitem__ = {
     $doc: "Delete self[key].",
 };
 
-// number
+// number slots
+/**
+ * @memberof Sk.slots
+ * @member tp$as_number
+ * @type {boolean}
+ * @description
+ * set `tp$as_number` to `true` in order for for {@link Sk.abstr.buildNativeClass}
+ * to acquire appropriate `slot_wrappers` for number slots 
+ * You can find an exhaustive list in the source code {@link Sk.slots}
+ * 
+ * Examples:
+ * - [nb$add]{@link Sk.slots.nb$add}
+ * - [nb$int_]{@link Sk.slots.nb$int_}
+ * - [nb$divide]{@link Sk.slots.nb$divide} - note we do not use `nb$true_divide`
+ * - [nb$bool]{@link Sk.slots.nb$bool} - should return a js boolean
+ * 
+ * You need not define `nb$reflected_*` slots unless your implementation is different from the default implementation
+ * Similarly `nb$inplace_` need not be defined unless the implementation is different from the usual slot. 
+ * 
+*/
+
+/**
+ * @memberof Sk.slots
+ * @method nb$add
+ * @implements __add__/__radd__
+ * @description 
+ * the reflected slot will be defined if not set
+ * 
+*/
 slots.__add__ = {
     $name: "__add__",
     $slot_name: "nb$add",
@@ -623,6 +885,14 @@ slots.__add__ = {
     $flags: { OneArg: true },
     $doc: "Return self+value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$relfceted_add
+ * @implements __radd__
+ * @description 
+ * the reflected slot will be defined if not set
+ * 
+*/
 slots.__radd__ = {
     $name: "__radd__",
     $slot_name: "nb$reflected_add",
@@ -632,6 +902,14 @@ slots.__radd__ = {
     $flags: { OneArg: true },
     $doc: "Return value+self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_add
+ * @implements __iadd__
+ * @description 
+ * Only define this if your implementation is different from `nb$add`
+ * 
+*/
 slots.__iadd__ = {
     $name: "__iadd__",
     $slot_name: "nb$inplace_add",
@@ -641,6 +919,12 @@ slots.__iadd__ = {
     $flags: { OneArg: true },
     $doc: "Implement self+=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$subtract
+ * @implements __sub__
+ * 
+ */
 slots.__sub__ = {
     $name: "__sub__",
     $slot_name: "nb$subtract",
@@ -650,6 +934,11 @@ slots.__sub__ = {
     $flags: { OneArg: true },
     $doc: "Return self-value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_subtract
+ * @implements __rsub__
+ */
 slots.__rsub__ = {
     $name: "__rsub__",
     $slot_name: "nb$reflected_subtract",
@@ -659,6 +948,11 @@ slots.__rsub__ = {
     $flags: { OneArg: true },
     $doc: "Return value-self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_multiply
+ * @implements __imul__
+ */
 slots.__imul__ = {
     $name: "__imul__",
     $slot_name: "nb$inplace_multiply",
@@ -668,6 +962,11 @@ slots.__imul__ = {
     $flags: { OneArg: true },
     $doc: "Implement self*=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$multiply
+ * @implements __mul__
+ */
 slots.__mul__ = {
     $name: "__mul__",
     $slot_name: "nb$multiply",
@@ -677,6 +976,11 @@ slots.__mul__ = {
     $flags: { OneArg: true },
     $doc: "Return self*value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_multiply
+ * @implements __rmul__
+ */
 slots.__rmul__ = {
     $name: "__rmul__",
     $slot_name: "nb$reflected_multiply",
@@ -686,6 +990,11 @@ slots.__rmul__ = {
     $flags: { OneArg: true },
     $doc: "Return value*self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_subtract
+ * @implements __isub__
+ */
 slots.__isub__ = {
     $name: "__isub__",
     $slot_name: "nb$inplace_subtract",
@@ -695,6 +1004,11 @@ slots.__isub__ = {
     $flags: { OneArg: true },
     $doc: "Implement self-=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$remainder
+ * @implements __mod__
+ */
 slots.__mod__ = {
     $name: "__mod__",
     $slot_name: "nb$remainder",
@@ -704,6 +1018,11 @@ slots.__mod__ = {
     $flags: { OneArg: true },
     $doc: "Return self%value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_remainder
+ * @implements __rmod__
+ */
 slots.__rmod__ = {
     $name: "__rmod__",
     $slot_name: "nb$reflected_remainder",
@@ -713,6 +1032,11 @@ slots.__rmod__ = {
     $flags: { OneArg: true },
     $doc: "Return value%self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_remainder
+ * @implements __imod__
+ */
 slots.__imod__ = {
     $name: "__imod__",
     $slot_name: "nb$inplace_remainder",
@@ -722,6 +1046,11 @@ slots.__imod__ = {
     $flags: { OneArg: true },
     $doc: "Implement value%=self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$divmod
+ * @implements __divmod__
+ */
 slots.__divmod__ = {
     $name: "__divmod__",
     $slot_name: "nb$divmod",
@@ -731,6 +1060,11 @@ slots.__divmod__ = {
     $flags: { OneArg: true },
     $doc: "Return divmod(self, value).",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_divmod
+ * @implements __rdivmod__
+ */
 slots.__rdivmod__ = {
     $name: "__rdivmod__",
     $slot_name: "nb$reflected_divmod",
@@ -740,6 +1074,11 @@ slots.__rdivmod__ = {
     $flags: { OneArg: true },
     $doc: "Return divmod(value, self)",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$positive
+ * @implements __pos__
+ */
 slots.__pos__ = {
     $name: "__pos__",
     $slot_name: "nb$positive",
@@ -749,6 +1088,11 @@ slots.__pos__ = {
     $flags: { NoArgs: true },
     $doc: "+self",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$negative
+ * @implements __neg__
+ */
 slots.__neg__ = {
     $name: "__neg__",
     $slot_name: "nb$negative",
@@ -758,6 +1102,11 @@ slots.__neg__ = {
     $flags: { NoArgs: true },
     $doc: "-self",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$abs
+ * @implements __abs__
+ */
 slots.__abs__ = {
     $name: "__abs__",
     $slot_name: "nb$abs",
@@ -767,6 +1116,12 @@ slots.__abs__ = {
     $flags: { NoArgs: true },
     $doc: "abs(self)",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$bool
+ * @implements __bool__
+ * @returns {boolean}
+ */
 slots.__bool__ = {
     $name: "__bool__",
     $slot_name: "nb$bool",
@@ -776,6 +1131,11 @@ slots.__bool__ = {
     $flags: { NoArgs: true },
     $doc: "self != 0",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$invert
+ * @implements __invert__
+ */
 slots.__invert__ = {
     $name: "__invert__",
     $slot_name: "nb$invert",
@@ -785,6 +1145,11 @@ slots.__invert__ = {
     $flags: { NoArgs: true },
     $doc: "~self",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$lshift
+ * @implements __lshift__
+ */
 slots.__lshift__ = {
     $name: "__lshift__",
     $slot_name: "nb$lshift",
@@ -794,6 +1159,11 @@ slots.__lshift__ = {
     $flags: { OneArg: true },
     $doc: "Return self<<value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_lshift
+ * @implements __rlshift__
+ */
 slots.__rlshift__ = {
     $name: "__rlshift__",
     $slot_name: "nb$reflected_lshift",
@@ -803,6 +1173,11 @@ slots.__rlshift__ = {
     $flags: { OneArg: true },
     $doc: "Return value<<self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$rshift
+ * @implements __rshift__
+ */
 slots.__rshift__ = {
     $name: "__rshift__",
     $slot_name: "nb$rshift",
@@ -812,6 +1187,11 @@ slots.__rshift__ = {
     $flags: { OneArg: true },
     $doc: "Return self>>value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_rshift
+ * @implements __rrshift__
+ */
 slots.__rrshift__ = {
     $name: "__rrshift__",
     $slot_name: "nb$reflected_rshift",
@@ -821,6 +1201,11 @@ slots.__rrshift__ = {
     $flags: { OneArg: true },
     $doc: "Return value>>self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_lshift
+ * @implements __ilshift__
+ */
 slots.__ilshift__ = {
     $name: "__ilshift__",
     $slot_name: "nb$inplace_lshift",
@@ -830,6 +1215,11 @@ slots.__ilshift__ = {
     $flags: { OneArg: true },
     $doc: "Implement self<<=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_rshift
+ * @implements __irshift__
+ */
 slots.__irshift__ = {
     $name: "__irshift__",
     $slot_name: "nb$inplace_rshift",
@@ -839,6 +1229,11 @@ slots.__irshift__ = {
     $flags: { OneArg: true },
     $doc: "Implement self=>>value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$and
+ * @implements __and__
+ */
 slots.__and__ = {
     $name: "__and__",
     $slot_name: "nb$and",
@@ -848,6 +1243,11 @@ slots.__and__ = {
     $flags: { OneArg: true },
     $doc: "Return self&value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_and
+ * @implements __rand__
+ */
 slots.__rand__ = {
     $name: "__rand__",
     $slot_name: "nb$refelcted_and",
@@ -857,6 +1257,11 @@ slots.__rand__ = {
     $flags: { OneArg: true },
     $doc: "Return value&self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_and
+ * @implements __iand__
+ */
 slots.__iand__ = {
     $name: "__iand__",
     $slot_name: "nb$and",
@@ -866,6 +1271,11 @@ slots.__iand__ = {
     $flags: { OneArg: true },
     $doc: "Implement self&=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$xor
+ * @implements __xor__
+ */
 slots.__xor__ = {
     $name: "__xor__",
     $slot_name: "nb$xor",
@@ -875,6 +1285,11 @@ slots.__xor__ = {
     $flags: { OneArg: true },
     $doc: "Return self^value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_xor
+ * @implements __rxor__
+ */
 slots.__rxor__ = {
     $name: "__rxor__",
     $slot_name: "nb$reflected_xor",
@@ -884,6 +1299,11 @@ slots.__rxor__ = {
     $flags: { OneArg: true },
     $doc: "Return value^self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_xor
+ * @implements __ixor__
+ */
 slots.__ixor__ = {
     $name: "__ixor__",
     $slot_name: "nb$inplace_xor",
@@ -893,6 +1313,11 @@ slots.__ixor__ = {
     $flags: { OneArg: true },
     $doc: "Implement self^=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$or
+ * @implements __or__
+ */
 slots.__or__ = {
     $name: "__or__",
     $slot_name: "nb$or",
@@ -902,6 +1327,11 @@ slots.__or__ = {
     $flags: { OneArg: true },
     $doc: "Return self|value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_or
+ * @implements __ror__
+ */
 slots.__ror__ = {
     $name: "__ror__",
     $slot_name: "nb$reflected_or",
@@ -911,6 +1341,11 @@ slots.__ror__ = {
     $flags: { OneArg: true },
     $doc: "Return value|self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_ior
+ * @implements __ior__
+ */
 slots.__ior__ = {
     $name: "__ior__",
     $slot_name: "nb$inplace_or",
@@ -920,6 +1355,11 @@ slots.__ior__ = {
     $flags: { OneArg: true },
     $doc: "Implement self|=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$int_
+ * @implements __int__
+ */
 slots.__int__ = {
     $name: "__int__",
     $slot_name: "nb$int_",
@@ -929,6 +1369,11 @@ slots.__int__ = {
     $flags: { NoArgs: true },
     $doc: "int(self)",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$float_
+ * @implements __float__
+ */
 slots.__float__ = {
     $name: "__float__",
     $slot_name: "nb$float_",
@@ -938,6 +1383,11 @@ slots.__float__ = {
     $flags: { NoArgs: true },
     $doc: "float(self)",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$floor_divide
+ * @implements __floordiv__
+ */
 slots.__floordiv__ = {
     $name: "__floordiv__",
     $slot_name: "nb$floor_divide",
@@ -947,6 +1397,11 @@ slots.__floordiv__ = {
     $flags: { OneArg: true },
     $doc: "Return self//value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_floor_divide
+ * @implements __rfloordiv__
+ */
 slots.__rfloordiv__ = {
     $name: "__rfloordiv__",
     $slot_name: "nb$reflected_floor_divide",
@@ -956,6 +1411,11 @@ slots.__rfloordiv__ = {
     $flags: { OneArg: true },
     $doc: "Return value//self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_floor_divide
+ * @implements __ifloordiv__
+ */
 slots.__ifloordiv__ = {
     $name: "__ifloordiv__",
     $slot_name: "nb$inplace_floor_divide",
@@ -965,6 +1425,11 @@ slots.__ifloordiv__ = {
     $flags: { OneArg: true },
     $doc: "Implement self//=value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$divide
+ * @implements __truediv__
+ */
 slots.__truediv__ = {
     $name: "__truediv__",
     $slot_name: "nb$divide",
@@ -974,6 +1439,11 @@ slots.__truediv__ = {
     $flags: { OneArg: true },
     $doc: "Return self/value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_divide
+ * @implements __rtruediv__
+ */
 slots.__rtruediv__ = {
     $name: "__rtruediv__",
     $slot_name: "nb$reflected_divide",
@@ -983,6 +1453,11 @@ slots.__rtruediv__ = {
     $flags: { OneArg: true },
     $doc: "Return value/self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_divide
+ * @implements __itruediv__
+ */
 slots.__itruediv__ = {
     $name: "__itruediv__",
     $slot_name: "nb$inplace_divide",
@@ -992,7 +1467,11 @@ slots.__itruediv__ = {
     $flags: { OneArg: true },
     $doc: "Implement self/=value.",
 };
-
+/**
+ * @memberof Sk.slots
+ * @method nb$index
+ * @implements __index__
+ */
 slots.__index__ = {
     $name: "__index__",
     $slot_name: "nb$index",
@@ -1002,6 +1481,11 @@ slots.__index__ = {
     $flags: { NoArgs: true },
     $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$power
+ * @implements __pow__
+ */
 slots.__pow__ = {
     $name: "__pow__",
     $slot_name: "nb$power",
@@ -1019,6 +1503,11 @@ slots.__pow__ = {
     $flags: { MinArgs: 1, MaxArgs: 2 },
     $doc: "Return pow(self, value, mod).",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_power
+ * @implements __rpow__
+ */
 slots.__rpow__ = {
     $name: "__rpow__",
     $slot_name: "nb$reflected_power",
@@ -1028,6 +1517,11 @@ slots.__rpow__ = {
     $flags: { MinArgs: 1, MaxArgs: 2 },
     $doc: "Return pow(value, self, mod).",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_power
+ * @implements __ipow__
+ */
 slots.__ipow__ = {
     $name: "__ipow__",
     $slot_name: "nb$inplace_power",
@@ -1037,7 +1531,11 @@ slots.__ipow__ = {
     $flags: { MinArgs: 1, MaxArgs: 2 },
     $doc: "Implement **=",
 };
-
+/**
+ * @memberof Sk.slots
+ * @method nb$matrix_multiply
+ * @implements __matmul__
+ */
 slots.__matmul__ = {
     $name: "__matmul__",
     $slot_name: "nb$matrix_multiply",
@@ -1047,6 +1545,11 @@ slots.__matmul__ = {
     $flags: { OneArg: true },
     $doc: "Return self@value.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$reflected_matrix_multiply
+ * @implements __rmatmul__
+ */
 slots.__rmatmul__ = {
     $name: "__rmatmul__",
     $slot_name: "nb$reflected_matrix_multiply",
@@ -1056,6 +1559,11 @@ slots.__rmatmul__ = {
     $flags: { OneArg: true },
     $doc: "Return value@self.",
 };
+/**
+ * @memberof Sk.slots
+ * @method nb$inplace_matrix_multiply
+ * @implements __imatmul__
+ */
 slots.__imatmul__ = {
     $name: "__imatmul__",
     $slot_name: "nb$inplace_matrix_multiply",
@@ -1124,7 +1632,12 @@ var py2$slots = {
         $doc: "implement self /= other",
     },
 };
-
+/**
+ * @memberof Sk.slots
+ * @member subSlots
+ * @description
+ * See the source code for a full list of slots split into apprpriate categories
+ */
 Sk.subSlots = {
     main_slots: {
         // nb we handle tp$new differently
@@ -1318,6 +1831,10 @@ Sk.sequenceAndMappingSlots = {
 };
 
 /**
+ * 
+ * 
+ * @member Sk.dunderToSkulpt
+ * 
  * Maps Python dunder names to the Skulpt Javascript function names that
  * implement them.
  *
@@ -1333,6 +1850,9 @@ Sk.sequenceAndMappingSlots = {
  * where this is not the case. These need to be spliced out of the argument list before
  * it is passed to python. Array values in this map contain [dunderName, argumentIdx],
  * where argumentIdx specifies the index of the "canSuspend" boolean argument.
+ * 
+ * @description
+ * A mapping of dunder names to skulpt slots
  *
  * @type {Object}
  */

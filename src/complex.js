@@ -1,7 +1,8 @@
 const JSBI = require("jsbi");
 
 /**
- * complex_new see https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911
+ * @description
+ * see [Cpython compled_new](https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911)
  * @constructor
  * @param {Number|undefined} real part of the complex number
  * @param {Number|undefined} imag part of the complex number
@@ -177,6 +178,7 @@ Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
 /**
  * hypot is a ESCMA6 function and maybe not available across all browsers
+ * @ignore
  */
 Math.hypot =
     Math.hypot ||
@@ -201,6 +203,8 @@ Math.hypot =
  * Otherwise throws an error
  *
  * @param {Sk.builtin.object} op
+ * 
+ * @ignore
  */
 function PyFloat_AsDouble(op) {
     let v = op.v;
@@ -226,6 +230,8 @@ function PyFloat_AsDouble(op) {
  * @return {null|Sk.builtin.complex}
  *
  * @param {Sk.builtin.object} op
+ * 
+ * @ignore
  */
 function try_complex_special_method(op) {
     // the lookup special method does already all the magic
@@ -250,6 +256,7 @@ function try_complex_special_method(op) {
  * @return {Boolean}
  *
  * @param {Sk.builtin.object} op
+ * @ignore
  */
 const _complex_check = Sk.builtin.checkComplex;
 
@@ -265,6 +272,8 @@ const _complex_check = Sk.builtin.checkComplex;
  *
  * @param {Sk.builtin.object|null} real
  * @param {Sk.builtin.object|null} imag
+ * 
+ * @ignore
  */
 function complex_from_py(real, imag) {
     let tmp; // PyObject
@@ -382,6 +391,7 @@ function complex_from_py(real, imag) {
  * @param {Sk.builtin.object|null} real
  * @param {Sk.builtin.object|null} imag
  * @param {Sk.builtin.complex.prototype} type_prototype
+ * @ignore
  */
 function complex_subtype_from_doubles(real, imag, type_prototype) {
     if (type_prototype === Sk.builtin.complex.prototype) {
@@ -399,6 +409,7 @@ function complex_subtype_from_doubles(real, imag, type_prototype) {
  * @description Parses a string repr of a complex number
  *
  * We leave this as Sk.builtin.complex since it is called by the compiler
+ * @ignore
  */
 Sk.builtin.complex.complex_subtype_from_string = function (val, type_prototype) {
     type_prototype = type_prototype || Sk.builtin.complex.prototype;
@@ -566,6 +577,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val, type_prototype) 
  * @description
  *
  * A helper function for converting a big int to a number or throwing OverFlow
+ * @ignore
  */
 function fromBigIntToNumberOrOverflow(big) {
     const x = parseFloat(JSBI.toNumber(big));
@@ -582,6 +594,7 @@ function fromBigIntToNumberOrOverflow(big) {
  * @description
  * A wrapper to do the checks before passing the this.real, this.imag, other.real, other.imag
  * to the number function
+ * @ignore
  */
 function complexNumberSlot(f, suppressOverflow) {
     return function (other) {
@@ -716,6 +729,7 @@ function c_powu(a_real, a_imag, n) {
  * It is not intended for __format__ calls
  *
  * This functions assumes, that v is always instance of Sk.builtin.complex
+ * @ignore
  */
 function complex_format(v, precision, format_code) {
     function copysign(a, b) {
@@ -764,6 +778,7 @@ function complex_format(v, precision, format_code) {
 /**
  * https://hg.python.org/cpython/file/3cf2990d19ab/Objects/complexobject.c#l907
  * also see _PyComplex_FormatAdvanced
+ * @ignore
  */
 function _PyComplex_FormatAdvanced(self, format_spec) {
     throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex type.");
@@ -772,6 +787,7 @@ function _PyComplex_FormatAdvanced(self, format_spec) {
 /**
     Return true if float or double are is neither infinite nor NAN, else false
     Value is already a Javascript object
+    @ignore
  */
 function _is_finite(val) {
     return Number.isFinite(val);
@@ -793,6 +809,7 @@ function _is_infinity(val) {
  * Py_DTSF_ALT means to apply “alternate” formatting rules. See the documentation for the PyOS_snprintf() '#' specifier for details.
  * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
  * infinite number, or not a number, respectively.
+ * @ignore
  */
 function PyOS_double_to_string(val, format_code, precision, flags, type) {
     let buf,

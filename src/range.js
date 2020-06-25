@@ -257,6 +257,7 @@ function convertIfSafe(v) {
  * @param {*} start
  * @param {*} stop
  * @param {*} step
+ * @ignore
  */
 Sk.builtin.range = Sk.builtin.xrange = function range(start, stop, step) {
     const ret = rangeFromPy(start, stop, step);

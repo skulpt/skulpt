@@ -1,19 +1,22 @@
+/**
+ * @namespace Sk.builtin
+ * 
+ * @description
+ * All the builtin types as well as useful functions
+ */
 if (Sk.builtin === undefined) {
     Sk.builtin = {};
 }
 
 /**
  * @constructor
- * Sk.builtin.type
  *
  * @description
  * this should never be called as a constructor
- * instead use Sk.abstr.buildinNativeClass
- * Sk.misceval.buildClass
- * Sk.misceval.callsimArray(Sk.builtin.type, [pyName, bases_tuple, attribute_dict])
+ * instead use {@link Sk.abstr.buildNativeClass} or
+ * {@link Sk.misceval.buildClass} 
  *
  */
-
 Sk.builtin.type = function type() {
     Sk.asserts.assert(false, "calling new Sk.builtin.type is not safe");
 };
@@ -234,7 +237,7 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
     const descr = this.ob$type.$typeLookup(pyName);
 
     // if it's a data descriptor then call it
-    if (descr !== undefined && descr !== null) {
+    if (descr !== undefined) {
         const f = descr.tp$descr_set;
         if (f) {
             return f.call(descr, this, value, canSuspend);
@@ -575,7 +578,7 @@ Sk.builtin.type.$best_base = function (bases) {
     let base, winner, candidate, base_i;
     for (let i = 0; i < bases.length; i++) {
         base_i = bases[i];
-        if (!Sk.builtin.checkType(base_i)) {
+        if (!Sk.builtin.checkClass(base_i)) {
             throw new Sk.builtin.TypeError("bases must be 'type' objects");
         } else if (base_i.sk$acceptable_as_base_class === false) {
             throw new Sk.builtin.TypeError("type '" + base_i.prototype.tp$name + "' is not an acceptable base type");

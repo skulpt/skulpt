@@ -1,9 +1,12 @@
 /**
  * @constructor
- * @param {Array} L
+ * @param {Array=} L A javascript array of key value pairs - All elements should be PyObjects
  *
  * @description
  * call with an array of key value pairs
+ * Do not use this function to convert a JS object to a dict
+ * Instead use {@link Sk.ffi.remapToPy}
+ * 
  *
  */
 Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
@@ -107,7 +110,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
         },
         mp$ass_subscript: function (key, value) {
-            if (value == null) {
+            if (value === undefined) {
                 this.del$item(key);
             } else {
                 this.set$item(key, value);
@@ -280,7 +283,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($type, iterable, value=None, /)",
             $meth: function fromkeys(seq, value) {
-                const keys = Sk.abstr.arrayFromIterable(seq);
+                const keys = Sk.misceval.arrayFromIterable(seq);
                 const dict = new Sk.builtin.dict([]);
                 value = value || Sk.builtin.none.none$;
                 for (let i = 0; i < keys.length; i++) {
@@ -295,7 +298,13 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
+/**
+ * @private
+ * @param {Sk.builtin.str} pyName 
+ * @this {Sk.builtin.dict}
+ */
 Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
+    /**@type {string} */
     const key_hash = pyName.$savedKeyHash_;
     if (key_hash === undefined) {
         return;
@@ -312,7 +321,7 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
  * NB:
  * We could put the following methods on the proto in the above object literal
  * but they're quite long so we keep them below for readability
- *
+ * @ignore
  */
 
 /**
@@ -322,6 +331,7 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
  *
  * @description
  * get the keys as an array - used internally for certain methods.
+ * @private
  */
 Sk.builtin.dict.prototype.sk$asarray = function () {
     const entries = this.entries;
@@ -341,7 +351,8 @@ Sk.builtin.dict.prototype.sk$asarray = function () {
  * fast call - if we have a str then we can guarantee that it's in the bucket
  * so we compare strings quickly rather than reaching out to richcompareBool
  *
- * @return the item if found or undefined if not found
+ * @return {PyObject|undefined} the item if found or undefined if not found
+ * @private
  */
 Sk.builtin.dict.prototype.get$item_from_bucket = function (key, base_hash) {
     const bucket = this.buckets[base_hash];
@@ -370,6 +381,7 @@ Sk.builtin.dict.prototype.get$item_from_bucket = function (key, base_hash) {
  * @return undefined if no key was found
  * or the item if the key was in the bucket
  * also removes the item from entries
+ * @private
  */
 Sk.builtin.dict.prototype.pop$item_from_bucket = function (key, base_hash) {
     const bucket = this.buckets[base_hash];
@@ -396,14 +408,16 @@ Sk.builtin.dict.prototype.pop$item_from_bucket = function (key, base_hash) {
 /**
  * @function
  * @param {Sk.builtin.object} key
- * @param {String} base_hash
+ * @param {Sk.builtin.object} value
+ * @param {string} base_hash
  *
  * @description
  * given a key and a base_hash will find a free slot or append to the list of slots for a given base_hash
  * then will set the item in the entries and return the item
  * Note this should only be called and immediately preceded by assigning the value to the rhs
  *
- * @return item {lhs: key}
+ * @return {{lhs: Sk.builtin.object, rhs: Sk.builtin.object}}
+ * @private
  */
 Sk.builtin.dict.prototype.insert$item_from_bucket = function (key, value, base_hash) {
     let key_hash,
@@ -434,6 +448,7 @@ Sk.builtin.dict.prototype.insert$item_from_bucket = function (key, value, base_h
  *
  * @return undefined if no key was found
  * or the item.rhs (value) if the key was found
+ * @private
  */
 Sk.builtin.dict.prototype.mp$lookup = function (key) {
     let item;
@@ -462,6 +477,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
  *
  * Note we don't use mp$ass_subscript since that slot might be overridden by a subclass
  * Instead we use this.set$item which is the dict implementation of mp$ass_subscript
+ * @private
  */
 Sk.builtin.dict.prototype.dict$merge = function (b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
@@ -512,6 +528,7 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
  * otherwise call dict$merge_from_seq
  *
  * finally put the kwargs in the dict.
+ * @private
  *
  */
 Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
@@ -547,6 +564,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
  * iterate over a sequence like object
  * check the next value has length 2
  * and then set the key value pair in
+ * @private
  *
  */
 Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
@@ -555,7 +573,7 @@ Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
     return Sk.misceval.iterFor(Sk.abstr.iter(arg), (i) => {
         try {
             // this should really just be a tuple/list of length 2 so no suspension to get the sequence
-            const seq = Sk.abstr.arrayFromIterable(i);
+            const seq = Sk.misceval.arrayFromIterable(i);
             if (seq.length !== 2) {
                 throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + seq.length + "; 2 is required");
             }
@@ -579,6 +597,7 @@ Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
  *
  * @description
  * sets the item from a key, value
+ * @private
  *
  */
 Sk.builtin.dict.prototype.set$item = function (key, value) {
@@ -611,6 +630,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
  *
  * @description
  * deletes an item in the dictionary
+ * @private
  *
  */
 Sk.builtin.dict.prototype.del$item = function (key) {
@@ -632,6 +652,7 @@ Sk.builtin.dict.prototype.del$item = function (key) {
 
 /**
  * Py2 methods
+ * @private
  */
 Sk.builtin.dict.py2$methods = {
     has_key: {

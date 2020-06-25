@@ -41,7 +41,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                 return arg;
             }
             // make tuples suspendible
-            let L = Sk.abstr.arrayFromIterable(arg, true);
+            let L = Sk.misceval.arrayFromIterable(arg, true);
             return Sk.misceval.chain(L, (l) => new Sk.builtin.tuple(l));
         },
         tp$hash: function () {

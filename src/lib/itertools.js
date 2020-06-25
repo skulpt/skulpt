@@ -120,7 +120,7 @@ var $builtinmodule = function (name) {
     function combinationsNew(combinations_proto, args, kwargs) {
         let iterable, r;
         [iterable, r] = Sk.abstr.copyKeywordsToNamedArgs(combinations_proto.tp$name, ["iterable", "r"], args, kwargs, []);
-        const pool = Sk.abstr.arrayFromIterable(iterable);
+        const pool = Sk.misceval.arrayFromIterable(iterable);
         r = Sk.misceval.asIndexOrThrow(r);
         if (r < 0) {
             throw new Sk.builtin.ValueError("r must be non-negative");
@@ -620,7 +620,7 @@ var $builtinmodule = function (name) {
             tp$new: function (args, kwargs) {
                 let iterable, r;
                 [iterable, r] = Sk.abstr.copyKeywordsToNamedArgs("permutations", ["iterable", "r"], args, kwargs, [Sk.builtin.none.none$]);
-                const pool = Sk.abstr.arrayFromIterable(iterable);
+                const pool = Sk.misceval.arrayFromIterable(iterable);
                 r = Sk.builtin.checkNone(r) ? pool.length : Sk.misceval.asIndexOrThrow(r);
                 if (r < 0) {
                     throw new Sk.builtin.ValueError("r must be non-negative");
@@ -684,7 +684,7 @@ var $builtinmodule = function (name) {
                 }
                 const iterables = [];
                 for (let i = 0; i < args.length; i++) {
-                    iterables.push(Sk.abstr.arrayFromIterable(args[i])); // want each arg as an array
+                    iterables.push(Sk.misceval.arrayFromIterable(args[i])); // want each arg as an array
                 }
                 const pools = [].concat(...Array(repeat).fill(iterables));
                 if (this === mod.product.prototype) {
@@ -763,7 +763,7 @@ var $builtinmodule = function (name) {
             if (args === undefined) {
                 return;
             }
-            const unpack = Sk.abstr.arrayFromIterable(args);
+            const unpack = Sk.misceval.arrayFromIterable(args);
             const val = Sk.misceval.callsimArray(this.func, unpack);
             return val;
         },

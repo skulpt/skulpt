@@ -1,12 +1,13 @@
 /**
+ * 
  * @constructor
- * Sk.builtin.object
  *
  * @description
  * Constructor for Python object. All Python classes (builtin and user-defined)
  * should inherit from this class.
  *
  * @return {Sk.builtin.object} Python object
+ * 
  */
 Sk.builtin.object = function object() {
     Sk.asserts.assert(this instanceof Sk.builtin.object, "bad call to object, use 'new'");
@@ -21,6 +22,7 @@ Sk.abstr.setUpBaseInheritance();
  * object, type, NoneType, NotImplemented,
  * slot_wrapper, methods_descriptor, getsets_desciptor, class_descriptor
  * will be fully initialized in the import.js doOneTimeInitialization
+ * @ignore
  */
 
 Sk.builtin.object.prototype.tp$doc = "The most base type";
@@ -74,6 +76,7 @@ Sk.builtin.object.prototype.tp$str = function () {
  * Javascript function, returns Python object.
  *
  * @return {Sk.builtin.int_} The hash value
+ * @ignore
  */
 Sk.builtin.object.prototype.tp$hash = function () {
     if (!this.$savedHash_) {
@@ -172,18 +175,19 @@ Sk.builtin.idCount = 1;
  * @constructor
  * Sk.builtin.none
  * @extends {Sk.builtin.object}
+ * 
+ * @description
+ * It would be rare to call this as a constructor since it returns {@link Sk.builtin.none.none$}
  */
 Sk.builtin.none = function () {
     return Sk.builtin.none.none$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
-/** @override */
 Sk.builtin.none.prototype.$r = function () {
     return new Sk.builtin.str("None");
 };
 
-/** @override */
 Sk.builtin.none.prototype.tp$hash = function () {
     return new Sk.builtin.int_(0);
 };
@@ -195,7 +199,7 @@ Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
 
 /**
  * Python None value.
- * @type {Sk.builtin.none}
+ * @member {Sk.builtin.none}
  */
 Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {
     v: { value: null, enumerable: true },
@@ -210,10 +214,8 @@ Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {
 Sk.builtin.NotImplemented = function () {
     return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object
 };
-
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
-/** @override */
 Sk.builtin.NotImplemented.prototype.$r = function () {
     return new Sk.builtin.str("NotImplemented");
 };
@@ -224,7 +226,7 @@ Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
 };
 /**
  * Python NotImplemented constant.
- * @type {Sk.builtin.NotImplemented}
+ * @member {Sk.builtin.NotImplemented}
  */
 Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {
     v: { value: null, enumerable: true },
