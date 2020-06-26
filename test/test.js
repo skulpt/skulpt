@@ -335,7 +335,6 @@ function testInteractive(name)
         console.log("FAILED: (" + name + ".py)\n-----");
         console.log(input);
         console.log("-----\nGOT:\n-----");
-        console.log('b')
         console.log(got);
         console.log("-----\nWANTED:\n-----");
         console.log(expect);
