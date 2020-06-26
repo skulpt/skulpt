@@ -109,13 +109,12 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
             } else {
                 res = Sk.misceval.callsimArray(this.func, [item]);
             }
-    
             if (Sk.misceval.isTrue(res)) {
                 return res;
             }
             return undefined;
-        }
-    }
+        },
+    },
 });
 
 Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
