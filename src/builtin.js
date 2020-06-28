@@ -380,24 +380,9 @@ Sk.builtin.zip = function zip() {
 };
 
 Sk.builtin.abs = function abs(x) {
-    if (x instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(Math.abs(x.v));
+    if (x.nb$abs) {
+        return x.nb$abs();
     }
-    if (x instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(Math.abs(x.v));
-    }
-    if (Sk.builtin.checkNumber(x)) {
-        return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)));
-    } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsimArray(x.__abs__, [x]);
-    }
-
-    // call custom __abs__ methods
-    if (x.tp$getattr) {
-        var f = x.tp$getattr(Sk.builtin.str.$abs);
-        return Sk.misceval.callsimArray(f);
-    }
-
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
@@ -591,7 +576,7 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
     const res = Sk.misceval.tryCatch(
-        () => obj.tp$getattr(pyName),
+        () => obj.tp$getattr(pyName, true),
         (e) => {
             if (e instanceof Sk.builtin.AttributeError) {
                 return undefined;
@@ -837,7 +822,7 @@ Sk.builtin.hasattr = function hasattr(obj, pyName) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
     const res = Sk.misceval.tryCatch(
-        () => obj.tp$getattr(pyName),
+        () => obj.tp$getattr(pyName, true),
         (e) => {
             if (e instanceof Sk.builtin.AttributeError) {
                 return undefined;
