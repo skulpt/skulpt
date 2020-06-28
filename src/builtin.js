@@ -590,7 +590,16 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const res = obj.tp$getattr(pyName, true);
+    const res = Sk.misceval.tryCatch(
+        () => obj.tp$getattr(pyName),
+        (e) => {
+            if (e instanceof Sk.builtin.AttributeError) {
+                return undefined;
+            } else {
+                throw e;
+            }
+        }
+    );
     return Sk.misceval.chain(res, (r) => {
         if (r === undefined) {
             if (default_ !== undefined) {
@@ -827,13 +836,17 @@ Sk.builtin.hasattr = function hasattr(obj, pyName) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
-    const res = obj.tp$getattr(pyName, true);
-    return Sk.misceval.chain(res, (r) => {
-        if (r === undefined) {
-            return Sk.builtin.bool.false$;
+    const res = Sk.misceval.tryCatch(
+        () => obj.tp$getattr(pyName),
+        (e) => {
+            if (e instanceof Sk.builtin.AttributeError) {
+                return undefined;
+            } else {
+                throw e;
+            }
         }
-        return Sk.builtin.bool.true$;
-    });
+    );
+    return Sk.misceval.chain(res, (val) => (val === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$));
 };
 
 Sk.builtin.pow = function pow(a, b, c) {

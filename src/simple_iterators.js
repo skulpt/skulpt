@@ -190,7 +190,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
                     // sq$length will return Sk.miseval.asIndex
                     return this.$seq.sq$length() - this.$index;
                 } else {
-                    throw new Sk.builtin.NotImplemented(
+                    throw new Sk.builtin.NotImplementedError(
                         "len is not implemented for " + Sk.abstr.typeName(this.$seq)
                     );
                 }
@@ -248,6 +248,6 @@ Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.dict_iter_", Sk.builtin.dict_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
-Sk.exportSymbol("Sk.builtin.seq_iter", Sk.builtin.seq_iter);
+Sk.exportSymbol("Sk.builtin.seq_iter_", Sk.builtin.seq_iter_s);
 Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);
 Sk.exportSymbol("Sk.builtin.tuple_iter_", Sk.builtin.tuple_iter_);

@@ -128,12 +128,6 @@ Compiler.prototype.niceName = function (roughName) {
 
 var reservedWords_ = Sk.builtin.str.reservedWords_; // defined in str.js
 
-/**
- * Fix reserved words
- *
- * @param {string} name
- */
-var reservedNames_ = Object.create(null);
 
 function fixReserved(name) {
     if (reservedWords_[name] === undefined) {

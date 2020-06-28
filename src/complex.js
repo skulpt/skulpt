@@ -4,8 +4,8 @@ const JSBI = require("jsbi");
  * @description
  * see [Cpython compled_new](https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911)
  * @constructor
- * @param {Number|undefined} real part of the complex number
- * @param {Number|undefined} imag part of the complex number
+ * @param {number} real part of the complex number
+ * @param {number} imag part of the complex number
  *
  * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
  *
@@ -163,7 +163,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             $meth: function (format_spec) {
                 if (Sk.builtin.checkString(format_spec)) {
                     // currently just returns not implemented.
-                    return Sk.builtin.complex._PyComplex_FormatAdvanced(this, format_spec);
+                    return _PyComplex_FormatAdvanced(this, format_spec);
                 }
                 throw new Sk.builtin.TypeError("__format__ requires str");
             },

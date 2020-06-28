@@ -84,7 +84,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     };
     for (let x in Sk.builtins) {
         const obj = Sk.builtins[x];
-        if (obj instanceof Sk.builtin.type && !obj.sk$abstract) {
+        if (obj instanceof Sk.builtin.type) {
             setUpClass(obj);
         }
     }

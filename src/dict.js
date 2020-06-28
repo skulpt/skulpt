@@ -216,7 +216,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 }
                 const all_key_hashes = Object.keys(this.entries);
                 const youngest_key_hash = all_key_hashes[all_key_hashes.length - 1];
-                const key = youngest_key_hash.lhs;
+                const key = this.entries[youngest_key_hash].lhs;
                 const val = this.pop.$meth.call(this, key, Sk.builtin.none.none$);
                 return new Sk.builtin.tuple([key, val]);
             },

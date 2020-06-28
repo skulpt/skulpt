@@ -339,17 +339,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
         // check prototypical mro
         if (res.length && this.prototype.sk$prototypical) {
             let prevs_prototype = Object.getPrototypeOf(res[res.length - 1].prototype);
-            if (prevs_prototype === next.prototype) {
-                // pass
-            } else if (prevs_prototype.constructor.sk$abstract) {
-                // account for abstract classes
-                while (prevs_prototype.constructor.sk$abstract) {
-                    prevs_prototype = Object.getPrototypeOf(prevs_prototype);
-                }
-                if (prevs_prototype !== next.prototype) {
-                    this.prototype.sk$prototypical = false;
-                }
-            } else {
+            if (prevs_prototype !== next.prototype) {
                 this.prototype.sk$prototypical = false;
             }
         }

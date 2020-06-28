@@ -52,7 +52,7 @@ function buildDictView(typename) {
         },
 
         sq$length: function () {
-            this.dict.get$size();
+            return this.dict.get$size();
         },
         sq$contains: function (item) {
             var iter, key, value, pair;

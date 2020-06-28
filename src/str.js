@@ -1322,13 +1322,13 @@ Sk.builtin.str.prototype.tp$methods = {
         $textsig: "($self, /)",
         $doc: "Convert uppercase characters to lowercase and lowercase characters to uppercase.",
     },
-    translate: {
-        $meth: Sk.builtin.str.methods.translate,
-        $flags: {},
-        $textsig: "($self, table, /)",
-        $doc:
-            "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals to\n    Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for instance a\ndictionary or list.  If this operation raises LookupError, the character is\nleft untouched.  Characters mapped to None are deleted.",
-    },
+    // translate: {
+    //     $meth: Sk.builtin.str.methods.translate,
+    //     $flags: {},
+    //     $textsig: "($self, table, /)",
+    //     $doc:
+    //         "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals to\n    Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for instance a\ndictionary or list.  If this operation raises LookupError, the character is\nleft untouched.  Characters mapped to None are deleted.",
+    // },
     upper: {
         $meth: Sk.builtin.str.methods.upper,
         $flags: {},
