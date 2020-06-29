@@ -26,7 +26,7 @@ Sk.builtin.type = function type() {
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
 
 /**
- * @this {typeObject|Sk.builtin.type}
+ * @this {typeObject | Sk.builtin.type}
  */
 Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
     if (this === Sk.builtin.type) {
