@@ -1,6 +1,7 @@
 /**
  * @constructor
  * @param {Array} L
+ * @extends {Sk.builtin.object}
  */
 Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
     constructor: function tuple(L) {
@@ -10,7 +11,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple, "bad call to tuple, use 'new' with an Array");
         this.v = L;
     },
-    slots: {
+    slots: /**@lends {Sk.builtin.tuple.prototype}*/{
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$doc:
@@ -26,6 +27,10 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             return new Sk.builtin.str("(" + ret + ")");
         },
+        /**
+         * @param {Array} args 
+         * @param {Array=} kwargs 
+         */
         tp$new: function (args, kwargs) {
             // this = Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
             if (this !== Sk.builtin.tuple.prototype) {
@@ -191,7 +196,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return Sk.misceval.richCompareBool(v[i], w[i], op);
         },
     },
-    proto: {
+    proto: /**@lends {Sk.builtin.tuple.prototype}*/{
         $subtype_new: function (args, kwargs) {
             const instance = new this.constructor();
             // pass the args but ignore the kwargs for subtyping - these might be handled by the subtypes init method
@@ -203,7 +208,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return this.v.slice(0);
         },
     },
-    methods: {
+    methods: /**@lends {Sk.builtin.tuple.prototype}*/{
         __getnewargs__: {
             $meth: function () {
                 return new Sk.builtin.tuple(this.v.slice(0));
@@ -212,7 +217,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             $textsig: "($self, /)",
             $doc: null,
         },
-        index: {
+        index: /**@lends {Sk.builtin.type.prototype}*/{
             $meth: function (item, start, stop) {
                 // TODO: currently doesn't support start and stop
                 const len = this.v.length;

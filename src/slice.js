@@ -1,8 +1,11 @@
+/** @typedef {Sk.builtin.object} */ var pyObject;
+
 /**
  * @constructor
- * @param {PyObject} start
- * @param {PyObject=} stop
- * @param {PyObject=} step
+ * @extends {Sk.builtin.object}
+ * @param {pyObject} start
+ * @param {pyObject=} stop
+ * @param {pyObject=} step
  */
 Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     constructor: function slice(start, stop, step) {
@@ -20,7 +23,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         this.stop = stop;
         this.step = step;
     },
-    slots: {
+    slots: /**@lends {Sk.builtin.slice.prototype} */ {
         tp$getattr: Sk.generic.getAttr,
         tp$doc: "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2]).",
         tp$hash: Sk.builtin.none.none$,
@@ -46,7 +49,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             return t1.tp$richcompare(t2, op);
         },
     },
-    getsets: {
+    getsets: /**@lends {Sk.builtin.slice.prototype} */{
         start: {
             $get: function () {
                 return this.start;
@@ -63,7 +66,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             },
         },
     },
-    methods: {
+    methods: /**@lends {Sk.builtin.slice.prototype} */{
         indices: {
             $meth: function indices(length) {
                 length = Sk.misceval.asIndexOrThrow(length);
@@ -79,7 +82,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             $flags: { OneArg: true },
         },
     },
-    proto: {
+    proto: /**@lends {Sk.builtin.slice.prototype} */{
         $slice_indices: function (length) {
             let start, stop, step;
             const msg = "slice indices must be integers or None or have an __index__ method";
@@ -140,7 +143,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         },
         /**
          * used by objects like str, list, tuple that can return a slice
-         * @param {Number} len 
+         * @param {number} len 
          * @param {Function} f 
          */
         sssiter$: function (len, f) {

@@ -2,12 +2,13 @@ const JSBI = require("jsbi");
 
 /**
  * @description
- * see [Cpython compled_new](https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911)
+ * see [Cpython complex_new](https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911)
  * @constructor
  * @param {number} real part of the complex number
  * @param {number} imag part of the complex number
  *
  * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
+ * @extends {Sk.builtin.object}
  *
  */
 Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
@@ -16,7 +17,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         this.real = real;
         this.imag = imag;
     },
-    slots: {
+    slots: /**@lends {Sk.builtin.complex.prototype}*/{
         tp$as_number: true,
         tp$doc:
             "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.",
@@ -24,7 +25,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             // _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
             const v = this.imag * 1000003 + this.real;
             if (Sk.builtin.int_.withinThreshold(v)) {
-                return new Sk.builtin.int_(parseInt(v));
+                return new Sk.builtin.int_(parseInt(v, 10));
             }
             return new Sk.builtin.int_(JSBI.BigInt(v));
         },
@@ -142,7 +143,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             },
         },
     },
-    methods: {
+    methods: /**@lends {Sk.builtin.complex.prototype}*/{
         conjugate: {
             $meth: function () {
                 return new Sk.builtin.complex(this.real, -this.imag);
@@ -227,7 +228,6 @@ function PyFloat_AsDouble(op) {
  * throws an error if this returns a non complex object
  * returns null if that function does not exist
  *
- * @return {null|Sk.builtin.complex}
  *
  * @param {Sk.builtin.object} op
  * 
@@ -253,7 +253,7 @@ function try_complex_special_method(op) {
  * copied here for easy access
  * checks whether the argument is an instance of Sk.builtin.complex
  *
- * @return {Boolean}
+ * @return {boolean}
  *
  * @param {Sk.builtin.object} op
  * @ignore
@@ -266,17 +266,13 @@ const _complex_check = Sk.builtin.checkComplex;
  * @description
  * this is the logic for tp$new
  *
- * @this {Sk.builtin.complex.prototype}
- *
- * @return {Sk.builtin.complex}
- *
- * @param {Sk.builtin.object|null} real
- * @param {Sk.builtin.object|null} imag
+ * @param {Sk.builtin.object} real
+ * @param {Sk.builtin.object} imag
  * 
  * @ignore
  */
 function complex_from_py(real, imag) {
-    let tmp; // PyObject
+    let tmp; // pyObject
     // var nbr, nbi; // real, imag as numbers
     const cr = {}; // PyComplexObject
     const ci = {}; // PyComplexObject
@@ -287,7 +283,7 @@ function complex_from_py(real, imag) {
     let i = imag;
 
     // handle case if passed in arguments are of type complex
-    if (r != null && r.ob$type === Sk.builtin.complex && i == null) {
+    if (r != null && r.constructor === Sk.builtin.complex && i == null) {
         // subtypes are handled later;
         return r;
     }
@@ -388,9 +384,9 @@ function complex_from_py(real, imag) {
  *
  * @return {Sk.builtin.complex} an instance of complex - could be a subtype's instance
  *
- * @param {Sk.builtin.object|null} real
- * @param {Sk.builtin.object|null} imag
- * @param {Sk.builtin.complex.prototype} type_prototype
+ * @param {number} real
+ * @param {number} imag
+ * @param {Object} type_prototype Sk.builtin.complex.prototype
  * @ignore
  */
 function complex_subtype_from_doubles(real, imag, type_prototype) {
@@ -407,7 +403,8 @@ function complex_subtype_from_doubles(real, imag, type_prototype) {
  *
  * @function
  * @description Parses a string repr of a complex number
- *
+ * @param {*} val 
+ * @param {Object=} type_prototype 
  * We leave this as Sk.builtin.complex since it is called by the compiler
  * @ignore
  */
@@ -595,6 +592,8 @@ function fromBigIntToNumberOrOverflow(big) {
  * A wrapper to do the checks before passing the this.real, this.imag, other.real, other.imag
  * to the number function
  * @ignore
+ * @param {function(number, number, number, number)} f 
+ * @param {boolean=} suppressOverflow
  */
 function complexNumberSlot(f, suppressOverflow) {
     return function (other) {
@@ -742,7 +741,7 @@ function complex_format(v, precision, format_code) {
         return sign * Math.abs(a);
     }
 
-    let result; // PyObject
+    let result; // pyObject
 
     let pre = "";
     let im = "";

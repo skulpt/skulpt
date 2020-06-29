@@ -1,15 +1,18 @@
+/** @typedef {Sk.builtin.type|Function|Object} */ var typeObject;
+/** @constructor @extends {Sk.builtin.object} */ var descr_object = new Function(); // keep closure compiler happy
+
 /**
  * @function
- *
- * @returns descriptor type object
+ * @param {string} type_name
+ * @param {string|undefined} repr_name
+ * @param {Function} descr_constructor
  */
-
 function buildDescriptor(type_name, repr_name, descr_constructor) {
-    const descr = {
+    const descr = Sk.abstr.buildNativeClass(type_name, {
         constructor: descr_constructor,
         flags: { sk$acceptable_as_base_class: false },
         // we can't use slots/methods/getsets yet since they're not defined!
-        proto: {
+        proto: /**@lends {descr_object.prototype}*/ {
             d$repr_name: repr_name || type_name,
             d$check: descriptorCheck,
             d$set_check: descriptorSetCheck,
@@ -17,9 +20,9 @@ function buildDescriptor(type_name, repr_name, descr_constructor) {
             tp$getsets: descriptorGetsets,
             tp$getattr: Sk.generic.getAttr,
         },
-    };
-    return Sk.abstr.buildNativeClass(type_name, descr);
-};
+    });
+    return descr;
+}
 
 function descriptorCheck(obj) {
     if (obj == null) {
@@ -36,7 +39,7 @@ function descriptorCheck(obj) {
         );
     }
     return;
-};
+}
 
 function descriptorSetCheck(obj) {
     if (!obj.ob$type.$isSubType(this.d$type)) {
@@ -50,11 +53,11 @@ function descriptorSetCheck(obj) {
                 "' object"
         );
     }
-};
+}
 
-function descriptorRepr () {
+function descriptorRepr() {
     return new Sk.builtin.str("<" + this.d$repr_name + " '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects>");
-};
+}
 
 const descriptorGetsets = {
     __doc__: {
@@ -76,17 +79,17 @@ const descriptorGetsets = {
 
 /**
  * @constructor
- * @param {Sk.builtin.type} type_obj
- * @param {Sk.GetSetDef} gsd
+ * @param {typeObject} type_obj
+ * @param {Object} gsd
+ * @extends {descr_object}
  */
-
 Sk.builtin.getset_descriptor = buildDescriptor("getset_descriptor", undefined, function getset_descr(typeobj, d_base) {
     this.d$def = d_base;
     this.$get = d_base.$get;
     this.$set = d_base.$set;
     this.d$type = typeobj;
     this.d$name = d_base.$name;
-},);
+});
 
 Sk.builtin.getset_descriptor.prototype.tp$descr_get = function (obj, type) {
     let ret;
@@ -113,8 +116,9 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
 
 /**
  * @constructor
- * @param {Sk.builtin.type} type_obj
- * @param {Sk.MethodDef} method
+ * @param {typeObject} type_obj
+ * @param {Object} method
+ * @extends {descr_object}
  */
 
 Sk.builtin.method_descriptor = buildDescriptor("method_descriptor", "method", function (typeobj, method_def) {
@@ -212,10 +216,12 @@ Sk.builtin.method_descriptor.prototype.tp$getsets.__text_signature__ = {
 
 /**
  * @constructor
- * @param {Sk.builtin.type} type_obj
- * @param {Sk.builtin.SlotDef} wrapper_base
+ * @extends {descr_object}
+ *
+ * @param {typeObject} type_obj
+ * @param {Object} wrapper_base
+ * @param {Function} wrapped
  */
-
 Sk.builtin.wrapper_descriptor = buildDescriptor("wrapper_descriptor", "slot wrapper", function wrapper_descriptor(typeobj, slot_def, wrapped) {
     this.d$def = slot_def;
     this.d$type = typeobj;
@@ -258,7 +264,8 @@ Sk.builtin.wrapper_descriptor.prototype.tp$descr_get = function (obj, type) {
 
 /**
  * @constructor
- * @param {Sk.builtin.type} type_obj
+ * @extends {descr_object}
+ * @param {Sk.builtin.wrapper_descriptor} type_obj
  * @param wrapper_base
  */
 
@@ -286,6 +293,9 @@ Sk.builtin.method_wrapper.prototype.tp$getsets.__self__ = {
 /**
  *
  * @constructor
+ * @extends {descr_object}
+ * @param {typeObject} typeobj
+ * @param {Object} method_def
  *
  * @description
  * This is for classmethods in Native Js Classes, not for "f = classmethod(f)" in Python
@@ -304,13 +314,17 @@ Sk.builtin.classmethod_descriptor.prototype.tp$getsets.__text_signature__ = Sk.b
 Sk.builtin.classmethod_descriptor.prototype.tp$call = function (args, kwargs) {
     if (args.length < 1) {
         throw new Sk.builtin.TypeError("descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' object needs an argument");
-    };
+    }
     const self = args.shift();
     const bound = this.tp$descr_get(null, self);
     return bound.tp$call(args, kwargs);
 };
 
-
+/**
+ * @param {*} obj
+ * @param {*} type
+ * @param {boolean=} canSuspend
+ */
 Sk.builtin.classmethod_descriptor.prototype.tp$descr_get = function (obj, type, canSuspend) {
     if (type === undefined) {
         if (obj !== null) {

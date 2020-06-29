@@ -1,7 +1,9 @@
+/** @typedef {Sk.builtin.object} */ var pyObject;
+
 /**
  * @constructor
- * @param {Object} iterable
- * @param {number=} start
+ * @param {pyObject} iterable
+ * @param {number|string=} start
  * @extends Sk.builtin.object
  */
 Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
@@ -60,7 +62,8 @@ Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
 
 /**
  * @constructor
- * @param {Object} iterable
+ * @param {pyObject} func
+ * @param {pyObject} iterable
  * @extends Sk.builtin.object
  */
 Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
@@ -174,7 +177,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
     methods: {
         __length_hint__: {
             $meth: function __length_hint__(self) {
-                return self.idx >= 0 ? Sk.builtin.int_(self.idx) : Sk.builtin.int_(0);
+                return self.idx >= 0 ? new Sk.builtin.int_(self.idx) : new Sk.builtin.int_(0);
             },
             $flags: { NoArgs: true },
         },

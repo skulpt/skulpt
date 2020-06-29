@@ -2,6 +2,7 @@
  * @constructor
  * @param {Array} L
  *
+ * @extends {Sk.builtin.object}
  */
 Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
     constructor: function list(L) {
@@ -9,10 +10,11 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         if (L === undefined) {
             L = [];
         }
+
         Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.list, "bad call to list, use 'new' with an Array");
         this.v = L;
     },
-    slots: {
+    slots: /** @lends {Sk.builtin.list.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
@@ -101,7 +103,6 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
 
         // sequence and mapping slots
-
         sq$length: function () {
             return this.v.length;
         },
@@ -188,7 +189,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             return this;
         },
     },
-    methods: {
+    methods: /** @lends {Sk.builtin.list.prototype}*/ {
         __reversed__: {
             $meth: function () {
                 return new Sk.builtin.reverselist_iter_(this);
@@ -334,7 +335,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             $doc: "Reverse *IN PLACE*.",
         },
     },
-    proto: {
+    proto: /** @lends {Sk.builtin.list.prototype}*/ {
         sk$asarray: function () {
             return this.v.slice(0);
         },

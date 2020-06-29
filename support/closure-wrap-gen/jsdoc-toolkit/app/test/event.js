@@ -35,7 +35,7 @@
  * @name Bakery#event:donutOrdered
  * @event
  * @param {Event} e The event object.
- * @param {String} [e.topping] Optional sprinkles.
+ * @param {string} [e.topping] Optional sprinkles.
  */
 
 /**

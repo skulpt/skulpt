@@ -1,10 +1,9 @@
-const JSBI = require("jsbi");
-
+/** @typedef {Sk.builtin.object} */ var pyObject;
 
 
 /**
  * @constructor
- * Sk.builtin.float_
+ * @extends {Sk.builtin.object}
  *
  * @param {number} x only be called with a JS number
  *
@@ -24,7 +23,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             Sk.asserts.fail("bad argument to float constructor");
         }
     },
-    slots: {
+    slots: /**@lends {Sk.builtin.float_.prototype} */{
         tp$gettattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$doc: "Convert a string or number to a floating point number, if possible.",
@@ -131,7 +130,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         ob$lt: numberSlot((v, w) => v < w),
         ob$le: numberSlot((v, w) => v <= w),
     },
-    getsets: {
+    getsets:  /**@lends {Sk.builtin.float_.prototype} */{
         real: {
             $get: cloneSelf,
         },
@@ -141,7 +140,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             },
         },
     },
-    methods: {
+    methods:  /**@lends {Sk.builtin.float_.prototype} */{
         conjugate: {
             $meth: cloneSelf,
             $flags: { NoArgs: true },
@@ -249,27 +248,6 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
     return false;
 };
 
-/**
- * Checks if ob is a Python float.
- *
- * This method is just a wrapper, but uses the correct cpython API name.
- *
- * Javascript function, returns Javascript object.
- * @param {Object} op The object to check.
- * @return {boolean} true if op is an instance of Sk.builtin.float_, false otherwise
- */
-Sk.builtin.float_.PyFloat_AsDouble = function (op) {
-    let v = op.v;
-    if (typeof v === "number") {
-        return v;
-    } else if (op.nb$float_) {
-        v = op.nb$float_();
-    }
-    if (v === undefined) {
-        throw new Sk.builtin.TypeError("a float is required");
-    }
-    return v;
-};
 
 /**
  * Returns this instance's value as a string formatted using fixed-point notation.
@@ -411,9 +389,9 @@ function power(v, w) {
  *
  * Javascript function, returns Python object.
  *
- * @param  {Sk.builtin.int_} self This instance.
- * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
+ * @param  {pyObject=} ndigits The number of digits after the decimal point to which to round.
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
+ * 
  */
 Sk.builtin.float_.prototype.round$ = function (ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;

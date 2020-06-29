@@ -56,7 +56,7 @@ function regexEscape(string) {
 /**
  * Iterable contains
  * @template T
- * @param {Iterable<T>} a
+ * @param {T} a
  * @param {T} obj
  */
 function contains (a, obj) {

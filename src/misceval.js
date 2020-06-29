@@ -3,11 +3,12 @@
  * 
  * @description
  * Various function protocols that include suspension aware options
- * As well as handling some common PyObject operations to Javascript
+ * As well as handling some common pyObject operations to Javascript
  *
  */
 Sk.misceval = {};
 const JSBI = require("jsbi");
+/** @typedef {Sk.builtin.object}*/ var pyObject;
 
 /*
   Suspension object format:
@@ -67,7 +68,7 @@ Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryO
  * @description
  * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
  * 
- * @param {PyObject} o - typically an {@link Sk.builtin.int_} legacy code might use a js number
+ * @param {pyObject} o - typically an {@link Sk.builtin.int_} legacy code might use a js number
  * @returns {boolean}
  */
 Sk.misceval.isIndex = function (o) {
@@ -78,7 +79,7 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 /**
  * @function
  * 
- * @param {PyObject} obj - typically an {@link Sk.builtin.int_} legacy code might use a js number 
+ * @param {pyObject|number} obj - typically an {@link Sk.builtin.int_} legacy code might use a js number 
  * @param {string=} msg - an optional message when throwing the TypeError
  * @throws {Sk.builtin.TypeError}
  *
@@ -222,8 +223,8 @@ Sk.misceval.opSymbols = {
 /**
  * @function
  * 
- * @param {PyObject} v
- * @param {PyObject} w
+ * @param {pyObject} v
+ * @param {pyObject} w
  * @param {string} op - `Eq`, `NotEq`, `Lt`, `LtE`, `Gt`, `GtE`, `Is`, `IsNot`, `In_`, `NotIn`
  * @param {boolean=} canSuspend
  * 
@@ -506,10 +507,9 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 /**
  * @function
  * @description
- * calls the __repr__ of a PyObject or returns `<unknown>` if a JS object was passed
- * 
+ * calls the __repr__ of a pyObject or returns `<unknown>` if a JS object was passed
+ * @param {*} obj
  * @returns {string}
- * @param {PyObject} obj
  * 
  */
 Sk.misceval.objectRepr = function (obj) {
@@ -546,7 +546,7 @@ Sk.exportSymbol("Sk.misceval.opAllowsEquality", Sk.misceval.opAllowsEquality);
 /**
  * @function
  * @description
- * Decides whether a PyObject is True or not
+ * Decides whether a pyObject is True or not
  * @returns {boolean}
  * @param {*} x 
  */
@@ -766,14 +766,14 @@ Sk.misceval.callsim = function (func, args) {
 Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 
 /**
- * @param {Object} func the thing to call
+ * @param {Object=} func the thing to call
  * @param {Array=} args an array of arguments to pass to the func
- * @param {Array=} kws an array of string/PyObject pairs to pass to the func as kwargs
+ * @param {Array=} kws an array of string/pyObject pairs to pass to the func as kwargs
  * 
  * @description
- * Call a PyObject - if the object is not callable will throw a TypeError
+ * Call a pyObject - if the object is not callable will throw a TypeError
  * Requires args to be a Javascript array.
- * kws should be an array of string/PyObject pairs as key/values
+ * kws should be an array of string/pyObject pairs as key/values
  */
 Sk.misceval.callsimArray = function (func, args, kws) {
     var argarray = args ? args : [];
@@ -808,10 +808,10 @@ Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
  * @description
  * Does the same thing as callsimOrSuspend without expensive call to
  * Array.slice.  Requires args+kws to be Javascript arrays. 
- * The preferred method for calling a PyObject. 
+ * The preferred method for calling a pyObject. 
  * 
- * @param {Object} func the thing to call
- * @param {Array} args an array of arguments to pass to the func
+ * @param {Object=} func the thing to call
+ * @param {Array=} args an array of arguments to pass to the func
  * @param {Array=} kws an array of keyword arguments to pass to the func
  *
  */
@@ -1082,7 +1082,7 @@ Sk.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
  * iterFor() on infinite iterators.
  *
  * @param {*} iter
- * @param {function(*,*=)} forFn
+ * @param {function(pyObject,*=)} forFn
  * @param {*=} initialValue
  */
 Sk.misceval.iterFor = function (iter, forFn, initialValue) {
@@ -1116,16 +1116,17 @@ Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
  * @description
  * Convert a Python iterable into a javascript array
  *
- * @param {*} iterable
- * @param {boolean} canSuspend - Can this funciton suspend
+ * @param {pyObject} iterable
+ * @param {boolean=} canSuspend - Can this funciton suspend
  *
- * @returns {Array}
+ * @returns {!Array}
  */
 Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
     if (iterable === undefined) {
         return [];
     }
-    if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
+    const hptype = iterable.hp$type || undefined;
+    if (hptype === undefined && iterable.sk$asarray !== undefined) {
         return iterable.sk$asarray();
     }
     const L = [];

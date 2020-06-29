@@ -46,7 +46,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         }
         this.func_closure = closure;
         this.$memoiseFlags();
-        this.memoised = code.co_fastcall;
+        this.memoised = code.co_fastcall || undefined;
         if (code.co_fastcall) {
             this.tp$call = code;
         }

@@ -3,7 +3,7 @@
  * @constructor
  * 
  * @param {Function} fn
- * @param {Boolean} [handlesOwnSuspensions=false] - Does it handle its own suspension?
+ * @param {boolean=} [handlesOwnSuspensions=false] - Does it handle its own suspension?
  * 
  * @description
  * Create a generic Python iterator that repeatedly calls a given JS function
@@ -17,6 +17,7 @@
  *   const self = this;
  *   return new Sk.generic.iterator(() => i >= len ? self.v[i++] : undefined);
  * }
+ * @extends {Sk.builtin.object}
  * 
  */
 Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
@@ -42,6 +43,7 @@ Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
 /**
  * 
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.func} callable
  * @param {Sk.builtin.object} sentinel - if reached returns undefined
  * @private
@@ -89,6 +91,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
 
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.list} lst
  * @private
  */
@@ -114,6 +117,7 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
 
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.list} lst
  * @private
  */
@@ -136,6 +140,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
 
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
  * @private
  */
@@ -154,7 +159,8 @@ Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
 
 /**
  * @constructor
- * @param {Sk.builtin.object} obj
+ * @extends {Sk.builtin.object}
+ * @param {Sk.builtin.object} seq
  * @private
  */
 Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
@@ -202,6 +208,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
 
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.str} str
  * @private
  */
@@ -225,6 +232,7 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
 
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  * @param {Sk.builtin.tuple} tuple
  * @private
  */
@@ -248,6 +256,6 @@ Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.dict_iter_", Sk.builtin.dict_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
-Sk.exportSymbol("Sk.builtin.seq_iter_", Sk.builtin.seq_iter_s);
+Sk.exportSymbol("Sk.builtin.seq_iter_", Sk.builtin.seq_iter_);
 Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);
 Sk.exportSymbol("Sk.builtin.tuple_iter_", Sk.builtin.tuple_iter_);

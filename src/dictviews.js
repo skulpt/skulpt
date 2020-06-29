@@ -125,6 +125,11 @@ function dict_iter_constructor(dict) {
     this.$orig = dict;
 }
 
+/**
+ * @param {string} typename 
+ * @param {Function} iternext 
+ * @param {Function=} constructor 
+ */
 function buildDictIterClass(typename, iternext, constructor) {
     return Sk.abstr.buildIteratorClass(typename, {
         constructor:

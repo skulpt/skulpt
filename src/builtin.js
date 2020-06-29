@@ -1,3 +1,5 @@
+/** @typedef {Sk.builtin.object} */ var pyObject;
+
 /**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
@@ -20,7 +22,7 @@ Sk.builtin.asnum$ = function (a) {
     if (a instanceof Sk.builtin.int_) {
         if (typeof a.v === "number") {
             return a.v;
-        } 
+        }
         return a.v.toString(); // then we have a BigInt
     }
     if (a instanceof Sk.builtin.float_) {
@@ -144,12 +146,12 @@ Sk.builtin.round = function round(number, ndigits) {
     }
     if (!Sk.__future__.dunder_round) {
         if (!Sk.builtin.checkNumber(number)) {
-            throw new Sk.builtin.TypeError("a float is required"); 
+            throw new Sk.builtin.TypeError("a float is required");
         }
         if (number.round$) {
             return number.round$(ndigits);
         } else {
-            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'"); 
+            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(number) + " instance has no attribute '__float__'");
         }
     }
 
@@ -436,7 +438,7 @@ Sk.builtin.unichr = function unichr(x) {
 Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
     let v;
     if (x.constructor === Sk.builtin.int_ || x instanceof Sk.builtin.int_) {
-        v = x.v; // we don't use asnum$ because it returns a str rather than a bigint. 
+        v = x.v; // we don't use asnum$ because it returns a str rather than a bigint.
     } else {
         x = x.nb$index();
         v = x.v;
@@ -477,6 +479,7 @@ Sk.builtin.bin = function bin(x) {
     }
     return Sk.builtin.int2str_(x, 2, "0b");
 };
+
 
 Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
@@ -602,7 +605,7 @@ Sk.builtin.setattr = function setattr(obj, pyName, value) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
     const res = obj.tp$setattr(pyName, value, true);
-    return Sk.misceval.chain(res, ()=>{
+    return Sk.misceval.chain(res, () => {
         return Sk.builtin.none.none$;
     });
 };
@@ -751,16 +754,21 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
     return accum_value;
 };
 
-
-Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
+/**
+ *
+ * @param {pyObject} iterable
+ * @param {*=} cmp
+ * @param {*=} key
+ * @param {*=} reverse
+ */
+Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
     const lst = Sk.misceval.arrayFromIterable(iterable, true);
-    return Sk.misceval.chain(lst, (L)=>{
+    return Sk.misceval.chain(lst, (L) => {
         L = new Sk.builtin.list(L);
         L.$list_sort(cmp, key, reverse);
         return L;
     });
 };
-
 
 Sk.builtin.filter = function filter(fun, iterable) {
     var result;

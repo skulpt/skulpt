@@ -1,13 +1,11 @@
 /**
  * 
  * @constructor
- *
+ * 
  * @description
  * Constructor for Python object. All Python classes (builtin and user-defined)
  * should inherit from this class.
  *
- * @return {Sk.builtin.object} Python object
- * 
  */
 Sk.builtin.object = function object() {
     Sk.asserts.assert(this instanceof Sk.builtin.object, "bad call to object, use 'new'");
@@ -40,6 +38,10 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
     return new this.constructor();
 };
 
+/**
+ * @param {Array} args 
+ * @param {Array=} kwargs 
+ */
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     // see cypthon object_init for algorithm details
     if (args.length || (kwargs && kwargs.length)) {
@@ -199,7 +201,9 @@ Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
 
 /**
  * Python None value.
+ * @type {Sk.builtin.none}
  * @member {Sk.builtin.none}
+ * @suppress {checkTypes}
  */
 Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {
     v: { value: null, enumerable: true },
@@ -226,7 +230,9 @@ Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
 };
 /**
  * Python NotImplemented constant.
+ * @type {Sk.builtin.NotImplemented}
  * @member {Sk.builtin.NotImplemented}
+ * @suppress {checkTypes}
  */
 Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {
     v: { value: null, enumerable: true },

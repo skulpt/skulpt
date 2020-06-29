@@ -113,7 +113,7 @@ Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
  * class with `__iter__` defined or ``__getitem__``  This tests for all of those cases
  * 
  * Note in most cases it will be more pragmatic to simply call {@link Sk.abstr.iter} which will 
- * throw the appropriate error if the PyObject is not iterable. 
+ * throw the appropriate error if the pyObject is not iterable. 
  *
  * @param arg {Object}   A Python object
  * @returns {boolean} true if the object is iterable

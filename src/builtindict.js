@@ -480,9 +480,6 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
         delete Sk.builtins["long_$rw$"];
-        Sk.longFromStr = function (s) {
-            return new Sk.builtin.int_(Sk.builtin.int_.stringToNumberOrBig(s));
-        };
         Sk.builtin.int_.prototype.$r = function () {
             return new Sk.builtin.str(this.v.toString());
         };
@@ -514,10 +511,6 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.builtins["long_$rw$"] = Sk.builtin.lng;
-        Sk.longFromStr = function (s, base) {
-            const num = Sk.str2number(s, base);
-            return new Sk.builtin.lng(num);
-        };
         Sk.builtin.int_.prototype.$r = function () {
             const v = this.v;
             if (typeof v === "number") {

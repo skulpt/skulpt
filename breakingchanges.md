@@ -80,9 +80,9 @@
 | `Sk.builtin.list`  | `{Array=}`  | |
 | `Sk.builtin.tuple`  | `{Array=}`  | |
 | `Sk.builtin.set`  | `{Array=}`  | |
-| `Sk.builtin.dict`  | `{Array=}`  | key/value pairs - only PyObjects |
-| `Sk.builtin.str`  | `{*}`  | can be used to convert a PyObject|
-| `Sk.builtin.bool`  | `{*}`  | can be used to convert a PyObject|
+| `Sk.builtin.dict`  | `{Array=}`  | key/value pairs - only pyObjects |
+| `Sk.builtin.str`  | `{*}`  | can be used to convert a pyObject|
+| `Sk.builtin.bool`  | `{*}`  | can be used to convert a pyObject|
 
 
 **Major changes**

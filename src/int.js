@@ -1,10 +1,10 @@
+/**@constructor */
 const JSBI = require("jsbi");
 
 /**
  * 
  * @constructor
  * @extends {Sk.builtin.object}
- * @this {Sk.builtin.int_}
  * @description
  * Function should only be called with a JS number|BigInt|String
  * If the number is a string then the size will be checked to determined whether it should be a number or BigInt
@@ -12,11 +12,10 @@ const JSBI = require("jsbi");
  * Similarly if a BigInt is passed it is assumed that this is larger than `Number.MaxSafeInteger`
  * Internal code like `float.nb$int_` checks the resulting JS instance before calling `new Sk.builtin.int_`
  * 
- * @param  {number|JSBI|string|undefined} x
+ * @param  {number|JSBI|string=} x
  * 
  */
 Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
-    /**@this {Sk.builtin.int_} */
     constructor: function int_ (x) {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
@@ -32,7 +31,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         /**@type {number|JSBI} */
         this.v = v;
     },
-    slots: {
+    slots: /** @lends {Sk.builtin.int_.prototype}*/{
         tp$as_number: true,
         tp$doc:
             "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4",
@@ -190,7 +189,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return new Sk.builtin.long(this.v);
         },
     },
-    getsets: {
+    getsets: /** @lends {Sk.builtin.int_.prototype}*/{
         real: {
             $get: cloneSelf,
         },
@@ -200,7 +199,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             },
         },
     },
-    methods: {
+    methods: /** @lends {Sk.builtin.int_.prototype}*/{
         conjugate: {
             $meth: cloneSelf,
             $flags: { NoArgs: true },
@@ -265,7 +264,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             $doc: Sk.builtin.none.none$,
         },
     },
-    proto: {
+    proto: /** @lends {Sk.builtin.int_.prototype}*/{
         str$: function (base, sign) {
             let tmp;
             if (base === undefined || base === 10) {
@@ -331,15 +330,15 @@ Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
  * 
  * @private
  * 
- * @param {function(number,number): number} number_func
- * @param {function(JSBI, JSBI): JSBI|number} bigint_func
+ * @param {Function} number_func
+ * @param {Function} bigint_func
  */
 function numberSlot(number_func, bigint_func) {
     /**
     * @this {Sk.builtin.int_}
-    * @return {Sk.builtin.int_}
     * 
     * @param {Sk.builtin.int_|Sk.builtin.object} other 
+    * @return {Sk.builtin.int_|Sk.builtin.NotImplemented}
     */
     function doNumberSlot(other) {
         if (other instanceof Sk.builtin.int_) {
@@ -476,7 +475,7 @@ function numberBitSlot(number_func, bigint_func) {
  * Takes a JavaScript string and returns a number using the parser and negater
  *  functions (for int/long right now)
  * @param  {string} s       Javascript string to convert to a number.
- * @param  {(number)} base    The base of the number.
+ * @param  {number|string=} base    The base of the number.
  */
 Sk.str2number = function (s, base) {
     var origs = s,
@@ -502,13 +501,13 @@ Sk.str2number = function (s, base) {
     if (base === null || base === undefined) {
         base = 10;
     } // default radix is 10, not dwim
-    if (base instanceof JSBI) {
-        base = JSBI.toNumber(base);
-    }
     if (base < 2 || base > 36) {
         if (base !== 0) {
             throw new Sk.builtin.ValueError("int() base must be >= 2 and <= 36");
         }
+    }
+    if (typeof base === "string") {
+        base = Number(base); // keep closure happy for parseInt
     }
 
     if (s.substring(0, 2).toLowerCase() === "0x") {
@@ -581,8 +580,18 @@ Sk.str2number = function (s, base) {
 
 Sk.builtin.int_.py2$methods = {};
 
-Sk.longFromStr = function (s) {
-    return new Sk.builtin.int_(stringToNumberOrBig(s));
+/**
+ * 
+ * @param {string} s 
+ * @param {number=} base 
+ */
+Sk.longFromStr = function (s, base) {
+    if (Sk.__future__.python3) {
+        return new Sk.builtin.int_(stringToNumberOrBig(s));
+    } else {
+        const num = Sk.str2number(s, base);
+        return new Sk.builtin.lng(num);
+    }
 };
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
@@ -745,3 +754,36 @@ const shiftconsts = [
     4503599627370496,
     9007199254740992,
 ];
+
+
+/**
+ * @constructor
+ *
+ * @description
+ * This is only for backward compatibility with py2. 
+ * We take the approach of using a trivial subclass with int and overriding a few methods
+ *
+ * @param {number|string|JSBI} x 
+ * @extends {Sk.builtin.int_}
+ * @ignore
+ */
+Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
+    base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
+    constructor: function lng (x) {
+        Sk.builtin.int_.call(this, x);
+    },
+    slots: /** @lends {Sk.builtin.lng.prototype} */{
+        $r: function () {
+            return new Sk.builtin.str(this.v.toString() + "L");
+        },
+        tp$as_number: true,
+        nb$negative: function () {
+            return new Sk.builtin.lng(intProto.nb$negative.call(this).v);
+        },
+        nb$positive: function () {
+            return new Sk.builtin.lng(intProto.nb$positive.call(this).v);
+        },
+    },
+});
+
+const intProto = Sk.builtin.int_.prototype;

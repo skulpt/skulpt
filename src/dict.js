@@ -1,6 +1,11 @@
+
+/** @typedef {Sk.builtin.object} */ var pyObject;
+/** @typedef {Sk.builtin.type|Function} */ var typeObject;
+
 /**
  * @constructor
- * @param {Array=} L A javascript array of key value pairs - All elements should be PyObjects
+ * @extends {Sk.builtin.object}
+ * @param {Array=} L A javascript array of key value pairs - All elements should be pyObjects
  *
  * @description
  * call with an array of key value pairs
@@ -24,7 +29,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             this.set$item(L[i], L[i + 1]);
         }
     },
-    slots: {
+    slots: /**@lends {Sk.builtin.dict.prototype}*/{
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
@@ -118,7 +123,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return Sk.builtin.none.none$;
         },
     },
-    proto: {
+    proto: /**@lends {Sk.builtin.dict.prototype}*/{
         get$size: function () {
             // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
@@ -138,7 +143,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return key_hash;
         },
     },
-    methods: {
+    methods: /**@lends {Sk.builtin.dict.prototype}*/{
         __reversed__: {
             $meth: function () {
                 return new Sk.builtin.dict_reverse_iter_(this);
@@ -201,7 +206,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 if (d !== undefined) {
                     return d;
                 }
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(s));
+                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: null,
@@ -278,7 +283,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.copy() -> a shallow copy of D",
         },
     },
-    classmethods: {
+    classmethods: /**@lends {Sk.builtin.dict.prototype}*/{
         fromkeys: {
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($type, iterable, value=None, /)",
@@ -344,14 +349,14 @@ Sk.builtin.dict.prototype.sk$asarray = function () {
 
 /**
  * @function
- * @param {Sk.builtin.object} key - key to get item for
- * @param {String} base_hash - base_hash from the key
+ * @param {pyObject} key - key to get item for
+ * @param {string} base_hash - base_hash from the key
  *
  * @description
  * fast call - if we have a str then we can guarantee that it's in the bucket
  * so we compare strings quickly rather than reaching out to richcompareBool
  *
- * @return {PyObject|undefined} the item if found or undefined if not found
+ * @return {pyObject|undefined} the item if found or undefined if not found
  * @private
  */
 Sk.builtin.dict.prototype.get$item_from_bucket = function (key, base_hash) {
@@ -375,8 +380,8 @@ Sk.builtin.dict.prototype.get$item_from_bucket = function (key, base_hash) {
 
 /**
  * @function
- * @param {Sk.builtin.object} key
- * @param {String} base_hash
+ * @param {pyObject} key
+ * @param {string} base_hash
  *
  * @return undefined if no key was found
  * or the item if the key was in the bucket
@@ -469,7 +474,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 /**
  * @function
  *
- * @param {Sk.builtin.dict} dict or dictlike object (anything with a keys method)
+ * @param {Sk.builtin.dict} b or dictlike object (anything with a keys method)
  *
  * @description
  * this function mimics the cpython implementation, which is also the reason for the
@@ -513,7 +518,7 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
  *
  * @param {Array} args
  * @param {Array} kwargs
- * @param {String} func_name for error messages
+ * @param {string} func_name for error messages
  *
  * @description
  *
@@ -558,7 +563,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
 /**
  * @function
  *
- * @param {Array} args
+ * @param {pyObject} arg
  *
  * @description
  * iterate over a sequence like object
@@ -592,8 +597,8 @@ Sk.builtin.dict.prototype.dict$merge_from_seq = function (arg) {
 /**
  * @function
  *
- * @param {Sk.builtin.object} key
- * @param {Sk.builtin.object} value
+ * @param {pyObject} key should be a python object
+ * @param {pyObject} value
  *
  * @description
  * sets the item from a key, value

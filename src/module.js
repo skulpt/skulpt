@@ -1,9 +1,9 @@
 /**
  * @constructor
+ * @extends {Sk.builtin.object}
  */
-
 Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
-    constructor: function module () {},
+    constructor: function module_ () {},
     slots: {
         tp$doc: "Create a module object.\n\nThe name must be a string; the optional doc argument can have any type.",
         tp$getattr: function (pyName, canSuspend) {

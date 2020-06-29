@@ -7,6 +7,9 @@
  */
 Sk.generic = {};
 
+/** @typedef {Sk.builtin.object} */ var pyObject;
+/** @typedef {Sk.builtin.type|Function} */ var typeObject;
+
 /**
  * @method
  * 
@@ -119,7 +122,7 @@ Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
  * 
  * @see {Sk.builtin.type.prototype.tp$new}
  * 
- * @param {Sk.builtin.type} builtin 
+ * @param {typeObject} builtin 
  */
 Sk.generic.new = function (builtin) {
     const genericNew = function __new__(args, kwargs) {
@@ -163,7 +166,7 @@ Sk.generic.newMethodDef = {
 
         if (subtype.sk$type === undefined) {
             this_name = native_type_proto.tp$name;
-            throw new Sk.builtin.TypeError(this_name + "__new__(X): X is not a type object (" + Sk.abst.typeName(subtype) + ")");
+            throw new Sk.builtin.TypeError(this_name + "__new__(X): X is not a type object (" + Sk.abstr.typeName(subtype) + ")");
         }
 
         if (!subtype.$isSubType(this)) {
@@ -198,7 +201,6 @@ Sk.generic.newMethodDef = {
  * used by most iterators that return self
  * 
  * @function
- * @returns {self}
  */
 Sk.generic.selfIter = function __iter__() {
     return this;

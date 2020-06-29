@@ -37,13 +37,14 @@ module.exports = (env, argv) => {
             noEmitOnErrors: true,
             minimizer: [
                 new ClosureWebpackPlugin({mode: 'STANDARD'}, {
-                    jscomp_error: ['accessControls', 'checkRegExp', 'checkTypes', 'checkVars',
+                    jscomp_error: ['accessControls', 'checkRegExp', 'checkVars', /*'checkTypes',*/
                                    'invalidCasts', 'missingProperties',
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
-                    jscomp_off: ['fileoverviewTags', 'deprecated'],
+                    jscomp_off: ['fileoverviewTags', 'deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
                     languageOut: (env && env.languageOut) ? env.languageOut : 'ECMASCRIPT_2015',
-                    externs: 'support/externs/sk.js'
+                    externs: 'support/externs/sk.js',
+                    // warningLevel: "QUIET",
                 })
             ]
         };
@@ -90,7 +91,12 @@ module.exports = (env, argv) => {
                 'assert': assertfile
             }
         },
-        module: mod
+
+        module: mod,
+        // uncomment this while working on closure compiler errors
+        // externals: {
+        //     jsbi: "JSBI",
+        // }
     };
 
     return config;

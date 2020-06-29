@@ -261,17 +261,17 @@ Sk.builtin.str.$re_escape = function (s) {
 // methods
 Sk.builtin.str.methods = {};
 
-Sk.builtin.str.methods["lower"] = function (self) {
+Sk.builtin.str.methods.lower = function (self) {
     Sk.builtin.pyCheckArgsLen("lower", arguments.length, 1, 1);
     return new Sk.builtin.str(self.v.toLowerCase());
 };
 
-Sk.builtin.str.methods["upper"] = function (self) {
+Sk.builtin.str.methods.upper = function (self) {
     Sk.builtin.pyCheckArgsLen("upper", arguments.length, 1, 1);
     return new Sk.builtin.str(self.v.toUpperCase());
 };
 
-Sk.builtin.str.methods["capitalize"] = function (self) {
+Sk.builtin.str.methods.capitalize = function (self) {
     var i;
     var cap;
     var orig;
@@ -289,7 +289,7 @@ Sk.builtin.str.methods["capitalize"] = function (self) {
     return new Sk.builtin.str(cap);
 };
 
-Sk.builtin.str.methods["join"] = function (self, seq) {
+Sk.builtin.str.methods.join = function (self, seq) {
     var it, i;
     var arrOfStrs;
     Sk.builtin.pyCheckArgsLen("join", arguments.length, 2, 2);
@@ -304,7 +304,7 @@ Sk.builtin.str.methods["join"] = function (self, seq) {
     return new Sk.builtin.str(arrOfStrs.join(self.v));
 };
 
-Sk.builtin.str.methods["split"] = function (self, on, howmany) {
+Sk.builtin.str.methods.split = function (self, on, howmany) {
     var splits;
     var index;
     var match;
@@ -364,7 +364,7 @@ Sk.builtin.str.methods["split"] = function (self, on, howmany) {
     return new Sk.builtin.list(result);
 };
 
-Sk.builtin.str.methods["strip"] = function (self, chars) {
+Sk.builtin.str.methods.strip = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("strip", arguments.length, 1, 2);
@@ -380,7 +380,7 @@ Sk.builtin.str.methods["strip"] = function (self, chars) {
     return new Sk.builtin.str(self.v.replace(pattern, ""));
 };
 
-Sk.builtin.str.methods["lstrip"] = function (self, chars) {
+Sk.builtin.str.methods.lstrip = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("lstrip", arguments.length, 1, 2);
@@ -396,7 +396,7 @@ Sk.builtin.str.methods["lstrip"] = function (self, chars) {
     return new Sk.builtin.str(self.v.replace(pattern, ""));
 };
 
-Sk.builtin.str.methods["rstrip"] = function (self, chars) {
+Sk.builtin.str.methods.rstrip = function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("rstrip", arguments.length, 1, 2);
@@ -412,7 +412,7 @@ Sk.builtin.str.methods["rstrip"] = function (self, chars) {
     return new Sk.builtin.str(self.v.replace(pattern, ""));
 };
 
-Sk.builtin.str.methods["partition"] = function (self, sep) {
+Sk.builtin.str.methods.partition = function (self, sep) {
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("partition", arguments.length, 2, 2);
@@ -426,7 +426,7 @@ Sk.builtin.str.methods["partition"] = function (self, sep) {
     return new Sk.builtin.tuple([new Sk.builtin.str(self.v.substring(0, pos)), sepStr, new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 };
 
-Sk.builtin.str.methods["rpartition"] = function (self, sep) {
+Sk.builtin.str.methods.rpartition = function (self, sep) {
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("rpartition", arguments.length, 2, 2);
@@ -440,7 +440,7 @@ Sk.builtin.str.methods["rpartition"] = function (self, sep) {
     return new Sk.builtin.tuple([new Sk.builtin.str(self.v.substring(0, pos)), sepStr, new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 };
 
-Sk.builtin.str.methods["count"] = function (self, pat, start, end) {
+Sk.builtin.str.methods.count = function (self, pat, start, end) {
     var normaltext;
     var ctl;
     var slice;
@@ -481,7 +481,7 @@ Sk.builtin.str.methods["count"] = function (self, pat, start, end) {
     }
 };
 
-Sk.builtin.str.methods["ljust"] = function (self, len, fillchar) {
+Sk.builtin.str.methods.ljust = function (self, len, fillchar) {
     var newstr;
     Sk.builtin.pyCheckArgsLen("ljust", arguments.length, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
@@ -504,7 +504,7 @@ Sk.builtin.str.methods["ljust"] = function (self, len, fillchar) {
     }
 };
 
-Sk.builtin.str.methods["rjust"] = function (self, len, fillchar) {
+Sk.builtin.str.methods.rjust = function (self, len, fillchar) {
     var newstr;
     Sk.builtin.pyCheckArgsLen("rjust", arguments.length, 2, 3);
     if (!Sk.builtin.checkInt(len)) {
@@ -527,7 +527,7 @@ Sk.builtin.str.methods["rjust"] = function (self, len, fillchar) {
     }
 };
 
-Sk.builtin.str.methods["center"] = function (self, len, fillchar) {
+Sk.builtin.str.methods.center = function (self, len, fillchar) {
     var newstr;
     var newstr1;
     Sk.builtin.pyCheckArgsLen("center", arguments.length, 2, 3);
@@ -555,7 +555,7 @@ Sk.builtin.str.methods["center"] = function (self, len, fillchar) {
     }
 };
 
-Sk.builtin.str.methods["find"] = function (self, tgt, start, end) {
+Sk.builtin.str.methods.find = function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
     if (!Sk.builtin.checkString(tgt)) {
@@ -588,7 +588,7 @@ Sk.builtin.str.methods["find"] = function (self, tgt, start, end) {
     return new Sk.builtin.int_(idx);
 };
 
-Sk.builtin.str.methods["index"] = function (self, tgt, start, end) {
+Sk.builtin.str.methods.index = function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     idx = Sk.misceval.callsimArray(self["find"], [self, tgt, start, end]);
@@ -598,7 +598,7 @@ Sk.builtin.str.methods["index"] = function (self, tgt, start, end) {
     return idx;
 };
 
-Sk.builtin.str.methods["rfind"] = function (self, tgt, start, end) {
+Sk.builtin.str.methods.rfind = function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("rfind", arguments.length, 2, 4);
     if (!Sk.builtin.checkString(tgt)) {
@@ -632,7 +632,7 @@ Sk.builtin.str.methods["rfind"] = function (self, tgt, start, end) {
     return new Sk.builtin.int_(idx);
 };
 
-Sk.builtin.str.methods["rindex"] = function (self, tgt, start, end) {
+Sk.builtin.str.methods.rindex = function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("rindex", arguments.length, 2, 4);
     idx = Sk.misceval.callsimArray(self["rfind"], [self, tgt, start, end]);
@@ -642,20 +642,20 @@ Sk.builtin.str.methods["rindex"] = function (self, tgt, start, end) {
     return idx;
 };
 
-Sk.builtin.str.methods["startswith"] = function (self, tgt) {
+Sk.builtin.str.methods.startswith = function (self, tgt) {
     Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
     return new Sk.builtin.bool(self.v.indexOf(tgt.v) === 0);
 };
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
-Sk.builtin.str.methods["endswith"] = function (self, tgt) {
+Sk.builtin.str.methods.endswith = function (self, tgt) {
     Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
     return new Sk.builtin.bool(self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
 };
 
-Sk.builtin.str.methods["replace"] = function (self, oldS, newS, count) {
+Sk.builtin.str.methods.replace = function (self, oldS, newS, count) {
     var c;
     var patt;
     Sk.builtin.pyCheckArgsLen("replace", arguments.length, 3, 4);
@@ -684,7 +684,7 @@ Sk.builtin.str.methods["replace"] = function (self, oldS, newS, count) {
     return new Sk.builtin.str(self.v.replace(patt, replacer));
 };
 
-Sk.builtin.str.methods["zfill"] = function (self, len) {
+Sk.builtin.str.methods.zfill = function (self, len) {
     var str = self.v;
     var ret;
     var zeroes;
@@ -708,17 +708,17 @@ Sk.builtin.str.methods["zfill"] = function (self, len) {
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.methods["isdigit"] = function (self) {
+Sk.builtin.str.methods.isdigit = function (self) {
     Sk.builtin.pyCheckArgsLen("isdigit", arguments.length, 1, 1);
     return new Sk.builtin.bool(/^\d+$/.test(self.v));
 };
 
-Sk.builtin.str.methods["isspace"] = function (self) {
+Sk.builtin.str.methods.isspace = function (self) {
     Sk.builtin.pyCheckArgsLen("isspace", arguments.length, 1, 1);
     return new Sk.builtin.bool(/^\s+$/.test(self.v));
 };
 
-Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
+Sk.builtin.str.methods.expandtabs = function (self, tabsize) {
     // var input = self.v;
     // var expanded = "";
     // var split;
@@ -746,7 +746,7 @@ Sk.builtin.str.methods["expandtabs"] = function (self, tabsize) {
     return new Sk.builtin.str(expanded);
 };
 
-Sk.builtin.str.methods["swapcase"] = function (self) {
+Sk.builtin.str.methods.swapcase = function (self) {
     var ret;
     Sk.builtin.pyCheckArgsLen("swapcase", arguments.length, 1, 1);
 
@@ -758,7 +758,7 @@ Sk.builtin.str.methods["swapcase"] = function (self) {
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.methods["splitlines"] = function (self, keepends) {
+Sk.builtin.str.methods.splitlines = function (self, keepends) {
     var data = self.v;
     var i = 0;
     var j = i;
@@ -809,7 +809,7 @@ Sk.builtin.str.methods["splitlines"] = function (self, keepends) {
     return new Sk.builtin.list(strs_w);
 };
 
-Sk.builtin.str.methods["title"] = function (self) {
+Sk.builtin.str.methods.title = function (self) {
     var ret;
 
     Sk.builtin.pyCheckArgsLen("title", arguments.length, 1, 1);
@@ -821,33 +821,33 @@ Sk.builtin.str.methods["title"] = function (self) {
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.methods["isalpha"] = function (self) {
+Sk.builtin.str.methods.isalpha = function (self) {
     Sk.builtin.pyCheckArgsLen("isalpha", arguments.length, 1, 1);
     return new Sk.builtin.bool(self.v.length && !/[^a-zA-Z]/.test(self.v));
 };
 
-Sk.builtin.str.methods["isalnum"] = function (self) {
+Sk.builtin.str.methods.isalnum = function (self) {
     Sk.builtin.pyCheckArgsLen("isalnum", arguments.length, 1, 1);
     return new Sk.builtin.bool(self.v.length && !/[^a-zA-Z0-9]/.test(self.v));
 };
 
 // does not account for unicode numeric values
-Sk.builtin.str.methods["isnumeric"] = function (self) {
+Sk.builtin.str.methods.isnumeric = function (self) {
     Sk.builtin.pyCheckArgsLen("isnumeric", arguments.length, 1, 1);
     return new Sk.builtin.bool(self.v.length && !/[^0-9]/.test(self.v));
 };
 
-Sk.builtin.str.methods["islower"] = function (self) {
+Sk.builtin.str.methods.islower = function (self) {
     Sk.builtin.pyCheckArgsLen("islower", arguments.length, 1, 1);
     return new Sk.builtin.bool(self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
 };
 
-Sk.builtin.str.methods["isupper"] = function (self) {
+Sk.builtin.str.methods.isupper = function (self) {
     Sk.builtin.pyCheckArgsLen("isupper", arguments.length, 1, 1);
     return new Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 };
 
-Sk.builtin.str.methods["istitle"] = function (self) {
+Sk.builtin.str.methods.istitle = function (self) {
     // Comparing to str.title() seems the most intuitive thing, but it fails on "",
     // Other empty-ish strings with no change.
     var input = self.v;

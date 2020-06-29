@@ -1,6 +1,6 @@
 /**
  * @namespace Sk.builtin
- * 
+ *
  * @description
  * All the builtin types as well as useful functions
  */
@@ -10,19 +10,24 @@ if (Sk.builtin === undefined) {
 
 /**
  * @constructor
- *
+ * @extends {Sk.builtin.object}
  * @description
  * this should never be called as a constructor
  * instead use {@link Sk.abstr.buildNativeClass} or
- * {@link Sk.misceval.buildClass} 
+ * {@link Sk.misceval.buildClass}
  *
  */
 Sk.builtin.type = function type() {
     Sk.asserts.assert(false, "calling new Sk.builtin.type is not safe");
 };
 
+/** @typedef {Sk.builtin.type|Function} */ var typeObject;
+
 Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
 
+/**
+ * @this {typeObject|Sk.builtin.type}
+ */
 Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
     if (this === Sk.builtin.type) {
         // check the args are 1 - only interested in the 1 argument form if
@@ -93,10 +98,12 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
         throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
     }
 
-    // klass is essentially a function that gives its instances a dict
-    // if we support slots then we would need to have two versions of this constructor
-    // TODO slots
+    /**
+     * @type {!typeObject}
+     */
     const klass = function () {
+        // klass is essentially a function that gives its instances a dict
+        // if we support slots then we might need to have two versions of this
         this.$d = new Sk.builtin.dict();
     };
 
@@ -129,6 +136,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.prototype.__doc__ = Sk.builtin.none.none$;
 
     // set __dict__ if not already on the prototype
+    /**@todo __slots__ */
     if (klass.$typeLookup(Sk.builtin.str.$dict) === undefined) {
         klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
     }
@@ -162,6 +170,10 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     return klass;
 };
 
+/**
+ * @param {Array} args
+ * @param {Array=} kwargs
+ */
 Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
     if (args && args.length == 1 && kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("type.__init__() takes no keyword arguments");
@@ -507,7 +519,7 @@ Sk.builtin.type.prototype.tp$getsets = {
     },
 };
 
-Sk.builtin.type.prototype.tp$methods = {
+Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     mro: {
         $meth: function () {
             return new Sk.builtin.tuple(this.$buildMRO());

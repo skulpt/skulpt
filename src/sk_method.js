@@ -27,6 +27,9 @@
  *
  * if no flags are set then the tp$call = function.prototype.tp$call
  *
+ * @param {Object} method_def
+ * @param {*} self
+ * @param {string=} module
  */
 Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
     constructor: function builtin_function_or_method (method_def, self, module) {
