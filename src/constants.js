@@ -5,6 +5,7 @@
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
 Sk.builtin.str.$emptystr = Sk.builtin.str.$empty;
+// Sk.builtin.bytes.$empty = new Sk.builtin.bytes("");
 
 Sk.builtin.str.$default_factory = new Sk.builtin.str("default_factory");
 Sk.builtin.str.$imag = new Sk.builtin.str("imag");
@@ -50,6 +51,7 @@ Sk.builtin.str.$setattr = new Sk.builtin.str("__setattr__");
 Sk.builtin.str.$setitem = new Sk.builtin.str("__setitem__");
 Sk.builtin.str.$str = new Sk.builtin.str("__str__");
 Sk.builtin.str.$trunc = new Sk.builtin.str("__trunc__");
+Sk.builtin.str.$utf8 = new Sk.builtin.str("utf-8");
 Sk.builtin.str.$write = new Sk.builtin.str("write");
 
 Sk.misceval.op2method_ = {

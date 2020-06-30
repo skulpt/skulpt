@@ -468,7 +468,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     // args is an array, kwargs is an array or undefined
     kwargs = kwargs || [];
 
-    const nargs = args.length + kwargs.length / 2;
+    const nargs = args.filter((x) => x !== undefined).length + kwargs.length / 2;
     if (nargs > varnames.length) {
         throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + " arguments (" + nargs + " given)");
     }
