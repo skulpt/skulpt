@@ -374,6 +374,39 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
  * @constructor
+ * @extends Sk.builtin.Excception
+ * @param {*=} args
+ */
+Sk.builtin.UnicodeDecodeError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {*=} args
+ */
+Sk.builtin.UnicodeEncodeError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.StandardError
+ * @param {*=} args
+ */
+Sk.builtin.LookupError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.LookupError", Sk.builtin.LookupError);
+
+/**
+ * @constructor
  * @extends Sk.builtin.Exception
  * @param {*=} args Typically called with a single string argument
  */
