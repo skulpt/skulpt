@@ -12,6 +12,7 @@ Sk.builtin.str.$imag = new Sk.builtin.str("imag");
 Sk.builtin.str.$real = new Sk.builtin.str("real");
 
 Sk.builtin.str.$abs = new Sk.builtin.str("__abs__");
+Sk.builtin.str.$bytes = new Sk.builtin.str("__bytes__");
 Sk.builtin.str.$call = new Sk.builtin.str("__call__");
 Sk.builtin.str.$class = new Sk.builtin.str("__class__");
 Sk.builtin.str.$cmp = new Sk.builtin.str("__cmp__");

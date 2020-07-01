@@ -649,6 +649,8 @@ function strBytesRemainder(rhs) {
     var val;
     const strBytesConstructor = this.baseType;
 
+    let self = this;
+
     if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
         rhs = new Sk.builtin.tuple([rhs]);
     }

@@ -395,12 +395,13 @@ Sk.builtin.fabs = function fabs(x) {
 };
 
 Sk.builtin.ord = function ord(x) {
-    if (!Sk.builtin.checkString(x)) {
+    if (!Sk.builtin.checkString(x) && !Sk.builtin.checkBytes(x)) {
         throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
-    } else if (x.v.length !== 1) {
+    } else if (x.v.length !== 1 && x.sq$length() !== 1) {
+        // ^^ avoid the astral check unless necessary ^^
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
-    return new Sk.builtin.int_(x.v.charCodeAt(0));
+    return new Sk.builtin.int_(x.v.codePointAt(0));
 };
 
 Sk.builtin.chr = function chr(x) {
@@ -409,11 +410,17 @@ Sk.builtin.chr = function chr(x) {
     }
     x = Sk.builtin.asnum$(x);
 
-    if (x < 0 || x > 255) {
-        throw new Sk.builtin.ValueError("chr() arg not in range(256)");
+    if (Sk.__future__.python3) {
+        if (x < 0 || x >= 0x110000) {
+            throw new Sk.builtin.ValueError("chr() arg not in range(0x110000)");
+        }
+    } else {
+        if (x < 0 || x >= 256) {
+            throw new Sk.builtin.ValueError("chr() arg not in range(256)");
+        }
     }
 
-    return new Sk.builtin.str(String.fromCharCode(x));
+    return new Sk.builtin.str(String.fromCodePoint(x));
 };
 
 Sk.builtin.unichr = function unichr(x) {
@@ -480,7 +487,6 @@ Sk.builtin.bin = function bin(x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
-
 Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
         const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
@@ -497,7 +503,54 @@ Sk.builtin.repr = function repr(x) {
     return x.$r();
 };
 
+Sk.builtin.ascii = function ascii(x) {
+    const r = x.$r();
+    let ret;
+    let i;
+    // Fast path
+    for (i = 0; i < r.v.length; i++) {
+        if (r.v.charCodeAt(i) >= 0x7f) {
+            ret = r.v.substr(0, i);
+            break;
+        }
+    }
+    if (!ret) {
+        return r;
+    }
+    for (; i < r.v.length; i++) {
+        let c = r.v.charAt(i);
+        let cc = r.v.charCodeAt(i);
+
+        if (cc > 0x7f && cc <= 0xff) {
+            let ashex = cc.toString(16);
+            if (ashex.length < 2) {
+                ashex = "0" + ashex;
+            }
+            ret += "\\x" + ashex;
+        } else if ((cc > 0x7f && cc < 0xd800) || cc >= 0xe000) {
+            // BMP
+            ret += "\\u" + ("000" + cc.toString(16)).slice(-4);
+        } else if (cc >= 0xd800) {
+            // Surrogate pair stuff
+            let val = r.v.codePointAt(i);
+            i++;
+
+            val = val.toString(16);
+            let s = "0000000" + val.toString(16);
+            if (val.length > 4) {
+                ret += "\\U" + s.slice(-8);
+            } else {
+                ret += "\\u" + s.slice(-4);
+            }
+        } else {
+            ret += c;
+        }
+    }
+    return new Sk.builtin.str(ret);
+};
+
 Sk.builtin.open = function open(filename, mode, bufsize) {
+    Sk.builtin.pyCheckArgsLen("open", arguments.length, 1, 3);
     if (mode === undefined) {
         mode = new Sk.builtin.str("r");
     }

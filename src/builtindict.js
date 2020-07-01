@@ -157,12 +157,12 @@ Sk.builtins.$method_defs = {
         $doc: "Return True if bool(x) is True for any x in the iterable.\n\nIf the iterable is empty, return False.",
     },
 
-    // ascii: {
-    //     $meth: Sk.builtin.ascii,
-    //     $flags: {OneArg: true},
-    //     $textsig: "($module, obj, /)",
-    //     $doc: "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2."
-    // },
+    ascii: {
+        $meth: Sk.builtin.ascii,
+        $flags: {OneArg: true},
+        $textsig: "($module, obj, /)",
+        $doc: "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2."
+    },
 
     bin: {
         $meth: Sk.builtin.bin,
@@ -485,6 +485,10 @@ Sk.setupObjects = function (py3) {
         };
         delete Sk.builtin.int_.prototype.tp$str;
         delete Sk.builtin.bool.prototype.tp$str;
+        delete Sk.builtins["basestring"];
+        Sk.builtins["bytes"] = Sk.builtin.bytes;
+        delete Sk.builtin.str.prototype.decode;
+        Sk.builtins["ascii"] = new Sk.builtin.sk_method(Sk.builtins.$method_defs.ascii);
     } else {
         Sk.builtins["range"] = new Sk.builtin.sk_method(
             {
@@ -525,6 +529,10 @@ Sk.setupObjects = function (py3) {
         Sk.builtin.bool.prototype.tp$str = function () {
             return this.$r();
         };
+        Sk.builtins["basestring"] = Sk.builtin.str;
+        delete Sk.builtins["bytes"];
+        Sk.builtin.str.prototype.decode = Sk.builtin.bytes.prototype.decode;
+        delete Sk.builtins["ascii"];
     }
 };
 
