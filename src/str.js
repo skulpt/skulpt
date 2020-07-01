@@ -42,11 +42,13 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             setInterned(ret, this);
         }
 
+        this.v = ret;
         this.$mangled = fixReserved(ret);
         // quicker set_dict for strings by preallocating the $savedKeyHash
         this.$savedKeyHash_ = "_" + ret;
-        this.v = ret;
         this.codepoints;
+        // we use baseType over this.constructor to account for subclassing and allow code reuse between bytes/str
+        this.baseType = Sk.builtin.str;
     },
     slots: /**@lends {Sk.builtin.str.prototype} */ {
         tp$getattr: Sk.generic.getAttr,
@@ -74,10 +76,17 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         },
         tp$richcompare: richCompare,
         mp$subscript: getItem,
-        sq$length: seqLength,
+        sq$length: function () {
+            return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
+        },
         sq$concat: seqConcat,
         sq$repeat: seqRepeat,
-        sq$contains: seqContains,
+        sq$contains: function (ob) {
+            if (!(ob instanceof Sk.builtin.str)) {
+                throw new Sk.builtin.TypeError("TypeError: 'In <string> requires string as left operand");
+            }
+            return this.v.indexOf(ob.v) != -1;
+        },
 
         tp$as_number: true,
         nb$remainder: strBytesRemainder,
@@ -122,6 +131,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             return false;
         },
     },
+    flags: {
+        englishName: "string",
+    }
 });
 
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
@@ -243,136 +255,257 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
 
 Sk.abstr.setUpMethods(Sk.builtin.str, strMethods);
 
-// /**
-//  * @constructor
-//  * @extends {Sk.builtin.object}
-//  */
-// Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
-//     constructor: function () {},
-//     slots: /**@lends {Sk.builtin.bytes.prototype} */ {
-//         tp$getattr: Sk.generic.getAttr,
-//         tp$as_sequence_or_mapping: true,
-//         tp$doc:
-//             "bytes(iterable_of_ints) -> bytes\nbytes(string, encoding[, errors]) -> bytes\nbytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer\nbytes(int) -> bytes object of size given by the parameter initialized with null bytes\nbytes() -> empty bytes object\n\nConstruct an immutable array of bytes from:\n  - an iterable yielding integers in range(256)\n  - a text string encoded using the specified encoding\n  - any object implementing the buffer API.\n  - an integer",
-//         tp$new: function (args, kwargs) {
-//             if (this !== Sk.builtin.bytes.prototype) {
-//                 return this.$subtype_new(args, kwargs);
-//             }
-//             args = Sk.abstr.copyKeywordsToNamedArgs("bytes", ["object"], args, kwargs);
-//             const x = args[0];
-//             return new Sk.builtin.bytes(x);
-//         },
-//         $r: strBytesRepr,
-//         tp$str: function () {},
-//         tp$iter: function () {
-//             return new Sk.builtin.bytes_iter_(this);
-//         },
-//         tp$richcompare: richCompare,
-//         mp$subscript: getItem,
-//         sq$length: seqLength,
-//         sq$concat: seqConcat,
-//         sq$repeat: seqRepeat,
-//         sq$contains: seqContains,
-//         tp$as_number: true,
-//         nb$remainser: strBytesRemainder,
-//     },
-//     methods: /**@lends {Sk.builtin.bytes.prototype} */ {
-//         __getnewargs__: bytesMethodDefs.__getnewargs__,
-//         capitalize: bytesMethodDefs.capitalize,
-//         center: bytesMethodDefs.center,
-//         count: bytesMethodDefs.count,
-//         decode: {
-//             $meth: function () {},
-//             $flags:{},
-//             $textsig: "($self, /, encoding='utf-8', errors='strict')",
-//             $doc: "Decode the bytes using the codec registered for encoding.\n\n  encoding\n    The encoding with which to decode the bytes.\n  errors\n    The error handling scheme to use for the handling of decoding errors.\n    The default is 'strict' meaning that decoding errors raise a\n    UnicodeDecodeError. Other possible values are 'ignore' and 'replace'\n    as well as any other name registered with codecs.register_error that\n    can handle UnicodeDecodeErrors." },
-//         endswith: bytesMethodDefs.endswith,
-//         expandtabs: bytesMethodDefs.expandtabs,
-//         find: bytesMethodDefs.find,
-//         hex: {
-//             $meth: function (self) {
-//                 /** @todo Python 3.8 has added some args here*/
-//                 let r = "";
-//                 for (let i = 0; i < this.v.length; i++) {
-//                     r += ("0" + this.v.charCodeAt(i).toString(16)).substr(-2);
-//                 }
-//                 return new Sk.builtin.str(r);
-//             },
-//             $flags: { NoArgs: true },
-//             $textsig: null,
-//             $doc: "B.hex() -> string\n\nCreate a string of hexadecimal numbers from a bytes object.\nExample: b'\\xb9\\x01\\xef'.hex() -> 'b901ef'.",
-//         },
-//         index: bytesMethodDefs.index,
-//         isalnum: bytesMethodDefs.isalnum,
-//         isalpha: bytesMethodDefs.isalpha,
-//         // isascii: bytesMethodDefs.isascii,
-//         isdigit: bytesMethodDefs.isdigit,
-//         islower: bytesMethodDefs.islower,
-//         isspace: bytesMethodDefs.isspace,
-//         istitle: bytesMethodDefs.istitle,
-//         isupper: bytesMethodDefs.isupper,
-//         join: bytesMethodDefs.join,
-//         ljust: bytesMethodDefs.ljust,
-//         lower: bytesMethodDefs.lower,
-//         lstrip: bytesMethodDefs.lstrip,
-//         partition: bytesMethodDefs.partition,
-//         replace: bytesMethodDefs.replace,
-//         rfind: bytesMethodDefs.rfind,
-//         rindex: bytesMethodDefs.rindex,
-//         rjust: bytesMethodDefs.rjust,
-//         rpartition: bytesMethodDefs.rpartition,
-//         // rsplit: bytesMethodDefs.rsplit,
-//         rstrip: bytesMethodDefs.rstrip,
-//         split: bytesMethodDefs.split,
-//         splitlines: bytesMethodDefs.splitlines,
-//         startswith: bytesMethodDefs.startswith,
-//         strip: bytesMethodDefs.strip,
-//         swapcase: bytesMethodDefs.swapcase,
-//         title: bytesMethodDefs.title,
-//         // translate: bytesMethodDefs.translate,
-//         upper: bytesMethodDefs.upper,
-//         zfill: bytesMethodDefs.zfill,
-//     },
-//     classmethods: {
-//         fromhex: {
-//             $meth: function (hex) {
-//                 Sk.builtin.pyCheckType("hex", "string", Sk.builtin.checkString(hex));
-//                 let h = hex.v.replace(/\s*/g, "");
-//                 let v = "";
-//                 for (let i = 0; i < h.length; i += 2) {
-//                     let s = h.substr(i, 2);
-//                     let n = parseInt(s, 16);
-//                     if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
-//                         throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
-//                     }
-//                     v += String.fromCharCode(n);
-//                 }
-//                 return new Sk.builtin.bytes(v);
-//             },
-//             $flags: { OneArg: true },
-//             $textsig: "($type, string, /)",
-//             $doc:
-//                 "Create a bytes object from a string of hexadecimal numbers.\n\nSpaces between two numbers are accepted.\nExample: bytes.fromhex('B9 01EF') -> b'\\\\xb9\\\\x01\\\\xef'.",
-//         },
-//     },
-//     proto: /**@lends {Sk.builtin.bytes.prototype} */ {
-//         $subtype_new: function (args, kwargs) {
-//             const instance = new this.constructor();
-//             // we call str new method with all the args and kwargs
-//             const bytes_instance = Sk.builtin.bytes.prototype.tp$new(args, kwargs);
-//             instance.v = bytes_instance.v;
-//             return instance;
-//         },
-//         $jsstr: function () {
-//             return this.v;
-//         },
-//         $hasAstralCodePoints: () => false,
-//     },
-// });
+var reservedWords_ = {
+    abstract: true,
+    as: true,
+    boolean: true,
+    break: true,
+    byte: true,
+    case: true,
+    catch: true,
+    char: true,
+    class: true,
+    continue: true,
+    const: true,
+    debugger: true,
+    default: true,
+    delete: true,
+    do: true,
+    double: true,
+    else: true,
+    enum: true,
+    export: true,
+    extends: true,
+    false: true,
+    final: true,
+    finally: true,
+    float: true,
+    for: true,
+    function: true,
+    goto: true,
+    if: true,
+    implements: true,
+    import: true,
+    in: true,
+    instanceof: true,
+    int: true,
+    interface: true,
+    is: true,
+    long: true,
+    namespace: true,
+    native: true,
+    new: true,
+    null: true,
+    package: true,
+    private: true,
+    protected: true,
+    public: true,
+    return: true,
+    short: true,
+    static: true,
+    super: true,
+    switch: true,
+    synchronized: true,
+    this: true,
+    throw: true,
+    throws: true,
+    transient: true,
+    true: true,
+    try: true,
+    typeof: true,
+    use: true,
+    var: true,
+    void: true,
+    volatile: true,
+    while: true,
+    with: true,
+    // reserved Names
+    constructor: true,
+    __defineGetter__: true,
+    __defineSetter__: true,
+    apply: true,
+    arguments: true,
+    call: true,
+    caller: true,
+    eval: true,
+    hasOwnProperty: true,
+    isPrototypeOf: true,
+    __lookupGetter__: true,
+    __lookupSetter__: true,
+    __noSuchMethod__: true,
+    propertyIsEnumerable: true,
+    prototype: true,
+    toSource: true,
+    toLocaleString: true,
+    toString: true,
+    unwatch: true,
+    valueOf: true,
+    watch: true,
+    length: true,
+    name: true,
+};
+
+Sk.builtin.str.reservedWords_ = reservedWords_;
+
+function fixReserved(name) {
+    if (reservedWords_[name] === undefined) {
+        return name;
+    }
+    return name + "_$rw$";
+}
+
+/**
+ * @constructor
+ * @extends {Sk.builtin.object}
+ */
+Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
+    constructor: function () {
+        this.codepoints = null;
+    },
+    slots: /**@lends {Sk.builtin.bytes.prototype} */ {
+        tp$getattr: Sk.generic.getAttr,
+        tp$as_sequence_or_mapping: true,
+        tp$doc:
+            "bytes(iterable_of_ints) -> bytes\nbytes(string, encoding[, errors]) -> bytes\nbytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer\nbytes(int) -> bytes object of size given by the parameter initialized with null bytes\nbytes() -> empty bytes object\n\nConstruct an immutable array of bytes from:\n  - an iterable yielding integers in range(256)\n  - a text string encoded using the specified encoding\n  - any object implementing the buffer API.\n  - an integer",
+        tp$new: function (args, kwargs) {
+            if (this !== Sk.builtin.bytes.prototype) {
+                return this.$subtype_new(args, kwargs);
+            }
+            args = Sk.abstr.copyKeywordsToNamedArgs("bytes", ["object"], args, kwargs);
+            const x = args[0];
+            return new Sk.builtin.bytes(x);
+        },
+        $r: strBytesRepr,
+        tp$str: function () {},
+        tp$iter: function () {
+            return new Sk.builtin.bytes_iter_(this);
+        },
+        tp$richcompare: richCompare,
+        mp$subscript: getItem,
+        sq$length: function () {
+            return this.v.length;
+        },
+        sq$concat: seqConcat,
+        sq$repeat: seqRepeat,
+        sq$contains: function (ob) {
+            if (ob instanceof Sk.builtin.bytes) {
+                return this.v.indexOf(ob.v) != -1;
+            } else if (Sk.builtin.checkInt(ob)) {
+                let v = Sk.builtin.asnum$(ob);
+                if (v < 0 || v > 0xff) {
+                    throw new Sk.builtin.ValueError("byte must be in range (0, 256)");
+                }
+                return this.v.indexOf(String.fromCharCode(v)) != -1;
+            } else {
+                throw new Sk.builtin.TypeError("TypeError: 'In <bytes> requires a bytes-like object as left operand, not " + Sk.abstr.typeName(ob));
+            }
+        },
+        tp$as_number: true,
+        nb$remainser: strBytesRemainder,
+    },
+    classmethods: /**@lends Sk.builtin.bytes.prototype*/ {
+        fromhex: {
+            $meth: function (hex) {
+                Sk.builtin.pyCheckType("hex", "string", Sk.builtin.checkString(hex));
+                let h = hex.v.replace(/\s*/g, "");
+                let v = "";
+                for (let i = 0; i < h.length; i += 2) {
+                    let s = h.substr(i, 2);
+                    let n = parseInt(s, 16);
+                    if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
+                        throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
+                    }
+                    v += String.fromCharCode(n);
+                }
+                return new Sk.builtin.bytes(v);
+            },
+            $flags: { OneArg: true },
+            $textsig: "($type, string, /)",
+            $doc:
+                "Create a bytes object from a string of hexadecimal numbers.\n\nSpaces between two numbers are accepted.\nExample: bytes.fromhex('B9 01EF') -> b'\\\\xb9\\\\x01\\\\xef'.",
+        },
+    },
+    proto: /**@lends {Sk.builtin.bytes.prototype} */ {
+        $subtype_new: function (args, kwargs) {
+            const instance = new this.constructor();
+            // we call str new method with all the args and kwargs
+            const bytes_instance = Sk.builtin.bytes.prototype.tp$new(args, kwargs);
+            instance.v = bytes_instance.v;
+            return instance;
+        },
+        $jsstr: function () {
+            return this.v;
+        },
+        $hasAstralCodePoints: () => false,
+    },
+});
+
+const bytesMethodDefs = Sk.builtin.str_methods(Sk.builtin.bytes);
+const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
+    __getnewargs__: bytesMethodDefs.__getnewargs__,
+    capitalize: bytesMethodDefs.capitalize,
+    center: bytesMethodDefs.center,
+    count: bytesMethodDefs.count,
+    decode: {
+        $meth: function () {},
+        $flags: {},
+        $textsig: "($self, /, encoding='utf-8', errors='strict')",
+        $doc:
+            "Decode the bytes using the codec registered for encoding.\n\n  encoding\n    The encoding with which to decode the bytes.\n  errors\n    The error handling scheme to use for the handling of decoding errors.\n    The default is 'strict' meaning that decoding errors raise a\n    UnicodeDecodeError. Other possible values are 'ignore' and 'replace'\n    as well as any other name registered with codecs.register_error that\n    can handle UnicodeDecodeErrors.",
+    },
+    endswith: bytesMethodDefs.endswith,
+    expandtabs: bytesMethodDefs.expandtabs,
+    find: bytesMethodDefs.find,
+    hex: {
+        $meth: function (self) {
+            /** @todo Python 3.8 has added some args here*/
+            let r = "";
+            for (let i = 0; i < this.v.length; i++) {
+                r += ("0" + this.v.charCodeAt(i).toString(16)).substr(-2);
+            }
+            return new Sk.builtin.str(r);
+        },
+        $flags: { NoArgs: true },
+        $textsig: null,
+        $doc: "B.hex() -> string\n\nCreate a string of hexadecimal numbers from a bytes object.\nExample: b'\\xb9\\x01\\xef'.hex() -> 'b901ef'.",
+    },
+    index: bytesMethodDefs.index,
+    isalnum: bytesMethodDefs.isalnum,
+    isalpha: bytesMethodDefs.isalpha,
+    // isascii: bytesMethodDefs.isascii,
+    isdigit: bytesMethodDefs.isdigit,
+    islower: bytesMethodDefs.islower,
+    isspace: bytesMethodDefs.isspace,
+    istitle: bytesMethodDefs.istitle,
+    isupper: bytesMethodDefs.isupper,
+    join: bytesMethodDefs.join,
+    ljust: bytesMethodDefs.ljust,
+    lower: bytesMethodDefs.lower,
+    lstrip: bytesMethodDefs.lstrip,
+    partition: bytesMethodDefs.partition,
+    replace: bytesMethodDefs.replace,
+    rfind: bytesMethodDefs.rfind,
+    rindex: bytesMethodDefs.rindex,
+    rjust: bytesMethodDefs.rjust,
+    rpartition: bytesMethodDefs.rpartition,
+    // rsplit: bytesMethodDefs.rsplit,
+    rstrip: bytesMethodDefs.rstrip,
+    split: bytesMethodDefs.split,
+    splitlines: bytesMethodDefs.splitlines,
+    startswith: bytesMethodDefs.startswith,
+    strip: bytesMethodDefs.strip,
+    swapcase: bytesMethodDefs.swapcase,
+    title: bytesMethodDefs.title,
+    // translate: bytesMethodDefs.translate,
+    upper: bytesMethodDefs.upper,
+    zfill: bytesMethodDefs.zfill,
+};
+
+Sk.abstr.setUpMethods(Sk.builtin.bytes, bytesMethods);
 
 function strBytesRepr() {
     // single is preferred
-    let ashex, c;
+    let ashex, c, cc;
     let quote = "'";
     //jshint ignore:start
     if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1) {
@@ -380,9 +513,10 @@ function strBytesRepr() {
     }
     //jshint ignore:end
     const len = this.v.length;
-    let ret = quote;
+    let ret = this instanceof Sk.builtin.bytes ? "b" + quote : quote;
     for (let i = 0; i < len; ++i) {
         c = this.v.charAt(i);
+        cc = this.v.charCodeAt(i);
         if (c === quote || c === "\\") {
             ret += "\\" + c;
         } else if (c === "\t") {
@@ -391,7 +525,24 @@ function strBytesRepr() {
             ret += "\\n";
         } else if (c === "\r") {
             ret += "\\r";
-        } else if (c < " " || c >= 0x7f) {
+        } else if (((cc > 0xff && cc < 0xd800) || cc >= 0xe000) && !Sk.__future__.python3) {
+            // BMP
+            ret += "\\u" + ("000" + cc.toString(16)).slice(-4);
+        } else if (cc >= 0xd800 && !Sk.__future__.python3) {
+            // Surrogate pair stuff
+            let val = this.v.codePointAt(i);
+            i++;
+            val = val.toString(16);
+            let s = "0000000" + val.toString(16);
+            if (val.length > 4) {
+                ret += "\\U" + s.slice(-8);
+            } else {
+                ret += "\\u" + s.slice(-4);
+            }
+        } else if (cc > 0xff && !Sk.__future__.python3) {
+            // Invalid!
+            ret += "\\ufffd";
+        } else if (c < " " || (cc >= 0x7f && !Sk.__future__.python3)) {
             ashex = c.charCodeAt(0).toString(16);
             if (ashex.length < 2) {
                 ashex = "0" + ashex;
@@ -406,7 +557,7 @@ function strBytesRepr() {
 }
 
 function richCompare(other, op) {
-    if (!(other instanceof Sk.builtin.str)) {
+    if (!(other instanceof this.baseType)) {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
     switch (op) {
@@ -428,11 +579,10 @@ function richCompare(other, op) {
 }
 
 function seqConcat(other) {
-    if (!other || !Sk.builtin.checkString(other)) {
-        const otypename = Sk.abstr.typeName(other);
-        throw new Sk.builtin.TypeError("cannot concatenate 'str' and '" + otypename + "' objects");
+    if (!(other instanceof this.baseType)) {
+        throw new Sk.builtin.TypeError("cannot concatenate '" + Sk.abstr.typeName(this) + "' and '" + Sk.abstr.typeName(other) + "' objects");
     }
-    return new Sk.builtin.str(this.v + other.v);
+    return new this.baseType(this.v + other.v);
 }
 
 function seqRepeat(n) {
@@ -441,40 +591,41 @@ function seqRepeat(n) {
     for (let i = 0; i < n; ++i) {
         ret += this.v;
     }
-    return new Sk.builtin.str(ret);
-}
-
-function seqContains(ob) {
-    if (!(ob instanceof Sk.builtin.str)) {
-        throw new Sk.builtin.TypeError("TypeError: 'In <string> requires string as left operand");
-    }
-    return this.v.indexOf(ob.v) != -1;
+    return new this.baseType(ret);
 }
 
 function getItem(index) {
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
+        let len = this.sq$length();
         if (index < 0) {
-            index = this.v.length + index;
+            index = len + index;
         }
-        if (index < 0 || index >= this.v.length) {
-            throw new Sk.builtin.IndexError("string index out of range");
+        if (index < 0 || index >= len) {
+            throw new Sk.builtin.IndexError(this.baseType.englishName + " index out of range");
         }
-        return new Sk.builtin.str(this.v.charAt(index));
+        if (this.codepoints) {
+            return new this.baseType(this.v.substring(this.codepoints[index], this.codepoints[index + 1]));
+        } else {
+            return new this.baseType(this.v.charAt(index));
+        }
     } else if (index instanceof Sk.builtin.slice) {
         let ret = "";
         const str = this.v;
-        index.sssiter$(str.length, (i) => {
-            ret += str.charAt(i);
-        });
-        return new Sk.builtin.str(ret);
+        if (this.$hasAstralCodePoints()) {
+            const self = this;
+            index.sssiter$(this.codepoints.length, (i) => {
+                ret += str.substring(self.codepoints[i], self.codepoints[i + 1]);
+            });
+        } else {
+            index.sssiter$(str.length, (i) => {
+                ret += str.charAt(i);
+            });
+        }
+        return new this.baseType(ret);
     } else {
-        throw new Sk.builtin.TypeError("string indices must be integers, not " + Sk.abstr.typeName(index));
+        throw new Sk.builtin.TypeError(this.baseType.englishName + " indices must be integers, not " + Sk.abstr.typeName(index));
     }
-}
-
-function seqLength() {
-    return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
 }
 
 function strBytesRemainder(rhs) {
@@ -496,6 +647,7 @@ function strBytesRemainder(rhs) {
     var index;
     var regex;
     var val;
+    const strBytesConstructor = this.baseType;
 
     if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
         rhs = new Sk.builtin.tuple([rhs]);
@@ -654,7 +806,7 @@ function strBytesRemainder(rhs) {
         } else if (rhs.mp$subscript !== undefined && mappingKey !== undefined) {
             mk = mappingKey.substring(1, mappingKey.length - 1);
             //print("mk",mk);
-            value = rhs.mp$subscript(new Sk.builtin.str(mk));
+            value = rhs.mp$subscript(new strBytesConstructor(mk));
         } else if (rhs.constructor === Sk.builtin.dict || rhs.constructor === Sk.builtin.list) {
             // new case where only one argument is provided
             value = rhs;
@@ -745,7 +897,7 @@ function strBytesRemainder(rhs) {
             }
             return r.v;
         } else if (conversionType === "s") {
-            r = new Sk.builtin.str(value);
+            r = new strBytesConstructor(value);
             r = r.$jsstr();
             if (precision) {
                 return r.substr(0, precision);
@@ -759,104 +911,5 @@ function strBytesRemainder(rhs) {
         }
     };
     ret = this.v.replace(regex, replFunc);
-    return new Sk.builtin.str(ret);
-}
-
-var reservedWords_ = {
-    abstract: true,
-    as: true,
-    boolean: true,
-    break: true,
-    byte: true,
-    case: true,
-    catch: true,
-    char: true,
-    class: true,
-    continue: true,
-    const: true,
-    debugger: true,
-    default: true,
-    delete: true,
-    do: true,
-    double: true,
-    else: true,
-    enum: true,
-    export: true,
-    extends: true,
-    false: true,
-    final: true,
-    finally: true,
-    float: true,
-    for: true,
-    function: true,
-    goto: true,
-    if: true,
-    implements: true,
-    import: true,
-    in: true,
-    instanceof: true,
-    int: true,
-    interface: true,
-    is: true,
-    long: true,
-    namespace: true,
-    native: true,
-    new: true,
-    null: true,
-    package: true,
-    private: true,
-    protected: true,
-    public: true,
-    return: true,
-    short: true,
-    static: true,
-    super: true,
-    switch: true,
-    synchronized: true,
-    this: true,
-    throw: true,
-    throws: true,
-    transient: true,
-    true: true,
-    try: true,
-    typeof: true,
-    use: true,
-    var: true,
-    void: true,
-    volatile: true,
-    while: true,
-    with: true,
-    // reserved Names
-    constructor: true,
-    __defineGetter__: true,
-    __defineSetter__: true,
-    apply: true,
-    arguments: true,
-    call: true,
-    caller: true,
-    eval: true,
-    hasOwnProperty: true,
-    isPrototypeOf: true,
-    __lookupGetter__: true,
-    __lookupSetter__: true,
-    __noSuchMethod__: true,
-    propertyIsEnumerable: true,
-    prototype: true,
-    toSource: true,
-    toLocaleString: true,
-    toString: true,
-    unwatch: true,
-    valueOf: true,
-    watch: true,
-    length: true,
-    name: true,
-};
-
-Sk.builtin.str.reservedWords_ = reservedWords_;
-
-function fixReserved(name) {
-    if (reservedWords_[name] === undefined) {
-        return name;
-    }
-    return name + "_$rw$";
+    return new strBytesConstructor(ret);
 }

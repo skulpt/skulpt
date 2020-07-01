@@ -656,7 +656,7 @@ Sk.builtin.str_methods = function (constructor) {
 };
 
 function getDocs(constructor) {
-    strDocs = {
+    const strDocs = {
         encode:
             "Encode the string using the codec registered for encoding.\n\n  encoding\n    The encoding in which to encode the string.\n  errors\n    The error handling scheme to use for encoding errors.\n    The default is 'strict' meaning that encoding errors raise a\n    UnicodeEncodeError.  Other possible values are 'ignore', 'replace' and\n    'xmlcharrefreplace' as well as any other name registered with\n    codecs.register_error that can handle UnicodeEncodeErrors.",
         replace:
@@ -738,7 +738,7 @@ function getDocs(constructor) {
         __sizeof__: "Return the size of the string in memory, in bytes.",
         __getnewargs__: "on",
     };
-    bytesDocs = {
+    const bytesDocs = {
         __getnewargs__: "on",
         capitalize: "B.capitalize() -> copy of B\n\nReturn a copy of B with only its first character capitalized (ASCII)\nand the rest lower-cased.",
         center:
