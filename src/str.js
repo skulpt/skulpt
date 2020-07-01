@@ -56,11 +56,16 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         tp$doc:
             "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.",
         tp$new: function (args, kwargs) {
+            kwargs = kwargs || [];
             if (this !== Sk.builtin.str.prototype) {
                 return this.$subtype_new(args, kwargs);
             }
-            args = Sk.abstr.copyKeywordsToNamedArgs("str", ["object"], args, kwargs);
-            const x = args[0];
+            let x, encoding = null, errors = null;
+            if (!kwargs.length && args.length <= 1) {
+                x = args[0];
+            } else {
+                [x, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("str", ["object", "encoding", "errors"], args, kwargs, [null, null]);
+            }
             return new Sk.builtin.str(x);
         },
         $r: strBytesRepr,
@@ -159,7 +164,7 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
             // }
             let v;
             try {
-                v = decodeURIComponent((encodeURIComponent(this.v)));
+                v = unescape(encodeURIComponent(this.v));
             } catch (e) {
                 throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
             }
@@ -416,7 +421,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 return new Sk.builtin.bytes("");
             } else if (Sk.builtin.checkString(pySource)) {
                 source = pySource.v;
-                if (encding === null) {
+                if (encoding === null) {
                     throw new Sk.builtin.TypeError("string argument without an encoding");
                 }
                 if (errors === null) {
@@ -427,7 +432,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 }
                 return pySource.encode.$meth.call(pySource, [encoding, errors]); // fast call direct access to the $meth
             } else if (Sk.builtin.checkInt(pySource)) {
-                return new Sk.builtin.bytes("\x00".repeat(source.v.toString())); // just incase v is a bigint
+                return new Sk.builtin.bytes("\x00".repeat(pySource.v.toString())); // just incase v is a bigint
             } else if (Sk.builtin.checkBytes(pySource)) {
                 return pySource;
             } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
@@ -452,8 +457,36 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
             
         },
-        $r: strBytesRepr,
-        tp$str: strBytesRepr,
+        $r: function () {
+            let ret = "";
+            const bytes = this.v;
+            for (let i in bytes) {
+                const num = bytes.charCodeAt(i);
+                if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
+                    ret += makehexform(num);
+                } else if (num == 9 || num == 10 || num == 13 || num == 92) {
+                    switch (num) {
+                        case 9:
+                            ret += "\\t";
+                            break;
+                        case 10:
+                            ret += "\\n";
+                            break;
+                        case 13:
+                            ret += "\\r";
+                            break;
+                        case 92:
+                            ret += "\\\\";
+                            break;
+                    }
+                } else {
+                    ret += String.fromCharCode(num);
+                }
+            }
+            ret = "b'" + ret + "'";
+            return new Sk.builtin.str(ret);
+        },
+        // tp$str: strBytesRepr,
         tp$iter: function () {
             return new Sk.builtin.bytes_iter_(this);
         },
@@ -527,7 +560,9 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
     center: bytesMethodDefs.center,
     count: bytesMethodDefs.count,
     decode: {
-        $meth: function () {},
+        $meth: function () {
+            
+        },
         $flags: {},
         $textsig: "($self, /, encoding='utf-8', errors='strict')",
         $doc:
@@ -582,6 +617,26 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
 };
 
 Sk.abstr.setUpMethods(Sk.builtin.bytes, bytesMethods);
+
+
+function makehexform(num) {
+    var leading;
+    if (num <= 265) {
+        leading = "\\x";
+    } else {
+        leading = "\\u";
+    }
+    num = num.toString(16);
+    if (num.length == 3) {
+        num = num.slice(1,3);
+    }
+    if (num.length  == 1) {
+        num = leading + "0" + num;
+    } else {
+        num = leading + num;
+    }
+    return num;
+};
 
 function strBytesRepr() {
     // single is preferred

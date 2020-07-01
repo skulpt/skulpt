@@ -199,7 +199,7 @@ Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
  * @param {*} arg 
  */
 Sk.builtin.checkString = function (arg) {
-    return arg != null && arg.ob$type == Sk.builtin.str;
+    return arg != null && arg.ob$type === Sk.builtin.str;
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
@@ -208,8 +208,8 @@ Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
  * Is the arg a strict instance of {@link Sk.builtin.bytes}
  * @param {*} arg 
  */
-Sk.builtin.checkString = function (arg) {
-    return arg != null && arg.constructor == Sk.builtin.bytes;
+Sk.builtin.checkBytes = function (arg) {
+    return arg != null && arg.constructor === Sk.builtin.bytes;
 };
 Sk.exportSymbol("Sk.builtin.checkBytes", Sk.builtin.checkBytes);
 
