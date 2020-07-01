@@ -204,6 +204,17 @@ Sk.builtin.checkString = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 /**
+ * @description
+ * Is the arg a strict instance of {@link Sk.builtin.bytes}
+ * @param {*} arg 
+ */
+Sk.builtin.checkString = function (arg) {
+    return arg != null && arg.constructor == Sk.builtin.bytes;
+};
+Sk.exportSymbol("Sk.builtin.checkBytes", Sk.builtin.checkBytes);
+
+
+/**
  * Is the arg an instance of {@link Sk.builtin.type}
  * @param {*} arg 
  */
