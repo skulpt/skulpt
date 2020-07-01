@@ -341,9 +341,11 @@ Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
  * @param {*=} args
  */
 Sk.builtin.ExternalError = function (...args) {
-    this.nativeError = args;
-    const msg = args.toString();
-    Sk.builtin.Exception.call(this, msg);
+    this.nativeError = args[0];
+    if (!Sk.builtin.checkString(this.nativeError)) {
+        args[0] = this.nativeError.toString();
+    }
+    Sk.builtin.Exception.apply(this, args);
 };
 Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
