@@ -341,9 +341,11 @@ Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
  * @param {*=} args
  */
 Sk.builtin.ExternalError = function (...args) {
-    this.nativeError = args;
-    const msg = args.toString();
-    Sk.builtin.Exception.call(this, msg);
+    this.nativeError = args[0];
+    if (!Sk.builtin.checkString(this.nativeError)) {
+        args[0] = this.nativeError.toString();
+    }
+    Sk.builtin.Exception.apply(this, args);
 };
 Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
@@ -369,40 +371,6 @@ Sk.builtin.SystemError = function (...args) {
 };
 Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.UnicodeEncodeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnicodeEncodeError)) {
-        o = Object.create(Sk.builtin.UnicodeEncodeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.StandardError);
-Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
-
-/**
- * @constructor
- * @extends Sk.builtin.StandardError
- * @param {...*} args
- */
-Sk.builtin.UnicodeDecodeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnicodeDecodeError)) {
-        o = Object.create(Sk.builtin.UnicodeDecodeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.StandardError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.StandardError);
-Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
 
 /**
  * @constructor

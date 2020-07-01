@@ -1,14 +1,14 @@
 /**
- * 
+ *
  * @constructor
- * 
+ *
  * @param {Function} fn
  * @param {boolean=} [handlesOwnSuspensions=false] - Does it handle its own suspension?
- * 
+ *
  * @description
  * Create a generic Python iterator that repeatedly calls a given JS function
  * until it returns 'undefined'. This function is useful for user defined Native classes
- * 
+ *
  * @example
  * // some immutable tuple like class where the v property is an array
  * MyClass.prototype.tp$iter = function() {
@@ -18,30 +18,30 @@
  *   return new Sk.generic.iterator(() => i >= len ? self.v[i++] : undefined);
  * }
  * @extends {Sk.builtin.object}
- * 
+ *
  */
 Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
-    constructor : function iterator (fn, handlesOwnSuspensions) {
-        this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
-            let x = fn();
-            if (canSuspend || !x.$isSuspension) {
-                return x;
-            } else {
-                return Sk.misceval.retryOptionalSuspensionOrThrow(x);
-            }
-        };
-    }, 
-    iternext: function (canSuspend) { /* keep slot __next__ happy */
+    constructor: function iterator(fn, handlesOwnSuspensions) {
+        this.tp$iternext = handlesOwnSuspensions
+            ? fn
+            : function (canSuspend) {
+                let x = fn();
+                if (canSuspend || !x.$isSuspension) {
+                    return x;
+                } else {
+                    return Sk.misceval.retryOptionalSuspensionOrThrow(x);
+                }
+            };
+    },
+    iternext: function (canSuspend) {
+        /* keep slot __next__ happy */
         return this.tp$iternext(canSuspend);
     },
     flags: { sk$acceptable_as_base_class: false },
 });
 
-
-
-
 /**
- * 
+ *
  * @constructor
  * @extends {Sk.builtin.object}
  * @param {Sk.builtin.func} callable
@@ -49,7 +49,7 @@ Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
  * @private
  */
 Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
-    constructor: function callable_iter (callable, sentinel) {
+    constructor: function callable_iter(callable, sentinel) {
         if (!Sk.builtin.checkCallable(callable)) {
             throw new Sk.builtin.TypeError("iter(v, w): v must be callable");
         }
@@ -87,8 +87,6 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-
-
 /**
  * @constructor
  * @extends {Sk.builtin.object}
@@ -96,7 +94,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
  * @private
  */
 Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
-    constructor: function list_iter_ (lst) {
+    constructor: function list_iter_(lst) {
         this.$index = 0;
         this.$seq = lst.v;
         this.$done = false; // the list can change size but once we've consumed the iterator we must stop
@@ -114,7 +112,6 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-
 /**
  * @constructor
  * @extends {Sk.builtin.object}
@@ -122,7 +119,7 @@ Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
  * @private
  */
 Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
-    constructor: function reverselist_iter_ (lst) {
+    constructor: function reverselist_iter_(lst) {
         this.$index = lst.v.length - 1;
         this.$seq = lst.v;
     },
@@ -133,7 +130,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
         return this.$seq[this.$index--];
     },
     methods: {
-        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef
+        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
@@ -145,7 +142,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
  * @private
  */
 Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
-    constructor: function set_iter_ (set) {
+    constructor: function set_iter_(set) {
         this.$index = 0;
         this.$seq = set.sk$asarray();
         this.$orig = set;
@@ -164,22 +161,16 @@ Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
  * @private
  */
 Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
-    constructor: function seq_iter (seq) {
+    constructor: function seq_iter(seq) {
         this.$index = 0;
         this.$seq = seq;
     },
     iternext: function (canSuspend) {
         let ret;
         try {
-            ret = this.$seq.mp$subscript(
-                new Sk.builtin.int_(this.$index),
-                canSuspend
-            );
+            ret = this.$seq.mp$subscript(new Sk.builtin.int_(this.$index), canSuspend);
         } catch (e) {
-            if (
-                e instanceof Sk.builtin.IndexError ||
-                e instanceof Sk.builtin.StopIteration
-            ) {
+            if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
                 return undefined;
             } else {
                 throw e;
@@ -196,9 +187,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
                     // sq$length will return Sk.miseval.asIndex
                     return this.$seq.sq$length() - this.$index;
                 } else {
-                    throw new Sk.builtin.NotImplementedError(
-                        "len is not implemented for " + Sk.abstr.typeName(this.$seq)
-                    );
+                    throw new Sk.builtin.NotImplementedError("len is not implemented for " + Sk.abstr.typeName(this.$seq));
                 }
             },
         },
@@ -215,14 +204,42 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
 Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     constructor: function str_iter_(str) {
         this.$index = 0;
-        this.$seq = str.v.slice(0);
-        this.$length = str.sq$length();
+        str.$hasAstralCodePoints();
+        this.$seq = str.codepoints || new Array(str.v.length).fill().map((_, i) => i);
+        this.$length = this.$seq.length;
+        this.$str = str.v;
+    },
+    iternext: function () {
+        const i = this.$seq[this.$index];
+        const j = this.$seq[++this.$index];
+        if (i === undefined) {
+            return undefined;
+        }
+        return new Sk.builtin.str(this.$str.substring(i, j));
+    },
+    methods: {
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});
+
+/**
+ * @constructor
+ * @extends {Sk.builtin.object}
+ * @param {Sk.builtin.bytes} bytes
+ * @private
+ */
+Sk.builtin.bytes_iter_ = Sk.abstr.buildIteratorClass("bytes_iterator", {
+    constructor: function bytes_iter_(bytes) {
+        this.$index = 0;
+        this.$seq = bytes.v.slice(0);
+        this.$length = bytes.sq$length();
     },
     iternext: function () {
         if (this.$index >= this.$length) {
             return undefined;
         }
-        return new Sk.builtin.str(this.$seq.substr(this.$index++, 1));
+        return new Sk.builtin.int_(this.$seq.charCodeAt(this.$index++));
     },
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
@@ -248,10 +265,7 @@ Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-
-
-
-
+Sk.exportSymbol("Sk.builtin.bytes_iter_", Sk.builtin.bytes_iter_);
 Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.dict_iter_", Sk.builtin.dict_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);

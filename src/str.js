@@ -14,7 +14,7 @@ function setInterned(x, pyStr) {
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
-    constructor: function (x) {
+    constructor: function str(x) {
         // new Sk.builtin.str is an internal function called with a JS value x
         // occasionally called with a python object and returns tp$str();
         Sk.asserts.assert(this instanceof Sk.builtin.str, "bad call to str - use 'new'");
@@ -60,11 +60,28 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             if (this !== Sk.builtin.str.prototype) {
                 return this.$subtype_new(args, kwargs);
             }
-            let x, encoding = null, errors = null;
+            let x,
+                encoding = null,
+                errors = null;
             if (!kwargs.length && args.length <= 1) {
                 x = args[0];
             } else {
                 [x, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("str", ["object", "encoding", "errors"], args, kwargs, [null, null]);
+            }
+            // check the types of encoding and errors
+            if (encoding !== null && !Sk.builtin.checkBytes(x)) {
+                throw new Sk.builtin.TypeError("str() argument 2 must be str not " + Sk.abstr.typeName(encoding));
+            }
+            if (errors !== null && !Sk.builtin.checkString(errors)) {
+                throw new Sk.builtin.TypeError("str() argument 3 must be str not " + Sk.abstr.typeName(encoding));
+            }
+            if (encoding !== null || errors !== null) {
+                if (!Sk.builtin.checkBytes(x)) {
+                    throw new Sk.builtin.TypeError((encoding !== null ? "encoding" : "errors") + " without a bytes argument");
+                }
+                encoding = encoding || undefined;
+                errors = errors || undefined;
+                return x.decode.$meth.call(x, [encoding, errors]);
             }
             return new Sk.builtin.str(x);
         },
@@ -80,7 +97,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             return new Sk.builtin.str_iter_(this);
         },
         tp$richcompare: richCompare,
-        mp$subscript: getItem,
+        mp$subscript: getStrItem,
         sq$length: function () {
             return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
         },
@@ -135,6 +152,21 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             this.codepoints = null;
             return false;
         },
+        sk$asarray: function () {
+            const ret = [];
+            const v = this.v;
+            if (this.$hasAstralCodePoints()) {
+                const codepoints = this.codepoints;
+                for (let i = 0; i < codepoints.length; i++) {
+                    ret.push(new Sk.builtin.str(v.substring(codepoints[i], codepoints[i + 1])));
+                }
+            } else {
+                for (let i in v) {
+                    ret.push(new Sk.builtin.str(v[i]));
+                }
+            }
+            return ret;
+        },
     },
     flags: /**@lends {Sk.builtin.str} */ {
         $errorname: "string",
@@ -149,7 +181,10 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
         $meth: function (args, kwargs) {
             /**@todo errors are currently always "strict" (other modes will require manual UTF-8-bashing) */
             let encoding, errors;
-            [encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("encoding", ["encoding", "errors"], args, kwargs, [Sk.builtin.str.$utf8, new Sk.builtin.str("strict")]);
+            [encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("encoding", ["encoding", "errors"], args, kwargs, [
+                Sk.builtin.str.$utf8,
+                new Sk.builtin.str("strict"),
+            ]);
             Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
             Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
             encoding = encoding.$jsstr();
@@ -366,7 +401,7 @@ function fixReserved(name) {
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
-    constructor: function (source) {
+    constructor: function bytes(source) {
         Sk.asserts.assert(this instanceof Sk.builtin.bytes, "bad call to bytes constructor use 'new'");
         let ret;
         if (typeof source === "string") {
@@ -453,16 +488,15 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                     source += String.fromCodePoint(n);
                 });
                 return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
-            } 
+            }
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
-            
         },
         $r: function () {
             let ret = "";
             const bytes = this.v;
             for (let i in bytes) {
                 const num = bytes.charCodeAt(i);
-                if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
+                if (num < 9 || (num > 10 && num < 13) || (num > 13 && num < 32) || num > 126) {
                     ret += makehexform(num);
                 } else if (num == 9 || num == 10 || num == 13 || num == 92) {
                     switch (num) {
@@ -491,7 +525,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             return new Sk.builtin.bytes_iter_(this);
         },
         tp$richcompare: richCompare,
-        mp$subscript: getItem,
+        mp$subscript: getBytesItem,
         sq$length: function () {
             return this.v.length;
         },
@@ -547,6 +581,14 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             return this.v;
         },
         $hasAstralCodePoints: () => false,
+        sk$asarray: function () {
+            const ret = [];
+            const v = this.v;
+            for (let i in v) {
+                ret.push(new Sk.builtin.int_(v.charCodeAt(i)));
+            }
+            return ret;
+        },
     },
     flags: /**@lends {Sk.builtin.bytes} */ {
         $errorname: "bytesstring",
@@ -560,10 +602,32 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
     center: bytesMethodDefs.center,
     count: bytesMethodDefs.count,
     decode: {
-        $meth: function () {
-            
+        $meth: function (args, kwargs) {
+            // TODO errors are currently always "strict"
+            // (other modes will require manual UTF-8-bashing)
+            let encoding, errors;
+            [encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("encoding", ["encoding", "errors"], args, kwargs, [
+                Sk.builtin.str.$utf8,
+                new Sk.builtin.str("strict"),
+            ]);
+            Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
+            Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
+            encoding = encoding.$jsstr();
+            errors = errors.$jsstr();
+            if (!/^utf-?8$/i.test(encoding)) {
+                throw new Sk.builtin.ValueError("Only UTF-8 encoding and decoding is supported");
+            }
+
+            let v;
+            try {
+                v = decodeURIComponent(escape(this.v));
+            } catch (e) {
+                throw new Sk.builtin.UnicodeEncodeError("UTF-8 decoding failed");
+            }
+
+            return new Sk.builtin.str(v);
         },
-        $flags: {},
+        $flags: {FastCall: true},
         $textsig: "($self, /, encoding='utf-8', errors='strict')",
         $doc:
             "Decode the bytes using the codec registered for encoding.\n\n  encoding\n    The encoding with which to decode the bytes.\n  errors\n    The error handling scheme to use for the handling of decoding errors.\n    The default is 'strict' meaning that decoding errors raise a\n    UnicodeDecodeError. Other possible values are 'ignore' and 'replace'\n    as well as any other name registered with codecs.register_error that\n    can handle UnicodeDecodeErrors.",
@@ -618,7 +682,6 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
 
 Sk.abstr.setUpMethods(Sk.builtin.bytes, bytesMethods);
 
-
 function makehexform(num) {
     var leading;
     if (num <= 265) {
@@ -628,15 +691,15 @@ function makehexform(num) {
     }
     num = num.toString(16);
     if (num.length == 3) {
-        num = num.slice(1,3);
+        num = num.slice(1, 3);
     }
-    if (num.length  == 1) {
+    if (num.length == 1) {
         num = leading + "0" + num;
     } else {
         num = leading + num;
     }
     return num;
-};
+}
 
 function strBytesRepr() {
     // single is preferred
@@ -729,7 +792,7 @@ function seqRepeat(n) {
     return new this.baseType(ret);
 }
 
-function getItem(index) {
+function getStrItem(index) {
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
         let len = this.sq$length();
@@ -760,6 +823,28 @@ function getItem(index) {
         return new this.baseType(ret);
     } else {
         throw new Sk.builtin.TypeError(this.baseType.$errorname + " indices must be integers, not " + Sk.abstr.typeName(index));
+    }
+}
+
+function getBytesItem(index) {
+    if (Sk.misceval.isIndex(index)) {
+        index = Sk.misceval.asIndex(index);
+        if (index < 0) {
+            index = this.v.length + index;
+        }
+        if (index < 0 || index >= this.v.length) {
+            throw new Sk.builtin.IndexError("bytestring index out of range");
+        }
+        return new Sk.builtin.int_(this.v.charCodeAt(index));
+    } else if (index instanceof Sk.builtin.slice) {
+        let ret = "";
+        const v = this.v;
+        index.sssiter$(v.length, function (i) {
+            ret += v.charAt(i);
+        });
+        return new Sk.builtin.bytes(ret);
+    } else {
+        throw new Sk.builtin.TypeError("bytestring indices must be integers, not " + Sk.abstr.typeName(index));
     }
 }
 
