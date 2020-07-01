@@ -504,49 +504,50 @@ Sk.builtin.repr = function repr(x) {
 };
 
 Sk.builtin.ascii = function ascii(x) {
-    const r = x.$r();
-    let ret;
-    let i;
-    // Fast path
-    for (i = 0; i < r.v.length; i++) {
-        if (r.v.charCodeAt(i) >= 0x7f) {
-            ret = r.v.substr(0, i);
-            break;
-        }
-    }
-    if (!ret) {
-        return r;
-    }
-    for (; i < r.v.length; i++) {
-        let c = r.v.charAt(i);
-        let cc = r.v.charCodeAt(i);
-
-        if (cc > 0x7f && cc <= 0xff) {
-            let ashex = cc.toString(16);
-            if (ashex.length < 2) {
-                ashex = "0" + ashex;
+    return Sk.misceval.chain(x.$r(), (r) => {
+        let ret;
+        let i;
+        // Fast path
+        for (i = 0; i < r.v.length; i++) {
+            if (r.v.charCodeAt(i) >= 0x7f) {
+                ret = r.v.substr(0, i);
+                break;
             }
-            ret += "\\x" + ashex;
-        } else if ((cc > 0x7f && cc < 0xd800) || cc >= 0xe000) {
-            // BMP
-            ret += "\\u" + ("000" + cc.toString(16)).slice(-4);
-        } else if (cc >= 0xd800) {
-            // Surrogate pair stuff
-            let val = r.v.codePointAt(i);
-            i++;
+        }
+        if (!ret) {
+            return r;
+        }
+        for (; i < r.v.length; i++) {
+            let c = r.v.charAt(i);
+            let cc = r.v.charCodeAt(i);
 
-            val = val.toString(16);
-            let s = "0000000" + val.toString(16);
-            if (val.length > 4) {
-                ret += "\\U" + s.slice(-8);
+            if (cc > 0x7f && cc <= 0xff) {
+                let ashex = cc.toString(16);
+                if (ashex.length < 2) {
+                    ashex = "0" + ashex;
+                }
+                ret += "\\x" + ashex;
+            } else if ((cc > 0x7f && cc < 0xd800) || cc >= 0xe000) {
+                // BMP
+                ret += "\\u" + ("000" + cc.toString(16)).slice(-4);
+            } else if (cc >= 0xd800) {
+                // Surrogate pair stuff
+                let val = r.v.codePointAt(i);
+                i++;
+
+                val = val.toString(16);
+                let s = "0000000" + val.toString(16);
+                if (val.length > 4) {
+                    ret += "\\U" + s.slice(-8);
+                } else {
+                    ret += "\\u" + s.slice(-4);
+                }
             } else {
-                ret += "\\u" + s.slice(-4);
+                ret += c;
             }
-        } else {
-            ret += c;
         }
-    }
-    return new Sk.builtin.str(ret);
+        return new Sk.builtin.str(ret);
+    });
 };
 
 Sk.builtin.open = function open(filename, mode, bufsize) {

@@ -187,21 +187,38 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
             ]);
             Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
             Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
-            encoding = encoding.$jsstr();
-            errors = errors.$jsstr();
-            if (!/^utf-?8$/i.test(encoding)) {
-                throw new Sk.builtin.ValueError("Only UTF-8 or ASCII encoding and decoding is supported");
+            encoding = encoding.$jsstr().toLowerCase();
+            errors = errors.$jsstr().toLowerCase();
+            if (encoding !== "utf-8" && encoding !== "ascii") {
+                throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
             }
-            // Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
-            // errors = errors.$jsstr();
-            // if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
-            //     throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
-            // }
+            if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
+                throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
+            }
             let v;
-            try {
-                v = unescape(encodeURIComponent(this.v));
-            } catch (e) {
-                throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
+            if (encoding === "ascii") {
+                let source = this.v;
+                v = "";
+                for (let i in source) {
+                    const val = source.charCodeAt(i);
+                    if (val < 0 || val > 127) {
+                        if (errors == "strict") {
+                            throw new Sk.builtin.UnicodeEncodeError(
+                                "'ascii' codec can't encode character '" + makehexform(val) + "' in position " + i + ": ordinal not in range(128)"
+                            );
+                        } else if (errors == "replace") {
+                            v += "?";
+                        }
+                    } else {
+                        v += source[i];
+                    }
+                }
+            } else {
+                try {
+                    v = unescape(encodeURIComponent(this.v));
+                } catch (e) {
+                    throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
+                }
             }
             return Sk.__future__.python3 ? new Sk.builtin.bytes(v) : new Sk.builtin.str(v);
         },
@@ -243,7 +260,7 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
     upper: strMethodDefs.upper,
     startswith: strMethodDefs.startswith,
     endswith: strMethodDefs.endswith,
-    // isascii: strMethodDefs.isascii,
+    isascii: strMethodDefs.isascii,
     islower: strMethodDefs.islower,
     isupper: strMethodDefs.isupper,
     istitle: strMethodDefs.istitle,
@@ -551,15 +568,22 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         fromhex: {
             $meth: function (hex) {
                 Sk.builtin.pyCheckType("hex", "string", Sk.builtin.checkString(hex));
-                let h = hex.v.replace(/\s*/g, "");
-                let v = "";
-                for (let i = 0; i < h.length; i += 2) {
-                    let s = h.substr(i, 2);
-                    let n = parseInt(s, 16);
+                hex = hex.v;
+                function checkHex(n, s) {
                     if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
                         throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
                     }
-                    v += String.fromCharCode(n);
+                }
+                const hex_splice = hex.split(/\s+/);
+                let v = "";
+                for (let i = 0; i < hex_splice.length; i++) {
+                    const h = hex_splice[i];
+                    for (j = 0; j < h.length; j += 2) {
+                        let s = h.substr(j, 2);
+                        let n = parseInt(s, 16);
+                        checkHex(n, s);
+                        v += String.fromCharCode(n);
+                    }
                 }
                 return new Sk.builtin.bytes(v);
             },
@@ -601,6 +625,14 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
     capitalize: bytesMethodDefs.capitalize,
     center: bytesMethodDefs.center,
     count: bytesMethodDefs.count,
+    // {
+    //     $meth: bytesCount,
+    //     $flags: { MinArgs: 1, MaxArgs: 3 },
+    //     $textsig: null,
+    //     $doc:
+    //         "B.count(sub[, start[, end]]) -> int\n\nReturn the number of non-overlapping occurrences of subsection sub in\nbytes B[start:end].  Optional arguments start and end are interpreted\nas in slice notation.",
+    // },
+
     decode: {
         $meth: function (args, kwargs) {
             // TODO errors are currently always "strict"
@@ -612,22 +644,46 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
             ]);
             Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
             Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
-            encoding = encoding.$jsstr();
-            errors = errors.$jsstr();
-            if (!/^utf-?8$/i.test(encoding)) {
-                throw new Sk.builtin.ValueError("Only UTF-8 encoding and decoding is supported");
+            encoding = encoding.v;
+            errors = errors.v;
+            if (encoding !== "utf-8" && encoding !== "ascii") {
+                throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
             }
 
             let v;
-            try {
-                v = decodeURIComponent(escape(this.v));
-            } catch (e) {
-                throw new Sk.builtin.UnicodeEncodeError("UTF-8 decoding failed");
+            if (encoding == "ascii") {
+                let string = this.v;
+                v = "";
+                for (let i in string) {
+                    const val = string[i];
+                    const cc = val.charCodeAt(0);
+                    if (cc > 127) {
+                        if (errors == "strict") {
+                            throw new Sk.builtin.UnicodeDecodeError(
+                                "'ascii' codec can't decode byte 0x" +
+                                    cc.toString(16) +
+                                    " in position " +
+                                    i.toString() +
+                                    ": ordinal not in range(128)"
+                            );
+                        } else if (errors == "replace") {
+                            v += String.fromCharCode(65533);
+                        }
+                    } else {
+                        v += val;
+                    }
+                }
+            } else {
+                try {
+                    v = decodeURIComponent(escape(this.v));
+                } catch (e) {
+                    throw new Sk.builtin.UnicodeDecodeError("UTF-8 decoding failed");
+                }
             }
 
             return new Sk.builtin.str(v);
         },
-        $flags: {FastCall: true},
+        $flags: { FastCall: true },
         $textsig: "($self, /, encoding='utf-8', errors='strict')",
         $doc:
             "Decode the bytes using the codec registered for encoding.\n\n  encoding\n    The encoding with which to decode the bytes.\n  errors\n    The error handling scheme to use for the handling of decoding errors.\n    The default is 'strict' meaning that decoding errors raise a\n    UnicodeDecodeError. Other possible values are 'ignore' and 'replace'\n    as well as any other name registered with codecs.register_error that\n    can handle UnicodeDecodeErrors.",
@@ -651,7 +707,7 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
     index: bytesMethodDefs.index,
     isalnum: bytesMethodDefs.isalnum,
     isalpha: bytesMethodDefs.isalpha,
-    // isascii: bytesMethodDefs.isascii,
+    isascii: bytesMethodDefs.isascii,
     isdigit: bytesMethodDefs.isdigit,
     islower: bytesMethodDefs.islower,
     isspace: bytesMethodDefs.isspace,

@@ -5,7 +5,7 @@
 // String constants
 Sk.builtin.str.$empty = new Sk.builtin.str("");
 Sk.builtin.str.$emptystr = Sk.builtin.str.$empty;
-// Sk.builtin.bytes.$empty = new Sk.builtin.bytes("");
+Sk.builtin.bytes.$empty = new Sk.builtin.bytes("");
 
 Sk.builtin.str.$default_factory = new Sk.builtin.str("default_factory");
 Sk.builtin.str.$imag = new Sk.builtin.str("imag");

@@ -19,15 +19,28 @@
  */
 Sk.builtin.str_methods = function (constructor) {
     const docs = getDocs(constructor);
-    let checkType, englishName, englishSingular;
+    let checkType, englishName, englishSingular, getTgt;
     if (constructor === Sk.builtin.str) {
         checkType = Sk.builtin.checkString;
+        getTgt = (x) => {
+            if (!Sk.builtin.checkString(x)) {
+                throw new Sk.builtin.TypeError("must be str, not " + Sk.abstr.typeName(x));
+            }
+            return x.v;
+        };
         englishName = "string";
         englishSingular = "char";
     } else {
         checkType = Sk.builtin.checkBytes;
         englishName = "bytes";
         englishSingular = "byte";
+        getTgt = (x) => {
+            if (x instanceof Sk.builtin.bytes) {
+                return x.v;
+            }
+            x = Sk.misceval.asIndexOrThrow(x, "argument should be integer or bytes-like object, not " + Sk.abstr.typeName(x));
+            return String.fromCharCode(x);
+        };
     }
 
     const methods = {
@@ -129,7 +142,7 @@ Sk.builtin.str_methods = function (constructor) {
                 for (let it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                     if (i.constructor !== constructor) {
                         throw new Sk.builtin.TypeError(
-                            "TypeError: sequence item " + arrOfStrs.length + ": expected " + englishName + ", " + Sk.abstr.typeNameype(i) + " found"
+                            "TypeError: sequence item " + arrOfStrs.length + ": expected " + englishName + ", " + Sk.abstr.typeName(i) + " found"
                         );
                     }
                     arrOfStrs.push(i.v);
@@ -170,37 +183,31 @@ Sk.builtin.str_methods = function (constructor) {
         center: { $meth: mkJust(false, true), $flags: { MinArgs: 1, MaxArgs: 2 }, $textsig: "($self, width, fillchar=' ', /)", $doc: docs.center },
         count: {
             $meth: function (pat, start, end) {
-                if (!checkType(pat)) {
-                    throw new Sk.builtin.TypeError("expected a character buffer object");
-                }
-                if (start !== undefined && !Sk.builtin.checkInt(start)) {
-                    throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-                }
-                if (end !== undefined && !Sk.builtin.checkInt(end)) {
-                    throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-                }
-
+                pat = getTgt(pat);
                 let len = this.sq$length();
-
-                if (start === undefined) {
+                if (start === undefined || Sk.builtin.checkNone(start)) {
                     start = 0;
                 } else {
-                    start = Sk.builtin.asnum$(start);
+                    start = Sk.misceval.asIndexOrThrow(start, "slice indices must be integers or None or have an __index__ method");
                     start = start >= 0 ? start : len + start;
-                    if (start > len) {
-                        // Guard against running off the end of the codepoints array
-                        return new Sk.builtin.int_(0);
+                    if (start < 0) {
+                        start = 0;
                     }
                 }
-
-                if (end === undefined) {
+                if (end === undefined || Sk.builtin.checkNone(end)) {
                     end = len;
                 } else {
-                    end = Sk.builtin.asnum$(end);
+                    end = Sk.misceval.asIndexOrThrow(end, "slice indices must be integers or None or have an __index__ method");
                     end = end >= 0 ? end : len + end;
                 }
+                if (start > len) {
+                    return new Sk.builtin.int_(0);
+                }
+                if (end < start) {
+                    return new Sk.builtin.int_(0);
+                }
 
-                const normaltext = pat.v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+                const normaltext = pat.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
                 const m = new RegExp(normaltext, "g");
                 const slice = this.v.slice(this.codepoints ? this.codepoints[start] : start, this.codepoints ? this.codepoints[end] : end);
                 const ctl = slice.match(m);
@@ -322,11 +329,7 @@ Sk.builtin.str_methods = function (constructor) {
                     return new Sk.builtin.tuple([constructor.$empty, constructor.$empty, this]);
                 }
 
-                return new Sk.builtin.tuple([
-                    new constructor(this.v.substring(0, pos)),
-                    sep,
-                    new constructor(this.v.substring(pos + sep.v.length)),
-                ]);
+                return new Sk.builtin.tuple([new constructor(this.v.substring(0, pos)), sep, new constructor(this.v.substring(pos + sep.v.length))]);
             },
             $flags: { OneArg: true },
             $textsig: "($self, sep, /)",
@@ -444,11 +447,21 @@ Sk.builtin.str_methods = function (constructor) {
             $textsig: null,
             $doc: docs.endswith,
         },
-        // isascii: {
-        //     $meth: Sk.builtin.str.methods.isascii,
-        //     $flags:{},
-        //     $textsig: "($self, /)",
-        //     $doc: "Return True if all characters in the string are ASCII, False otherwise.\n\nASCII characters have code points in the range U+0000-U+007F.\nEmpty string is ASCII too." },
+        isascii: {
+            $meth: function () {
+                const v = this.v;
+                for (i = 0; i < v.length; i++) {
+                    val = v.charCodeAt(i);
+                    if (!(val >= 0 && val < 128)) {
+                        return Sk.builtin.bool.false$;
+                    }
+                }
+                return Sk.builtin.bool.true$;
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc: docs.isascii,
+        },
         islower: {
             $meth: function () {
                 return new Sk.builtin.bool(this.v.length && /[a-z]/.test(this.v) && !/[A-Z]/.test(this.v));
@@ -507,7 +520,7 @@ Sk.builtin.str_methods = function (constructor) {
             $meth: function () {
                 return new Sk.builtin.bool(/^\d+$/.test(this.v));
             },
-            $flags: {},
+            $flags: { NoArgs: true },
             $textsig: "($self, /)",
             $doc: docs.isdigit,
         },
@@ -559,7 +572,7 @@ Sk.builtin.str_methods = function (constructor) {
 
     function mkFind(isReversed) {
         return function strFind(tgt, start, end) {
-            Sk.builtin.pyCheckType("", englishName, checkType(tgt));
+            tgt = getTgt(tgt);
             let len = this.sq$length();
             if (start === undefined || Sk.builtin.checkNone(start)) {
                 start = 0;
@@ -596,8 +609,8 @@ Sk.builtin.str_methods = function (constructor) {
                 }
 
                 // ...do the search..
-                end -= tgt.v.length;
-                let jsidx = isReversed ? this.v.lastIndexOf(tgt.v, end) : this.v.indexOf(tgt.v, start);
+                end -= tgt.length;
+                let jsidx = isReversed ? this.v.lastIndexOf(tgt, end) : this.v.indexOf(tgt, start);
                 jsidx = jsidx >= start && jsidx <= end ? jsidx : -1;
 
                 // ...and now convert them back
@@ -610,8 +623,8 @@ Sk.builtin.str_methods = function (constructor) {
                 }
             } else {
                 // No astral codepoints, no conversion required
-                end -= tgt.v.length;
-                idx = isReversed ? this.v.lastIndexOf(tgt.v, end) : this.v.indexOf(tgt.v, start);
+                end -= tgt.length;
+                idx = isReversed ? this.v.lastIndexOf(tgt, end) : this.v.indexOf(tgt, start);
                 idx = idx >= start && idx <= end ? idx : -1;
             }
 
