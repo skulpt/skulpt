@@ -364,7 +364,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
     constructor: function (source) {
         Sk.asserts.assert(this instanceof Sk.builtin.bytes, "bad call to bytes constructor use 'new'");
         let ret;
-        if (typeof soure == "string") {
+        if (typeof source === "string") {
             ret = source;
         } else if (source === undefined) {
             ret = "";
