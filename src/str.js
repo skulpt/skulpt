@@ -677,7 +677,20 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
                 try {
                     v = decodeURIComponent(escape(this.v));
                 } catch (e) {
-                    throw new Sk.builtin.UnicodeDecodeError("UTF-8 decoding failed");
+                    // slow case there is at least 1 error
+                    const string = this.v;
+                    v = "";
+                    for (let i in string) {
+                        try {
+                            v += decodeURIComponent(escape(string[i]));
+                        } catch (e)  {
+                            if (errors == "strict") {
+                                throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + string[i].toString(16) + " in position " + i.toString() + ": invalid start byte");
+                            } else if (errors === "replace") {
+                                v += String.fromCharCode(65533);
+                            }
+                        }
+                    }
                 }
             }
 

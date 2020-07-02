@@ -19,7 +19,7 @@
  */
 Sk.builtin.str_methods = function (constructor) {
     const docs = getDocs(constructor);
-    let checkType, englishName, englishSingular, getTgt;
+    let checkType, englishName, englishSingular, getTgt, typeName;
     if (constructor === Sk.builtin.str) {
         checkType = Sk.builtin.checkString;
         getTgt = (x) => {
@@ -30,6 +30,7 @@ Sk.builtin.str_methods = function (constructor) {
         };
         englishName = "string";
         englishSingular = "char";
+        typeName = "str";
     } else {
         checkType = Sk.builtin.checkBytes;
         englishName = "bytes";
@@ -41,6 +42,7 @@ Sk.builtin.str_methods = function (constructor) {
             x = Sk.misceval.asIndexOrThrow(x, "argument should be integer or bytes-like object, not " + Sk.abstr.typeName(x));
             return String.fromCharCode(x);
         };
+        typeName = "byetes";
     }
 
     const methods = {
@@ -185,21 +187,7 @@ Sk.builtin.str_methods = function (constructor) {
             $meth: function (pat, start, end) {
                 pat = getTgt(pat);
                 let len = this.sq$length();
-                if (start === undefined || Sk.builtin.checkNone(start)) {
-                    start = 0;
-                } else {
-                    start = Sk.misceval.asIndexOrThrow(start, "slice indices must be integers or None or have an __index__ method");
-                    start = start >= 0 ? start : len + start;
-                    if (start < 0) {
-                        start = 0;
-                    }
-                }
-                if (end === undefined || Sk.builtin.checkNone(end)) {
-                    end = len;
-                } else {
-                    end = Sk.misceval.asIndexOrThrow(end, "slice indices must be integers or None or have an __index__ method");
-                    end = end >= 0 ? end : len + end;
-                }
+                [start, end] = getStartEndAsJs(start, end, len);
                 if (start > len) {
                     return new Sk.builtin.int_(0);
                 }
@@ -427,23 +415,94 @@ Sk.builtin.str_methods = function (constructor) {
             $doc: docs.upper,
         },
         startswith: {
-            $meth: function (prefix) {
-                //todo start, end
-                Sk.builtin.pyCheckType("prefix", englishName, checkType(prefix));
-                return new Sk.builtin.bool(this.v.indexOf(prefix.v) === 0);
+            $meth: function (prefix, start, end) {
+                if (!(prefix instanceof constructor) && prefix.constructor !== Sk.builtin.tuple) {
+                    throw new Sk.builtin.TypeError(
+                        "startswith first arg must be " + typeName + " or a tuple of " + typeName + ", not " + Sk.abstr.typeName(prefix)
+                    );
+                }
+                len = this.sq$length();
+                [start, end] = getStartEndAsJs(start, end, len);
+                if (start > len) {
+                    return Sk.builtin.bool.false$;
+                }
+
+                const slice = this.v.slice(this.codepoints ? this.codepoints[start] : start, this.codepoints ? this.codepoints[end] : end);
+                if (prefix.constructor === Sk.builtin.tuple) {
+                    let resultBool;
+                    for (let it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                        if (!(i instanceof constructor)) {
+                            throw new Sk.builtin.TypeError(
+                                "tuple for startswith must only contain " + typeName + ", not " + Sk.abstr.typeName(prefix)
+                            );
+                        }
+                        if (start > end) {
+                            resultBool = start <= 0;
+                        } else {
+                            resultBool = slice.indexOf(i.v) === 0;
+                        }
+                        if (resultBool) {
+                            break;
+                        }
+                    }
+                    return resultBool ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+                }
+
+                if (prefix.v === "" && start > end && end >= 0) {
+                    return Sk.builtin.bool.false$;
+                }
+
+                return new Sk.builtin.bool(slice.indexOf(prefix.v) === 0);
             },
-            $flags: { OneArg: true },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
             $textsig: null,
             $doc: docs.startswith,
         },
         endswith: {
-            $meth: function (suffix) {
-                // todo start, end
-                // http://stackoverflow.com/questions/280634/endswith-in-javascript
-                Sk.builtin.pyCheckType("suffix", englishName, checkType(suffix));
-                return new Sk.builtin.bool(this.v.indexOf(suffix.v, this.v.length - suffix.v.length) !== -1);
+            $meth: function (suffix, start, end) {
+                if (!(suffix instanceof constructor) && suffix.constructor !== Sk.builtin.tuple) {
+                    throw new Sk.builtin.TypeError(
+                        "startswith first arg must be " + typeName + " or a tuple of " + typeName + ", not " + Sk.abstr.typeName(suffix)
+                    );
+                }
+                len = this.sq$length();
+                [start, end] = getStartEndAsJs(start, end, len);
+                if (start > len) {
+                    return Sk.builtin.bool.false$;
+                }
+
+                const slice = this.v.slice(this.codepoints ? this.codepoints[start] : start, this.codepoints ? this.codepoints[end] : end);
+                if (suffix.constructor === Sk.builtin.tuple) {
+                    let resultBool;
+                    for (let it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                        if (!(i instanceof constructor)) {
+                            throw new Sk.builtin.TypeError(
+                                "tuple for startswith must only contain " + typeName + ", not " + Sk.abstr.typeName(suffix)
+                            );
+                        }
+                        if (start > end) {
+                            resultBool = start <= 0;
+                        } else {
+                            resultBool = slice.indexOf(i.v, slice.length - i.v.length) !== -1;
+                        }
+                        if (resultBool) {
+                            break;
+                        }
+                    }
+                    return resultBool ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+                }
+
+                if (suffix.v === "" && start > end && end >= 0) {
+                    return Sk.builtin.bool.false$;
+                }
+
+                return new Sk.builtin.bool(slice.indexOf(suffix.v, slice.length - suffix.v.length) !== -1);
             },
-            $flags: { OneArg: true },
+            // // todo start, end
+            // // http://stackoverflow.com/questions/280634/endswith-in-javascript
+            // Sk.builtin.pyCheckType("suffix", englishName, checkType(suffix));
+            // return new Sk.builtin.bool(this.v.indexOf(suffix.v, this.v.length - suffix.v.length) !== -1);
+            $flags: { MinArgs: 1, MaxArgs: 3 },
             $textsig: null,
             $doc: docs.endswith,
         },
@@ -570,25 +629,30 @@ Sk.builtin.str_methods = function (constructor) {
         },
     };
 
+    function getStartEndAsJs(start, end, len) {
+        if (start === undefined || Sk.builtin.checkNone(start)) {
+            start = 0;
+        } else {
+            start = Sk.misceval.asIndexOrThrow(start, "slice indices must be integers or None or have an __index__ method");
+            start = start >= 0 ? start : len + start;
+            if (start < 0) {
+                start = 0;
+            }
+        }
+        if (end === undefined || Sk.builtin.checkNone(end)) {
+            end = len;
+        } else {
+            end = Sk.misceval.asIndexOrThrow(end, "slice indices must be integers or None or have an __index__ method");
+            end = end >= 0 ? end : len + end;
+        }
+        return [start, end];
+    }
+
     function mkFind(isReversed) {
         return function strFind(tgt, start, end) {
             tgt = getTgt(tgt);
             let len = this.sq$length();
-            if (start === undefined || Sk.builtin.checkNone(start)) {
-                start = 0;
-            } else {
-                start = Sk.misceval.asIndexOrThrow(start, "slice indices must be integers or None or have an __index__ method");
-                start = start >= 0 ? start : len + start;
-                if (start < 0) {
-                    start = 0;
-                }
-            }
-            if (end === undefined || Sk.builtin.checkNone(end)) {
-                end = len;
-            } else {
-                end = Sk.misceval.asIndexOrThrow(end, "slice indices must be integers or None or have an __index__ method");
-                end = end >= 0 ? end : len + end;
-            }
+            [start, end] = getStartEndAsJs(start, end, len);
             // This guard makes sure we don't, eg, look for self.codepoints[-1]
             if (start > len) {
                 return new Sk.builtin.int_(-1);
