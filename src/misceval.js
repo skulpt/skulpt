@@ -352,6 +352,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                     return v.v === w.v;
                 }
                 return JSBI.equal(JSBI.BigInt(v.v), JSBI.BigInt(w.v));
+            } else if (v_type === Sk.builtin.bytes) {
+                return v.v === w.v;
             }
         }
         return false;
