@@ -85,7 +85,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             }
             return new Sk.builtin.str(x);
         },
-        $r: strBytesRepr,
+        $r: strRepr,
         tp$str: function () {
             if (this.constructor === Sk.builtin.str) {
                 return this;
@@ -265,7 +265,13 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
     isupper: strMethodDefs.isupper,
     istitle: strMethodDefs.istitle,
     isspace: strMethodDefs.isspace,
-    // isdecimal: strMethodDefs.isdecimal,
+    // isdecimal: {
+    //     $meth: function () {},
+    //     $flags: { NoArgs: true },
+    //     $textsig: "($self, /)",
+    //     $doc:
+    //         "Return True if the string is a decimal string, False otherwise.\n\nA string is a decimal string if all characters in the string are decimal and\nthere is at least one character in the string.",
+    // },
     isdigit: strMethodDefs.isdigit,
     isnumeric: {
         $meth: function () {
@@ -510,13 +516,19 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         },
         $r: function () {
             let ret = "";
+            let quote = "'";
+            if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1) {
+                quote = '"';
+            }
+            ret = "b" + quote;
             const bytes = this.v;
             for (let i in bytes) {
-                const num = bytes.charCodeAt(i);
-                if (num < 9 || (num > 10 && num < 13) || (num > 13 && num < 32) || num > 126) {
-                    ret += makehexform(num);
-                } else if (num == 9 || num == 10 || num == 13 || num == 92) {
-                    switch (num) {
+                const c = bytes[i];
+                const cc = bytes.charCodeAt(i);
+                if (cc < 9 || (cc > 10 && cc < 13) || (cc > 13 && cc < 32) || cc > 126) {
+                    ret += makehexform(cc);
+                } else if (cc == 9 || cc == 10 || cc == 13 || cc == 92) {
+                    switch (cc) {
                         case 9:
                             ret += "\\t";
                             break;
@@ -530,14 +542,18 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                             ret += "\\\\";
                             break;
                     }
+                } else if (c === quote) {
+                    ret += "\\" + c;
                 } else {
-                    ret += String.fromCharCode(num);
+                    ret += c;
                 }
             }
-            ret = "b'" + ret + "'";
+            ret +=  quote;
             return new Sk.builtin.str(ret);
         },
-        // tp$str: strBytesRepr,
+        tp$str: function() {
+            return this.$r();
+        },
         tp$iter: function () {
             return new Sk.builtin.bytes_iter_(this);
         },
@@ -562,7 +578,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
         },
         tp$as_number: true,
-        nb$remainser: strBytesRemainder,
+        nb$remainder: strBytesRemainder,
     },
     classmethods: /**@lends Sk.builtin.bytes.prototype*/ {
         fromhex: {
@@ -625,14 +641,6 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
     capitalize: bytesMethodDefs.capitalize,
     center: bytesMethodDefs.center,
     count: bytesMethodDefs.count,
-    // {
-    //     $meth: bytesCount,
-    //     $flags: { MinArgs: 1, MaxArgs: 3 },
-    //     $textsig: null,
-    //     $doc:
-    //         "B.count(sub[, start[, end]]) -> int\n\nReturn the number of non-overlapping occurrences of subsection sub in\nbytes B[start:end].  Optional arguments start and end are interpreted\nas in slice notation.",
-    // },
-
     decode: {
         $meth: function (args, kwargs) {
             // TODO errors are currently always "strict"
@@ -683,9 +691,15 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
                     for (let i in string) {
                         try {
                             v += decodeURIComponent(escape(string[i]));
-                        } catch (e)  {
+                        } catch (e) {
                             if (errors == "strict") {
-                                throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + string[i].toString(16) + " in position " + i.toString() + ": invalid start byte");
+                                throw new Sk.builtin.UnicodeDecodeError(
+                                    "'utf-8' codec can't decode byte 0x" +
+                                        string[i].toString(16) +
+                                        " in position " +
+                                        i.toString() +
+                                        ": invalid start byte"
+                                );
                             } else if (errors === "replace") {
                                 v += String.fromCharCode(65533);
                             }
@@ -770,7 +784,7 @@ function makehexform(num) {
     return num;
 }
 
-function strBytesRepr() {
+function strRepr(self) {
     // single is preferred
     let ashex, c, cc;
     let quote = "'";
@@ -940,14 +954,14 @@ function strBytesRemainder(rhs) {
 
     let self = this;
 
-    if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
+    if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === this.baseType)) {
         rhs = new Sk.builtin.tuple([rhs]);
     }
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
 
     //           1 2222222222222222   33333333   444444444   5555555555555  66666  777777777777777777
-    regex = /%(\([a-zA-Z0-9]+\))?([#0 +\-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrs%])/g;
+    regex = /%(\([a-zA-Z0-9]+\))?([#0 +\-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrsb%])/g;
     index = 0;
     replFunc = function (substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType) {
         var result;
@@ -1187,9 +1201,30 @@ function strBytesRemainder(rhs) {
                 return r.v.substr(0, precision);
             }
             return r.v;
-        } else if (conversionType === "s") {
-            r = new strBytesConstructor(value);
+        } else if (conversionType === "s" && strBytesConstructor === Sk.builtin.str) {
+            r = new Sk.builtin.str(value);
             r = r.$jsstr();
+            if (precision) {
+                return r.substr(0, precision);
+            }
+            if (fieldWidth) {
+                r = handleWidth([" ", r]);
+            }
+            return r;
+        } else if (conversionType === "b" || conversionType === "s") {
+            if (strBytesConstructor !== Sk.builtin.bytes) {
+                throw new Sk.builtin.ValueError("unsupported format character 'b'");
+            }
+            let func;
+            if (!(value instanceof Sk.builtin.bytes) && (func = Sk.abstr.lookupSpecial(value, Sk.builtin.str.$bytes) === undefined)) {
+                throw new Sk.builtin.TypeError(
+                    "%b requires a bytes-like object, or an object that implements __bytes__, not '" + Sk.abstr.typeName(value) + "'"
+                );
+            }
+            if (func !== undefined) {
+                value = Sk.misceval.callsimArray(func, [value]);
+            }
+            r = value.$jsstr();
             if (precision) {
                 return r.substr(0, precision);
             }

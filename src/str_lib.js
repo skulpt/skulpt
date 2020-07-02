@@ -1,17 +1,5 @@
-/**
- * only in str not in bytes
- * {'__format__',
- * 'casefold',
- * 'encode',
- * 'format',
- * 'format_map',
- * 'isdecimal',
- * 'isidentifier',
- * 'isnumeric',
- * 'isprintable'}
- */
 
-/**not in str {'decode', 'fromhex', 'hex'} only in bytes */
+
 
 /**
  *
@@ -40,6 +28,9 @@ Sk.builtin.str_methods = function (constructor) {
                 return x.v;
             }
             x = Sk.misceval.asIndexOrThrow(x, "argument should be integer or bytes-like object, not " + Sk.abstr.typeName(x));
+            if (x < 0 || x > 255) {
+                throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+            }
             return String.fromCharCode(x);
         };
         typeName = "byetes";
@@ -134,7 +125,7 @@ Sk.builtin.str_methods = function (constructor) {
             $doc: docs.split,
         },
         // rsplit: {
-        //     $meth: Sk.builtin.str.methods.rsplit,
+        //     $meth: function () {},
         //     $flags:{},
         //     $textsig: "($self, /, sep=None, maxsplit=-1)",
         //     $doc: "Return a list of the words in the string, using sep as the delimiter string.\n\n  sep\n    The delimiter according which to split the string.\n    None (the default value) means split according to any whitespace,\n    and discard empty strings from the result.\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.\n\nSplits are done starting at the end of the string and working to the front." },
