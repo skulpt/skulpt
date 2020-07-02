@@ -79,9 +79,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 if (!Sk.builtin.checkBytes(x)) {
                     throw new Sk.builtin.TypeError((encoding !== null ? "encoding" : "errors") + " without a bytes argument");
                 }
-                encoding = encoding || undefined;
-                errors = errors || undefined;
-                return x.decode.$meth.call(x, [encoding, errors]);
+                encoding = encoding ? encoding.v : "utf-8";
+                errors = errors ? errors.v : "strict";
+                return bytesDecode.call(x, encoding, errors);
             }
             return new Sk.builtin.str(x);
         },
@@ -179,7 +179,6 @@ const strMethodDefs = Sk.builtin.str_methods(Sk.builtin.str);
 const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
     encode: {
         $meth: function (args, kwargs) {
-            /**@todo errors are currently always "strict" (other modes will require manual UTF-8-bashing) */
             let encoding, errors;
             [encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("encoding", ["encoding", "errors"], args, kwargs, [
                 Sk.builtin.str.$utf8,
@@ -187,40 +186,9 @@ const strMethods = /**@lends {Sk.builtin.str.prototype} */ {
             ]);
             Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
             Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
-            encoding = encoding.$jsstr().toLowerCase();
-            errors = errors.$jsstr().toLowerCase();
-            if (encoding !== "utf-8" && encoding !== "ascii") {
-                throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
-            }
-            if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
-                throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
-            }
-            let v;
-            if (encoding === "ascii") {
-                let source = this.v;
-                v = "";
-                for (let i in source) {
-                    const val = source.charCodeAt(i);
-                    if (val < 0 || val > 127) {
-                        if (errors == "strict") {
-                            throw new Sk.builtin.UnicodeEncodeError(
-                                "'ascii' codec can't encode character '" + makehexform(val) + "' in position " + i + ": ordinal not in range(128)"
-                            );
-                        } else if (errors == "replace") {
-                            v += "?";
-                        }
-                    } else {
-                        v += source[i];
-                    }
-                }
-            } else {
-                try {
-                    v = unescape(encodeURIComponent(this.v));
-                } catch (e) {
-                    throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
-                }
-            }
-            return Sk.__future__.python3 ? new Sk.builtin.bytes(v) : new Sk.builtin.str(v);
+            encoding = encoding.v;
+            errors = errors.v;
+            return strEncode.call(this, encoding, errors);
         },
         $flags: { FastCall: true },
         $textsig: "($self, /, encoding='utf-8', errors='strict')",
@@ -478,17 +446,12 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             if (pySource === undefined) {
                 return new Sk.builtin.bytes("");
             } else if (Sk.builtin.checkString(pySource)) {
-                source = pySource.v;
                 if (encoding === null) {
                     throw new Sk.builtin.TypeError("string argument without an encoding");
                 }
-                if (errors === null) {
-                    errors = new Sk.builtin.str("strict");
-                }
-                if (!(errors.v == "strict" || errors.v == "ignore" || errors.v == "replace")) {
-                    throw new Sk.builtin.NotImplementedError("'" + errors.v + "' error handling not implemented in Skulpt");
-                }
-                return pySource.encode.$meth.call(pySource, [encoding, errors]); // fast call direct access to the $meth
+                errors = errors === null ? "strict" : errors.v;
+                encoding = encoding.v;
+                return strEncode.call(pySource, encoding, errors);
             } else if (Sk.builtin.checkInt(pySource)) {
                 return new Sk.builtin.bytes("\x00".repeat(pySource.v.toString())); // just incase v is a bigint
             } else if (Sk.builtin.checkBytes(pySource)) {
@@ -548,10 +511,10 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                     ret += c;
                 }
             }
-            ret +=  quote;
+            ret += quote;
             return new Sk.builtin.str(ret);
         },
-        tp$str: function() {
+        tp$str: function () {
             return this.$r();
         },
         tp$iter: function () {
@@ -654,61 +617,7 @@ const bytesMethods = /**@lends {Sk.builtin.bytes.prototype} */ {
             Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
             encoding = encoding.v;
             errors = errors.v;
-            if (encoding !== "utf-8" && encoding !== "ascii") {
-                throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
-            }
-
-            let v;
-            if (encoding == "ascii") {
-                let string = this.v;
-                v = "";
-                for (let i in string) {
-                    const val = string[i];
-                    const cc = val.charCodeAt(0);
-                    if (cc > 127) {
-                        if (errors == "strict") {
-                            throw new Sk.builtin.UnicodeDecodeError(
-                                "'ascii' codec can't decode byte 0x" +
-                                    cc.toString(16) +
-                                    " in position " +
-                                    i.toString() +
-                                    ": ordinal not in range(128)"
-                            );
-                        } else if (errors == "replace") {
-                            v += String.fromCharCode(65533);
-                        }
-                    } else {
-                        v += val;
-                    }
-                }
-            } else {
-                try {
-                    v = decodeURIComponent(escape(this.v));
-                } catch (e) {
-                    // slow case there is at least 1 error
-                    const string = this.v;
-                    v = "";
-                    for (let i in string) {
-                        try {
-                            v += decodeURIComponent(escape(string[i]));
-                        } catch (e) {
-                            if (errors == "strict") {
-                                throw new Sk.builtin.UnicodeDecodeError(
-                                    "'utf-8' codec can't decode byte 0x" +
-                                        string[i].toString(16) +
-                                        " in position " +
-                                        i.toString() +
-                                        ": invalid start byte"
-                                );
-                            } else if (errors === "replace") {
-                                v += String.fromCharCode(65533);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return new Sk.builtin.str(v);
+            return bytesDecode.call(this, encoding, errors);
         },
         $flags: { FastCall: true },
         $textsig: "($self, /, encoding='utf-8', errors='strict')",
@@ -1238,4 +1147,95 @@ function strBytesRemainder(rhs) {
     };
     ret = this.v.replace(regex, replFunc);
     return new strBytesConstructor(ret);
+}
+
+function strEncode(encoding, errors) {
+    if (encoding !== "utf-8" && encoding !== "ascii") {
+        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+    }
+    if (!(errors == "strict" || errors == "ignore" || errors == "replace")) {
+        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
+    }
+    let v;
+    if (encoding === "ascii") {
+        let source = this.v;
+        v = "";
+        for (let i in source) {
+            const val = source.charCodeAt(i);
+            if (val < 0 || val > 127) {
+                if (errors == "strict") {
+                    throw new Sk.builtin.UnicodeEncodeError(
+                        "'ascii' codec can't encode character '" + makehexform(val) + "' in position " + i + ": ordinal not in range(128)"
+                    );
+                } else if (errors == "replace") {
+                    v += "?";
+                }
+            } else {
+                v += source[i];
+            }
+        }
+    } else {
+        try {
+            v = unescape(encodeURIComponent(this.v));
+        } catch (e) {
+            throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
+        }
+    }
+    return Sk.__future__.python3 ? new Sk.builtin.bytes(v) : new Sk.builtin.str(v);
+}
+/**
+ *
+ * @param {string} encoding
+ * @param {string} errors
+ * @ignore
+ */
+function bytesDecode(encoding, errors) {
+    encoding = encoding.toLowerCase();
+    errors = errors.toLowerCase();
+    if (encoding !== "utf-8" && encoding !== "ascii") {
+        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+    }
+
+    let v;
+    if (encoding == "ascii") {
+        let string = this.v;
+        v = "";
+        for (let i in string) {
+            const val = string[i];
+            const cc = val.charCodeAt(0);
+            if (cc > 127) {
+                if (errors == "strict") {
+                    throw new Sk.builtin.UnicodeDecodeError(
+                        "'ascii' codec can't decode byte 0x" + cc.toString(16) + " in position " + i.toString() + ": ordinal not in range(128)"
+                    );
+                } else if (errors == "replace") {
+                    v += String.fromCharCode(65533);
+                }
+            } else {
+                v += val;
+            }
+        }
+    } else {
+        try {
+            v = decodeURIComponent(escape(this.v));
+        } catch (e) {
+            // slow case there is at least 1 error
+            const string = this.v;
+            v = "";
+            for (let i in string) {
+                try {
+                    v += decodeURIComponent(escape(string[i]));
+                } catch (e) {
+                    if (errors == "strict") {
+                        throw new Sk.builtin.UnicodeDecodeError(
+                            "'utf-8' codec can't decode byte 0x" + string[i].toString(16) + " in position " + i.toString() + ": invalid start byte"
+                        );
+                    } else if (errors === "replace") {
+                        v += String.fromCharCode(65533);
+                    }
+                }
+            }
+        }
+    }
+    return new Sk.builtin.str(v);
 }
