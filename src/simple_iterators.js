@@ -205,7 +205,7 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     constructor: function str_iter_(str) {
         this.$index = 0;
         str.$hasAstralCodePoints();
-        this.$seq = str.codepoints || new Array(str.v.length).fill().map((_, i) => i);
+        this.$seq = str.codepoints || new Array(str.v.length).fill(null).map((_, i) => i);
         this.$length = this.$seq.length;
         this.$str = str.v;
     },

@@ -374,7 +374,7 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
  * @constructor
- * @extends Sk.builtin.Excception
+ * @extends Sk.builtin.Exception
  * @param {*=} args
  */
 Sk.builtin.UnicodeDecodeError = function (...args) {
@@ -396,7 +396,7 @@ Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {*=} args
  */
 Sk.builtin.LookupError = function (...args) {

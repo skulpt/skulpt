@@ -1,9 +1,6 @@
-
-
-
 /**
  *
- * @param {Sk.builtin.str | Sk.builtin.bytes} constructor
+ * @param {Function} constructor
  */
 Sk.builtin.str_methods = function (constructor) {
     const docs = getDocs(constructor);
@@ -11,7 +8,7 @@ Sk.builtin.str_methods = function (constructor) {
     if (constructor === Sk.builtin.str) {
         checkType = Sk.builtin.checkString;
         getTgt = (x) => {
-            if (!Sk.builtin.checkString(x)) {
+            if (!(x instanceof Sk.builtin.str)) {
                 throw new Sk.builtin.TypeError("must be str, not " + Sk.abstr.typeName(x));
             }
             return x.v;
@@ -31,7 +28,7 @@ Sk.builtin.str_methods = function (constructor) {
             if (x < 0 || x > 255) {
                 throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
             }
-            return String.fromCharCode(x);
+            return String.fromCharCode(parseInt(x, 10));
         };
         typeName = "byetes";
     }
@@ -412,7 +409,7 @@ Sk.builtin.str_methods = function (constructor) {
                         "startswith first arg must be " + typeName + " or a tuple of " + typeName + ", not " + Sk.abstr.typeName(prefix)
                     );
                 }
-                len = this.sq$length();
+                const len = this.sq$length();
                 [start, end] = getStartEndAsJs(start, end, len);
                 if (start > len) {
                     return Sk.builtin.bool.false$;
@@ -456,7 +453,7 @@ Sk.builtin.str_methods = function (constructor) {
                         "startswith first arg must be " + typeName + " or a tuple of " + typeName + ", not " + Sk.abstr.typeName(suffix)
                     );
                 }
-                len = this.sq$length();
+                const len = this.sq$length();
                 [start, end] = getStartEndAsJs(start, end, len);
                 if (start > len) {
                     return Sk.builtin.bool.false$;
@@ -500,8 +497,8 @@ Sk.builtin.str_methods = function (constructor) {
         isascii: {
             $meth: function () {
                 const v = this.v;
-                for (i = 0; i < v.length; i++) {
-                    val = v.charCodeAt(i);
+                for (let i = 0; i < v.length; i++) {
+                    const val = v.charCodeAt(i);
                     if (!(val >= 0 && val < 128)) {
                         return Sk.builtin.bool.false$;
                     }

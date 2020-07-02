@@ -46,7 +46,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         this.$mangled = fixReserved(ret);
         // quicker set_dict for strings by preallocating the $savedKeyHash
         this.$savedKeyHash_ = "_" + ret;
-        this.codepoints;
+        this.codepoints = undefined;
         // we use baseType over this.constructor to account for subclassing and allow code reuse between bytes/str
         this.baseType = Sk.builtin.str;
     },
@@ -97,7 +97,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             return new Sk.builtin.str_iter_(this);
         },
         tp$richcompare: richCompare,
-        mp$subscript: getStrItem,
+        mp$subscript: getItem,
         sq$length: function () {
             return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
         },
@@ -390,6 +390,7 @@ function fixReserved(name) {
 /**
  * @constructor
  * @extends {Sk.builtin.object}
+ * @param {string=} source
  */
 Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
     constructor: function bytes(source) {
@@ -405,8 +406,8 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
 
         // keep a bytes object the same shape as a str object
         this.v = ret;
-        this.$mangled;
-        this.$savedKeyHash_;
+        this.$mangled = null;
+        this.$savedKeyHash_ = null;
         this.codepoints = null;
         this.baseType = Sk.builtin.bytes;
     },
@@ -422,6 +423,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             kwargs = kwargs || [];
             let source,
                 pySource,
+                dunderBytes,
                 encoding = null,
                 errors = null;
             if (args.length <= 1 && +kwargs.length === 0) {
@@ -471,7 +473,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                     if (n < 0 || n > 255) {
                         throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
                     }
-                    source += String.fromCodePoint(n);
+                    source += String.fromCodePoint(parseInt(n, 10));
                 });
                 return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
             }
@@ -521,24 +523,15 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             return new Sk.builtin.bytes_iter_(this);
         },
         tp$richcompare: richCompare,
-        mp$subscript: getBytesItem,
+        mp$subscript: getItem,
         sq$length: function () {
             return this.v.length;
         },
         sq$concat: seqConcat,
         sq$repeat: seqRepeat,
         sq$contains: function (ob) {
-            if (ob instanceof Sk.builtin.bytes) {
-                return this.v.indexOf(ob.v) != -1;
-            } else if (Sk.builtin.checkInt(ob)) {
-                let v = Sk.builtin.asnum$(ob);
-                if (v < 0 || v > 0xff) {
-                    throw new Sk.builtin.ValueError("byte must be in range (0, 256)");
-                }
-                return this.v.indexOf(String.fromCharCode(v)) != -1;
-            } else {
-                throw new Sk.builtin.TypeError("TypeError: 'In <bytes> requires a bytes-like object as left operand, not " + Sk.abstr.typeName(ob));
-            }
+            const tgt = this.baseType.$getTgt(ob);
+            return this.v.indexOf(tgt) != -1;
         },
         tp$as_number: true,
         nb$remainder: strBytesRemainder,
@@ -557,7 +550,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 let v = "";
                 for (let i = 0; i < hex_splice.length; i++) {
                     const h = hex_splice[i];
-                    for (j = 0; j < h.length; j += 2) {
+                    for (let j = 0; j < h.length; j += 2) {
                         let s = h.substr(j, 2);
                         let n = parseInt(s, 16);
                         checkHex(n, s);
@@ -595,6 +588,16 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
     },
     flags: /**@lends {Sk.builtin.bytes} */ {
         $errorname: "bytesstring",
+        $getTgt: (x) => {
+            if (x instanceof Sk.builtin.bytes) {
+                return x.v;
+            }
+            x = Sk.misceval.asIndexOrThrow(x, "a bytes-like object, not " + Sk.abstr.typeName(x));
+            if (x < 0 || x > 255) {
+                throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+            }
+            return String.fromCharCode(parseInt(x, 10));
+        },
     },
 });
 
@@ -784,7 +787,7 @@ function seqRepeat(n) {
     return new this.baseType(ret);
 }
 
-function getStrItem(index) {
+function getItem(index) {
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
         let len = this.sq$length();
@@ -795,9 +798,11 @@ function getStrItem(index) {
             throw new Sk.builtin.IndexError(this.baseType.$errorname + " index out of range");
         }
         if (this.codepoints) {
-            return new this.baseType(this.v.substring(this.codepoints[index], this.codepoints[index + 1]));
+            return new Sk.builtin.str(this.v.substring(this.codepoints[index], this.codepoints[index + 1]));
+        } else if (this.baseType === Sk.builtin.str) {
+            return new Sk.builtin.str(this.v.charAt(index));
         } else {
-            return new this.baseType(this.v.charAt(index));
+            return new Sk.builtin.int_(this.v.charCodeAt(index));
         }
     } else if (index instanceof Sk.builtin.slice) {
         let ret = "";
@@ -1125,7 +1130,7 @@ function strBytesRemainder(rhs) {
                 throw new Sk.builtin.ValueError("unsupported format character 'b'");
             }
             let func;
-            if (!(value instanceof Sk.builtin.bytes) && (func = Sk.abstr.lookupSpecial(value, Sk.builtin.str.$bytes) === undefined)) {
+            if (!(value instanceof Sk.builtin.bytes) && (func = Sk.abstr.lookupSpecial(value, Sk.builtin.str.$bytes)) === undefined) {
                 throw new Sk.builtin.TypeError(
                     "%b requires a bytes-like object, or an object that implements __bytes__, not '" + Sk.abstr.typeName(value) + "'"
                 );
