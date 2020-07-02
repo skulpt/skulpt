@@ -1,4 +1,6 @@
-/**@constructor */
+/**@constructor 
+ * @ignore
+*/
 const JSBI = require("jsbi");
 
 /**
@@ -28,7 +30,6 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         } else {
             Sk.asserts.fail("bad argument to int constructor");
         }
-        /**@type {number|JSBI} */
         this.v = v;
     },
     slots: /** @lends {Sk.builtin.int_.prototype}*/{
@@ -381,6 +382,7 @@ function compareSlot(number_func, bigint_func) {
  * 
  * @param {function(number): number} number_func 
  * @param {function(JSBI): JSBI} bigint_func 
+ * @ignore
  * 
  */
 function numberUnarySlot(number_func, bigint_func) {

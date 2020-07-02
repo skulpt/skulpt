@@ -28,6 +28,7 @@ function wrapperCallNoArgs(self, args, kwargs) {
  * @param {*} self
  * @param {Array} args
  * @param {Array=} kwargs
+ * @ignore
  */
 function wrapperFastCall(self, args, kwargs) {
     // this = the wrapped function
@@ -42,6 +43,7 @@ function wrapperFastCall(self, args, kwargs) {
  * @param {*} self
  * @param {Array} args
  * @param {Array=} kwargs
+ * @ignore
  */
 function wrapperCallOneArg(self, args, kwargs) {
     // this = the wrapped function
@@ -57,6 +59,7 @@ function wrapperCallOneArg(self, args, kwargs) {
  * @param {*} self
  * @param {!Array} args
  * @param {Array=} kwargs
+ * @ignore
  */
 function wrapperCallTernary(self, args, kwargs) {
     // this = the wrapped function
@@ -73,6 +76,7 @@ function wrapperCallTernary(self, args, kwargs) {
  * @param {*} self
  * @param {Array} args
  * @param {Array=} kwargs
+ * @ignore
  */
 function wrapperSet(self, args, kwargs) {
     Sk.abstr.checkNoKwargs(this.$name, kwargs);
@@ -84,6 +88,7 @@ function wrapperSet(self, args, kwargs) {
  * @param {*} self
  * @param {Array} args
  * @param {Array=} kwargs
+ * @ignore
  */
 function wrapperRichCompare(self, args, kwargs) {
     const res = wrapperCallOneArg.call(this, self, args, kwargs);
@@ -117,6 +122,7 @@ function slotFuncNoArgs(dunderFunc) {
  * @param {Function} checkFunc 
  * @param {string} checkMsg 
  * @param {Function=} f 
+ * @ignore
  */
 function slotFuncNoArgsWithCheck(dunderName, checkFunc, checkMsg, f) {
     return function (dunderFunc) {

@@ -419,6 +419,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         /**
          * @param {Array} args
          * @param {Array=} kwargs
+         * @ignore
          */
         tp$new: function (args, kwargs) {
             if (this !== Sk.builtin.frozenset.prototype) {

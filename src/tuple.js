@@ -30,6 +30,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         /**
          * @param {Array} args 
          * @param {Array=} kwargs 
+         * @ignore
          */
         tp$new: function (args, kwargs) {
             // this = Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype

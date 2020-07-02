@@ -41,6 +41,7 @@ Sk.builtin.object.prototype.tp$new = function (args, kwargs) {
 /**
  * @param {Array} args 
  * @param {Array=} kwargs 
+ * @ignore
  */
 Sk.builtin.object.prototype.tp$init = function (args, kwargs) {
     // see cypthon object_init for algorithm details
