@@ -36,7 +36,7 @@ Sk.configure({
     output: (args) => { process.stdout.write(args); },
     read: (fname) => { return fs.readFileSync(fname, "utf8"); },
     systemexit: true,
-    retainglobals: true,
+    retainGlobals: true,
     inputfun: readline,
     __future__: py3 ? Sk.python3 : Sk.python2,
 });
