@@ -20,6 +20,7 @@
         _i: Sk.builtin.str.$empty,
         _ii: Sk.builtin.str.$empty,
         _iii: Sk.builtin.str.$empty,
+        __name__: new Sk.builtin.str("__main__"),
     };
     Sk.globals.In = Sk.globals._ih;
     Sk.globals.Out = Sk.globals._oh;
@@ -111,7 +112,7 @@
         compile_code = lines.join("\n");
         this.inCell.setReadOnly(true);
         this.inCell.renderer.$cursorLayer.element.style.opacity = 0;
-        const executionPromise = Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, compile_code, true), {
+        const executionPromise = Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("ipython", false, compile_code, true), {
             "*": () => {
                 if (Sk.stopExecution) {
                     throw "\nKeyboard interrupt";
@@ -131,7 +132,7 @@
                 if (Sk.builtin.checkNone(last_input) || last_input === undefined) {
                     delete Sk.globals["_" + this.inputs.length];
                 } else {
-                    this.outCell.setValue(Sk.misceval.objectRepr(last_input), -1);
+                    this.outCell.setValue(Sk.ffi.remapToJs(Sk.misceval.objectRepr(last_input)), -1);
                     if (last_input !== Sk.globals.Out) {
                         Sk.abstr.objectSetItem(Sk.globals._oh, Sk.ffi.remapToPy(this.inputs.length), last_input);
                         Sk.globals["___"] = Sk.globals["__"];
@@ -328,4 +329,5 @@
         cell.isVisible = false;
         return cell;
     };
+
 })();
