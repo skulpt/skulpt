@@ -11,14 +11,9 @@
 }
 
 #editor {
-    /* height: 400px; */
     min-height: 30px;
-    /* max-height: 90vh; */
     padding: 7px;
     overflow: scroll;
-    /* display: flex;
-    flex-direction: row;
-    flex-wrap: wrap; */
 }
 #editor > div {
     min-height: 15px;
@@ -27,10 +22,6 @@
 }
 #editor > div > .ace_gutter-cell:first-child {
     margin-left: 0px;
-}
-#output {
-    min-height: 50px;
-    /* width: 40vw; */
 }
 
 .ace_gutter-cell {
@@ -60,8 +51,6 @@
 
 .out-gutter,
 .in-gutter {
-    /* left: 0;
-    z-index: 3; */
     padding-left: 30px;
     visibility: visible;
     display: block;
