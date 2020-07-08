@@ -53,6 +53,7 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
+    "__iter__": "tp$iter",
     "__bool__": ["nb$bool", 1],
     "__nonzero__": ["nb$nonzero", 1],
     "__len__": ["sq$length", 1],
@@ -325,40 +326,26 @@ Sk.builtin.type = function (name, bases, dict) {
                 return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
             });
         };
-        klass.prototype.tp$iter = function () {
-            var iterf = this.tp$getattr(Sk.builtin.str.$iter);
-            if (iterf === undefined) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not iterable");
-            }
-            return Sk.misceval.callsimArray(iterf);
-        };
-        klass.prototype.tp$iternext = function (canSuspend) {
-            var self = this;
-            var next;
-
-            if (Sk.__future__.dunder_next) {
-                next = Sk.builtin.str.$next3;
-            } else {
-                next = Sk.builtin.str.$next2;
-            }
-            var r = Sk.misceval.chain(self.tp$getattr(next, canSuspend), function(iternextf) {
-                if (iternextf === undefined) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(self) + "' object is not iterable");
-                }
-
-                return Sk.misceval.tryCatch(function() {
-                    return Sk.misceval.callsimOrSuspendArray(iternextf);
-                }, function(e) {
-                    if (e instanceof Sk.builtin.StopIteration) {
-                        return undefined;
-                    } else {
-                        throw e;
+        const next = Sk.__future__.dunder_next ? Sk.builtin.str.$next3 : Sk.builtin.str.$next2;
+        const iternext = dict.mp$lookup(next);
+        if (iternext !== undefined) {
+            klass.prototype.tp$iternext = function (canSuspend) {
+                const self = this;
+                const r = Sk.misceval.tryCatch(
+                    () => Sk.misceval.callsimOrSuspendArray(iternext, [self]),
+                    (e) => {
+                        if (e instanceof Sk.builtin.StopIteration) {
+                            return undefined;
+                        } else {
+                            throw e;
+                        }
                     }
-                });
-            });
+                );
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            };
+        }
 
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-        };
+
 
         klass.prototype.tp$getitem = function (key, canSuspend) {
             var getf = this.tp$getattr(Sk.builtin.str.$getitem, canSuspend), r;
