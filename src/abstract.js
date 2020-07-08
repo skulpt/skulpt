@@ -927,7 +927,6 @@ Sk.abstr.iter = function(obj) {
     };
 
     if (obj.tp$iter) {
-        // catch and ignore not iterable error here.
         ret = obj.tp$iter();
         if (ret.tp$iternext) {
             return ret;
