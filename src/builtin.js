@@ -321,47 +321,118 @@ Sk.builtin.len = function len (item) {
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
 
-Sk.builtin.min = function min () {
-    var i;
-    var lowest;
-    var args;
-    Sk.builtin.pyCheckArgsLen("min", arguments.length, 1);
-
-    args = Sk.misceval.arrayFromArguments(arguments);
-    lowest = args[0];
-
-    if (lowest === undefined) {
-        throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+Sk.builtin.min = function min($default, key, args) {
+    if (!args.sq$length()) {
+        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
-            lowest = args[i];
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (args.sq$length() > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for min() with multiple positional arguments");
+    }
+
+    if (args.sq$length() == 1) {
+        args = args.v[0];
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
         }
+    }
+    let iter = Sk.abstr.iter(args);
+
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let lowest = iter.tp$iternext();
+
+    if (lowest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+        } else {
+            return $default;
+        }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
+                lowest = i;
+            }
+        }
+    } else {
+        let lowest_compare = Sk.misceval.callsimOrSuspendArray(key, [lowest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
+                lowest = i;
+                lowest_compare = i_compare;
+            }
+        }
+
     }
     return lowest;
 };
+Sk.builtin.min.co_argcount = 0;
+Sk.builtin.min.co_kwonlyargcount = 2;
+Sk.builtin.min.$kwdefs = [null, Sk.builtin.none.none$];
+Sk.builtin.min.co_varnames = ["default", "key"];
+Sk.builtin.min.co_varargs = 1;
 
-Sk.builtin.max = function max () {
-    var i;
-    var highest;
-    var args;
-    Sk.builtin.pyCheckArgsLen("max", arguments.length, 1);
-
-    args = Sk.misceval.arrayFromArguments(arguments);
-    highest = args[0];
-
-    if (highest === undefined) {
-        throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+Sk.builtin.max = function max($default, key, args) {
+    if (!args.sq$length()) {
+        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], highest, "Gt")) {
-            highest = args[i];
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (args.sq$length() > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for max() with multiple positional arguments");
+    }
+
+    if (args.sq$length() == 1) {
+        args = args.v[0];
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
         }
+    }
+    let iter = Sk.abstr.iter(args);
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let highest = iter.tp$iternext();
+
+    if (highest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+        } else {
+            return $default;
+        }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
+                highest = i;
+            }
+        }
+    } else {
+        let highest_compare = Sk.misceval.callsimOrSuspendArray(key, [highest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
+                highest = i;
+                highest_compare = i_compare;
+            }
+        }
+
     }
     return highest;
 };
+Sk.builtin.max.co_argcount = 0;
+Sk.builtin.max.co_kwonlyargcount = 2;
+Sk.builtin.max.$kwdefs = [null, Sk.builtin.none.none$];
+Sk.builtin.max.co_varnames = ["default", "key"];
+Sk.builtin.max.co_varargs = 1;
 
 Sk.builtin.any = function any (iter) {
     var it, i;
@@ -870,20 +941,16 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
-    if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
-        if (!Sk.builtin.checkString(pyName)) {
-            throw new Sk.builtin.TypeError("attribute name must be string");
-        }
-        jsName = pyName.$jsstr();
-        if (obj.tp$setattr) {
-            obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
-        } else {
-            throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
-        }
-        return Sk.builtin.none.none$;
+    if (!Sk.builtin.checkString(pyName)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
     }
-
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    jsName = pyName.$jsstr();
+    if (obj.tp$setattr) {
+        obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
+    } else {
+        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
+    }
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtin.raw_input = function (prompt) {
@@ -1377,10 +1444,6 @@ Sk.builtin.delattr = function delattr (obj, attr) {
 
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
-};
-
-Sk.builtin.frozenset = function frozenset () {
-    throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };
 
 Sk.builtin.help = function help () {

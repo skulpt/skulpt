@@ -11,7 +11,7 @@ var commands = {
     "run dist": "Prepare the distribution: build the optimized Skulpt, run all tests, build docs.",
     "run brun <pyfile>": "Run Python <pyfile> in the browser.  This will automatically rebuild the unoptimized Skulpt first.",
     "run btest": "Run all unit tests in the browser.",
-    "run repl": "Open the REPL. You need to build Skulpt (either " + chalk.green("npm run build") + " or " + chalk.green("npm run devbuild") + ") first.",
+    "run repl <py2|py3>": "Open the REPL. You need to build Skulpt (either " + chalk.green("npm run build") + " or " + chalk.green("npm run devbuild") + ") first.",
     "test": "Run all tests. You need to build Skulpt (either " + chalk.green("npm run build") + " or " + chalk.green("npm run devbuild") + ") first.",
     "start <py2|py3> <pyfile>": "Run pyfile using either Python 2 (py2) or Python 3 (py3). You need to build Skulpt (either " + chalk.green("npm run build") + " or " + chalk.green("npm run devbuild") + ") first.",
     "run profile <py2|py3> <pyfile>": "Run pyfile using either Python 2 (py2) or Python 3 (py3) with the profiler on.  Will report the profiling results to the console. You need to build the optimized Skulpt (" + chalk.green("npm run build") + ") first."
