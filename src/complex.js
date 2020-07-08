@@ -865,7 +865,7 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
 };
 
 Sk.builtin.complex.prototype["$r"] = function () {
-    return Sk.builtin.complex.complex_format(this, 0, "r");
+    return Sk.builtin.complex.complex_format(this, null, "g");
 };
 
 Sk.builtin.complex.prototype.tp$str = function () {
@@ -1108,6 +1108,14 @@ Sk.builtin.complex.prototype.int$nonzero = function __nonzero__(self){
 };
 Sk.builtin.complex.prototype.int$nonzero.co_name = new Sk.builtin.str("__nonzero__");
 Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$nonzero);
+
+Sk.builtin.complex.prototype.nb$bool = function () {
+    return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
+};
+
+Sk.builtin.complex.prototype.nb$nonzero = function () {
+    return new Sk.builtin.bool(this.tp$getattr(Sk.builtin.str.$real).v || this.tp$getattr(Sk.builtin.str.$real).v);
+};
 
 
 // ToDo: think about inplace methods too

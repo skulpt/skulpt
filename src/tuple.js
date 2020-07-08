@@ -58,6 +58,9 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
     var i;
     if (Sk.misceval.isIndex(index)) {
         i = Sk.misceval.asIndex(index);
+        if (typeof i !== "number") {
+            throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
+        }
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
@@ -109,6 +112,9 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     var ret;
 
     n = Sk.misceval.asIndex(n);
+    if (typeof n !== "number") {
+        throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
+    }
     ret = [];
     for (i = 0; i < n; ++i) {
         for (j = 0; j < this.v.length; ++j) {

@@ -68,27 +68,40 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
+        x = Math.floor(_x);
 
-        if (!Number.isInteger(_x)) {
-            throw new Sk.builtin.ValueError("factorial() only accepts integral values")
-        };
-        if (_x < 0) {
-            throw new Sk.builtin.ValueError("factorial() not defined for negative numbers")
-        };
+        if (x != _x) {
+            throw new Sk.builtin.ValueError("factorial() only accepts integral values");
+        }
+        if (x < 0) {
+            throw new Sk.builtin.ValueError("factorial() not defined for negative numbers");
+        }
 
-        let res = 1;
-        if (_x > MAX_SAFE_INTEGER_FACTORIAL) { // correct results for large x!
-            _x = Sk.builtin.str(x).$jsstr().replace(".0", ""); // x could be a float
-            _x = BigInt(_x);
-            res = BigInt(res);
+        var r = 1;
+        for (var i = 2; i <= x && i <= MAX_SAFE_INTEGER_FACTORIAL; i++) {
+            r *= i;
         }
-        for (let i = res; i <= _x; i++) {
-            res *= i;
+        if(x<=MAX_SAFE_INTEGER_FACTORIAL){
+            return new Sk.builtin.int_(r);
+        }else{
+            // for big numbers (19 and larger) we first calculate 18! above
+            // and then use bigintegers to continue the process.
+
+            // This is inefficient as hell, but it produces correct answers.
+
+            // promotes an integer to a biginteger
+            function bigup(number){
+              var n = Sk.builtin.asnum$nofloat(number);
+              return new Sk.builtin.biginteger(number);
+            }
+
+            r = bigup(r);
+            for (var i = MAX_SAFE_INTEGER_FACTORIAL+1; i <= x; i++) {
+                var i_bigup = bigup(i);
+                r = r.multiply(i_bigup);
+            }
+            return new Sk.builtin.lng(r);
         }
-        if (_x > MAX_SAFE_INTEGER_FACTORIAL) {
-            return new Sk.builtin.lng(res.toString());
-        }
-        return new Sk.builtin.int_(res);
     });
 
     mod.floor = new Sk.builtin.func(function (x) {
@@ -204,25 +217,30 @@ var $builtinmodule = function (name) {
                 return a;
             };
             return _gcd(b, a % b);
-        };
+        }
 
-        let _a = Math.abs(Sk.builtin.asnum$(a));
-        let _b = Math.abs(Sk.builtin.asnum$(b));
-        let max_safe = false;
+        function _biggcd(a, b) {
+            if (b.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
+                return a;
+            }
+            return _biggcd(b, a.remainder(b));
+        }
 
-        if (_a >= Number.MAX_SAFE_INTEGER || _b >= Number.MAX_SAFE_INTEGER) {
-            _a = BigInt(Sk.builtin.str(a).$jsstr());
-            _b = BigInt(Sk.builtin.str(b).$jsstr());
-            max_safe = true;
-        };
+        if ((a instanceof Sk.builtin.lng) || (b instanceof Sk.builtin.lng)) {
+            let _a = Sk.builtin.lng(a).biginteger;
+            let _b = Sk.builtin.lng(b).biginteger;
+            let res = _biggcd(_a, _b);
+            res = res.abs(); // python only returns positive gcds
 
-        let res = _gcd(_a, _b);
-        res = res < 0 ? -res : res; // python only returns positive gcds
+            return new Sk.builtin.lng(res);
+        } else {
+            let _a = Math.abs(Sk.builtin.asnum$(a));
+            let _b = Math.abs(Sk.builtin.asnum$(b));
+            let res = _gcd(_a, _b);
+            res = res < 0 ? -res : res; // python only returns positive gcds
 
-        if (max_safe) {
-            return new Sk.builtin.lng(res.toString());
-        };
-        return new Sk.builtin.int_(res);
+            return new Sk.builtin.int_(res);
+        }
     });
 
 

@@ -42,3 +42,11 @@ class G:
         return 1
 
 print bool(G())
+
+print bool(A)
+print bool(B)
+print bool(C)
+print bool(D)
+print bool(E)
+print bool(F)
+print bool(G)

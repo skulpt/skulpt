@@ -93,7 +93,10 @@ Sk.misceval.asIndex = function (o) {
         return o.v;
     }
     if (o.constructor === Sk.builtin.lng) {
-        return o.tp$index();
+        if (o.cantBeInt()) {
+            return o.str$(10, true);
+        }
+        return o.toInt$();
     }
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
@@ -646,24 +649,24 @@ Sk.misceval.isTrue = function (x) {
         return x.v !== 0;
     }
     if (Sk.__future__.python3) {
-        if (x.__bool__) {
-            ret = Sk.misceval.callsimArray(x.__bool__, [x]);
+        if (x.nb$bool) {
+            ret = x.nb$bool();
             if (!(ret instanceof Sk.builtin.bool)) {
                 throw new Sk.builtin.TypeError("__bool__ should return bool, returned " + Sk.abstr.typeName(ret));
             }
             return ret.v;
         }
     } else {
-        if (x.__nonzero__) {
-            ret = Sk.misceval.callsimArray(x.__nonzero__, [x]);
+        if (x.nb$nonzero) {
+            ret = x.nb$nonzero();
             if (!Sk.builtin.checkInt(ret)) {
                 throw new Sk.builtin.TypeError("__nonzero__ should return an int");
             }
             return Sk.builtin.asnum$(ret) !== 0;
         }
     }
-    if (x.__len__) {
-        ret = Sk.misceval.callsimArray(x.__len__, [x]);
+    if (x.sq$length) {
+        ret = x.sq$length();
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
