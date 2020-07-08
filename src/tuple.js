@@ -277,7 +277,7 @@ Sk.builtin.tuple_iter_ = function (obj) {
     this.$index = 0;
     this.$obj = obj.v.slice();
     this.sq$length = this.$obj.length;
-    this.tp$iter = this;
+    this.tp$iter = () => this;
     this.tp$iternext = function () {
         if (this.$index >= this.sq$length) {
             return undefined;

@@ -370,7 +370,7 @@ Sk.builtin.frozenset_iter_ = function (obj) {
         return new Sk.builtin.frozenset_iter_(obj);
     }
     this.$obj = obj;
-    this.tp$iter = this;
+    this.tp$iter = () => this;
     allkeys = [];
     buckets = obj.v.buckets;
     for (k in buckets) {

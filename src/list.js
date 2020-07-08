@@ -699,7 +699,7 @@ Sk.builtin.list_iter_ = function (lst) {
     this.$index = 0;
     this.lst = lst.v.slice();
     this.sq$length = this.lst.length;
-    this.tp$iter = this;
+    this.tp$iter = () => this;
     this.tp$iternext = function () {
         if (this.$index >= this.sq$length) {
             return undefined;
