@@ -129,6 +129,8 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
         Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+        delete Sk.builtins[fileWithoutExtension].__module__;
+        delete Sk.globals[fileWithoutExtension];
     }
 };
 
