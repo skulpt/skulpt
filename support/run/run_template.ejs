@@ -29,16 +29,7 @@ function showjs(text) {
 }
 
 
-function builtinRead(x) {
-    console.log(x);
-    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-        throw "File not found: '" + x + "'";
-    }
 
-    var file = Sk.builtinFiles["files"][x];
-
-    return file;
-}
 
 function runit(myDiv, pyver) {
     var prog = document.getElementById(myDiv+"_code").value;
@@ -74,7 +65,6 @@ function runit(myDiv, pyver) {
 
     Sk.configure({
         output:outf,
-        read: builtinRead,
         inputfunTakesPrompt: true,
         debugout: showjs,
         debugging: debug,

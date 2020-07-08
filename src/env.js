@@ -257,12 +257,12 @@ Sk.output = function (x) {
 };
 
 /*
- * Replacable function to load modules with (called via import, etc.)
+ * Replaceable function to load modules with (called via import, etc.)
  * todo; this should be an async api
  */
 Sk.read = function (x) {
     if (Sk.builtinFiles === undefined) {
-        throw Sk.builtin.NotImplementedError("Sk.read has not been implemented");
+        throw "skulpt-stdlib.js has not been loaded";
     } else if (Sk.builtinFiles.files[x] === undefined) {
         throw "File not found: '" + x + "'";
     }

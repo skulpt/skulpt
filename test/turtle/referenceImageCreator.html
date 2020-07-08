@@ -124,12 +124,6 @@ t = turtle.Turtle()</textarea>
             outf('});');
         }
 
-        function builtinRead(x) {
-            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-                throw "File not found: '" + x + "'";
-            return Sk.builtinFiles["files"][x];
-        }
-
         function runit(myDiv) {
             //var prog = document.getElementById(myDiv + "_code").value;
             var mypre = document.getElementById(myDiv + "_pre");
@@ -160,7 +154,6 @@ t = turtle.Turtle()</textarea>
             Sk.pre = myDiv+"_pre";
             Sk.configure({
                 output: outf,
-                read: builtinRead
             });
 
             //try {
