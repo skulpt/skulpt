@@ -13,8 +13,8 @@ Sk.builtin.tuple = function (L) {
         v = [];
     } else if (Object.prototype.toString.apply(L) === "[object Array]") {
         v = L;
-    } else if (L.sq$asarray) {
-        v = L.sq$asarray();
+    } else if (L.sk$asarray) {
+        v = L.sk$asarray();
     } else if (Sk.builtin.checkIterable(L)) {
         v = [];
         for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
@@ -33,7 +33,7 @@ Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
 Sk.builtin.tuple.prototype.__class__ = Sk.builtin.tuple;
 
 /* Return copy of internal array */
-Sk.builtin.tuple.prototype.sq$asarray = function () {
+Sk.builtin.tuple.prototype.sk$asarray = function () {
     return this.v.slice(0);
 };
 

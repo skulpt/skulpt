@@ -20,8 +20,8 @@ Sk.builtin.list = function (L, canSuspend) {
         v = [];
     } else if (Object.prototype.toString.apply(L) === "[object Array]") {
         v = L;
-    } else if (L.sq$asarray) {
-        v = L.sq$asarray();
+    } else if (L.sk$asarray) {
+        v = L.sk$asarray();
     } else if (Sk.builtin.checkIterable(L)) {
         v = [];
         it = Sk.abstr.iter(L);
@@ -56,7 +56,7 @@ Sk.abstr.markUnhashable(Sk.builtin.list);
 Sk.builtin.list.prototype.__class__ = Sk.builtin.list;
 
 /* Return copy of internal array */
-Sk.builtin.list.prototype.sq$asarray = function () {
+Sk.builtin.list.prototype.sk$asarray = function () {
     return this.v.slice(0);
 };
 
@@ -72,8 +72,8 @@ Sk.builtin.list.prototype.list_concat_ = function (other) {
 Sk.builtin.list.prototype.list_extend_ = function (other) {
     var it, i;
 
-    if (other.sq$asarray) {
-        this.v.push.apply(this.v, other.sq$asarray());
+    if (other.sk$asarray) {
+        this.v.push.apply(this.v, other.sk$asarray());
         return this;
     }
 

@@ -16,8 +16,8 @@ Sk.builtin.set = function (S) {
 
     if (S !== undefined) {
         obj = S;
-        if (obj.sq$asarray) {
-            obj = obj.sq$asarray();
+        if (obj.sk$asarray) {
+            obj = obj.sk$asarray();
         }
 
         if (Object.prototype.toString.apply(obj) === "[object Array]") {
