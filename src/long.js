@@ -156,7 +156,7 @@ Sk.longFromStr = function (s, base) {
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
-    return this.biginteger.intValue();
+    return parseInt(this.biginteger.toString(), 10);
 };
 
 Sk.builtin.lng.prototype.clone = function () {
