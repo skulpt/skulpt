@@ -4,8 +4,8 @@
  */
 Sk.builtin.set = function (S) {
     var it, i;
-    var len;
-    
+    var obj, len;
+
     if (!(this instanceof Sk.builtin.set)) {
         // Called directly from Python
         Sk.builtin.pyCheckArgsLen("set", arguments.length, 0, 1);
@@ -15,17 +15,22 @@ Sk.builtin.set = function (S) {
     this.set_reset_();
 
     if (S !== undefined) {
-        if (Sk.builtin.checkIterable(S)) {
-            for (it = Sk.abstr.iter(S), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        obj = S;
+        if (obj.sk$asarray) {
+            obj = obj.sk$asarray();
+        }
+
+        if (Object.prototype.toString.apply(obj) === "[object Array]") {
+            len = obj.length;
+            for (i = 0; i < len; i++) {
+                Sk.builtin.set.prototype["add"].func_code(this, obj[i]);
+            }
+        } else if (Sk.builtin.checkIterable(obj)) {
+            for (it = Sk.abstr.iter(obj), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 Sk.builtin.set.prototype["add"].func_code(this, i);
             }
-        } else if (Object.prototype.toString.apply(S) === "[object Array]") {
-            len = S.length;
-            for (i = 0; i < len; i++) {
-                Sk.builtin.set.prototype["add"].func_code(this, S[i]);
-            }
         } else {
-            throw new Sk.builtin.TypeError("expecting Array or iterable");
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(S) + "' " + "object is not iterable");
         }
     }
 
