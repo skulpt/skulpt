@@ -95,7 +95,7 @@
         Sk.misceval.callsimArray(Sk.globals.In.append, [Sk.globals.In, codeAsPyStr]);
         this.inputs[this.inputs.length - 1] = code;
 
-        let compile_code = code.trimEnd();
+        let compile_code = code.trimEnd() || "None";
 
         const lines = compile_code.split("\n");
         let last_line = lines[lines.length - 1];
