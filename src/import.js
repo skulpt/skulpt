@@ -240,7 +240,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             // - run module and set the module locals returned to the module __dict__
             module = new Sk.builtin.module();
 
-            if (suppliedPyBody) {
+            if (typeof suppliedPyBody === "string") {
                 filename = name + ".py";
                 co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
             } else {
