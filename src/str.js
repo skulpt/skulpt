@@ -1064,8 +1064,8 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             if (tmpData[1] === undefined){
                 throw new Sk.builtin.TypeError("%"+ conversionType+" format: a number is required, not "+ Sk.abstr.typeName(value));
             }
-            const tmpArray = tmpData[1].split(".");
-            tmpData[1] = tmpArray.slice(0, tmpArray.length !== 1 ? tmpArray.length - 1 : tmpArray.length).join("");
+            let r = tmpData[1];
+            tmpData[1] = r.indexOf(".") !== -1 ? parseInt(r, 10).toString() : r;
             return handleWidth(tmpData);
         } else if (conversionType === "o") {
             return handleWidth(formatNumber(value, 8));
