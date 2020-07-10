@@ -634,8 +634,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // Should this be an assert?
     if (obj === null || !obj.tp$getattr) {
         let objname = Sk.abstr.typeName(obj);
-        let jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
     }
 
     // This function is so hot that we do our own inline suspension checks
@@ -643,13 +642,11 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     let ret = obj.tp$getattr(pyName, canSuspend);
 
     if (ret === undefined) {
-        let jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function(r) {
             if (r === undefined) {
-                let jsName = pyName.$jsstr();
-                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
             }
             return r;
         });
@@ -664,15 +661,13 @@ Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
 
     if (obj === null) {
-        let jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
         return obj.tp$setattr(pyName, data, canSuspend);
     } else {
-        let jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
     }
 };
 Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);

@@ -933,7 +933,7 @@ Sk.builtin.hash = function hash (value) {
 };
 
 Sk.builtin.getattr = function getattr (obj, pyName, default_) {
-    var ret, jsName;
+    var ret;
     Sk.builtin.pyCheckArgsLen("getattr", arguments.length, 2, 3);
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
@@ -944,15 +944,13 @@ Sk.builtin.getattr = function getattr (obj, pyName, default_) {
         if (default_ !== undefined) {
             return default_;
         } else {
-            jsName = pyName.$jsstr();
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
         }
     }
     return ret;
 };
 
 Sk.builtin.setattr = function setattr (obj, pyName, value) {
-    var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
     if (!Sk.builtin.checkString(pyName)) {
@@ -961,8 +959,7 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     if (obj.tp$setattr) {
         obj.tp$setattr(pyName, value);
     } else {
-        jsName = pyName.$jsstr();
-        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
+        throw new Sk.builtin.AttributeError("object has no attribute " + pyName.$jsstr());
     }
     return Sk.builtin.none.none$;
 };
@@ -1159,7 +1156,6 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
 Sk.builtin.hasattr = function hasattr (obj, attr) {
     Sk.builtin.pyCheckArgsLen("hasattr", arguments.length, 2, 2);
-    var special, ret;
     if (!Sk.builtin.checkString(attr)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
