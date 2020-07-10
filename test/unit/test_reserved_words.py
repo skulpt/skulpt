@@ -12,6 +12,7 @@ class A:
 a = A()
 a.name = 'foo'
 a.length = 'bar'
+default = "foo"
 
 class Test_ReservedWords(unittest.TestCase):
     def test_getattr(self):
@@ -65,6 +66,8 @@ class Test_ReservedWords(unittest.TestCase):
                 return name
             return inner
         self.assertEqual(wrapper("foo")(), "foo")
+    def test_global(self):
+        self.assertTrue("default" in globals())
 
 if __name__ == '__main__':
     unittest.main()

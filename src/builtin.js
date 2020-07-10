@@ -1315,10 +1315,11 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
 };
 
 Sk.builtin.globals = function globals () {
-    var i;
+    var i, unmangled;
     var ret = new Sk.builtin.dict([]);
     for (i in Sk["globals"]) {
-        ret.mp$ass_subscript(new Sk.builtin.str(i), Sk["globals"][i]);
+        unmangled = Sk.unfixReserved(i);
+        ret.mp$ass_subscript(new Sk.builtin.str(unmangled), Sk["globals"][i]);
     }
 
     return ret;
