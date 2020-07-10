@@ -59,5 +59,12 @@ class Test_ReservedWords(unittest.TestCase):
         with self.assertRaises(AttributeError):
             A.arguments 
 
+    def test_bug_949(self):
+        def wrapper(name):
+            def inner():
+                return name
+            return inner
+        self.assertEqual(wrapper("foo")(), "foo")
+
 if __name__ == '__main__':
     unittest.main()
