@@ -933,19 +933,18 @@ Sk.builtin.hash = function hash (value) {
 };
 
 Sk.builtin.getattr = function getattr (obj, pyName, default_) {
-    var ret, mangledName, jsName;
+    var ret, jsName;
     Sk.builtin.pyCheckArgsLen("getattr", arguments.length, 2, 3);
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
 
-    jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReserved(jsName));
-    ret = obj.tp$getattr(mangledName);
+    ret = obj.tp$getattr(pyName);
     if (ret === undefined) {
         if (default_ !== undefined) {
             return default_;
         } else {
+            jsName = pyName.$jsstr();
             throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
         }
     }
@@ -959,10 +958,10 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    jsName = pyName.$jsstr();
     if (obj.tp$setattr) {
-        obj.tp$setattr(new Sk.builtin.str(Sk.fixReserved(jsName)), value);
+        obj.tp$setattr(pyName, value);
     } else {
+        jsName = pyName.$jsstr();
         throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
     }
     return Sk.builtin.none.none$;

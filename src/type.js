@@ -524,7 +524,7 @@ Sk.builtin.type.typeLookup = function (type, pyName) {
     var base;
     var res;
     var i;
-    var jsName = pyName.$jsstr();
+    var jsName = pyName.$mangled;
 
     // todo; probably should fix this, used for builtin types to get stuff
     // from prototype

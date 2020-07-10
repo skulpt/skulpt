@@ -1269,7 +1269,7 @@ var $builtinmodule = function (name) {
 
             // create the field properties
             for (let i = 0; i < flds.length; i++) {
-                fld = Sk.fixReservedNames(flds[i]);
+                fld = Sk.fixReserved(flds[i]);
                 cons[fld] = {};
                 cons[fld].tp$descr_set = function () {
                     throw new Sk.builtin.AttributeError("can't set attribute");
