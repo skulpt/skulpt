@@ -22,6 +22,9 @@ class Test_ReservedWords(unittest.TestCase):
         func_delete = getattr(f, "delete")
         self.assertTrue(func_delete())
 
+        self.assertNotIn("$", repr(func_default))
+        self.assertNotIn("$", repr(func_delete))
+
     def test_getattr_with_name(self):
         self.assertEqual(getattr(a, 'name'), 'foo')
         self.assertEqual(getattr(a, 'length'), 'bar')
