@@ -1,4 +1,12 @@
-Sk.builtin.interned = {};
+Sk.builtin.interned = Object.create(null);
+
+function getInterned (x) {
+    return Sk.builtin.interned[x];
+}
+
+function setInterned (x, pyStr) {
+    Sk.builtin.interned[x] = pyStr;
+}
 
 /**
  * @constructor
@@ -54,14 +62,15 @@ Sk.builtin.str = function (x) {
     }
 
     // interning required for strings in py
-    if (Sk.builtin.interned["1" + ret]) {
-        return Sk.builtin.interned["1" + ret];
+    const interned = getInterned(ret);
+    if (interned !== undefined) {
+        return interned;
     }
 
     this.__class__ = Sk.builtin.str;
     this.v = ret;
     this["v"] = this.v;
-    Sk.builtin.interned["1" + ret] = this;
+    setInterned(ret, this);
     return this;
 
 };
