@@ -511,15 +511,6 @@ Sk.builtin.open = function open(filename, mode, bufsize) {
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
-const issubclass_multiple_inheritance = function (klass, base) {
-    const mro = klass.prototype.tp$mro;
-    for (let i = 0; i < mro.length; i++) {
-        if (base === mro[i]) {
-            return true;
-        }
-    }
-    return false;
-};
 
 Sk.builtin.isinstance = function isinstance(obj, type) {
     if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
@@ -645,7 +636,11 @@ Sk.builtin.jseval = function jseval(evalcode) {
     }
 };
 
+/**
+ * @deprecated
+ */
 Sk.builtin.jsmillis = function jsmillis() {
+    console.warn("jsmillis is deprecated");
     var now = new Date();
     return now.valueOf();
 };
