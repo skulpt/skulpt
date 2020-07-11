@@ -106,7 +106,7 @@
 **Additions**
 - `dict`, `tuple` are suspendable
 - `classmethod`, `property`, `staticmethod` have native skulpt implementations
-- `super` can now be unbound
+- `super` can now be unbound [see this explanation](https://stackoverflow.com/questions/30190185/how-can-i-use-super-with-one-argument-in-python/30190341#30190341)
 - `Sk.builtin.func` objects gain a `qualname` in compile code
 - API for building native types 
   - `Sk.abstr.buildNativeClass`

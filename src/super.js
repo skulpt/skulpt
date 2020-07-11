@@ -134,7 +134,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
                 the normal case; the return value is obj.__class__.
 
             /* Check for first bullet above (special case) */
-            if (Sk.builtin.checkClass(obj) && obj.ob$type.$isSubType(type)) {
+            if (Sk.builtin.checkClass(obj) && obj.$isSubType(type)) {
                 return obj;
             }
             /* Normal case */
