@@ -705,6 +705,7 @@ Sk.builtin.dir = function dir (x) {
         if (internal.indexOf(k) !== -1) {
             return null;
         }
+        k = Sk.unfixReserved(k);
         if (k.indexOf("$") !== -1) {
             s = Sk.builtin.dir.slotNameToRichName(k);
         } else if (k.charAt(k.length - 1) !== "_") {
@@ -925,7 +926,7 @@ Sk.builtin.getattr = function getattr (obj, pyName, default_) {
     }
 
     jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReservedWords(jsName));
+    mangledName = new Sk.builtin.str(Sk.fixReserved(jsName));
     ret = obj.tp$getattr(mangledName);
     if (ret === undefined) {
         if (default_ !== undefined) {
@@ -946,7 +947,7 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     }
     jsName = pyName.$jsstr();
     if (obj.tp$setattr) {
-        obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
+        obj.tp$setattr(new Sk.builtin.str(Sk.fixReserved(jsName)), value);
     } else {
         throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
     }
