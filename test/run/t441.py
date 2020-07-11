@@ -19,6 +19,7 @@ print random.randrange(10,101,10)
 print "\nrandom.randint(a,b)"
 print random.randint(1,100)
 print random.randint(-10,0)
+print random.randint(0, 0x7fffffff)
 
 print "\nrandom.choice(seq)"
 print random.choice([1,2,3,4,5])
