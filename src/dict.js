@@ -76,6 +76,18 @@ Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {
     var eq;
     var i;
 
+    // Fast path: We spend a *lot* of time looking up strings
+    // in dictionaries. (Every attribute access, for starters.)
+    if (key.ob$type === Sk.builtin.str) {
+        for (i = 0; i < bucket.items.length; i++) {
+            item = bucket.items[i];
+            if (item.lhs.ob$type === Sk.builtin.str && item.lhs.v === key.v) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     for (i = 0; i < bucket.items.length; i++) {
         item = bucket.items[i];
         eq = Sk.misceval.richCompareBool(item.lhs, key, "Eq");
@@ -259,13 +271,119 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
     throw new Sk.builtin.KeyError(s.v);
 });
 
-Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
+Sk.builtin.dict.prototype.haskey$ = function (self, k) {
     Sk.builtin.pyCheckArgsLen("has_key()", arguments.length, 1, 1, false, true);
-    return new Sk.builtin.bool( self.sq$contains(k));
+    return new Sk.builtin.bool(self.sq$contains(k));
+};
+
+const dict$views = {
+    KEYS: "keys",
+    VALUES: "values",
+    ITEMS: "items"
+};
+
+Sk.builtin.dictview = function (type, dict) {
+    this.dict = dict;
+    this.type = type;  // from dict$views
+
+    return this;
+};
+
+Sk.abstr.setUpInheritance("dictview", Sk.builtin.dictview, Sk.builtin.object);
+Sk.builtin.dictview.prototype.__class__ = Sk.builtin.dictview;
+
+Sk.builtin.dictview.prototype.$r = function () {
+    var rep = "dict_" + this.type + "([";
+    var iter, key, value;
+    var empty = true;
+    for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext();
+        key !== undefined;
+        key = iter.tp$iternext()) {
+        empty = false;
+        if (this.type === dict$views.KEYS) {
+            rep += Sk.misceval.objectRepr(key).v + ", ";
+        } else {
+            value = this.dict.mp$subscript(key);
+            if (value === undefined) {
+                value = null;
+            }
+            if (this.type === dict$views.VALUES) {
+                rep += Sk.misceval.objectRepr(value).v + ", ";
+            } else if (this.type === dict$views.ITEMS) {
+                rep += "(" + Sk.misceval.objectRepr(key).v + ", " + Sk.misceval.objectRepr(value).v + "), ";
+            }
+        }
+    }
+    if (!empty) {
+        rep = rep.slice(0, -2);
+    }
+    rep += "])";
+    return new Sk.builtin.str(rep);
+};
+
+Sk.builtin.dictview.prototype.sq$length = function () {
+    return this.dict.mp$length();
+};
+
+Sk.builtin.dictview.prototype.sq$contains = function (item) {
+    var iter, key, value, pair;
+    if (this.type === dict$views.KEYS) {
+        return this.dict.sq$contains(item);
+    } else if (this.type === dict$views.VALUES) {
+        for (iter = Sk.abstr.iter(this.dict), key = iter.tp$iternext();
+            key !== undefined;
+            key = iter.tp$iternext()) {
+            value = this.dict.mp$subscript(key);
+            if (value === undefined) {
+                value = null;
+            }
+            if (Sk.misceval.isTrue(Sk.misceval.richCompareBool(value, item, "Eq"))) {
+                return true;
+            }
+        }
+
+        return false;
+    } else if (this.type === dict$views.ITEMS) {
+        if (item.mp$subscript && item.sq$length && (item.sq$length() === 2)) {
+            key = item.mp$subscript(new Sk.builtin.int_(0));
+            value = this.dict.mp$lookup(key);
+            if (value !== undefined) {
+                pair = new Sk.builtin.tuple([key, value]);
+                if (Sk.misceval.isTrue(Sk.misceval.richCompareBool(pair, item, "Eq"))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+Sk.builtin.dictview.prototype.tp$iter = function () {
+    // Hijack the Py2 iterators
+    var iter;
+    if (this.type === dict$views.KEYS) {
+        iter = Sk.builtin.dict.prototype.py2$keys(this.dict).tp$iter();
+    } else if (this.type === dict$views.VALUES) {
+        iter = this.dict.py2$values(this.dict).tp$iter();
+    } else if (this.type === dict$views.ITEMS) {
+        iter = this.dict.py2$items(this.dict).tp$iter();
+    }
+    iter.$r = function () {
+        return new Sk.builtin.str("<dict_" + this.type + "iterator>");
+    };
+    return iter;
+};
+
+Sk.builtin.dictview.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, false, true);
+
+    return self.tp$iter();
 });
 
-Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("items()", arguments.length, 0, 0, false, true);
+
+Sk.builtin.dict.prototype.py2$items = function (self) {
+    Sk.builtin.pyCheckArgsLen("items", arguments.length, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -281,10 +399,18 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
         ret.push(new Sk.builtin.tuple([k, v]));
     }
     return new Sk.builtin.list(ret);
-});
+};
 
-Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("keys()", arguments.length, 0, 0, false, true);
+Sk.builtin.dict.prototype.py3$items = function (self) {
+    Sk.builtin.pyCheckArgsLen("items", arguments.length, 0, 0, false, true);
+
+    return new Sk.builtin.dictview(dict$views.ITEMS, self);
+};
+
+Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$items);
+
+Sk.builtin.dict.prototype.py2$keys = function (self) {
+    Sk.builtin.pyCheckArgsLen("keys", arguments.length, 0, 0, false, true);
     var iter, k;
     var ret = [];
 
@@ -294,10 +420,18 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
         ret.push(k);
     }
     return new Sk.builtin.list(ret);
-});
+};
 
-Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("values()", arguments.length, 0, 0, false, true);
+Sk.builtin.dict.prototype.py3$keys = function (self) {
+    Sk.builtin.pyCheckArgsLen("keys", arguments.length, 0, 0, false, true);
+
+    return new Sk.builtin.dictview(dict$views.KEYS, self);
+};
+
+Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$keys);
+
+Sk.builtin.dict.prototype.py2$values = function (self) {
+    Sk.builtin.pyCheckArgsLen("values", arguments.length, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -312,7 +446,27 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
         ret.push(v);
     }
     return new Sk.builtin.list(ret);
-});
+};
+
+Sk.builtin.dict.prototype.py3$values = function (self) {
+    Sk.builtin.pyCheckArgsLen("values", arguments.length, 0, 0, false, true);
+
+    return new Sk.builtin.dictview(dict$views.VALUES, self);
+};
+
+Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
+
+Sk.setupDictIterators = function (python3) {
+    if (python3) {
+        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$keys);
+        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$values);
+        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$items);
+    } else {
+        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$keys);
+        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
+        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$items);
+    }
+};
 
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
@@ -492,8 +646,12 @@ Sk.builtin.dict.prototype.ob$eq = function (other) {
     for (iter = this.tp$iter(), k = iter.tp$iternext();
         k !== undefined;
         k = iter.tp$iternext()) {
-        v = this.mp$subscript(k);
-        otherv = other.mp$subscript(k);
+        v = this.mp$lookup(k);
+        otherv = other.mp$lookup(k);
+
+        if (otherv === undefined) {
+            return Sk.builtin.bool.false$;
+        }
 
         if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
             return Sk.builtin.bool.false$;
@@ -601,17 +759,12 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
 
 Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
-/**
- * @constructor
- * @param {Object} obj
- */
-Sk.builtin.dict_iter_ = function (obj) {
+Sk.builtin.create_dict_iter_ = function (obj) {
+    var iterobj = {};
     var k, i, bucket, allkeys, buckets;
-    if (!(this instanceof Sk.builtin.dict_iter_)) {
-        return new Sk.builtin.dict_iter_(obj);
-    }
-    this.$index = 0;
-    this.$obj = obj;
+
+    iterobj.$index = 0;
+    iterobj.$obj = obj;
     allkeys = [];
     buckets = obj.buckets;
     for (k in buckets) {
@@ -625,20 +778,37 @@ Sk.builtin.dict_iter_ = function (obj) {
             }
         }
     }
-    this.$keys = allkeys;
-    this.tp$iter = this;
-    this.tp$iternext = function () {
-        // todo; StopIteration
+    iterobj.$keys = allkeys;
+    iterobj.tp$iter = function () {
+        return iterobj;
+    };
+    iterobj.tp$iternext = function () {
         if (this.$index >= this.$keys.length) {
             return undefined;
         }
         return this.$keys[this.$index++];
-        // return this.$obj[this.$keys[this.$index++]].lhs;
     };
-    this.$r = function () {
-        return new Sk.builtin.str("dictionary-keyiterator");
+
+    return iterobj;
+};
+
+/**
+ * @constructor
+ * @param {Object} obj
+ */
+Sk.builtin.dict_iter_ = function (obj) {
+    var iterobj;
+    if (!(this instanceof Sk.builtin.dict_iter_)) {
+        return new Sk.builtin.dict_iter_(obj);
+    }
+
+    iterobj = Sk.builtin.create_dict_iter_(obj);
+
+    iterobj.$r = function () {
+        return new Sk.builtin.str("<dictionary-keyiterator>");
     };
-    return this;
+
+    return iterobj;
 };
 
 Sk.abstr.setUpInheritance("dictionary-keyiterator", Sk.builtin.dict_iter_, Sk.builtin.object);

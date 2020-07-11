@@ -93,7 +93,10 @@ Sk.misceval.asIndex = function (o) {
         return o.v;
     }
     if (o.constructor === Sk.builtin.lng) {
-        return o.tp$index();
+        if (o.cantBeInt()) {
+            return o.str$(10, true);
+        }
+        return o.toInt$();
     }
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
@@ -257,8 +260,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
-    v_type = new Sk.builtin.type(v);
-    w_type = new Sk.builtin.type(w);
+    v_type = v.ob$type;
+    w_type = w.ob$type;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
@@ -423,13 +426,13 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
 
     if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+        if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
@@ -646,24 +649,24 @@ Sk.misceval.isTrue = function (x) {
         return x.v !== 0;
     }
     if (Sk.__future__.python3) {
-        if (x.__bool__) {
-            ret = Sk.misceval.callsimArray(x.__bool__, [x]);
+        if (x.nb$bool) {
+            ret = x.nb$bool();
             if (!(ret instanceof Sk.builtin.bool)) {
                 throw new Sk.builtin.TypeError("__bool__ should return bool, returned " + Sk.abstr.typeName(ret));
             }
             return ret.v;
         }
     } else {
-        if (x.__nonzero__) {
-            ret = Sk.misceval.callsimArray(x.__nonzero__, [x]);
+        if (x.nb$nonzero) {
+            ret = x.nb$nonzero();
             if (!Sk.builtin.checkInt(ret)) {
                 throw new Sk.builtin.TypeError("__nonzero__ should return an int");
             }
             return Sk.builtin.asnum$(ret) !== 0;
         }
     }
-    if (x.__len__) {
-        ret = Sk.misceval.callsimArray(x.__len__, [x]);
+    if (x.sq$length) {
+        ret = x.sq$length();
         if (!Sk.builtin.checkInt(ret)) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
@@ -854,9 +857,9 @@ Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  * Does the same thing as callsim without expensive call to Array.slice.
  * Requires args to be a Javascript array.
  */
-Sk.misceval.callsimArray = function(func, args) {
+Sk.misceval.callsimArray = function(func, args, kws) {
     var argarray = args ? args : [];
-    return Sk.misceval.apply(func, undefined, undefined, undefined, argarray);
+    return Sk.misceval.apply(func, undefined, undefined, kws, argarray);
 };
 Sk.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
 
@@ -884,14 +887,24 @@ Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
 
 /**
  * @param {Object} func the thing to call
- * @param {Array=} args an array of arguments to pass to the func
+ * @param {Array} args an array of arguments to pass to the func
+ * @param {Array=} kws an array of keyword arguments to pass to the func
  *
  * Does the same thing as callsimOrSuspend without expensive call to
- * Array.slice.  Requires args to be a Javascript array.
+ * Array.slice.  Requires args+kws to be Javascript arrays.
  */
-Sk.misceval.callsimOrSuspendArray = function (func, args) {
-    var argarray = args ? args : [];
-    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, argarray);
+Sk.misceval.callsimOrSuspendArray = function (func, args, kws) {
+    if (!args) {
+        args = [];
+    }
+    if (func.tp$call) {
+        return func.tp$call(args, kws);
+    } else {
+        // Slow path handles things like calling native JS fns
+        // (perhaps we should stop supporting that), and weird
+        // detection of the __call__ method (everything should use tp$call)
+        return Sk.misceval.applyOrSuspend(func, undefined, undefined, kws, args);
+    }
 };
 Sk.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
 

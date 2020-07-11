@@ -1,3 +1,279 @@
+// Implement the default "format specification mini-language"
+// for numbers and strings
+// https://docs.python.org/3.7/library/string.html#formatspec
+
+const FORMAT_SPEC_REGEX = /^(?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?$/;
+const FMT = {
+    FILL_CHAR: 1,
+    FILL_ALIGN: 2,
+    SIGN: 3,
+    ALT_FORM: 4,
+    ZERO_PAD: 5,
+    FIELD_WIDTH: 6,
+    COMMA: 7,
+    PRECISION: 8,
+    CONVERSION_TYPE: 9
+};
+
+Sk.formatting = {};
+
+let handleWidth = function (m, r, prefix, isNumber) {
+    // print(prefix);
+    Sk.asserts.assert(typeof(r) === "string");
+
+    if (m[FMT.FIELD_WIDTH]) {
+        let fieldWidth = parseInt(m[FMT.FIELD_WIDTH], 10);
+        let fillChar = m[FMT.FILL_CHAR] || (m[FMT.ZERO_PAD] ? "0" : " ");
+        let fillAlign = m[FMT.FILL_ALIGN] || (m[FMT.ZERO_PAD] ? "=" : isNumber ? ">" : "<");
+        let nFill = fieldWidth - (r.length + (prefix ? prefix.length : 0));
+
+        if (nFill <= 0) {
+            return r;
+        }
+
+        let fill = fillChar.repeat(nFill);
+
+        switch (fillAlign) {
+            case "=":
+                if (m[FMT.CONVERSION_TYPE] === "s") {
+                    throw new Sk.builtin.ValueError("'=' alignment not allowed in string format specifier");
+                }
+                return prefix + fill + r;
+            case ">":
+                return fill + prefix + r;
+            case "<":
+                return prefix + r + fill;
+            case "^":
+                let idx = Math.floor(nFill/2);
+                return fill.substring(0, idx) + prefix + r + fill.substring(idx);
+        }
+    }
+    return prefix + r;
+};
+
+let signForNeg = function(m, neg) {
+    return neg ? "-" :
+        (m[FMT.SIGN] === "+") ? "+" :
+        (m[FMT.SIGN] === " ") ? " " : "";
+};
+
+let handleInteger = function(m, n, base){
+    // TODO: Do we need to tolerate float inputs for integer conversions?
+    // Python doesn't, but I'm guessing this is something to do with JS's
+    // int/float ambiguity
+    Sk.asserts.assert(n instanceof Sk.builtin.int_ || n instanceof Sk.builtin.lng);
+
+    if (m[FMT.PRECISION]) {
+        throw new Sk.builtin.ValueError("Precision not allowed in integer format");
+    }
+
+    let r = n.str$(base, false);
+    let neg = n.nb$isnegative();
+
+    let prefix = signForNeg(m, neg);
+
+    if (m[FMT.ALT_FORM]) {
+        if (base === 16) {
+            prefix += "0x";
+        } else if (base === 8) {
+            prefix += "0o";
+        } else if (base === 2){
+            prefix += "0b";
+        }
+    }
+
+    if (m[FMT.CONVERSION_TYPE] === "X") {
+        r = r.toUpperCase();
+    }
+
+    if (m[FMT.CONVERSION_TYPE] === "n"){
+        r = (+r).toLocaleString();
+    } else if (m[FMT.COMMA]){
+        var parts = r.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        r = parts.join(".");
+    }
+
+    return handleWidth(m, r, prefix, true);
+};
+
+// Common implementation of __format__ for Python number objects
+let formatNumber = function(num, formatSpec, isFractional) {
+    if (!formatSpec) { // empty or undefined
+        return num.str$(10, true);
+    }
+    let m = formatSpec.match(FORMAT_SPEC_REGEX);
+    if (!m) {
+        throw new Sk.builtin.ValueError("Invalid format specifier");
+    }
+
+    let conversionType = m[FMT.CONVERSION_TYPE];
+    if (!conversionType) {
+        conversionType = (isFractional ? "g" : "d");
+    }
+
+    let validConversions = isFractional ? "fFeEgG%" : "bcdoxXnfFeEgG%";
+    if (validConversions.indexOf(conversionType) == -1) {
+        throw new Sk.builtin.ValueError("Unknown format code '" + m[FMT.CONVERSION_TYPE] + "' for object of type '" + Sk.abstr.typeName(num) +"'");
+    }
+
+    switch (conversionType) {
+        case "d":
+        case "n":
+            return handleInteger(m, num, 10);
+        case "x":
+        case "X":
+            return handleInteger(m, num, 16);
+        case "o":
+            return handleInteger(m, num, 8);
+        case "b":
+            return handleInteger(m, num, 2);
+        case "c": {
+            if (m[FMT.SIGN]) {
+                throw new Sk.builtin.ValueError("Sign not allowed with integer format specifier 'c'");
+            }
+            if (m[FMT.ALT_FORM]) {
+                throw new Sk.builtin.ValueError("Alternate form not allowed with integer format specifier 'c'");
+            }
+            if (m[FMT.COMMA]) {
+                throw new Sk.builtin.ValueError("Cannot specify ',' with 'c'");
+            }
+            if (m[FMT.PRECISION]) {
+                throw new Sk.builtin.ValueError("Cannot specify ',' with 'c'");
+            }
+            return handleWidth(m, String.fromCodePoint(Sk.builtin.asnum$(num)), "", true);
+        };
+
+        case "f":
+        case "F":
+        case "e":
+        case "E":
+        case "g":
+        case "G": {
+            if (m[FMT.ALT_FORM]){
+                throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
+            }
+            let convValue = Sk.builtin.asnum$(num);
+            if (typeof convValue === "string") {
+                convValue = Number(convValue);
+            }
+            if (convValue === Infinity) {
+                return handleWidth(m, "inf", "", true);
+            }
+            if (convValue === -Infinity) {
+                return handleWidth(m, "inf", "-", true);
+            }
+            if (isNaN(convValue)) {
+                return handleWidth(m, "nan", "", true);
+            }
+            let neg = false;
+            if (convValue < 0) {
+                convValue = -convValue;
+                neg = true;
+            }
+            let convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
+            let precision = m[FMT.PRECISION] ? parseInt(m[FMT.PRECISION], 10) : 6;
+            let result = (convValue)[convName](precision);
+            if ("EFG".indexOf(conversionType) !== -1) {
+                result = result.toUpperCase();
+            }
+            // Python's 'g' does not show trailing 0s
+            if (conversionType.toLowerCase()==="g" || !m[FMT.CONVERSION_TYPE]) {
+                let trailingZeros = result.match(/\.(\d*[1-9])?(0+)$/);
+                if (trailingZeros) {
+                    let [_, hasMoreDigits, zs] = trailingZeros;
+                    // Python's default conversion shows at least one trailing zero
+                    result = result.slice(0, hasMoreDigits ? -zs.length : -(zs.length+1));
+                }
+                if (result.indexOf(".") == -1 && !m[FMT.CONVERSION_TYPE]) {
+                    result += ".0";
+                }
+            }
+            if (m[FMT.COMMA]){
+                var parts = result.toString().split(".");
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                result = parts.join(".");
+            }
+
+            return handleWidth(m, result, signForNeg(m, neg), true);
+        };
+
+        case "%": {
+            if (m[FMT.ALT_FORM]) {
+                throw new Sk.builtin.ValueError("Alternate form (#) not allowed with format specifier '%'");
+            }
+            let convValue = Sk.builtin.asnum$(num);
+            if (typeof convValue === "string") {
+                convValue = Number(convValue);
+            }
+            if (convValue === Infinity) {
+                return handleWidth(m, "inf%", "", true);
+            }
+            if (convValue === -Infinity) {
+                return handleWidth(m, "inf%", "-", true);
+            }
+            if (isNaN(convValue)) {
+                return handleWidth(m, "nan%", "", true);
+            }
+            let neg = false;
+            if (convValue < 0) {
+                convValue = -convValue;
+                neg = true;
+            }
+            let precision = m[FMT.PRECISION] ? parseInt(m[FMT.PRECISION], 10) : 6;
+            let result = (convValue*100.0).toFixed(precision) + "%";
+            return handleWidth(m, result, signForNeg(m, neg), true);
+        };
+
+        default:
+            throw new Sk.builtin.ValueError("Unknown format code '" + m[FMT.CONVERSION_TYPE] + "'");
+    }
+};
+
+Sk.formatting.mkNumber__format__ = (isFractional) => new Sk.builtin.func(function (self, format_spec) {
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+    }
+
+    return new Sk.builtin.str(formatNumber(self, format_spec.$jsstr(), isFractional));
+});
+
+let formatString = function (self, format_spec) {
+    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
+
+    if (!Sk.builtin.checkString(format_spec)) {
+        throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
+    }
+
+    let m = format_spec.$jsstr().match(FORMAT_SPEC_REGEX);
+    if (m[FMT.CONVERSION_TYPE] && m[FMT.CONVERSION_TYPE] !== "s") {
+        throw new Sk.builtin.ValueError("Unknown format code '" + m[FMT.CONVERSION_TYPE] + "' for object of type 'str'");
+    }
+
+    if (m[FMT.SIGN]) {
+        throw new Sk.builtin.ValueError("Sign not allowed in string format specifier");
+    }
+
+    if (m[FMT.ALT_FORM]) {
+        throw new Sk.builtin.ValueError("Alternate form (#) not allowed with string format specifier");
+    }
+
+    if (m[FMT.COMMA]) {
+        throw new Sk.builtin.ValueError("Cannot specify ',' with 's'");
+    }
+
+    let value = self.v;
+
+    if (m[FMT.PRECISION]) {
+        value = value.substring(0, m[FMT.PRECISION]);
+    }
+
+    return new Sk.builtin.str(handleWidth(m, value, "", false));
+};
+
+// str.format() implementation
 var format = function (kwa) {
     // following PEP 3101
 
@@ -17,7 +293,7 @@ var format = function (kwa) {
         return args.v;
     }
     index = 0;
-    regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:((?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?))?}/g;
+    regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:([^}]*))?}/g;
     // ex: {o.name!r:*^+#030,.9b}
     // Field 1, Field_name, o.name
     // Field 2, arg_name, o
@@ -26,28 +302,19 @@ var format = function (kwa) {
     // Field 5, element_index, [0]
     // Field 6, conversion, r
     // Field 7, format_spec,*^+#030,.9b
-    // Field 9, fill_character,*
-    // Field 10, fill_align, ^
-    // Field 11, sign, +
-    // Field 12, 0x, #
-    // Filed 13, sign-aware 0 padding, 0
-    // Field 14, width, 30
-    // Field 15, comma, ,
-    // Field 16, precision, .9
-    // Field 17, conversionType, b
 
     // Detect empty/int/complex name
     // retrive field value
     // hand off format spec
     // return resulting spec to function
 
-
-    if(kwargs.size !== 0){
-
-        var kwItems = Sk.misceval.callsimArray(Sk.builtin.dict.prototype["items"], [kwargs]);
-
-        for (var n in kwItems.v){
-            arg_dict[kwItems.v[n].v[0].v] = kwItems.v[n].v[1];
+    if(kwargs.size !== 0) {
+        let iter, k, v;
+        for (iter = kwargs.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext()) {
+            v = kwargs.mp$lookup(k);
+            arg_dict[k.v] = v;
         }
     }
     for(var i in args.v){
@@ -56,289 +323,43 @@ var format = function (kwa) {
         }
     }
 
-    replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, fill_char, fill_align, sign, zero_pad, sign_aware, fieldWidth, comma, precision, conversionType, offset, str_whole) {
-        var return_str;
-        var formatNumber;
-        var formatFormat;
-        var result;
-        var base;
-        var value;
-        var handleWidth;
-        var alternateForm;
-        var precedeWithSign;
-        var blankBeforePositive;
-        var leftAdjust;
-        var centerAdjust;
-        var zeroPad;
-        var convName;
-        var convValue;
-        var percent;
-        var container;
-        fieldWidth = Sk.builtin.asnum$(fieldWidth);
-        precision = Sk.builtin.asnum$(precision);
+    replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, offset, str_whole) {
+        let value;
 
         if(element_index !== undefined && element_index !== ""){
-            container = arg_dict[arg_name];
+            let container = arg_dict[arg_name];
             if (container.constructor === Array) {
                 value = container[element_index];
+            } else if (/^\d+$/.test(element_index)) {
+                value = Sk.abstr.objectGetItem(container, new Sk.builtin.int_(parseInt(element_index, 10)), false);
             } else {
-                if (container instanceof Sk.builtin.dict) {
-                    value = Sk.abstr.objectGetItem(container, new Sk.builtin.str(element_index), false);
-                } else {
-                    value = Sk.abstr.objectGetItem(container, new Sk.builtin.int_(parseInt(element_index, 10)), false);
-                }
+                value = Sk.abstr.objectGetItem(container, new Sk.builtin.str(element_index), false);
             }
             index++;
         } else if(attribute_name !== undefined && attribute_name !== ""){
-            value = arg_dict[arg_name][attribute_name];
-            index++;
+            value = Sk.abstr.gattr(arg_dict[arg_name || (index++)], new Sk.builtin.str(attribute_name));
         } else if(arg_name !== undefined && arg_name !== ""){
             value = arg_dict[arg_name];
-            index++;
         } else if(field_name === undefined || field_name === ""){
-            return_str = arg_dict[index];
+            value = arg_dict[index];
             index++;
-            value = return_str;
-        } else if(field_name instanceof Sk.builtin.int_ ||
-                  field_name instanceof Sk.builtin.float_ ||
-                  field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
-            return_str = arg_dict[field_name];
+        } else if (field_name instanceof Sk.builtin.int_ ||
+                   field_name instanceof Sk.builtin.float_ ||
+                   field_name instanceof Sk.builtin.lng || /^\d+$/.test(field_name)) {
+            value = arg_dict[field_name];
             index++;
-            value = return_str;
         }
 
-        if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
-            precision = undefined;
+        if (conversion === "s") {
+            value = new Sk.builtin.str(value);
+        } else if (conversion === "r") {
+            value = Sk.builtin.repr(value);
+        } else if (conversion !== "" && conversion !== undefined) {
+            throw new Sk.builtin.ValueError("Unknown conversion specifier " + conversion);
         }
-        if(fill_char === undefined || fill_char === ""){
-            fill_char = " ";
-        }
+        // TODO "!a" I guess?
 
-        zeroPad = false;
-        leftAdjust = false;
-        centerAdjust = false;
-        blankBeforePositive = false;
-        precedeWithSign = false;
-        alternateForm = false;
-        if (format_spec) {
-            if(sign !== undefined && sign !== ""){
-                if ("-".indexOf(sign) !== -1) {
-                    leftAdjust = true;
-                } else if ("+".indexOf(sign) !== -1) {
-                    precedeWithSign = true;
-                } else if (" ".indexOf(sign) !== -1) {
-                    blankBeforePositive = true;
-                }
-            }
-            if(zero_pad){
-                alternateForm = "#".indexOf(zero_pad) !== -1;
-            }
-            if(fieldWidth !== undefined && fieldWidth !== ""){
-                if(fill_char === undefined || fill_char === ""){
-                    fill_char = " ";
-                }
-            }
-            if("%".indexOf(conversionType) !== -1){
-                percent = true;
-            }
-        }
-        if (precision) {
-            precision = parseInt(precision, 10);
-        }
-
-        formatFormat = function(value){
-            var r;
-            var s;
-            if(conversion === undefined || conversion === "" || conversion == "s"){
-                s = new Sk.builtin.str(value);
-                return s.v;
-            } else if(conversion == "r"){
-                r = Sk.builtin.repr(value);
-                return r.v;
-            }
-
-        };
-
-        handleWidth = function (prefix, r) {
-            // print(prefix);
-            var totLen;
-            r = Sk.ffi.remapToJs(r);
-
-            var j;
-            if(percent){
-                r = r +"%";
-            }
-            if (fieldWidth !== undefined && fieldWidth !== "") {
-                fieldWidth = parseInt(fieldWidth, 10);
-                totLen = r.length + prefix.length;
-                if (zeroPad) {
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        r = "0" + r;
-                    }
-                } else if (leftAdjust) {
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        r = r + fill_char;
-                    }
-                } else if(">".indexOf(fill_align) !== -1){
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        prefix = fill_char + prefix;
-                    }
-                } else if("^".indexOf(fill_align) !== -1){
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        if(j % 2 === 0){
-                            prefix = fill_char + prefix;
-                        } else if ( j % 2 === 1){
-                            r = r + fill_char;
-                        }
-                    }
-                } else if("=".indexOf(fill_align) !== -1){
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        r =  fill_char + r;
-                    }
-                } else{
-                    for (j = totLen; j < fieldWidth; ++j) {
-                        r = r + fill_char;
-                    }
-                }
-            }
-            return formatFormat(prefix + r);
-        };
-
-        formatNumber = function(n, base){
-            var precZeroPadded;
-            var prefix;
-            var neg;
-            var r;
-
-            base = Sk.builtin.asnum$(base);
-            neg = false;
-
-            if(format_spec === undefined){
-                return formatFormat(value);
-            }
-
-            if (typeof n === "number") {
-                if (n < 0) {
-                    n = -n;
-                    neg = true;
-                }
-                r = n.toString(base);
-            } else if (n instanceof Sk.builtin.float_) {
-                r = n.str$(base, false);
-                if (r.length > 2 && r.substr(-2) === ".0") {
-                    r = r.substr(0, r.length - 2);
-                }
-                neg = n.nb$isnegative();
-            } else if (n instanceof Sk.builtin.int_) {
-                r = n.str$(base, false);
-                neg = n.nb$isnegative();
-            } else if (n instanceof Sk.builtin.lng) {
-                r = n.str$(base, false);
-                neg = n.nb$isnegative();    //  neg = n.size$ < 0;  RNL long.js change
-            } else{
-                r = n;
-            }
-
-            if (precision) {
-                n = Number(r);
-                if (n < 0) {
-                    n = -n;
-                    neg = true;
-                }
-                r = n.toFixed(precision);
-            }
-
-            precZeroPadded = false;
-            prefix = "";
-
-            if (neg) {
-                prefix = "-";
-            } else if (precedeWithSign) {
-                prefix = "+" ;
-            } else if (blankBeforePositive) {
-                prefix = " " ;
-            }
-
-            if (alternateForm) {
-                if (base === 16) {
-                    prefix += "0x";
-                } else if (base === 8 && !precZeroPadded && r !== "0") {
-                    prefix += "0o";
-                } else if (base === 2 && !precZeroPadded && r !== "0"){
-                    prefix += "0b";
-                }
-            }
-
-            if(conversionType === "n"){
-                r=r.toLocaleString();
-            } else if(",".indexOf(comma) !== -1){
-                var parts = r.toString().split(".");
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                r = parts.join(".");
-            }
-            return handleWidth(prefix, r);
-        };
-
-        base = 10;
-        if(conversionType === "d" || conversionType === "n" || conversionType === "" || conversionType === undefined){
-            return formatNumber(value, 10);
-        }else if (conversionType === "b") {
-            return formatNumber(value, 2);
-        }else if (conversionType === "o") {
-            return formatNumber(value, 8);
-        } else if (conversionType === "x") {
-            return formatNumber(value, 16);
-        } else if (conversionType === "X") {
-            return formatNumber(value, 16).toUpperCase();
-        } else if (conversionType === "f" || conversionType === "F" || conversionType === "e" || conversionType === "E" || conversionType === "g" || conversionType === "G") {
-            if(alternateForm){
-                throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
-            }
-            convValue = Sk.builtin.asnum$(value);
-            if (typeof convValue === "string") {
-                convValue = Number(convValue);
-            }
-            if (convValue === Infinity) {
-                return handleWidth("","inf");
-            }
-            if (convValue === -Infinity) {
-                return handleWidth("-","inf");
-            }
-            if (isNaN(convValue)) {
-                return handleWidth("","nan");
-            }
-            convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
-            if (precision === undefined || precision === "") {
-                if (conversionType === "e" || conversionType === "E" || conversionType === "%") {
-                    precision = parseInt(6, 10);
-                } else if (conversionType === "f" || conversionType === "F") {
-                    precision = parseInt(6, 10);
-                }
-            }
-            result = (convValue)[convName](precision);
-            if ("EFG".indexOf(conversionType) !== -1) {
-                result = result.toUpperCase();
-            }
-            return formatNumber(result, 10);
-        } else if (conversionType === "c") {
-            if (typeof value === "number") {
-                return handleWidth("", String.fromCharCode(value));
-            } else if (value instanceof Sk.builtin.int_) {
-                return handleWidth("", String.fromCharCode(value.v));
-            } else if (value instanceof Sk.builtin.float_) {
-                return handleWidth("", String.fromCharCode(value.v));
-            } else if (value instanceof Sk.builtin.lng) {
-                return handleWidth("", String.fromCharCode(value.str$(10, false)[0]));
-            } else if (value.constructor === Sk.builtin.str) {
-                return handleWidth("", value.v.substr(0, 1));
-            } else {
-                throw new Sk.builtin.TypeError("an integer is required");
-            }
-        } else if (percent) {
-            if(precision === undefined){precision = parseInt(7,10);}
-            return formatNumber(value.nb$multiply(new Sk.builtin.int_(100)), 10);
-        }
-
+        return Sk.abstr.objectFormat(value, new Sk.builtin.str(format_spec)).$jsstr();
     };
 
     ret = args.v[0].v.replace(regex, replFunc);
@@ -347,3 +368,4 @@ var format = function (kwa) {
 
 format["co_kwargs"] = true;
 Sk.builtin.str.prototype["format"] = new Sk.builtin.func(format);
+Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(formatString);

@@ -170,9 +170,7 @@ Sk.builtin.checkComplex = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.lng);
+    return arg instanceof Sk.builtin.int_ || arg instanceof Sk.builtin.lng || (typeof arg === "number" && Number.isInteger(arg));
 };
 Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
@@ -256,6 +254,18 @@ Sk.builtin.func = function (code, globals, closure, closure2) {
     };
     this.func_closure = closure;
     this.tp$name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
+
+    // Because our external API allows you to set these flags
+    // *after* constructing the function (grr), we can only
+    // currently rely on this memoisation in fast-call mode.
+    // (but we set the values anyway so V8 knows the object's
+    // shape)
+    this.$memoiseFlags();
+    this.memoised = code.co_fastcall;
+
+    if (code.co_fastcall) {
+        this.tp$call = code;
+    }
     return this;
 };
 
@@ -264,6 +274,19 @@ Sk.abstr.setUpInheritance("function", Sk.builtin.func, Sk.builtin.object);
 Sk.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
 Sk.builtin.func.prototype.tp$name = "function";
+
+Sk.builtin.func.prototype.$memoiseFlags = function() {
+    this.co_varnames = this.func_code.co_varnames;
+    this.co_argcount = this.func_code.co_argcount;
+    if (this.co_argcount === undefined && this.co_varnames) {
+        this.co_argcount = this.co_argcount = this.co_varnames.length;
+    }
+    this.co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+    this.co_varargs = this.func_code.co_varargs;
+    this.co_kwargs = this.func_code.co_kwargs;
+    this.$defaults = this.func_code.$defaults || [];
+    this.$kwdefs = this.func_code.$kwdefs || [];
+};
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     Sk.asserts.assert(!(obj === undefined && objtype === undefined));
@@ -289,22 +312,40 @@ Sk.builtin.func.prototype.tp$getname = function () {
     return (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || this.func_code.name || "<native JS>";
 };
 
-Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
-    // This function is a logical Javascript port of
-    // _PyEval_EvalCodeWithName, and follows its logic.
+Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
+    // The rest of this function is a logical Javascript port of
+    // _PyEval_EvalCodeWithName, and follows its logic,
+    // plus fast-paths imported from _PyFunction_FastCall* as marked
 
-    let co_argcount = this.func_code.co_argcount;
+    let co_argcount = this.co_argcount;
 
     if (co_argcount === undefined) {
-        co_argcount = this.func_code.co_varnames ? this.func_code.co_varnames.length : posargs.length;
+        co_argcount = this.co_varnames ? this.co_varnames.length : posargs.length;
     }
-    let varnames = this.func_code.co_varnames || [];
-    let co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
+    let varnames = this.co_varnames || [];
+    let co_kwonlyargcount = this.co_kwonlyargcount || 0;
     let totalArgs = co_argcount + co_kwonlyargcount;
+
+    // Fast path from _PyFunction_FastCallDict
+    if (co_kwonlyargcount === 0 && !this.co_kwargs && (!kw || kw.length === 0) && !this.co_varargs) {
+        if (posargs.length == co_argcount) {
+            return posargs;
+        } else if(posargs.length === 0 && this.$defaults &&
+                    this.$defaults.length === co_argcount) {
+            for (let i=0; i!=this.$defaults.length; i++) {
+                posargs[i] = this.$defaults[i];
+            }
+            return posargs;
+        }
+    }
+    // end fast path from _PyFunction_FastCallDict
+    
+
+
     let kwargs;
 
     /* Create a NOT-a-dictionary for keyword parameters (**kwags) */
-    if (this.func_code.co_kwargs) {
+    if (this.co_kwargs) {
         kwargs = [];
     }
 
@@ -314,7 +355,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
 
 
     /* Pack other positional arguments into the *args argument */
-    if (this.func_code.co_varargs) {
+    if (this.co_varargs) {
         let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
         args[totalArgs] = new Sk.builtin.tuple(vararg);
     } else if (nposargs > co_argcount) {
@@ -351,7 +392,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
     /* Add missing positional arguments (copy default values from defs)
        (also checks for missing args where no defaults) */
     {
-        let defaults = this.func_code.$defaults || [];
+        let defaults = this.$defaults || [];
         let i = 0, missing = [], missingUnnamed = false;
         // Positional args for which we *don't* have a default
         let defaultStart = co_argcount - defaults.length;
@@ -363,7 +404,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
                 }
             }
         }
-        if (missing.length != 0 && (this.func_code.co_argcount || this.func_code.co_varnames)) {
+        if (missing.length != 0 && (this.co_argcount || this.co_varnames)) {
             throw new Sk.builtin.TypeError(this.tp$getname() + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
         }
         for (; i < co_argcount; i++) {
@@ -377,7 +418,7 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
 
     if (co_kwonlyargcount > 0) {
         let missing = [];
-        let kwdefs = this.func_code.$kwdefs;
+        let kwdefs = this.$kwdefs;
 
         for (let i = co_argcount; i < totalArgs; i++) {
             if (args[i] === undefined) {
@@ -401,19 +442,49 @@ Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
                 args.push(undefined);
             }
         }
-
-        args.push(this.func_closure);
     }
 
     if (kwargs) {
         args.unshift(kwargs);
     }
 
+    return args;
+};
+
+Sk.builtin.func.prototype.tp$call = function (posargs, kw) {
+    //console.log("Legacy tp$call for", this.tp$getname());
+
+    // Property reads from func_code are slooow, but
+    // the existing external API allows setup first, so as a
+    // hack we delay this initialisation.
+    // TODO change the external API to require all the co_ vars
+    // to be supplied at construction time!
+    if (!this.memoised) {
+        this.$memoiseFlags();
+        this.memoised = true;
+    }
+    
+    // Fast path for JS-native functions (which should be implemented
+    // in a separate tp$call, really)
+    if (this.co_argcount === undefined && this.co_varnames === undefined  && !this.co_kwargs && !this.func_closure) {
+        // It's a JS function with no type info, don't hang around
+        // resolving anything.
+        if (kw && kw.length !== 0) {
+            throw new Sk.builtin.TypeError(this.tp$getname() + "() takes no keyword arguments");
+        }
+        return this.func_code.apply(this.func_globals, posargs);
+    }
+    // end js fast path
+
+    let args = this.$resolveArgs(posargs, kw);
+    if (this.func_closure) {
+        args.push(this.func_closure);
+    }
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     return this.func_code.apply(this.func_globals, args);
-
 };
+
 
 Sk.builtin.func.prototype["$r"] = function () {
     var name = this.tp$getname();

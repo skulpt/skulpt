@@ -450,10 +450,14 @@ function generateTurtleModule(_target) {
         };
     })(EventManager.prototype);
 
-    function Turtle() {
+    function Turtle(shape) {
         getFrameManager().addTurtle(this);
         this._screen = getScreen();
         this._managers = {};
+        this._shape = shape.v;
+        if (!SHAPES.hasOwnProperty(this._shape)){
+            throw Sk.builtin.ValueError("Shape:'" + this._shape + "' not in default shape, please check shape again!")
+        }
         this.reset();
     }
 
@@ -565,7 +569,6 @@ function generateTurtleModule(_target) {
             this._down       = true;
             this._color      = "black";
             this._fill       = "black";
-            this._shape      = "classic";
             this._size       = 1;
             this._filling    = false;
             this._undoBuffer = [];
@@ -1057,8 +1060,8 @@ function generateTurtleModule(_target) {
                     this._colorMode = 255;
                 } else {
                     this._colorMode = 1.0;
-                }   
-                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});         
+                }
+                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
             }
 
             return this._colorMode;
@@ -2057,7 +2060,7 @@ function generateTurtleModule(_target) {
                 for(i = 0; i < 3; i++) {
                     if(typeof color[i] === "number") {
                         color[i] = Math.max(0, Math.min(255, parseInt(color[i])));
-                    } else { 
+                    } else {
                         throw new Sk.builtin.ValueError("bad color sequence");
                     }
                 }
@@ -2248,6 +2251,7 @@ function generateTurtleModule(_target) {
             }
         };
 
+        wrapperFn.co_name = new Sk.builtin.str(displayName); 
         wrapperFn.co_varnames = co_varnames.slice();
         wrapperFn.$defaults = [];
 
@@ -2263,11 +2267,18 @@ function generateTurtleModule(_target) {
         module[publicMethodName] = new Sk.builtin.func(wrapperFn);
     }
 
+    function initTurtle(self, shape) {
+        Sk.builtin.pyCheckArgs("__init__", arguments, 2, 3, false, false);
+        self.instance = new Turtle(shape);
+        self.instance.skInstance = self;
+    }
+    initTurtle.co_varnames = ["self", "shape"];
+    initTurtle.co_name = Sk.builtin.str("Turtle");
+    initTurtle.co_argcount = 2;
+    initTurtle.$defaults = [Sk.builtin.none.none$, Sk.builtin.str("classic")];
+
     function TurtleWrapper($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function (self) {
-            self.instance = new Turtle();
-            self.instance.skInstance = self;
-        });
+        $loc.__init__ = new Sk.builtin.func(initTurtle);
 
         for(var key in Turtle.prototype) {
             if (/^\$[a-z_]+/.test(key)) {

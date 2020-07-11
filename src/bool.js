@@ -45,4 +45,8 @@ Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
+Sk.builtin.bool.prototype.__format__ = new Sk.builtin.func(function(self) {
+    return self.$r();
+});
+
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
