@@ -2251,6 +2251,7 @@ function generateTurtleModule(_target) {
             }
         };
 
+        wrapperFn.co_name = new Sk.builtin.str(displayName); 
         wrapperFn.co_varnames = co_varnames.slice();
         wrapperFn.$defaults = [];
 

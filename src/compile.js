@@ -577,7 +577,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
 Compiler.prototype.cyield = function(e)
 {
     if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
-        throw new SyntaxError("'yield' outside function");
+        throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
     }
     var val = "null",
         nextBlock;
@@ -1555,7 +1555,7 @@ Compiler.prototype.ctry = function (s) {
         this.setBlock(handlers[i]);
         handler = s.handlers[i];
         if (!handler.type && i < n - 1) {
-            throw new SyntaxError("default 'except:' must be last");
+            throw new Sk.builtin.SyntaxError("default 'except:' must be last", this.filename, handler.lineno);
         }
 
         if (handler.type) {
@@ -1889,10 +1889,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (isGenerator) {
         // TODO make generators deal with arguments properly
         if (kwarg) {
-            throw new SyntaxError(coname.v + "(): keyword arguments in generators not supported");
+            throw new Sk.builtin.SyntaxError(coname.v + "(): keyword arguments in generators not supported",
+                                            this.filename, n.lineno);
         }
         if (vararg) {
-            throw new SyntaxError(coname.v + "(): variable number of arguments in generators not supported");
+            throw new Sk.builtin.SyntaxError(coname.v + "(): variable number of arguments in generators not supported",
+                                            this.filename, n.lineno);
         }
         funcArgs.push("$gen");
     }
@@ -2016,7 +2018,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.varDeclsCode += "}";
 
     // inject __class__ cell when running python3
-    if (Sk.python3 && class_for_super) {
+    if (Sk.__future__.python3 && class_for_super) {
         this.u.varDeclsCode += "$gbl.__class__=this." + class_for_super.v + ";";
     }
 
@@ -2330,7 +2332,7 @@ Compiler.prototype.cclass = function (s) {
 Compiler.prototype.ccontinue = function (s) {
     var nextFinally = this.peekFinallyBlock(), gotoBlock;
     if (this.u.continueBlocks.length == 0) {
-        throw new SyntaxError("'continue' outside loop");
+        throw new Sk.builtin.SyntaxError("'continue' outside loop", this.filename, s.lineno);
     }
     // todo; continue out of exception blocks
     gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
@@ -2346,7 +2348,7 @@ Compiler.prototype.cbreak = function (s) {
     var nextFinally = this.peekFinallyBlock(), gotoBlock;
 
     if (this.u.breakBlocks.length === 0) {
-        throw new SyntaxError("'break' outside loop");
+        throw new Sk.builtin.SyntaxError("'break' outside loop", this.filename, s.lineno);
     }
     gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
     if (nextFinally && nextFinally.breakDepth == this.u.breakBlocks.length) {
@@ -2394,7 +2396,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case Sk.astnodes.Return:
             if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
-                throw new SyntaxError("'return' outside function");
+                throw new Sk.builtin.SyntaxError("'return' outside function", this.filename, s.lineno);
             }
             val = s.value ? this.vexpr(s.value) : "Sk.builtin.none.none$";
             if (this.u.finallyBlocks.length == 0) {
@@ -2500,7 +2502,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     var op;
     var mangled;
     if ((ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore || ctx === Sk.astnodes.Del) && name.v === "__debug__") {
-        throw new Sk.builtin.SyntaxError("can not assign to __debug__");
+        throw new Sk.builtin.SyntaxError("can not assign to __debug__", this.filename, this.u.lineno);
     }
     Sk.asserts.assert(name.v !== "None");
 
