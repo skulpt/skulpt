@@ -129,6 +129,8 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
         Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
+        delete Sk.builtins[fileWithoutExtension].__module__;
+        delete Sk.globals[fileWithoutExtension];
     }
 };
 
@@ -238,7 +240,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             // - run module and set the module locals returned to the module __dict__
             module = new Sk.builtin.module();
 
-            if (suppliedPyBody) {
+            if (typeof suppliedPyBody === "string") {
                 filename = name + ".py";
                 co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
             } else {
