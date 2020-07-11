@@ -640,24 +640,24 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
         throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
     }
 
-    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
     if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
-        start = Sk.builtin.asnum$(start);
+        start = Sk.misceval.asIndex(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
     if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
-        end = Sk.builtin.asnum$(end);
+        end = Sk.misceval.asIndex(end);
         end = end >= 0 ? end : self.v.length + end;
     }
 
@@ -667,13 +667,18 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
 
     var substr = self.v.slice(start, end);
 
+    
     if(Sk.abstr.typeName(prefix) == "tuple"){
         var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
         var it, i;
         for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if(start > end){
-                tmpBool = start <= 0;
-            }else{     
+            if(!tmpBool){
                 tmpBool = substr.indexOf(i.v) === 0;    
             }
             resultBool = resultBool || tmpBool;
@@ -699,24 +704,24 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
         throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
     }
 
-    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
     if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
-        start = Sk.builtin.asnum$(start);
+        start = Sk.misceval.asIndex(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
     if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
-        end = Sk.builtin.asnum$(end);
+        end = Sk.misceval.asIndex(end);
         end = end >= 0 ? end : self.v.length + end;
     }
 
@@ -729,11 +734,15 @@ Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffi
 
     if(Sk.abstr.typeName(suffix) == "tuple"){
         var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
         var it, i;
         for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if(start > end){
-                tmpBool = start <= 0;
-            }else{     
+            if(!tmpBool){     
                 tmpBool = substr.indexOf(i.v, substr.length - i.v.length) !== -1;    
             }
             resultBool = resultBool || tmpBool;
