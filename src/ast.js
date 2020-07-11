@@ -2551,30 +2551,6 @@ function ast_for_atom(c, n)
         }
         case TOK.T_STRING: {
             var str = parsestrplus(c, n);
-            // if (!str) {
-            //     const char *errtype = NULL;
-            //     if (PyErr_ExceptionMatches(PyExc_UnicodeError))
-            //         errtype = "unicode error";
-            //     else if (PyErr_ExceptionMatches(PyExc_ValueError))
-            //         errtype = "value error";
-            //     if (errtype) {
-            //         PyObject *type, *value, *tback, *errstr;
-            //         PyErr_Fetch(&type, &value, &tback);
-            //         errstr = PyObject_Str(value);
-            //         if (errstr) {
-            //             ast_error(c, n, "(%s) %U", errtype, errstr);
-            //             Py_DECREF(errstr);
-            //         }
-            //         else {
-            //             PyErr_Clear();
-            //             ast_error(c, n, "(%s) unknown error", errtype);
-            //         }
-            //         Py_DECREF(type);
-            //         Py_XDECREF(value);
-            //         Py_XDECREF(tback);
-            //     }
-            //     return NULL;
-            // }
             return new Sk.astnodes.Str(str, LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset);
         }
         case TOK.T_NUMBER:
