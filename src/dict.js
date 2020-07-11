@@ -1,4 +1,3 @@
-
 /** @typedef {Sk.builtin.object} */ var pyObject;
 /** @typedef {Sk.builtin.type|Function} */ var typeObject;
 
@@ -11,7 +10,7 @@
  * call with an array of key value pairs
  * Do not use this function to convert a JS object to a dict
  * Instead use {@link Sk.ffi.remapToPy}
- * 
+ *
  *
  */
 Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
@@ -20,7 +19,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         if (L === undefined) {
             L = [];
         }
-        Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.dict, "bad call to dict constructor");
+        Sk.asserts.assert(Array.isArray(L) && L.length % 2 === 0 && this instanceof Sk.builtin.dict, "bad call to dict constructor");
 
         this.size = 0;
         this.entries = {};
@@ -29,7 +28,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             this.set$item(L[i], L[i + 1]);
         }
     },
-    slots: /**@lends {Sk.builtin.dict.prototype}*/{
+    slots: /**@lends {Sk.builtin.dict.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
@@ -123,7 +122,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return Sk.builtin.none.none$;
         },
     },
-    proto: /**@lends {Sk.builtin.dict.prototype}*/{
+    proto: /**@lends {Sk.builtin.dict.prototype}*/ {
         get$size: function () {
             // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
@@ -143,7 +142,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return key_hash;
         },
     },
-    methods: /**@lends {Sk.builtin.dict.prototype}*/{
+    methods: /**@lends {Sk.builtin.dict.prototype}*/ {
         __reversed__: {
             $meth: function () {
                 return new Sk.builtin.dict_reverse_iter_(this);
@@ -283,7 +282,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.copy() -> a shallow copy of D",
         },
     },
-    classmethods: /**@lends {Sk.builtin.dict.prototype}*/{
+    classmethods: /**@lends {Sk.builtin.dict.prototype}*/ {
         fromkeys: {
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($type, iterable, value=None, /)",
@@ -305,7 +304,7 @@ Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /**
  * @private
- * @param {Sk.builtin.str} pyName 
+ * @param {Sk.builtin.str} pyName
  * @this {Sk.builtin.dict}
  */
 Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
@@ -320,7 +319,6 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
     }
     return;
 };
-
 
 /**
  * NB:
@@ -613,7 +611,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
         item = this.entries[hash];
         if (item === undefined) {
             this.size += 1;
-            item = this.entries[hash] = { lhs: key , rhs: undefined};
+            item = this.entries[hash] = { lhs: key, rhs: undefined };
         }
         item.rhs = value;
         return;
