@@ -208,7 +208,9 @@ var reservedNames_ = {
     "__defineGetter__": true,
     "__defineSetter__": true,
     "apply": true,
+    "arguments": true,
     "call": true,
+    "caller": true, 
     "eval": true,
     "hasOwnProperty": true,
     "isPrototypeOf": true,
@@ -216,6 +218,7 @@ var reservedNames_ = {
     "__lookupSetter__": true,
     "__noSuchMethod__": true,
     "propertyIsEnumerable": true,
+    "prototype": true,
     "toSource": true,
     "toLocaleString": true,
     "toString": true,
@@ -230,6 +233,11 @@ function fixReservedNames (name) {
     if (reservedNames_[name]) {
         return name + "_$rn$";
     }
+    return name;
+}
+
+function fixReserved (name) {
+    name = fixReservedNames(fixReservedWords(name));
     return name;
 }
 
@@ -902,8 +910,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            mangled = fixReservedWords(mangled);
-            mangled = fixReservedNames(mangled);
+            mangled = fixReserved(mangled);
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
@@ -2711,8 +2718,7 @@ Compiler.prototype.exitScope = function () {
     if (prev.name.v !== "<module>") {// todo; hacky
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
-        mangled = fixReservedWords(mangled);
-        mangled = fixReservedNames(mangled);
+        mangled = fixReserved(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
     for (var constant in prev.consts) {
@@ -2875,6 +2881,9 @@ Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
 Sk.fixReservedNames = fixReservedNames;
 Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+
+Sk.fixReserved = fixReserved;
+Sk.exportSymbol("Sk.fixReserved", Sk.fixReserved);
 
 Sk.unfixReserved = unfixReserved;
 Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
