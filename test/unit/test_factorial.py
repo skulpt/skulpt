@@ -116,7 +116,7 @@ class FactorialTests(unittest.TestCase):
         for i in [100, 333, 1000]:
             self.assertEqual(factorial(i), factorialPS(i))
 
-        self.assertEqual(str(factorial(8888)).count("8"), 2887)
+        self.assertEqual(str(factorial(888)).count("8"), 216)
         self.assertEqual(len(str(factorial(3333))), 10297)
 
 if __name__ == '__main__':

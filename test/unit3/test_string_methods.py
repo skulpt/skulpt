@@ -72,7 +72,7 @@ class StringMethodsTests(unittest.TestCase):
 
     def test_percent_operator(self):
         self.assertEqual("formatting with just %d argument" % 1, "formatting with just 1 argument")
-
+        
         self.assertEqual("%r is a repr and %s is a string" % ("this","this"), "'this' is a repr and this is a string")
         self.assertEqual("I can also use a %(structure)s to format." % {'structure':'dictionary'}, "I can also use a dictionary to format.")
         self.assertEqual("+%s+" % "hello","+hello+")

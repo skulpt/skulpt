@@ -114,7 +114,8 @@ class ComplexTest(unittest.TestCase):
 
     def test_richcompare(self):
         self.assertIs(complex.__eq__(1+1j, 1 << 10000), False)
-        self.assertRaises(TypeError, complex.__lt__, 1+1j, None)
+        # in py3 this is returns NotImplemented so comment this out
+        # self.assertRaises(TypeError, complex.__lt__, 1+1j, None)
         self.assertIs(complex.__eq__(1+1j, 1+1j), True)
         self.assertIs(complex.__eq__(1+1j, 2+2j), False)
         self.assertIs(complex.__ne__(1+1j, 1+1j), False)
