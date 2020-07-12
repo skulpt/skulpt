@@ -525,7 +525,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
     // class attributes are direct properties of the object
-    var jsName = pyName.$jsstr();
+    var jsName = Sk.fixReserved(pyName.$jsstr());
     this[jsName] = value;
     this.prototype[jsName] = value;
     if (jsName in Sk.dunderToSkulpt) {
