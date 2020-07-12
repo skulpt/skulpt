@@ -1809,7 +1809,7 @@ Sk.subSlots = {
         nb$invert: "__invert__",
         nb$remainder: "__mod__",
         nb$reflected_remainder: "__rmod__",
-        nb$inplace_mod: "__imod__",
+        nb$inplace_remainder: "__imod__",
         nb$divmod: "__divmod__",
         nb$reflected_divmod: "__rdivmod__",
         nb$power: "__pow__",
@@ -1837,6 +1837,10 @@ Sk.subSlots = {
         nb$reflected_rshift: "__rrshift__",
         nb$inplace_lshift: "__ilshift__",
         nb$inplace_rshift: "__irshift__",
+
+        nb$matrix_multiply: "__matmul__",
+        nb$reflected_matrix_multiply: "__rmatmul__",
+        nb$inplace_matrix_multiply: "__imatmul__",
     },
 
     sequence_and_mapping_slots: {

@@ -91,7 +91,7 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
             return obj.nb$or;
     }
 };
-/**@suppress {checkTypes} */
+
 Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
     switch (name) {
         case "Add":
@@ -126,7 +126,7 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
             return obj.nb$reflected_or;
     }
 };
-/**@suppress {checkTypes} */
+
 Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
     switch (name) {
         case "Add":
@@ -834,6 +834,8 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
  *
  * @function
  * @suppress {checkTypes}
+ * closure doesn't like lends here but we need it so that it knows ob$type etc are defined
+ * the specific error is Sk.builtin.object.prototype is not yet defined. 
  *
  */
 Sk.abstr.setUpBaseInheritance = function () {
@@ -842,7 +844,7 @@ Sk.abstr.setUpBaseInheritance = function () {
     Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
 
     // required so that type objects can be called!
-    Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/{
+    Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
         call: { value: Function.prototype.call },
         apply: { value: Function.prototype.apply },
         ob$type: { value: Sk.builtin.type, writable: true },
@@ -850,7 +852,7 @@ Sk.abstr.setUpBaseInheritance = function () {
         tp$base: { value: Sk.builtin.object, writable: true },
         sk$type: { value: true },
     });
-    Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/{
+    Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/ {
         ob$type: { value: Sk.builtin.object, writable: true },
         tp$name: { value: "object", writable: true },
         tp$base: { value: undefined, writable: true },

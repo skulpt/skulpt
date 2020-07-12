@@ -64,7 +64,7 @@ Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.object);
 
 Sk.builtin.str.prototype.tp$as_sequence_or_mapping = true;
-// Sk.builtin.str.prototype.tp$as_number = true; // we currently don't support nb$mod
+Sk.builtin.str.prototype.tp$as_number = true;
 
 Sk.builtin.str.prototype.tp$doc =
     "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.";
