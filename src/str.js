@@ -20,7 +20,7 @@ Sk.builtin.str = function (x) {
     // Temporary
     // Sk.asserts.assert(typeof this === "string" || this === undefined || this.sk$object, "str called with an invalid JS object");
 
-    let ret, interned;
+    let ret;
     if (typeof x === "string") {
         // the common case
         ret = x;
@@ -45,9 +45,9 @@ Sk.builtin.str = function (x) {
     } else {
         throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
     }
-    interned = getInterned(ret);
-    // interning required for strings in py
 
+    const interned = getInterned(ret);
+    // interning required for strings in py
     if (interned !== undefined) {
         return interned;
     } else {
@@ -449,21 +449,21 @@ Sk.builtin.str.methods.count = function (self, pat, start, end) {
     if (!Sk.builtin.checkString(pat)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if (start !== undefined && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if (end !== undefined && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)&& !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -561,21 +561,21 @@ Sk.builtin.str.methods.find = function (self, tgt, start, end) {
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if (start !== undefined && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if (end !== undefined && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -604,21 +604,21 @@ Sk.builtin.str.methods.rfind = function (self, tgt, start, end) {
     if (!Sk.builtin.checkString(tgt)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    if (start !== undefined && !Sk.builtin.checkInt(start)) {
+    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if (end !== undefined && !Sk.builtin.checkInt(end)) {
+    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined) {
+    if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
         start = start >= 0 ? start : self.v.length + start;
     }
 
-    if (end === undefined) {
+    if (end === undefined || Sk.builtin.checkNone(end)) {
         end = self.v.length;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -642,17 +642,130 @@ Sk.builtin.str.methods.rindex = function (self, tgt, start, end) {
     return idx;
 };
 
-Sk.builtin.str.methods.startswith = function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool(self.v.indexOf(tgt.v) === 0);
+Sk.builtin.str.methods.startswith = function (self, prefix, start, end) {
+
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 1, 3, false, true);
+    if(Sk.abstr.typeName(prefix) != "str" && Sk.abstr.typeName(prefix) != "tuple"){
+        throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
+    }
+
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else {
+        start = Sk.misceval.asIndex(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = self.v.length;
+    } else {
+        end = Sk.misceval.asIndex(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
+    }
+
+    var substr = self.v.slice(start, end);
+
+    
+    if(Sk.abstr.typeName(prefix) == "tuple"){
+        var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
+        var it, i;
+        for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if(!tmpBool){
+                tmpBool = substr.indexOf(i.v) === 0;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
+            }
+        }
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    }
+
+    if(prefix.v == "" && start > end && end >= 0){
+        return Sk.builtin.bool.false$;
+    }
+
+    return new Sk.builtin.bool(substr.indexOf(prefix.v) === 0);
 };
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
-Sk.builtin.str.methods.endswith = function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return new Sk.builtin.bool(self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+Sk.builtin.str.methods.endswith = function (self, suffix, start, end) {
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 1, 3, false, true);
+
+    if(Sk.abstr.typeName(suffix) != "str" && Sk.abstr.typeName(suffix) != "tuple"){
+        throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
+    }
+
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else {
+        start = Sk.misceval.asIndex(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = self.v.length;
+    } else {
+        end = Sk.misceval.asIndex(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
+    }
+
+    //take out the substring
+    var substr = self.v.slice(start, end);
+
+    if(Sk.abstr.typeName(suffix) == "tuple"){
+        var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
+        var it, i;
+        for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if(!tmpBool){     
+                tmpBool = substr.indexOf(i.v, substr.length - i.v.length) !== -1;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
+            }
+        }
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    }
+
+    if(suffix.v == "" && start > end && end >= 0){
+        return Sk.builtin.bool.false$;
+    }
+    return new Sk.builtin.bool(substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 };
 
 Sk.builtin.str.methods.replace = function (self, oldS, newS, count) {
@@ -921,6 +1034,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         var leftAdjust;
         var zeroPad;
         var i;
+
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
 
@@ -1038,6 +1152,10 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = r + " ";
                     }
+                    if (Sk.__future__.python3) {
+                        r += prefix;
+                        prefix = "";
+                    }
                 } else {
                     for (j = totLen; j < fieldWidth; ++j) {
                         prefix = " " + prefix;
@@ -1046,7 +1164,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             return prefix + r;
         };
-
         //print("Rhs:",rhs, "ctor", rhs.constructor);
         if (rhs.constructor === Sk.builtin.tuple) {
             value = rhs.v[i];
@@ -1062,7 +1179,13 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         }
         base = 10;
         if (conversionType === "d" || conversionType === "i") {
-            return handleWidth(formatNumber(value, 10));
+            let tmpData = formatNumber(value, base);
+            if (tmpData[1] === undefined){
+                throw new Sk.builtin.TypeError("%"+ conversionType+" format: a number is required, not "+ Sk.abstr.typeName(value));
+            }
+            let r = tmpData[1];
+            tmpData[1] = r.indexOf(".") !== -1 ? parseInt(r, 10).toString() : r;
+            return handleWidth(tmpData);
         } else if (conversionType === "o") {
             return handleWidth(formatNumber(value, 8));
         } else if (conversionType === "x") {
