@@ -151,7 +151,7 @@ var $builtinmodule = function (name) {
 
         if (initial === undefined) {
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(pool.slice(0, r))];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(pool.slice(0, r))];
         }
         let found = false
         let i;
@@ -170,7 +170,7 @@ var $builtinmodule = function (name) {
             indices[j] = indices[j - 1] + 1;
         }
         const res = indices.map(i => pool[i]);
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
     };
 
     var _combinations = function (iterable, r) {
@@ -182,7 +182,7 @@ var $builtinmodule = function (name) {
         }
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
         n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -214,7 +214,7 @@ var $builtinmodule = function (name) {
         if (initial === undefined) {
             const res = indices.map(i => pool[i]);
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         }
         let found = false
         let i;
@@ -233,7 +233,7 @@ var $builtinmodule = function (name) {
             indices[j] = val
         }
         const res = indices.map(i => pool[i]);
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
     };
 
     var _combinations_with_replacement = function (iterable, r) {
@@ -245,7 +245,7 @@ var $builtinmodule = function (name) {
         }
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        const pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
         const n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -485,7 +485,7 @@ var $builtinmodule = function (name) {
         $gen.gi$locals.currval = currval;
 
         const grouper = new Sk.builtin.itertools_gen(_grouper, mod, [$gen, $gen.gi$locals.tgtkey, $gen.gi$locals.id])
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple([currkey, grouper])];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple([currkey, grouper])];
     };
 
     _groupby = function (iterable, key) {
@@ -500,13 +500,13 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.itertools_gen(_groupby_gen, mod, [iterable, key, currval, currkey, tgtkey])
     };
 
-    _groupby_gen.co_name = new Sk.builtins.str("groupby");
+    _groupby_gen.co_name = new Sk.builtin.str("groupby");
     _groupby_gen.co_varnames = ["it", "keyfunc", "currval", "currkey", "tgtkey"];
-    _groupby.co_name = new Sk.builtins.str("groupby");
+    _groupby.co_name = new Sk.builtin.str("groupby");
     _groupby.$defaults = [Sk.builtin.none.none$];
     _groupby.co_varnames = ["iterable", "key"];
 
-    _grouper.co_name = new Sk.builtins.str("_grouper");
+    _grouper.co_name = new Sk.builtin.str("_grouper");
     _grouper.co_varnames = ["groupby_gen", "tgtkey", "id"];
 
     mod.groupby = new Sk.builtin.func(_groupby);
@@ -619,7 +619,7 @@ var $builtinmodule = function (name) {
 
         if (initial === undefined) {
             $gen.gi$locals.initial = false;
-            return [ /*resume*/ , Sk.builtin.tuple(pool.slice(0, r))];
+            return [ /*resume*/ , new Sk.builtin.tuple(pool.slice(0, r))];
         }
 
         for (let i = r - 1; i >= 0; i--) {
@@ -632,7 +632,7 @@ var $builtinmodule = function (name) {
                 j = cycles[i];
                 [indices[i], indices[n - j]] = [indices[n - j], indices[i]]; //swap elements;
                 const res = indices.map(i => pool[i]).slice(0, r);
-                return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+                return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
             }
         }
 
@@ -647,9 +647,9 @@ var $builtinmodule = function (name) {
                 "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
             );
         }
-        const pool = Sk.builtin.tuple(iterable).v; // want pool as an array
+        const pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
         const n = pool.length;
-        r = Sk.builtin.checkNone(r) ? Sk.builtin.int_(n) : r;
+        r = Sk.builtin.checkNone(r) ? new Sk.builtin.int_(n) : r;
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -683,7 +683,7 @@ var $builtinmodule = function (name) {
                 $gen.gi$locals.n = 0; // at least one pool arguments is an empty iterator
                 return [ /*resume*/ , /*ret*/ ];
             }
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         }
 
         let i = n - 1;
@@ -701,7 +701,7 @@ var $builtinmodule = function (name) {
             return [ /*resume*/ , /*ret*/ ];
         } else {
             const res = indices.map((_, i) => pools[i][indices[i]]);
-            return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(res)];
+            return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(res)];
         };
 
     };
@@ -721,7 +721,7 @@ var $builtinmodule = function (name) {
                     "'" + Sk.abstr.typeName(args[i]) + "' object is not iterable"
                 );
             }
-            args[i] = Sk.builtin.tuple(args[i]).v; // want each arg as an array
+            args[i] = new Sk.builtin.tuple(args[i]).v; // want each arg as an array
         }
         const pools = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
         const n = pools.length;
@@ -737,7 +737,7 @@ var $builtinmodule = function (name) {
     _product.co_argcount = 0;
     _product.co_varnames = ["repeat"];
     _product.co_varargs = 1;
-    _product.$kwdefs = [Sk.builtin.int_(1)];
+    _product.$kwdefs = [new Sk.builtin.int_(1)];
 
     mod.product = new Sk.builtin.func(_product);
 
@@ -869,7 +869,7 @@ var $builtinmodule = function (name) {
             }
             values.push(val);
         }
-        return [ /*resume*/ , /*ret*/ Sk.builtin.tuple(values)];
+        return [ /*resume*/ , /*ret*/ new Sk.builtin.tuple(values)];
     };
 
     _zip_longest = function (fillvalue, args) {
