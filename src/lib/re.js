@@ -198,6 +198,7 @@ var $builtinmodule = function (name) {
             self.thematch = thematch;
             self.re = pattern;
             self.string = string;
+            return Sk.builtin.none.none$;
         });
 
         $loc.groups = new Sk.builtin.func(function (self) {
@@ -323,6 +324,7 @@ var $builtinmodule = function (name) {
             else {
                 self.flags = flags;
             }
+            return Sk.builtin.none.none$;
         });
 
         _repr = new Sk.builtin.func( function (self) {
