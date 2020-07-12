@@ -204,14 +204,13 @@ var $builtinmodule = function (name) {
         $loc.groups = new Sk.builtin.func(function (self) {
             var _groups = self.thematch.v.slice(1);
 
-            return new Sk.builtin.tuple(_groups)
+            return new Sk.builtin.tuple(_groups);
         });
 
         $loc.group = new Sk.builtin.func(function (self, grpnum) {
             if (grpnum === undefined) {
                 grpnum = 0;
-            }
-            else {
+            } else {
                 grpnum = Sk.builtin.asnum$(grpnum);
             }
             if (grpnum >= self.thematch.v.length) {
@@ -236,8 +235,7 @@ var $builtinmodule = function (name) {
 
         if (str.match(patt)) {
             matches = str.slice(0, -1).match(re);
-        }
-        else {
+        } else {
             matches = str.match(re);
         }
         retval = new Sk.builtin.list();
@@ -320,8 +318,7 @@ var $builtinmodule = function (name) {
             self.re = pattern;
             if (flags === undefined) {
                 self.flags = 0;
-            }
-            else {
+            } else {
                 self.flags = flags;
             }
             return Sk.builtin.none.none$;
@@ -345,7 +342,7 @@ var $builtinmodule = function (name) {
             var end = endpos == undefined ? str.length : Sk.ffi.remapToJs(endpos);
 
             if (start == "^") {
-                start = str.indexOf('\n') + 1;
+                start = str.indexOf("\n") + 1;
             }
             if (end == Sk.builtin.none.none$) {
                 end = str.length;
