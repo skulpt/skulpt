@@ -22,7 +22,7 @@ const $builtinmodule = function (name) {
     };
 
     methods.comb = function comb(x, y) {
-        throw new Sk.builtin.NotImplementedError("methods.comb() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.comb() is not yet implemented in Skulpt");
     };
 
     const get_sign = function (n) {
@@ -313,7 +313,7 @@ const $builtinmodule = function (name) {
     };
 
     methods.isqrt = function isqrt(x) {
-        throw new Sk.builtin.NotImplementedError("methods.isqrt() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
     };
 
     methods.ldexp = function ldexp(x, i) {
@@ -360,11 +360,11 @@ const $builtinmodule = function (name) {
     };
 
     methods.perm = function perm(x) {
-        throw new Sk.builtin.NotImplementedError("methods.perm() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.perm() is not yet implemented in Skulpt");
     };
 
     methods.prod = function prod(x) {
-        throw new Sk.builtin.NotImplementedError("methods.prod() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.prod() is not yet implemented in Skulpt");
     };
 
     methods.remainder = function remainder(x, y) {
@@ -647,7 +647,7 @@ const $builtinmodule = function (name) {
     };
 
     methods.dist = function dist(x) {
-        throw new Sk.builtin.NotImplementedError("methods.dist() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.dist() is not yet implemented in Skulpt");
     };
 
     methods.hypot = function hypot(x, y) {
@@ -749,19 +749,19 @@ const $builtinmodule = function (name) {
 
     // Special Functions
     methods.erf = function erf(x) {
-        throw new Sk.builtin.NotImplementedError("methods.erf() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.erf() is not yet implemented in Skulpt");
     };
 
     methods.erfc = function erfc(x) {
-        throw new Sk.builtin.NotImplementedError("methods.erfc() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.erfc() is not yet implemented in Skulpt");
     };
 
     methods.gamma = function gamma(x) {
-        throw new Sk.builtin.NotImplementedError("methods.gamma() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.gamma() is not yet implemented in Skulpt");
     };
 
     methods.lgamma = function lgamma(x) {
-        throw new Sk.builtin.NotImplementedError("methods.lgamma() is not yet implemented in Skulpt");
+        throw new Sk.builtin.NotImplementedError("math.lgamma() is not yet implemented in Skulpt");
     };
 
     const method_defs = {
@@ -1086,7 +1086,6 @@ const $builtinmodule = function (name) {
         },
     };
     Sk.abstr.setUpModuleMethods("math", method_defs, math);
-    delete methods;
 
     return math;
 };

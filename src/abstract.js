@@ -612,7 +612,7 @@ Sk.abstr.objectNegative = function (obj) {
     if (obj.nb$negative) {
         return obj.nb$negative();
     }
-    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
+    throw new Sk.builtin.TypeError("bad operand type for unary -: '" + Sk.abstr.typeName(obj) + "'");
 };
 
 Sk.abstr.objectPositive = function (obj) {

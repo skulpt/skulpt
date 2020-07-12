@@ -232,7 +232,7 @@ class IntTestCases(unittest.TestCase):
 
     def test_keyword_args(self):
         # Test invoking int() using keyword arguments.
-        # no longer supported
+        # x = no longer supported in Python
         # self.assertEqual(int(x=1.2), 1)
         self.assertEqual(int('100', base=2), 4)
         # self.assertEqual(int(x='100', base=2), 4)

@@ -66,10 +66,10 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("sep must be a string");
         }
 
-        var words = Sk.misceval.callsimArray(mod.split, [s, sep]);
+        var words = Sk.misceval.callsimArray(mod.split, [s, sep]).v;
         var capWords = [];
-        for (var i = 0; i < words.v.length; i++) {
-            var word = Sk.abstr.sequenceGetItem(words, i);
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
             var cap = Sk.misceval.callsimArray(mod.capitalize, [word]);
             capWords.push(cap);
         }

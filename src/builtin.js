@@ -212,32 +212,44 @@ Sk.builtin.min = function min(args, kwargs) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
     }
 
-    let lowest = iter.tp$iternext();
-
-    if (lowest === undefined) {
-        if ($default === null) {
-            throw new Sk.builtin.ValueError("min() arg is an empty sequence");
-        } else {
-            return $default;
-        }
-    }
-    if (Sk.builtin.checkNone(key)) {
-        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
-                lowest = i;
+    let lowest;
+    return Sk.misceval.chain(
+        iter.tp$iternext(true),
+        (i) => {
+            lowest = i;
+            if (lowest === undefined) {
+                return;
             }
-        }
-    } else {
-        let lowest_compare = Sk.misceval.callsimArray(key, [lowest]);
-        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = Sk.misceval.callsimArray(key, [i]);
-            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
-                lowest = i;
-                lowest_compare = i_compare;
+            if (Sk.builtin.checkNone(key)) {
+                return Sk.misceval.iterFor(iter, (i) => {
+                    if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
+                        lowest = i;
+                    }
+                });
+            } else {
+                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [lowest]), (lowest_compare) =>
+                    Sk.misceval.iterFor(iter, (i) =>
+                        Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
+                            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
+                                lowest = i;
+                                lowest_compare = i_compare;
+                            }
+                        })
+                    )
+                );
             }
+        },
+        () => {
+            if (lowest === undefined) {
+                if ($default === null) {
+                    throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+                } else {
+                    lowest = $default;
+                }
+            }
+            return lowest;
         }
-    }
-    return lowest;
+    );
 };
 
 Sk.builtin.max = function max(args, kwargs) {
@@ -266,32 +278,44 @@ Sk.builtin.max = function max(args, kwargs) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
     }
 
-    let highest = iter.tp$iternext();
-
-    if (highest === undefined) {
-        if ($default === null) {
-            throw new Sk.builtin.ValueError("max() arg is an empty sequence");
-        } else {
-            return $default;
-        }
-    }
-    if (Sk.builtin.checkNone(key)) {
-        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
-                highest = i;
+    let highest;
+    return Sk.misceval.chain(
+        iter.tp$iternext(true),
+        (i) => {
+            highest = i;
+            if (highest === undefined) {
+                return;
             }
-        }
-    } else {
-        let highest_compare = Sk.misceval.callsimArray(key, [highest]);
-        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-            let i_compare = Sk.misceval.callsimArray(key, [i]);
-            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
-                highest = i;
-                highest_compare = i_compare;
+            if (Sk.builtin.checkNone(key)) {
+                return Sk.misceval.iterFor(iter, (i) => {
+                    if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
+                        highest = i;
+                    }
+                });
+            } else {
+                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [highest]), (highest_compare) =>
+                    Sk.misceval.iterFor(iter, (i) =>
+                        Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
+                            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
+                                highest = i;
+                                highest_compare = i_compare;
+                            }
+                        })
+                    )
+                );
             }
+        },
+        () => {
+            if (highest === undefined) {
+                if ($default === null) {
+                    throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+                } else {
+                    highest = $default;
+                }
+            }
+            return highest;
         }
-    }
-    return highest;
+    );
 };
 
 Sk.builtin.any = function any(iter) {
