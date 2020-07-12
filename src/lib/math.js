@@ -23,7 +23,7 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("math.comb() is not yet implemented in Skulpt");
     });
 
-    function get_sign (n) {
+    function get_sign(n) {
         //deals with signed zeros
         // returns -1 or +1 for the sign
         if (n) {
@@ -47,7 +47,7 @@ var $builtinmodule = function (name) {
         const sign_y = get_sign(_y);
         const sign = sign_x * sign_y;
 
-        return new Sk.builtin.float_(_x*sign);
+        return new Sk.builtin.float_(_x * sign);
     });
 
     mod.fabs = new Sk.builtin.func(function fabs(x) {
@@ -93,7 +93,7 @@ var $builtinmodule = function (name) {
             }
 
             r = bigup(r);
-            for (var i = MAX_SAFE_INTEGER_FACTORIAL+1; i <= x; i++) {
+            for (var i = MAX_SAFE_INTEGER_FACTORIAL + 1; i <= x; i++) {
                 var i_bigup = bigup(i);
                 r = r.multiply(i_bigup);
             }
@@ -223,7 +223,7 @@ var $builtinmodule = function (name) {
             return _biggcd(b, a.remainder(b));
         }
 
-        if ((a instanceof Sk.builtin.lng) || (b instanceof Sk.builtin.lng)) {
+        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng) {
             let _a = Sk.builtin.lng(a).biginteger;
             let _b = Sk.builtin.lng(b).biginteger;
             let res = _biggcd(_a, _b);
@@ -238,7 +238,6 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.int_(res);
         }
     });
-
 
     _isclose = function isclose(a, b, rel_tol, abs_tol) {
         Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 4, true);
@@ -271,7 +270,7 @@ var $builtinmodule = function (name) {
     _isclose.co_varnames = ["a", "b", "rel_tol", "abs_tol"];
     _isclose.co_argcount = 2;
     _isclose.co_kwonlyargcount = 2;
-    _isclose.$kwdefs = [1e-09, 0.0];
+    _isclose.$kwdefs = [1e-9, 0.0];
 
     mod.isclose = new Sk.builtin.func(_isclose);
 
@@ -443,7 +442,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.expm1 = new Sk.builtin.func(function expm1(x) {
-        // as per python docs this implements an algorithm for evaluating exp(x) - 1 
+        // as per python docs this implements an algorithm for evaluating exp(x) - 1
         // for smaller values of x
         Sk.builtin.pyCheckArgsLen("expm1", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
@@ -764,16 +763,16 @@ var $builtinmodule = function (name) {
     });
 
     mod.erfc = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.erfc() is not yet implemented in Skulpt")
+        throw new Sk.builtin.NotImplementedError("math.erfc() is not yet implemented in Skulpt");
     });
 
     mod.gamma = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.gamma() is not yet implemented in Skulpt")
+        throw new Sk.builtin.NotImplementedError("math.gamma() is not yet implemented in Skulpt");
     });
 
     mod.lgamma = new Sk.builtin.func(function (x) {
-        throw new Sk.builtin.NotImplementedError("math.lgamma() is not yet implemented in Skulpt")
+        throw new Sk.builtin.NotImplementedError("math.lgamma() is not yet implemented in Skulpt");
     });
 
     return mod;
-}
+};
