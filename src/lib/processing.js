@@ -249,7 +249,7 @@ var $builtinmodule = function (name) {
     mod.MOVE = new Sk.builtin.str("move");
     mod.TEXT = new Sk.builtin.str("text");
     mod.WAIT = new Sk.builtin.str("wait");
-    mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto", Sk.builtin.nmber.str);
+    mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto");
 
     // Hints
     mod.DISABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(1);
