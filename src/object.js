@@ -11,9 +11,51 @@ Sk.builtin.object = function object() {
     Sk.asserts.assert(this instanceof Sk.builtin.object, "bad call to object, use 'new'");
 };
 
-// now that object has been created we setup the base inheritances
-// between type and object
-Sk.abstr.setUpBaseInheritance();
+Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/ {
+    ob$type: { value: Sk.builtin.object, writable: true },
+    tp$name: { value: "object", writable: true },
+    tp$base: { value: undefined, writable: true },
+    sk$object: { value: true },
+});
+
+/**
+ * @description
+ * We aim to match python and javascript inheritance like
+ * type   instanceof object => true
+ * object instanceof type   => true
+ * type   instanceof type   => true
+ * object instanceof object => true
+ *
+ * type   subclassof object => type.prototype   instanceof object => true
+ * object subclassof type   => object.prototype instanceof type   => false
+ * 
+ * this algorithm achieves the equivalent with the following prototypical chains
+ * using `Object.setPrototypeOf`
+ *
+ * ```
+ * type.__proto__             = type   (type instanceof type)
+ * type.__proto__.__proto__   = object (type instanceof object)
+ * type.prototype.__proto__   = object (type subclasssof object)
+ * object.__proto__           = type   (object instanceof type)
+ * object.__proto__.__proto__ = object (object instanceof object)
+ * ```
+ *
+ * while `Object.setPrototypeOf` is not considered [good practice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
+ * this is a particularly unique use case and creates a lot of prototypical benefits
+ * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
+ * similarly it makes metclasses that much easier to implement
+ * Object.setPrototypeOf is also a feature built into the javascript language
+ *
+ * @ignore
+ */
+(function setUpBaseInheritance () {
+    Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+    Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
+    Sk.abstr.setUpBuiltinMro(Sk.builtin.object);
+})();
+
 
 /**
  * worth noting that we don't use the new api for object since descr_objects are not yet initialized

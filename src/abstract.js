@@ -801,70 +801,6 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     return child;
 };
 
-/**
- * @summary
- * Set up inheritance between type and object
- *
- * @description
- * ```text
- * type   instanceof object => true
- * object instanceof type   => true
- * type   instanceof type   => true
- * object instanceof object => true
- *
- * type   subclassof object => type.prototype   instanceof object => true
- * object subclassof type   => object.prototype instanceof type   => false
- * ```
- * this algorithm achieves the equivalent with the following prototypical chains
- * using `Object.setPrototypeOf`
- *
- * ```
- * type.__proto__             = type   (type instanceof type)
- * type.__proto__.__proto__   = object (type instanceof object)
- * type.prototype.__proto__   = object (type subclassof object)
- * object.__proto__           = type   (object instanceof type)
- * object.__proto__.__proto__ = object (object instanceof object)
- * ```
- *
- * while `Object.setPrototypeOf` is not considered [good practice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
- * this is a particularly unique use case and creates a lot of prototypical benefits
- * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
- * similarly it makes metclasses that much easier to implement
- * Object.setPrototypeOf is also a feature built into the javascript language
- *
- * @function
- * @suppress {checkTypes}
- * closure doesn't like lends here but we need it so that it knows ob$type etc are defined
- * the specific error is Sk.builtin.object.prototype is not yet defined. 
- *
- */
-Sk.abstr.setUpBaseInheritance = function () {
-    Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
-    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
-    Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
-
-    // required so that type objects can be called!
-    Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
-        call: { value: Function.prototype.call },
-        apply: { value: Function.prototype.apply },
-        ob$type: { value: Sk.builtin.type, writable: true },
-        tp$name: { value: "type", writable: true },
-        tp$base: { value: Sk.builtin.object, writable: true },
-        sk$type: { value: true },
-    });
-    Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/ {
-        ob$type: { value: Sk.builtin.object, writable: true },
-        tp$name: { value: "object", writable: true },
-        tp$base: { value: undefined, writable: true },
-        sk$object: { value: true },
-    });
-
-    Sk.builtin.object.sk$basetype = true;
-    Sk.builtin.type.sk$basetype = true;
-
-    Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
-    Sk.abstr.setUpBuiltinMro(Sk.builtin.object);
-};
 
 /**
  * This function is called in {@link Sk.doOneTimeInitialization}
@@ -876,7 +812,7 @@ Sk.abstr.setUpBaseInheritance = function () {
 Sk.abstr.setUpBuiltinMro = function (child) {
     let parent = child.prototype.tp$base || undefined;
     const bases = parent === undefined ? [] : [parent];
-    if (parent === Sk.builtin.object) {
+    if (parent === Sk.builtin.object || parent === undefined) {
         child.sk$basetype = true;
     }
     const mro = [child];
