@@ -319,21 +319,25 @@ Sk.builtin.max = function max(args, kwargs) {
 };
 
 Sk.builtin.any = function any(iter) {
-    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-        if (Sk.misceval.isTrue(i)) {
-            return new Sk.misceval.Break(true);
-        }
-    });
-    return ret === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.true$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.false$
+    );
 };
 
 Sk.builtin.all = function all(iter) {
-    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-        if (!Sk.misceval.isTrue(i)) {
-            return new Sk.misceval.Break(false);
-        }
-    });
-    return ret === undefined ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (!Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.false$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.true$
+    );
 };
 
 Sk.builtin.sum = function sum(iter, start) {
