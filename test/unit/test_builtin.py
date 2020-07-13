@@ -579,5 +579,11 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(StopIteration, next, it)
         self.assertEqual(next(it, 42), 42)
 
+    def test_skulpt_bugs(self):
+        # bug where sum should accept non numbers types
+        class A(int): pass
+        self.assertEqual(sum([A(1), A(2), A(3)]), 6)
+        self.assertEqual(sum([complex(1,1), 1]), complex(2, 1))
+
 if __name__ == "__main__":
     unittest.main()
