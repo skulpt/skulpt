@@ -338,33 +338,73 @@ Sk.builtin.all = function all(iter) {
 
 Sk.builtin.sum = function sum(iter, start) {
     var tot;
-    var has_float;
-    // this follows the order python checks errors
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (Sk.builtin.checkString(start)) {
+    // follows the order of CPython checks
+    const it = Sk.abstr.iter(iter);
+    if (start === undefined) {
+        tot = new Sk.builtin.int_(0);
+    } else if (Sk.builtin.checkString(start)) {
         throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
+    } else {
+        tot = start;
     }
-    tot = start;
-    Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
-        if (!has_float && i instanceof Sk.builtin.float_) {
-            has_float = true;
-            tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
-        }
-        // else if (i instanceof Sk.builtin.lng) {
-        //     if (!has_float && !(tot instanceof Sk.builtin.lng)) {
-        //         tot = new Sk.builtin.lng(tot);
-        //     }
-        // }
-        if (tot.nb$add !== undefined) {
-            const itermed = tot.nb$add(i);
-            if (itermed !== undefined && !(itermed instanceof Sk.builtin.NotImplemented)) {
-                tot = itermed;
-                return;
+
+    function fastSumInt() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.int_) {
+                tot = tot.nb$add(i);
+            } else if (i.constructor === Sk.builtin.float_) {
+                tot = new Sk.builtin.float_(tot).nb$add(i);
+                return Sk.misceval.Break("float");
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return Sk.misceval.Break("slow");
             }
-        }
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + Sk.abstr.typeName(tot) + "' and '" + Sk.abstr.typeName(i) + "'");
-    });
-    return tot;
+        });
+    }
+
+    function fastSumFloat() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.float_ || i.constructor === Sk.builtin.int_) {
+                tot = tot.nb$add(i);
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return Sk.misceval.Break("slow");
+            }
+        });
+    }
+
+    function slowSum() {
+        return Sk.misceval.iterFor(it, (i) => {
+            tot = Sk.abstr.numberBinOp(tot, i, "Add");
+        });
+    }
+
+    let initValue;
+    if (start === undefined || tot.constructor === Sk.builtin.int_) {
+        initValue = fastSumInt();
+    } else if (tot.constructor === Sk.builtin.float_) {
+        initValue = "float";
+    } else {
+        initValue = "slow";
+    }
+
+    return Sk.misceval.chain(
+        initValue,
+        (brValue) => {
+            if (brValue === undefined) {
+                return;
+            } else if (brValue === "float") {
+                return fastSumFloat();
+            }
+            return brValue;
+        },
+        (brValue) => {
+            if (brValue !== undefined) {
+                return slowSum();
+            }
+        },
+        () => tot
+    );
 };
 
 Sk.builtin.zip = function zip() {
