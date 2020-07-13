@@ -518,7 +518,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.ValueError("sample larger than population");
         }
 
-        return Sk.builtin.list(reservoir);
+        return new Sk.builtin.list(reservoir);
     });
 
     return mod;
