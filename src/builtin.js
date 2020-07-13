@@ -491,10 +491,10 @@ Sk.builtin.sum = function sum(iter, start) {
                 tot = tot.nb$add(i);
             } else if (i.constructor === Sk.builtin.float_) {
                 tot = new Sk.builtin.float_(tot).nb$add(i);
-                return Sk.misceval.Break("float");
+                return new Sk.misceval.Break("float");
             } else {
                 tot = Sk.abstr.numberBinOp(tot, i, "Add");
-                return Sk.misceval.Break("slow");
+                return new Sk.misceval.Break("slow");
             }
         });
     }
@@ -505,7 +505,7 @@ Sk.builtin.sum = function sum(iter, start) {
                 tot = tot.nb$add(i);
             } else {
                 tot = Sk.abstr.numberBinOp(tot, i, "Add");
-                return Sk.misceval.Break("slow");
+                return new Sk.misceval.Break("slow");
             }
         });
     }
