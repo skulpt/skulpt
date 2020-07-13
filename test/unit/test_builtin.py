@@ -585,6 +585,9 @@ class BuiltinTest(unittest.TestCase):
         class A:
             def __add__(self, other):
                 return 3
+            def __radd__(self, other):
+                return 3
+        self.assertEqual(sum([A(), A()]), 3)
         self.assertEqual(sum([1,2,3], A()), 8)
 
 if __name__ == "__main__":

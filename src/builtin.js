@@ -475,18 +475,15 @@ Sk.builtin.all = function all (iter) {
 Sk.builtin.sum = function sum(iter, start) {
     var tot;
     Sk.builtin.pyCheckArgsLen("sum", arguments.length, 1, 2);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (start !== undefined && Sk.builtin.checkString(start)) {
-        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
-    }
-
+    // follows the order of CPython checks
+    const it = Sk.abstr.iter(iter);
     if (start === undefined) {
         tot = new Sk.builtin.int_(0);
+    } else if (Sk.builtin.checkString(start)) {
+        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     } else {
         tot = start;
     }
-
-    const it = Sk.abstr.iter(iter);
 
     function fastSumInt() {
         return Sk.misceval.iterFor(it, (i) => {
@@ -519,16 +516,17 @@ Sk.builtin.sum = function sum(iter, start) {
         });
     }
 
+    let initValue;
+    if (start === undefined || tot.constructor === Sk.builtin.int_) {
+        initValue = fastSumInt();
+    } else if (tot.constructor === Sk.builtin.float_) {
+        initValue = "float";
+    } else {
+        initValue = "slow";
+    }
+
     return Sk.misceval.chain(
-        null,
-        () => {
-            if (start === undefined || tot.constructor === Sk.builtin.int_) {
-                return fastSumInt();
-            } else if (tot.constructor === Sk.builtin.float_) {
-                return "float";
-            }
-            return "slow";
-        },
+        initValue,
         (brValue) => {
             if (brValue === undefined) {
                 return;
