@@ -54,7 +54,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.abs = new Sk.builtin.func(function (obj) {
-        return Sk.misceval.callsimArray(Sk.builtin.abs, [obj]);
+        return Sk.builtin.abs(obj);
     });
     mod.__abs__ = mod.abs;
 
