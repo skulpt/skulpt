@@ -472,7 +472,7 @@ Sk.builtin.all = function all (iter) {
     return Sk.builtin.bool.true$;
 };
 
-Sk.builtin.sum = function sum (iter, start) {
+Sk.builtin.sum = function sum(iter, start) {
     var tot;
     Sk.builtin.pyCheckArgsLen("sum", arguments.length, 1, 2);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
@@ -513,20 +513,28 @@ Sk.builtin.sum = function sum (iter, start) {
         });
     }
 
-    function slowSum () {
+    function slowSum() {
         return Sk.misceval.iterFor(it, (i) => {
             tot = Sk.abstr.numberBinOp(tot, i, "Add");
         });
     }
 
     return Sk.misceval.chain(
-        fastSumInt(),
+        null,
+        () => {
+            if (start === undefined || tot.constructor === Sk.builtin.int_) {
+                return fastSumInt();
+            } else if (tot.constructor === Sk.builtin.float_) {
+                return "float";
+            }
+            return "slow";
+        },
         (brValue) => {
             if (brValue === undefined) {
                 return;
             } else if (brValue === "float") {
                 return fastSumFloat();
-            } 
+            }
             return brValue;
         },
         (brValue) => {
