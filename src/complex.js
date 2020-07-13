@@ -773,7 +773,7 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 };
 
 
-Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.builtin.complex.prototype.$internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
 
 /**
  * Custom getattr impl. to get the c.real and c.imag to work. Though we should
@@ -783,26 +783,22 @@ Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototy
  *
  */
 Sk.builtin.complex.prototype.tp$getattr = function (name) {
-    if (Sk.builtin.checkString(name)) {
-        var _name = name.$jsstr();
-
-        if (_name === "real" || _name === "imag") {
-            return new Sk.builtin.float_(this[_name]);
-        }
+    if (name === Sk.builtin.str.$real || name === Sk.builtin.str.$imag) {
+        return new Sk.builtin.float_(this[name.$jsstr()]);
     }
-
     // if we have not returned yet, try the genericgetattr
-    return this._internalGenericGetAttr(name);
+    return this.$internalGenericGetAttr(name);
 };
 
 
 Sk.builtin.complex.prototype.tp$setattr = function (name, value) {
-    if (Sk.builtin.checkString(name)) {
-        var _name = name.$jsstrs();
-    }
+    if (name === Sk.builtin.str.$real || name === Sk.builtin.str.$imag) {
+        throw new Sk.builtin.AttributeError("readonly attribute");
+        // real and imag throw a different error
 
-    // builtin: --> all is readonly (I am not happy with this)
-    throw new Sk.builtin.AttributeError("'complex' object attribute '" + name + "' is readonly");
+    }
+    return Sk.builtin.object.prototype.tp$setattr.call(this, name, value);
+    // outsource to tp$setattr which will throw the appropriate error
 };
 
 /**
