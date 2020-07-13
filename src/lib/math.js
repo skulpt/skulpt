@@ -239,7 +239,7 @@ var $builtinmodule = function (name) {
         }
     });
 
-    _isclose = function isclose(a, b, rel_tol, abs_tol) {
+    function isclose(a, b, rel_tol, abs_tol) {
         Sk.builtin.pyCheckArgsLen("isclose", arguments.length, 2, 4, true);
         Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
         Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
@@ -267,12 +267,12 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.bool(res);
     };
 
-    _isclose.co_varnames = ["a", "b", "rel_tol", "abs_tol"];
-    _isclose.co_argcount = 2;
-    _isclose.co_kwonlyargcount = 2;
-    _isclose.$kwdefs = [1e-9, 0.0];
+    isclose.co_varnames = ["a", "b", "rel_tol", "abs_tol"];
+    isclose.co_argcount = 2;
+    isclose.co_kwonlyargcount = 2;
+    isclose.$kwdefs = [1e-9, 0.0];
 
-    mod.isclose = new Sk.builtin.func(_isclose);
+    mod.isclose = new Sk.builtin.func(isclose);
 
     mod.isfinite = new Sk.builtin.func(function isfinite(x) {
         Sk.builtin.pyCheckArgsLen("isfinite", arguments.length, 1, 1);
@@ -683,7 +683,7 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.log(L));
     });
 
-    mod.atanh = new Sk.builtin.func(function (x) {
+    mod.atanh = new Sk.builtin.func(function atanh(x) {
         Sk.builtin.pyCheckArgsLen("atanh", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
@@ -708,7 +708,7 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.float_(result);
     });
 
-    mod.cosh = new Sk.builtin.func(function (x) {
+    mod.cosh = new Sk.builtin.func(function cosh(x) {
         Sk.builtin.pyCheckArgsLen("cosh", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
@@ -762,15 +762,15 @@ var $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("math.erf() is not yet implemented in Skulpt");
     });
 
-    mod.erfc = new Sk.builtin.func(function (x) {
+    mod.erfc = new Sk.builtin.func(function erfc(x) {
         throw new Sk.builtin.NotImplementedError("math.erfc() is not yet implemented in Skulpt");
     });
 
-    mod.gamma = new Sk.builtin.func(function (x) {
+    mod.gamma = new Sk.builtin.func(function gamma(x) {
         throw new Sk.builtin.NotImplementedError("math.gamma() is not yet implemented in Skulpt");
     });
 
-    mod.lgamma = new Sk.builtin.func(function (x) {
+    mod.lgamma = new Sk.builtin.func(function lgamma(x) {
         throw new Sk.builtin.NotImplementedError("math.lgamma() is not yet implemented in Skulpt");
     });
 
