@@ -1117,7 +1117,7 @@ Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
  * Convert a Python iterable into a javascript array
  *
  * @param {pyObject} iterable
- * @param {boolean=} canSuspend - Can this funciton suspend
+ * @param {boolean=} canSuspend - Can this function suspend
  *
  * @returns {!Array}
  */
@@ -1127,21 +1127,17 @@ Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
     }
     const hptype = iterable.hp$type || undefined;
     if (hptype === undefined && iterable.sk$asarray !== undefined) {
+        // use sk$asarray only if we're a builtin
         return iterable.sk$asarray();
     }
     const L = [];
-    const ret = Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
-        L.push(i);
-    });
-    if (ret === undefined) {
-        return L;
-    } else if (canSuspend) {
-        return Sk.misceval.chain(ret, () => {
-            return L;
-        });
-    }
-    Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-    return L;
+    const ret = Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
+            L.push(i);
+        }),
+        () => L
+    );
+    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 Sk.exportSymbol("Sk.misceval.arrayFromIterable", Sk.misceval.arrayFromIterable);
 
