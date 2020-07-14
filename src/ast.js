@@ -2589,7 +2589,7 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
             }
             literal = literal.replace(/}}/g, "}");
         }
-        values.push(new Sk.astnodes.Str(new Sk.builtin.str(literal), LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset));
+        values.push(new Sk.astnodes.Str(new Sk.builtin.str(literal), LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset));
     };
 
     
@@ -2658,7 +2658,7 @@ function parsestrplus (c, n) {
             if (lastStrNode) {
                 lastStrNode.s = lastStrNode.s.sq$concat(str);
             } else {
-                lastStrNode = new Sk.astnodes.Str(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset)
+                lastStrNode = new Sk.astnodes.Str(str, LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset)
                 strs.push(lastStrNode);
             }
         }
@@ -2667,7 +2667,7 @@ function parsestrplus (c, n) {
     if (strs.length === 1 && strs[0].constructor === Sk.astnodes.Str) {
         return strs[0];
     } else {
-        return new Sk.astnodes.JoinedStr(strs, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset);
+        return new Sk.astnodes.JoinedStr(strs, LINENO(n), n.col_offset, n.end_lineno, n.end_col_offset);
     }
 }
 
