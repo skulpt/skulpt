@@ -24,7 +24,7 @@ var $builtinmodule = function(name) {
         }
 
         function jsReadline() {
-            const line = Sk.misceval.callsim(readline);
+            const line = Sk.misceval.callsimArray(readline);
             return Sk.ffi.remapToJs(line);
         }
 

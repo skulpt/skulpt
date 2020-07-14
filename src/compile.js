@@ -811,7 +811,7 @@ Compiler.prototype.cformattedvalue = function(e) {
     let value = this.vexpr(e.value);
     switch (e.conversion) {
         case 's':
-            value = this._gr("value", "Sk.builtin.str(",value,")");
+            value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
         case 'a':
             // TODO when repr() becomes more unicode-aware,
@@ -947,7 +947,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
                     out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
-                    this._checkSuspension(e)
+                    this._checkSuspension(e);
                     return this._gr("gitem", "$ret");
                 case Sk.astnodes.Load:
                 case Sk.astnodes.Store:
