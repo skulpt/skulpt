@@ -1,3 +1,111 @@
+let INHERITANCE_MAP = {
+    "mod": [Sk.astnodes.Module,
+            Sk.astnodes.Interactive,
+            Sk.astnodes.Expression,
+            Sk.astnodes.Suite],
+    "stmt": [Sk.astnodes.FunctionDef,
+             Sk.astnodes.AsyncFunctionDef,
+             Sk.astnodes.ClassDef,
+             Sk.astnodes.Return,
+             Sk.astnodes.Delete,
+             Sk.astnodes.Assign,
+             Sk.astnodes.AugAssign,
+             Sk.astnodes.AnnAssign,
+             Sk.astnodes.For,
+             Sk.astnodes.AsyncFor,
+             Sk.astnodes.While,
+             Sk.astnodes.If,
+             Sk.astnodes.With,
+             Sk.astnodes.AsyncWith,
+             Sk.astnodes.Raise,
+             Sk.astnodes.Try,
+             Sk.astnodes.Assert,
+             Sk.astnodes.Import,
+             Sk.astnodes.ImportFrom,
+             Sk.astnodes.Global,
+             Sk.astnodes.Nonlocal,
+             Sk.astnodes.Expr,
+             Sk.astnodes.Pass,
+             Sk.astnodes.Break,
+             Sk.astnodes.Continue,
+             Sk.astnodes.Print,
+             Sk.astnodes.Debugger],
+    "expr": [Sk.astnodes.BoolOp,
+             Sk.astnodes.BinOp,
+             Sk.astnodes.UnaryOp,
+             Sk.astnodes.Lambda,
+             Sk.astnodes.IfExp,
+             Sk.astnodes.Dict,
+             Sk.astnodes.Set,
+             Sk.astnodes.ListComp,
+             Sk.astnodes.SetComp,
+             Sk.astnodes.DictComp,
+             Sk.astnodes.GeneratorExp,
+             Sk.astnodes.Await,
+             Sk.astnodes.Yield,
+             Sk.astnodes.YieldFrom,
+             Sk.astnodes.Compare,
+             Sk.astnodes.Call,
+             Sk.astnodes.Num,
+             Sk.astnodes.Str,
+             Sk.astnodes.FormattedValue,
+             Sk.astnodes.JoinedStr,
+             Sk.astnodes.Bytes,
+             Sk.astnodes.Ellipsis,
+             Sk.astnodes.NameConstant,
+             Sk.astnodes.Constant,
+             Sk.astnodes.Attribute,
+             Sk.astnodes.Subscript,
+             Sk.astnodes.Starred,
+             Sk.astnodes.Name,
+             Sk.astnodes.List,
+             Sk.astnodes.Tuple],
+    "expr_context": [Sk.astnodes.Load,
+                     Sk.astnodes.Store,
+                     Sk.astnodes.Del,
+                     Sk.astnodes.AugLoad,
+                     Sk.astnodes.AugStore,
+                     Sk.astnodes.Param],
+    "slice": [Sk.astnodes.Slice,
+              Sk.astnodes.ExtSlice,
+              Sk.astnodes.Index],
+    "boolop": [Sk.astnodes.And, Sk.astnodes.Or],
+    "operator": [Sk.astnodes.Add,
+                 Sk.astnodes.Sub,
+                 Sk.astnodes.Mult,
+                 Sk.astnodes.MatMult,
+                 Sk.astnodes.Div,
+                 Sk.astnodes.Mod,
+                 Sk.astnodes.Pow,
+                 Sk.astnodes.LShift,
+                 Sk.astnodes.RShift,
+                 Sk.astnodes.BitOr,
+                 Sk.astnodes.BitXor,
+                 Sk.astnodes.BitAnd,
+                 Sk.astnodes.FloorDiv],
+    "unaryop": [Sk.astnodes.Invert,
+                Sk.astnodes.Not,
+                Sk.astnodes.UAdd,
+                Sk.astnodes.USub],
+    "cmpop": [Sk.astnodes.Eq,
+              Sk.astnodes.NotEq,
+              Sk.astnodes.Lt,
+              Sk.astnodes.LtE,
+              Sk.astnodes.Gt,
+              Sk.astnodes.GtE,
+              Sk.astnodes.Is,
+              Sk.astnodes.IsNot,
+              Sk.astnodes.In,
+              Sk.astnodes.NotIn],
+    "comprehension": [],
+    "excepthandler": [Sk.astnodes.ExceptHandler],
+    "arguments": [],
+    "arg": [],
+    "keyword": [],
+    "alias": [],
+    "withitem": []
+};
+
 var $builtinmodule = function (name) {
     var mod = {__name__: Sk.builtin.str("_ast")};
 
@@ -355,7 +463,7 @@ var $builtinmodule = function (name) {
     mod.parse = function parse(source, filename, mode, type_comments,
         feature_version) {
         if (!(/\S/.test(source))) {
-            return Sk.misceval.callsim(mod.Module, new Sk.INHERITANCE_MAP.mod[0]([]));
+            return Sk.misceval.callsim(mod.Module, new INHERITANCE_MAP.mod[0]([]));
         }
         // TODO: mode, type_comments, feature_version
         var parse = Sk.parse(filename, Sk.ffi.remapToJs(source));
@@ -375,13 +483,17 @@ var $builtinmodule = function (name) {
     mod.Module = function ($gbl, $loc) {
         Sk.abstr.superConstructor(mod.OrderedDict, this, items);
     }*/
+
+    function fixReservedNames(name) {
+        switch (name) {
+            case "arguments": return "arguments_";
+            default: return name;
+        }
+    }
     
     function functionName(fun) {
         let astname = fun.prototype._astname;
-        switch (astname) {
-            case "arguments": return "arguments_";
-            default: return astname;
-        }
+        return fixReservedNames(astname);
         /*
         var ret = fun.toString();
         ret = ret.substr("function ".length);
@@ -394,12 +506,12 @@ var $builtinmodule = function (name) {
         return ret;*/
     }
     
-    for (var base in Sk.INHERITANCE_MAP) {
+    for (var base in INHERITANCE_MAP) {
         var baseClass = function($gbl, $loc) { return this;};
         mod[base] = Sk.misceval.buildClass(mod, baseClass, base, [mod.AST]);
-        for (var i=0; i < Sk.INHERITANCE_MAP[base].length; i++) {
-            var nodeType = Sk.INHERITANCE_MAP[base][i];
-            var nodeName = nodeType.prototype._astname;
+        for (var i=0; i < INHERITANCE_MAP[base].length; i++) {
+            var nodeType = INHERITANCE_MAP[base][i];
+            var nodeName = functionName(nodeType);
             var nodeClass = function($gbl, $loc) { return this;};
             mod[nodeName] = Sk.misceval.buildClass(mod, nodeClass, nodeName, [mod[base]]);
         }
