@@ -99,7 +99,7 @@ let INHERITANCE_MAP = {
               Sk.astnodes.NotIn],
     "comprehension": [],
     "excepthandler": [Sk.astnodes.ExceptHandler],
-    "arguments": [],
+    "arguments_": [],
     "arg": [],
     "keyword": [],
     "alias": [],
@@ -135,9 +135,9 @@ var $builtinmodule = function (name) {
         return fieldList;
     };
     
-    mod.iter_fields = function(node) {
+    mod.iter_fields = new Sk.builtin.func(function(node) {
         return node._fields;
-    };
+    });
     
     var convertValue = function(value) {
         // acbart: kwarg field for lambdas (and functions perhaps?) can be undefined
@@ -145,7 +145,7 @@ var $builtinmodule = function (name) {
             return Sk.builtin.none.none$;
         } else if (isSpecialPyAst(value)) {
             var constructorName = functionName(value);
-            return Sk.misceval.callsim(mod[constructorName], constructorName, true);
+            return Sk.misceval.callsimArray(mod[constructorName], [constructorName, true]);
         } else if (typeof value == "number") {
             return Sk.builtin.assk$(value);
         } else if (Array === value.constructor) {
@@ -154,11 +154,11 @@ var $builtinmodule = function (name) {
                 var subvalue = value[j];
                 if (isSpecialPyAst(subvalue)) {
                     var constructorName = functionName(subvalue);
-                    subvalue = Sk.misceval.callsim(mod[constructorName], constructorName, true);
+                    subvalue = Sk.misceval.callsimArray(mod[constructorName], [constructorName, true]);
                     subvalues.push(subvalue);
                 } else if (isJsAst(subvalue)) {
                     var constructorName = functionName(subvalue.constructor);
-                    subvalue = Sk.misceval.callsim(mod[constructorName], subvalue);
+                    subvalue = Sk.misceval.callsimArray(mod[constructorName], [subvalue]);
                     subvalues.push(subvalue);
                 }
                 // No AST nodes have primitive list values, just
@@ -167,7 +167,7 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.list(subvalues);
         } else if (isJsAst(value)) {
             var constructorName = functionName(value.constructor);
-            return Sk.misceval.callsim(mod[constructorName], value);
+            return Sk.misceval.callsimArray(mod[constructorName], [value]);
         } else {// Else already a Python value
             return value;
         }
@@ -225,7 +225,7 @@ var $builtinmodule = function (name) {
     };
     
     // Python node
-    mod.iter_child_nodes = function(node) {
+    mod.iter_child_nodes = new Sk.builtin.func(function(node) {
         var fieldList = node._fields.v;
         var childFields = [];
         for (var i = 0; i < fieldList.length; i += 1) {
@@ -245,14 +245,14 @@ var $builtinmodule = function (name) {
             }
         }
         return Sk.builtin.list(childFields);
-    };
+    });
     
     /**
      * Dump the tree in a pretty format
     */
-    mod.dump = function(node, annotate_fields, include_attributes) {
+    mod.dump = new Sk.builtin.func(function(node, annotate_fields, include_attributes, indent) {
         // Confirm valid arguments
-        Sk.builtin.pyCheckArgs("dump", arguments, 1, 3);
+        Sk.builtin.pyCheckArgs("dump", arguments, 1, 4);
         // node argument
         if (!isPyAst(node)) {
             throw new Sk.builtin.TypeError("expected AST, got "+Sk.abstr.typeName(node));
@@ -309,7 +309,11 @@ var $builtinmodule = function (name) {
             }
         };
         return Sk.ffi.remapToPy(_format(node, 0));
-    };
+    });
+    mod.dump.minArgs = 1;
+    mod.dump.$defaults = [Sk.builtin.bool.true$, Sk.builtin.bool.false$, Sk.builtin.none.none$];
+    mod.dump.co_varnames = ["node", "annotate_fields", "include_attributes", "indent"];
+    mod.dump.co_name = new Sk.builtin.str("dump");
 
     var depth = 0;
     var NodeVisitor = function($gbl, $loc) {
@@ -324,11 +328,11 @@ var $builtinmodule = function (name) {
             method = Sk.builtin.getattr(self, method_name, $loc.generic_visit);
             if (method.im_self) {
                 //print(method.im_func.func_code)
-                result = Sk.misceval.callsim(method, node);
+                result = Sk.misceval.callsimArray(method, [node]);
                 depth -= 1;
                 return result;
             }else {
-                result = Sk.misceval.callsim(method, self, node);
+                result = Sk.misceval.callsimArray(method, [self, node]);
                 depth -= 1;
                 return result;
             }
@@ -338,7 +342,7 @@ var $builtinmodule = function (name) {
         $loc.generic_visit = new Sk.builtin.func(function(self, node) {
             /** Called if no explicit visitor function exists for a node. **/
             //print(" ".repeat(depth), "Generically checked", node.astname)
-            var fieldList = mod.iter_fields(node).v;
+            var fieldList = Sk.misceval.callsimArray(mod.iter_fields, [node]).v;
             for (var i = 0; i < fieldList.length; i += 1) {
                 var field = fieldList[i].v[0].v, value = fieldList[i].v[1];
                 if (value === null) {
@@ -348,12 +352,12 @@ var $builtinmodule = function (name) {
                         var subvalue = value.v[j];
                         if (isPyAst(subvalue)) {
                             //print(self.visit)
-                            Sk.misceval.callsim(self.visit, self, subvalue);
+                            Sk.misceval.callsimArray(self.visit, [self, subvalue]);
                         }
                     }
                 } else if (isPyAst(value)) {
                     //print(self.visit)
-                    Sk.misceval.callsim(self.visit, self, value);
+                    Sk.misceval.callsimArray(self.visit, [self, value]);
                 }
             }
             return Sk.builtin.none.none$;
@@ -367,10 +371,10 @@ var $builtinmodule = function (name) {
             return Sk.builtin.list([]);
         }
         var resultList = [node];
-        var childList = mod.iter_child_nodes(node);
+        var childList = Sk.misceval.callsimArray(mod.iter_child_nodes, [node]);
         for (var i = 0; i < childList.v.length; i += 1) {
             var child = childList.v[i];
-            var children = mod.walk(child);
+            var children = Sk.misceval.callsimArray(mod.walk, [child]);
             resultList = resultList.concat(children.v);
         }
         return Sk.builtin.list(resultList);
@@ -460,17 +464,17 @@ var $builtinmodule = function (name) {
     //mod.literal_eval
     // Implementation wouldn't be hard, but it does require a lot of Skulpting
     
-    mod.parse = function parse(source, filename, mode, type_comments,
+    mod.parse = new Sk.builtin.func(function parse(source, filename, mode, type_comments,
         feature_version) {
         if (!(/\S/.test(source))) {
-            return Sk.misceval.callsim(mod.Module, new INHERITANCE_MAP.mod[0]([]));
+            return Sk.misceval.callsimArray(mod.Module, [new INHERITANCE_MAP.mod[0]([])]);
         }
         // TODO: mode, type_comments, feature_version
         var parse = Sk.parse(filename, Sk.ffi.remapToJs(source));
         ast = Sk.astFromParse(parse.cst, filename, parse.flags);
-        return Sk.misceval.callsim(mod.Module, ast);
+        return Sk.misceval.callsimArray(mod.Module, [ast]);
         // Walk tree and create nodes (lazily?)
-    };
+    });
 
     //mod.parse.co_argcount = 1;
     mod.parse.minArgs = 1;
@@ -478,6 +482,7 @@ var $builtinmodule = function (name) {
                            new Sk.builtin.str("exec"), Sk.builtin.bool.false$,
                            Sk.builtin.none.none$];
     mod.parse.co_varnames = ["source", "filename", "mode", "type_comments", "feature_version"];
+    mod.parse.co_name = new Sk.builtin.str("parse");
     
     /*
     mod.Module = function ($gbl, $loc) {
