@@ -15,6 +15,9 @@ var $builtinmodule = function (name) {
      */
     var iter_fieldsJs = function(node) {
         var fieldList = [];
+        if (node === undefined || node._fields === undefined) {
+            return fieldList;
+        }
         for (var i = 0; i < node._fields.length; i += 2) {
             var field = node._fields[i];
             if (field in node) {
@@ -53,7 +56,7 @@ var $builtinmodule = function (name) {
                 // No AST nodes have primitive list values, just
                 //  lists of AST nodes
             }
-            return Sk.builtin.list(subvalues);
+            return new Sk.builtin.list(subvalues);
         } else if (isJsAst(value)) {
             var constructorName = functionName(value.constructor);
             return Sk.misceval.callsim(mod[constructorName], value);
@@ -288,7 +291,7 @@ var $builtinmodule = function (name) {
     var depth = 0;
     AST = function($gbl, $loc) {
         var copyFromJsNode = function(self, key, jsNode) {
-            if (key in self.jsNode) {
+            if (self.jsNode && (key in self.jsNode)) {
                 Sk.abstr.sattr(self, Sk.builtin.str(key), Sk.ffi.remapToPy(jsNode[key]), true);
                 self._attributes.push(Sk.builtin.str(key));
             }
@@ -300,15 +303,15 @@ var $builtinmodule = function (name) {
                 //console.log(" ".repeat(depth)+"S:", jsNode);
                 self.jsNode = {"_astname": jsNode};
                 self.astname = jsNode;
-                self._fields = Sk.builtin.list([]);
-                self._attributes = Sk.builtin.list([]);
-                Sk.abstr.sattr(self, Sk.builtin.str("_fields"), self._fields, true);
-                Sk.abstr.sattr(self, Sk.builtin.str("_attributes"), self._attributes, true);
+                self._fields = new Sk.builtin.list([]);
+                self._attributes = new Sk.builtin.list([]);
+                Sk.abstr.sattr(self, new Sk.builtin.str("_fields"), self._fields, true);
+                Sk.abstr.sattr(self, new Sk.builtin.str("_attributes"), self._attributes, true);
                 //console.log(" ".repeat(depth)+"--", jsNode);
             } else {
                 //console.log(" ".repeat(depth)+"P:", jsNode._astname);
                 self.jsNode = jsNode;
-                self.astname = jsNode._astname;
+                self.astname = jsNode === undefined ? self.tp$name: jsNode._astname;
                 var fieldListJs = iter_fieldsJs(jsNode);
                 self._fields = [];
                 self._attributes = [];
@@ -322,25 +325,25 @@ var $builtinmodule = function (name) {
                         value = convertValue(value);
                     }
                     field = mangleAppropriately(field);
-                    Sk.abstr.sattr(self, Sk.builtin.str(field), value, true);
+                    Sk.abstr.sattr(self, new Sk.builtin.str(field), value, true);
                     // TODO: Figure out why name is getting manged, and make it stop!
-                    self._fields.push(Sk.builtin.tuple([Sk.builtin.str(field), value]));
+                    self._fields.push(new Sk.builtin.tuple([Sk.builtin.str(field), value]));
                 }
                 //console.log(" ".repeat(depth)+"FIELDS")
-                self._fields = Sk.builtin.list(self._fields);
-                Sk.abstr.sattr(self, Sk.builtin.str("_fields"), self._fields, true);
+                self._fields = new Sk.builtin.list(self._fields);
+                Sk.abstr.sattr(self, new Sk.builtin.str("_fields"), self._fields, true);
                 copyFromJsNode(self, "lineno", self.jsNode);
                 copyFromJsNode(self, "col_offset", self.jsNode);
                 copyFromJsNode(self, "end_lineno", self.jsNode);
                 copyFromJsNode(self, "end_col_offset", self.jsNode);
-                self._attributes = Sk.builtin.list(self._attributes);
-                Sk.abstr.sattr(self, Sk.builtin.str("_attributes"), self._attributes, true);
+                self._attributes = new Sk.builtin.list(self._attributes);
+                Sk.abstr.sattr(self, new Sk.builtin.str("_attributes"), self._attributes, true);
                 //console.log(" ".repeat(depth)+"--", jsNode._astname);
             }
             depth -= 1;
         });
         $loc.__str__ = new Sk.builtin.func(function (self) {
-            return Sk.builtin.str("<_ast."+self.astname+" object>");
+            return new Sk.builtin.str("<_ast."+self.astname+" object>");
         });
         $loc.__repr__ = $loc.__str__;
     };
@@ -349,18 +352,24 @@ var $builtinmodule = function (name) {
     //mod.literal_eval
     // Implementation wouldn't be hard, but it does require a lot of Skulpting
     
-    mod.parse = function parse(source, filename) {
+    mod.parse = function parse(source, filename, mode, type_comments,
+        feature_version) {
         if (!(/\S/.test(source))) {
             return Sk.misceval.callsim(mod.Module, new Sk.INHERITANCE_MAP.mod[0]([]));
         }
-        if (filename === undefined) {
-            filename = Sk.builtin.str("<unknown>");
-        }
+        // TODO: mode, type_comments, feature_version
         var parse = Sk.parse(filename, Sk.ffi.remapToJs(source));
         ast = Sk.astFromParse(parse.cst, filename, parse.flags);
         return Sk.misceval.callsim(mod.Module, ast);
         // Walk tree and create nodes (lazily?)
     };
+
+    //mod.parse.co_argcount = 1;
+    mod.parse.minArgs = 1;
+    mod.parse.$defaults = [new Sk.builtin.str("<unknown>"),
+                           new Sk.builtin.str("exec"), Sk.builtin.bool.false$,
+                           Sk.builtin.none.none$];
+    mod.parse.co_varnames = ["source", "filename", "mode", "type_comments", "feature_version"];
     
     /*
     mod.Module = function ($gbl, $loc) {
