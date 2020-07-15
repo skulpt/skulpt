@@ -18,9 +18,9 @@ class calculator:
             return "OTHER ERROR"
 
 c = calculator();
-print c.div(10,1)
+print repr(c.div(10,1))
 print c.div(10,0)
-print c.div('12','6')
+print repr(c.div('12','6'))
 
 try:
     print c.div('10','1') / 2
@@ -30,5 +30,5 @@ except:
 try:
     print c.div(x,12)
 except NameError as e:
-    print e
+    print repr(e)
 

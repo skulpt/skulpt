@@ -18,7 +18,7 @@ class ListSort(unittest.TestCase):
         try:
             x.sort(reverse=None)
         except TypeError as e:
-            self.assertEqual(str(e), "TypeError: an integer is required on line 19")
+            self.assertEqual(repr(e), "TypeError('an integer is required')")
             return
 
         self.fail("Test should have thrown exception")

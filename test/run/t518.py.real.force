@@ -1,2 +1,2 @@
-ValueError: slice step cannot be zero on line 3
-ValueError: slice step cannot be zero on line 8
+ValueError('slice step cannot be zero')
+ValueError('slice step cannot be zero')

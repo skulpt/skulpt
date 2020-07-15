@@ -11,4 +11,4 @@ divide(2, 0)
 try:
     divide("2", "1")
 except TypeError as e:
-    print e
+    print repr(e)
