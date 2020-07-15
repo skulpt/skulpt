@@ -560,7 +560,7 @@ var update_f = function (kwargs, self, other) {
 
     // apply all key/value pairs of kwargs
     // create here kwargs_dict, there could be exceptions in other cases before
-    var kwargs_dict = new Sk.builtins.dict(kwargs);
+    var kwargs_dict = new Sk.builtin.dict(kwargs);
     self.dict_merge(kwargs_dict);
 
     // returns none, when successful or throws exception
