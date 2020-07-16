@@ -654,21 +654,6 @@ Sk.builtin.type.buildMRO = function (klass) {
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 
-Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
-    var r2;
-    var r1;
-    if (other.ob$type != Sk.builtin.type) {
-        return undefined;
-    }
-    if (!this["$r"] || !other["$r"]) {
-        return undefined;
-    }
-
-    r1 = this["$r"]();
-    r2 = other["$r"]();
-
-    return r1.tp$richcompare(r2, op);
-};
 
 Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
