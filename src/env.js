@@ -206,6 +206,7 @@ Sk.configure = function (options) {
 
     Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
     Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
+    
 
     Sk.builtin.str.$next = Sk.__future__.python3 ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
 
