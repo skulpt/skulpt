@@ -12,7 +12,7 @@ var $builtinmodule = function (name) {
 
     mod.__file__ = "/src/lib/time/__init__.js";
 
-    mod.__package__ = Sk.builtin.none.none$;
+    mod.__package__ = new Sk.builtin.str("");
 
     var struct_time_fields = {
         "tm_year": "year, for example, 1993",
@@ -140,9 +140,9 @@ var $builtinmodule = function (name) {
         var jan = new Date(2002, 0, 1);
         var jul = new Date(2002, 6, 1);
         if (dst(jan)) {
-            return [Sk.builtin.str(timeZoneName(jul)), Sk.builtin.str(timeZoneName(jan))];
+            return [new Sk.builtin.str(timeZoneName(jul)), new Sk.builtin.str(timeZoneName(jan))];
         } else {
-            return [Sk.builtin.str(timeZoneName(jan)), Sk.builtin.str(timeZoneName(jul))];
+            return [new Sk.builtin.str(timeZoneName(jan)), new Sk.builtin.str(timeZoneName(jul))];
         }
     }
 
@@ -212,7 +212,7 @@ var $builtinmodule = function (name) {
             );
             parts.push(padLeft(Sk.builtin.asnum$(time.v[0]).toString(), 4, '0'));
 
-            return Sk.builtin.str(parts.join(" "));
+            return new Sk.builtin.str(parts.join(" "));
         }
     }
 
@@ -260,9 +260,9 @@ var $builtinmodule = function (name) {
     A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local
     DST timezone. If no DST timezone is defined, the second string should not be used.
     */
-    mod.tzname = Sk.builtin.tuple(timeZoneNames());
+    mod.tzname = new Sk.builtin.tuple(timeZoneNames());
 
-    mod.accept2dyear = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+    mod.accept2dyear = Sk.builtin.assk$(1);
 
     mod.clock = new Sk.builtin.func(function() {
         var res = 0.0;
