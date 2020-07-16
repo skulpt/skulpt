@@ -83,7 +83,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
         }).bind(this);
 
         if (args.length > 0) {
-            if (this.im_class != Sk.builtin.none.none$ && !Sk.builtin.issubclass(args[0].ob$type, this.im_class) && !this.im_builtin) {
+            if (this.im_class != Sk.builtin.none.none$ && !args[0].ob$type.$isSubType(this.im_class) && !this.im_builtin) {
                 throw new Sk.builtin.TypeError(getMessage(Sk.abstr.typeName(args[0].ob$type) + " instance"));
             }
         } else {
@@ -111,7 +111,7 @@ Sk.builtin.method.prototype.__get__ = function __get__(self, instance, owner) {
 
     // if the owner is specified it needs to be a a subclass of im_self
     if (owner && owner !== Sk.builtin.none.none$) {
-        if (Sk.builtin.issubclass(owner, self.im_class)) {
+        if (Sk.builtin.checkClass(owner) && owner.$isSubType(self.im_class)) {
             return self.tp$descr_get(instance, owner);
         }
 

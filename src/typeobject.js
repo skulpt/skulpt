@@ -1,32 +1,3 @@
-Sk.builtin.type_is_subtype_base_chain = function type_is_subtype_base_chain(a, b) {
-    do {
-        if (a == b) {
-            return true;
-        }
-        a = a.tp$base;
-    } while (a !== undefined);
-
-    return (b == Sk.builtin.object);
-};
-
-Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
-    var mro = a.tp$mro;
-    if (mro) {
-        /* Deal with multiple inheritance without recursion
-           by walking the MRO tuple */
-        Sk.asserts.assert(mro instanceof Sk.builtin.tuple);
-        for (var i = 0; i < mro.v.length; i++) {
-            if (mro.v[i] == b) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        /* a is not completely initilized yet; follow tp_base */
-        return Sk.builtin.type_is_subtype_base_chain(a, b);
-    }
-};
-
 /**
  * @constructor
  * Sk.builtin.super_
@@ -59,7 +30,7 @@ Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_se
                 "question for more information https://stackoverflow.com/a/30190341/117242");
     }
 
-    if (!Sk.builtin.PyType_IsSubtype(self.obj.ob$type, self.type)) {
+    if (!self.obj.ob$type.$isSubType(self.type)) {
         throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance of subtype of type");
     }
 
