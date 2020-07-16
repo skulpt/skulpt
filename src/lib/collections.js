@@ -32,6 +32,7 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
+        mod.defaultdict.tp$mro = new Sk.builtin.tuple([mod.defaultdict, Sk.builtin.dict, Sk.builtin.object]);
 
         mod.defaultdict.prototype['$r'] = function () {
             var def_str = Sk.misceval.objectRepr(this.default_factory).v;
@@ -113,6 +114,7 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("Counter", mod.Counter, Sk.builtin.dict);
+        mod.Counter.tp$mro = new Sk.builtin.tuple([mod.Counter, Sk.builtin.dict, Sk.builtin.object]);
 
         mod.Counter.prototype['$r'] = function () {
             var dict_str = this.size > 0 ? Sk.builtin.dict.prototype['$r'].call(this).v : '';
@@ -276,6 +278,7 @@ var $builtinmodule = function (name) {
         }
 
         Sk.abstr.setUpInheritance("OrderedDict", mod.OrderedDict, Sk.builtin.dict);
+        mod.OrderedDict.tp$mro = new Sk.builtin.tuple([mod.OrderedDict, Sk.builtin.dict, Sk.builtin.object]);
 
         mod.OrderedDict.prototype['$r'] = function()
         {
@@ -513,6 +516,7 @@ var $builtinmodule = function (name) {
         mod.deque.$defaults = [new Sk.builtin.tuple([]), Sk.builtin.none.none$];
 
         Sk.abstr.setUpInheritance("collections.deque", mod.deque, Sk.builtin.seqtype);
+        mod.deque.tp$mro = new Sk.builtin.tuple([mod.deque, Sk.builtin.object]);
         Sk.abstr.markUnhashable(mod.deque);
 
         mod.deque.prototype.$init$ = mod.deque;
@@ -822,6 +826,7 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("_collections._deque_iterator", mod.deque.deque_iter_, Sk.builtin.object);
+        mod.deque.deque_iter_.tp$mro = new Sk.builtin.tuple([mod.deque.deque_iter_, Sk.builtin.object]);
 
         mod.deque.deque_iter_.prototype.__class__ = mod.deque.deque__iter_;
 
@@ -1074,6 +1079,7 @@ var $builtinmodule = function (name) {
         };
 
         Sk.abstr.setUpInheritance("_collections._deque_reverse_iterator", mod._deque_reverse_iterator, Sk.builtin.seqtype);
+        mod._deque_reverse_iterator.tp$mro = new Sk.builtin.tuple([mod._deque_reverse_iterator, Sk.builtin.object]);
 
         mod._deque_reverse_iterator._deque_reverse_iterator_iter_ = function (dq) {
             if (!(this instanceof mod._deque_reverse_iterator._deque_reverse_iterator_iter_)) {
@@ -1242,7 +1248,7 @@ var $builtinmodule = function (name) {
                 Sk.builtin.pyCheckArgsLen("__new__", arguments.length, flds.length + 1, flds.length + 1);
                 Sk.builtin.pyCheckType("___new___(X): X", "type object", Sk.builtin.checkClass(cls));
                 
-                if (Sk.builtin.issubclass(cls, Sk.builtin.tuple)) {
+                if (Sk.builtin.checkClass(cls) && cls.$isSubType(Sk.builtin.tuple)) {
                     let o;
                     try {
                         o = new cls(...args);

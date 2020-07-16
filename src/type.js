@@ -524,7 +524,7 @@ Sk.builtin.type.typeLookup = function (type, pyName) {
         if (base.hasOwnProperty(jsName)) {
             return base[jsName];
         }
-        res = base["$d"].mp$lookup(pyName);
+        res = base["$d"] ? base["$d"].mp$lookup(pyName) : undefined;
         if (res !== undefined) {
             return res;
         }
