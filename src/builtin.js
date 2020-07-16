@@ -901,62 +901,24 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
-Sk.builtin.isinstance = function isinstance (obj, type) {
-    var issubclass;
-    var i;
+
+Sk.builtin.isinstance = function isinstance(obj, type) {
     Sk.builtin.pyCheckArgsLen("isinstance", arguments.length, 2, 2);
     if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
     }
 
-    if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj === Sk.builtin.none.none$) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
     // Normal case
-    if (obj.ob$type === type) {
-        return Sk.builtin.bool.true$;
+    if (!(type instanceof Sk.builtin.tuple)) {
+        return obj.ob$type.$isSubType(type) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
-
     // Handle tuple type argument
-    if (type instanceof Sk.builtin.tuple) {
-        for (i = 0; i < type.v.length; ++i) {
-            if (Sk.misceval.isTrue(Sk.builtin.isinstance(obj, type.v[i]))) {
-                return Sk.builtin.bool.true$;
-            }
-        }
-        return Sk.builtin.bool.false$;
-    }
-
-    // Check for Javascript inheritance
-    if (obj instanceof type) {
-        return Sk.builtin.bool.true$;
-    }
-
-
-    issubclass = function (klass, base) {
-        var i;
-        var bases;
-        if (klass === base) {
+    for (let i = 0; i < type.v.length; ++i) {
+        if (Sk.misceval.isTrue(Sk.builtin.isinstance(obj, type.v[i]))) {
             return Sk.builtin.bool.true$;
         }
-        if (klass["$d"] === undefined) {
-            return Sk.builtin.bool.false$;
-        }
-        bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
-        for (i = 0; i < bases.v.length; ++i) {
-            if (Sk.misceval.isTrue(issubclass(bases.v[i], base))) {
-                return Sk.builtin.bool.true$;
-            }
-        }
-        return Sk.builtin.bool.false$;
-    };
-
-    return issubclass(obj.ob$type, type);
+    }
+    return Sk.builtin.bool.false$;
 };
 
 Sk.builtin.hash = function hash (value) {
@@ -1312,64 +1274,25 @@ Sk.builtin.quit = function quit (msg) {
     throw new Sk.builtin.SystemExit(s);
 };
 
-
-Sk.builtin.issubclass = function issubclass (c1, c2) {
-    var i;
-    var issubclass_internal;
+Sk.builtin.issubclass = function issubclass(c1, c2) {
     Sk.builtin.pyCheckArgsLen("issubclass", arguments.length, 2, 2);
     if (!Sk.builtin.checkClass(c1)) {
         throw new Sk.builtin.TypeError("issubclass() arg 1 must be a class");
     }
-
-    if (!Sk.builtin.checkClass(c2) && !(c2 instanceof Sk.builtin.tuple)) {
+    let c2_isClass = Sk.builtin.checkClass(c2);
+    if (!c2_isClass && !(c2 instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
-
-    issubclass_internal = function (klass, base) {
-        var i;
-        var bases;
-        if (klass === base) {
-            return true;
-        }
-        if (klass["$d"] === undefined) {
-            return false;
-        }
-        if (klass["$d"].mp$subscript) {
-            // old style classes don't have bases
-            if (klass["$d"].sq$contains(Sk.builtin.type.basesStr_)) {
-                bases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        for (i = 0; i < bases.v.length; ++i) {
-            if (issubclass_internal(bases.v[i], base)) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    if (Sk.builtin.checkClass(c2)) {
-        /* Quick test for an exact match */
-        if (c1 === c2) {
-            return true;
-        }
-
-        return issubclass_internal(c1, c2);
+    if (c2_isClass) {
+        return c1.$isSubType(c2) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
-
     // Handle tuple type argument
-    if (c2 instanceof Sk.builtin.tuple) {
-        for (i = 0; i < c2.v.length; ++i) {
-            if (Sk.builtin.issubclass(c1, c2.v[i])) {
-                return true;
-            }
+    for (let i = 0; i < c2.v.length; ++i) {
+        if (Sk.misceval.isTrue(Sk.builtin.issubclass(c1, c2.v[i]))) {
+            return Sk.builtin.bool.true$;
         }
-        return false;
     }
+    return Sk.misceval.bool.false$;
 };
 
 Sk.builtin.globals = function globals () {
