@@ -651,6 +651,10 @@ Sk.builtin.type.buildMRO = function (klass) {
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 
+Sk.builtin.type.prototype.$isSubType = function (other) {
+    return this === other || this.prototype instanceof other || (this.hasOwnProperty("tp$mro") && this.tp$mro.v.includes(other));
+};
+
 
 Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);
