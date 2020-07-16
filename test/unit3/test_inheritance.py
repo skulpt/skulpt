@@ -93,7 +93,7 @@ class InheritanceTesting(unittest.TestCase):
         self.assertTrue(issubclass(Foo,object))
         self.assertTrue(issubclass(Frob,XXX))
 
-    def test_builtins(self):
+    def test_skulpt_bugs(self):
         for _cls in (int, dict, set, list, object, tuple):
             self.assertTrue(issubclass(_cls, object))
         
@@ -103,6 +103,14 @@ class InheritanceTesting(unittest.TestCase):
         self.assertEqual(int.__mro__, (int, object))
         self.assertEqual(Exception.__mro__, (Exception, BaseException, object))
         self.assertEqual(TypeError.__bases__, (Exception,))
+
+        # test type and object
+        self.assertTrue(isinstance(type, object))
+        self.assertTrue(isinstance(type, type))
+        self.assertTrue(isinstance(object, object))
+        self.assertTrue(isinstance(object, type))
+        # self.assertTrue(issubclass(type, object)) # commenting out until issubclass returns a pyBool
+        # self.assertFalse(issubclass(object, type))
 
 if __name__ == '__main__':
     unittest.main()

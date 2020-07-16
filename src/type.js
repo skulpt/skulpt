@@ -378,7 +378,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
         var dunder;
         for (dunder in Sk.dunderToSkulpt) {
-            if (klass[dunder]) {
+            if (klass.hasOwnProperty(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             }
         }
@@ -412,6 +412,15 @@ Sk.builtin.type = function (name, bases, dict) {
 
 };
 
+Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
+    call: { value: Function.prototype.call },
+    apply: { value: Function.prototype.apply },
+    ob$type: { value: Sk.builtin.type, writable: true },
+    tp$name: { value: "type", writable: true },
+    tp$base: { value: Sk.builtin.object, writable: true },
+    sk$type: { value: true },
+});
+
 /**
  *
  */
@@ -423,43 +432,27 @@ Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
 Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(t !== undefined);
-    t.ob$type = Sk.builtin.type;
+    Object.setPrototypeOf(t, Sk.builtin.type.prototype);
     t.tp$name = name;
-    t["$r"] = function () {
-        var ctype;
-        var mod = t.__module__;
-        var cname = "";
-        if (mod) {
-            cname = mod.v + ".";
-        }
-        ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
-            ctype = "type";
-        }
-        return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
-    };
-    t.tp$str = undefined;
-    t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-    t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-    t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
-    t.sk$type = true;
 
     return t;
 };
 
-Sk.builtin.type.ob$type = Sk.builtin.type;
-Sk.builtin.type.tp$name = "type";
-Sk.builtin.type.sk$type = true;
-Sk.builtin.type["$r"] = function () {
-    if(Sk.__future__.class_repr) {
-        return new Sk.builtin.str("<class 'type'>");
+Sk.builtin.type.prototype["$r"] = function () {
+    let mod = this.prototype.__module__;
+    let cname = "";
+    let ctype = "class";
+    if (mod && Sk.builtin.checkString(mod)) {
+        cname = mod.v + ".";
     } else {
-        return new Sk.builtin.str("<type 'type'>");
+        mod = null;
     }
+    if (!mod && !this.sk$klass && !Sk.__future__.class_repr) {
+        ctype = "type";
+    }
+    return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
-Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
-};
+
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
@@ -502,6 +495,9 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
     // class attributes are direct properties of the object
+    if (this.sk$klass === undefined) {
+        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+    }
     var jsName = Sk.fixReserved(pyName.$jsstr());
     this[jsName] = value;
     this.prototype[jsName] = value;

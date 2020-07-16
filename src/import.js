@@ -60,7 +60,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * @return {undefined}
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
-    var proto, name, i, x, func, typesWithFunctionsToWrap, builtin_type, j;
+    var proto, name, i, x, type, typesWithFunctionsToWrap, builtin_type, j;
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
@@ -89,16 +89,12 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, child.tp$base ? new Sk.builtin.tuple([child.tp$base]) : new Sk.builtin.tuple([]));
         child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
-        child.tp$setattr = function(pyName, value, canSuspend) {
-            throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
-        };
     };
 
     for (x in Sk.builtin) {
-        func = Sk.builtin[x];
-        if ((func.prototype instanceof Sk.builtin.object ||
-             func === Sk.builtin.object) && !func.sk$abstract) {
-            setUpClass(func);
+        type = Sk.builtin[x];
+        if (type instanceof Sk.builtin.type && type.sk$abstract === undefined) {
+            setUpClass(type);
         }
     }
 
