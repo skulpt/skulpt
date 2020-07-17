@@ -326,8 +326,7 @@ Sk.builtin.type = function (name, bases, dict) {
                 return Sk.misceval.applyOrSuspend(callf, undefined, undefined, kw, args);
             });
         };
-        const next = Sk.__future__.dunder_next ? Sk.builtin.str.$next3 : Sk.builtin.str.$next2;
-        const iternext = dict.mp$lookup(next);
+        const iternext = dict.mp$lookup(Sk.builtin.str.$next);
         if (iternext !== undefined) {
             klass.prototype.tp$iternext = function (canSuspend) {
                 const self = this;
