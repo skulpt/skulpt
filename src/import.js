@@ -81,13 +81,13 @@ Sk.doOneTimeInitialization = function (canSuspend) {
             }
         }
 
-        child.tp$mro = new Sk.builtin.tuple([child]);
+        child.tp$mro = new Sk.builtin.tuple([child].concat(bases));
         if (!child.tp$base){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
-        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child].concat(bases)));
+        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, child.tp$base ? new Sk.builtin.tuple([child.tp$base]) : new Sk.builtin.tuple([]));
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
         child.tp$setattr = function(pyName, value, canSuspend) {
             throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");

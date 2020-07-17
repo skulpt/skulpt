@@ -929,25 +929,14 @@ Sk.abstr.iter = function(obj) {
         };
     };
 
-    if (obj.tp$getattr) {
-        iter =  Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
-        if (iter) {
-            ret = Sk.misceval.callsimArray(iter, [obj]);
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        }
-    }
     if (obj.tp$iter) {
-        try {  // catch and ignore not iterable error here.
-            ret = obj.tp$iter();
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        } catch (e) { }
-    }
-    getit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
-    if (getit) {
+        ret = obj.tp$iter();
+        if (ret.tp$iternext) {
+            return ret;
+        } else {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+        }
+    } else if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem)) {
         // create internal iterobject if __getitem__
         return new seqIter(obj);
     }
