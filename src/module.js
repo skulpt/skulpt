@@ -6,7 +6,6 @@ Sk.builtin.module = function module (name) {
         return new Sk.builtin.module(name);
     }
     this["$d"] = {__name__: name};
-    this["$d"]["__dict__"] = this["$d"];
     return this;
 };
 Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);
