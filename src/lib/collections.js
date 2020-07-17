@@ -799,7 +799,7 @@ var $builtinmodule = function (name) {
             this.$index = 0;
             this.dq = dq.v;
             this.sq$length = (dq.tail - dq.head) & dq.mask;
-            this.tp$iter = this;
+            this.tp$iter = () => this;
 
             this.$head = dq.head;
             this.$tail = dq.tail;
@@ -1082,7 +1082,7 @@ var $builtinmodule = function (name) {
             this.$index = 0;
             this.dq = dq.v.v;
             this.sq$length = this.dq.length;
-            this.tp$iter = this;
+            this.tp$iter = () => this;
             var pos;
             this.tp$iternext = function () {
                 if (this.$index >= this.sq$length) {
