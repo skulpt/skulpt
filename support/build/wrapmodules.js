@@ -39,7 +39,14 @@ function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
                     if (exts.includes(ext)) {
                         let contents = fs.readFileSync(fullname, 'utf8');
                         if (minifyjs && (ext == ".js")) {
-                            let result = minify(contents);
+                            let result = minify(contents, {
+                                mangle: {
+                                    keepFnName: true,
+                                },
+                                deadcode: {
+                                    keepFnName: true,
+                                },
+                            });
                             contents = result.code;
                         }
                         ret.files[fullname] = contents;

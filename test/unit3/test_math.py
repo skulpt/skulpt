@@ -1650,6 +1650,14 @@ class IsCloseTests(unittest.TestCase):
     #     self.assertAllNotClose(fraction_examples, rel_tol=1e-9)
 
 
+    def test_skulptBugs(self):
+        # 1113
+        self.assertAlmostEqual(math.log(9007199254740992 // 2), 36.04365338911715, 15)
+        # check func names
+        self.assertIn("ceil", repr(math.ceil))
+        self.assertIn("isclose", repr(math.isclose))
+        self.assertIn("fabs", repr(math.fabs))
+
 
 if __name__ == '__main__':
     unittest.main()

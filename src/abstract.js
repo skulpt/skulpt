@@ -834,7 +834,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // Should this be an assert?
     if (obj === null || !obj.tp$getattr) {
         let objname = Sk.abstr.typeName(obj);
-        let jsName = pyName.$jsstr();
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
@@ -843,11 +843,13 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     let ret = obj.tp$getattr(pyName, canSuspend);
 
     if (ret === undefined) {
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function(r) {
             if (r === undefined) {
-                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+                let jsName = Sk.unfixReserved(pyName.$jsstr());
+                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
             }
             return r;
         });
@@ -860,15 +862,16 @@ Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
-    var jsName = pyName.$jsstr();
 
     if (obj === null) {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
         return obj.tp$setattr(pyName, data, canSuspend);
     } else {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 };
