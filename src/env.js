@@ -45,7 +45,6 @@ Sk.python2 = {
     octal_number_literal: false,
     bankers_rounding: false,
     python_version: false,
-    dunder_next: false,
     dunder_round: false,
     exceptions: false,
     no_long_type: false,
@@ -66,7 +65,6 @@ Sk.python3 = {
     octal_number_literal: true,
     bankers_rounding: true,
     python_version: true,
-    dunder_next: true,
     dunder_round: true,
     exceptions: true,
     no_long_type: true,
@@ -115,7 +113,6 @@ Sk.configure = function (options) {
     Sk.bool_check(Sk.__future__.octal_number_literal, "Sk.__future__.octal_number_literal");
     Sk.bool_check(Sk.__future__.bankers_rounding, "Sk.__future__.bankers_rounding");
     Sk.bool_check(Sk.__future__.python_version, "Sk.__future__.python_version");
-    Sk.bool_check(Sk.__future__.dunder_next, "Sk.__future__.dunder_next");
     Sk.bool_check(Sk.__future__.dunder_round, "Sk.__future__.dunder_round");
     Sk.bool_check(Sk.__future__.exceptions, "Sk.__future__.exceptions");
     Sk.bool_check(Sk.__future__.no_long_type, "Sk.__future__.no_long_type");
@@ -202,14 +199,14 @@ Sk.configure = function (options) {
     Sk.misceval.softspace_ = false;
 
     Sk.switch_version("round$", Sk.__future__.dunder_round);
-    Sk.switch_version("next$", Sk.__future__.dunder_next);
+    Sk.switch_version("next$", Sk.__future__.python3);
     Sk.switch_version("haskey$", Sk.__future__.python3);
     Sk.switch_version("clear$", Sk.__future__.python3);
     Sk.switch_version("copy$", Sk.__future__.python3);
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
 
-    Sk.builtin.str.$next = Sk.__future__.dunder_next ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
+    Sk.builtin.str.$next = Sk.__future__.python3 ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
