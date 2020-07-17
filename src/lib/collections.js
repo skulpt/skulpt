@@ -464,7 +464,7 @@ var $builtinmodule = function (name) {
             }
 
             val = Sk.misceval.callsimArray(self["pop"], [self, key]);
-            return Sk.builtin.tuple([key, val]);
+            return new Sk.builtin.tuple([key, val]);
         });
 
         // deque - Special thanks to:https://github.com/blakeembrey/deque
@@ -508,9 +508,9 @@ var $builtinmodule = function (name) {
         mod.deque.minArgs = 1;
         mod.deque.maxArgs = 2;
         mod.deque.co_varnames = ["iterable", "maxlen"];
-        mod.deque.co_name = Sk.builtin.str("mod.deque");
+        mod.deque.co_name = new Sk.builtin.str("mod.deque");
         mod.deque.co_argcount = 2;
-        mod.deque.$defaults = [Sk.builtin.tuple([]), Sk.builtin.none.none$];
+        mod.deque.$defaults = [new Sk.builtin.tuple([]), Sk.builtin.none.none$];
 
         Sk.abstr.setUpInheritance("collections.deque", mod.deque, Sk.builtin.seqtype);
         Sk.abstr.markUnhashable(mod.deque);

@@ -36,7 +36,7 @@ Sk.builtin.range_.prototype.mp$subscript = function (index) {
     sub = this.v.mp$subscript(index);
     if (sub instanceof Sk.builtin.list) {
         if (Sk.builtin.checkNone(index.start)) {
-            start = this.v.mp$subscript(0).v;
+            start = this.v.mp$subscript(new Sk.builtin.int_(0)).v;
         } else {
             try {
                 start = this.v.mp$subscript(index.start).v;
