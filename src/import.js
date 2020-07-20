@@ -60,8 +60,6 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
  * @return {undefined}
  */
 Sk.doOneTimeInitialization = function (canSuspend) {
-    var proto, name, i, x, type, typesWithFunctionsToWrap, builtin_type, j;
-
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
@@ -70,11 +68,10 @@ Sk.doOneTimeInitialization = function (canSuspend) {
     // Register a Python class with an internal dictionary, which allows it to
     // be subclassed
     var setUpClass = function (child) {
-        var parent = child.prototype.tp$base;
-        var bases = [];
-        var base;
+        const parent = child.prototype.tp$base;
+        const bases = [];
 
-        for (base = parent; base !== undefined; base = base.prototype.tp$base) {
+        for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
             if (!base.sk$abstract && Sk.builtins[base.tp$name]) {
                 // check the base is not an abstract class and that it is in the builtins dict
                 bases.push(base);
@@ -82,7 +79,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         }
 
         child.tp$mro = new Sk.builtin.tuple([child].concat(bases));
-        if (!child.tp$base){
+        if (!child.hasOwnProperty("tp$base")){
             child.tp$base = bases[0];
         }
         child["$d"] = new Sk.builtin.dict([]);
@@ -91,8 +88,8 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
     };
 
-    for (x in Sk.builtin) {
-        type = Sk.builtin[x];
+    for (let x in Sk.builtin) {
+        const type = Sk.builtin[x];
         if (type instanceof Sk.builtin.type && type.sk$abstract === undefined) {
             setUpClass(type);
         }
@@ -100,13 +97,13 @@ Sk.doOneTimeInitialization = function (canSuspend) {
 
     // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
     // Sk.builtin.func, as that class was undefined when these functions were declared
-    typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
+    const typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
 
-    for (i = 0; i < typesWithFunctionsToWrap.length; i++) {
-        builtin_type = typesWithFunctionsToWrap[i];
-        proto = builtin_type.prototype;
-        for (j = 0; j < builtin_type.pythonFunctions.length; j++) {
-            name = builtin_type.pythonFunctions[j];
+    for (let i = 0; i < typesWithFunctionsToWrap.length; i++) {
+        const builtin_type = typesWithFunctionsToWrap[i];
+        const proto = builtin_type.prototype;
+        for (let j = 0; j < builtin_type.pythonFunctions.length; j++) {
+            const name = builtin_type.pythonFunctions[j];
 
             if (proto[name] instanceof Sk.builtin.func) {
                 // If functions have already been initialized, do not wrap again.
