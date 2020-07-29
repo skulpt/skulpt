@@ -254,6 +254,7 @@ Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, st
     } else {
         throw new Sk.builtin.IOError("File not open for writing");
     }
+    return Sk.builtin.none.none$;
 });
 
 

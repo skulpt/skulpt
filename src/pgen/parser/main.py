@@ -48,7 +48,8 @@ Sk.OpMap = {
 "**=": Sk.token.tokens.T_DOUBLESTAREQUAL,
 "//": Sk.token.tokens.T_DOUBLESLASH,
 "//=": Sk.token.tokens.T_DOUBLESLASHEQUAL,
-"->": Sk.token.tokens.T_RARROW
+"->": Sk.token.tokens.T_RARROW,
+"...": Sk.token.tokens.T_ELLIPSIS
 };
 """ + \
         pgen.generate_grammar().genjs()

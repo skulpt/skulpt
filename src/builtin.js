@@ -7,20 +7,20 @@
 
 Sk.builtin.range = function range (start, stop, step) {
     var ret = [];
+    var lst;
     var i;
 
     Sk.builtin.pyCheckArgsLen("range", arguments.length, 1, 3);
-    Sk.builtin.pyCheckType("start", "integer", Sk.builtin.checkInt(start));
+    Sk.builtin.pyCheckType("start", "integer", Sk.misceval.isIndex(start));
+    start = Sk.misceval.asIndex(start);
     if (stop !== undefined) {
-        Sk.builtin.pyCheckType("stop", "integer", Sk.builtin.checkInt(stop));
+        Sk.builtin.pyCheckType("stop", "integer", Sk.misceval.isIndex(stop));
+        stop = Sk.misceval.asIndex(stop);
     }
     if (step !== undefined) {
-        Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
+        Sk.builtin.pyCheckType("step", "integer", Sk.misceval.isIndex(step));
+        step = Sk.misceval.asIndex(step);
     }
-
-    start = Sk.builtin.asnum$(start);
-    stop = Sk.builtin.asnum$(stop);
-    step = Sk.builtin.asnum$(step);
 
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
@@ -34,17 +34,46 @@ Sk.builtin.range = function range (start, stop, step) {
         throw new Sk.builtin.ValueError("range() step argument must not be zero");
     }
 
-    if (step > 0) {
-        for (i = start; i < stop; i += step) {
-            ret.push(new Sk.builtin.int_(i));
+    if ((typeof start === "number")
+	&& (typeof stop === "number")
+	&& (typeof step === "number")) {
+        if (step > 0) {
+            for (i = start; i < stop; i += step) {
+                ret.push(new Sk.builtin.int_(i));
+            }
+        } else {
+            for (i = start; i > stop; i += step) {
+                ret.push(new Sk.builtin.int_(i));
+            }
         }
     } else {
-        for (i = start; i > stop; i += step) {
-            ret.push(new Sk.builtin.int_(i));
+        // This is going to be slow, really needs to be a generator!
+        var startlng = new Sk.builtin.lng(start);
+        var stoplng = new Sk.builtin.lng(stop);
+        var steplng = new Sk.builtin.lng(step);
+
+        if (steplng.nb$ispositive()) {
+            i = startlng;
+            while (Sk.misceval.isTrue(i.ob$lt(stoplng))) {
+                ret.push(i);
+                i = i.nb$add(steplng);
+            }
+        } else {
+            i = startlng;
+            while (Sk.misceval.isTrue(i.ob$gt(stoplng))) {
+                ret.push(i);
+                i = i.nb$add(steplng);
+            }
         }
     }
 
-    return new Sk.builtin.list(ret);
+    lst = new Sk.builtin.list(ret);
+
+    if (Sk.__future__.python3) {
+        return new Sk.builtin.range_(start, stop, step, lst);
+    }
+
+    return lst;
 };
 
 Sk.builtin.asnum$ = function (a) {
@@ -292,47 +321,118 @@ Sk.builtin.len = function len (item) {
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
 
-Sk.builtin.min = function min () {
-    var i;
-    var lowest;
-    var args;
-    Sk.builtin.pyCheckArgsLen("min", arguments.length, 1);
-
-    args = Sk.misceval.arrayFromArguments(arguments);
-    lowest = args[0];
-
-    if (lowest === undefined) {
-        throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+Sk.builtin.min = function min($default, key, args) {
+    if (!args.sq$length()) {
+        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
-            lowest = args[i];
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (args.sq$length() > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for min() with multiple positional arguments");
+    }
+
+    if (args.sq$length() == 1) {
+        args = args.v[0];
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
         }
+    }
+    let iter = Sk.abstr.iter(args);
+
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let lowest = iter.tp$iternext();
+
+    if (lowest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+        } else {
+            return $default;
+        }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
+                lowest = i;
+            }
+        }
+    } else {
+        let lowest_compare = Sk.misceval.callsimOrSuspendArray(key, [lowest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
+                lowest = i;
+                lowest_compare = i_compare;
+            }
+        }
+
     }
     return lowest;
 };
+Sk.builtin.min.co_argcount = 0;
+Sk.builtin.min.co_kwonlyargcount = 2;
+Sk.builtin.min.$kwdefs = [null, Sk.builtin.none.none$];
+Sk.builtin.min.co_varnames = ["default", "key"];
+Sk.builtin.min.co_varargs = 1;
 
-Sk.builtin.max = function max () {
-    var i;
-    var highest;
-    var args;
-    Sk.builtin.pyCheckArgsLen("max", arguments.length, 1);
-
-    args = Sk.misceval.arrayFromArguments(arguments);
-    highest = args[0];
-
-    if (highest === undefined) {
-        throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+Sk.builtin.max = function max($default, key, args) {
+    if (!args.sq$length()) {
+        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
     }
 
-    for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], highest, "Gt")) {
-            highest = args[i];
+    // if args is not a single iterable then default should not be included as a kwarg
+    if (args.sq$length() > 1 && $default !== null) {
+        throw new Sk.builtin.TypeError("Cannot specify a default for max() with multiple positional arguments");
+    }
+
+    if (args.sq$length() == 1) {
+        args = args.v[0];
+        if (!Sk.builtin.checkIterable(args)) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(args) + "' object is not iterable");
         }
+    }
+    let iter = Sk.abstr.iter(args);
+
+    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+    }
+
+    let highest = iter.tp$iternext();
+
+    if (highest === undefined) {
+        if ($default === null) {
+            throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+        } else {
+            return $default;
+        }
+    }
+    if (Sk.builtin.checkNone(key)) {
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
+                highest = i;
+            }
+        }
+    } else {
+        let highest_compare = Sk.misceval.callsimOrSuspendArray(key, [highest]);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            let i_compare = Sk.misceval.callsimOrSuspendArray(key, [i]);
+            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
+                highest = i;
+                highest_compare = i_compare;
+            }
+        }
+
     }
     return highest;
 };
+Sk.builtin.max.co_argcount = 0;
+Sk.builtin.max.co_kwonlyargcount = 2;
+Sk.builtin.max.$kwdefs = [null, Sk.builtin.none.none$];
+Sk.builtin.max.co_varnames = ["default", "key"];
+Sk.builtin.max.co_varargs = 1;
 
 Sk.builtin.any = function any (iter) {
     var it, i;
@@ -372,52 +472,74 @@ Sk.builtin.all = function all (iter) {
     return Sk.builtin.bool.true$;
 };
 
-Sk.builtin.sum = function sum (iter, start) {
+Sk.builtin.sum = function sum(iter, start) {
     var tot;
-    var intermed;
-    var it, i;
-    var has_float;
-
     Sk.builtin.pyCheckArgsLen("sum", arguments.length, 1, 2);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (start !== undefined && Sk.builtin.checkString(start)) {
-        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
-    }
+    // follows the order of CPython checks
+    const it = Sk.abstr.iter(iter);
     if (start === undefined) {
         tot = new Sk.builtin.int_(0);
+    } else if (Sk.builtin.checkString(start)) {
+        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     } else {
         tot = start;
     }
 
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i instanceof Sk.builtin.float_) {
-            has_float = true;
-            if (!(tot instanceof Sk.builtin.float_)) {
-                tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
-            }
-        } else if (i instanceof Sk.builtin.lng) {
-            if (!has_float) {
-                if (!(tot instanceof Sk.builtin.lng)) {
-                    tot = new Sk.builtin.lng(tot);
-                }
-            }
-        }
-
-        if (tot.nb$add !== undefined) {
-            intermed = tot.nb$add(i);
-            if ((intermed !== undefined) && (intermed !== Sk.builtin.NotImplemented.NotImplemented$)) {
+    function fastSumInt() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.int_) {
                 tot = tot.nb$add(i);
-                continue;
+            } else if (i.constructor === Sk.builtin.float_) {
+                tot = new Sk.builtin.float_(tot).nb$add(i);
+                return new Sk.misceval.Break("float");
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return new Sk.misceval.Break("slow");
             }
-        }
-
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-                    Sk.abstr.typeName(tot) + "' and '" +
-                    Sk.abstr.typeName(i) + "'");
+        });
     }
 
-    return tot;
+    function fastSumFloat() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.float_ || i.constructor === Sk.builtin.int_) {
+                tot = tot.nb$add(i);
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return new Sk.misceval.Break("slow");
+            }
+        });
+    }
+
+    function slowSum() {
+        return Sk.misceval.iterFor(it, (i) => {
+            tot = Sk.abstr.numberBinOp(tot, i, "Add");
+        });
+    }
+
+    let sumType;
+    if (start === undefined || start.constructor === Sk.builtin.int_) {
+        sumType = fastSumInt();
+    } else if (start.constructor === Sk.builtin.float_) {
+        sumType = "float";
+    } else {
+        sumType = "slow";
+    }
+
+    return Sk.misceval.chain(
+        sumType,
+        (sumType) => {
+            if (sumType === "float") {
+                return fastSumFloat();
+            }
+            return sumType;
+        },
+        (sumType) => {
+            if (sumType === "slow") {
+                return slowSum();
+            }
+        },
+        () => tot
+    );
 };
 
 Sk.builtin.zip = function zip () {
@@ -605,6 +727,7 @@ Sk.builtin.dir = function dir (x) {
         if (internal.indexOf(k) !== -1) {
             return null;
         }
+        k = Sk.unfixReserved(k);
         if (k.indexOf("$") !== -1) {
             s = Sk.builtin.dir.slotNameToRichName(k);
         } else if (k.charAt(k.length - 1) !== "_") {
@@ -825,7 +948,7 @@ Sk.builtin.getattr = function getattr (obj, pyName, default_) {
     }
 
     jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReservedWords(jsName));
+    mangledName = new Sk.builtin.str(Sk.fixReserved(jsName));
     ret = obj.tp$getattr(mangledName);
     if (ret === undefined) {
         if (default_ !== undefined) {
@@ -841,20 +964,16 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
-    if (obj === undefined || obj["$r"] === undefined || obj["$r"]().v.slice(1,5) !== "type") {
-        if (!Sk.builtin.checkString(pyName)) {
-            throw new Sk.builtin.TypeError("attribute name must be string");
-        }
-        jsName = pyName.$jsstr();
-        if (obj.tp$setattr) {
-            obj.tp$setattr(new Sk.builtin.str(Sk.fixReservedWords(jsName)), value);
-        } else {
-            throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
-        }
-        return Sk.builtin.none.none$;
+    if (!Sk.builtin.checkString(pyName)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
     }
-
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + obj.tp$name + "'");
+    jsName = pyName.$jsstr();
+    if (obj.tp$setattr) {
+        obj.tp$setattr(new Sk.builtin.str(Sk.fixReserved(jsName)), value);
+    } else {
+        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
+    }
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtin.raw_input = function (prompt) {
@@ -1348,10 +1467,6 @@ Sk.builtin.delattr = function delattr (obj, attr) {
 
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
-};
-
-Sk.builtin.frozenset = function frozenset () {
-    throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };
 
 Sk.builtin.help = function help () {

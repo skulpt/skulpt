@@ -711,7 +711,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     // Find the (unbound!) __format__ method (a borrowed reference)
     meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format);
     if (meth == null) {
-        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + " doesn't define __format__");
+        return Sk.misceval.callsimArray(Sk.builtin.object.prototype["__format__"], [obj, format_spec]);
     }
 
     // And call it
@@ -830,41 +830,48 @@ Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
-    var ret, f;
-    var objname = Sk.abstr.typeName(obj);
-    var jsName = pyName.$jsstr();
-
-    if (obj === null) {
+    // TODO is it even valid to pass something this shape in here?
+    // Should this be an assert?
+    if (obj === null || !obj.tp$getattr) {
+        let objname = Sk.abstr.typeName(obj);
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
-    if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(pyName, canSuspend);
+    // This function is so hot that we do our own inline suspension checks
+
+    let ret = obj.tp$getattr(pyName, canSuspend);
+
+    if (ret === undefined) {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
+        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+    } else if (ret.$isSuspension) {
+        return Sk.misceval.chain(ret, function(r) {
+            if (r === undefined) {
+                let jsName = Sk.unfixReserved(pyName.$jsstr());
+                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+            }
+            return r;
+        });
+    } else {
+        return ret;
     }
-
-    ret = Sk.misceval.chain(ret, function(r) {
-        if (r === undefined) {
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
-        }
-        return r;
-    });
-
-    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
     var objname = Sk.abstr.typeName(obj), r, setf;
-    var jsName = pyName.$jsstr();
 
     if (obj === null) {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 
     if (obj.tp$setattr !== undefined) {
         return obj.tp$setattr(pyName, data, canSuspend);
     } else {
+        let jsName = Sk.unfixReserved(pyName.$jsstr());
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + jsName + "'");
     }
 };
@@ -922,25 +929,14 @@ Sk.abstr.iter = function(obj) {
         };
     };
 
-    if (obj.tp$getattr) {
-        iter =  Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$iter);
-        if (iter) {
-            ret = Sk.misceval.callsimArray(iter, [obj]);
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        }
-    }
     if (obj.tp$iter) {
-        try {  // catch and ignore not iterable error here.
-            ret = obj.tp$iter();
-            if (ret.tp$iternext) {
-                return ret;
-            }
-        } catch (e) { }
-    }
-    getit = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem);
-    if (getit) {
+        ret = obj.tp$iter();
+        if (ret.tp$iternext) {
+            return ret;
+        } else {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+        }
+    } else if (Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$getitem)) {
         // create internal iterobject if __getitem__
         return new seqIter(obj);
     }

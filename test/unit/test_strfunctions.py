@@ -179,7 +179,142 @@ class string_functions(unittest.TestCase):
                          "fOrMaT,thIs-aS*titLe;String".title())
         self.assertEqual("Getint", "getInt".title())
         # self.assertRaises(TypeError, "hello".title, 42)
+        
+    def test_startswith_endswith(self):
+        x = "Please make startswith and endswith work"
+        self.assertTrue(x.startswith("Please"))
+        self.assertTrue(x.endswith("work"))
+        self.assertFalse(x.startswith("please"))
+        self.assertFalse(x.endswith("please"))
 
+        self.assertTrue(x.startswith("and", 23))
+        self.assertTrue(x.startswith("and", 23, 27))
+        self.assertFalse(x.startswith("and", 24))
+        self.assertFalse(x.startswith("and", 0, 23))
+
+        self.assertTrue(x.endswith("make", 1, 11))
+        self.assertFalse(x.endswith("make", 0, 12))
+        self.assertFalse(x.endswith("make", 0, 10))
+
+        self.assertTrue(x.startswith("endswith", -13, -5))
+        self.assertFalse(x.startswith("endswith", -5, -13))
+        self.assertFalse(x.endswith("endswith", -5, -14))
+        self.assertTrue(x.endswith("endswith", -14, -5))
+
+        # tuple
+        self.assertTrue(x.startswith(("a", "nd"), 23))
+
+        self.assertTrue(x.startswith(("ends", "with"), -13, -5))
+        self.assertFalse(x.startswith(("ends", "with"), -5, -13))
+        self.assertFalse(x.endswith(("ends", "with"), -5, -14))
+        self.assertTrue(x.endswith(("ends", "with"), -14, -5))
+
+        self.assertTrue(x.startswith("", -13, -5))
+        self.assertTrue(x.startswith("", -13, -13))
+        self.assertFalse(x.startswith("", -5, -13))
+
+        self.assertTrue(x.endswith("", -13, -5))
+        self.assertTrue(x.endswith("", -13, -13))
+        self.assertFalse(x.endswith("", -5, -13))
+
+        self.assertTrue(x.startswith("", len(x), len(x) + 5))
+        self.assertTrue(x.startswith("", -len(x) - 1, -len(x) - 5))
+        self.assertFalse(x.startswith("", 4, 0))
+        self.assertTrue(x.endswith("", len(x), len(x) + 5))
+        self.assertTrue(x.endswith("", -len(x) - 1, -len(x) - 5))
+        self.assertFalse(x.endswith("", 4, 0))
+        
+    # Take from https://github.com/python/cpython/blob/master/Lib/test/string_tests.py
+    def test_startswith(self):
+        self.assertTrue('hello'.startswith('he'))
+        self.assertTrue('hello'.startswith('hello'))
+        self.assertFalse('hello'.startswith('hello world'))
+        self.assertTrue('hello'.startswith(''))
+        self.assertFalse('hello'.startswith('ello'))
+        self.assertTrue('hello'.startswith('ello', 1))
+        self.assertTrue('hello'.startswith('o', 4))
+        self.assertFalse('hello'.startswith('o', 5))
+        self.assertTrue('hello'.startswith('', 5))
+        self.assertFalse('hello'.startswith('lo', 6))
+        self.assertTrue('helloworld'.startswith('lowo', 3))
+        self.assertTrue('helloworld'.startswith('lowo', 3, 7))
+        self.assertFalse('helloworld'.startswith('lowo', 3, 6))
+        self.assertTrue(''.startswith('', 0, 1))
+        self.assertTrue(''.startswith('', 0, 0))
+        self.assertFalse(''.startswith('', 1, 0))
+
+        # test negative indices
+        self.assertTrue('hello'.startswith('he', 0, -1))
+        self.assertTrue('hello'.startswith('he', -53, -1))
+        self.assertFalse('hello'.startswith('hello', 0, -1))
+        self.assertFalse('hello'.startswith('hello world', -1, -10))
+        self.assertFalse('hello'.startswith('ello', -5))
+        self.assertTrue('hello'.startswith('ello', -4))
+        self.assertFalse('hello'.startswith('o', -2))
+        self.assertTrue('hello'.startswith('o', -1))
+        self.assertTrue('hello'.startswith('', -3, -3))
+        self.assertFalse('hello'.startswith('lo', -9))
+
+        # test tuple arguments
+        self.assertTrue('hello'.startswith(('he', 'ha')))
+        self.assertFalse('hello'.startswith(('lo', 'llo')))
+        self.assertTrue('hello'.startswith(('hellox', 'hello')))
+        self.assertFalse('hello'.startswith(()))
+        self.assertTrue('helloworld'.startswith(('hellowo','rld', 'lowo'), 3))
+        self.assertFalse('helloworld'.startswith(('hellowo', 'ello',
+                                                            'rld'), 3))
+        self.assertTrue('hello'.startswith(('lo', 'he'), 0, -1))
+        self.assertFalse('hello'.startswith(('he', 'hel'), 0, 1))
+        self.assertTrue('hello'.startswith(('he', 'hel'), 0, 2))
+
+
+    def test_endswith(self):
+        self.assertTrue('hello'.endswith('lo'))
+        self.assertFalse('hello'.endswith('he'))
+        self.assertTrue('hello'.endswith(''))
+        self.assertFalse('hello'.endswith('hello world'))
+        self.assertFalse('helloworld'.endswith('worl'))
+        self.assertTrue('helloworld'.endswith('worl', 3, 9))
+        self.assertTrue('helloworld'.endswith('world', 3, 12))
+        self.assertTrue('helloworld'.endswith('lowo', 1, 7))
+        self.assertTrue('helloworld'.endswith('lowo', 2, 7))
+        self.assertTrue('helloworld'.endswith('lowo', 3, 7))
+        self.assertFalse('helloworld'.endswith('lowo', 4, 7))
+        self.assertFalse('helloworld'.endswith('lowo', 3, 8))
+        self.assertFalse('ab'.endswith('ab', 0, 1))
+        self.assertFalse('ab'.endswith('ab', 0, 0))
+        self.assertTrue(''.endswith('', 0, 1))
+        self.assertTrue(''.endswith('', 0, 0))
+        self.assertFalse(''.endswith('', 1, 0))
+
+        # test negative indices
+        self.assertTrue('hello'.endswith('lo', -2))
+        self.assertFalse('hello'.endswith('he', -2))
+        self.assertTrue('hello'.endswith('', -3, -3))
+        self.assertFalse('hello'.endswith('hello world', -10, -2))
+        self.assertFalse('helloworld'.endswith('worl', -6))
+        self.assertTrue('helloworld'.endswith('worl', -5, -1))
+        self.assertTrue('helloworld'.endswith('worl', -5, 9))
+        self.assertTrue('helloworld'.endswith('world', -7, 12))
+        self.assertTrue('helloworld'.endswith('lowo', -99, -3))
+        self.assertTrue('helloworld'.endswith('lowo', -8, -3))
+        self.assertTrue('helloworld'.endswith('lowo', -7, -3))
+        self.assertFalse('helloworld'.endswith('lowo', 3, -4))
+        self.assertFalse('helloworld'.endswith('lowo', -8, -2))
+        
+
+        # test tuple arguments
+        self.assertFalse('hello'.endswith(('he', 'ha')))
+        self.assertTrue('hello'.endswith(('lo', 'llo', 'wllo'))) 
+        self.assertTrue('hello'.endswith(('hellox', 'hello')))
+        self.assertFalse('hello'.endswith(()))
+        self.assertTrue('helloworld'.endswith(('hellowo', 'rld', 'lowo'), 3))
+        self.assertFalse('helloworld'.endswith(('hellowo', 'ello',
+                                                          'rld'), 3, -1))
+        self.assertTrue('hello'.endswith(('hell', 'ell'), 0, -1))
+        self.assertFalse('hello'.endswith(('he', 'hel'), 0, 1))
+        self.assertTrue('hello'.endswith(('he', 'hell'), 0, 4))
+        
     def test_splitlines(self):
         self.assertEqual(["abc", "def", "", "ghi"],
                          "abc\ndef\n\rghi".splitlines())
@@ -203,6 +338,54 @@ class string_functions(unittest.TestCase):
         #                  "\nabc\ndef\r\nghi\n\r".splitlines(keepends=True))
 
         # self.assertRaises(TypeError, "abc".splitlines, 42, 42)
+        
+    def test___contains__(self):
+        self.assertTrue(''.__contains__(''))
+        self.assertTrue('abc'.__contains__(''))
+        self.assertFalse('abc'.__contains__('\0'))
+        self.assertTrue('\0abc'.__contains__('\0'))
+        self.assertTrue('abc\0'.__contains__('\0'))
+        self.assertTrue('\0abc'.__contains__('a'))
+        self.assertTrue('asdf'.__contains__('asdf'))
+        self.assertFalse('asd'.__contains__('asdf'))
+        self.assertFalse(''.__contains__('asdf'))
+    # Copy from CPython test
+    def test_none_arguments(self):
+        s = 'hello'
+        self.assertEqual(2, s.find('l', None))
+        self.assertEqual(3, s.find('l', -2, None))
+        self.assertEqual(2, s.find('l', None, -2))
+        self.assertEqual(0, s.find('h', None, None))
+
+        self.assertEqual(3, s.rfind('l', None))
+        self.assertEqual(3, s.rfind('l', -2, None))
+        self.assertEqual(2, s.rfind('l', None, -2))
+        self.assertEqual(0, s.rfind('h', None, None))
+
+        self.assertEqual(2, s.index('l', None))
+        self.assertEqual(3, s.index('l', -2, None))
+        self.assertEqual(2, s.index('l', None, -2))
+        self.assertEqual(0, s.index('h', None, None))
+
+        self.assertEqual(3, s.rindex('l', None))
+        self.assertEqual(3, s.rindex('l', -2, None))
+        self.assertEqual(2, s.rindex('l', None, -2))
+        self.assertEqual(0, s.rindex('h', None, None))
+
+        self.assertEqual(2, s.count('l', None))
+        self.assertEqual(1, s.count('l', -2, None))
+        self.assertEqual(1, s.count('l', None, -2))
+        self.assertEqual(0, s.count('x', None, None))
+
+        self.assertEqual(True, s.count('o', None))
+        self.assertEqual(True, s.count('lo', -2, None))
+        self.assertEqual(True, s.count('l', None, -2))
+        self.assertEqual(False, s.count('x', None, None))
+
+        self.assertEqual(True, s.count('h', None))
+        self.assertEqual(True, s.count('l', -2, None))
+        self.assertEqual(True, s.count('h', None, -2))
+        self.assertEqual(False, s.count('x', None, None))
 
 if __name__ == "__main__":
     unittest.main()

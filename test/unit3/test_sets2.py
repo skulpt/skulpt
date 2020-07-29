@@ -233,6 +233,19 @@ class SetTests(unittest.TestCase):
         self.assertTrue(a.pop() in b)
         self.assertEqual(len(a), 0)
 
+    def test_ops(self):
+        a = set(range(5))
+        b = set(range(3, 8))
+        c = list(b)
+        self.assertEqual(a & b, set(range(3, 5)))
+        self.assertEqual(a | b, set(range(8)))
+        self.assertEqual(a ^ b, set([0, 1, 2, 5, 6, 7]))
+        self.assertEqual(a - b, set([0, 1, 2]))
+        self.assertRaises(TypeError, lambda: a & c)
+        self.assertRaises(TypeError, lambda: a | c)
+        self.assertRaises(TypeError, lambda: a ^ c)
+        self.assertRaises(TypeError, lambda: a - c)
+        
 if __name__ == '__main__':
     unittest.main()
             

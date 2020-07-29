@@ -179,7 +179,15 @@ Parser.prototype.classify = function (type, value, context) {
         // throw new Sk.builtin.SyntaxError("bad token", type, value, context);
         // Questionable modification to put line number in position 2
         // like everywhere else and filename in position 1.
-        throw new Sk.builtin.SyntaxError("bad token", this.filename, context[0][0], context);
+        let descr = "#"+type;
+        for (let i in Sk.token.tokens) {
+            if (Sk.token.tokens[i] == type) {
+                descr = i;
+                break;
+            }
+        }
+
+        throw new Sk.builtin.SyntaxError("bad token " + descr, this.filename, context[0][0], context);
     }
     return ilabel;
 };
@@ -303,7 +311,7 @@ Sk.parse = function parse (filename, input) {
         };
     }
 
-    Sk._tokenize(readline(input), "utf-8", function (tokenInfo) {
+    Sk._tokenize(filename, readline(input), "utf-8", function (tokenInfo) {
         var s_lineno = tokenInfo.start[0];
         var s_column = tokenInfo.start[1];
         var type = null;

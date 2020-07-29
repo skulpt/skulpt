@@ -29,6 +29,7 @@ Sk.builtins = {
     "any"       : new Sk.builtin.func(Sk.builtin.any),
     "all"       : new Sk.builtin.func(Sk.builtin.all),
 
+    "BaseException"      : Sk.builtin.BaseException, 
     "AttributeError"     : Sk.builtin.AttributeError,
     "ValueError"         : Sk.builtin.ValueError,
     "Exception"          : Sk.builtin.Exception,
@@ -52,6 +53,7 @@ Sk.builtins = {
     "NegativePowerError" : Sk.builtin.NegativePowerError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
     "StopIteration"      : Sk.builtin.StopIteration,
+    "SyntaxError"        : Sk.builtin.SyntaxError,
 
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
@@ -117,10 +119,18 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["map"] = Sk.builtin.map_;
         Sk.builtins["zip"] = Sk.builtin.zip_;
         Sk.builtins["bytes"] = Sk.builtin.bytes;
+        Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.xrange);
+        delete Sk.builtins["xrange"];
+        delete Sk.builtins["StandardError"];
+        delete Sk.builtins["unicode"];
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
+        Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
+        Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
+        Sk.builtins["StandardError"] = Sk.builtin.StandardError;
+        Sk.builtins["unicode"] = Sk.builtin.str;
         if (Sk.builtins["bytes"]) {
             delete Sk.builtins["bytes"];
         }

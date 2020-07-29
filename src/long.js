@@ -77,26 +77,6 @@ Sk.builtin.lng.prototype.nb$int_ = function() {
     return new Sk.builtin.int_(this.toInt$());
 };
 
-Sk.builtin.lng.prototype.__format__= function (obj, format_spec) {
-    var formatstr;
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
-    if (!Sk.builtin.checkString(format_spec)) {
-        if (Sk.__future__.exceptions) {
-            throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
-        } else {
-            throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
-        }
-    } else {
-        formatstr = Sk.ffi.remapToJs(format_spec);
-        if (formatstr !== "") {
-            throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
-        }
-    }
-
-    return new Sk.builtin.str(obj);
-};
-
 Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
     Sk.builtin.pyCheckArgsLen("__round__", arguments.length, 1, 2);
 
@@ -130,6 +110,8 @@ Sk.builtin.lng.prototype.round$ = function (self, ndigits) {
 Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
     return self.nb$int_(self);
 });
+
+Sk.builtin.lng.prototype.__format__ = Sk.formatting.mkNumber__format__(false);
 
 Sk.builtin.lng.prototype.nb$lng_ = function () {
     return this;
@@ -174,7 +156,7 @@ Sk.longFromStr = function (s, base) {
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.toInt$ = function () {
-    return this.biginteger.intValue();
+    return parseInt(this.biginteger.toString(), 10);
 };
 
 Sk.builtin.lng.prototype.clone = function () {

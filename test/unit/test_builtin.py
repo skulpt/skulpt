@@ -77,6 +77,11 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, setattr, sys, 1, 'spam')
         self.assertRaises(AttributeError, setattr, 1, 'spam', 9)
         self.assertRaises(TypeError, setattr)
+        for builtin_type in (int, float, Exception, object, type, super):
+            self.assertRaises(TypeError, setattr, builtin_type, 'foo', 'bar')
+            with self.assertRaises(TypeError):
+                builtin_type.foo = 'bar'
+        
 
     def test_delattr(self):
         class NoName:
@@ -573,6 +578,17 @@ class BuiltinTest(unittest.TestCase):
         self.assertEqual(next(it), 1)
         self.assertRaises(StopIteration, next, it)
         self.assertEqual(next(it, 42), 42)
+
+    def test_skulpt_bugs(self):
+        # bug where sum should accept non numbers types
+        self.assertEqual(sum([complex(1,1), 1]), complex(2, 1))
+        class A:
+            def __add__(self, other):
+                return 3
+            def __radd__(self, other):
+                return 3
+        self.assertEqual(sum([A(), A()]), 3)
+        self.assertEqual(sum([1,2,3], A()), 8)
 
 if __name__ == "__main__":
     unittest.main()

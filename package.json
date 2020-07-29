@@ -50,7 +50,7 @@
     "closure-webpack-plugin": "^2.0.1",
     "commander": "^2.20.0",
     "compression-webpack-plugin": "^2.0.0",
-    "copy-webpack-plugin": "^5.0.3",
+    "copy-webpack-plugin": "^5.1.1",
     "ejs": "^2.6.1",
     "eslint": "^5.16.0",
     "eslint-loader": "^2.1.2",
@@ -70,7 +70,7 @@
     "webpack-cli": "^3.3.2"
   },
   "engines": {
-    "node": ">=8.10"
+    "node": ">=10.4"
   },
   "dependencies": {}
 }

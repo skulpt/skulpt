@@ -77,6 +77,8 @@ class IntTestCases(unittest.TestCase):
         # Failed in all Linux builds.
         x = -1-sys.maxsize
         self.assertEqual(x >> 1, x//2)
+        self.assertEqual(int(x >> 1), x//2)
+
 
         x = int('1' * 600)
         """
