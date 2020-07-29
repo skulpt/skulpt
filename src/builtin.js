@@ -472,52 +472,74 @@ Sk.builtin.all = function all (iter) {
     return Sk.builtin.bool.true$;
 };
 
-Sk.builtin.sum = function sum (iter, start) {
+Sk.builtin.sum = function sum(iter, start) {
     var tot;
-    var intermed;
-    var it, i;
-    var has_float;
-
     Sk.builtin.pyCheckArgsLen("sum", arguments.length, 1, 2);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (start !== undefined && Sk.builtin.checkString(start)) {
-        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
-    }
+    // follows the order of CPython checks
+    const it = Sk.abstr.iter(iter);
     if (start === undefined) {
         tot = new Sk.builtin.int_(0);
+    } else if (Sk.builtin.checkString(start)) {
+        throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     } else {
         tot = start;
     }
 
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i instanceof Sk.builtin.float_) {
-            has_float = true;
-            if (!(tot instanceof Sk.builtin.float_)) {
-                tot = new Sk.builtin.float_(Sk.builtin.asnum$(tot));
-            }
-        } else if (i instanceof Sk.builtin.lng) {
-            if (!has_float) {
-                if (!(tot instanceof Sk.builtin.lng)) {
-                    tot = new Sk.builtin.lng(tot);
-                }
-            }
-        }
-
-        if (tot.nb$add !== undefined) {
-            intermed = tot.nb$add(i);
-            if ((intermed !== undefined) && (intermed !== Sk.builtin.NotImplemented.NotImplemented$)) {
+    function fastSumInt() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.int_) {
                 tot = tot.nb$add(i);
-                continue;
+            } else if (i.constructor === Sk.builtin.float_) {
+                tot = new Sk.builtin.float_(tot).nb$add(i);
+                return new Sk.misceval.Break("float");
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return new Sk.misceval.Break("slow");
             }
-        }
-
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-                    Sk.abstr.typeName(tot) + "' and '" +
-                    Sk.abstr.typeName(i) + "'");
+        });
     }
 
-    return tot;
+    function fastSumFloat() {
+        return Sk.misceval.iterFor(it, (i) => {
+            if (i.constructor === Sk.builtin.float_ || i.constructor === Sk.builtin.int_) {
+                tot = tot.nb$add(i);
+            } else {
+                tot = Sk.abstr.numberBinOp(tot, i, "Add");
+                return new Sk.misceval.Break("slow");
+            }
+        });
+    }
+
+    function slowSum() {
+        return Sk.misceval.iterFor(it, (i) => {
+            tot = Sk.abstr.numberBinOp(tot, i, "Add");
+        });
+    }
+
+    let sumType;
+    if (start === undefined || start.constructor === Sk.builtin.int_) {
+        sumType = fastSumInt();
+    } else if (start.constructor === Sk.builtin.float_) {
+        sumType = "float";
+    } else {
+        sumType = "slow";
+    }
+
+    return Sk.misceval.chain(
+        sumType,
+        (sumType) => {
+            if (sumType === "float") {
+                return fastSumFloat();
+            }
+            return sumType;
+        },
+        (sumType) => {
+            if (sumType === "slow") {
+                return slowSum();
+            }
+        },
+        () => tot
+    );
 };
 
 Sk.builtin.zip = function zip () {

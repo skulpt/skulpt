@@ -267,10 +267,10 @@ function getOperator (n) {
 
 function new_identifier(n, c) {
     if (n.value) {
-        return Sk.builtin.str(n.value);
+        return new Sk.builtin.str(n.value);
     }
 
-    return Sk.builtin.str(n);
+    return new Sk.builtin.str(n);
 }
 
 function astForCompOp (c, n) {
