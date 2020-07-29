@@ -516,27 +516,25 @@ Sk.builtin.sum = function sum(iter, start) {
         });
     }
 
-    let initValue;
-    if (start === undefined || tot.constructor === Sk.builtin.int_) {
-        initValue = fastSumInt();
-    } else if (tot.constructor === Sk.builtin.float_) {
-        initValue = "float";
+    let sumType;
+    if (start === undefined || start.constructor === Sk.builtin.int_) {
+        sumType = fastSumInt();
+    } else if (start.constructor === Sk.builtin.float_) {
+        sumType = "float";
     } else {
-        initValue = "slow";
+        sumType = "slow";
     }
 
     return Sk.misceval.chain(
-        initValue,
-        (brValue) => {
-            if (brValue === undefined) {
-                return;
-            } else if (brValue === "float") {
+        sumType,
+        (sumType) => {
+            if (sumType === "float") {
                 return fastSumFloat();
             }
-            return brValue;
+            return sumType;
         },
-        (brValue) => {
-            if (brValue !== undefined) {
+        (sumType) => {
+            if (sumType === "slow") {
                 return slowSum();
             }
         },
