@@ -417,6 +417,7 @@ Sk.builtin.complex.prototype.nb$add = function (other) {
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
+Sk.builtin.complex.prototype.nb$reflected_add = Sk.builtin.complex.prototype.nb$add;
 
 /* internal subtract/diff function that calls internal float diff */
 Sk.builtin.complex._c_diff = function (a, b) {
@@ -438,6 +439,10 @@ Sk.builtin.complex.prototype.nb$subtract = function (other) {
 
     return result;
 };
+Sk.builtin.complex.prototype.nb$reflected_subtract = function (other) {
+    const self = this.nb$negative();
+    return self.nb$add(other);
+};
 
 Sk.builtin.complex.prototype.nb$multiply = function (other) {
     var real;
@@ -452,6 +457,7 @@ Sk.builtin.complex.prototype.nb$multiply = function (other) {
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
+Sk.builtin.complex.prototype.nb$reflected_multiply = Sk.builtin.complex.prototype.nb$multiply;
 
 /**
  * Otherwise google closure complains about ZeroDivisionError not being
@@ -503,6 +509,10 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     }
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
+};
+Sk.builtin.complex.prototype.nb$reflected_divide = function (other) {
+    other = Sk.builtin.complex.check_number_or_complex(other);
+    return other.nb$divide(this);
 };
 
 Sk.builtin.complex.prototype.nb$floor_divide = function (other) {
