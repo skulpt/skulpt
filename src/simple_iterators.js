@@ -170,23 +170,19 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
     },
     iternext: function (canSuspend) {
         let ret;
-        try {
-            ret = this.$seq.mp$subscript(
-                new Sk.builtin.int_(this.$index),
-                canSuspend
-            );
-        } catch (e) {
-            if (
-                e instanceof Sk.builtin.IndexError ||
-                e instanceof Sk.builtin.StopIteration
-            ) {
-                return undefined;
-            } else {
-                throw e;
+        ret = Sk.misceval.tryCatch(
+            () => {
+                return this.$seq.mp$subscript(new Sk.builtin.int_(this.$index++), canSuspend);
+            },
+            (e) => {
+                if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
+                    return undefined;
+                } else {
+                    throw e;
+                }
             }
-        }
-        this.$index++;
-        return ret;
+        );
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     methods: {
         __length_hint__: {
