@@ -180,7 +180,7 @@ var $builtinmodule = function (name) {
     mod.DEG_TO_RAD = new Sk.builtin.float_( Math.PI / 180);
     mod.RAD_TO_DEG = new Sk.builtin.float_( 180 / Math.PI);
 
-    mod.WHITESPACE = Sk.builtin.str(" \t\n\r\f\u00A0");
+    mod.WHITESPACE = new Sk.builtin.str(" \t\n\r\f\u00A0");
     // Shape modes
     mod.POINT = new Sk.builtin.int_(2);
     mod.POINTS = new Sk.builtin.int_(2);
@@ -249,7 +249,7 @@ var $builtinmodule = function (name) {
     mod.MOVE = new Sk.builtin.str("move");
     mod.TEXT = new Sk.builtin.str("text");
     mod.WAIT = new Sk.builtin.str("wait");
-    mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto", Sk.builtin.nmber.str);
+    mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto");
 
     // Hints
     mod.DISABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(1);

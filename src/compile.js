@@ -208,7 +208,9 @@ var reservedNames_ = {
     "__defineGetter__": true,
     "__defineSetter__": true,
     "apply": true,
+    "arguments": true,
     "call": true,
+    "caller": true, 
     "eval": true,
     "hasOwnProperty": true,
     "isPrototypeOf": true,
@@ -216,6 +218,7 @@ var reservedNames_ = {
     "__lookupSetter__": true,
     "__noSuchMethod__": true,
     "propertyIsEnumerable": true,
+    "prototype": true,
     "toSource": true,
     "toLocaleString": true,
     "toString": true,
@@ -230,6 +233,11 @@ function fixReservedNames (name) {
     if (reservedNames_[name]) {
         return name + "_$rn$";
     }
+    return name;
+}
+
+function fixReserved (name) {
+    name = fixReservedNames(fixReservedWords(name));
     return name;
 }
 
@@ -579,7 +587,7 @@ Compiler.prototype.cyield = function(e)
     if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
     }
-    var val = "null",
+    var val = "Sk.builtin.none.none$",
         nextBlock;
     if (e.value) {
         val = this.vexpr(e.value);
@@ -588,7 +596,7 @@ Compiler.prototype.cyield = function(e)
     // return a pair: resume target block and yielded value
     out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
     this.setBlock(nextBlock);
-    return "$gen.gi$sentvalue"; // will either be null if none sent, or the value from gen.send(value)
+    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 Compiler.prototype.ccompare = function (e) {
@@ -803,7 +811,7 @@ Compiler.prototype.cformattedvalue = function(e) {
     let value = this.vexpr(e.value);
     switch (e.conversion) {
         case 's':
-            value = this._gr("value", "Sk.builtin.str(",value,")");
+            value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
         case 'a':
             // TODO when repr() becomes more unicode-aware,
@@ -902,8 +910,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            mangled = fixReservedWords(mangled);
-            mangled = fixReservedNames(mangled);
+            mangled = fixReserved(mangled);
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
@@ -940,7 +947,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
                     out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
-                    this._checkSuspension(e)
+                    this._checkSuspension(e);
                     return this._gr("gitem", "$ret");
                 case Sk.astnodes.Load:
                 case Sk.astnodes.Store:
@@ -1913,12 +1920,24 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
         }
     }
+    // Are we using the new fast-call mechanism, where the
+    // function we define implements the tp$call interface?
+    // (Right now we haven't migrated generators because they're
+    // a mess, but if this works we can move everything over)
+    let fastCall = !isGenerator;
+
     if (hasFree) {
-        funcArgs.push("$free");
+        if (!fastCall) {
+            funcArgs.push("$free");
+        }
         this.u.tempsToSave.push("$free");
     }
 
-    this.u.prefixCode += funcArgs.join(",");
+    if (fastCall) {
+        this.u.prefixCode += "$posargs,$kwargs";
+    } else {
+        this.u.prefixCode += funcArgs.join(",");
+    }
 
     this.u.prefixCode += "){";
 
@@ -1930,6 +1949,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (hasCell) {
         this.u.prefixCode += "\n// has cell\n";
+    }
+
+    if (fastCall) {
+        this.u.prefixCode += "\n// fast call\n";
     }
 
     //
@@ -1949,7 +1972,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    // (fastcall doesn't need to do this, as 'this' is the func object)
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -1962,6 +1986,22 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // parameters appropriately.
     //
     this.u.varDeclsCode += "if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); } else {";
+
+    if (fastCall) {
+        // Resolve our arguments from $posargs+$kwargs.
+        // If we're posargs-only, we can handle the fast path
+        // without even calling out
+        if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
+            this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
+        } else {
+            this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
+        }
+        for (let i=0; i < funcArgs.length; i++) {
+            this.u.varDeclsCode += ","+funcArgs[i]+"=$args["+i+"]";
+        }
+        this.u.varDeclsCode += ";\n";
+    }
+
 
     // TODO update generators to do their arg checks in outside generated code,
     // like functions do
@@ -2019,7 +2059,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
     // inject __class__ cell when running python3
     if (Sk.__future__.python3 && class_for_super) {
-        this.u.varDeclsCode += "$gbl.__class__=this." + class_for_super.v + ";";
+        this.u.varDeclsCode += "$gbl.__class__=$gbl." + class_for_super.v + ";";
     }
 
     // finally, set up the block switch that the jump code expects
@@ -2093,6 +2133,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
     if (vararg) {
         out(scopename, ".co_varargs=1;");
+    }
+    if (!isGenerator) {
+        out(scopename, ".co_fastcall=1;");
     }
 
     //
@@ -2675,8 +2718,7 @@ Compiler.prototype.exitScope = function () {
     if (prev.name.v !== "<module>") {// todo; hacky
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
-        mangled = fixReservedWords(mangled);
-        mangled = fixReservedNames(mangled);
+        mangled = fixReserved(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
     for (var constant in prev.consts) {
@@ -2839,6 +2881,9 @@ Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
 
 Sk.fixReservedNames = fixReservedNames;
 Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
+
+Sk.fixReserved = fixReserved;
+Sk.exportSymbol("Sk.fixReserved", Sk.fixReserved);
 
 Sk.unfixReserved = unfixReserved;
 Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);

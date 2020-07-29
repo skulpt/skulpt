@@ -62,7 +62,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
     var self = this;
     this["gi$running"] = true;
     if (yielded === undefined) {
-        yielded = null;
+        yielded = Sk.builtin.none.none$;
     }
     this["gi$sentvalue"] = yielded;
 

@@ -8,27 +8,27 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    mod.ascii_lowercase = Sk.builtin.str('abcdefghijklmnopqrstuvwxyz');
-    mod.ascii_uppercase = Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-    mod.ascii_letters = Sk.builtin.str(mod.ascii_lowercase.v + mod.ascii_uppercase.v);
+    mod.ascii_lowercase = new Sk.builtin.str('abcdefghijklmnopqrstuvwxyz');
+    mod.ascii_uppercase = new Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    mod.ascii_letters = new Sk.builtin.str(mod.ascii_lowercase.v + mod.ascii_uppercase.v);
 
-    mod.lowercase = Sk.builtin.str('abcdefghijklmnopqrstuvwxyz');
-    mod.uppercase = Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-    mod.letters = Sk.builtin.str(mod.lowercase.v + mod.uppercase.v);
+    mod.lowercase = new Sk.builtin.str('abcdefghijklmnopqrstuvwxyz');
+    mod.uppercase = new Sk.builtin.str('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    mod.letters = new Sk.builtin.str(mod.lowercase.v + mod.uppercase.v);
 
-    mod.digits = Sk.builtin.str('0123456789');
-    mod.hexdigits = Sk.builtin.str('0123456789abcdefABCDEF');
-    mod.octdigits = Sk.builtin.str('01234567');
+    mod.digits = new Sk.builtin.str('0123456789');
+    mod.hexdigits = new Sk.builtin.str('0123456789abcdefABCDEF');
+    mod.octdigits = new Sk.builtin.str('01234567');
 
-    mod.punctuation = Sk.builtin.str('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~');
-    mod.whitespace = Sk.builtin.str('\t\n\x0b\x0c\r ');
+    mod.punctuation = new Sk.builtin.str('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~');
+    mod.whitespace = new Sk.builtin.str('\t\n\x0b\x0c\r ');
 
     /* Note: The docs for string.printable say that it's the concatenation of string.digits,
      * string.letters, string.punctuation, and string.whitespace. The CPython interpreter
      * outputs the whitespace characters in one order when string.whitespace is used, and a
      * slightly different order when string.printable is used. I've elected to follow the
      * behavior of CPython here rather than the spec. */
-    mod.printable = Sk.builtin.str(mod.digits.v + mod.letters.v + mod.punctuation.v + " \t\n\r\x0b\x0c");
+    mod.printable = new Sk.builtin.str(mod.digits.v + mod.letters.v + mod.punctuation.v + " \t\n\r\x0b\x0c");
 
 
     mod.split = new Sk.builtin.func(function (s, sep, maxsplit) {
@@ -44,7 +44,7 @@ var $builtinmodule = function (name) {
      * of sep. The default value for sep is a single space character. */
     mod.join = new Sk.builtin.func(function (words, sep) {
         if (sep === undefined) {
-            sep = Sk.builtin.str(' ');
+            sep = new Sk.builtin.str(' ');
         }
         return Sk.misceval.callsimArray(Sk.builtin.str.prototype['join'], [sep, words]);
     });
@@ -60,16 +60,16 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("s must be a string");
         }
         if (sep === undefined) {
-            sep = Sk.builtin.str(' ');
+            sep = new Sk.builtin.str(' ');
         }
         if (!Sk.builtin.checkString(sep)) {
             throw new Sk.builtin.TypeError("sep must be a string");
         }
 
-        var words = Sk.misceval.callsimArray(mod.split, [s, sep]);
+        var words = Sk.misceval.callsimArray(mod.split, [s, sep]).v;
         var capWords = [];
-        for (var i = 0; i < words.v.length; i++) {
-            var word = Sk.builtin.list.prototype['list_subscript_'].call(words, i);
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
             var cap = Sk.misceval.callsimArray(mod.capitalize, [word]);
             capWords.push(cap);
         }
