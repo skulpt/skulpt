@@ -7,7 +7,7 @@
 var print_f = function function_print(kwa) {
     Sk.builtin.pyCheckArgsLen("print", arguments.length, 0, Infinity, true, false);
     var args = Array.prototype.slice.call(arguments, 1);
-    var kwargs = new Sk.builtins.dict(kwa);
+    var kwargs = new Sk.builtin.dict(kwa);
     var _kwargs = Sk.ffi.remapToJs(kwargs);
 
     // defaults, null for None
@@ -68,12 +68,12 @@ var print_f = function function_print(kwa) {
 
     s += kw_list.end;
 
-    if(kw_list.file !== null) {
+    if (kw_list.file !== null) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
         Sk.misceval.callsimArray(kw_list.file.write, [kw_list.file, new Sk.builtin.str(s)]); // callsim to write function
     } else {
-        return Sk.misceval.chain(Sk.importModule("sys", false, true), function(sys) {
-            return Sk.misceval.apply(sys["$d"]["stdout"]["write"], undefined, undefined, undefined, [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+        return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
+            return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
         });
     }
     // ToDo:

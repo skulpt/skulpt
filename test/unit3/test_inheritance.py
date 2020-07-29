@@ -102,7 +102,7 @@ class InheritanceTesting(unittest.TestCase):
 
         self.assertEqual(int.__mro__, (int, object))
         self.assertEqual(Exception.__mro__, (Exception, BaseException, object))
-        self.assertEqual(TypeError.__bases__, (Exception, BaseException, object))
+        self.assertEqual(TypeError.__bases__, (Exception,))
 
 if __name__ == '__main__':
     unittest.main()
