@@ -477,7 +477,7 @@ Compiler.prototype.cyield = function(e) {
     if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
     }
-    var val = "null",
+    var val = "Sk.builtin.none.none$",
         nextBlock;
     if (e.value) {
         val = this.vexpr(e.value);
@@ -486,7 +486,7 @@ Compiler.prototype.cyield = function(e) {
     // return a pair: resume target block and yielded value
     out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
     this.setBlock(nextBlock);
-    return "$gen.gi$sentvalue"; // will either be null if none sent, or the value from gen.send(value)
+    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 Compiler.prototype.ccompare = function (e) {
