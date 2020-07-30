@@ -604,25 +604,9 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgsLen("abs", arguments.length, 1, 1);
-
-    if (x instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(Math.abs(x.v));
+    if (x.nb$abs) {
+        return x.nb$abs();
     }
-    if (x instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(Math.abs(x.v));
-    }
-    if (Sk.builtin.checkNumber(x)) {
-        return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)));
-    } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsimArray(x.__abs__, [x]);
-    }
-
-    // call custom __abs__ methods
-    if (x.tp$getattr) {
-        var f = x.tp$getattr(Sk.builtin.str.$abs);
-        return Sk.misceval.callsimArray(f);
-    }
-
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
@@ -640,7 +624,7 @@ Sk.builtin.ord = function ord (x) {
     } else if (x.v.length !== 1) {
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
-    return new Sk.builtin.int_((x.v).charCodeAt(0));
+    return new Sk.builtin.int_(x.v.charCodeAt(0));
 };
 
 Sk.builtin.chr = function chr (x) {
