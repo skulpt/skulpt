@@ -2115,7 +2115,6 @@ Sk.setupDunderMethods = function (py3) {
     }
 
     if (py3) {
-        Sk.builtin.str.$next = new Sk.builtin.str("__next__");
         dunderToSkulpt.__bool__ = "nb$bool";
         dunderToSkulpt.__next__ = "tp$iternext";
 
@@ -2148,7 +2147,6 @@ Sk.setupDunderMethods = function (py3) {
             };
             py3$slots = slots.py3$slots;
         }
-        Sk.builtin.str.$next = new Sk.builtin.str("next");
         dunderToSkulpt.next = "tp$iternext";
         dunderToSkulpt.__nonzero__ = "nb$bool";
         dunderToSkulpt.__div__ = "nb$divide";
