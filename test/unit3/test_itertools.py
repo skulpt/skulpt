@@ -1882,7 +1882,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
             self.assertEqual(list(accumulate(g(s))), r)
         self.assertEqual(list(accumulate(S(s))), [])
         self.assertRaises(TypeError, accumulate, X(s))
-        # self.assertRaises(TypeError, accumulate, N(s))
+        self.assertRaises(TypeError, accumulate, N(s))
         self.assertRaises(ZeroDivisionError, list, accumulate(E(s)))
 
     def test_chain(self):
@@ -1900,7 +1900,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
             for g in (G, I, Ig, S, L, R):
                 self.assertEqual(list(compress(g(s), repeat(1))), list(g(s)))
             self.assertRaises(TypeError, compress, X(s), repeat(1))
-            # self.assertRaises(TypeError, compress, N(s), repeat(1))
+            self.assertRaises(TypeError, compress, N(s), repeat(1))
             self.assertRaises(ZeroDivisionError, list, compress(E(s), repeat(1)))
 
     def test_product(self):
@@ -1917,7 +1917,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 actual = list(islice(cycle(g(s)), tgtlen))
                 self.assertEqual(actual, expected)
             self.assertRaises(TypeError, cycle, X(s))
-            # self.assertRaises(TypeError, cycle, N(s))
+            self.assertRaises(TypeError, cycle, N(s))
             self.assertRaises(ZeroDivisionError, list, cycle(E(s)))
 
     def test_groupby(self):
@@ -1925,7 +1925,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
             for g in (G, I, Ig, S, L, R):
                 self.assertEqual([k for k, sb in groupby(g(s))], list(g(s)))
             self.assertRaises(TypeError, groupby, X(s))
-            # self.assertRaises(TypeError, groupby, N(s))
+            self.assertRaises(TypeError, groupby, N(s))
             self.assertRaises(ZeroDivisionError, list, groupby(E(s)))
 
     def test_filter(self):
@@ -1934,7 +1934,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(filter(isEven, g(s))),
                                  [x for x in g(s) if isEven(x)])
             self.assertRaises(TypeError, filter, isEven, X(s))
-            # self.assertRaises(TypeError, filter, isEven, N(s))
+            self.assertRaises(TypeError, filter, isEven, N(s))
             self.assertRaises(ZeroDivisionError, list, filter(isEven, E(s)))
 
     def test_filterfalse(self):
@@ -1943,7 +1943,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(filterfalse(isEven, g(s))),
                                  [x for x in g(s) if isOdd(x)])
             self.assertRaises(TypeError, filterfalse, isEven, X(s))
-            # self.assertRaises(TypeError, filterfalse, isEven, N(s))
+            self.assertRaises(TypeError, filterfalse, isEven, N(s))
             self.assertRaises(ZeroDivisionError, list, filterfalse(isEven, E(s)))
 
     def test_zip(self):
@@ -1952,7 +1952,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(zip(g(s))), lzip(g(s)))
                 self.assertEqual(list(zip(g(s), g(s))), lzip(g(s), g(s)))
             self.assertRaises(TypeError, zip, X(s))
-            # self.assertRaises(TypeError, zip, N(s))
+            self.assertRaises(TypeError, zip, N(s))
             self.assertRaises(ZeroDivisionError, list, zip(E(s)))
 
     def test_ziplongest(self):
@@ -1961,7 +1961,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(zip_longest(g(s))), list(zip(g(s))))
                 self.assertEqual(list(zip_longest(g(s), g(s))), list(zip(g(s), g(s))))
             self.assertRaises(TypeError, zip_longest, X(s))
-            # self.assertRaises(TypeError, zip_longest, N(s))
+            self.assertRaises(TypeError, zip_longest, N(s))
             self.assertRaises(ZeroDivisionError, list, zip_longest(E(s)))
 
     def test_map(self):
@@ -1972,7 +1972,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(map(operator.pow, g(s), g(s))),
                                  [x**x for x in g(s)])
             self.assertRaises(TypeError, map, onearg, X(s))
-            # self.assertRaises(TypeError, map, onearg, N(s))
+            self.assertRaises(TypeError, map, onearg, N(s))
             self.assertRaises(ZeroDivisionError, list, map(onearg, E(s)))
 
     def test_islice(self):
@@ -1980,7 +1980,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
             for g in (G, I, Ig, S, L, R):
                 self.assertEqual(list(islice(g(s),1,None,2)), list(g(s))[1::2])
             self.assertRaises(TypeError, islice, X(s), 10)
-            # self.assertRaises(TypeError, islice, N(s), 10)
+            self.assertRaises(TypeError, islice, N(s), 10)
             self.assertRaises(ZeroDivisionError, list, islice(E(s), 10))
 
     def test_starmap(self):
@@ -1990,7 +1990,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                 self.assertEqual(list(starmap(operator.pow, g(ss))),
                                  [x**x for x in g(s)])
             self.assertRaises(TypeError, starmap, operator.pow, X(ss))
-            # self.assertRaises(TypeError, starmap, operator.pow, N(ss))
+            self.assertRaises(TypeError, starmap, operator.pow, N(ss))
             self.assertRaises(ZeroDivisionError, list, starmap(operator.pow, E(ss)))
 
     def test_takewhile(self):
@@ -2002,7 +2002,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                     tgt.append(elem)
                 self.assertEqual(list(takewhile(isEven, g(s))), tgt)
             self.assertRaises(TypeError, takewhile, isEven, X(s))
-            # self.assertRaises(TypeError, takewhile, isEven, N(s))
+            self.assertRaises(TypeError, takewhile, isEven, N(s))
             self.assertRaises(ZeroDivisionError, list, takewhile(isEven, E(s)))
 
     def test_dropwhile(self):
@@ -2014,7 +2014,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
                     tgt.append(elem)
                 self.assertEqual(list(dropwhile(isOdd, g(s))), tgt)
             self.assertRaises(TypeError, dropwhile, isOdd, X(s))
-            # self.assertRaises(TypeError, dropwhile, isOdd, N(s))
+            self.assertRaises(TypeError, dropwhile, isOdd, N(s))
             self.assertRaises(ZeroDivisionError, list, dropwhile(isOdd, E(s)))
 
 #     def test_tee(self):

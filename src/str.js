@@ -34,7 +34,7 @@ Sk.builtin.str = function (x) {
         ret = "True";
     } else if (x === false) {
         ret = "False";
-    } else if ((x === null) || (x instanceof Sk.builtin.none)) {
+    } else if ((x === null) || (x === Sk.builtin.none.none$)) {
         ret = "None";
     } else if (x instanceof Sk.builtin.bool) {
         if (x.v) {
@@ -304,7 +304,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     var str;
     var regex;
     Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
+    if ((on === undefined) || (on === Sk.builtin.none.none$)) {
         on = null;
     }
     if ((on !== null) && !Sk.builtin.checkString(on)) {
@@ -1298,7 +1298,7 @@ Sk.builtin.str_iter_ = function (obj) {
     this.$index = 0;
     this.$obj = obj.v.slice();
     this.sq$length = this.$obj.length;
-    this.tp$iter = this;
+    this.tp$iter = () => this;
     this.tp$iternext = function () {
         if (this.$index >= this.sq$length) {
             return undefined;

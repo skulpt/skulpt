@@ -195,7 +195,7 @@ Sk.builtin.checkBool = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
 Sk.builtin.checkNone = function (arg) {
-    return (arg instanceof Sk.builtin.none);
+    return (arg === Sk.builtin.none.none$);
 };
 Sk.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 

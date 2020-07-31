@@ -84,7 +84,7 @@ var MersenneTwister = function (seed) {
     /* mti==N+1 means mt[N] is not initialized */
 
     this.init_genrand(seed);
-}
+};
 
 /* initializes mt[N] with a seed */
 MersenneTwister.prototype.init_genrand = function (s) {
@@ -100,7 +100,7 @@ MersenneTwister.prototype.init_genrand = function (s) {
         this.mt[this.mti] >>>= 0;
         /* for >32 bit machines */
     }
-}
+};
 
 /* initialize by an array with array-length */
 /* init_key is the array for initializing keys */
@@ -113,7 +113,7 @@ MersenneTwister.prototype.init_by_array = function (init_key, key_length) {
     j = 0;
     k = (this.N > key_length ? this.N : key_length);
     for (; k; k--) {
-        var s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)
+        var s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30);
         this.mt[i] = (this.mt[i] ^ (((((s & 0xffff0000) >>> 16) * 1664525) << 16) + ((s & 0x0000ffff) * 1664525)))
             + init_key[j] + j;
         /* non linear */
@@ -145,7 +145,7 @@ MersenneTwister.prototype.init_by_array = function (init_key, key_length) {
 
     this.mt[0] = 0x80000000;
     /* MSB is 1; assuring non-zero initial array */
-}
+};
 
 /* generates a random number on [0,0xffffffff]-interval */
 MersenneTwister.prototype.genrand_int32 = function () {
@@ -156,8 +156,7 @@ MersenneTwister.prototype.genrand_int32 = function () {
     if (this.mti >= this.N) { /* generate N words at one time */
         var kk;
 
-        if (this.mti == this.N + 1)   /* if init_genrand() has not been called, */
-        {
+        if (this.mti == this.N + 1) { /* if init_genrand() has not been called, */
             this.init_genrand(5489);
         }
         /* a default initial seed is used */
@@ -185,36 +184,36 @@ MersenneTwister.prototype.genrand_int32 = function () {
     y ^= (y >>> 18);
 
     return y >>> 0;
-}
+};
 
 /* generates a random number on [0,0x7fffffff]-interval */
 MersenneTwister.prototype.genrand_int31 = function () {
     return (this.genrand_int32() >>> 1);
-}
+};
 
 /* generates a random number on [0,1]-real-interval */
 MersenneTwister.prototype.genrand_real1 = function () {
     return this.genrand_int32() * (1.0 / 4294967295.0);
     /* divided by 2^32-1 */
-}
+};
 
 /* generates a random number on [0,1)-real-interval */
 MersenneTwister.prototype.random = function () {
     return this.genrand_int32() * (1.0 / 4294967296.0);
     /* divided by 2^32 */
-}
+};
 
 /* generates a random number on (0,1)-real-interval */
 MersenneTwister.prototype.genrand_real3 = function () {
     return (this.genrand_int32() + 0.5) * (1.0 / 4294967296.0);
     /* divided by 2^32 */
-}
+};
 
 /* generates a random number on [0,1) with 53-bit resolution*/
 MersenneTwister.prototype.genrand_res53 = function () {
     var a = this.genrand_int32() >>> 5, b = this.genrand_int32() >>> 6;
     return(a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
-}
+};
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
@@ -232,8 +231,7 @@ var $builtinmodule = function (name) {
 
         if (arguments.length > 0) {
             myGenerator = new MersenneTwister(x);
-        }
-        else {
+        } else {
             myGenerator = new MersenneTwister();
         }
 
@@ -337,7 +335,7 @@ var $builtinmodule = function (name) {
         a = Sk.builtin.asnum$(a);
         b = Sk.builtin.asnum$(b);
         var rnd = myGenerator.genrand_res53();
-        c = a + rnd * (b - a)
+        c = a + rnd * (b - a);
         return new Sk.builtin.float_(c);
     });
 
@@ -355,7 +353,7 @@ var $builtinmodule = function (name) {
             low = high;
             high = swap;
         }
-        if ((mode === undefined) || (mode instanceof Sk.builtin.none)) {
+        if ((mode === undefined) || (mode === Sk.builtin.none.none$)) {
             mode = (high - low)/2.0;
         } else {
             Sk.builtin.pyCheckType("mode", "number", Sk.builtin.checkNumber(mode));
@@ -439,7 +437,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
 
         if (seq.sq$length !== undefined) {
-            var r = toInt(myGenerator.genrand_res53() * seq.sq$length());
+            var r = new Sk.builtin.int_(toInt(myGenerator.genrand_res53() * seq.sq$length()));
             return seq.mp$subscript(r);
         } else {
             throw new Sk.builtin.TypeError("object has no length");
@@ -449,20 +447,27 @@ var $builtinmodule = function (name) {
     mod.shuffle = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("shuffle", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "sequence", Sk.builtin.checkSequence(x));
-
-        if (x.sq$length !== undefined) {
+        // make this faster we kow that it's a list so just use the array
+        if (x.constructor === Sk.builtin.list) {
+            const L = x.v;
+            for (var i = L.length - 1; i > 0; i -= 1) {
+                var r = toInt(myGenerator.genrand_res53() * (i + 1));
+                var tmp = L[r];
+                L[r] = L[i];
+                L[i] = tmp;
+            }
+        } else if (x.sq$length !== undefined) {
             if (x.mp$ass_subscript !== undefined) {
                 for (var i = x.sq$length() - 1; i > 0; i -= 1) {
-                    var r = toInt(myGenerator.genrand_res53() * (i + 1));
+                    var r = new Sk.builtin.int_(toInt(myGenerator.genrand_res53() * (i + 1)));
+                    i = new Sk.builtin.int_(i);
                     var tmp = x.mp$subscript(r);
                     x.mp$ass_subscript(r, x.mp$subscript(i));
                     x.mp$ass_subscript(i, tmp);
-                }
-                ;
+                };
             } else {
                 throw new Sk.builtin.TypeError("object is immutable");
-            }
-            ;
+            };
         } else {
             throw new Sk.builtin.TypeError("object has no length");
         }
@@ -494,8 +499,8 @@ var $builtinmodule = function (name) {
         reservoir = [];
         iter = Sk.abstr.iter(population);
         for (i = 0, elem = iter.tp$iternext();
-             elem !== undefined;
-             i++, elem = iter.tp$iternext()) {
+            elem !== undefined;
+            i++, elem = iter.tp$iternext()) {
             j = Math.floor(myGenerator.genrand_res53() * (i + 1));
             if (i < k) {
                 // Fill the reservoir
@@ -518,8 +523,8 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.ValueError("sample larger than population");
         }
 
-        return Sk.builtin.list(reservoir);
+        return new Sk.builtin.list(reservoir);
     });
 
     return mod;
-}
+};

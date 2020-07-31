@@ -15,7 +15,7 @@ var $builtinmodule = function (name) {
                 this.default_factory = Sk.builtin.none.none$;
             }
             else {
-                if (!Sk.builtin.checkCallable(default_) && !(default_ instanceof Sk.builtin.none)) {
+                if (!Sk.builtin.checkCallable(default_) && !(default_ === Sk.builtin.none.none$)) {
                     throw new Sk.builtin.TypeError("first argument must be callable");
                 }
                 this.default_factory = default_;
@@ -69,7 +69,7 @@ var $builtinmodule = function (name) {
                 return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
             }
             catch (e) {
-                if (this.default_factory instanceof Sk.builtin.none) {
+                if (this.default_factory === Sk.builtin.none.none$) {
                     return this.__missing__(key);
                 }
                 else {
@@ -464,7 +464,7 @@ var $builtinmodule = function (name) {
             }
 
             val = Sk.misceval.callsimArray(self["pop"], [self, key]);
-            return Sk.builtin.tuple([key, val]);
+            return new Sk.builtin.tuple([key, val]);
         });
 
         // deque - Special thanks to:https://github.com/blakeembrey/deque
@@ -508,9 +508,9 @@ var $builtinmodule = function (name) {
         mod.deque.minArgs = 1;
         mod.deque.maxArgs = 2;
         mod.deque.co_varnames = ["iterable", "maxlen"];
-        mod.deque.co_name = Sk.builtin.str("mod.deque");
+        mod.deque.co_name = new Sk.builtin.str("mod.deque");
         mod.deque.co_argcount = 2;
-        mod.deque.$defaults = [Sk.builtin.tuple([]), Sk.builtin.none.none$];
+        mod.deque.$defaults = [new Sk.builtin.tuple([]), Sk.builtin.none.none$];
 
         Sk.abstr.setUpInheritance("collections.deque", mod.deque, Sk.builtin.seqtype);
         Sk.abstr.markUnhashable(mod.deque);
@@ -799,7 +799,7 @@ var $builtinmodule = function (name) {
             this.$index = 0;
             this.dq = dq.v;
             this.sq$length = (dq.tail - dq.head) & dq.mask;
-            this.tp$iter = this;
+            this.tp$iter = () => this;
 
             this.$head = dq.head;
             this.$tail = dq.tail;
@@ -1082,7 +1082,7 @@ var $builtinmodule = function (name) {
             this.$index = 0;
             this.dq = dq.v.v;
             this.sq$length = this.dq.length;
-            this.tp$iter = this;
+            this.tp$iter = () => this;
             var pos;
             this.tp$iternext = function () {
                 if (this.$index >= this.sq$length) {

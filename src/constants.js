@@ -1,18 +1,5 @@
 Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
-/**
- * Python bool True constant.
- * @type {Sk.builtin.bool}
- * @memberOf Sk.builtin.bool
- */
-Sk.builtin.bool.true$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {v: {value: 1, enumerable: true}}));
-
-/**
- * Python bool False constant.
- * @type {Sk.builtin.bool}
- * @memberOf Sk.builtin.bool
- */
-Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {v: {value: 0, enumerable: true}}));
 
 /* Constants used for kwargs */
 
@@ -67,8 +54,7 @@ Sk.builtin.str.$lt = new Sk.builtin.str("__lt__");
 Sk.builtin.str.$name = new Sk.builtin.str("__name__");
 Sk.builtin.str.$ne = new Sk.builtin.str("__ne__");
 Sk.builtin.str.$new = new Sk.builtin.str("__new__");
-Sk.builtin.str.$next2 = new Sk.builtin.str("next");
-Sk.builtin.str.$next3 = new Sk.builtin.str("__next__");
+Sk.builtin.str.$next = new Sk.builtin.str("__next__");
 Sk.builtin.str.$path = new Sk.builtin.str("__path__");
 Sk.builtin.str.$repr = new Sk.builtin.str("__repr__");
 Sk.builtin.str.$reversed = new Sk.builtin.str("__reversed__");

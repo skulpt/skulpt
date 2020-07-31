@@ -49,7 +49,7 @@ function generateTurtleModule(_target) {
     }
 
     Types.FLOAT = function(value) {
-        return Sk.builtin.float_(value);
+        return new Sk.builtin.float_(value);
     };
     Types.COLOR = function(value) {
         if (typeof value === "string") {
@@ -60,7 +60,7 @@ function generateTurtleModule(_target) {
                 value[i] = Sk.builtin.assk$(value[i]);
             }
             if (value.length === 4) {
-                value[3] = Sk.builtin.float_(value[3]);
+                value[3] = new Sk.builtin.float_(value[3]);
             }
             return new Sk.builtin.tuple(value);
         }
@@ -456,7 +456,7 @@ function generateTurtleModule(_target) {
         this._managers = {};
         this._shape = shape.v;
         if (!SHAPES.hasOwnProperty(this._shape)){
-            throw Sk.builtin.ValueError("Shape:'" + this._shape + "' not in default shape, please check shape again!")
+            throw new Sk.builtin.ValueError("Shape:'" + this._shape + "' not in default shape, please check shape again!")
         }
         this.reset();
     }
@@ -630,8 +630,8 @@ function generateTurtleModule(_target) {
         };
         proto.$position.returnType = function(value) {
             return new Sk.builtin.tuple([
-                    Sk.builtin.float_(value[0]),
-                    Sk.builtin.float_(value[1])
+                    new Sk.builtin.float_(value[0]),
+                    new Sk.builtin.float_(value[1])
             ]);
         };
 
@@ -1069,7 +1069,7 @@ function generateTurtleModule(_target) {
         proto.$colormode.minArgs     = 0;
         proto.$colormode.co_varnames = ["cmode"];
         proto.$colormode.returnType = function(value) {
-            return value === 255 ? Sk.builtin.int_(255) : Sk.builtin.float_(1.0);
+            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
         };
 
         proto.$window_width = function() {
@@ -2190,7 +2190,7 @@ function generateTurtleModule(_target) {
             // filter out undefines in a previous implementation of function calls
             // non required args were not specified, where as now they are filled with
             // default values of None which are translated to null's
-            var tmp_args = args.slice();
+            var tmp_args = args.slice(0);
             args = [];
             for (i = tmp_args.length; i >= 0; --i) {
                 if (tmp_args[i] === null) {
@@ -2273,9 +2273,9 @@ function generateTurtleModule(_target) {
         self.instance.skInstance = self;
     }
     initTurtle.co_varnames = ["self", "shape"];
-    initTurtle.co_name = Sk.builtin.str("Turtle");
+    initTurtle.co_name = new Sk.builtin.str("Turtle");
     initTurtle.co_argcount = 2;
-    initTurtle.$defaults = [Sk.builtin.none.none$, Sk.builtin.str("classic")];
+    initTurtle.$defaults = [Sk.builtin.none.none$, new Sk.builtin.str("classic")];
 
     function TurtleWrapper($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(initTurtle);
