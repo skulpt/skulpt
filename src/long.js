@@ -741,7 +741,7 @@ Sk.builtin.lng.prototype.ob$eq = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.longCompare(other) == 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
+    } else if (other === Sk.builtin.none.none$) {
         return Sk.builtin.bool.false$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -752,7 +752,7 @@ Sk.builtin.lng.prototype.ob$ne = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
         return new Sk.builtin.bool(this.longCompare(other) != 0); //jshint ignore:line
-    } else if (other instanceof Sk.builtin.none) {
+    } else if (other === Sk.builtin.none.none$) {
         return Sk.builtin.bool.true$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;

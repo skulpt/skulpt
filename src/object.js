@@ -492,7 +492,7 @@ Sk.builtin.object.pythonFunctions = [
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.none = function () {
-    this.v = null;
+    return Sk.builtin.none.none$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
@@ -505,10 +505,13 @@ Sk.builtin.none.prototype.tp$hash = function () {
 };
 
 /**
- * Python None constant.
+ * Python None value.
  * @type {Sk.builtin.none}
+ * @member {Sk.builtin.none}
  */
-Sk.builtin.none.none$ = new Sk.builtin.none();
+Sk.builtin.none.none$ =  /** @type {Sk.builtin.none} */ (Object.create(Sk.builtin.none.prototype, {
+    v: { value: null, enumerable: true },
+}));
 
 /**
  * @constructor
@@ -516,7 +519,9 @@ Sk.builtin.none.none$ = new Sk.builtin.none();
  *
  * @extends {Sk.builtin.object}
  */
-Sk.builtin.NotImplemented = function() { };
+Sk.builtin.NotImplemented = function() {
+    return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object
+};
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
 /** @override */
@@ -525,8 +530,10 @@ Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.
 /**
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
+ * @member {Sk.builtin.NotImplemented}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
-
+Sk.builtin.NotImplemented.NotImplemented$ =  /** @type {Sk.builtin.NotImplemented} */ (Object.create(Sk.builtin.NotImplemented.prototype, {
+    v: { value: null, enumerable: true },
+}));
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);

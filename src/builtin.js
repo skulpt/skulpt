@@ -83,7 +83,7 @@ Sk.builtin.asnum$ = function (a) {
     if (a === null) {
         return a;
     }
-    if (a instanceof Sk.builtin.none) {
+    if (a === Sk.builtin.none.none$) {
         return null;
     }
     if (a instanceof Sk.builtin.bool) {
@@ -862,7 +862,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
     }
 
     if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj instanceof Sk.builtin.none) {
+        if (obj === Sk.builtin.none.none$) {
             return Sk.builtin.bool.true$;
         } else {
             return Sk.builtin.bool.false$;
@@ -1209,7 +1209,7 @@ Sk.builtin.pow = function pow (a, b, c) {
     var a_num;
     Sk.builtin.pyCheckArgsLen("pow", arguments.length, 2, 3);
 
-    if (c instanceof Sk.builtin.none) {
+    if (c === Sk.builtin.none.none$) {
         c = undefined;
     }
 

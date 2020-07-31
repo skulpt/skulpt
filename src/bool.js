@@ -8,8 +8,8 @@
  * Where possible, do not create a new instance but use the constants 
  * Sk.builtin.bool.true$ or Sk.builtin.bool.false$. These are defined in src/constant.js
  *
- * @extends {Sk.builtin.object}
- * 
+ * @extends {Sk.builtin.int_}
+ *
  * @param  {(Object|number|boolean)} x Value to evaluate as true or false
  * @return {Sk.builtin.bool} Sk.builtin.bool.true$ if x is true, Sk.builtin.bool.false$ otherwise
  */
@@ -50,3 +50,21 @@ Sk.builtin.bool.prototype.__format__ = new Sk.builtin.func(function(self) {
 });
 
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
+
+/**
+ * Python bool True constant.
+ * @type {Sk.builtin.bool}
+ * @member {Sk.builtin.bool}
+ */
+Sk.builtin.bool.true$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {
+    v: { value: 1, enumerable: true },
+}));
+
+/**
+ * Python bool False constant.
+ * @type {Sk.builtin.bool}
+ * @member {Sk.builtin.bool}
+ */
+Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {
+    v: { value: 0, enumerable: true },
+}));

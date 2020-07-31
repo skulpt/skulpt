@@ -520,7 +520,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     
     // handle special cases for comparing None with None or Bool with Bool
-    if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) ||
+    if (((v === Sk.builtin.none.none$) && (w === Sk.builtin.none.none$)) ||
         ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool))) {
         // Javascript happens to return the same values when comparing null
         // with null or true/false with true/false as Python does when
@@ -570,7 +570,7 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
-    if ((v === null) || (v instanceof Sk.builtin.none)) {
+    if ((v === null) || (v === Sk.builtin.none.none$)) {
         return new Sk.builtin.str("None");
     } else if (v === true) {
         // todo; these should be consts
@@ -1214,7 +1214,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
     var it, i;
 
-    if (func === null || func instanceof Sk.builtin.none) {
+    if (func === null || func === Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 
