@@ -210,7 +210,7 @@ Sk.configure = function (options) {
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
-    Sk.setupDictIterators(Sk.__future__.python3);
+    setupDictIterators(Sk.__future__.python3);
     Sk.setupObjects(Sk.__future__.python3);
 };
 
@@ -398,3 +398,16 @@ Sk.switch_version = function (method_to_map, python3) {
 
 Sk.exportSymbol("Sk.__future__", Sk.__future__);
 Sk.exportSymbol("Sk.inputfun", Sk.inputfun);
+
+function setupDictIterators (python3) {
+    if (python3) {
+        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$keys);
+        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$values);
+        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$items);
+    } else {
+        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$keys);
+        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
+        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$items);
+    }
+};
+

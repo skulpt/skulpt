@@ -456,17 +456,7 @@ Sk.builtin.dict.prototype.py3$values = function (self) {
 
 Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
 
-Sk.setupDictIterators = function (python3) {
-    if (python3) {
-        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$keys);
-        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$values);
-        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$items);
-    } else {
-        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$keys);
-        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
-        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$items);
-    }
-};
+
 
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
@@ -665,7 +655,7 @@ Sk.builtin.dict.prototype.ob$ne = function (other) {
 
     var isEqual = this.ob$eq(other);
 
-    if (isEqual instanceof Sk.builtin.NotImplemented) {
+    if (isEqual === Sk.builtin.NotImplemented.NotImplemented$) {
         return isEqual;
     } else if (isEqual.v) {
         return Sk.builtin.bool.false$;

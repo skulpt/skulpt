@@ -353,7 +353,7 @@ var $builtinmodule = function (name) {
             low = high;
             high = swap;
         }
-        if ((mode === undefined) || (mode instanceof Sk.builtin.none)) {
+        if ((mode === undefined) || (mode === Sk.builtin.none.none$)) {
             mode = (high - low)/2.0;
         } else {
             Sk.builtin.pyCheckType("mode", "number", Sk.builtin.checkNumber(mode));
