@@ -655,7 +655,7 @@ Sk.builtin.dict.prototype.ob$ne = function (other) {
 
     var isEqual = this.ob$eq(other);
 
-    if (isEqual instanceof Sk.builtin.NotImplemented) {
+    if (isEqual === Sk.builtin.NotImplemented.NotImplemented$) {
         return isEqual;
     } else if (isEqual.v) {
         return Sk.builtin.bool.false$;
