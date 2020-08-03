@@ -36,7 +36,8 @@ class FloatTestCases(unittest.TestCase):
     def test_overflow(self):
         self.assertRaises(OverflowError, float, 2**1024)
         self.assertRaises(OverflowError, float, -2**1024)
-        self.assertRaises(OverflowError, float, str(2**1024))
+        self.assertEqual(float('inf'), float(str(2**1024)))
+
 
 if __name__ == '__main__':
     unittest.main()
