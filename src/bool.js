@@ -49,6 +49,46 @@ Sk.builtin.bool.prototype.__format__ = new Sk.builtin.func(function(self) {
     return self.$r();
 });
 
+Sk.builtin.bool.prototype.nb$and = function (other) {
+    if (other.ob$type === Sk.builtin.bool) {
+        return new Sk.builtin.bool(this.v & other.v);
+    }
+    return Sk.builtin.int_.prototype.nb$and.call(this, other);
+};
+
+Sk.builtin.bool.prototype.nb$or = function (other) {
+    if (other.ob$type === Sk.builtin.bool) {
+        return new Sk.builtin.bool(this.v | other.v);
+    }
+    return Sk.builtin.int_.prototype.nb$or.call(this, other);
+};
+
+Sk.builtin.bool.prototype.nb$xor = function (other) {
+    if (other.ob$type === Sk.builtin.bool) {
+        return new Sk.builtin.bool(this.v ^ other.v);
+    }
+    return Sk.builtin.int_.prototype.nb$xor.call(this, other);
+};
+
+Sk.builtin.bool.prototype.ob$eq = function (other) {
+    return Sk.builtin.int_.prototype.ob$eq.call(this, other);
+};
+Sk.builtin.bool.prototype.ob$ne = function (other) {
+    return Sk.builtin.int_.prototype.ob$ne.call(this, other);
+};
+Sk.builtin.bool.prototype.ob$lt = function (other) {
+    return Sk.builtin.int_.prototype.ob$lt.call(this, other);
+};
+Sk.builtin.bool.prototype.ob$le = function (other) {
+    return Sk.builtin.int_.prototype.ob$le.call(this, other);
+};
+Sk.builtin.bool.prototype.ob$gt = function (other) {
+    return Sk.builtin.int_.prototype.ob$gt.call(this, other);
+};
+Sk.builtin.bool.prototype.ob$ge = function (other) {
+    return Sk.builtin.int_.prototype.ob$ge.call(this, other);
+};
+
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
 
 /**
