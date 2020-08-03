@@ -456,42 +456,28 @@ Sk.builtin.max.$kwdefs = [null, Sk.builtin.none.none$];
 Sk.builtin.max.co_varnames = ["default", "key"];
 Sk.builtin.max.co_varargs = 1;
 
-Sk.builtin.any = function any (iter) {
-    var it, i;
-
+Sk.builtin.any = function any(iter) {
     Sk.builtin.pyCheckArgsLen("any", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.true$;
-        }
-    }
-
-    return Sk.builtin.bool.false$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.true$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.false$
+    );
 };
 
-Sk.builtin.all = function all (iter) {
-    var it, i;
-
+Sk.builtin.all = function all(iter) {
     Sk.builtin.pyCheckArgsLen("all", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    return Sk.builtin.bool.true$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (!Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.false$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.true$
+    );
 };
 
 Sk.builtin.sum = function sum(iter, start) {
