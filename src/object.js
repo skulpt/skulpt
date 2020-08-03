@@ -63,7 +63,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
         }
         if (res !== undefined) {
             return res;
-        } else if (pyName.v == "__dict__" && dict instanceof Sk.builtin.dict) {
+        } else if (pyName.$jsstr() == "__dict__" && dict instanceof Sk.builtin.dict) {
             return dict;
         }
     }
