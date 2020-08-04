@@ -344,7 +344,7 @@ var $builtinmodule = function (name) {
             if (start == "^") {
                 start = str.indexOf("\n") + 1;
             }
-            if (end == Sk.builtin.none.none$) {
+            if (end === Sk.builtin.none.none$ || endpos === Sk.builtin.none.none$) {
                 end = str.length;
             }
             return Sk.ffi.remapToPy(str.substring(start, end));
