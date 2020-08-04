@@ -83,7 +83,7 @@ Sk.builtin.asnum$ = function (a) {
     if (a === null) {
         return a;
     }
-    if (a instanceof Sk.builtin.none) {
+    if (a === Sk.builtin.none.none$) {
         return null;
     }
     if (a instanceof Sk.builtin.bool) {
@@ -456,42 +456,28 @@ Sk.builtin.max.$kwdefs = [null, Sk.builtin.none.none$];
 Sk.builtin.max.co_varnames = ["default", "key"];
 Sk.builtin.max.co_varargs = 1;
 
-Sk.builtin.any = function any (iter) {
-    var it, i;
-
+Sk.builtin.any = function any(iter) {
     Sk.builtin.pyCheckArgsLen("any", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.true$;
-        }
-    }
-
-    return Sk.builtin.bool.false$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.true$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.false$
+    );
 };
 
-Sk.builtin.all = function all (iter) {
-    var it, i;
-
+Sk.builtin.all = function all(iter) {
     Sk.builtin.pyCheckArgsLen("all", arguments.length, 1, 1);
-    if (!Sk.builtin.checkIterable(iter)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
-            "' object is not iterable");
-    }
-
-    it = Sk.abstr.iter(iter);
-    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.misceval.isTrue(i)) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    return Sk.builtin.bool.true$;
+    return Sk.misceval.chain(
+        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+            if (!Sk.misceval.isTrue(i)) {
+                return new Sk.misceval.Break(Sk.builtin.bool.false$);
+            }
+        }),
+        (brValue) => brValue || Sk.builtin.bool.true$
+    );
 };
 
 Sk.builtin.sum = function sum(iter, start) {
@@ -604,25 +590,9 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgsLen("abs", arguments.length, 1, 1);
-
-    if (x instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(Math.abs(x.v));
+    if (x.nb$abs) {
+        return x.nb$abs();
     }
-    if (x instanceof Sk.builtin.float_) {
-        return new Sk.builtin.float_(Math.abs(x.v));
-    }
-    if (Sk.builtin.checkNumber(x)) {
-        return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)));
-    } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsimArray(x.__abs__, [x]);
-    }
-
-    // call custom __abs__ methods
-    if (x.tp$getattr) {
-        var f = x.tp$getattr(Sk.builtin.str.$abs);
-        return Sk.misceval.callsimArray(f);
-    }
-
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
@@ -640,7 +610,7 @@ Sk.builtin.ord = function ord (x) {
     } else if (x.v.length !== 1) {
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
-    return new Sk.builtin.int_((x.v).charCodeAt(0));
+    return new Sk.builtin.int_(x.v.charCodeAt(0));
 };
 
 Sk.builtin.chr = function chr (x) {
@@ -878,7 +848,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
     }
 
     if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj instanceof Sk.builtin.none) {
+        if (obj === Sk.builtin.none.none$) {
             return Sk.builtin.bool.true$;
         } else {
             return Sk.builtin.bool.false$;
@@ -1225,7 +1195,7 @@ Sk.builtin.pow = function pow (a, b, c) {
     var a_num;
     Sk.builtin.pyCheckArgsLen("pow", arguments.length, 2, 3);
 
-    if (c instanceof Sk.builtin.none) {
+    if (c === Sk.builtin.none.none$) {
         c = undefined;
     }
 

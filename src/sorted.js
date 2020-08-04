@@ -16,8 +16,8 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
 
-    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
-        if (cmp instanceof Sk.builtin.none || cmp === undefined) {
+    if (key !== undefined && !(key === Sk.builtin.none.none$)) {
+        if (cmp === Sk.builtin.none.none$ || cmp === undefined) {
             compare_func = function (a, b) {
                 return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.int_(-1) : new Sk.builtin.int_(0);
             };
@@ -35,7 +35,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         }
         list = new Sk.builtin.list(arr);
     } else {
-        if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
+        if (!(cmp === Sk.builtin.none.none$) && cmp !== undefined) {
             compare_func = cmp;
         }
         list = new Sk.builtin.list(iterable);
@@ -51,7 +51,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
         list.list_reverse_(list);
     }
 
-    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
+    if (key !== undefined && !(key === Sk.builtin.none.none$)) {
         iter = list.tp$iter();
         next = iter.tp$iternext();
         arr = [];

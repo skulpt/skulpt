@@ -2185,7 +2185,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         var res;
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
-            for (let decorator of decos) {
+            for (let decorator of decos.reverse()) {
                 out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
                 this._checkSuspension();
             }

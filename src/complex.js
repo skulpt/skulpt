@@ -927,10 +927,10 @@ Sk.builtin.complex._is_infinity = function (val) {
 /**
  * @suppress {missingProperties}
  */
-Sk.builtin.complex.prototype.int$abs = function __abs__(self) {
+Sk.builtin.complex.prototype.nb$abs = function () {
     var result;
-    var _real = self.real.v;
-    var _imag = self.imag.v;
+    var _real = this.real.v;
+    var _imag = this.imag.v;
 
     if (!Sk.builtin.complex._is_finite(_real) || !Sk.builtin.complex._is_finite(_imag)) {
         /* C99 rules: if either the real or the imaginary part is an
@@ -962,8 +962,10 @@ Sk.builtin.complex.prototype.int$abs = function __abs__(self) {
 
     return new Sk.builtin.float_(result);
 };
-Sk.builtin.complex.prototype.int$abs.co_name = new Sk.builtin.str("__abs__");
-Sk.builtin.complex.prototype.__abs__ = new Sk.builtin.func(Sk.builtin.complex.prototype.int$abs);
+Sk.builtin.complex.prototype.__abs__ = new Sk.builtin.func(function __abs__(self) {
+    Sk.builtin.pyCheckArgsLen("__abs__", arguments.length, 0, 0, false, true);
+    return self.nb$abs();
+});
 
 Sk.builtin.complex.prototype.int$bool = function __bool__(self) {
     return new Sk.builtin.bool(self.tp$getattr(Sk.builtin.str.$real).v || self.tp$getattr(Sk.builtin.str.$real).v);
