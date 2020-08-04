@@ -349,7 +349,6 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
         final = "";
         for (i=0; i<self.v.byteLength; i++) {
             val = self.v.getUint8(i);
-            console.log(val);
             if (val > 127) {
                 if (errors == "strict") {
                     val = val.toString(16);
@@ -360,7 +359,6 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
             } else {
                 final += String.fromCharCode(val);
             }
-            console.log(final);
         }
     } else {
         let string = new TextDecoder(encoding.$jsstr()).decode(self.v);
