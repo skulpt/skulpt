@@ -1,4 +1,4 @@
-const textEncoding = require("text-encoding");
+require("fastestsmallesttextencoderdecoder");
 
 /**
  * @constructor
@@ -13,7 +13,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     var val;
     var view;
     var buffer;
-    var string;
+    var data;
     var ret;
     var final;
     var arr;
@@ -93,7 +93,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     source = source.$jsstr();
                 }
                 if (encoding.v == "ascii") {
-                    string = "";
+                    data = [];
                     for (i in source) {
                         val = source[i].charCodeAt(0);
 
@@ -102,18 +102,18 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                                 val = makehexform(val);
                                 throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + val + "' in position " + i + ": ordinal not in range(128)");
                             } else if (errors == "replace") {
-                                string += "?";
+                                data.push(63); // "?"
                             }
                         } else {
-                            string += source[i];
+                            data.push(val);
                         }
                     }
+                    ret = Uint8Array.from(data);
                 } else if (encoding.v == "utf-8") {
-                    string = source;
+                    ret = new TextEncoder().encode(source);
                 } else {
                     throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
                 }
-                ret = new textEncoding.TextEncoder(encoding.$jsstr()).encode(string);
                 buffer = ret.buffer;
                 view = new DataView(buffer);
             } else {
@@ -346,24 +346,24 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
     }
 
     if (encoding.v == "ascii") {
-        var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.v);
         final = "";
-        for (i in string) {
-            if (string[i].charCodeAt(0) > 127) {
+        for (i=0; i<self.v.byteLength; i++) {
+            val = self.v.getUint8(i);
+            console.log(val);
+            if (val > 127) {
                 if (errors == "strict") {
-                    val = self.v.getUint8(i);
                     val = val.toString(16);
                     throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte 0x" + val + " in position " + i.toString() + ": ordinal not in range(128)");
                 } else if (errors == "replace") {
                     final += String.fromCharCode(65533);
                 }
             } else {
-                final += string[i];
+                final += String.fromCharCode(val);
             }
+            console.log(final);
         }
-        string = final;
     } else {
-        var string = new textEncoding.TextDecoder(encoding.$jsstr()).decode(self.v);
+        let string = new TextDecoder(encoding.$jsstr()).decode(self.v);
         if (errors == "replace") {
             return new Sk.builtin.str(string);
         }
@@ -379,9 +379,8 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
                 final += string[i];
             }
         }
-        string = final;
     }
-    return new Sk.builtin.str(string);
+    return new Sk.builtin.str(final);
 };
 
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(Sk.builtin.bytes.prototype.$decode);
