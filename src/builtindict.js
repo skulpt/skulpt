@@ -125,7 +125,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
-        Sk.builtins["StandardError"] = Sk.builtin.StandardError;
+        Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
     }
 };
