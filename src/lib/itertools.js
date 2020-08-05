@@ -175,20 +175,15 @@ var $builtinmodule = function (name) {
 
     var _combinations = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
+        const pool = Sk.misceval.arrayFromIterable(iterable); // want pool as an array
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
-        n = pool.length;
+        const n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
             throw new Sk.builtin.ValueError("r must be non-negative");
         }
-        indices = new Array(r).fill().map((_, i) => i);
+        const indices = new Array(r).fill().map((_, i) => i);
         return new Sk.builtin.itertools_gen(_combinations_gen, mod, [indices, pool, n, r]);
     };
 
@@ -238,14 +233,9 @@ var $builtinmodule = function (name) {
 
     var _combinations_with_replacement = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("combinations", arguments.length, 2, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
+        const pool = Sk.misceval.arrayFromIterable(iterable); // want pool as an array
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
 
-        const pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
         const n = pool.length;
         r = Sk.builtin.asnum$(r);
         if (r < 0) {
@@ -642,12 +632,7 @@ var $builtinmodule = function (name) {
 
     var _permutations = function (iterable, r) {
         Sk.builtin.pyCheckArgsLen("permutations", arguments.length, 1, 2);
-        if (!Sk.builtin.checkIterable(iterable)) {
-            throw new Sk.builtin.TypeError(
-                "'" + Sk.abstr.typeName(iterable) + "' object is not iterable"
-            );
-        }
-        const pool = new Sk.builtin.tuple(iterable).v; // want pool as an array
+        const pool = Sk.misceval.arrayFromIterable(iterable); // want pool as an array
         const n = pool.length;
         r = Sk.builtin.checkNone(r) ? new Sk.builtin.int_(n) : r;
         Sk.builtin.pyCheckType("r", "int", Sk.builtin.checkInt(r));
@@ -721,7 +706,7 @@ var $builtinmodule = function (name) {
                     "'" + Sk.abstr.typeName(args[i]) + "' object is not iterable"
                 );
             }
-            args[i] = new Sk.builtin.tuple(args[i]).v; // want each arg as an array
+            args[i] = Sk.misceval.arrayFromIterable(args[i]); // want each arg as an array
         }
         const pools = [].concat(...Array(repeat).fill(args)); // js equivalent to [arg for arg in args] * repeat
         const n = pools.length;
