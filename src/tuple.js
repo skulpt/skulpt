@@ -1,31 +1,26 @@
 /**
  * @constructor
  * @param {Array.<Object>|Object} L
+ * @param {boolean=} canSuspend
  */
-Sk.builtin.tuple = function (L) {
-    var v, it, i;
+Sk.builtin.tuple = function (L, canSuspend) {
     if (!(this instanceof Sk.builtin.tuple)) {
+        // called from python
         Sk.builtin.pyCheckArgsLen("tuple", arguments.length, 0, 1);
-        return new Sk.builtin.tuple(L);
+        return new Sk.builtin.tuple(L, true);
     }
 
     if (L === undefined) {
-        v = [];
-    } else if (Object.prototype.toString.apply(L) === "[object Array]") {
-        v = L;
-    } else if (L.sk$asarray) {
-        v = L.sk$asarray();
-    } else if (Sk.builtin.checkIterable(L)) {
-        v = [];
-        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            v.push(i);
-        }
+        this.v = [];
+    } else if (Array.isArray(L)) {
+        this.v = L;
     } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L) + "' " + "object is not iterable");
+        const self = this;
+        return Sk.misceval.chain(Sk.misceval.arrayFromIterable(L, canSuspend), (v) => {
+            self.v = v;
+            return self;
+        });
     }
-
-    this.v = v;
-    return this;
 };
 
 Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
