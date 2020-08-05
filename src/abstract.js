@@ -646,7 +646,9 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function(r) {
             if (r === undefined) {
-                throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+                const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
+                let jsName = Sk.unfixReserved(pyName.$jsstr());
+                throw new Sk.builtin.AttributeError(error_name + "has no attribute '" + jsName + "'");
             }
             return r;
         });
