@@ -34,7 +34,7 @@ Sk.builtin.str = function (x) {
         ret = "True";
     } else if (x === false) {
         ret = "False";
-    } else if ((x === null) || (x instanceof Sk.builtin.none)) {
+    } else if ((x === null) || (x === Sk.builtin.none.none$)) {
         ret = "None";
     } else if (x instanceof Sk.builtin.bool) {
         if (x.v) {
@@ -71,6 +71,7 @@ Sk.builtin.str = function (x) {
     this.v = ret;
     this["v"] = this.v;
     setInterned(ret, this);
+    this.$mangled = fixReserved(ret);
     return this;
 
 };
@@ -304,7 +305,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     var str;
     var regex;
     Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
+    if ((on === undefined) || (on === Sk.builtin.none.none$)) {
         on = null;
     }
     if ((on !== null) && !Sk.builtin.checkString(on)) {
@@ -1327,3 +1328,104 @@ Sk.builtin.str_iter_.prototype.next$ = function (self) {
     }
     return ret;
 };
+
+
+var reservedWords_ = {
+    "abstract": true,
+    "as": true,
+    "boolean": true,
+    "break": true,
+    "byte": true,
+    "case": true,
+    "catch": true,
+    "char": true,
+    "class": true,
+    "continue": true,
+    "const": true,
+    "debugger": true,
+    "default": true,
+    "delete": true,
+    "do": true,
+    "double": true,
+    "else": true,
+    "enum": true,
+    "export": true,
+    "extends": true,
+    "false": true,
+    "final": true,
+    "finally": true,
+    "float": true,
+    "for": true,
+    "function": true,
+    "goto": true,
+    "if": true,
+    "implements": true,
+    "import": true,
+    "in": true,
+    "instanceof": true,
+    "int": true,
+    "interface": true,
+    "is": true,
+    "long": true,
+    "namespace": true,
+    "native": true,
+    "new": true,
+    "null": true,
+    "package": true,
+    "private": true,
+    "protected": true,
+    "public": true,
+    "return": true,
+    "short": true,
+    "static": true,
+    // "super": false,
+    "switch": true,
+    "synchronized": true,
+    "this": true,
+    "throw": true,
+    "throws": true,
+    "transient": true,
+    "true": true,
+    "try": true,
+    "typeof": true,
+    "use": true,
+    "var": true,
+    "void": true,
+    "volatile": true,
+    "while": true,
+    "with": true,
+    // reserved Names
+    "__defineGetter__": true,
+    "__defineSetter__": true,
+    "apply": true,
+    "arguments": true,
+    "call": true,
+    "caller": true, 
+    "eval": true,
+    "hasOwnProperty": true,
+    "isPrototypeOf": true,
+    "__lookupGetter__": true,
+    "__lookupSetter__": true,
+    "__noSuchMethod__": true,
+    "propertyIsEnumerable": true,
+    "prototype": true,
+    "toSource": true,
+    "toLocaleString": true,
+    "toString": true,
+    "unwatch": true,
+    "valueOf": true,
+    "watch": true,
+    "length": true,
+    "name": true,
+};
+
+Sk.builtin.str.reservedWords_ = reservedWords_;
+
+function fixReserved(name) {
+    if (reservedWords_[name] === undefined) {
+        return name;
+    }
+    return name + "_$rw$";
+}
+
+

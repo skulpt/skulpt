@@ -15,7 +15,7 @@ var $builtinmodule = function (name) {
                 this.default_factory = Sk.builtin.none.none$;
             }
             else {
-                if (!Sk.builtin.checkCallable(default_) && !(default_ instanceof Sk.builtin.none)) {
+                if (!Sk.builtin.checkCallable(default_) && !(default_ === Sk.builtin.none.none$)) {
                     throw new Sk.builtin.TypeError("first argument must be callable");
                 }
                 this.default_factory = default_;
@@ -69,7 +69,7 @@ var $builtinmodule = function (name) {
                 return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
             }
             catch (e) {
-                if (this.default_factory instanceof Sk.builtin.none) {
+                if (this.default_factory === Sk.builtin.none.none$) {
                     return this.__missing__(key);
                 }
                 else {
@@ -1269,7 +1269,7 @@ var $builtinmodule = function (name) {
 
             // create the field properties
             for (let i = 0; i < flds.length; i++) {
-                fld = Sk.fixReservedNames(flds[i]);
+                fld = Sk.fixReserved(flds[i]);
                 cons[fld] = {};
                 cons[fld].tp$descr_set = function () {
                     throw new Sk.builtin.AttributeError("can't set attribute");

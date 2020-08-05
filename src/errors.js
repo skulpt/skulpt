@@ -12,81 +12,69 @@
  * @constructor
  * @param {...Object|null} args
  */
-Sk.builtin.BaseException = function (args) {
-    var i, o;
-
+Sk.builtin.BaseException = function (...args) {
+    var o;
     if (!(this instanceof Sk.builtin.BaseException)) {
         o = Object.create(Sk.builtin.BaseException.prototype);
         o.constructor.apply(o, arguments);
         return o;
     }
 
-    args = Array.prototype.slice.call(arguments);
-    // hackage to allow shorter throws
-    for (i = 0; i < args.length; ++i) {
-        if (typeof args[i] === "string") {
-            args[i] = new Sk.builtin.str(args[i]);
-        }
-    }
-    this.args = new Sk.builtin.tuple(args);
     this.traceback = [];
 
-    // For errors occurring during normal execution, the line/col/etc
-    // of the error are populated by each stack frame of the runtime code,
-    // but we can seed it with the supplied parameters.
-    if (this.args.sq$length() >= 3) {
-
-        // if !this.args[1].v, this is an error, and the exception that causes it
-        // probably needs to be fixed, but we mark as "<unknown>" for now
-        this.traceback.push({
-            lineno: this.args.v[2],
-            filename: this.args.v[1].v || "<unknown>"
-        });
+    // If args[0] is a string then we're an internal call
+    if (typeof args[0] === "string") {
+        this.args = new Sk.builtin.tuple([new Sk.builtin.str(args[0])]);
+        if (args.length === 3) {
+            // For errors occurring during normal execution, the line/col/etc
+            // of the error are populated by each stack frame of the runtime code,
+            // but we can seed it with the supplied parameters.
+            this.traceback.push({
+                lineno: args[2],
+                // if !this.args[1], this is an error, and the exception that causes it
+                // probably needs to be fixed, but we mark as "<unknown>" for now
+                filename: args[1] || "<unknown>",
+            });
+        }
+    } else {
+        this.args = new Sk.builtin.tuple(args);
     }
 };
 Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
 
-Sk.builtin.BaseException.prototype.tp$str = function () {
-    var i;
-    var ret = "";
 
-    ret += this.tp$name;
-    if (this.args) {
-        ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
+Sk.builtin.BaseException.prototype.$r = function () {
+    let ret = this.tp$name;
+    ret += "(" + this.args.v.map((x) => Sk.misceval.objectRepr(x).v).join(", ") + ")";
+    return new Sk.builtin.str(ret);
+};
+
+Sk.builtin.BaseException.prototype.tp$str = function () {
+    if (this.args.v.length <= 1) {
+        return new Sk.builtin.str(this.args.v[0]);
     }
+    return this.args.$r();
+};
+
+Sk.builtin.BaseException.prototype.toString = function () {
+    let ret = this.tp$name;
+    ret += ": " + this.tp$str().v;
+
     if (this.traceback.length !== 0) {
         ret += " on line " + this.traceback[0].lineno;
     } else {
         ret += " at <unknown>";
     }
 
-    if (this.args.v.length > 4) {
-        ret += "\n" + this.args.v[4].v + "\n";
-        for (i = 0; i < this.args.v[3]; ++i) {
-            ret += " ";
-        }
-        ret += "^\n";
-    }
 
-    /*for (i = 0; i < this.traceback.length; i++) {
-        ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
-        if ("colno" in this.traceback[i]) {
-            ret += " column " + this.traceback[i].colno;
-        }
-    }*/
-
-    return new Sk.builtin.str(ret);
-};
-
-Sk.builtin.BaseException.prototype.toString = function () {
-    return this.tp$str().v;
+    return ret;
 };
 
 // Create a descriptor to return the 'args' of an exception.
 // This is a hack to get around a weird mismatch between builtin
 // objects and proper types
 Sk.builtin.BaseException.prototype.args = {
-    "tp$descr_get": function(self, clstype) {
+    tp$descr_get: function(self, clstype) {
         return self.args;
     }
 };

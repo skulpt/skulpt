@@ -236,62 +236,42 @@ Sk.misceval.opSymbols = {
 Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
-    var wname,
-        vname,
-        ret,
-        swapped_method,
-        method,
+    var ret,
         swapped_shortcut,
-        shortcut,
-        v_has_shortcut,
-        w_has_shortcut,
-        op2shortcut,
-        vcmp,
-        wcmp,
-        w_seq_type,
-        w_num_type,
-        v_seq_type,
-        v_num_type,
-        sequence_types,
-        numeric_types,
-        w_type,
-        v_type;
+        shortcut;
 
     Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
-    v_type = v.ob$type;
-    w_type = w.ob$type;
+    const v_type = v.ob$type;
+    const w_type = w.ob$type;
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
-    if (!Sk.__future__.python3 &&
-        (v_type !== w_type) &&
-        (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
+    if (!Sk.__future__.python3 && v_type !== w_type && (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
-        numeric_types = [Sk.builtin.float_.prototype.ob$type,
-                         Sk.builtin.int_.prototype.ob$type,
-                         Sk.builtin.lng.prototype.ob$type,
-                         Sk.builtin.bool.prototype.ob$type];
-        sequence_types = [Sk.builtin.dict.prototype.ob$type,
-                          Sk.builtin.enumerate.prototype.ob$type,
-                          Sk.builtin.filter_.prototype.ob$type,
-                          Sk.builtin.list.prototype.ob$type,
-                          Sk.builtin.map_.prototype.ob$type,
-                          Sk.builtin.str.prototype.ob$type,
-                          Sk.builtin.tuple.prototype.ob$type,
-                          Sk.builtin.zip_.prototype.ob$type];
+        const numeric_types = [Sk.builtin.float_, Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.bool];
+        const sequence_types = [
+            Sk.builtin.dict,
+            Sk.builtin.enumerate,
+            Sk.builtin.filter_,
+            Sk.builtin.list,
+            Sk.builtin.map_,
+            Sk.builtin.str,
+            Sk.builtin.tuple,
+            Sk.builtin.zip_,
+        ];
 
-        v_num_type = numeric_types.indexOf(v_type);
-        v_seq_type = sequence_types.indexOf(v_type);
-        w_num_type = numeric_types.indexOf(w_type);
-        w_seq_type = sequence_types.indexOf(w_type);
+        const v_num_type = numeric_types.indexOf(v_type);
+        const v_seq_type = sequence_types.indexOf(v_type);
+        const w_num_type = numeric_types.indexOf(w_type);
+        const w_seq_type = sequence_types.indexOf(w_type);
 
         // NoneTypes are considered less than any other type in Python
         // note: this only handles comparing NoneType with any non-NoneType.
         // Comparing NoneType with NoneType is handled further down.
-        if (v_type === Sk.builtin.none.prototype.ob$type) {
+        if (v === Sk.builtin.none.none$) {
             switch (op) {
                 case "Lt":
                     return true;
@@ -304,7 +284,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             }
         }
 
-        if (w_type === Sk.builtin.none.prototype.ob$type) {
+        if (w === Sk.builtin.none.none$) {
             switch (op) {
                 case "Lt":
                     return false;
@@ -360,29 +340,32 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-
     // handle identity and membership comparisons
     if (op === "Is") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
-            return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
-            return v.numberCompare(w) === 0;
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
-            return v.longCompare(w) === 0;
+        if (v_type === w_type) {
+            if (v === w) {
+                return true;
+            } else if (v_type === Sk.builtin.float_) {
+                return v.v === w.v;
+            } else if (v_type === Sk.builtin.int_) {
+                return v.v === w.v;
+            } else if (v_type === Sk.builtin.lng) {
+                return v.longCompare(w) === 0;
+            }
         }
-
-        return v === w;
+        return false;
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
-            return v.numberCompare(w) !== 0;
-        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
-            return v.numberCompare(w) !== 0;
-        }else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v_type !== w_type) {
+            return true;
+        } else if (v_type === Sk.builtin.float_) {
+            return v.v !== w.v;
+        } else if (v_type === Sk.builtin.int_) {
+            return v.v !== w.v;
+        } else if (v_type === Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
-
         return v !== w;
     }
 
@@ -398,7 +381,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     // Call Javascript shortcut method if exists for either object
 
-    op2shortcut = {
+    var op2shortcut = {
         "Eq"   : "ob$eq",
         "NotEq": "ob$ne",
         "Gt"   : "ob$gt",
@@ -408,7 +391,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     };
 
     shortcut = op2shortcut[op];
-    v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
+    const v_has_shortcut = v.constructor.prototype.hasOwnProperty(shortcut);
     if (v_has_shortcut) {
         if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
@@ -416,7 +399,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     }
 
     swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-    w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
+    const w_has_shortcut = w.constructor.prototype.hasOwnProperty(swapped_shortcut);
     if (w_has_shortcut) {
 
         if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
@@ -441,7 +424,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // depending on the op, try left:op:right, and if not, then
     // right:reversed-top:left
 
-    method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
+    const method = Sk.abstr.lookupSpecial(v, Sk.misceval.op2method_[op]);
     if (method && !v_has_shortcut) {
         ret = Sk.misceval.callsimArray(method, [v, w]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -449,7 +432,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
 
-    swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
+    const swapped_method = Sk.abstr.lookupSpecial(w, Sk.misceval.op2method_[Sk.misceval.swappedOp_[op]]);
     if (swapped_method && !w_has_shortcut) {
         ret = Sk.misceval.callsimArray(swapped_method, [w, v]);
         if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
@@ -457,7 +440,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         }
     }
     if (!Sk.__future__.python3) {
-        vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
+        const vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
         if (vcmp) {
             try {
                 ret = Sk.misceval.callsimArray(vcmp, [v, w]);
@@ -477,7 +460,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                         return ret >= 0;
                     }
                 }
-    
+
                 if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                     throw new Sk.builtin.TypeError("comparison did not return an int");
                 }
@@ -485,7 +468,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
         }
-        wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
+        const wcmp = Sk.abstr.lookupSpecial(w, Sk.builtin.str.$cmp);
         if (wcmp) {
             // note, flipped on return value and call
             try {
@@ -514,55 +497,43 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
         }
+        // handle special cases for comparing None with None or Bool with Bool
+        if (v === Sk.builtin.none.none$ && w === Sk.builtin.none.none$) {
+            // Javascript happens to return the same values when comparing null
+            // with null or true/false with true/false as Python does when
+            // comparing None with None or True/False with True/False
 
-    }
-    
-
-    
-    // handle special cases for comparing None with None or Bool with Bool
-    if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) ||
-        ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool))) {
-        // Javascript happens to return the same values when comparing null
-        // with null or true/false with true/false as Python does when
-        // comparing None with None or True/False with True/False
-
-        if (op === "Eq") {
-            return v.v === w.v;
-        }
-        if (op === "NotEq") {
-            return v.v !== w.v;
-        }
-        if (op === "Gt") {
-            return v.v > w.v;
-        }
-        if (op === "GtE") {
-            return v.v >= w.v;
-        }
-        if (op === "Lt") {
-            return v.v < w.v;
-        }
-        if (op === "LtE") {
-            return v.v <= w.v;
+            if (op === "Eq") {
+                return v.v === w.v;
+            }
+            if (op === "NotEq") {
+                return v.v !== w.v;
+            }
+            if (op === "Gt") {
+                return v.v > w.v;
+            }
+            if (op === "GtE") {
+                return v.v >= w.v;
+            }
+            if (op === "Lt") {
+                return v.v < w.v;
+            }
+            if (op === "LtE") {
+                return v.v <= w.v;
+            }
         }
     }
-
 
     // handle equality comparisons for any remaining objects
     if (op === "Eq") {
-        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str)) {
-            return v.v === w.v;
-        }
         return v === w;
     }
     if (op === "NotEq") {
-        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str)) {
-            return v.v !== w.v;
-        }
         return v !== w;
     }
 
-    vname = Sk.abstr.typeName(v);
-    wname = Sk.abstr.typeName(w);
+    const vname = Sk.abstr.typeName(v);
+    const wname = Sk.abstr.typeName(w);
     throw new Sk.builtin.TypeError("'" + Sk.misceval.opSymbols[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
     //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
@@ -570,7 +541,7 @@ Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
-    if ((v === null) || (v instanceof Sk.builtin.none)) {
+    if ((v === null) || (v === Sk.builtin.none.none$)) {
         return new Sk.builtin.str("None");
     } else if (v === true) {
         // todo; these should be consts
@@ -1214,7 +1185,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
     var it, i;
 
-    if (func === null || func instanceof Sk.builtin.none) {
+    if (func === null || func === Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 
