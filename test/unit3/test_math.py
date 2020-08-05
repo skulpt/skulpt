@@ -499,7 +499,7 @@ class MathTests(unittest.TestCase):
         self.assertEqual(math.factorial(0), 1)
         self.assertEqual(math.factorial(0.0), 1)
         total = 1
-        for i in range(1, 1000):
+        for i in range(1, 100): # make the numbers smaller for speed
             total *= i
             self.assertEqual(math.factorial(i), total)
             self.assertEqual(math.factorial(float(i)), total)
@@ -665,7 +665,7 @@ class MathTests(unittest.TestCase):
 
         from random import random, gauss, shuffle, seed
         seed(0)
-        for j in range(100):
+        for j in range(20):
             vals = [7, 1e100, -7, -1e100, -9e-20, 8e-20] * 10
             s = 0
             for i in range(200):

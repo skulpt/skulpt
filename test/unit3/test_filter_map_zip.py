@@ -211,7 +211,7 @@ class FilterTest(unittest.TestCase):
                     raise IndexError
                 else:
                     return i
-        self.assertEqual(list(zip(SequenceWithoutALength(), range(2**23))), list(enumerate(range(5))))
+        self.assertEqual(list(zip(SequenceWithoutALength(), range(2**10))), list(enumerate(range(5))))
 
         a = BasicIterClass(0,6)
         b = BasicIterClass(10, 16)
