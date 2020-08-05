@@ -3,7 +3,7 @@ TypeError('elements() takes exactly 1 arguments (2 given)')
 TypeError('most_common() takes at most 2 arguments (3 given)')
 TypeError('an integer is required')
 []
-[('l', 2), ('e', 1), ('h', 1), ('o', 1)]
+[('l', 2), ('h', 1), ('e', 1), ('o', 1)]
 TypeError('update() takes at most 2 arguments (3 given)')
 TypeError("'int' object is not iterable")
 TypeError('subtract() takes at most 2 arguments (3 given)')
