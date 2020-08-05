@@ -493,7 +493,7 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {...*} args
  */
 Sk.builtin.UnicodeDecodeError = function (args) {
@@ -503,14 +503,14 @@ Sk.builtin.UnicodeDecodeError = function (args) {
         o.constructor.apply(o, arguments);
         return o;
     }
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {...*} args
  */
 Sk.builtin.UnicodeEncodeError = function (args) {
@@ -520,14 +520,14 @@ Sk.builtin.UnicodeEncodeError = function (args) {
         o.constructor.apply(o, arguments);
         return o;
     }
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
 /**
  * @constructor
- * @extends Sk.builtin.StandardError
+ * @extends Sk.builtin.Exception
  * @param {...*} args
  */
 Sk.builtin.LookupError = function (args) {
@@ -537,9 +537,9 @@ Sk.builtin.LookupError = function (args) {
         o.constructor.apply(o, arguments);
         return o;
     }
-    Sk.builtin.StandardError.apply(this, arguments);
+    Sk.builtin.Exception.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.StandardError);
+Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.LookupError", Sk.builtin.LookupError);
 
 /**
