@@ -93,7 +93,7 @@ Sk.builtins = {
     "bytearray" : Sk.builtin.bytearray,
     "callable"  : Sk.builtin.callable,
     "delattr"   : Sk.builtin.delattr,
-    "eval_$rn$" : Sk.builtin.eval_,
+    "eval_$rw$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,
     "frozenset" : Sk.builtin.frozenset,
     "help"      : Sk.builtin.help,
@@ -107,7 +107,7 @@ Sk.builtins = {
     "unichr"    : Sk.builtin.unichr,
     "vars"      : Sk.builtin.vars,
     "xrange"    : Sk.builtin.xrange,
-    "apply_$rn$": Sk.builtin.apply_,
+    "apply_$rw$": Sk.builtin.apply_,
     "buffer"    : Sk.builtin.buffer,
     "coerce"    : Sk.builtin.coerce,
     "intern"    : Sk.builtin.intern

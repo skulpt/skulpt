@@ -236,9 +236,8 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
-        var module_lk = new Sk.builtin.str("__module__");
-        if(dict.mp$lookup(module_lk) === undefined) {
-            dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
+        if(dict.mp$lookup(Sk.builtin.str.$module) === undefined) {
+            dict.mp$ass_subscript(Sk.builtin.str.$module, Sk.globals["__name__"]);
         }
 
         // copy properties into our klass object
@@ -256,27 +255,20 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__class__"] = klass;
         klass["__name__"] = name;
         klass.sk$klass = true;
+        klass.prototype.hp$type = true;
         klass.prototype["$r"] = function () {
-            var cname;
-            var mod;
-            var reprf = this.tp$getattr(Sk.builtin.str.$repr);
-            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
-                return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
+            const reprf = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$repr);
+            if (reprf !== undefined && reprf !== Sk.builtin.object.prototype["__repr__"]) {
+                return Sk.misceval.callsimArray(reprf, [this]);
             }
 
             if ((klass.prototype.tp$base !== undefined) &&
-                (klass.prototype.tp$base !== Sk.builtin.object) &&
                 (klass.prototype.tp$base.prototype["$r"] !== undefined)) {
-                // If subclass of a builtin which is not object, use that class' repr
+                // use superclass $r
                 return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
-                // Else, use default repr for a user-defined class instance
-                mod = dict.mp$subscript(module_lk); // lookup __module__
-                cname = "";
-                if (mod) {
-                    cname = mod.v + ".";
-                }
-                return new Sk.builtin.str("<" + cname + _name + " object>");
+                // Else, use object repr for a user-defined class instance
+                return Sk.builtin.object.prototype["$r"].call(this);
             }
         };
 
@@ -300,9 +292,9 @@ Sk.builtin.type = function (name, bases, dict) {
         // __getattribute__, rather than checking on every tp$getattr() call
 
         klass.prototype.tp$str = function () {
-            var strf = this.tp$getattr(Sk.builtin.str.$str);
-            if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype["__str__"]) {
-                return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
+            const strf = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$str);
+            if (strf !== undefined && strf !== Sk.builtin.object.prototype["__str__"]) {
+                return Sk.misceval.callsimArray(strf, [this]);
             }
             if ((klass.prototype.tp$base !== undefined) &&
                 (klass.prototype.tp$base !== Sk.builtin.object) &&
@@ -387,7 +379,7 @@ Sk.builtin.type = function (name, bases, dict) {
         // https://docs.python.org/2/reference/datamodel.html#special-method-lookup-for-old-style-classes
         var dunder;
         for (dunder in Sk.dunderToSkulpt) {
-            if (klass[dunder]) {
+            if (klass.hasOwnProperty(dunder)) {
                 Sk.builtin.type.$allocateSlot(klass, dunder);
             }
         }
@@ -421,6 +413,15 @@ Sk.builtin.type = function (name, bases, dict) {
 
 };
 
+Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
+    call: { value: Function.prototype.call },
+    apply: { value: Function.prototype.apply },
+    ob$type: { value: Sk.builtin.type, writable: true },
+    tp$name: { value: "type", writable: true },
+    tp$base: { value: Sk.builtin.object, writable: true },
+    sk$type: { value: true },
+});
+
 /**
  *
  */
@@ -432,43 +433,27 @@ Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
 Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(t !== undefined);
-    t.ob$type = Sk.builtin.type;
+    Object.setPrototypeOf(t, Sk.builtin.type.prototype);
     t.tp$name = name;
-    t["$r"] = function () {
-        var ctype;
-        var mod = t.__module__;
-        var cname = "";
-        if (mod) {
-            cname = mod.v + ".";
-        }
-        ctype = "class";
-        if (!mod && !t.sk$klass && !Sk.__future__.class_repr) {
-            ctype = "type";
-        }
-        return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
-    };
-    t.tp$str = undefined;
-    t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-    t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-    t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
-    t.sk$type = true;
 
     return t;
 };
 
-Sk.builtin.type.ob$type = Sk.builtin.type;
-Sk.builtin.type.tp$name = "type";
-Sk.builtin.type.sk$type = true;
-Sk.builtin.type["$r"] = function () {
-    if(Sk.__future__.class_repr) {
-        return new Sk.builtin.str("<class 'type'>");
+Sk.builtin.type.prototype["$r"] = function () {
+    let mod = this.prototype.__module__;
+    let cname = "";
+    let ctype = "class";
+    if (mod && Sk.builtin.checkString(mod)) {
+        cname = mod.v + ".";
     } else {
-        return new Sk.builtin.str("<type 'type'>");
+        mod = null;
     }
+    if (!mod && !this.sk$klass && !Sk.__future__.class_repr) {
+        ctype = "type";
+    }
+    return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
-Sk.builtin.type.tp$setattr = function(pyName, value, canSuspend) {
-    throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
-};
+
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
@@ -511,6 +496,9 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
     // class attributes are direct properties of the object
+    if (this.sk$klass === undefined) {
+        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+    }
     var jsName = Sk.fixReserved(pyName.$jsstr());
     this[jsName] = value;
     this.prototype[jsName] = value;
@@ -524,7 +512,7 @@ Sk.builtin.type.typeLookup = function (type, pyName) {
     var base;
     var res;
     var i;
-    var jsName = pyName.$jsstr();
+    var jsName = pyName.$mangled;
 
     // todo; probably should fix this, used for builtin types to get stuff
     // from prototype
@@ -667,21 +655,6 @@ Sk.builtin.type.buildMRO = function (klass) {
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 
-Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
-    var r2;
-    var r1;
-    if (other.ob$type != Sk.builtin.type) {
-        return undefined;
-    }
-    if (!this["$r"] || !other["$r"]) {
-        return undefined;
-    }
-
-    r1 = this["$r"]();
-    r2 = other["$r"]();
-
-    return r1.tp$richcompare(r2, op);
-};
 
 Sk.builtin.type.prototype["__format__"] = function(self, format_spec) {
     Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 1, 2);

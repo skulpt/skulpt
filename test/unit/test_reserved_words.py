@@ -12,6 +12,7 @@ class A:
 a = A()
 a.name = 'foo'
 a.length = 'bar'
+default = "foo"
 
 class Test_ReservedWords(unittest.TestCase):
     def test_getattr(self):
@@ -21,6 +22,9 @@ class Test_ReservedWords(unittest.TestCase):
 
         func_delete = getattr(f, "delete")
         self.assertTrue(func_delete())
+
+        self.assertNotIn("$", repr(func_default))
+        self.assertNotIn("$", repr(func_delete))
 
     def test_getattr_with_name(self):
         self.assertEqual(getattr(a, 'name'), 'foo')
@@ -55,6 +59,15 @@ class Test_ReservedWords(unittest.TestCase):
             A.prototype
         with self.assertRaises(AttributeError):
             A.arguments 
+
+    def test_bug_949(self):
+        def wrapper(name):
+            def inner():
+                return name
+            return inner
+        self.assertEqual(wrapper("foo")(), "foo")
+    def test_global(self):
+        self.assertTrue("default" in globals())
 
 if __name__ == '__main__':
     unittest.main()

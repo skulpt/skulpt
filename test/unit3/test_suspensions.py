@@ -42,6 +42,9 @@ class Test_Suspensions(unittest.TestCase):
         self.assertIs(sum(sleeping_gen([1, 2.0, 3])), 6.0)
         self.assertEqual(sum(sleeping_gen([[1], [2]]), []), [1, 2])
 
+    def test_builtin_types(self):
+        self.assertEqual(list(sleeping_gen([1, 2, 3])), [1, 2, 3])
+        self.assertEqual(tuple(sleeping_gen([1, 2, 3])), (1, 2, 3))
 
 if __name__ == '__main__':
     unittest.main()

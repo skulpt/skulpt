@@ -205,6 +205,8 @@ Sk.configure = function (options) {
     Sk.switch_version("copy$", Sk.__future__.python3);
 
     Sk.builtin.lng.tp$name = Sk.__future__.no_long_type ? "int" : "long";
+    Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
+    Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
 
     Sk.builtin.str.$next = Sk.__future__.python3 ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
 
@@ -348,7 +350,6 @@ Sk.setup_method_mappings = function () {
             "classes": [Sk.builtin.dict_iter_,
                         Sk.builtin.list_iter_,
                         Sk.builtin.set_iter_,
-                        Sk.builtin.frozenset_iter_,
                         Sk.builtin.str_iter_,
                         Sk.builtin.tuple_iter_,
                         Sk.builtin.generator,

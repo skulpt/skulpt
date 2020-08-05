@@ -5,49 +5,21 @@
  * @extends Sk.builtin.object
  */
 Sk.builtin.list = function (L, canSuspend) {
-    var v, it, thisList;
-    var canSusp;
-
-    if (this instanceof Sk.builtin.list) {
-        canSusp = canSuspend || false;
-    } else {
+    if (!(this instanceof Sk.builtin.list)) {
         // Called from Python
         Sk.builtin.pyCheckArgsLen("list", arguments.length, 0, 1);
         return new Sk.builtin.list(L, true);
     }
-
     if (L === undefined) {
-        v = [];
-    } else if (Object.prototype.toString.apply(L) === "[object Array]") {
-        v = L;
-    } else if (L.sk$asarray) {
-        v = L.sk$asarray();
-    } else if (Sk.builtin.checkIterable(L)) {
-        v = [];
-        it = Sk.abstr.iter(L);
-
-        thisList = this;
-
-        return (function next(i) {
-            while(true) {
-                if (i instanceof Sk.misceval.Suspension) {
-                    return new Sk.misceval.Suspension(next, i);
-                } else if (i === undefined) {
-                    // done!
-                    thisList.v = v;
-                    return thisList;
-                } else {
-                    v.push(i);
-                    i = it.tp$iternext(canSusp);
-                }
-            }
-        })(it.tp$iternext(canSusp));
+        this.v = [];
+    } else if (Array.isArray(L)) {
+        this.v = L;
     } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(L) + "' " + "object is not iterable");
+        return Sk.misceval.chain(Sk.misceval.arrayFromIterable(L, canSuspend), (v) => {
+            this.v = v;
+            return this;
+        });
     }
-
-    this.v = v;
-    return this;
 };
 
 Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);

@@ -2922,7 +2922,7 @@ function ast_for_atom(c, n)
             }
         }
         default:
-            Sk.assert.fail("unhandled atom " + TYPE(ch));
+            Sk.asserts.fail("unhandled atom " + TYPE(ch));
             return null;
     }
 }

@@ -126,123 +126,18 @@ Compiler.prototype.niceName = function (roughName) {
     return this.gensym(roughName.replace("<", "").replace(">", "").replace(" ", "_"));
 };
 
-var reservedWords_ = {
-    "abstract": true,
-    "as": true,
-    "boolean": true,
-    "break": true,
-    "byte": true,
-    "case": true,
-    "catch": true,
-    "char": true,
-    "class": true,
-    "continue": true,
-    "const": true,
-    "debugger": true,
-    "default": true,
-    "delete": true,
-    "do": true,
-    "double": true,
-    "else": true,
-    "enum": true,
-    "export": true,
-    "extends": true,
-    "false": true,
-    "final": true,
-    "finally": true,
-    "float": true,
-    "for": true,
-    "function": true,
-    "goto": true,
-    "if": true,
-    "implements": true,
-    "import": true,
-    "in": true,
-    "instanceof": true,
-    "int": true,
-    "interface": true,
-    "is": true,
-    "long": true,
-    "namespace": true,
-    "native": true,
-    "new": true,
-    "null": true,
-    "package": true,
-    "private": true,
-    "protected": true,
-    "public": true,
-    "return": true,
-    "short": true,
-    "static": true,
-    "super": false,
-    "switch": true,
-    "synchronized": true,
-    "this": true,
-    "throw": true,
-    "throws": true,
-    "transient": true,
-    "true": true,
-    "try": true,
-    "typeof": true,
-    "use": true,
-    "var": true,
-    "void": true,
-    "volatile": true,
-    "while": true,
-    "with": true
-};
+var reservedWords_ = Sk.builtin.str.reservedWords_; // defined in str.js
 
-/**
- * Fix reserved words
- *
- * @param {string} name
- */
-function fixReservedWords(name) {
-    if (reservedWords_[name] !== true) {
+
+function fixReserved(name) {
+    if (reservedWords_[name] === undefined) {
         return name;
     }
     return name + "_$rw$";
 }
 
-var reservedNames_ = {
-    "__defineGetter__": true,
-    "__defineSetter__": true,
-    "apply": true,
-    "arguments": true,
-    "call": true,
-    "caller": true, 
-    "eval": true,
-    "hasOwnProperty": true,
-    "isPrototypeOf": true,
-    "__lookupGetter__": true,
-    "__lookupSetter__": true,
-    "__noSuchMethod__": true,
-    "propertyIsEnumerable": true,
-    "prototype": true,
-    "toSource": true,
-    "toLocaleString": true,
-    "toString": true,
-    "unwatch": true,
-    "valueOf": true,
-    "watch": true,
-    "length": true,
-    "name": true,
-};
-
-function fixReservedNames (name) {
-    if (reservedNames_[name]) {
-        return name + "_$rn$";
-    }
-    return name;
-}
-
-function fixReserved (name) {
-    name = fixReservedNames(fixReservedWords(name));
-    return name;
-}
-
 function unfixReserved(name) {
-    return name.replace(/_\$r[wn]\$$/, "");
+    return name.replace(/_\$rw\$$/, "");
 }
 
 function mangleName (priv, ident) {
@@ -299,7 +194,7 @@ Compiler.prototype.makeConstant = function (rest) {
     v = this.u.scopename + "." + this.gensym("const");
     this.u.consts[v] = val;
     return v;
-}
+};
 
 /**
  * @param {string} hint basename for gensym
@@ -324,7 +219,7 @@ Compiler.prototype._gr = function (hint, rest) {
 Compiler.prototype.outputInterruptTest = function () { // Added by RNL
     var output = "";
     if (Sk.execLimit !== null || Sk.yieldLimit !== null && this.u.canSuspend) {
-            output += "var $dateNow = Date.now();";
+        output += "var $dateNow = Date.now();";
         if (Sk.execLimit !== null) {
             output += "if ($dateNow - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}";
         }
@@ -420,7 +315,7 @@ Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
         // Fast path
         return "[" + elts.map((expr) => this.vexpr(expr)).join(",") + "]";
     }
-}
+};
 
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
@@ -896,9 +791,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             }
             else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
-                var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
-                var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
-                return this.makeConstant("new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))");
+                var real_val = e.n.real === 0 && 1/e.n.real === -Infinity ? "-0" : e.n.real;
+                var imag_val = e.n.imag === 0 && 1/e.n.imag === -Infinity ? "-0" : e.n.imag;
+                return this.makeConstant("new Sk.builtin.complex(" + real_val + ", " + imag_val + ")");
             }
             Sk.asserts.fail("unhandled Num type");
         case Sk.astnodes.Str:
@@ -915,7 +810,6 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = e.attr["$r"]().v;
             mangled = mangled.substring(1, mangled.length - 1);
             mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
-            mangled = fixReserved(mangled);
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
@@ -1781,7 +1675,7 @@ Compiler.prototype.cfromimport = function (s) {
         level = -1;
     }
     for (i = 0; i < n; ++i) {
-        names[i] = "'" + fixReservedWords(s.names[i].name.v) + "'";
+        names[i] = "'" + fixReserved(s.names[i].name.v) + "'";
     }
     out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "],",level,");");
 
@@ -1792,7 +1686,7 @@ Compiler.prototype.cfromimport = function (s) {
     mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        aliasOut = "'" + fixReservedWords(alias.name.v) + "'";
+        aliasOut = "'" + alias.name.v + "'";
         if (i === 0 && alias.name.v === "*") {
             Sk.asserts.assert(n === 1);
             out("Sk.importStar(", mod, ",$loc, $gbl);");
@@ -2033,17 +1927,20 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     for (i = 0; args && i < args.args.length; ++i) {
         id = args.args[i].arg;
         if (this.isCell(id)) {
-            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, id).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
     for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
         id = args.kwonlyargs[i].arg;
         if (this.isCell(id)) {
-            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, id).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
     if (vararg && this.isCell(vararg.arg)) {
-        this.u.varDeclsCode += "$cell." + vararg.arg.v + "=" + vararg.arg.v + ";";
+        let mangled = fixReserved(mangleName(this.u.private_, vararg.arg).v);
+        this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
     }
 
     //
@@ -2053,7 +1950,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.localnames.push(kwarg.arg.v);
         this.u.varDeclsCode += kwarg.arg.v + "=new Sk.builtins['dict']($kwa);";
         if (this.isCell(kwarg.arg)) {
-            this.u.varDeclsCode += "$cell." + kwarg.arg.v + "=" + kwarg.arg.v + ";";
+            let mangled = fixReserved(mangleName(this.u.private_, kwarg.arg).v);
+            this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
     }
 
@@ -2529,7 +2427,7 @@ var D_FREEVARS = 1;
 var D_CELLVARS = 2;
 
 Compiler.prototype.isCell = function (name) {
-    var mangled = mangleName(this.u.private_, name).v;
+    var mangled = fixReserved(mangleName(this.u.private_, name).v);
     var scope = this.u.ste.getScope(mangled);
     var dict = null;
     return scope === Sk.SYMTAB_CONSTS.CELL;
@@ -2560,7 +2458,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
 
     mangled = mangleName(this.u.private_, name).v;
     // Have to do this before looking it up in the scope
-    mangled = fixReservedNames(mangled);
+    mangled = fixReserved(mangled);
     op = 0;
     optype = OP_NAME;
     scope = this.u.ste.getScope(mangled);
@@ -2591,8 +2489,6 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
     }
 
-    // have to do this after looking it up in the scope
-    mangled = fixReservedWords(mangled);
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here
@@ -2712,8 +2608,7 @@ Compiler.prototype.exitScope = function () {
     this.nestlevel--;
     if (this.stack.length - 1 >= 0) {
         this.u = this.stack.pop();
-    }
-    else {
+    } else {
         this.u = null;
     }
     if (this.u) {
@@ -2723,7 +2618,6 @@ Compiler.prototype.exitScope = function () {
     if (prev.name.v !== "<module>") {// todo; hacky
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
-        mangled = fixReserved(mangled);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
     }
     for (var constant in prev.consts) {
@@ -2880,12 +2774,6 @@ Sk.resetCompiler = function () {
 };
 
 Sk.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);
-
-Sk.fixReservedWords = fixReservedWords;
-Sk.exportSymbol("Sk.fixReservedWords", Sk.fixReservedWords);
-
-Sk.fixReservedNames = fixReservedNames;
-Sk.exportSymbol("Sk.fixReservedNames", Sk.fixReservedNames);
 
 Sk.fixReserved = fixReserved;
 Sk.exportSymbol("Sk.fixReserved", Sk.fixReserved);

@@ -157,7 +157,10 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.findall(pattern, "\t\t"), ['\t', '\t'])
         self.assertEqual(re.findall(pattern, "x\tx"), ['\t'])
         self.assertEqual(re.findall(pattern, "x\tx\t"), ['\t', '\t'])
-        
+
+        # issue1148
+        self.assertEqual(re.findall(r"[^c|p]at", r"mat cat hat pat"), ['mat', 'hat'])
+
 
     def test_search(self):
         val = re.search("From","dlkjdsljkdlkdsjlk")
@@ -168,7 +171,7 @@ class ReTests(unittest.TestCase):
         self.assertTrue(val is not None)
         def helper(match,expected):
             if type(expected) == str:
-                if match: 
+                if match:
                     if match.group(0)==expected: return True
                     else: return False
                 else: return False
@@ -286,4 +289,4 @@ class ReTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-            
+
