@@ -50,8 +50,7 @@ Sk.builtin.tuple.prototype["$r"] = function () {
 };
 
 Sk.builtin.tuple.prototype.mp$subscript = function (index) {
-    var ret;
-    var i;
+    let i;
     if (Sk.misceval.isIndex(index)) {
         i = Sk.misceval.asIndex(index);
         if (typeof i !== "number") {
@@ -67,9 +66,10 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
             return this.v[i];
         }
     } else if (index instanceof Sk.builtin.slice) {
-        ret = [];
-        index.sssiter$(this, function (i, wrt) {
-            ret.push(wrt.v[i]);
+        const ret = [];
+        const lst = this.v;
+        index.sssiter$(lst.length, (i) => {
+            ret.push(lst[i]);
         });
         return new Sk.builtin.tuple(ret);
     }

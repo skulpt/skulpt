@@ -161,23 +161,24 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     ]);
 });
 
-Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
-    var i;
-    var wrtv = Sk.builtin.asnum$(wrt);
-    var sss = this.slice_indices_(typeof wrtv === "number" ? wrtv : wrt.v.length);
-    if (sss[2] > 0) {
-        for (i = sss[0]; i < sss[1]; i += sss[2]) {
-            if (f(i, wrtv) === false) {
-                return;
-            }
-        }	//	wrt or wrtv? RNL
+/**
+ * used by objects like str, list, tuple that can return a slice
+ * @param {number} len
+ * @param {Function} f
+ */
+Sk.builtin.slice.prototype.sssiter$ = function (len, f) {
+    const sss = this.slice_indices_(len);
+    const start = sss[0];
+    const stop = sss[1];
+    const step = sss[2];
+    if (step > 0) {
+        for (let i = start; i < stop; i += step) {
+            f(i);
+        }
     } else {
-        for (i = sss[0]; i > sss[1]; i += sss[2]) {
-            if (f(i, wrtv) === false) {
-                return;
-            }
-        }	//	wrt or wrtv? RNL
-
+        for (let i = start; i > stop; i += step) {
+            f(i);
+        }
     }
 };
 
