@@ -255,6 +255,7 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__class__"] = klass;
         klass["__name__"] = name;
         klass.sk$klass = true;
+        klass.prototype.hp$type = true;
         klass.prototype["$r"] = function () {
             const reprf = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$repr);
             if (reprf !== undefined && reprf !== Sk.builtin.object.prototype["__repr__"]) {
