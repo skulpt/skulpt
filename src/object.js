@@ -361,7 +361,16 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
  * @return {Sk.builtin.str} The Python string representation of this instance.
  */
 Sk.builtin.object.prototype["$r"] = function () {
-    return new Sk.builtin.str("<object>");
+    const mod = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$module);
+    let cname = "";
+    if (mod && Sk.builtin.checkString(mod)) {
+        cname = mod.v + ".";
+    }
+    return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + " object>");
+};
+
+Sk.builtin.object.prototype.tp$str = function () {
+    return this.$r();
 };
 
 Sk.builtin.hashCount = 1;

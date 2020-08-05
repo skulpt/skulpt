@@ -9,6 +9,6 @@
 {1: 2, 3: 4}
 ''
 'hello world'
-<object>
+<object object>
 <__main__.A object>
 custom repr
