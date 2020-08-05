@@ -16,6 +16,50 @@ Sk.builtin.object = function () {
     return this;
 };
 
+Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/ {
+    ob$type: { value: Sk.builtin.object, writable: true },
+    tp$name: { value: "object", writable: true },
+    tp$base: { value: undefined, writable: true },
+    sk$object: { value: true },
+});
+
+/**
+ * @description
+ * We aim to match python and javascript inheritance like
+ * type   instanceof object => true
+ * object instanceof type   => true
+ * type   instanceof type   => true
+ * object instanceof object => true
+ *
+ * type   subclassof object => type.prototype   instanceof object => true
+ * object subclassof type   => object.prototype instanceof type   => false
+ * 
+ * this algorithm achieves the equivalent with the following prototypical chains
+ * using `Object.setPrototypeOf`
+ *
+ * ```
+ * type.__proto__             = type.prototype   (type   instanceof type  )
+ * type.__proto__.__proto__   = object.prototype (type   instanceof object)
+ * type.prototype.__proto__   = object.prototype (type   subclassof object)
+ * object.__proto__           = type.prototype   (object instanceof type  )
+ * object.__proto__.__proto__ = object.prototype (object instanceof object)
+ * ```
+ *
+ * while `Object.setPrototypeOf` is not considered [good practice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
+ * this is a particularly unique use case and creates a lot of prototypical benefits
+ * all single inheritance classes (i.e. all builtins) now follow prototypical inheritance
+ * similarly it makes metclasses that much easier to implement
+ * Object.setPrototypeOf is also a feature built into the javascript language
+ *
+ * @ignore
+ */
+(function setUpBaseInheritance () {
+    Object.setPrototypeOf(Sk.builtin.type.prototype, Sk.builtin.object.prototype);
+    Object.setPrototypeOf(Sk.builtin.type, Sk.builtin.type.prototype);
+    Object.setPrototypeOf(Sk.builtin.object, Sk.builtin.type.prototype);
+    Sk.builtin.type.prototype.tp$base = Sk.builtin.object;
+})();
+
 Sk.builtin.object.prototype.__init__ = function __init__() {
     return Sk.builtin.none.none$;
 };
@@ -192,18 +236,6 @@ Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetA
 Sk.builtin.object.prototype["__getattribute__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
 Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
 
-/**
- * The name of this class.
- * @type {string}
- */
-Sk.builtin.object.prototype.tp$name = "object";
-
-/**
- * The type object of this class.
- * @type {Sk.builtin.type|Object}
- */
-Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
-Sk.builtin.object.prototype.ob$type.sk$klass = undefined;   // Nonsense for closure compiler
 Sk.builtin.object.prototype.tp$descr_set = undefined;   // Nonsense for closure compiler
 
 /** Default implementations of dunder methods found in all Python objects */
