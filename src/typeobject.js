@@ -48,7 +48,7 @@ Sk.builtin.super_.__init__ = new Sk.builtin.func(function(self, a_type, other_se
     self.type = a_type;
 
     if (!a_type.tp$mro) {
-        throw new Sk.builtin.TypeError("must be type, not " + a_type.ob$type.tp$name);
+        throw new Sk.builtin.TypeError("must be type, not " + Sk.abstr.typeName(a_type));
     }
 
     self.obj_type = a_type.tp$mro.v[1];
@@ -124,10 +124,10 @@ Sk.builtin.super_.prototype.tp$getattr = function (pyName, canSuspend) {
 
 Sk.builtin.super_.prototype["$r"] = function super_repr(self) {
     if (this.obj) {
-        return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, <" + this.obj.tp$name + " object>>");
+        return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.prototype.tp$name : "NULL") + "'>, <" + Sk.abstr.typeName(this.obj) + " object>>");
     }
 
-    return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.tp$name : "NULL") + "'>, NULL>");
+    return new Sk.builtin.str("<super: <class '" + (this.type ? this.type.prototype.tp$name : "NULL") + "'>, NULL>");
 };
 
 Sk.builtin.super_.__doc__ = new Sk.builtin.str(
