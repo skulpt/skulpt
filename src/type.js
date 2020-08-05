@@ -256,26 +256,18 @@ Sk.builtin.type = function (name, bases, dict) {
         klass["__name__"] = name;
         klass.sk$klass = true;
         klass.prototype["$r"] = function () {
-            var cname;
-            var mod;
-            var reprf = this.tp$getattr(Sk.builtin.str.$repr);
-            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype["__repr__"]) {
-                return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
+            const reprf = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$repr);
+            if (reprf !== undefined && reprf !== Sk.builtin.object.prototype["__repr__"]) {
+                return Sk.misceval.callsimArray(reprf, [this]);
             }
 
             if ((klass.prototype.tp$base !== undefined) &&
-                (klass.prototype.tp$base !== Sk.builtin.object) &&
                 (klass.prototype.tp$base.prototype["$r"] !== undefined)) {
-                // If subclass of a builtin which is not object, use that class' repr
+                // If subclass of a builtin, use that class' repr
                 return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
-                // Else, use default repr for a user-defined class instance
-                mod = dict.mp$subscript(module_lk); // lookup __module__
-                cname = "";
-                if (mod) {
-                    cname = mod.v + ".";
-                }
-                return new Sk.builtin.str("<" + cname + _name + " object>");
+                // Else, use object repr for a user-defined class instance
+                return Sk.builtin.object.prototype["$r"].call(this);
             }
         };
 
@@ -299,9 +291,9 @@ Sk.builtin.type = function (name, bases, dict) {
         // __getattribute__, rather than checking on every tp$getattr() call
 
         klass.prototype.tp$str = function () {
-            var strf = this.tp$getattr(Sk.builtin.str.$str);
-            if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype["__str__"]) {
-                return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
+            const strf = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$str);
+            if (strf !== undefined && strf !== Sk.builtin.object.prototype["__str__"]) {
+                return Sk.misceval.callsimArray(strf, [this]);
             }
             if ((klass.prototype.tp$base !== undefined) &&
                 (klass.prototype.tp$base !== Sk.builtin.object) &&
