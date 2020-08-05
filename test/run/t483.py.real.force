@@ -1,3 +1,0 @@
-result is 2
-division by zero!
-TypeError: unsupported operand type(s) for Div: 'str' and 'str' on line 3

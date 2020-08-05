@@ -3,15 +3,15 @@ class A:
         return "not the right value"
 
 try:
-    print bool(A())
+    print(bool(A()))
 except TypeError as e:
-    print e
+    print (repr(e))
 
 class B:
     def __len__(self):
         return "not the right value"
 
 try:
-    print bool(B())
+    print (bool(B()))
 except TypeError as e:
-    print e
+    print (repr(e))

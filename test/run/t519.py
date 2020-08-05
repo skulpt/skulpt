@@ -12,39 +12,39 @@ print l.index('l', 3, -1)
 try:
     print l.index('l', 4)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', -1)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 2, 2)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 3, 2)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 3, -2)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 3, 0)
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 4.3)
 except TypeError as e:
-    print e
+    print repr(e)
 
 try:
     print l.index('l', 3, 0.6)
 except TypeError as e:
-    print e
+    print repr(e)

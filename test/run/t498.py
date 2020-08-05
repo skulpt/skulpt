@@ -53,28 +53,28 @@ try:
     print pow([1, 2],  '34')
     print "you shouldn't see this"
 except TypeError as e:
-    print e
+    print repr(e)
 
 try:
     print pow([1, 2],  '34',  5)
     print "you shouldn't see this"
 except TypeError as e:
-    print e
+    print repr(e)
 
 try:
     print pow(-2.5, 3.7)
     print "you shouldn't see this"
 except ValueError as e:
-    print e
+    print repr(e)
 
 try:
     print pow(4.0, 5.0, 3)
     print "you shouldn't see this"
 except TypeError as e:
-    print e
+    print repr(e)
 
 try:
     print pow(4, -3, 2)
     print "you shouldn't see this"
 except TypeError as e:
-    print e
+    print repr(e)
