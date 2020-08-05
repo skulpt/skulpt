@@ -31,7 +31,7 @@ Sk.builtin.BaseException = function (...args) {
             // but we can seed it with the supplied parameters.
             this.traceback.push({
                 lineno: args[2],
-                // if !this.args[1].v, this is an error, and the exception that causes it
+                // if !this.args[1], this is an error, and the exception that causes it
                 // probably needs to be fixed, but we mark as "<unknown>" for now
                 filename: args[1] || "<unknown>",
             });
