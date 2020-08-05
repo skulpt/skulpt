@@ -434,8 +434,6 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     Sk.asserts.assert(name !== undefined);
     Sk.asserts.assert(t !== undefined);
     Object.setPrototypeOf(t, Sk.builtin.type.prototype);
-    t.tp$name = name;
-
     return t;
 };
 
@@ -454,10 +452,8 @@ Sk.builtin.type.prototype["$r"] = function () {
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
 
-
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
-//Sk.builtin.type.prototype.tp$name = "type";
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
@@ -497,7 +493,7 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
 Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
     // class attributes are direct properties of the object
     if (this.sk$klass === undefined) {
-        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.tp$name + "'");
+        throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
     }
     var jsName = Sk.fixReserved(pyName.$jsstr());
     this[jsName] = value;
