@@ -1,75 +1,95 @@
 {
-  "name": "skulpt",
-  "version": "1.0.0",
-  "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
-  "keywords": [
-    "skulpt"
-  ],
-  "scripts": {
-    "help": "node support/build/help.js",
-    "regenparser": "node support/build/regenparser.js",
-    "brun": "node support/run/brun.js -p",
-    "prebtest": "node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
-    "btest": "node support/run/brun.js -t",
-    "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
-    "dist": "npm run build && npm run test && npm run doc && node support/build/copy2docs.js",
-    "repl": "node repl/repl.js",
-    "prebuild": "node support/build/wrapmodules.js internal",
-    "build": "webpack --mode production",
-    "postbuild": "node support/build/wrapmodules.js builtin",
-    "build-es3": "npm run build -- --env.languageOut=ECMASCRIPT3",
-    "build-es5": "npm run build -- --env.languageOut=ECMASCRIPT5",
-    "build-es19": "npm run build -- --env.languageOut=ECMASCRIPT_2019",
-    "predevbuild": "node support/build/wrapmodules.js internal",
-    "devbuild": "webpack --mode development",
-    "postdevbuild": "node support/build/wrapmodules.js builtin",
-    "watch": "webpack --watch --mode development",
-    "test": "node test/testwrapper.js && node test/testunit.js && node test/testunit.js --python3",
-    "start": "node support/run/runfile.js",
-    "profile": "node --prof --no-logfile-per-isolate --log-internal-timer-events support/run/runfile.js -o",
-    "postprofile": "node --prof-process v8.log"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/skulpt/skulpt.git"
-  },
-  "bugs": {
-    "url": "https://github.com/skulpt/skulpt/issues"
-  },
-  "homepage": "http://www.skulpt.org/",
-  "author": {
-    "name": "Brad Miller"
-  },
-  "license": "MIT",
-  "private": true,
-  "devDependencies": {
-    "acorn": "^6.1.1",
-    "babel-minify": "^0.5.0",
-    "chalk": "^2.4.2",
-    "clean-webpack-plugin": "^2.0.2",
-    "closure-webpack-plugin": "^2.0.1",
-    "commander": "^2.20.0",
-    "compression-webpack-plugin": "^2.0.0",
-    "copy-webpack-plugin": "^5.1.1",
-    "ejs": "^2.6.1",
-    "eslint": "^5.16.0",
-    "eslint-loader": "^2.1.2",
-    "express": "^4.17.0",
-    "git-revision-webpack-plugin": "^3.0.3",
-    "google-closure-compiler": "^20190415.0.0",
-    "js-beautify": "^1.10.0",
-    "jsdoc": "^3.6.3",
-    "micro-strptime": "^0.2.3",
-    "open": "^6.3.0",
-    "readline-sync": "^1.4.9",
-    "setimmediate": "^1.0.5",
-    "shelljs": "^0.8.3",
-    "strftime": "^0.10.0",
-    "webpack": "^4.32.0",
-    "webpack-cli": "^3.3.2"
-  },
-  "engines": {
-    "node": ">=10.4"
-  },
-  "dependencies": {}
+    "name": "skulpt",
+    "version": "1.0.0",
+    "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
+    "keywords": [
+        "skulpt"
+    ],
+    "scripts": {
+        "help": "node support/build/help.js",
+        "regenparser": "node support/build/regenparser.js",
+        "brun": "node support/run/brun.js -p",
+        "prebtest": "node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
+        "btest": "node support/run/brun.js -t",
+        "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
+        "dist": "npm run build && npm run test && npm run doc && node support/build/copy2docs.js",
+        "repl": "node repl/repl.js",
+        "prebuild": "node support/build/wrapmodules.js internal",
+        "build": "webpack --mode production",
+        "postbuild": "node support/build/wrapmodules.js builtin",
+        "build-es3": "npm run build -- --env.languageOut=ECMASCRIPT3",
+        "build-es5": "npm run build -- --env.languageOut=ECMASCRIPT5",
+        "build-es19": "npm run build -- --env.languageOut=ECMASCRIPT_2019",
+        "predevbuild": "node support/build/wrapmodules.js internal",
+        "devbuild": "webpack --mode development",
+        "postdevbuild": "node support/build/wrapmodules.js builtin",
+        "watch": "webpack --watch --mode development",
+        "test": "node test/testwrapper.js && node test/testunit.js && node test/testunit.js --python3",
+        "start": "node support/run/runfile.js",
+        "profile": "node --prof --no-logfile-per-isolate --log-internal-timer-events support/run/runfile.js -o",
+        "postprofile": "node --prof-process v8.log"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/skulpt/skulpt.git"
+    },
+    "bugs": {
+        "url": "https://github.com/skulpt/skulpt/issues"
+    },
+    "homepage": "http://www.skulpt.org/",
+    "author": {
+        "name": "Brad Miller"
+    },
+    "license": "MIT",
+    "private": true,
+    "devDependencies": {
+        "acorn": "^6.1.1",
+        "babel-minify": "^0.5.0",
+        "chalk": "^2.4.2",
+        "clean-webpack-plugin": "^2.0.2",
+        "closure-webpack-plugin": "^2.0.1",
+        "commander": "^2.20.0",
+        "compression-webpack-plugin": "^2.0.0",
+        "copy-webpack-plugin": "^5.1.1",
+        "ejs": "^2.6.1",
+        "eslint": "^5.16.0",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-loader": "^2.1.2",
+        "express": "^4.17.0",
+        "git-revision-webpack-plugin": "^3.0.3",
+        "google-closure-compiler": "^20190415.0.0",
+        "husky": "^4.2.5",
+        "js-beautify": "^1.10.0",
+        "jsdoc": "^3.6.3",
+        "lint-staged": "^10.2.11",
+        "micro-strptime": "^0.2.3",
+        "open": "^6.3.0",
+        "prettier": "^2.0.5",
+        "pretty-quick": "^2.0.1",
+        "readline-sync": "^1.4.9",
+        "setimmediate": "^1.0.5",
+        "shelljs": "^0.8.3",
+        "strftime": "^0.10.0",
+        "webpack": "^4.32.0",
+        "webpack-cli": "^3.3.2"
+    },
+    "engines": {
+        "node": ">=10.4"
+    },
+    "dependencies": {},
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{js,css,json,md}": [
+            "prettier --write",
+            "git add"
+        ],
+        "*.js": [
+            "eslint --fix",
+            "git add"
+        ]
+    }
 }
