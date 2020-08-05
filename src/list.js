@@ -15,10 +15,9 @@ Sk.builtin.list = function (L, canSuspend) {
     } else if (Array.isArray(L)) {
         this.v = L;
     } else {
-        const self = this;
         return Sk.misceval.chain(Sk.misceval.arrayFromIterable(L, canSuspend), (v) => {
-            self.v = v;
-            return self;
+            this.v = v;
+            return this;
         });
     }
 };
