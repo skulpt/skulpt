@@ -933,37 +933,33 @@ Sk.builtin.hash = function hash (value) {
 };
 
 Sk.builtin.getattr = function getattr (obj, pyName, default_) {
-    var ret, mangledName, jsName;
+    var ret;
     Sk.builtin.pyCheckArgsLen("getattr", arguments.length, 2, 3);
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
 
-    jsName = pyName.$jsstr();
-    mangledName = new Sk.builtin.str(Sk.fixReserved(jsName));
-    ret = obj.tp$getattr(mangledName);
+    ret = obj.tp$getattr(pyName);
     if (ret === undefined) {
         if (default_ !== undefined) {
             return default_;
         } else {
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + jsName + "'");
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
         }
     }
     return ret;
 };
 
 Sk.builtin.setattr = function setattr (obj, pyName, value) {
-    var jsName;
     Sk.builtin.pyCheckArgsLen("setattr", arguments.length, 3, 3);
     // cannot set or del attr from builtin type
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    jsName = pyName.$jsstr();
     if (obj.tp$setattr) {
-        obj.tp$setattr(new Sk.builtin.str(Sk.fixReserved(jsName)), value);
+        obj.tp$setattr(pyName, value);
     } else {
-        throw new Sk.builtin.AttributeError("object has no attribute " + jsName);
+        throw new Sk.builtin.AttributeError("object has no attribute " + pyName.$jsstr());
     }
     return Sk.builtin.none.none$;
 };
@@ -1160,7 +1156,6 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
 Sk.builtin.hasattr = function hasattr (obj, attr) {
     Sk.builtin.pyCheckArgsLen("hasattr", arguments.length, 2, 2);
-    var special, ret;
     if (!Sk.builtin.checkString(attr)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
@@ -1316,10 +1311,11 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
 };
 
 Sk.builtin.globals = function globals () {
-    var i;
+    var i, unmangled;
     var ret = new Sk.builtin.dict([]);
     for (i in Sk["globals"]) {
-        ret.mp$ass_subscript(new Sk.builtin.str(i), Sk["globals"][i]);
+        unmangled = Sk.unfixReserved(i);
+        ret.mp$ass_subscript(new Sk.builtin.str(unmangled), Sk["globals"][i]);
     }
 
     return ret;
