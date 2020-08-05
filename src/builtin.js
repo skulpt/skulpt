@@ -987,16 +987,8 @@ Sk.builtin.raw_input = function (prompt) {
 Sk.builtin.input = Sk.builtin.raw_input;
 
 Sk.builtin.jseval = function jseval (evalcode) {
-    var result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
-    try {
-        return Sk.ffi.remapToPy(result);
-    } catch (err) {
-        if (err.constructor === Sk.asserts.AssertionError) {
-            return Sk.builtin.none.none$;
-        }
-
-        throw err;
-    }
+    const result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
+    return Sk.ffi.remapToPy(result);
 };
 
 Sk.builtin.jsmillis = function jsmillis () {
