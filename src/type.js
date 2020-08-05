@@ -263,7 +263,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
             if ((klass.prototype.tp$base !== undefined) &&
                 (klass.prototype.tp$base.prototype["$r"] !== undefined)) {
-                // If subclass of a builtin, use that class' repr
+                // use superclass $r
                 return klass.prototype.tp$base.prototype["$r"].call(this);
             } else {
                 // Else, use object repr for a user-defined class instance
