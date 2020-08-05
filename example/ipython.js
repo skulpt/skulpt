@@ -25,11 +25,11 @@
     Sk.globals.In = Sk.globals._ih;
     Sk.globals.Out = Sk.globals._oh;
 
-    Sk.stopExecution = false;
+    var stopExecution = false;
 
     const info = "# Python 3.7(ish) (Skulpt ipython, " + new Date() + ") \n" + "# [" + navigator.userAgent + "] on " + navigator.platform;
 
-    Sk.ipython = function (dom) {
+    ipythonExample = function (dom) {
         if (ace === undefined) {
             Sk.asserts.fail("No ace");
         }
@@ -41,7 +41,7 @@
         const keyboardInterrupt = (e) => {
             if (e.ctrlKey && e.key === "c") {
                 // faile safe for keyboard interrupt
-                Sk.stopExecution = true;
+                stopExecution = true;
             }
         };
         this.editor.addEventListener("keydown", keyboardInterrupt);
@@ -78,7 +78,7 @@
         });
     };
 
-    Sk.ipython.prototype.newCells = function () {
+    ipythonExample.prototype.newCells = function () {
         this.idx = this.inputs.length;
         this.inCell = this.newIn();
         this.printCell = this.newPrint();
@@ -87,8 +87,8 @@
         this.inCell.container.scrollIntoView();
     };
 
-    Sk.ipython.prototype.execute = function () {
-        Sk.stopExecution = false;
+    ipythonExample.prototype.execute = function () {
+        stopExecution = false;
         const code = this.inCell.getValue();
         const codeAsPyStr = new Sk.builtin.str(code);
         Sk.globals["_i" + this.inputs.length] = codeAsPyStr;
@@ -114,7 +114,7 @@
         this.inCell.renderer.$cursorLayer.element.style.opacity = 0;
         const executionPromise = Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("ipython", false, compile_code, true), {
             "*": () => {
-                if (Sk.stopExecution) {
+                if (stopExecution) {
                     throw "\nKeyboard interrupt";
                 }
             },
@@ -156,12 +156,12 @@
             });
     };
 
-    Sk.ipython.prototype.outf = function (text) {
+    ipythonExample.prototype.outf = function (text) {
         const curr_val = this.printCell.getValue();
         this.printCell.setValue(curr_val + text, 1);
     };
 
-    Sk.ipython.prototype.newIn = function () {
+    ipythonExample.prototype.newIn = function () {
         let cell = document.createElement("DIV");
         this.editor.appendChild(cell);
         cell = ace.edit(cell);
@@ -241,7 +241,7 @@
                     win: "ctrl-C",
                 },
                 exec: (e, t) => {
-                    Sk.stopExecution = true;
+                    stopExecution = true;
                 },
                 readOnly: true,
             },
@@ -249,7 +249,7 @@
         return cell;
     };
 
-    Sk.ipython.prototype.newPrint = function () {
+    ipythonExample.prototype.newPrint = function () {
         let cell = document.createElement("DIV");
         this.editor.appendChild(cell);
         cell = ace.edit(cell);
@@ -288,14 +288,14 @@
                 win: "ctrl-C",
             },
             exec: (e, t) => {
-                Sk.stopExecution = true;
+                stopExecution = true;
             },
             readOnly: true,
         });
         return cell;
     };
 
-    Sk.ipython.prototype.newOut = function () {
+    ipythonExample.prototype.newOut = function () {
         let cell = document.createElement("DIV");
         this.editor.appendChild(cell);
         cell = ace.edit(cell);
