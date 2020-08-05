@@ -44,7 +44,6 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     var tp;
     var dict;
     var getf;
-    var jsName = pyName.$jsstr();
 
     tp = this.ob$type;
     Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
@@ -59,11 +58,12 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
         } else if (dict.mp$subscript) {
             res = Sk.builtin._tryGetSubscript(dict, pyName);
         } else if (typeof dict === "object") {
-            res = dict[jsName];
+            const mangled = pyName.$mangled;
+            res = dict[mangled];
         }
         if (res !== undefined) {
             return res;
-        } else if (jsName == "__dict__" && dict instanceof Sk.builtin.dict) {
+        } else if (pyName.$jsstr() == "__dict__" && dict instanceof Sk.builtin.dict) {
             return dict;
         }
     }
@@ -165,11 +165,12 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
             dict.mp$lookup(pyName) === undefined) {
             // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + Sk.unfixReserved(jsName) + "'");
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
         }
         dict.mp$ass_subscript(pyName, value);
     } else if (typeof dict === "object") {
-        dict[jsName] = value;
+        const mangled = pyName.$mangled;
+        dict[mangled] = value;
     }
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
@@ -360,7 +361,16 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
  * @return {Sk.builtin.str} The Python string representation of this instance.
  */
 Sk.builtin.object.prototype["$r"] = function () {
-    return new Sk.builtin.str("<object>");
+    const mod = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$module);
+    let cname = "";
+    if (mod && Sk.builtin.checkString(mod)) {
+        cname = mod.v + ".";
+    }
+    return new Sk.builtin.str("<" + cname + Sk.abstr.typeName(this) + " object>");
+};
+
+Sk.builtin.object.prototype.tp$str = function () {
+    return this.$r();
 };
 
 Sk.builtin.hashCount = 1;

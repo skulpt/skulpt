@@ -51,6 +51,7 @@ Sk.builtin.str.$gt = new Sk.builtin.str("__gt__");
 Sk.builtin.str.$le = new Sk.builtin.str("__le__");
 Sk.builtin.str.$len = new Sk.builtin.str("__len__");
 Sk.builtin.str.$lt = new Sk.builtin.str("__lt__");
+Sk.builtin.str.$module = new Sk.builtin.str("__module__");
 Sk.builtin.str.$name = new Sk.builtin.str("__name__");
 Sk.builtin.str.$ne = new Sk.builtin.str("__ne__");
 Sk.builtin.str.$new = new Sk.builtin.str("__new__");
