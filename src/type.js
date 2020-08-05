@@ -236,9 +236,8 @@ Sk.builtin.type = function (name, bases, dict) {
         klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
-        var module_lk = new Sk.builtin.str("__module__");
-        if(dict.mp$lookup(module_lk) === undefined) {
-            dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
+        if(dict.mp$lookup(Sk.builtin.str.$module) === undefined) {
+            dict.mp$ass_subscript(Sk.builtin.str.$module, Sk.globals["__name__"]);
         }
 
         // copy properties into our klass object
