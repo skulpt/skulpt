@@ -688,17 +688,9 @@ Sk.builtin.raw_input = function (prompt) {
 
 Sk.builtin.input = Sk.builtin.raw_input;
 
-Sk.builtin.jseval = function jseval(evalcode) {
-    var result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
-    try {
-        return Sk.ffi.remapToPy(result);
-    } catch (err) {
-        if (err.constructor === Sk.asserts.AssertionError) {
-            return Sk.builtin.none.none$;
-        }
-
-        throw err;
-    }
+Sk.builtin.jseval = function jseval (evalcode) {
+    const result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
+    return Sk.ffi.remapToPy(result);
 };
 
 /**
@@ -911,7 +903,7 @@ Sk.builtin.pow = function pow(a, b, c) {
     var b_num;
     var a_num;
 
-    if (c instanceof Sk.builtin.none) {
+    if (c === Sk.builtin.none.none$) {
         c = undefined;
     }
 
@@ -994,11 +986,12 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
     return Sk.misceval.bool.false$;
 };
 
-Sk.builtin.globals = function globals() {
-    var i;
+Sk.builtin.globals = function globals () {
+    var i, unmangled;
     var ret = new Sk.builtin.dict([]);
     for (i in Sk["globals"]) {
-        ret.mp$ass_subscript(new Sk.builtin.str(i), Sk["globals"][i]);
+        unmangled = Sk.unfixReserved(i);
+        ret.mp$ass_subscript(new Sk.builtin.str(unmangled), Sk["globals"][i]);
     }
 
     return ret;

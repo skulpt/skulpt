@@ -313,7 +313,7 @@ Sk.builtin.str.methods.split = function (self, on, howmany) {
     var str;
     var regex;
     Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if (on === undefined || on instanceof Sk.builtin.none) {
+    if ((on === undefined) || (on === Sk.builtin.none.none$)) {
         on = null;
     }
     if (on !== null && !Sk.builtin.checkString(on)) {

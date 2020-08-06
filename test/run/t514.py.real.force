@@ -1,5 +1,0 @@
-TypeError("can't multiply sequence by non-int of type 'str'")
-TypeError("can't multiply sequence by non-int of type 'float'")
-TypeError("can't multiply sequence by non-int of type 'float'")
-TypeError("can't multiply sequence by non-int of type 'list'")
-TypeError("can't multiply sequence by non-int of type 'str'")

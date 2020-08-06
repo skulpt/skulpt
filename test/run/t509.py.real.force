@@ -1,5 +1,0 @@
-caught TypeError('abc')
-caught TypeError('abc')
-caught re-raise:  TypeError('abc')
-caught TypeError()
-caught TypeError('abc')

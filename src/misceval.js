@@ -346,7 +346,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             if (v === w) {
                 return true;
             } else if (v_type === Sk.builtin.float_) {
-                return v.v - w.v === 0;
+                return v.v === w.v;
             } else if (v_type === Sk.builtin.int_) {
                 if (typeof v.v === "number" && typeof v.v === "number") {
                     return v.v === w.v;
@@ -361,7 +361,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         if (v_type !== w_type) {
             return true;
         } else if (v_type === Sk.builtin.float_) {
-            return v.v - w.v !== 0;
+            return v.v !== w.v;
         } else if (v_type === Sk.builtin.int_) {
             if (typeof v.v === "number" && typeof v.v === "number") {
                 return v.v !== w.v;
@@ -383,12 +383,12 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // Call Javascript shortcut method if exists for either object
 
     var op2shortcut = {
-        Eq: "ob$eq",
-        NotEq: "ob$ne",
-        Gt: "ob$gt",
-        GtE: "ob$ge",
-        Lt: "ob$lt",
-        LtE: "ob$le",
+        "Eq"   : "ob$eq",
+        "NotEq": "ob$ne",
+        "Gt"   : "ob$gt",
+        "GtE"  : "ob$ge",
+        "Lt"   : "ob$lt",
+        "LtE"  : "ob$le"
     };
 
     // tp richcompare and all respective shortcuts guaranteed because we inherit from object
@@ -462,11 +462,12 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
                 throw new Sk.builtin.TypeError("comparison did not return an int");
             }
         }
-        if ((v instanceof Sk.builtin.none && w instanceof Sk.builtin.none)) {
+        // handle special cases for comparing None with None or Bool with Bool
+        if (v === Sk.builtin.none.none$ && w === Sk.builtin.none.none$) {
             // Javascript happens to return the same values when comparing null
             // with null or true/false with true/false as Python does when
             // comparing None with None or True/False with True/False
-    
+
             if (op === "Eq") {
                 return v.v === w.v;
             }
@@ -1139,7 +1140,6 @@ Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
     );
     return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
-Sk.exportSymbol("Sk.misceval.arrayFromIterable", Sk.misceval.arrayFromIterable);
 
 /**
  * A special value to return from an iterFor() function,

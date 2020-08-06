@@ -33,11 +33,11 @@ Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.objec
  * using `Object.setPrototypeOf`
  *
  * ```
- * type.__proto__             = type   (type instanceof type)
- * type.__proto__.__proto__   = object (type instanceof object)
- * type.prototype.__proto__   = object (type subclasssof object)
- * object.__proto__           = type   (object instanceof type)
- * object.__proto__.__proto__ = object (object instanceof object)
+ * type.__proto__             = type.prototype   (type   instanceof type  )
+ * type.__proto__.__proto__   = object.prototype (type   instanceof object)
+ * type.prototype.__proto__   = object.prototype (type   subclassof object)
+ * object.__proto__           = type.prototype   (object instanceof type  )
+ * object.__proto__.__proto__ = object.prototype (object instanceof object)
  * ```
  *
  * while `Object.setPrototypeOf` is not considered [good practice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
@@ -246,11 +246,10 @@ Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
  * Python None value.
  * @type {Sk.builtin.none}
  * @member {Sk.builtin.none}
- * @suppress {checkTypes}
  */
-Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {
+Sk.builtin.none.none$ =  /** @type {Sk.builtin.none} */ (Object.create(Sk.builtin.none.prototype, {
     v: { value: null, enumerable: true },
-});
+}));
 
 /**
  * @constructor
@@ -275,11 +274,9 @@ Sk.builtin.NotImplemented.prototype.tp$new = function (args, kwargs) {
  * Python NotImplemented constant.
  * @type {Sk.builtin.NotImplemented}
  * @member {Sk.builtin.NotImplemented}
- * @suppress {checkTypes}
  */
-Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {
+Sk.builtin.NotImplemented.NotImplemented$ =  /** @type {Sk.builtin.NotImplemented} */ (Object.create(Sk.builtin.NotImplemented.prototype, {
     v: { value: null, enumerable: true },
-});
-
+}));
 Sk.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 Sk.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);

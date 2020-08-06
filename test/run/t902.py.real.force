@@ -1,7 +1,0 @@
-TypeError('first argument must be callable')
-TypeError('first argument must be callable')
-TypeError("'int' object is not iterable")
-KeyError('5')
-None
-TypeError('__missing__() takes exactly one argument (2 given)')
-KeyError('{1: 2}')

@@ -318,7 +318,7 @@ class TestDecorators(unittest.TestCase):
             return x
 
         self.assertEqual(42, f(42))
-        self.assertEqual(['inner', 'outer'], calls)
+        self.assertEqual(['outer', 'inner'], calls)
 
 
     def test_class_decorator(self):

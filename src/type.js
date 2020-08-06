@@ -179,6 +179,15 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     return klass;
 };
 
+Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
+    call: { value: Function.prototype.call },
+    apply: { value: Function.prototype.apply },
+    ob$type: { value: Sk.builtin.type, writable: true },
+    tp$name: { value: "type", writable: true },
+    tp$base: { value: Sk.builtin.object, writable: true },
+    sk$type: { value: true },
+});
+
 /**
  * @param {Array} args
  * @param {Array=} kwargs
@@ -207,7 +216,6 @@ Sk.builtin.type.prototype.$r = function () {
     }
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
 };
-
 Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
     // first check that the pyName is indeed a string
     let res;
