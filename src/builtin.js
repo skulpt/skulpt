@@ -909,6 +909,10 @@ Sk.builtin.isinstance = function isinstance(obj, type) {
     }
 
     // Normal case
+    if (obj.ob$type === type) {
+        return Sk.builtin.bool.true$;
+    }
+
     if (!(type instanceof Sk.builtin.tuple)) {
         return obj.ob$type.$isSubType(type) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }

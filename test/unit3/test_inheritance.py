@@ -113,14 +113,6 @@ class InheritanceTesting(unittest.TestCase):
         self.assertTrue(issubclass(type, object))
         self.assertFalse(issubclass(object, type))
 
-        # test type and object
-        self.assertTrue(isinstance(type, object))
-        self.assertTrue(isinstance(type, type))
-        self.assertTrue(isinstance(object, object))
-        self.assertTrue(isinstance(object, type))
-        self.assertTrue(issubclass(type, object))
-        self.assertFalse(issubclass(object, type))
-
 if __name__ == '__main__':
     unittest.main()
             
