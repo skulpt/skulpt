@@ -74,6 +74,15 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(UnicodeEncodeError, bytes, "ÿ", "ascii")
 
     def test_comparisons(self):
+        a = bytes([1, 2, 3])
+        b = bytes([1, 2, 3])
+        c = bytes([4, 5, 6])
+        self.assertTrue(a == a)
+        self.assertTrue(a == b)
+        self.assertFalse(a == c)
+        self.assertFalse(a != a)
+        self.assertFalse(a != b)
+        self.assertTrue(a != c)
         self.assertTrue(bytes([97, 98, 122]) == bytes("abz", 'ascii'))
         self.assertFalse(bytes([97, 98, 122]) != bytes("abz", 'ascii'))
         self.assertFalse(bytes([97, 120]) == bytes([97, 120, 100]))

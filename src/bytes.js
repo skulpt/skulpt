@@ -208,32 +208,16 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
 };
 
 Sk.builtin.bytes.prototype.ob$eq = function (other) {
-    var i;
-    var val1;
-    var val2;
-    var iter1;
-    var iter2;
-
     if (this === other) {
         return Sk.builtin.bool.true$;
-    }
-
-    if (!(other instanceof Sk.builtin.bytes)) {
+    } else if (!(other instanceof Sk.builtin.bytes)) {
+        return Sk.builtin.bool.false$;
+    } else if (this.v.byteLength != other.v.byteLength) {
         return Sk.builtin.bool.false$;
     }
-    if (this.sq$length() != other.sq$length()) {
-        return Sk.builtin.bool.false$;
-    }
-    iter1 = this.tp$iter();
-    iter2 = other.tp$iter();
 
-    for (i = 0; i < this.sq$length(); i ++) {
-        val1 = iter1.tp$iternext();
-        val2 = iter2.tp$iternext();
-        if (val1 === undefined || val2 === undefined) {
-            break;
-        }
-        if (val1.v != val2.v) {
+    for (let i = 0; i < this.v.byteLength; i++) {
+        if (this.v[i] != other.v[i]) {
             return Sk.builtin.bool.false$;
         }
     }
@@ -242,7 +226,8 @@ Sk.builtin.bytes.prototype.ob$eq = function (other) {
 };
 
 Sk.builtin.bytes.prototype.ob$ne = function (other) {
-    return (!(this.ob$eq(other)));
+    return Sk.misceval.isTrue(this.ob$eq(other)) ?
+        Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
 };
 
 Sk.builtin.bytes.prototype.sq$length = function () {
