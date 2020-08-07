@@ -25,7 +25,7 @@ Sk.builtin.BaseException = function (...args) {
     // If args[0] is a string then we're an internal call
     if (typeof args[0] === "string") {
         this.args = new Sk.builtin.tuple([new Sk.builtin.str(args[0])]);
-        if (args.length === 3) {
+        if (args.length >= 3) {
             // For errors occurring during normal execution, the line/col/etc
             // of the error are populated by each stack frame of the runtime code,
             // but we can seed it with the supplied parameters.
