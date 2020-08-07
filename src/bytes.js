@@ -140,9 +140,9 @@ function makehexform (num) {
     }
     num = num.toString(16);
     if (num.length === 3) {
-        num = num.slice(1,3);
+        num = num.slice(1, 3);
     }
-    if (num.length  === 1) {
+    if (num.length === 1) {
         num = leading + "0" + num;
     } else {
         num = leading + num;
@@ -287,7 +287,7 @@ Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.sq$r
 Sk.builtin.bytes.prototype.sq$contains = function (item) {
     if (Sk.builtin.checkInt(item)) {
         const val = Sk.builtin.asnum$(item);
-        if ((val < 0) || (val > 255)) {
+        if (val < 0 || val > 255) {
             throw new Sk.builtin.ValueError("byte must be in range(0, 256)");
         }
 
@@ -360,7 +360,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
 
     if (encoding === "ascii") {
         final = "";
-        for (i=0; i<self.v.byteLength; i++) {
+        for (i = 0; i < self.v.byteLength; i++) {
             val = self.v[i];
             if (val > 127) {
                 if (errors === "strict") {
@@ -443,7 +443,7 @@ Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
                 throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
             }
         } else if (checkspace(char)) {
-            i ++;
+            i++;
         } else {
             throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
         }
