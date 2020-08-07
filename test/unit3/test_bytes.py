@@ -88,6 +88,29 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(bytes([97, 120]) == bytes([97, 120, 100]))
         self.assertFalse(bytes([97, 98, 99]) == bytes("abd", "ascii"))
 
+    def test_contains(self):
+        b = b"abc"
+        self.assertIn(ord('a'), b)
+        self.assertIn(int(ord('a')), b)
+        self.assertNotIn(200, b)
+        self.assertRaises(ValueError, lambda: 300 in b)
+        self.assertRaises(ValueError, lambda: -1 in b)
+        # self.assertRaises(ValueError, lambda: sys.maxsize+1 in b)
+        self.assertRaises(TypeError, lambda: None in b)
+        self.assertRaises(TypeError, lambda: float(ord('a')) in b)
+        self.assertRaises(TypeError, lambda: "a" in b)
+        self.assertIn(bytes(b""), b)
+        self.assertIn(bytes(b"a"), b)
+        self.assertIn(bytes(b"b"), b)
+        self.assertIn(bytes(b"c"), b)
+        self.assertIn(bytes(b"ab"), b)
+        self.assertIn(bytes(b"bc"), b)
+        self.assertIn(bytes(b"abc"), b)
+        self.assertNotIn(bytes(b"ac"), b)
+        self.assertNotIn(bytes(b"d"), b)
+        self.assertNotIn(bytes(b"dab"), b)
+        self.assertNotIn(bytes(b"abd"), b)
+
     def test_decode(self):
         a = bytes("abc", "ascii")
         b0 = [67,127,102]

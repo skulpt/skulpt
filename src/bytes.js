@@ -1,9 +1,29 @@
 require("fastestsmallesttextencoderdecoder");
 
+// Mapping from supported valid encodings to normalized encoding name
+const supportedEncodings = {
+    "utf": "utf-8",
+    "utf8": "utf-8",
+    "utf-8": "utf-8",
+    "ascii": "ascii"
+};
+
+function normalizeEncoding (encoding) {
+    const normalized = encoding.replace(/\s+/g, "").toLowerCase();
+    const supported = supportedEncodings[normalized];
+    if (supported === undefined) {
+        return encoding;
+    } else {
+        return supported;
+    }
+}
+
 /**
  * @constructor
- * @param {*} x
- * @extends Sk.builtin.object
+ * @param {*} source
+ * @param {Sk.builtin.str=} encoding
+ * @param {Sk.builtin.str=} errors
+ * @return {Sk.builtin.bytes}
  */
 
 Sk.builtin.bytes = function (source, encoding, errors) {
@@ -32,45 +52,33 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         return new Sk.builtin.bytes(0);
     }
     if (arguments.length === 1) {
-        if (source instanceof Sk.builtin.int_ || typeof source === "number") {
-            if (source instanceof Sk.builtin.int_) {
-                source = source.v;
-            }
+        if (Sk.builtin.checkInt(source)) {
+            source = Sk.builtin.asnum$(source);
             arr = new Uint8Array(source);
-        } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) || source instanceof Array) {
+        } else if (source instanceof Sk.builtin.bytes) {
+            return source;
+        } else if (Array.isArray(source)) {
+            // Internal fast path
+            Sk.asserts.assert(source.every((x) => (x >= 0) && (x < 256)),
+                              "Bad internal call to bytes with array object");
+            arr = new Uint8Array(source);
+        } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str))) {
             const final = [];
-            let i = 0;
-            if (source instanceof Array) {
-                for (i in source) {
-                    if (typeof source[i] === "number") {
-                        if (source[i] >= 0 && source[i] < 256) {
-                            final.push(source[i]);
-                        } else {
-                            throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
-                        }
+            for (let iter = Sk.abstr.iter(source), item = iter.tp$iternext();
+                item !== undefined;
+                item = iter.tp$iternext()) {
+                if (Sk.builtin.checkInt(item)) {
+                    item = Sk.builtin.asnum$(item);
+                    if (item >= 0 && item <= 256) {
+                        final.push(item);
                     } else {
-                        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(source[i]) + "' " + "object cannot be interpreted as an integer");
+                        throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
                     }
-                }
-            } else {
-                for (let iter = Sk.abstr.iter(source), item = iter.tp$iternext();
-                    item !== undefined;
-                    item = iter.tp$iternext()) {
-                    if (item instanceof Sk.builtin.int_ ) {
-                        if (item.v >= 0 && item.v <= 256) {
-                            final.push(item.v);
-                            i++;
-                        } else {
-                            throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
-                        }
-                    } else {
-                        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
-                    }
+                } else {
+                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
                 }
             }
             arr = new Uint8Array(final);
-        } else if (source instanceof Sk.builtin.bytes) {
-            return source;
         } else if ((source instanceof Sk.builtin.str) || (typeof source === "string")) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         } else {
@@ -83,7 +91,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     source = source.$jsstr();
                 }
 
-                encoding = encoding.$jsstr();
+                encoding = normalizeEncoding(encoding.$jsstr());
                 if (encoding === "ascii") {
                     const data = [];
                     for (let i in source) {
@@ -120,7 +128,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     return this;
 };
 
-var makehexform = function (num) {
+function makehexform (num) {
     var leading;
     if (num <= 265) {
         leading = "\\x";
@@ -150,7 +158,7 @@ Sk.builtin.bytes.prototype["$r"] = function () {
         num = this.v[i];
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
             ret += makehexform(num);
-        } else if (num === 9 || num === 10 || num === 13 || num === 92) {
+        } else if (num === 9 || num === 10 || num === 13 || num === 39 || num === 92) {
             switch (num) {
                 case 9:
                     ret += "\\t";
@@ -160,6 +168,9 @@ Sk.builtin.bytes.prototype["$r"] = function () {
                     break;
                 case 13:
                     ret += "\\r";
+                    break;
+                case 39:
+                    ret += "\\'";
                     break;
                 case 92:
                     ret += "\\\\";
@@ -189,19 +200,10 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
         }
     } else if (index instanceof Sk.builtin.slice) {
         ret = [];
-        if (index.start.v < 0) {
-            index.start.v = 0;
-        }
-        if (index.stop.v > this.v.byteLength) {
-            index.stop.v = this.v.byteLength;
-        }
-        if (index.stop.v < 0) {
-            index.stop.v = this.v.byteLength + index.stop.v;
-        }
-        index.sssiter$(this, function (i, wrt) {
-            ret.push(new Sk.builtin.int_(wrt.v[i]));
+        index.sssiter$(this.v.byteLength, (i) => {
+            ret.push(this.v[i]);
         });
-        return new Sk.builtin.bytes(new Sk.builtin.list(ret));
+        return new Sk.builtin.bytes(ret);
     }
 
     throw new Sk.builtin.TypeError("byte indices must be integers, not " + Sk.abstr.typeName(index));
@@ -211,7 +213,7 @@ Sk.builtin.bytes.prototype.ob$eq = function (other) {
     if (this === other) {
         return Sk.builtin.bool.true$;
     } else if (!(other instanceof Sk.builtin.bytes)) {
-        return Sk.builtin.bool.false$;
+        return Sk.builtin.NotImplemented.NotImplemented$;
     } else if (this.v.byteLength != other.v.byteLength) {
         return Sk.builtin.bool.false$;
     }
@@ -280,13 +282,45 @@ Sk.builtin.bytes.prototype.nb$multiply = Sk.builtin.bytes.prototype.sq$repeat;
 Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.sq$repeat;
 
 Sk.builtin.bytes.prototype.sq$contains = function (item) {
-    var it;
-    var i;
-    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.misceval.richCompareBool(i, item, "Eq")) {
-            return true;
+    if (Sk.builtin.checkInt(item)) {
+        const val = Sk.builtin.asnum$(item);
+        if ((val < 0) || (val > 255)) {
+            throw new Sk.builtin.ValueError("byte must be in range(0, 256)");
+        }
+
+        return this.v.indexOf(val) !== -1;
+    } else if (!(item instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not " + Sk.abstr.typeName(item));
+    }
+
+    if (item.v.byteLength === 0) {
+        return true;
+    } else if (item.v.byteLength === 1) {
+        return this.v.indexOf(item.v[0]) !== -1;
+    } else {
+        // Currently can't test for array/subarray equality with typed arrays
+        let start = 0;
+        while (start < this.v.byteLength) {
+            const idx = this.v.indexOf(item.v[0], start);
+            if (idx === -1) {
+                break;
+            }
+
+            let match = true;
+            for (let j = 0; j < item.v.byteLength; j++) {
+                if (this.v[idx + j] !== item.v[j]) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                return true;
+            }
+            start = idx + 1;
         }
     }
+
     return false;
 };
 
@@ -297,12 +331,13 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
     Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 1, 2);
 
     if (encoding === undefined) {
-        encoding = Sk.builtin.str.$utf8;
-    }
-
-    if (!(encoding instanceof Sk.builtin.str)) {
+        encoding = "utf-8";
+    } else if (!(encoding instanceof Sk.builtin.str)) {
         throw new Sk.builtin.TypeError("decode() argument 1 must be str, not " + Sk.abstr.typeName(encoding));
+    } else {
+        encoding = encoding.v;
     }
+    encoding = normalizeEncoding(encoding);
 
     if (errors === undefined) {
         errors = "strict";
@@ -316,11 +351,11 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
         throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
     }
 
-    if (!(encoding.v === "ascii" || encoding.v === "utf-8")) {
+    if (!(encoding === "ascii" || encoding === "utf-8")) {
         throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
     }
 
-    if (encoding.v === "ascii") {
+    if (encoding === "ascii") {
         final = "";
         for (i=0; i<self.v.byteLength; i++) {
             val = self.v[i];
@@ -336,7 +371,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
             }
         }
     } else {
-        const string = new TextDecoder(encoding.$jsstr()).decode(self.v.buffer);
+        const string = new TextDecoder(encoding).decode(self.v.buffer);
         if (errors === "replace") {
             return new Sk.builtin.str(string);
         }
@@ -431,21 +466,13 @@ Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str(final);
 });
 
-Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, start, end) {
-    var count;
-    var i;
-    var len;
-    var val;
-    var val1;
-    var index;
-    Sk.builtin.pyCheckArgsLen("count", arguments.length - 1, 1, 3);
-    
+function indices (self, start, end) {
     if (start === undefined) {
         start = 0;
-    } else if (!(start instanceof Sk.builtin.int_)) {
+    } else if (!Sk.misceval.isIndex(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     } else {
-        start = start.v;
+        start = Sk.misceval.asIndex(start);
         if (start + self.v.byteLength < 0) {
             start = 0 - self.v.byteLength;
         }
@@ -455,10 +482,10 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
     }
     if (end === undefined) {
         end = self.v.byteLength;
-    } else if (!(end instanceof Sk.builtin.int_)) {
+    } else if (!Sk.misceval.isIndex(end)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     } else {
-        end = end.v;
+        end = Sk.misceval.asIndex(end);
         if (end > self.v.byteLength) {
             end = self.v.byteLength;
         }
@@ -466,23 +493,41 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
             end += self.v.byteLength;
         }
     }
+
+    return {
+        startidx: start,
+        endidx: end
+    };
+}
+
+Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, start, end) {
+    var count;
+    var i;
+    var len;
+    var val;
+    var val1;
+    var index;
+    Sk.builtin.pyCheckArgsLen("count", arguments.length - 1, 1, 3);
+
+    let { startidx, endidx } = indices(self, start, end);
+
     count = 0;
     if (sub instanceof Sk.builtin.int_) {
-        for (i = start; i < end; i++) {
+        for (i = startidx; i < endidx; i++) {
             if (self.v[i] === sub.v) {
                 count++;
             }
         }
     } else if (sub instanceof Sk.builtin.bytes) {
         len = sub.v.byteLength;
-        while (start + len <= end) {
-            index = new Sk.builtin.slice(start, start + len);
+        while (startidx + len <= endidx) {
+            index = new Sk.builtin.slice(startidx, startidx + len);
             val = self.mp$subscript(index);
             if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
                 count += 1;
-                start += len;
+                startidx += len;
             } else {
-                start += 1;
+                startidx += 1;
             }
         }
     } else {
@@ -502,34 +547,8 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
     if (!(suffix instanceof Sk.builtin.bytes || suffix instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("endswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(suffix));
     }
-    if (start === undefined) {
-        start = 0;
-    } else {
-        if (!(start instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        start = start.v;
-        if (start + self.v.byteLength < 0) {
-            start = 0 - self.v.byteLength;
-        }
-        if (start < 0) {
-            start += self.v.byteLength;
-        }
-    }
-    if (end === undefined) {
-        end = self.v.byteLength;
-    } else {
-        if (!(end instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        end = end.v;
-        if (end > self.v.byteLength) {
-            end = self.v.byteLength;
-        }
-        if (end < 0) {
-            end += self.v.byteLength;
-        }
-    }
+
+    let { startidx, endidx } = indices(self, start, end);
 
     negend = function (idx, object, suff) {
         var i;
@@ -558,13 +577,13 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
                 throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
             }
             len = item.v.byteLength;
-            if ((end - start) >= len) {
-                if (end < 0) {
-                    if (negend(end, self, item) === Sk.builtin.bool.$true) {
+            if ((endidx - startidx) >= len) {
+                if (endidx < 0) {
+                    if (negend(endidx, self, item) === Sk.builtin.bool.$true) {
                         return Sk.builtin.bool.$true;
                     }
                 }
-                index = new Sk.builtin.slice(end - len, end);
+                index = new Sk.builtin.slice(endidx - len, endidx);
                 val = self.mp$subscript(index);
                 if (val.ob$eq(item) === Sk.builtin.bool.true$) {
                     return Sk.builtin.bool.true$;
@@ -574,11 +593,11 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
         return Sk.builtin.bool.false$;
     } else {
         len = suffix.v.byteLength;
-        if ((end - start) >= len) {
-            if (end < 0) {
-                return (negend(end, self, suffix));
+        if ((endidx - startidx) >= len) {
+            if (endidx < 0) {
+                return (negend(endidx, self, suffix));
             }
-            index = new Sk.builtin.slice(end - len, end);
+            index = new Sk.builtin.slice(endidx - len, endidx);
             val = self.mp$subscript(index);
             if (val.ob$eq(suffix) === Sk.builtin.bool.true$) {
                 return Sk.builtin.bool.true$;
@@ -593,36 +612,10 @@ Sk.builtin.bytes.prototype.find_item_ = function (sub, start, end) {
     var len;
     var val;
 
-    if (start === undefined) {
-        start = 0;
-    } else {
-        if (!(start instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        start = start.v;
-        if (start + this.v.byteLength < 0) {
-            start = 0 - this.v.byteLength;
-        }
-        if (start < 0) {
-            start += this.v.byteLength;
-        }
-    }
-    if (end === undefined) {
-        end = this.v.byteLength;
-    } else {
-        if (!(end instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        end = end.v;
-        if (end > this.v.byteLength) {
-            end = this.v.byteLength;
-        }
-        if (end < 0) {
-            end += this.v.byteLength;
-        }
-    }
+    let { startidx, endidx } = indices(this, start, end);
+
     if (sub instanceof Sk.builtin.int_) {
-        for (i = start; i < end; i++) {
+        for (i = startidx; i < endidx; i++) {
             if (this.v[i] === sub.v) {
                 return new Sk.builtin.int_(i);
             }
@@ -630,13 +623,13 @@ Sk.builtin.bytes.prototype.find_item_ = function (sub, start, end) {
         return new Sk.builtin.int_(-1);
     } else if (sub instanceof Sk.builtin.bytes) {
         len = sub.v.byteLength;
-        while (start + len <= end) {
-            i = new Sk.builtin.slice(start, start + len);
+        while (startidx + len <= endidx) {
+            i = new Sk.builtin.slice(startidx, startidx + len);
             val = this.mp$subscript(i);
             if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
-                return new Sk.builtin.int_(start);
+                return new Sk.builtin.int_(startidx);
             }
-            start++;
+            startidx++;
         }
         return new Sk.builtin.int_(-1);
     } else {
@@ -714,7 +707,7 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
     val = Sk.builtin.bytes.prototype.find_item_.call(self, sep);
     val = val.v;
     if (val === -1) {
-        final1 = new Sk.builtin.bytes(self);
+        final1 = self;
         final2 = new Sk.builtin.bytes(0);
         final3 = new Sk.builtin.bytes(0);
     } else {
@@ -785,49 +778,24 @@ Sk.builtin.bytes.prototype.right_find_ = function (sub, start, end) {
     var val;
     var final;
     final = -1;
-    if (start === undefined) {
-        start = 0;
-    } else {
-        if (!(start instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        start = start.v;
-        if (start + this.v.byteLength < 0) {
-            start = 0 - this.v.byteLength;
-        }
-        if (start < 0) {
-            start += this.v.byteLength;
-        }
-    }
-    if (end === undefined) {
-        end = this.v.byteLength;
-    } else {
-        if (!(end instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        end = end.v;
-        if (end > this.v.byteLength) {
-            end = this.v.byteLength;
-        }
-        if (end < 0) {
-            end += this.v.byteLength;
-        }
-    }
+
+    let { startidx, endidx } = indices(this, start, end);
+
     if (sub instanceof Sk.builtin.int_) {
-        for (i = start; i < end; i++) {
+        for (i = startidx; i < endidx; i++) {
             if (this.v[i] === sub.v) {
                 final = i;
             }
         }
     } else if (sub instanceof Sk.builtin.bytes) {
         len = sub.v.byteLength;
-        while (start + len <= end) {
-            i = new Sk.builtin.slice(start, start + len);
+        while (startidx + len <= endidx) {
+            i = new Sk.builtin.slice(startidx, startidx + len);
             val = this.mp$subscript(i);
             if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
-                final = start;
+                final = startidx;
             }
-            start++;
+            startidx++;
         }
     } else {
         throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
@@ -895,34 +863,9 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
     if (!(prefix instanceof Sk.builtin.bytes || prefix instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("startswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(prefix));
     }
-    if (start === undefined) {
-        start = 0;
-    } else {
-        if (!(start instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        start = start.v;
-        if (start + self.v.byteLength < 0) {
-            start = 0 - self.v.byteLength;
-        }
-        if (start < 0) {
-            start += self.v.byteLength;
-        }
-    }
-    if (end === undefined) {
-        end = self.v.byteLength;
-    } else {
-        if (!(end instanceof Sk.builtin.int_)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        end = end.v;
-        if (end > self.v.byteLength) {
-            end = self.v.byteLength;
-        }
-        if (end < 0) {
-            end += self.v.byteLength;
-        }
-    }
+
+    let { startidx, endidx } = indices(self, start, end);
+
     negstart = function (idx, object, pref) {
         var i;
         var j;
@@ -949,13 +892,13 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
                 throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
             }
             len = item.v.byteLength;
-            if (start + len <= end) {
-                if (start < 0) {
-                    if (negstart(start, self, prefix) === Sk.builtin.bool.true$) {
+            if (startidx + len <= endidx) {
+                if (startidx < 0) {
+                    if (negstart(startidx, self, prefix) === Sk.builtin.bool.true$) {
                         return Sk.builtin.bool.true$;
                     }
                 }
-                index = new Sk.builtin.slice(start, start + len);
+                index = new Sk.builtin.slice(startidx, startidx + len);
                 val = self.mp$subscript(index);
                 if (val.ob$eq(item) === Sk.builtin.bool.true$) {
                     return Sk.builtin.bool.true$;
@@ -965,11 +908,11 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
         return Sk.builtin.bool.false$;
     } else {
         len = prefix.v.byteLength;
-        if (start + len <= end) {
-            if (start < 0) {
-                return negstart(start, self, prefix);
+        if (startidx + len <= endidx) {
+            if (startidx < 0) {
+                return negstart(startidx, self, prefix);
             }
-            index = new Sk.builtin.slice(start, start + len);
+            index = new Sk.builtin.slice(startidx, startidx + len);
             val = self.mp$subscript(index);
             if (val.ob$eq(prefix) === Sk.builtin.bool.true$) {
                 return Sk.builtin.bool.true$;
@@ -1065,12 +1008,12 @@ Sk.builtin.bytes.prototype.left_strip_ = function (chars) {
     var i;
     var j;
     var final;
-    
+
     if (chars === undefined || chars === Sk.builtin.none.none$) {
         // default is to remove ASCII whitespace
         leading = [9, 10, 11, 12, 13, 32, 133];
     } else if (!(chars instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");  
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");
     } else {
         leading = [];
         for (i = 0; i < chars.v.byteLength; i++) {
@@ -1139,12 +1082,12 @@ Sk.builtin.bytes.prototype.right_strip_ = function (chars) {
     var i;
     var j;
     var final;
-    
+
     if (chars === undefined || chars === Sk.builtin.none.none$) {
         // default is to remove ASCII whitespace
         ending = [9, 10, 11, 12, 13, 32, 133];
     } else if (!(chars instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");  
+        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");
     } else {
         ending = [];
         for (i = 0; i < chars.v.byteLength; i++) {
@@ -1391,7 +1334,7 @@ Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.bytes.prototype["title"] = new Sk.builtin.func(function (self) {
-    throw new Sk.builtin.NotImplementedError("title() bytes method not implemented in Skulpt"); 
+    throw new Sk.builtin.NotImplementedError("title() bytes method not implemented in Skulpt");
 });
 
 Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {
@@ -1467,7 +1410,7 @@ Sk.builtin.bytes_iter_ = function (bts) {
     }
     this.$index = 0;
     this.sq$length = bts.v.byteLength;
-    this.tp$iter = this;
+    this.tp$iter = () => this;
     this.tp$iternext = function () {
         if (this.$index >= this.sq$length) {
             return undefined;
