@@ -1,9 +1,5 @@
 require("fastestsmallesttextencoderdecoder");
 
-function uint8ToBuffer(arr) {
-    return arr.buffer.slice(arr.byteOffset, arr.byteLength + arr.byteOffset);
-}
-
 /**
  * @constructor
  * @param {*} x
@@ -12,7 +8,7 @@ function uint8ToBuffer(arr) {
 
 Sk.builtin.bytes = function (source, encoding, errors) {
     let view;
-    let ret;
+    let arr;
 
     if (!(this instanceof Sk.builtin.bytes)) {
         return new Sk.builtin.bytes(...arguments);
@@ -40,8 +36,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
             if (source instanceof Sk.builtin.int_) {
                 source = source.v;
             }
-            const buffer = new ArrayBuffer(source);
-            view = new DataView(buffer);
+            arr = new Uint8Array(source);
         } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str)) || source instanceof Array) {
             const final = [];
             let i = 0;
@@ -73,8 +68,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     }
                 }
             }
-            const arr = new Uint8Array(final);
-            view = new DataView(uint8ToBuffer(arr));
+            arr = new Uint8Array(final);
         } else if (source instanceof Sk.builtin.bytes) {
             return source;
         } else if ((source instanceof Sk.builtin.str) || (typeof source === "string")) {
@@ -106,13 +100,12 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                             data.push(val);
                         }
                     }
-                    ret = Uint8Array.from(data);
+                    arr = Uint8Array.from(data);
                 } else if (encoding === "utf-8") {
-                    ret = new TextEncoder().encode(source);
+                    arr = new TextEncoder().encode(source);
                 } else {
                     throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
                 }
-                view = new DataView(uint8ToBuffer(ret));
             } else {
                 throw new Sk.builtin.TypeError("encoding without a string argument");
             }
@@ -121,7 +114,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         }
     }
 
-    this.v = view;
+    this.v = arr;
     this.__class__ = Sk.builtin.bytes;
 
     return this;
@@ -154,7 +147,7 @@ Sk.builtin.bytes.prototype["$r"] = function () {
     var num;
     ret = "";
     for (i = 0; i < this.v.byteLength; i++) {
-        num = this.v.getUint8(i);
+        num = this.v[i];
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
             ret += makehexform(num);
         } else if (num === 9 || num === 10 || num === 13 || num === 92) {
@@ -192,7 +185,7 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
             if (i < 0 || i >= this.v.byteLength) {
                 throw new Sk.builtin.IndexError("index out of range");
             }
-            return new Sk.builtin.int_(this.v.getUint8(i));
+            return new Sk.builtin.int_(this.v[i]);
         }
     } else if (index instanceof Sk.builtin.slice) {
         ret = [];
@@ -206,7 +199,7 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
             index.stop.v = this.v.byteLength + index.stop.v;
         }
         index.sssiter$(this, function (i, wrt) {
-            ret.push(new Sk.builtin.int_(wrt.v.getUint8(i)));
+            ret.push(new Sk.builtin.int_(wrt.v[i]));
         });
         return new Sk.builtin.bytes(new Sk.builtin.list(ret));
     }
@@ -261,7 +254,7 @@ Sk.builtin.bytes.prototype.bytes_copy_ = function () {
     var final;
     final = [];
     for (i = 0; i < this.v.byteLength; i++) {
-        final.push(this.v.getUint8(i));
+        final.push(this.v[i]);
     }
     return new Sk.builtin.bytes(final);
 };
@@ -273,10 +266,10 @@ Sk.builtin.bytes.prototype.sq$concat = function (other) {
     }
     lis = [];
     for (i = 0; i < this.v.byteLength; i++) {
-        lis.push(this.v.getUint8(i));
+        lis.push(this.v[i]);
     }
     for (i = 0; i < other.v.byteLength; i++) {
-        lis.push(other.v.getUint8(i));
+        lis.push(other.v[i]);
     }
     return new Sk.builtin.bytes(lis);
 };
@@ -293,7 +286,7 @@ Sk.builtin.bytes.prototype.sq$repeat = function (n) {
     ret = [];
     for (j = 0; j < n.v; j++) {
         for (i = 0; i < this.v.byteLength; i++) {
-            ret.push(this.v.getUint8(i));
+            ret.push(this.v[i]);
         }
     }
     return new Sk.builtin.bytes(ret);
@@ -345,7 +338,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
     if (encoding.v === "ascii") {
         final = "";
         for (i=0; i<self.v.byteLength; i++) {
-            val = self.v.getUint8(i);
+            val = self.v[i];
             if (val > 127) {
                 if (errors === "strict") {
                     val = val.toString(16);
@@ -366,7 +359,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
         for (i in string) {
             if (string[i].charCodeAt(0) === 65533) {
                 if (errors === "strict") {
-                    val = self.v.getUint8(i);
+                    val = self.v[i];
                     val = val.toString(16);
                     throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + val + " in position " + i.toString() + ": invalid start byte");
                 }
@@ -443,7 +436,7 @@ Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("hex", arguments.length - 1, 0, 0);
     final = "";
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         val = val.toString(16);
         if (val.length === 1) {
             val = "0" + val;
@@ -491,7 +484,7 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
     count = 0;
     if (sub instanceof Sk.builtin.int_) {
         for (i = start; i < end; i++) {
-            if (self.v.getUint8(i) === sub.v) {
+            if (self.v[i] === sub.v) {
                 count++;
             }
         }
@@ -560,11 +553,11 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
         var val2;
         for (i = idx - suff.v.byteLength, j = 0; j < suff.v.byteLength; i++, j++) {
             if (i < 0) {
-                val1 = object.v.getUint8(i + object.v.byteLength);
+                val1 = object.v[i + object.v.byteLength];
             } else {
-                val1 = object.v.getUint8(i);
+                val1 = object.v[i];
             }
-            val2 = suff.v.getUint8(j);
+            val2 = suff.v[j];
             if (val1 != val2) {
                 return Sk.builtin.bool.$false;
             }
@@ -645,7 +638,7 @@ Sk.builtin.bytes.prototype.find_item_ = function (sub, start, end) {
     }
     if (sub instanceof Sk.builtin.int_) {
         for (i = start; i < end; i++) {
-            if (this.v.getUint8(i) === sub.v) {
+            if (this.v[i] === sub.v) {
                 return new Sk.builtin.int_(i);
             }
         }
@@ -697,7 +690,7 @@ Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterabl
     final = [];
     sep = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        sep.push(self.v.getUint8(i));
+        sep.push(self.v[i]);
     }
     i = 0;
     for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
@@ -710,7 +703,7 @@ Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterabl
             final = final.concat(sep);
         }
         for (i = 0; i < item.v.byteLength; i++) {
-            final.push(item.v.getUint8(i));
+            final.push(item.v[i]);
         }
         i++;
     }
@@ -774,7 +767,7 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     final = [];
     sep = [];
     for (i = 0; i < repl.v.byteLength; i++) {
-        sep.push(repl.v.getUint8(i));
+        sep.push(repl.v[i]);
     }
     len = old.v.byteLength;
     i = 0;
@@ -787,12 +780,12 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
             i += len;
             tot++;
         } else {
-            final.push(self.v.getUint8(i));
+            final.push(self.v[i]);
             i++;
         }
         if (i > self.v.byteLength - len) {
             for (idx = i; i < self.v.byteLength; i++) {
-                final.push(self.v.getUint8(idx));
+                final.push(self.v[idx]);
             }
             break;
         }
@@ -837,7 +830,7 @@ Sk.builtin.bytes.prototype.right_find_ = function (sub, start, end) {
     }
     if (sub instanceof Sk.builtin.int_) {
         for (i = start; i < end; i++) {
-            if (this.v.getUint8(i) === sub.v) {
+            if (this.v[i] === sub.v) {
                 final = i;
             }
         }
@@ -952,11 +945,11 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
         var val2;
         for (i = idx, j = 0; j < pref.v.byteLength; i++, j++) {
             if (i < 0) {
-                val1 = object.v.getUint8(i + object.v.byteLength);
+                val1 = object.v[i + object.v.byteLength];
             } else {
-                val1 = object.v.getUint8(i);
+                val1 = object.v[i];
             }
-            val2 = pref.v.getUint8(j);
+            val2 = pref.v[j];
             if (val1 != val2) {
                 return Sk.builtin.bool.false$;
             }
@@ -1018,7 +1011,7 @@ Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function (self, width
     } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
         throw new Sk.builtin.TypeError("center() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
     } else {
-        fillbyte = fillbyte.v.getUint8(0);
+        fillbyte = fillbyte.v[0];
     }
     if (!(width instanceof Sk.builtin.int_)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
@@ -1041,7 +1034,7 @@ Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function (self, width
         final.push(fillbyte);
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v.getUint8(i));
+        final.push(self.v[i]);
     }
     for (i = 0; i < fill2; i++) {
         final.push(fillbyte);
@@ -1060,7 +1053,7 @@ Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, width,
     } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
         throw new Sk.builtin.TypeError("ljust() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
     } else {
-        fillbyte = fillbyte.v.getUint8(0);
+        fillbyte = fillbyte.v[0];
     }
     if (!(width instanceof Sk.builtin.int_)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
@@ -1072,7 +1065,7 @@ Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, width,
     }
     final = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v.getUint8(i));
+        final.push(self.v[i]);
     }
     for (i = 0; i < width - self.v.byteLength; i++) {
         final.push(fillbyte);
@@ -1096,20 +1089,20 @@ Sk.builtin.bytes.prototype.left_strip_ = function (chars) {
     } else {
         leading = [];
         for (i = 0; i < chars.v.byteLength; i++) {
-            leading.push(chars.v.getUint8(i));
+            leading.push(chars.v[i]);
         }
     }
     final = [];
     i = 0;
     while (i < this.v.byteLength) {
-        if (!(leading.includes(this.v.getUint8(i)))) {
+        if (!(leading.includes(this.v[i]))) {
             break;
         } else {
             i++;
         }
     }
     for (j = i; j < this.v.byteLength; j++) {
-        final.push(this.v.getUint8(j));
+        final.push(this.v[j]);
     }
 
     return new Sk.builtin.bytes(final);
@@ -1131,7 +1124,7 @@ Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width,
     } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
         throw new Sk.builtin.TypeError("rjust() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
     } else {
-        fillbyte = fillbyte.v.getUint8(0);
+        fillbyte = fillbyte.v[0];
     }
     if (!(width instanceof Sk.builtin.int_)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
@@ -1146,7 +1139,7 @@ Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width,
         final.push(fillbyte);
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v.getUint8(i));
+        final.push(self.v[i]);
     }
 
     return new Sk.builtin.bytes(final);
@@ -1170,20 +1163,20 @@ Sk.builtin.bytes.prototype.right_strip_ = function (chars) {
     } else {
         ending = [];
         for (i = 0; i < chars.v.byteLength; i++) {
-            ending.push(chars.v.getUint8(i));
+            ending.push(chars.v[i]);
         }
     }
     final = [];
     i = this.v.byteLength - 1;
     while (i > -1) {
-        if (!(ending.includes(this.v.getUint8(i)))) {
+        if (!(ending.includes(this.v[i]))) {
             break;
         } else {
             i--;
         }
     }
     for (j = 0; j <= i; j++) {
-        final.push(this.v.getUint8(j));
+        final.push(this.v[j]);
     }
 
     return new Sk.builtin.bytes(final);
@@ -1218,14 +1211,14 @@ Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
         return new Sk.builtin.bytes(0);
     }
     final = [];
-    if (self.v.getUint8(0) >= 97 && self.v.getUint8(0) <= 122) {
-        val = self.v.getUint8(0) - 32;
+    if (self.v[0] >= 97 && self.v[0] <= 122) {
+        val = self.v[0] - 32;
     } else {
-        val = self.v.getUint8(0);
+        val = self.v[0];
     }
     final.push(val);
     for (i = 1; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (val >= 65 && val <= 90) {
             val += 32;
             final.push(val);
@@ -1248,7 +1241,7 @@ Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
         return Sk.builtin.bool.false$;
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!((val >= 48 && val <= 57) || (val >= 65 && val <= 90) || (val >= 97 && val <= 122))) {
             return Sk.builtin.bool.false$;
         }
@@ -1265,7 +1258,7 @@ Sk.builtin.bytes.prototype["isalpha"] = new Sk.builtin.func(function (self) {
         return Sk.builtin.bool.false$;
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!((val >= 65 && val <= 90) || (val >= 97&& val <= 122))) {
             return Sk.builtin.bool.false$;
         }
@@ -1279,7 +1272,7 @@ Sk.builtin.bytes.prototype["isascii"] = new Sk.builtin.func(function (self) {
     var val;
     Sk.builtin.pyCheckArgsLen("isascii", arguments.length - 1, 0, 0);
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!(val >= 0 && val < 128)) {
             return Sk.builtin.bool.false$;
         }
@@ -1296,7 +1289,7 @@ Sk.builtin.bytes.prototype["isdigit"] = new Sk.builtin.func(function (self) {
         return Sk.builtin.bool.false$;
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!(val >= 48 && val < 58)) {
             return Sk.builtin.bool.false$;
         }
@@ -1311,7 +1304,7 @@ Sk.builtin.bytes.prototype["islower"] = new Sk.builtin.func(function (self) {
     var flag;
     Sk.builtin.pyCheckArgsLen("islower", arguments.length - 1, 0, 0);
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (val >= 65 && val <= 90) {
             return Sk.builtin.bool.false$;
         }
@@ -1335,7 +1328,7 @@ Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
         return Sk.builtin.bool.false$;
     }
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!(val === 32 || val === 9 || val === 10 || val === 13 || val === 11 || val === 12)) {
             return Sk.builtin.bool.false$;
         }
@@ -1354,7 +1347,7 @@ Sk.builtin.bytes.prototype["isupper"] = new Sk.builtin.func(function (self) {
     var flag;
     Sk.builtin.pyCheckArgsLen("isupper", arguments.length - 1, 0, 0);
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (!(flag) && (val >= 65 && val <= 90)) {
             flag = true;
         }
@@ -1376,7 +1369,7 @@ Sk.builtin.bytes.prototype["lower"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("lower", arguments.length - 1, 0, 0);
     final = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (val >= 65 && val <= 90) {
             val += 32;
             final.push(val);
@@ -1398,7 +1391,7 @@ Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("swapcase", arguments.length - 1, 0, 0);
     final = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (val >= 65 && val <= 90) {
             val += 32;
             final.push(val);
@@ -1423,7 +1416,7 @@ Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("upper", arguments.length - 1, 0, 0);
     final = [];
     for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v.getUint8(i);
+        val = self.v[i];
         if (val >= 97 && val <= 122) {
             val -= 32;
             final.push(val);
@@ -1448,14 +1441,14 @@ Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, width)
     }
     final = [];
     fill = width.v - self.v.byteLength;
-    if (self.v.getUint8(0) === 43 || self.v.getUint8(0) === 45) {
-        val = self.v.getUint8(0);
+    if (self.v[0] === 43 || self.v[0] === 45) {
+        val = self.v[0];
         final.push(val);
         for (i = 0; i < fill; i++) {
             final.push(48);
         }
         for (i = 1; i < self.v.byteLength; i++) {
-            val = self.v.getUint8(i);
+            val = self.v[i];
             final.push(val);
         }
     } else {
@@ -1463,7 +1456,7 @@ Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, width)
             final.push(48);
         }
         for (i = 0; i < self.v.byteLength; i++) {
-            val = self.v.getUint8(i);
+            val = self.v[i];
             final.push(val);
         }
     }
@@ -1494,7 +1487,7 @@ Sk.builtin.bytes_iter_ = function (bts) {
         if (this.$index >= this.sq$length) {
             return undefined;
         }
-        return new Sk.builtin.int_(bts.v.getUint8(this.$index++));
+        return new Sk.builtin.int_(bts.v[this.$index++]);
     };
     this.$r = function () {
         return new Sk.builtin.str("bytesiterator");
