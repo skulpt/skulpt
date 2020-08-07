@@ -62,6 +62,9 @@ Sk.builtin.bytes = function (source, encoding, errors) {
             Sk.asserts.assert(source.every((x) => (x >= 0) && (x < 256)),
                               "Bad internal call to bytes with array object");
             arr = new Uint8Array(source);
+        } else if (source instanceof Uint8Array) {
+            // Internal fast path
+            arr = source;
         } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str))) {
             const final = [];
             for (let iter = Sk.abstr.iter(source), item = iter.tp$iternext();
@@ -711,12 +714,9 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
         final2 = new Sk.builtin.bytes(0);
         final3 = new Sk.builtin.bytes(0);
     } else {
-        index = new Sk.builtin.slice(0, val);
-        final1 = self.mp$subscript(index);
-        index = new Sk.builtin.slice(val, val + sep.v.byteLength);
-        final2 = self.mp$subscript(index);
-        index = new Sk.builtin.slice(val + sep.v.byteLength, self.v.byteLength);
-        final3 = self.mp$subscript(index);
+        final1 = new Sk.builtin.bytes(self.v.subarray(0, val));
+        final2 = new Sk.builtin.bytes(self.v.subarray(val, val + sep.v.byteLength));
+        final3 = new Sk.builtin.bytes(self.v.subarray(val + sep.v.byteLength, self.v.byteLength));
     }
     len = sep.v.byteLength;
 
