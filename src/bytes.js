@@ -8,7 +8,7 @@ const supportedEncodings = {
     "ascii": "ascii"
 };
 
-function normalizeEncoding (encoding) {
+function normalizeEncoding(encoding) {
     const normalized = encoding.replace(/\s+/g, "").toLowerCase();
     const supported = supportedEncodings[normalized];
     if (supported === undefined) {
@@ -20,7 +20,11 @@ function normalizeEncoding (encoding) {
 
 // Stop gap until Uint8Array.from (or new Uint8Array(iterable)) gets wider support
 // This only handles the simple case used in this file
-function Uint8ArrayFromArray (source) {
+function Uint8ArrayFromArray(source) {
+    if (Uint8Array.from) {
+        return Uint8Array.from(source);
+    }
+
     const uarr = new Uint8Array(source.length);
 
     for (let idx = 0; idx < source.length; idx++) {
@@ -142,7 +146,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     return this;
 };
 
-function makehexform (num) {
+function makehexform(num) {
     var leading;
     if (num <= 265) {
         leading = "\\x";
@@ -483,7 +487,7 @@ Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str(final);
 });
 
-function indices (self, start, end) {
+function indices(self, start, end) {
     if (start === undefined) {
         start = 0;
     } else if (!Sk.misceval.isIndex(start)) {
