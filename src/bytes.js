@@ -18,22 +18,16 @@ function normalizeEncoding (encoding) {
     }
 }
 
-// Simple polyfill for older browsers
-if (!Uint8Array.from) {
-    Uint8Array.from = function (source, mapFn, thisArg) {
-        const uarr = new Uint8Array(source.length);
+// Stop gap until Uint8Array.from (or new Uint8Array(iterable)) gets wider support
+// This only handles the simple case used in this file
+function Uint8ArrayFromArray (source) {
+    const uarr = new Uint8Array(source.length);
 
-        let fxn = (arg) => arg;
-        if (mapFn !== undefined) {
-            fxn = thisArg === undefined ? (arg) => mapFn(arg) : (arg) => mapFn.call(thisArg, arg);
-        }
+    for (let idx = 0; idx < source.length; idx++) {
+        uarr[idx] = source[idx];
+    }
 
-        for (let idx = 0; idx < source.length; idx++) {
-            uarr[idx] = fxn(source[idx]);
-        }
-
-        return uarr;
-    };
+    return uarr;
 }
 
 /**
@@ -78,7 +72,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
             // Internal fast path
             Sk.asserts.assert(source.every((x) => (x >= 0) && (x < 256)),
                               "Bad internal call to bytes with array object");
-            arr = Uint8Array.from(source);
+            arr = Uint8ArrayFromArray(source);
         } else if (source instanceof Uint8Array) {
             // Internal fast path
             arr = source;
@@ -98,7 +92,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
                 }
             }
-            arr = Uint8Array.from(final);
+            arr = Uint8ArrayFromArray(final);
         } else if ((source instanceof Sk.builtin.str) || (typeof source === "string")) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         } else {
@@ -128,7 +122,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                             data.push(val);
                         }
                     }
-                    arr = Uint8Array.from(data);
+                    arr = Uint8ArrayFromArray(data);
                 } else if (encoding === "utf-8") {
                     arr = new TextEncoder().encode(source);
                 } else {
