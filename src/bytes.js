@@ -18,6 +18,24 @@ function normalizeEncoding (encoding) {
     }
 }
 
+// Simple polyfill for older browsers
+if (!Uint8Array.from) {
+    Uint8Array.from = function (source, mapFn, thisArg) {
+        const uarr = new Uint8Array(source.length);
+
+        let fxn = (arg) => arg;
+        if (mapFn !== undefined) {
+            fxn = thisArg === undefined ? (arg) => mapFn(arg) : (arg) => mapFn.call(thisArg, arg);
+        }
+
+        for (let idx = 0; idx < source.length; idx++) {
+            uarr[idx] = fxn(source[idx]);
+        }
+
+        return uarr;
+    };
+}
+
 /**
  * @constructor
  * @param {*} source
@@ -27,7 +45,6 @@ function normalizeEncoding (encoding) {
  */
 
 Sk.builtin.bytes = function (source, encoding, errors) {
-    let view;
     let arr;
 
     if (!(this instanceof Sk.builtin.bytes)) {
@@ -61,7 +78,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
             // Internal fast path
             Sk.asserts.assert(source.every((x) => (x >= 0) && (x < 256)),
                               "Bad internal call to bytes with array object");
-            arr = new Uint8Array(source);
+            arr = Uint8Array.from(source);
         } else if (source instanceof Uint8Array) {
             // Internal fast path
             arr = source;
@@ -81,7 +98,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
                     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
                 }
             }
-            arr = new Uint8Array(final);
+            arr = Uint8Array.from(final);
         } else if ((source instanceof Sk.builtin.str) || (typeof source === "string")) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         } else {
@@ -231,8 +248,11 @@ Sk.builtin.bytes.prototype.ob$eq = function (other) {
 };
 
 Sk.builtin.bytes.prototype.ob$ne = function (other) {
-    return Sk.misceval.isTrue(this.ob$eq(other)) ?
-        Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+    const ret = this.ob$eq(other);
+    if (ret === Sk.builtin.NotImplemented.NotImplemented$) {
+        return ret;
+    }
+    return Sk.misceval.isTrue(ret) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
 };
 
 Sk.builtin.bytes.prototype.sq$length = function () {
@@ -842,12 +862,9 @@ Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, s
         return new Sk.builtin.tuple([final1, final2, final3]);
 
     }
-    index = new Sk.builtin.slice(0, val);
-    final1 = self.mp$subscript(index);
-    index = new Sk.builtin.slice(val, val + sep.v.byteLength);
-    final2 = self.mp$subscript(index);
-    index = new Sk.builtin.slice(val + sep.v.byteLength, self.v.byteLength);
-    final3 = self.mp$subscript(index);
+    final1 = new Sk.builtin.bytes(self.v.subarray(0, val));
+    final2 = new Sk.builtin.bytes(self.v.subarray(val, val + sep.v.byteLength));
+    final3 = new Sk.builtin.bytes(self.v.subarray(val + sep.v.byteLength, self.v.byteLength));
 
     return new Sk.builtin.tuple([final1, final2, final3]);
 });
