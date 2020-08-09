@@ -257,15 +257,6 @@ Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
 
-Sk.builtin.bytes.prototype.bytes_copy_ = function () {
-    var i;
-    var final;
-    final = [];
-    for (i = 0; i < this.v.byteLength; i++) {
-        final.push(this.v[i]);
-    }
-    return new Sk.builtin.bytes(final);
-};
 Sk.builtin.bytes.prototype.sq$concat = function (other) {
     var i;
     var lis;
