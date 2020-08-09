@@ -67,9 +67,9 @@ class TestBasic(unittest.TestCase):
         self.assertEqual(deque('abc', maxlen=4).maxlen, 4)
         self.assertEqual(deque('abc', maxlen=2).maxlen, 2)
         self.assertEqual(deque('abc', maxlen=0).maxlen, 0)
-        # with self.assertRaises(AttributeError):
-        #     d = deque('abc')
-        #     d.maxlen = 10
+        with self.assertRaises(AttributeError):
+            d = deque('abc')
+            d.maxlen = 10
         
     def test_count(self):
         for s in ('', 'abracadabra', 'simsalabim'*500+'abc'):
@@ -365,8 +365,8 @@ class TestBasic(unittest.TestCase):
             dr()
         self.assertEqual(tuple(d), tuple(e))
 
-        # self.assertRaises(TypeError, d.rotate, 'x')   # Wrong arg type
-        # self.assertRaises(TypeError, d.rotate, 1, 10) # Too many args
+        self.assertRaises(TypeError, d.rotate, 'x')   # Wrong arg type
+        self.assertRaises(TypeError, d.rotate, 1, 10) # Too many args
 
         d = deque()
         d.rotate()              # rotate an empty deque
