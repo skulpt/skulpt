@@ -168,11 +168,12 @@ function makehexform(num) {
 Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
 
 Sk.builtin.bytes.prototype["$r"] = function () {
-    var ret;
-    var i;
-    var num;
-    ret = "";
-    for (i = 0; i < this.v.byteLength; i++) {
+    let num;
+    let quote = "'";
+    const hasdbl = this.v.indexOf(34) !== -1;
+    let ret = "";
+    
+    for (let i = 0; i < this.v.byteLength; i++) {
         num = this.v[i];
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
             ret += makehexform(num);
@@ -188,7 +189,12 @@ Sk.builtin.bytes.prototype["$r"] = function () {
                     ret += "\\r";
                     break;
                 case 39:
-                    ret += "\\'";
+                    if (hasdbl) {
+                        ret += "\\'";
+                    } else {
+                        ret += "'";     
+                        quote = '"';
+                    }
                     break;
                 case 92:
                     ret += "\\\\";
@@ -198,7 +204,7 @@ Sk.builtin.bytes.prototype["$r"] = function () {
             ret += String.fromCharCode(num);
         }
     }
-    ret = "b'" + ret + "'";
+    ret = "b" + quote + ret + quote;
     return new Sk.builtin.str(ret);
 };
 
