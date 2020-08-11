@@ -867,7 +867,7 @@ Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, s
     if (val === -1) {
         final1 = new Sk.builtin.bytes(0);
         final2 = new Sk.builtin.bytes(0);
-        final3 = new Sk.builtin.bytes(self);
+        final3 = self;
         return new Sk.builtin.tuple([final1, final2, final3]);
 
     }
@@ -1568,7 +1568,7 @@ Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, k
                 eol = i;
             }
 
-            final.push(Sk.builtin.bytes(self.v.subarray(sol, eol)));
+            final.push(new Sk.builtin.bytes(self.v.subarray(sol, eol)));
 
             sol = rn ? i + 2 : i + 1;
             i = sol;
@@ -1579,7 +1579,7 @@ Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, k
                 eol = i;
             }
 
-            final.push(Sk.builtin.bytes(self.v.subarray(sol, eol)));
+            final.push(new Sk.builtin.bytes(self.v.subarray(sol, eol)));
 
             sol = i + 1;
             i = sol;
@@ -1589,7 +1589,7 @@ Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, k
     }
 
     if (sol < self.v.byteLength) {
-        final.push(Sk.builtin.bytes(self.v.subarray(sol, self.v.byteLength)));
+        final.push(new Sk.builtin.bytes(self.v.subarray(sol, self.v.byteLength)));
     }
 
     return new Sk.builtin.list(final);
