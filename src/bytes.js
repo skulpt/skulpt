@@ -538,15 +538,13 @@ Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, s
         }
     } else if (sub instanceof Sk.builtin.bytes) {
         len = sub.v.byteLength;
-        while (startidx + len <= endidx) {
-            index = new Sk.builtin.slice(startidx, startidx + len);
-            val = self.mp$subscript(index);
-            if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
-                count += 1;
-                startidx += len;
-            } else {
-                startidx += 1;
+        while (startidx < endidx) {
+            const next = self.find$left(sub, startidx, endidx);
+            if (next === -1) {
+                break;
             }
+            count++;
+            startidx = next + len;
         }
     } else {
         throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
@@ -558,7 +556,6 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
     var len;
     var iter;
     var item;
-    var index;
     var val;
     var negend;
     Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
@@ -601,9 +598,13 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
                         return Sk.builtin.bool.$true;
                     }
                 }
-                index = new Sk.builtin.slice(endidx - len, endidx);
-                val = self.mp$subscript(index);
-                if (val.ob$eq(item) === Sk.builtin.bool.true$) {
+                let match = true;
+                for (let j = endidx - len, k = 0; j < endidx; j++, k++) {
+                    if (self.v[j] !== item.v[k]) {
+                        match = false;
+                    }
+                }
+                if (match) {
                     return Sk.builtin.bool.true$;
                 }
             }
@@ -615,9 +616,13 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
             if (endidx < 0) {
                 return (negend(endidx, self, suffix));
             }
-            index = new Sk.builtin.slice(endidx - len, endidx);
-            val = self.mp$subscript(index);
-            if (val.ob$eq(suffix) === Sk.builtin.bool.true$) {
+            let match = true;
+            for (let j = endidx - len, k = 0; j < endidx; j++, k++) {
+                if (self.v[j] !== suffix.v[k]) {
+                    match = false;
+                }
+            }
+            if (match) {
                 return Sk.builtin.bool.true$;
             }
         }
@@ -791,9 +796,14 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     if (!(repl instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(repl) + "'");
     }
-    if (count !== undefined && (!(count instanceof Sk.builtin.int_))) {
+    if (count === undefined) {
+        count = -1;
+    } else if (!(count instanceof Sk.builtin.int_)) {
         throw new  Sk.builtin.TypeError("'" + Sk.abstr.typeName(count) + "' " + "object cannot be interpreted as an integer");
+    } else {
+        count = count.v;
     }
+
     final = [];
     sep = [];
     for (i = 0; i < repl.v.byteLength; i++) {
@@ -802,24 +812,23 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     len = old.v.byteLength;
     i = 0;
     tot = 0;
-    while (i + len <= self.v.byteLength) {
-        index = new Sk.builtin.slice(i, i + len);
-        val = self.mp$subscript(index);
-        if ((val.ob$eq(old) === Sk.builtin.bool.true$) && (count === undefined || tot < count.v)) {
-            final = final.concat(sep);
-            i += len;
-            tot++;
-        } else {
-            final.push(self.v[i]);
-            i++;
-        }
-        if (i > self.v.byteLength - len) {
-            for (idx = i; i < self.v.byteLength; i++) {
-                final.push(self.v[idx]);
-            }
+    while (i < self.v.byteLength && (count === -1 || tot < count)) {
+        const next = self.find$left(old, i, self.v.byteLength);
+        if (next === -1) {
             break;
         }
+        for (let j = i; j < next; j++) {
+            final.push(self.v[j]);
+        }
+        final = final.concat(sep);
+        i = next + len;
+        tot++;
     }
+
+    for (let j = i; j < self.v.byteLength; j++) {
+        final.push(self.v[j]);
+    }
+
     return new Sk.builtin.bytes(final);
 
 });
@@ -873,7 +882,6 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
     var len;
     var iter;
     var item;
-    var index;
     var val;
     var negstart;
     Sk.builtin.pyCheckArgsLen("startswith", arguments.length - 1, 1, 3);
@@ -915,9 +923,13 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
                         return Sk.builtin.bool.true$;
                     }
                 }
-                index = new Sk.builtin.slice(startidx, startidx + len);
-                val = self.mp$subscript(index);
-                if (val.ob$eq(item) === Sk.builtin.bool.true$) {
+                let match = true;
+                for (let j = startidx, k = 0; k < len; j++, k++) {
+                    if (self.v[j] !== item.v[k]) {
+                        match = false;
+                    }
+                }
+                if (match) {
                     return Sk.builtin.bool.true$;
                 }
             }
@@ -929,9 +941,13 @@ Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, p
             if (startidx < 0) {
                 return negstart(startidx, self, prefix);
             }
-            index = new Sk.builtin.slice(startidx, startidx + len);
-            val = self.mp$subscript(index);
-            if (val.ob$eq(prefix) === Sk.builtin.bool.true$) {
+            let match = true;
+            for (let j = startidx, k = 0; k < len; j++, k++) {
+                if (self.v[j] !== prefix.v[k]) {
+                    match = false;
+                }
+            }
+            if (match) {
                 return Sk.builtin.bool.true$;
             }
         }
