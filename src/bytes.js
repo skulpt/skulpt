@@ -172,7 +172,7 @@ Sk.builtin.bytes.prototype["$r"] = function () {
     let quote = "'";
     const hasdbl = this.v.indexOf(34) !== -1;
     let ret = "";
-    
+
     for (let i = 0; i < this.v.byteLength; i++) {
         num = this.v[i];
         if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
@@ -192,7 +192,7 @@ Sk.builtin.bytes.prototype["$r"] = function () {
                     if (hasdbl) {
                         ret += "\\'";
                     } else {
-                        ret += "'";     
+                        ret += "'";
                         quote = '"';
                     }
                     break;
@@ -625,52 +625,90 @@ Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suf
     }
 });
 
-Sk.builtin.bytes.prototype.find_item_ = function (sub, start, end) {
-    var i;
-    var len;
-    var val;
-
+Sk.builtin.bytes.prototype.find$left = function (sub, start, end) {
+    let final = -1;
     let { startidx, endidx } = indices(this, start, end);
 
     if (sub instanceof Sk.builtin.int_) {
-        for (i = startidx; i < endidx; i++) {
+        for (let i = startidx; i < endidx; i++) {
             if (this.v[i] === sub.v) {
-                return new Sk.builtin.int_(i);
+                final = i;
+                break;
             }
         }
-        return new Sk.builtin.int_(-1);
     } else if (sub instanceof Sk.builtin.bytes) {
-        len = sub.v.byteLength;
-        while (startidx + len <= endidx) {
-            i = new Sk.builtin.slice(startidx, startidx + len);
-            val = this.mp$subscript(i);
-            if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
-                return new Sk.builtin.int_(startidx);
+        let len = sub.v.byteLength;
+        for (let i = startidx; i < endidx - len + 1; i++) {
+            let match = true;
+            for (let j = i, k = 0; k < len; j++, k++) {
+                if (this.v[j] !== sub.v[k]) {
+                    match = false;
+                    break;
+                }
             }
-            startidx++;
+            if (match) {
+                final = i;
+                break;
+            }
         }
-        return new Sk.builtin.int_(-1);
     } else {
         throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
     }
+
+    return final;
 };
+
+Sk.builtin.bytes.prototype.find$right = function (sub, start, end) {
+    let final = -1;
+    let { startidx, endidx } = indices(this, start, end);
+
+    if (sub instanceof Sk.builtin.int_) {
+        for (let i = endidx - 1; i >= startidx; i--) {
+            if (this.v[i] === sub.v) {
+                final = i;
+                break;
+            }
+        }
+    } else if (sub instanceof Sk.builtin.bytes) {
+        let len = sub.v.byteLength;
+        for (let i = endidx - len; i >= startidx; i--) {
+            let match = true;
+            for (let j = i, k = 0; k < len; j++, k++) {
+                if (this.v[j] != sub.v[k]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                final = i;
+                break;
+            }
+        }
+
+    } else {
+        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
+    }
+
+    return final;
+};
+
 
 Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, start, end) {
     Sk.builtin.pyCheckArgsLen("find", arguments.length - 1, 1, 3);
 
-    return Sk.builtin.bytes.prototype.find_item_.call(self, sub, start, end);
+    return Sk.builtin.int_(self.find$left(sub, start, end));
 });
 
 Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, start, end) {
     var val;
     Sk.builtin.pyCheckArgsLen("index", arguments.length - 1, 1, 3);
 
-    val = Sk.builtin.bytes.prototype.find_item_.call(self, sub, start, end);
+    val = self.find$left(sub, start, end);
 
-    if (val.v === -1) {
+    if (val === -1) {
         throw new Sk.builtin.ValueError("subsection not found");
     }
-    return val;
+    return Sk.builtin.int_(val);
 });
 
 Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterable) {
@@ -722,8 +760,7 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
     }
 
-    val = Sk.builtin.bytes.prototype.find_item_.call(self, sep);
-    val = val.v;
+    val = self.find$left(sep);
     if (val === -1) {
         final1 = self;
         final2 = new Sk.builtin.bytes(0);
@@ -787,52 +824,21 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
 
 });
 
-Sk.builtin.bytes.prototype.right_find_ = function (sub, start, end) {
-    var i;
-    var len;
-    var val;
-    var final;
-    final = -1;
-
-    let { startidx, endidx } = indices(this, start, end);
-
-    if (sub instanceof Sk.builtin.int_) {
-        for (i = startidx; i < endidx; i++) {
-            if (this.v[i] === sub.v) {
-                final = i;
-            }
-        }
-    } else if (sub instanceof Sk.builtin.bytes) {
-        len = sub.v.byteLength;
-        while (startidx + len <= endidx) {
-            i = new Sk.builtin.slice(startidx, startidx + len);
-            val = this.mp$subscript(i);
-            if (val.ob$eq(sub) === Sk.builtin.bool.true$) {
-                final = startidx;
-            }
-            startidx++;
-        }
-    } else {
-        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
-    }
-    return new Sk.builtin.int_(final);
-};
-
 Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function (self, sub, start, end) {
     Sk.builtin.pyCheckArgsLen("rfind", arguments.length - 1, 1, 3);
 
-    return Sk.builtin.bytes.prototype.right_find_.call(self, sub, start, end);
+    return Sk.builtin.int_(self.find$right(sub, start, end));
 });
 
 Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function (self, sub, start, end) {
     var val;
     Sk.builtin.pyCheckArgsLen("rindex", arguments.length - 1, 1, 3);
 
-    val = Sk.builtin.bytes.prototype.right_find_.call(self, sub, start, end);
-    if (val.v === -1) {
+    val = self.find$right(sub, start, end);
+    if (val === -1) {
         throw new Sk.builtin.ValueError("subsection not found");
     } else {
-        return val;
+        return Sk.builtin.int_(val);
     }
 });
 
@@ -847,8 +853,7 @@ Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, s
     if (!(sep instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
     }
-    val = Sk.builtin.bytes.prototype.right_find_.call(self, sep);
-    val = val.v;
+    val = self.find$right(sep);
 
     if (val === -1) {
         final1 = new Sk.builtin.bytes(0);
@@ -1015,7 +1020,7 @@ Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, width,
 
 });
 
-Sk.builtin.bytes.prototype.left_strip_ = function (chars) {
+Sk.builtin.bytes.prototype.left$strip = function (chars) {
     var leading;
     var i;
     var j;
@@ -1051,7 +1056,7 @@ Sk.builtin.bytes.prototype.left_strip_ = function (chars) {
 Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
     Sk.builtin.pyCheckArgsLen("lstrip", arguments.length - 1, 0, 1);
 
-    return Sk.builtin.bytes.prototype.left_strip_.call(self, chars);
+    return self.left$strip(chars);
 });
 
 Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width, fillbyte) {
@@ -1085,11 +1090,78 @@ Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width,
     return new Sk.builtin.bytes(final);
 });
 
-Sk.builtin.bytes.prototype["rsplit"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("rsplit() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["rsplit"] = new Sk.builtin.func(function (self, sep, maxsplits) {
+    Sk.builtin.pyCheckArgsLen("rsplit", arguments.length, 1, 3);
+    if ((sep === undefined) || (sep === Sk.builtin.none.none$)) {
+        sep = null;
+    }
+    if ((sep !== null) && !(sep instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("expected bytes");
+    }
+    if ((sep !== null) && sep.v.byteLength == 0) {
+        throw new Sk.builtin.ValueError("empty separator");
+    }
+    if ((maxsplits !== undefined) && !Sk.builtin.checkInt(maxsplits)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+
+    if (maxsplits === undefined) {
+        maxsplits = -1;
+    } else {
+        maxsplits = Sk.builtin.asnum$(maxsplits);
+    }
+
+    let result = [];
+    let splits = 0;
+
+    if (sep) {
+        let index = self.v.byteLength;
+        while (index >= 0) {
+            let next = self.find$right(sep, 0, index);
+            if (next === -1) {
+                break;
+            }
+            result.push(new Sk.builtin.bytes(self.v.subarray(next + sep.v.byteLength, index)));
+            index = next;
+            splits++;
+            if (maxsplits > -1 && splits >= maxsplits) {
+                break;
+            }
+        }
+        result.push(new Sk.builtin.bytes(self.v.subarray(0, index)));
+    } else {
+        let i = self.v.byteLength - 1;
+        let index;
+        while (maxsplits === -1 || splits < maxsplits) {
+            while (i >= 0 && isspace(self.v[i])) {
+                i--;
+            }
+            if (i < 0) {
+                break;
+            }
+            index = i + 1;
+            i--;
+            while (i >= 0 && !isspace(self.v[i])) {
+                i--;
+            }
+            result.push(new Sk.builtin.bytes(self.v.subarray(i + 1, index)));
+            splits++;
+        }
+
+        if (i >= 0) {
+            while (i >= 0 && isspace(self.v[i])) {
+                i--;
+            }
+            if (i >= 0) {
+                result.push(new Sk.builtin.bytes(self.v.subarray(0, i + 1)));
+            }
+        }
+    }
+
+    return new Sk.builtin.list(result.reverse());
 });
 
-Sk.builtin.bytes.prototype.right_strip_ = function (chars) {
+Sk.builtin.bytes.prototype.right$strip = function (chars) {
     var ending;
     var i;
     var j;
@@ -1125,20 +1197,91 @@ Sk.builtin.bytes.prototype.right_strip_ = function (chars) {
 Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
     Sk.builtin.pyCheckArgsLen("rstrip", arguments.length - 1, 0, 1);
 
-    return Sk.builtin.bytes.prototype.right_strip_.call(self, chars);
+    return self.right$strip(chars);
 });
 
-Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("split() bytes method not implemented in Skulpt");
+function isspace(val) {
+    return ((val >= 9 && val <= 13) || val === 32);
+};
+
+Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function (self, sep, maxsplits) {
+    Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
+    if ((sep === undefined) || (sep === Sk.builtin.none.none$)) {
+        sep = null;
+    }
+    if ((sep !== null) && !(sep instanceof Sk.builtin.bytes)) {
+        throw new Sk.builtin.TypeError("expected bytes");
+    }
+    if ((sep !== null) && sep.v.byteLength == 0) {
+        throw new Sk.builtin.ValueError("empty separator");
+    }
+    if ((maxsplits !== undefined) && !Sk.builtin.checkInt(maxsplits)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+
+    if (maxsplits === undefined) {
+        maxsplits = -1;
+    } else {
+        maxsplits = Sk.builtin.asnum$(maxsplits);
+    }
+
+    let result = [];
+    let splits = 0;
+    let index = 0;
+
+    if (sep) {
+        while (index < self.v.byteLength) {
+            let next = self.find$left(sep, index);
+            if (next === -1) {
+                break;
+            }
+            result.push(new Sk.builtin.bytes(self.v.subarray(index, next)));
+            index = next + sep.v.byteLength;
+            splits++;
+            if (maxsplits > -1 && splits >= maxsplits) {
+                break;
+            }
+        }
+        result.push(new Sk.builtin.bytes(self.v.subarray(index, self.v.byteLength)));
+    } else {
+        let i = 0;
+        let len = self.v.byteLength;
+        while (maxsplits === -1 || splits < maxsplits) {
+            while (i < len && isspace(self.v[i])) {
+                i++;
+            }
+            if (i == len) {
+                break;
+            }
+            index = i;
+            i++;
+            while (i < len && !isspace(self.v[i])) {
+                i++;
+            }
+            result.push(new Sk.builtin.bytes(self.v.subarray(index, i)));
+            splits++;
+        }
+
+        if (i < len) {
+            while (i < len && isspace(self.v[i])) {
+                i++;
+            }
+            if (i < len) {
+                result.push(new Sk.builtin.bytes(self.v.subarray(i, len)));
+            }
+        }
+    }
+
+    return new Sk.builtin.list(result);
 });
 
 Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     var lstripped;
     //double check the description
     Sk.builtin.pyCheckArgsLen("strip", arguments.length - 1, 0, 1);
-    lstripped  = Sk.builtin.bytes.prototype.left_strip_.call(self, chars);
+    lstripped  = self.left$strip(chars);
 
-    return Sk.builtin.bytes.prototype.right_strip_.call(lstripped, chars);
+    return lstripped.right$strip(chars);
 });
 
 Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
@@ -1169,8 +1312,37 @@ Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.bytes(final);
 });
 
-Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("expandtabs() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
+    Sk.builtin.pyCheckArgsLen("expandtabs", arguments.length, 1, 2);
+
+    if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
+        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
+    }
+    if (tabsize === undefined) {
+        tabsize = 8;
+    } else {
+        tabsize = Sk.builtin.asnum$(tabsize);
+    }
+
+    let final = [];
+    let spaces;
+    let linepos = 0;
+
+    for (let i = 0; i < self.v.byteLength; i++) {
+        if (self.v[i] === 9) {
+            let inc = tabsize - (linepos % tabsize);
+            final = final.concat(Array(inc).fill(32));
+            linepos += inc;
+        } else if (self.v[i] === 10 || self.v[i] === 13) {
+            final.push(self.v[i]);
+            linepos = 0;
+        } else {
+            final.push(self.v[i]);
+            linepos++;
+        }
+    }
+
+    return new Sk.builtin.bytes(final);
 });
 
 Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
@@ -1278,7 +1450,35 @@ Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.bytes.prototype["istitle"] = new Sk.builtin.func(function (self) {
-    throw new Sk.builtin.NotImplementedError("istitle() bytes method not implemented in Skulpt");
+    Sk.builtin.pyCheckArgsLen("istitle", arguments.length - 1, 0, 0);
+
+    if (self.v.byteLength === 0) {
+        return Sk.builtin.bool.false$;
+    }
+
+    let inword = false;
+    let cased = false;
+
+    for (let i = 0; i < self.v.byteLength; i++) {
+        const val = self.v[i];
+        if (val >= 65 && val <= 90) {
+            if (inword) {
+                return Sk.builtin.bool.false$;
+            } else {
+                inword = true;
+            }
+            cased = true;
+        } else if (val >= 97 && val <= 122) {
+            if (!inword) {
+                return Sk.builtin.bool.false$;
+            }
+            cased = true;
+        } else {
+            inword = false;
+        }
+    }
+
+    return cased ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
 });
 
 Sk.builtin.bytes.prototype["isupper"] = new Sk.builtin.func(function (self) {
@@ -1320,8 +1520,63 @@ Sk.builtin.bytes.prototype["lower"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.bytes(final);
 });
 
-Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self) {
-    throw new Sk.builtin.NotImplementedError("splitlines() bytes method not implemented in Skulpt");
+Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
+    Sk.builtin.pyCheckArgsLen("splitlines", arguments.length, 1, 2);
+
+    if ((keepends !== undefined) && !Sk.builtin.checkBool(keepends)) {
+        throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
+    }
+    if (keepends === undefined) {
+        keepends = false;
+    } else {
+        keepends = keepends.v;
+    }
+
+    let final = [];
+    let sol = 0;
+    let eol;
+    let i = 0;
+
+    while (i < self.v.byteLength) {
+        const val = self.v[i];
+
+        if (val === 13) {  // \r
+            let rn = false;
+            if ((i < self.v.byteLength - 1) && (self.v[i + 1] === 10)) {
+                rn = true;
+            }
+
+            if (keepends) {
+                eol = rn ? i + 2 : i + 1;
+            } else {
+                eol = i;
+            }
+
+            final.push(Sk.builtin.bytes(self.v.subarray(sol, eol)));
+
+            sol = rn ? i + 2 : i + 1;
+            i = sol;
+        } else if (val === 10) {  // \n
+            if (keepends) {
+                eol = i + 1;
+            } else {
+                eol = i;
+            }
+
+            final.push(Sk.builtin.bytes(self.v.subarray(sol, eol)));
+
+            sol = i + 1;
+            i = sol;
+        } else {
+            i++;
+        }
+    }
+
+    if (sol < self.v.byteLength) {
+        final.push(Sk.builtin.bytes(self.v.subarray(sol, self.v.byteLength)));
+    }
+
+    return new Sk.builtin.list(final);
 });
 
 Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
@@ -1346,7 +1601,37 @@ Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.bytes.prototype["title"] = new Sk.builtin.func(function (self) {
-    throw new Sk.builtin.NotImplementedError("title() bytes method not implemented in Skulpt");
+    Sk.builtin.pyCheckArgsLen("title", arguments.length - 1, 0, 0);
+
+    if (self.v.byteLength === 0) {
+        return new Sk.builtin.bytes(0);
+    }
+    let final = [];
+    let inword = false;
+
+    for (let i = 0; i < self.v.byteLength; i++) {
+        const val = self.v[i];
+        if (val >= 65 && val <= 90) {
+            if (inword) {
+                final.push(val + 32);
+            } else {
+                inword = true;
+                final.push(val);
+            }
+        } else if (val >= 97 && val <= 122) {
+            if (inword) {
+                final.push(val);
+            } else {
+                inword = true;
+                final.push(val - 32);
+            }
+        } else {
+            inword = false;
+            final.push(val);
+        }
+    }
+
+    return new Sk.builtin.bytes(final);
 });
 
 Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {

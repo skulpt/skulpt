@@ -161,6 +161,15 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(UnicodeDecodeError, d0.decode, "utf-8")
         self.assertRaises(UnicodeDecodeError, d0.decode, "ascii")
 
+    def test_expandtabs(self):
+        self.assertEqual(b'abc\rab\tdef\ng\thi'.expandtabs(), b'abc\rab      def\ng       hi');
+        self.assertEqual(b'abc\rab\tdef\ng\thi'.expandtabs(8), b'abc\rab      def\ng       hi');
+        self.assertEqual(b'abc\rab\tdef\ng\thi'.expandtabs(4), b'abc\rab  def\ng   hi')
+        self.assertEqual(b'abc\r\nab\tdef\ng\thi'.expandtabs(), b'abc\r\nab      def\ng       hi')
+        self.assertEqual(b'abc\r\nab\tdef\ng\thi'.expandtabs(8), b'abc\r\nab      def\ng       hi')
+        self.assertEqual(b'abc\r\nab\tdef\ng\thi'.expandtabs(4), b'abc\r\nab  def\ng   hi')
+        self.assertEqual(b'abc\r\nab\r\ndef\ng\r\nhi'.expandtabs(4), b'abc\r\nab\r\ndef\ng\r\nhi')
+        
     def test_iteration(self):
         a = bytes("abc", "ascii")
         self.assertEqual(list(a), [97,98,99])
@@ -432,6 +441,16 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, a.replace, b, c, "1")
         self.assertRaises(TypeError, a.replace, b)
 
+    def test_rsplit(self):
+        self.assertEqual(b'a b'.rsplit(), [b'a', b'b']);
+        self.assertEqual(b' a b '.rsplit(), [b'a', b'b']);
+        self.assertEqual(b'a b'.rsplit(b' '), [b'a', b'b']);
+        self.assertEqual(b'a b '.rsplit(b' '), [b'a', b'b', b'']);
+        self.assertRaises(TypeError, b'a b'.rsplit, ' ')
+        self.assertRaises(TypeError, b'a b'.rsplit, 32)
+        # b = b"\x09\x0A\x0B\x0C\x0D\x1C\x1D\x1E\x1F"
+        # self.assertEqual(b.rsplit(), [b'\x1c\x1d\x1e\x1f'])        
+        
     def test_rfind(self):
         a = bytes([1, 2, 1, 4, 5, 4, 5])
         self.assertEqual(a.rfind(1), 2)
@@ -521,6 +540,24 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(a.partition(b), (bytes([1]), bytes([2, 2]), bytes([2, 4, 2, 2])))
         self.assertRaises(TypeError, a.partition, 2)
         self.assertRaises(TypeError, a.partition, bytes([2]), bytes([2]))
+
+    def test_title(self):
+        self.assertEqual(b' hello '.title(), b' Hello ')
+        self.assertEqual(b'hello '.title(), b'Hello ')
+        self.assertEqual(b'Hello '.title(), b'Hello ')
+        self.assertEqual(b"fOrMaT thIs aS titLe String".title(), b'Format This As Title String')
+        self.assertEqual(b"fOrMaT,thIs-aS*titLe;String".title(), b'Format,This-As*Title;String')
+        self.assertEqual(b"getInt".title(), b'Getint')
+
+    def test_splitlines(self):
+        self.assertEqual(b'abc\ndef\n\rghi'.splitlines(), [b'abc', b'def', b'', b'ghi']) 
+        self.assertEqual(b'abc\ndef\n\r\nghi'.splitlines(), [b'abc', b'def', b'', b'ghi']) 
+        self.assertEqual(b'abc\ndef\r\nghi'.splitlines(), [b'abc', b'def', b'ghi'])
+        self.assertEqual(b'abc\ndef\r\nghi\n'.splitlines(), [b'abc', b'def', b'ghi'])
+        self.assertEqual(b'abc\ndef\r\nghi\n\r'.splitlines(), [b'abc', b'def', b'ghi', b''])
+        self.assertEqual(b'\nabc\ndef\r\nghi\n\r'.splitlines(), [b'', b'abc', b'def', b'ghi', b''])
+        self.assertEqual(b'\nabc\ndef\r\nghi\n\r'.splitlines(False), [b'', b'abc', b'def', b'ghi', b''])                        
+        self.assertEqual(b'\nabc\ndef\r\nghi\n\r'.splitlines(True), [b'\n', b'abc\n', b'def\r\n', b'ghi\n', b'\r'])
 
     def test_startswith(self):
         a = bytes([1, 2, 2, 3])
@@ -723,6 +760,19 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(d.islower())
 
         self.assertRaises(TypeError, d.islower, 1)
+
+    def test_istitle(self):
+        self.assertFalse(b''.istitle())
+        self.assertFalse(b'a'.istitle())
+        self.assertTrue(b'A'.istitle())
+        self.assertFalse(b'\n'.istitle())
+        self.assertTrue(b'A Titlecased Line'.istitle())
+        self.assertTrue(b'A\nTitlecased Line'.istitle())
+        self.assertTrue(b'A Titlecased, Line'.istitle())
+        self.assertFalse(b'Not a capitalized String'.istitle())
+        self.assertFalse(b'Not\ta Titlecase String'.istitle())
+        self.assertFalse(b'Not--a Titlecase String'.istitle())
+        self.assertFalse(b'NOT'.istitle())
 
     def test_isspace(self):
         a = bytes([])
