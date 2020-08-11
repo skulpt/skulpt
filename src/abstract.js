@@ -640,15 +640,15 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // This function is so hot that we do our own inline suspension checks
 
     let ret = obj.tp$getattr(pyName, canSuspend);
-
+    let error_name;
     if (ret === undefined) {
-        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + pyName.$jsstr() + "'");
+        error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
+        throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function(r) {
             if (r === undefined) {
-                const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
-                let jsName = Sk.unfixReserved(pyName.$jsstr());
-                throw new Sk.builtin.AttributeError(error_name + "has no attribute '" + jsName + "'");
+                error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
+                throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
             }
             return r;
         });
