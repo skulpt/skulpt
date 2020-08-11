@@ -231,7 +231,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             // - add module object to sys.modules
             // - compile source to (function(){...});
             // - run module and set the module locals returned to the module __dict__
-            module = new Sk.builtin.module();
+            module = new Sk.builtin.module(new Sk.builtin.str(name));
 
             if (typeof suppliedPyBody === "string") {
                 filename = name + ".py";

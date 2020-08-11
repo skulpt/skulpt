@@ -1,4 +1,4 @@
-var tokens = Sk.token.tokens
+var tokens = Sk.token.tokens;
 
 const TokenError = Sk.builtin.SyntaxError;
 const IndentationError = Sk.builtin.SyntaxError;
