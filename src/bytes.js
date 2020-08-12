@@ -38,18 +38,16 @@ function Uint8ArrayFromArray(source) {
 
 /**
  * @constructor
- * @param {*} source
- * @param {Sk.builtin.str=} encoding
- * @param {Sk.builtin.str=} errors
+ * @param {*} source Using constructor with new should be a js object
+ * @param {Sk.builtin.str=} encoding Only called from python
+ * @param {Sk.builtin.str=} errors Only called from python
  * @return {Sk.builtin.bytes}
- * @extends Sk.builtin.object
+ * @extends {Sk.builtin.object}
  */
 Sk.builtin.bytes = function (source) {
     if (!(this instanceof Sk.builtin.bytes)) {
         // called from python
         Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
-        return tp$new([...arguments]);
-    } else if (arguments.length > 1) {
         return tp$new([...arguments]);
     }
 
