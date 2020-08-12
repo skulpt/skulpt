@@ -192,7 +192,6 @@ function makehexform(num) {
     return num;
 };
 
-
 Sk.builtin.bytes.prototype.$jsstr = function () {
     return Decoder.decode(this.v);
 };
