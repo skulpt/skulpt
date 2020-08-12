@@ -604,14 +604,19 @@ Sk.builtin.fabs = function fabs(x) {
 
 Sk.builtin.ord = function ord (x) {
     Sk.builtin.pyCheckArgsLen("ord", arguments.length, 1, 1);
-
-    if (!Sk.builtin.checkString(x) && !Sk.builtin.checkBytes(x)) {
-        throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
-    } else if (x.v.length !== 1 && x.sq$length() !== 1) {
-        // ^^ avoid the astral check unless necessary ^^
-        throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
+    if (Sk.builtin.checkString(x)) {
+        if (x.v.length !== 1 && x.sq$length() !== 1) {
+            // ^^ avoid the astral check unless necessary ^^
+            throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
+        }
+        return new Sk.builtin.int_(x.v.codePointAt(0));
+    } else if (Sk.builtin.checkBytes(x)) {
+        if (x.sq$length() !== 1) {
+            throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
+        }
+        return new Sk.builtin.int_(x.v[0]);
     }
-    return new Sk.builtin.int_(x.v.codePointAt(0));
+    throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
 };
 
 Sk.builtin.chr = function chr (x) {
