@@ -13,7 +13,7 @@ function setInterned (x, pyStr) {
  * @param {*} x
  * @extends Sk.builtin.object
  */
-Sk.builtin.str = function (x, encoding) {
+Sk.builtin.str = function (x, encoding, errors) {
     var ret;
 
     Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, Sk.__future__ && Sk.__future__.python3 ? 2 : 1);
@@ -22,11 +22,11 @@ Sk.builtin.str = function (x, encoding) {
         x = "";
     }
 
-    if (encoding || x instanceof Sk.builtin.bytes) {
+    if (encoding) {
         if (!Sk.builtin.checkBytes(x)) {
             throw new TypeError("decoding " + Sk.abstr.typeName(x) + " is not supported");
         }
-        return Sk.misceval.callsimArray(x.tp$getattr(new Sk.builtin.str("decode")), encoding ? [encoding] : []);
+        return Sk.misceval.callsimArray(x.decode, [x, encoding, errors]);
     }
 
     if (x instanceof Sk.builtin.str) {
@@ -87,9 +87,7 @@ Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
 Sk.builtin.str.$englishname = "string";
-Sk.builtin.bytes.$englishname = "bytes";
 Sk.builtin.str.$englishsingular = "char";
-Sk.builtin.bytes.$englishsingular = "byte";
 
 Sk.builtin.str.prototype.$hasAstralCodePoints = function() {
     // If a string has astral code points, we have to work
@@ -127,9 +125,8 @@ Sk.builtin.str.prototype.$hasAstralCodePoints = function() {
     return false;
 };
 
-Sk.builtin.bytes.prototype.$hasAstralCodePoints = () => false;
 
-Sk.builtin.str.prototype.$jsstr = Sk.builtin.bytes.prototype.$jsstr = function () {
+Sk.builtin.str.prototype.$jsstr = function () {
     return this.v;
 };
 
@@ -170,36 +167,12 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
     }
 };
 
-Sk.builtin.bytes.prototype.mp$subscript = function(index) {
-    if (Sk.misceval.isIndex(index)) {
-        index = Sk.misceval.asIndex(index);
-        if (index < 0) {
-            index = this.v.length + index;
-        }
-        if (index < 0 || index >= this.v.length) {
-            throw new Sk.builtin.IndexError("bytestring index out of range");
-        }
-        return new Sk.builtin.int_(this.v.charCodeAt(index));
-    } else if (index instanceof Sk.builtin.slice) {
-        let ret = "";
-        index.sssiter$(this, function (i, wrt) {
-            if (i >= 0 && i < wrt.v.length) {
-                ret += wrt.v.charAt(i);
-            }
-        });
-        return new Sk.builtin.bytes(ret);
-    } else {
-        throw new Sk.builtin.TypeError("bytestring indices must be integers, not " + Sk.abstr.typeName(index));
-    }
-};
 
 Sk.builtin.str.prototype.sq$length = function () {
     return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
 };
-Sk.builtin.bytes.prototype.sq$length = function () {
-    return this.v.length;
-};
-Sk.builtin.str.prototype.sq$concat = Sk.builtin.bytes.prototype.sq$concat = function (other) {
+
+Sk.builtin.str.prototype.sq$concat = function (other) {
     var otypename;
     if (!other || other.__class__ !== this.__class__) {
         otypename = Sk.abstr.typeName(other);
@@ -207,9 +180,9 @@ Sk.builtin.str.prototype.sq$concat = Sk.builtin.bytes.prototype.sq$concat = func
     }
     return new this.__class__(this.v + other.v);
 };
-Sk.builtin.str.prototype.nb$add = Sk.builtin.bytes.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
-Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.bytes.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
-Sk.builtin.str.prototype.sq$repeat = Sk.builtin.bytes.prototype.sq$repeat = function (n) {
+Sk.builtin.str.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
+Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
+Sk.builtin.str.prototype.sq$repeat = function (n) {
     var i;
     var ret;
 
@@ -224,12 +197,12 @@ Sk.builtin.str.prototype.sq$repeat = Sk.builtin.bytes.prototype.sq$repeat = func
     }
     return new this.__class__(ret);
 };
-Sk.builtin.str.prototype.nb$multiply = Sk.builtin.bytes.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
-Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
-Sk.builtin.str.prototype.sq$item = Sk.builtin.bytes.prototype.sq$item = function () {
+Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
+Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
+Sk.builtin.str.prototype.sq$item = function () {
     Sk.asserts.fail();
 };
-Sk.builtin.str.prototype.sq$slice = Sk.builtin.bytes.prototype.sq$slice = function (i1, i2) {
+Sk.builtin.str.prototype.sq$slice = function (i1, i2) {
     i1 = Sk.builtin.asnum$(i1);
     i2 = Sk.builtin.asnum$(i2);
     if (i1 < 0) {
@@ -274,16 +247,8 @@ Sk.builtin.str.prototype.tp$iter = function () {
     return new Sk.builtin.str_iter_(this);
 };
 
-Sk.builtin.bytes.prototype.tp$iter = function() {
-    let i = 0;
-    return new Sk.misceval.Iterator(() => {
-        if (i < this.v.length) {
-            return new Sk.builtin.int_(this.v.charCodeAt(i++));
-        }
-    }, true);
-};
 
-Sk.builtin.str.prototype.tp$richcompare = Sk.builtin.bytes.prototype.tp$richcompare = function (other, op) {
+Sk.builtin.str.prototype.tp$richcompare =  function (other, op) {
     if (!(other instanceof this.__class__)) {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -306,7 +271,7 @@ Sk.builtin.str.prototype.tp$richcompare = Sk.builtin.bytes.prototype.tp$richcomp
     }
 };
 
-Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () {
+Sk.builtin.str.prototype["$r"] = function () {
     // single is preferred
     var ashex;
     var c;
@@ -415,7 +380,7 @@ Sk.builtin.str.prototype["capitalize"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str(cap);
 });
 
-Sk.builtin.str.prototype["join"] = Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, seq) {
+Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
     var it, i;
     var arrOfStrs;
     Sk.builtin.pyCheckArgsLen("join", arguments.length, 2, 2);
@@ -430,7 +395,7 @@ Sk.builtin.str.prototype["join"] = Sk.builtin.bytes.prototype["join"] = new Sk.b
     return new self.__class__(arrOfStrs.join(self.v));
 });
 
-Sk.builtin.str.prototype["split"] = Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function (self, on, howmany) {
+Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howmany) {
     var splits;
     var index;
     var match;
@@ -442,7 +407,7 @@ Sk.builtin.str.prototype["split"] = Sk.builtin.bytes.prototype["split"] = new Sk
     if ((on === undefined) || (on === Sk.builtin.none.none$)) {
         on = null;
     }
-    if ((on !== null) && !checkStringish(self, on)) {
+    if ((on !== null) && !Sk.builtin.checkString(on)) {
         throw new Sk.builtin.TypeError("expected " + self.__class__.$englishname);
     }
     if ((on !== null) && on.v === "") {
@@ -490,7 +455,7 @@ Sk.builtin.str.prototype["split"] = Sk.builtin.bytes.prototype["split"] = new Sk
     return new Sk.builtin.list(result);
 });
 
-Sk.builtin.str.prototype["strip"] = Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
+Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("strip", arguments.length, 1, 2);
@@ -506,7 +471,7 @@ Sk.builtin.str.prototype["strip"] = Sk.builtin.bytes.prototype["strip"] = new Sk
     return new self.__class__(self.v.replace(pattern, ""));
 });
 
-Sk.builtin.str.prototype["lstrip"] = Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
+Sk.builtin.str.prototype["lstrip"] =  new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("lstrip", arguments.length, 1, 2);
@@ -522,7 +487,7 @@ Sk.builtin.str.prototype["lstrip"] = Sk.builtin.bytes.prototype["lstrip"] = new 
     return new self.__class__(self.v.replace(pattern, ""));
 });
 
-Sk.builtin.str.prototype["rstrip"] = Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
+Sk.builtin.str.prototype["rstrip"] =  new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("rstrip", arguments.length, 1, 2);
@@ -558,11 +523,11 @@ Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, for
     return new Sk.builtin.str(self);
 });
 
-Sk.builtin.str.prototype["partition"] = Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
+Sk.builtin.str.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("partition", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, checkStringish(self, sep));
+    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, Sk.builtin.checkString(sep));
     sepStr = new self.__class__(sep);
     pos = self.v.indexOf(sepStr.v);
     if (pos < 0) {
@@ -575,11 +540,11 @@ Sk.builtin.str.prototype["partition"] = Sk.builtin.bytes.prototype["partition"] 
         new self.__class__(self.v.substring(pos + sepStr.v.length))]);
 });
 
-Sk.builtin.str.prototype["rpartition"] = Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
+Sk.builtin.str.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("rpartition", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, checkStringish(self, sep));
+    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, Sk.builtin.checkString(sep));
     sepStr = new self.__class__(sep);
     pos = self.v.lastIndexOf(sepStr.v);
     if (pos < 0) {
@@ -592,13 +557,13 @@ Sk.builtin.str.prototype["rpartition"] = Sk.builtin.bytes.prototype["rpartition"
         new self.__class__(self.v.substring(pos + sepStr.v.length))]);
 });
 
-Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, pat, start, end) {
+Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, start, end) {
     var normaltext;
     var ctl;
     var slice;
     var m;
     Sk.builtin.pyCheckArgsLen("count", arguments.length, 2, 4);
-    if (!checkStringish(self, pat)) {
+    if (!Sk.builtin.checkString(pat)) {
         throw new Sk.builtin.TypeError("expected a character buffer object");
     }
     if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
@@ -610,7 +575,7 @@ Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk
 
     let len = self.sq$length();
 
-    if (start === undefined) {
+    if (start === undefined || start === Sk.builtin.none.none$) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
@@ -621,7 +586,7 @@ Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk
         }
     }
 
-    if (end === undefined) {
+    if (end === undefined || end === Sk.builtin.none.none$) {
         end = len;
     } else {
         end = Sk.builtin.asnum$(end);
@@ -649,7 +614,7 @@ function mkJust(isRight, isCenter) {
         if (!Sk.builtin.checkInt(len)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
         }
-        if ((fillchar !== undefined) && (!checkStringish(self, fillchar) || fillchar.v.length !== 1 && fillchar.sq$length() !== 1)) {
+        if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1 && fillchar.sq$length() !== 1)) {
             throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
         }
         if (fillchar === undefined) {
@@ -679,23 +644,23 @@ function mkJust(isRight, isCenter) {
     });
 }
 
-Sk.builtin.str.prototype["ljust"] = Sk.builtin.bytes.prototype["ljust"] = mkJust(false);
+Sk.builtin.str.prototype["ljust"] = mkJust(false);
 
-Sk.builtin.str.prototype["rjust"] = Sk.builtin.bytes.prototype["rjust"] = mkJust(true);
+Sk.builtin.str.prototype["rjust"] = mkJust(true);
 
-Sk.builtin.str.prototype["center"] = Sk.builtin.bytes.prototype["center"] = mkJust(false, true);
+Sk.builtin.str.prototype["center"] = mkJust(false, true);
 
 function mkFind(isReversed) {
     return new Sk.builtin.func(function (self, tgt, start, end) {
         var idx;
         Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
-        if (!checkStringish(self, tgt)) {
+        if (!Sk.builtin.checkString(tgt)) {
             throw new Sk.builtin.TypeError("expected a " + self.__class__.$englishname + " object");
         }
         if ((start !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(start)) {
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
         }
-        if ((end !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(end)) {
+        if ((end !== undefined) && (end !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(end)) {
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
         }
 
@@ -758,9 +723,9 @@ function mkFind(isReversed) {
     });
 };
 
-Sk.builtin.str.prototype["find"] = Sk.builtin.bytes.prototype["find"] = mkFind(false);
+Sk.builtin.str.prototype["find"] = mkFind(false);
 
-Sk.builtin.str.prototype["index"] = Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
+Sk.builtin.str.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("index", arguments.length, 2, 4);
     idx = Sk.misceval.callsimArray(self["find"], [self, tgt, start, end]);
@@ -770,9 +735,9 @@ Sk.builtin.str.prototype["index"] = Sk.builtin.bytes.prototype["index"] = new Sk
     return idx;
 });
 
-Sk.builtin.str.prototype["rfind"] = Sk.builtin.bytes.prototype["rfind"] = mkFind(true);
+Sk.builtin.str.prototype["rfind"] = mkFind(true);
 
-Sk.builtin.str.prototype["rindex"] = Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
+Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
     Sk.builtin.pyCheckArgsLen("rindex", arguments.length, 2, 4);
     idx = Sk.misceval.callsimArray(self["rfind"], [self, tgt, start, end]);
@@ -795,12 +760,12 @@ Sk.builtin.str.prototype["endswith"] = Sk.builtin.bytes.prototype["endswith"] = 
     return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
 });
 
-Sk.builtin.str.prototype["replace"] = Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
+Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
     var c;
     var patt;
     Sk.builtin.pyCheckArgsLen("replace", arguments.length, 3, 4);
-    Sk.builtin.pyCheckType("oldS", self.__class__.$englishname, checkStringish(self, oldS));
-    Sk.builtin.pyCheckType("newS", self.__class__.$englishname, checkStringish(self, newS));
+    Sk.builtin.pyCheckType("oldS", self.__class__.$englishname, Sk.builtin.checkString(oldS));
+    Sk.builtin.pyCheckType("newS", self.__class__.$englishname, Sk.builtin.checkString(newS));
     if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
         throw new Sk.builtin.TypeError("integer argument expected, got " +
             Sk.abstr.typeName(count));
@@ -825,7 +790,7 @@ Sk.builtin.str.prototype["replace"] = Sk.builtin.bytes.prototype["replace"] = ne
     return new self.__class__(self.v.replace(patt, replacer));
 });
 
-Sk.builtin.str.prototype["zfill"] = Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
+Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     var str = self.v;
     var ret;
     var zeroes;
@@ -851,18 +816,18 @@ Sk.builtin.str.prototype["zfill"] = Sk.builtin.bytes.prototype["zfill"] = new Sk
 
 });
 
-Sk.builtin.str.prototype["isdigit"] = Sk.builtin.bytes.prototype["isdigit"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isdigit", arguments.length, 1, 1);
     return new Sk.builtin.bool( /^\d+$/.test(self.v));
 });
 
-Sk.builtin.str.prototype["isspace"] = Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isspace", arguments.length, 1, 1);
     return new Sk.builtin.bool( /^\s+$/.test(self.v));
 });
 
 
-Sk.builtin.str.prototype["expandtabs"] = Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
+Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
     // var input = self.v;
     // var expanded = "";
     // var split;
@@ -892,7 +857,7 @@ Sk.builtin.str.prototype["expandtabs"] = Sk.builtin.bytes.prototype["expandtabs"
     return new self.__class__(expanded);
 });
 
-Sk.builtin.str.prototype["swapcase"] = Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     var ret;
     Sk.builtin.pyCheckArgsLen("swapcase", arguments.length, 1, 1);
 
@@ -905,7 +870,7 @@ Sk.builtin.str.prototype["swapcase"] = Sk.builtin.bytes.prototype["swapcase"] = 
     return new self.__class__(ret);
 });
 
-Sk.builtin.str.prototype["splitlines"] = Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
+Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
     var data = self.v;
     var i = 0;
     var j = i;
@@ -958,7 +923,7 @@ Sk.builtin.str.prototype["splitlines"] = Sk.builtin.bytes.prototype["splitlines"
     return new Sk.builtin.list(strs_w);
 });
 
-Sk.builtin.str.prototype["title"] = Sk.builtin.bytes.prototype["title"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
     var ret;
 
     Sk.builtin.pyCheckArgsLen("title", arguments.length, 1, 1);
@@ -970,33 +935,33 @@ Sk.builtin.str.prototype["title"] = Sk.builtin.bytes.prototype["title"] = new Sk
     return new self.__class__(ret);
 });
 
-Sk.builtin.str.prototype["isalpha"] = Sk.builtin.bytes.prototype["isalpha"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalpha", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z]/.test(self.v));
 });
 
-Sk.builtin.str.prototype["isalnum"] = Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isalnum", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && !/[^a-zA-Z0-9]/.test(self.v));
 });
 
 // does not account for unicode numeric values
-Sk.builtin.str.prototype["isnumeric"] = Sk.builtin.bytes.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isnumeric", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && !/[^0-9]/.test(self.v));
 });
 
-Sk.builtin.str.prototype["islower"] = Sk.builtin.bytes.prototype["islower"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("islower", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
 });
 
-Sk.builtin.str.prototype["isupper"] = Sk.builtin.bytes.prototype["isupper"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("isupper", arguments.length, 1, 1);
     return new Sk.builtin.bool( self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
 
-Sk.builtin.str.prototype["istitle"] = Sk.builtin.bytes.prototype["istitle"] = new Sk.builtin.func(function (self) {
+Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
     // Comparing to str.title() seems the most intuitive thing, but it fails on "",
     // Other empty-ish strings with no change.
     var input = self.v;

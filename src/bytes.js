@@ -70,6 +70,8 @@ Sk.builtin.bytes = function (source) {
     }
 };
 
+Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
+
 function strEncode(str, encoding, errors) {
     const source = str.$jsstr();
     let uint8;
@@ -192,7 +194,10 @@ function makehexform(num) {
     return num;
 };
 
-Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
+
+Sk.builtin.bytes.prototype.$jsstr = function () {
+    return Decoder.decode(this.v);
+};
 
 Sk.builtin.bytes.prototype["$r"] = function () {
     let num;
@@ -371,7 +376,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
     var i;
     var val;
     var final;
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 1, 2);
+    Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 0, 2);
 
     if (encoding === undefined) {
         encoding = "utf-8";

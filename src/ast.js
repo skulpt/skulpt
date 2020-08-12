@@ -2651,9 +2651,12 @@ function parsestrplus (c, n) {
             let r = parsestr(c, CHILD(n, i).value);
             str = r[0];
             fmode = r[1];
+            this_bytesmode = r[2];
         } catch (e) {
             if (e instanceof Sk.builtin.SyntaxError) {
-                ast_error(c, CHILD(n, i), e.tp$str().v); 
+                ast_error(c, CHILD(n, i), e.tp$str().v);
+            } else {
+                ast_error(c, CHILD(n, i), "invalid string (possibly contains a unicode character)");
             }
             throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }

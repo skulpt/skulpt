@@ -611,7 +611,7 @@ Sk.builtin.ord = function ord (x) {
         // ^^ avoid the astral check unless necessary ^^
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
-    return new Sk.builtin.int_((x.v).codePointAt(0));
+    return new Sk.builtin.int_(x.v.codePointAt(0));
 };
 
 Sk.builtin.chr = function chr (x) {

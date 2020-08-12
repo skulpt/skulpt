@@ -817,12 +817,16 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             Sk.asserts.fail("unhandled Num type");
         case Sk.astnodes.Bytes:
             if (Sk.__future__.python3) {
-                for (let i = 0; i < e.s.length; i++) {
-                    if (e.s[i] > String.fromCharCode(0x7f)) {
+                const source = [];
+                const str = e.s.$jsstr();
+                for (let i = 0; i < str.length; i++) {
+                    const c = str.charCodeAt(i);
+                    if (c > 0xff) {
                         throw new Sk.builtin.SyntaxError("bytes can only contain ASCII literal characters");
                     }
+                    source.push(c);
                 }
-                return this.makeConstant("new Sk.builtin.bytes(", getJsLiteralForString(e.s.$jsstr()), ")");
+                return this.makeConstant("new Sk.builtin.bytes(new Uint8Array([", source.toString(), "]))");
             }
             // else fall through and make a string instead
         case Sk.astnodes.Str:
