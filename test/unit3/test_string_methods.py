@@ -110,6 +110,9 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(ord('\u2603'), 0x2603)
         self.assertEqual(chr(0x2603), '\u2603')
 
+        # Unicode doesn't get escaped in repr(), but escape chars still do
+        self.assertEqual(repr('\x01\xf0\u2603'), "'\\x01\xf0\u2603'")
+
         # Indexing: It's a single character
         self.assertEqual(len('Build a \u2603!'), 10)
         self.assertEqual('Build a \u2603!'[9], '!')

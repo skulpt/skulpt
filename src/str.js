@@ -333,10 +333,10 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
             ret += "\\n";
         } else if (c === "\r") {
             ret += "\\r";
-        } else if (cc > 0xff && cc < 0xd800 || cc >= 0xe000) {
+        } else if ((cc > 0xff && cc < 0xd800 || cc >= 0xe000) && !Sk.__future__.python3) {
             // BMP
             ret += "\\u" + ("000"+cc.toString(16)).slice(-4);
-        } else if (cc >= 0xd800) {
+        } else if (cc >= 0xd800 && !Sk.__future__.python3) {
             // Surrogate pair stuff
             let val = this.v.codePointAt(i);
             i++;
@@ -348,10 +348,10 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
             } else {
                 ret += "\\u" + s.slice(-4);
             }
-        } else if (cc > 0xff) {
+        } else if (cc > 0xff && !Sk.__future__.python3) {
             // Invalid!
             ret += "\\ufffd";
-        } else if (c < " " || cc >= 0x7f) {
+        } else if (c < " " || cc >= 0x7f && !Sk.__future__.python3) {
             ashex = c.charCodeAt(0).toString(16);
             if (ashex.length < 2) {
                 ashex = "0" + ashex;
