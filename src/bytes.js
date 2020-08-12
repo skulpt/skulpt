@@ -77,7 +77,7 @@ function strEncode(str, encoding, errors) {
     let uint8;
     if (encoding === "ascii") {
         uint8 = encodeAscii(source, errors);
-    } else if (encoding === "utf-8" || encoding === "utf8" || encoding === "utf") {
+    } else if (encoding === "utf-8") {
         uint8 = Encoder.encode(source);
     } else {
         throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
@@ -105,14 +105,13 @@ function encodeAscii(source, errors) {
     return Uint8Array.from(data);
 }
 
-function tp$new(args, kwargs) {
-    kwargs = kwargs || [];
+function tp$new(args) {
     let source,
         pySource,
         dunderBytes,
         encoding = null,
         errors = null;
-    if (args.length <= 1 && +kwargs.length === 0) {
+    if (args.length <= 1) {
         pySource = args[0];
     } else {
         [pySource, encoding, errors] = args;
@@ -139,8 +138,8 @@ function tp$new(args, kwargs) {
         if (encoding === null) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         }
-        errors = errors === null ? "strict" : errors.$jsstr().trim().toLowerCase();
-        encoding = encoding.$jsstr().trim().toLowerCase();
+        errors = errors === null ? "strict" : errors.$jsstr();
+        encoding = normalizeEncoding(encoding.$jsstr());
         return strEncode(pySource, encoding, errors);
     } else if (Sk.builtin.checkInt(pySource)) {
         source = Sk.builtin.asnum$(pySource);
