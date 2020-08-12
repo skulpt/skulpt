@@ -1207,6 +1207,39 @@ Sk.misceval.Break = function(brValue) {
 Sk.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
 
 /**
+ * Create a Python iterator that repeatedly calls a given JS function
+ * until it returns 'undefined'
+ * @constructor
+ */
+Sk.misceval.Iterator = function(fn, handlesOwnSuspensions) {
+    this.tp$iter = this;
+    this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
+        let x = fn();
+        if (canSuspend || !x.isSuspension) {
+            return x;
+        } else {
+            return Sk.misceval.retryOptionalSuspensionOrThrow(x);
+        }
+    };
+};
+
+Sk.abstr.setUpInheritance("iterator", Sk.misceval.Iterator, Sk.builtin.object);
+Sk.misceval.Iterator.prototype.__class__ = Sk.misceval.Iterator;
+Sk.misceval.Iterator.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
+    return self;
+});
+Sk.misceval.Iterator.prototype.next$ = function (self) {
+    var ret = self.tp$iternext();
+    if (ret === undefined) {
+        throw new Sk.builtin.StopIteration();
+    }
+    return ret;
+};
+
+
+
+/**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
  */

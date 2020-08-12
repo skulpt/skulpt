@@ -169,7 +169,11 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(bytes('hello', 'utf-8'), b'hello')
         self.assertEqual(bytes('Love \U0001f355!', 'utf-8'), b'Love \xf0\x9f\x8d\x95!')
 
-        # Construct from bytestrings
+        # Construct string from bytestring
+        self.assertEqual(str(b'\xf0\x9f\x8d\x95'), '\U0001f355')
+        self.assertEqual(str(b'\xf0\x9f\x8d\x95', "utf-8"), '\U0001f355')
+
+        # Construct bytestring from bytestring
         self.assertEqual(bytes(b'hello'), b'hello')
 
         # Construct empty bytestrings
@@ -204,6 +208,9 @@ class StringMethodsTests(unittest.TestCase):
         # Search
         self.assertTrue(b'y' in b'xyz')
         self.assertFalse(b'a' in b'xyz')
+        self.assertTrue(120 in b'xyz')
+        self.assertFalse(119 in b'xyz')
+        self.assertRaises(ValueError, lambda: 1000 in b'xyz')
         self.assertEqual(b'abc'.find(b'b'), 1)
         self.assertEqual(b'abc'.find(b'z'), -1)
         self.assertRaises(TypeError, lambda: 'y' in b'xyz')
@@ -212,9 +219,12 @@ class StringMethodsTests(unittest.TestCase):
         self.assertRaises(TypeError, lambda: 'xyz'.find(b'y'))
 
         # Index and slice
-        self.assertEqual(b'xyz'[2], b'z')
-        self.assertEqual(b'xyz'[-1], b'z')
+        self.assertEqual(b'xyz'[2], 122)
+        self.assertEqual(b'xyz'[-1], 122)
         self.assertEqual(b'xyz'[:2], b'xy')
+
+        # Iterate
+        self.assertEqual(list(b'xyz'), [120, 121, 122])
 
         # To and from hex
         self.assertEqual(bytes.fromhex('2Ef0 F1f2 '), b'.\xf0\xf1\xf2')

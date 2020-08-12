@@ -13,14 +13,22 @@ function setInterned (x, pyStr) {
  * @param {*} x
  * @extends Sk.builtin.object
  */
-Sk.builtin.str = function (x) {
+Sk.builtin.str = function (x, encoding) {
     var ret;
 
-    Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, 1);
+    Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, Sk.__future__ && Sk.__future__.python3 ? 2 : 1);
 
     if (x === undefined) {
         x = "";
     }
+
+    if (encoding || x instanceof Sk.builtin.bytes) {
+        if (!Sk.builtin.checkBytes(x)) {
+            throw new TypeError("decoding " + Sk.abstr.typeName(x) + " is not supported");
+        }
+        return Sk.misceval.callsimArray(x.tp$getattr(new Sk.builtin.str("decode")), encoding ? [encoding] : []);
+    }
+
     if (x instanceof Sk.builtin.str) {
         return x;
     }
@@ -125,7 +133,7 @@ Sk.builtin.str.prototype.$jsstr = Sk.builtin.bytes.prototype.$jsstr = function (
     return this.v;
 };
 
-Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript = function (index) {
+Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
@@ -134,12 +142,12 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
             index = len + index;
         }
         if (index < 0 || index >= len) {
-            throw new Sk.builtin.IndexError(this.__class__.$englishname + " index out of range");
+            throw new Sk.builtin.IndexError("string index out of range");
         }
         if (this.codepoints) {
-            return new this.__class__(this.v.substring(this.codepoints[index], this.codepoints[index+1]));
+            return new Sk.builtin.str(this.v.substring(this.codepoints[index], this.codepoints[index+1]));
         } else {
-            return new this.__class__(this.v.charAt(index));
+            return new Sk.builtin.str(this.v.charAt(index));
         }
     } else if (index instanceof Sk.builtin.slice) {
         ret = "";
@@ -156,9 +164,32 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
                 }
             });
         };
-        return new this.__class__(ret);
+        return new Sk.builtin.str(ret);
     } else {
-        throw new Sk.builtin.TypeError(this.__class__.$englishname + " indices must be integers, not " + Sk.abstr.typeName(index));
+        throw new Sk.builtin.TypeError("string indices must be integers, not " + Sk.abstr.typeName(index));
+    }
+};
+
+Sk.builtin.bytes.prototype.mp$subscript = function(index) {
+    if (Sk.misceval.isIndex(index)) {
+        index = Sk.misceval.asIndex(index);
+        if (index < 0) {
+            index = this.v.length + index;
+        }
+        if (index < 0 || index >= this.v.length) {
+            throw new Sk.builtin.IndexError("bytestring index out of range");
+        }
+        return new Sk.builtin.int_(this.v.charCodeAt(index));
+    } else if (index instanceof Sk.builtin.slice) {
+        let ret = "";
+        index.sssiter$(this, function (i, wrt) {
+            if (i >= 0 && i < wrt.v.length) {
+                ret += wrt.v.charAt(i);
+            }
+        });
+        return new Sk.builtin.bytes(ret);
+    } else {
+        throw new Sk.builtin.TypeError("bytestring indices must be integers, not " + Sk.abstr.typeName(index));
     }
 };
 
@@ -214,19 +245,42 @@ Sk.builtin.str.prototype.sq$slice = Sk.builtin.bytes.prototype.sq$slice = functi
     }
 };
 
-Sk.builtin.str.prototype.sq$contains = Sk.builtin.bytes.prototype.sq$contains = function (ob) {
-    if (!(ob instanceof this.__class__)) {
-        throw new Sk.builtin.TypeError("TypeError: 'In <" + this.__class__.$englishname + "> requires " + this.__class__.$englishname + " as left operand");
+Sk.builtin.str.prototype.sq$contains = function (ob) {
+    if (!(ob instanceof Sk.builtin.str)) {
+        throw new Sk.builtin.TypeError("TypeError: 'In <string> requires string as left operand");
     }
     return this.v.indexOf(ob.v) != -1;
 };
 
-Sk.builtin.str.prototype.__iter__ = Sk.builtin.bytes.prototype.__iter__ = new Sk.builtin.func(function (self) {
+Sk.builtin.bytes.prototype.sq$contains = function(ob) {
+    if (ob instanceof Sk.builtin.bytes) {
+        return this.v.indexOf(ob.v) != -1;
+    } else if (Sk.builtin.checkInt(ob)) {
+        let v = Sk.ffi.remapToJs(ob);
+        if (v < 0 || v > 0xff) {
+            throw new Sk.builtin.ValueError("byte must be in range (0, 256)");
+        }
+        return this.v.indexOf(String.fromCharCode(v)) != -1;
+    } else {
+        throw new Sk.builtin.TypeError("TypeError: 'In <bytes> requires a bytes-like object as left operand, not " + Sk.abstr.typeName(ob));
+    }
+};
+
+Sk.builtin.str.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str_iter_(self);
 });
 
-Sk.builtin.str.prototype.tp$iter = Sk.builtin.bytes.prototype.tp$iter = function () {
+Sk.builtin.str.prototype.tp$iter = function () {
     return new Sk.builtin.str_iter_(this);
+};
+
+Sk.builtin.bytes.prototype.tp$iter = function() {
+    let i = 0;
+    return new Sk.misceval.Iterator(() => {
+        if (i < this.v.length) {
+            return new Sk.builtin.int_(this.v.charCodeAt(i++));
+        }
+    }, true);
 };
 
 Sk.builtin.str.prototype.tp$richcompare = Sk.builtin.bytes.prototype.tp$richcompare = function (other, op) {
