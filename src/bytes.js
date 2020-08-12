@@ -97,7 +97,7 @@ Sk.builtin.bytes.$strEncode = strEncode;
 function encodeAscii(source, errors) {
     const data = [];
     for (let i in source) {
-        const val = source[i].charCodeAt(0);
+        const val = source.charCodeAt(i);
         if (val < 0 || val > 127) {
             if (errors === "strict") {
                 const hexval = makehexform(val);

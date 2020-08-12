@@ -820,8 +820,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 const source = [];
                 const str = e.s.$jsstr();
                 for (let i = 0; i < str.length; i++) {
-                    const c = str.charCodeAt(i);
-                    source.push(c);
+                    source.push(str.charCodeAt(i));
                 }
                 return this.makeConstant("new Sk.builtin.bytes([", source.join(", "), "])");
             }
