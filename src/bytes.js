@@ -44,10 +44,9 @@ function Uint8ArrayFromArray(source) {
  * @return {Sk.builtin.bytes}
  * @extends {Sk.builtin.object}
  */
-Sk.builtin.bytes = function (source) {
+Sk.builtin.bytes = function (source, encoding, errors) {
     if (!(this instanceof Sk.builtin.bytes)) {
         // called from python
-        Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
         return newBytesFromPy(...arguments);
     }
 
@@ -65,15 +64,19 @@ Sk.builtin.bytes = function (source) {
         this.v = new Uint8Array(source);
     } else {
         // fall through case for subclassing called by Sk.abstr.superConstructor
-        const bytes_obj = newBytesFromPy(...arguments);
-        this.v = bytes_obj.v;
+        return Sk.misceval.chain(newBytesFromPy(...arguments), (pyBytes) => {
+            this.v = pyBytes.v;
+            return this;
+        });
     }
 };
 
 Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
 
-function strEncode(str, encoding, errors) {
-    const source = str.$jsstr();
+Sk.builtin.bytes.prototype.__class__ = Sk.builtin.bytes;
+
+function strEncode(pyStr, encoding, errors) {
+    const source = pyStr.$jsstr();
     encoding = normalizeEncoding(encoding);
     let uint8;
     if (encoding === "ascii") {
@@ -106,42 +109,29 @@ function encodeAscii(source, errors) {
     return Uint8ArrayFromArray(data);
 }
 
-function newBytesFromPy(...args) {
-    let source,
-        pySource,
-        dunderBytes,
-        encoding = null,
-        errors = null;
-    if (args.length <= 1) {
-        pySource = args[0];
-    } else {
+function newBytesFromPy(pySource, encoding, errors) {
+    Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
+    let source;
+    let dunderBytes;
+    if (arguments.length > 1) {
         // either encoding is a py object or errors is a py object - currently kwargs not supported
         // will fail if encoding is not a string || errors is not a string || pySource is not a string
-        [pySource, encoding, errors] = args;
-        encoding = encoding || null;
-        errors = errors || null;
-    }
-
-    // check the types of encoding and errors
-    if (encoding !== null && !Sk.builtin.checkString(encoding)) {
-        throw new Sk.builtin.TypeError("bytes() argument 2 must be str not " + Sk.abstr.typeName(encoding));
-    }
-    if (errors !== null && !Sk.builtin.checkString(errors)) {
-        throw new Sk.builtin.TypeError("bytes() argument 3 must be str not " + Sk.abstr.typeName(encoding));
-    }
-    if (encoding !== null || errors !== null) {
-        if (!Sk.builtin.checkString(pySource)) {
-            throw new Sk.builtin.TypeError((encoding !== null ? "encoding" : "errors") + " without a string argument");
+        // check the types of encoding and errors
+        if (!Sk.builtin.checkString(encoding)) {
+            throw new Sk.builtin.TypeError("bytes() argument 2 must be str not " + Sk.abstr.typeName(encoding));
+        }
+        if (errors !== undefined && !Sk.builtin.checkString(errors)) {
+            throw new Sk.builtin.TypeError("bytes() argument 3 must be str not " + Sk.abstr.typeName(encoding));
         }
     }
 
     if (pySource === undefined) {
         return new Sk.builtin.bytes();
     } else if (Sk.builtin.checkString(pySource)) {
-        if (encoding === null) {
+        if (encoding === undefined) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         }
-        errors = errors === null ? "strict" : errors.$jsstr();
+        errors = errors === undefined ? "strict" : errors.$jsstr();
         encoding = encoding.$jsstr();
         return strEncode(pySource, encoding, errors);
     } else if (Sk.builtin.checkInt(pySource)) {
@@ -151,7 +141,7 @@ function newBytesFromPy(...args) {
         }
         return new Sk.builtin.bytes(source);
     } else if (Sk.builtin.checkBytes(pySource)) {
-        return pySource;
+        return new Sk.builtin.bytes(pySource.v);
     } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
         const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, [pySource]);
         return Sk.misceval.chain(ret, (bytesSource) => {
@@ -161,8 +151,8 @@ function newBytesFromPy(...args) {
             return bytesSource;
         });
     } else if (Sk.builtin.checkIterable(pySource)) {
-        let source = [];
-        let r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
+        source = [];
+        const r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
             if (!Sk.builtin.checkInt(byte)) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(byte) + "' object cannot be interpreted as an integer");
             };
@@ -518,7 +508,7 @@ Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function (self) {
 });
 
 function indices(self, start, end) {
-    if (start === undefined) {
+    if (start === undefined || start === Sk.builtin.none.none$) {
         start = 0;
     } else if (!Sk.misceval.isIndex(start)) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
