@@ -107,6 +107,9 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('\u2603'.encode(), b'\xe2\x98\x83')
         self.assertEqual(b'\xe2\x98\x83'.decode(), '\u2603')
 
+        self.assertEqual(ord('\u2603'), 0x2603)
+        self.assertEqual(chr(0x2603), '\u2603')
+
         # Indexing: It's a single character
         self.assertEqual(len('Build a \u2603!'), 10)
         self.assertEqual('Build a \u2603!'[9], '!')
@@ -122,14 +125,24 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('\U0001f355'.encode(), b'\xf0\x9f\x8d\x95')
         self.assertEqual(b'\xf0\x9f\x8d\x95'.decode(), '\U0001f355')
 
+        self.assertEqual(ord('\U0001f355'), 0x1f355)
+        self.assertEqual(chr(0x1f355), '\U0001f355')
+
         # It's *still* a single character, even though it's a surrogate
         # pair in JS
         self.assertEqual(len('Love \U0001f355!'), 7)
+
+        self.assertEqual(list('Love \U0001f355!'), ['L', 'o', 'v', 'e', ' ', '\U0001f355', '!'])
+
         self.assertEqual('Love \U0001f355!'[6], '!')
         self.assertEqual('Love \U0001f355!'[5], '\U0001f355')
         self.assertEqual('Love \U0001f355!'[4:6], ' \U0001f355')
         self.assertEqual('Love \U0001f355!'[:6], 'Love \U0001f355')
         self.assertEqual('Love \U0001f355!'[4:], ' \U0001f355!')
+
+        self.assertEqual('Love \U0001f355!'[-2:], '\U0001f355!')
+        self.assertEqual('abc\U0001f355def'[-2::-2], 'e\U0001f355b')
+        self.assertEqual('abc\U0001f355def'[-1::-2], 'fdca')
 
         self.assertEqual('Love \U0001f355!'.find('!'), 6)
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', 0, 6), 5)

@@ -142,15 +142,19 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
         }
     } else if (index instanceof Sk.builtin.slice) {
         ret = "";
-        index.sssiter$(this, function (i, wrt) {
-            if (wrt.$hasAstralCodePoints()) {
-                if (i >= 0 && i < wrt.codepoints.length) {
-                    ret += wrt.v.substring(wrt.codepoints[i], wrt.codepoints[i+1]);
+        if (this.$hasAstralCodePoints()) {
+            index.sssiter$(this.codepoints.length, (i, wrt) => {
+                if (i >= 0 && i < this.codepoints.length) {
+                    ret += this.v.substring(this.codepoints[i], this.codepoints[i+1]);
                 }
-            } else if (i >= 0 && i < wrt.v.length) {
-                ret += wrt.v.charAt(i);
-            }
-        });
+            });
+        } else {
+            index.sssiter$(this, function (i, wrt) {
+                if (i >= 0 && i < wrt.v.length) {
+                    ret += wrt.v.charAt(i);
+                }
+            });
+        };
         return new this.__class__(ret);
     } else {
         throw new Sk.builtin.TypeError(this.__class__.$englishname + " indices must be integers, not " + Sk.abstr.typeName(index));
@@ -1348,7 +1352,9 @@ Sk.builtin.str_iter_ = function (obj) {
                 return undefined;
             }
 
-            return new this.$cls(this.$obj.substring(this.$codepoints[this.$index], this.$codepoints[this.$index+1]));
+            let r = new this.$cls(this.$obj.substring(this.$codepoints[this.$index], this.$codepoints[this.$index+1]));
+            this.$index++;
+            return r;
         }
     } else {
         this.sq$length = this.$obj.length;

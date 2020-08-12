@@ -184,6 +184,11 @@ Sk.builtin.checkString = function (arg) {
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
+Sk.builtin.checkBytes = function (arg) {
+    return (arg !== null && arg.__class__ == (Sk.builtin.__python3__ ? Sk.builtin.bytes : Sk.builtin.str));
+};
+Sk.exportSymbol("Sk.builtin.checkBytes", Sk.builtin.checkBytes);
+
 Sk.builtin.checkClass = function (arg) {
     return (arg !== null && arg.sk$type);
 };
