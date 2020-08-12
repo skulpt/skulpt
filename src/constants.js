@@ -1,4 +1,5 @@
 Sk.builtin.str.$emptystr = new Sk.builtin.str("");
+Sk.builtin.bytes.$emptystr = new Sk.builtin.bytes("");
 
 
 /* Constants used for kwargs */
@@ -30,6 +31,7 @@ Sk.builtin.str.$imag = new Sk.builtin.str("imag");
 Sk.builtin.str.$real = new Sk.builtin.str("real");
 
 Sk.builtin.str.$abs = new Sk.builtin.str("__abs__");
+Sk.builtin.str.$bytes = new Sk.builtin.str("__bytes__");
 Sk.builtin.str.$call = new Sk.builtin.str("__call__");
 Sk.builtin.str.$cmp = new Sk.builtin.str("__cmp__");
 Sk.builtin.str.$complex = new Sk.builtin.str("__complex__");
