@@ -2247,12 +2247,12 @@ function astForIfexpr (c, n) {
  * prefixes. Returns [decoded string object, is-an-fstring]
  */
 function parsestr (c, n, s) {
-    var encodeUtf8 = function (s) {
-        return unescape(encodeURIComponent(s));
-    };
-    var decodeUtf8 = function (s) {
-        return decodeURIComponent(escape(s));
-    };
+    var quote = s.charAt(0);
+    var rawmode = false;
+    var unicode = false;
+    var fmode = false;
+    var bytesmode = false;
+
     var decodeEscape = function (s, quote) {
         var d3;
         var d2;
@@ -2306,14 +2306,14 @@ function parsestr (c, n, s) {
                     ret += String.fromCharCode(parseInt(s.substr(i+1,2), 16));
                     i += 2;
                 }
-                else if (ch === "u") {
+                else if (!bytesmode && ch === "u") {
                     if (i+4 >= len) {
                         ast_error(c, n, "Truncated \\uXXXX escape");
                     }
                     ret += String.fromCharCode(parseInt(s.substr(i+1, 4), 16))
                     i += 4;
                 }
-                else if (ch === "U") {
+                else if (!bytesmode && ch === "U") {
                     if (i+8 >= len) {
                         ast_error(c, n, "Truncated \\UXXXXXXXX escape");
                     }
@@ -2326,7 +2326,9 @@ function parsestr (c, n, s) {
                     // Sk.asserts.fail("unhandled escape: '" + ch.charCodeAt(0) + "'");
                 }
             }
-            else {
+            else if (bytesmode && ch.charCodeAt(0) > 0xff) {
+                ast_error(c, n, "bytes can only contain ASCII literal characters");
+            } else {
                 ret += ch;
             }
         }
@@ -2334,13 +2336,6 @@ function parsestr (c, n, s) {
     };
 
     //console.log("parsestr", s);
-
-    var quote = s.charAt(0);
-    var rawmode = false;
-    var unicode = false;
-    var bytes = false;
-    var fmode = false;
-    var bytesmode = false;
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
@@ -2379,6 +2374,13 @@ function parsestr (c, n, s) {
     }
 
     if (rawmode || s.indexOf("\\") === -1) {
+        if (bytesmode) {
+            for (let i=0; i<s.length; i++) {
+                if (s.charCodeAt(i) > 0xff) {
+                    ast_error(c, n, "bytes can only contain ASCII literal characters");
+                }
+            }
+        }
         return [strobj(s), fmode, bytesmode];
     }
     return [strobj(decodeEscape(s, quote)), fmode, bytesmode];
