@@ -1030,22 +1030,8 @@ Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encodin
     // (other modes will require manual UTF-8-bashing)
 
     Sk.builtin.pyCheckArgsLen("encode", arguments.length, 1, 3);
-
-    if (encoding) {
-        Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
-        if (!/^utf-?8$/i.test(encoding.v)) {
-            throw new Sk.builtin.ValueError("Only UTF-8 or ASCII encoding and decoding is supported");
-        }
-    }
-
-    let v;
-    try {
-        v = unescape(encodeURIComponent(self.v));
-    } catch (e) {
-        throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
-    }
-
-    return Sk.__future__.python3 ? new Sk.builtin.bytes(v) : new Sk.builtin.str(v);
+    
+    return new Sk.builtin.bytes(self, encoding || Sk.builtin.str.$utf8, errors);
 });
 
 Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {

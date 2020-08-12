@@ -17,6 +17,8 @@ function normalizeEncoding(encoding) {
         return supported;
     }
 }
+const Encoder = new TextEncoder();
+const Decoder = new TextDecoder();
 
 // Stop gap until Uint8Array.from (or new Uint8Array(iterable)) gets wider support
 // This only handles the simple case used in this file
@@ -40,111 +42,136 @@ function Uint8ArrayFromArray(source) {
  * @param {Sk.builtin.str=} encoding
  * @param {Sk.builtin.str=} errors
  * @return {Sk.builtin.bytes}
+ * @extends Sk.builtin.object
  */
-
-Sk.builtin.bytes = function (source, encoding, errors) {
-    let arr;
-
+Sk.builtin.bytes = function (source) {
     if (!(this instanceof Sk.builtin.bytes)) {
-        return new Sk.builtin.bytes(...arguments);
-    }
-    Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
-
-    if (errors === undefined) {
-        errors = "strict";
-    } else if (!(errors instanceof Sk.builtin.str)) {
-        throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not " + Sk.abstr.typeName(errors));
-    } else {
-        errors = errors.v;
-    }
-    if (encoding === undefined) {
-        encoding = Sk.builtin.str.$utf8;
-    }
-    if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
-        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
-    }
-    if (arguments.length === 0) {
-        return new Sk.builtin.bytes(0);
-    }
-    if (arguments.length === 1) {
-        if (Sk.builtin.checkInt(source)) {
-            source = Sk.builtin.asnum$(source);
-            arr = new Uint8Array(source);
-        } else if (source instanceof Sk.builtin.bytes) {
-            return source;
-        } else if (Array.isArray(source)) {
-            // Internal fast path
-            Sk.asserts.assert(source.every((x) => (x >= 0) && (x < 256)),
-                              "Bad internal call to bytes with array object");
-            arr = Uint8ArrayFromArray(source);
-        } else if (source instanceof Uint8Array) {
-            // Internal fast path
-            arr = source;
-        } else if ((Sk.builtin.checkIterable(source) && !(source instanceof Sk.builtin.str))) {
-            const final = [];
-            for (let iter = Sk.abstr.iter(source), item = iter.tp$iternext();
-                item !== undefined;
-                item = iter.tp$iternext()) {
-                if (Sk.builtin.checkInt(item)) {
-                    item = Sk.builtin.asnum$(item);
-                    if (item >= 0 && item <= 256) {
-                        final.push(item);
-                    } else {
-                        throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
-                    }
-                } else {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(item) + "' " + "object cannot be interpreted as an integer");
-                }
-            }
-            arr = Uint8ArrayFromArray(final);
-        } else if ((source instanceof Sk.builtin.str) || (typeof source === "string")) {
-            throw new Sk.builtin.TypeError("string argument without an encoding");
-        } else {
-            throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
-        }
+        // called from python
+        Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
+        return tp$new([...arguments]);
     } else if (arguments.length > 1) {
-        if (encoding instanceof Sk.builtin.str) {
-            if ((source instanceof Sk.builtin.str) || (typeof source === "string")){
-                if (source instanceof Sk.builtin.str) {
-                    source = source.$jsstr();
-                }
+        return tp$new([...arguments]);
+    }
 
-                encoding = normalizeEncoding(encoding.$jsstr());
-                if (encoding === "ascii") {
-                    const data = [];
-                    for (let i in source) {
-                        const val = source[i].charCodeAt(0);
+    // deal with internal calls
+    if (source === undefined) {
+        this.v = new Uint8Array();
+    } else if (source instanceof Uint8Array) {
+        this.v = source;
+    } else if (Array.isArray(source)) {
+        Sk.asserts.assert(source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
+        this.v = Uint8Array.from(source);
+    } else if (typeof source === "string") {
+        this.v = Encoder.encode(source);
+    } else if (typeof source === "number") {
+        this.v = new Uint8Array(source);
+    } else {
+        Sk.asserts.fail("got a " + Sk.abstr.typeName(source));
+    }
+};
 
-                        if (val < 0 || val > 127) {
-                            if (errors === "strict") {
-                                const hexval = makehexform(val);
-                                throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + hexval + "' in position " + i + ": ordinal not in range(128)");
-                            } else if (errors === "replace") {
-                                data.push(63); // "?"
-                            }
-                        } else {
-                            data.push(val);
-                        }
-                    }
-                    arr = Uint8ArrayFromArray(data);
-                } else if (encoding === "utf-8") {
-                    arr = new TextEncoder().encode(source);
-                } else {
-                    throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
-                }
-            } else {
-                throw new Sk.builtin.TypeError("encoding without a string argument");
+function strEncode(str, encoding, errors) {
+    const source = str.$jsstr();
+    let uint8;
+    if (encoding === "ascii") {
+        uint8 = encodeAscii(source, errors);
+    } else if (encoding === "utf-8" || encoding === "utf8" || encoding === "utf") {
+        uint8 = Encoder.encode(source);
+    } else {
+        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+    }
+    return new Sk.builtin.bytes(uint8);
+}
+
+Sk.builtin.bytes.$strEncode = strEncode;
+
+function encodeAscii(source, errors) {
+    const data = [];
+    for (let i in source) {
+        const val = source[i].charCodeAt(0);
+        if (val < 0 || val > 127) {
+            if (errors === "strict") {
+                const hexval = makehexform(val);
+                throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + hexval + "' in position " + i + ": ordinal not in range(128)");
+            } else if (errors === "replace") {
+                data.push(63); // "?"
             }
         } else {
-            throw new Sk.builtin.TypeError("bytes() argument 2 must be str, not " + Sk.abstr.typeName(encoding));
+            data.push(val);
+        }
+    }
+    return Uint8Array.from(data);
+}
+
+function tp$new(args, kwargs) {
+    kwargs = kwargs || [];
+    let source,
+        pySource,
+        dunderBytes,
+        encoding = null,
+        errors = null;
+    if (args.length <= 1 && +kwargs.length === 0) {
+        pySource = args[0];
+    } else {
+        [pySource, encoding, errors] = args;
+        encoding = encoding || null;
+        errors = errors || null;
+    }
+
+    // check the types of encoding and errors
+    if (encoding !== null && !Sk.builtin.checkString(encoding)) {
+        throw new Sk.builtin.TypeError("bytes() argument 2 must be str not " + Sk.abstr.typeName(encoding));
+    }
+    if (errors !== null && !Sk.builtin.checkString(errors)) {
+        throw new Sk.builtin.TypeError("bytes() argument 3 must be str not " + Sk.abstr.typeName(encoding));
+    }
+    if (encoding !== null || errors !== null) {
+        if (!Sk.builtin.checkString(pySource)) {
+            throw new Sk.builtin.TypeError((encoding !== null ? "encoding" : "errors") + " without a string argument");
         }
     }
 
-    this.v = arr;
-    this.__class__ = Sk.builtin.bytes;
-
-    return this;
-};
+    if (pySource === undefined) {
+        return new Sk.builtin.bytes();
+    } else if (Sk.builtin.checkString(pySource)) {
+        if (encoding === null) {
+            throw new Sk.builtin.TypeError("string argument without an encoding");
+        }
+        errors = errors === null ? "strict" : errors.$jsstr().trim().toLowerCase();
+        encoding = encoding.$jsstr().trim().toLowerCase();
+        return strEncode(pySource, encoding, errors);
+    } else if (Sk.builtin.checkInt(pySource)) {
+        source = Sk.builtin.asnum$(pySource);
+        if (Math.abs(source) > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("cannot fit 'int' into an index-sized integer");
+        }
+        return new Sk.builtin.bytes(source);
+    } else if (Sk.builtin.checkBytes(pySource)) {
+        return pySource;
+    } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
+        const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, [pySource]);
+        return Sk.misceval.chain(ret, (bytesSource) => {
+            if (!Sk.builtin.checkBytes(bytesSource)) {
+                throw new Sk.builtin.TypeError("__bytes__ returned non-bytes (type " + Sk.abstr.typeName(bytesSource) + ")");
+            }
+            return bytesSource;
+        });
+    } else if (Sk.builtin.checkIterable(pySource)) {
+        let source = [];
+        let r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
+            if (!Sk.builtin.checkInt(byte)) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(byte) + "' object cannot be interpreted as an integer");
+            };
+            const n = Sk.builtin.asnum$(byte);
+            if (n < 0 || n > 255) {
+                throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+            }
+            source.push(n);
+        });
+        return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
+    }
+    throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(pySource) + "' object into bytes");
+}
 
 function makehexform(num) {
     var leading;
@@ -209,10 +236,8 @@ Sk.builtin.bytes.prototype["$r"] = function () {
 };
 
 Sk.builtin.bytes.prototype.mp$subscript = function (index) {
-    var ret;
-    var i;
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.byteLength + i;
@@ -223,7 +248,7 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
             return new Sk.builtin.int_(this.v[i]);
         }
     } else if (index instanceof Sk.builtin.slice) {
-        ret = [];
+        const ret = [];
         index.sssiter$(this.v.byteLength, (i) => {
             ret.push(this.v[i]);
         });
@@ -389,7 +414,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
             }
         }
     } else {
-        const string = new TextDecoder(encoding).decode(self.v.buffer);
+        const string = Decoder.decode(self.v);
         if (errors === "replace") {
             return new Sk.builtin.str(string);
         }

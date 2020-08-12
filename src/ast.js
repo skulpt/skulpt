@@ -82,7 +82,7 @@ function strobj (s) {
 
 function bytesobj (s) {
     Sk.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
-    return new Sk.builtin.bytes(s, Sk.builtin.str.$ascii);
+    return new Sk.builtin.bytes(new Sk.builtin.str(s), Sk.builtin.str.$ascii);
 }
 
 /** @return {number} */
