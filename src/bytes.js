@@ -809,8 +809,6 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
     var final2;
     var final3;
     var val;
-    var index;
-    var len;
     Sk.builtin.pyCheckArgsLen("partition", arguments.length - 1, 1, 1);
     if (!(sep instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
@@ -826,7 +824,6 @@ Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, se
         final2 = new Sk.builtin.bytes(self.v.subarray(val, val + sep.v.byteLength));
         final3 = new Sk.builtin.bytes(self.v.subarray(val + sep.v.byteLength, self.v.byteLength));
     }
-    len = sep.v.byteLength;
 
     return new Sk.builtin.tuple([final1, final2, final3]);
 });
@@ -837,9 +834,6 @@ Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old,
     var i;
     var sep;
     var tot;
-    var idx;
-    var index;
-    var val;
     Sk.builtin.pyCheckArgsLen("replace", arguments.length - 1, 2, 3);
     if (!(old instanceof Sk.builtin.bytes)) {
         throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(old) + "'");
@@ -907,7 +901,6 @@ Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, s
     var final1;
     var final2;
     var final3;
-    var index;
     Sk.builtin.pyCheckArgsLen("rpartition", arguments.length - 1, 1, 1);
 
     if (!(sep instanceof Sk.builtin.bytes)) {
@@ -1392,7 +1385,6 @@ Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function (self, t
     }
 
     let final = [];
-    let spaces;
     let linepos = 0;
 
     for (let i = 0; i < self.v.byteLength; i++) {
@@ -1501,7 +1493,6 @@ Sk.builtin.bytes.prototype["islower"] = new Sk.builtin.func(function (self) {
 Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
     var i;
     var val;
-    var flag;
     Sk.builtin.pyCheckArgsLen("isspace", arguments.length - 1, 0, 0);
     if (self.v.byteLength === 0) {
         return Sk.builtin.bool.false$;
