@@ -126,6 +126,7 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["basestring"];
         Sk.builtins["bytes"] = Sk.builtin.bytes;
         delete Sk.builtin.str.prototype.decode;
+        Sk.builtins["ascii"] = new Sk.builtin.func(Sk.builtin.ascii);
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
@@ -136,6 +137,8 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.builtins["basestring"] = Sk.builtin.str;
         delete Sk.builtins["bytes"];
+        Sk.builtin.str.prototype.decode = Sk.builtin.bytes.prototype.decode;
+        delete Sk.builtins["ascii"];
     }
 };
 Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);

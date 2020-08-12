@@ -709,9 +709,8 @@ Compiler.prototype.cformattedvalue = function(e) {
             value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
         case 'a':
-            // TODO when repr() becomes more unicode-aware,
-            // we'll want to handle repr() and ascii() differently.
-            // For now, they're the same
+            value = this._gr("value", "Sk.builtin.ascii(",value,")");
+            break;
         case 'r':
             value = this._gr("value", "Sk.builtin.repr(",value,")");
             break;

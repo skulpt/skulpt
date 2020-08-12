@@ -112,6 +112,9 @@ class StringMethodsTests(unittest.TestCase):
 
         # Unicode doesn't get escaped in repr(), but escape chars still do
         self.assertEqual(repr('\x01\xf0\u2603'), "'\\x01\xf0\u2603'")
+        # ...but it *does* get escaped in ascii()
+        self.assertEqual(ascii('hi there'), "'hi there'")
+        self.assertEqual(ascii('x\x01\xf0\u2603\U0001f355'), "'x\\x01\\xf0\\u2603\\U0001f355'")
 
         # Indexing: It's a single character
         self.assertEqual(len('Build a \u2603!'), 10)

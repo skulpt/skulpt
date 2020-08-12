@@ -831,6 +831,56 @@ Sk.builtin.repr = function repr (x) {
     return Sk.misceval.objectRepr(x);
 };
 
+Sk.builtin.ascii = function ascii (x) {
+    return Sk.misceval.chain(Sk.misceval.objectRepr(x), (r) => {
+        if (!(r instanceof Sk.builtin.str)) {
+            throw new Sk.builtin.TypeError("__repr__ returned non-string (type " + Sk.abstr.typeName(r) + ")");
+        }
+        let ret;
+        let i;
+        // Fast path
+        for (i=0; i < r.v.length; i++) {
+            if (r.v.charCodeAt(i) >= 0x7f) {
+                ret = r.v.substr(0, i);
+                break;
+            }
+        }
+        if (!ret) {
+            return r;
+        }
+        for (; i < r.v.length; i++) {
+            let c = r.v.charAt(i);
+            let cc = r.v.charCodeAt(i);
+
+            if (cc > 0x7f && cc <= 0xff) {
+                let ashex = cc.toString(16);
+                if (ashex.length < 2) {
+                    ashex = "0" + ashex;
+                }
+                ret += "\\x" + ashex;
+            } else if (cc > 0x7f && cc < 0xd800 || cc >= 0xe000) {
+                // BMP
+                ret += "\\u" + ("000"+cc.toString(16)).slice(-4);
+            } else if (cc >= 0xd800) {
+                // Surrogate pair stuff
+                let val = r.v.codePointAt(i);
+                i++;
+
+                val = val.toString(16);
+                let s = ("0000000"+val.toString(16));
+                if (val.length > 4) {
+                    ret += "\\U" + s.slice(-8);
+                } else {
+                    ret += "\\u" + s.slice(-4);
+                }
+            } else {
+                ret += c;
+            }
+        }
+        return new Sk.builtin.str(ret);
+    });
+};
+
 Sk.builtin.open = function open (filename, mode, bufsize) {
     Sk.builtin.pyCheckArgsLen("open", arguments.length, 1, 3);
     if (mode === undefined) {
