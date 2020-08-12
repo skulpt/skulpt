@@ -64,7 +64,9 @@ Sk.builtin.bytes = function (source) {
     } else if (typeof source === "number") {
         this.v = new Uint8Array(source);
     } else {
-        Sk.asserts.fail("got a " + Sk.abstr.typeName(source));
+        // fall through case for subclassing called by Sk.abstr.superConstructor
+        const bytes_obj = tp$new([...arguments]);
+        this.v = bytes_obj.v;
     }
 };
 
