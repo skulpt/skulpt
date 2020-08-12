@@ -82,7 +82,16 @@ function strobj (s) {
 
 function bytesobj (s) {
     Sk.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
-    return new Sk.builtin.bytes(new Sk.builtin.str(s), Sk.builtin.str.$ascii);
+    const ret = [];
+    for (let i in s) {
+        const c = s.charCodeAt(i);
+        if (c > 255) {
+            throw new Sk.builtin.SyntaxError("bytes can only contain ASCII literal characters");
+        } else {
+            ret.push(c);
+        }
+    }
+    return new Sk.builtin.bytes(ret);
 }
 
 /** @return {number} */
@@ -2638,19 +2647,15 @@ function parsestrplus (c, n) {
     let bytesmode;
 
     for (let i = 0; i < NCH(n); ++i) {
-        let chstr = CHILD(n, i).value;
-        let str, fmode, this_bytesmode;
         try {
-            let r = parsestr(c, CHILD(n,i), chstr);
+            let r = parsestr(c, CHILD(n, i).value);
             str = r[0];
             fmode = r[1];
-            this_bytesmode = r[2];
-        } catch (x) {
-            if (x instanceof Sk.builtin.SyntaxError) {
-                throw x;
-            } else {
-                throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
+        } catch (e) {
+            if (e instanceof Sk.builtin.SyntaxError) {
+                ast_error(c, CHILD(n, i), e.tp$str().v); 
             }
+            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
 
         /* Check that we're not mixing bytes with unicode. */
