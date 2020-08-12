@@ -16,13 +16,14 @@ function setInterned (x, pyStr) {
 Sk.builtin.str = function (x, encoding, errors) {
     var ret;
 
-    Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, Sk.__future__ && Sk.__future__.python3 ? 2 : 1);
-
     if (x === undefined) {
         x = "";
     }
 
     if (encoding) {
+        // only check args if we have more than 1
+        Sk.builtin.pyCheckArgsLen("str", arguments.length, 0, Sk.__future__.python3 ? 3 : 1);
+        
         if (!Sk.builtin.checkBytes(x)) {
             throw new TypeError("decoding " + Sk.abstr.typeName(x) + " is not supported");
         }
