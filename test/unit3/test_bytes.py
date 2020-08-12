@@ -124,6 +124,8 @@ class BytesTests(unittest.TestCase):
         self.assertFalse(b3 <  b2)
         self.assertFalse(b3 <= b2)
 
+        self.assertTrue(b'\xfe' < b'\xff') # skulpt test for non utf8 character
+
     def test_compare_to_str(self):
         # Byte comparisons with unicode should always fail!
         # Test this for all expected byte orders and Unicode character
