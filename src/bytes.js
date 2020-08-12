@@ -64,10 +64,12 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         this.v = new Uint8Array(source);
     } else {
         // fall through case for subclassing called by Sk.abstr.superConstructor
-        return Sk.misceval.chain(newBytesFromPy(...arguments), (pyBytes) => {
+        const ret = Sk.misceval.chain(newBytesFromPy(...arguments), (pyBytes) => {
             this.v = pyBytes.v;
             return this;
         });
+        // Sk.abstr.superConstructor is not suspension aware
+        return Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     }
 };
 
