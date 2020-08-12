@@ -493,6 +493,40 @@ Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
 /**
  * @constructor
+ * @extends Sk.builtin.StandardError
+ * @param {...*} args
+ */
+Sk.builtin.UnicodeEncodeError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.UnicodeEncodeError)) {
+        o = Object.create(Sk.builtin.UnicodeEncodeError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.StandardError.apply(this, arguments);
+};
+Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.StandardError);
+Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.StandardError
+ * @param {...*} args
+ */
+Sk.builtin.UnicodeDecodeError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.UnicodeDecodeError)) {
+        o = Object.create(Sk.builtin.UnicodeDecodeError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.StandardError.apply(this, arguments);
+};
+Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.StandardError);
+Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
+
+/**
+ * @constructor
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */

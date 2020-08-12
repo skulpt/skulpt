@@ -123,6 +123,8 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
+        Sk.builtins["bytes"] = Sk.builtin.bytes;
+        delete Sk.builtin.str.prototype.decode;
     } else {
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
         Sk.builtins["map"] = new Sk.builtin.func(Sk.builtin.map);
@@ -131,9 +133,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
         Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
-        if (Sk.builtins["bytes"]) {
-            delete Sk.builtins["bytes"];
-        }
+        delete Sk.builtins["bytes"];
     }
 };
 Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);

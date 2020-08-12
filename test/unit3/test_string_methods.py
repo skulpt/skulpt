@@ -101,6 +101,34 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual("%g" % (.00012), "0.00012")
         self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
         self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+
+    def test_encoding(self):
+        # Unicode snowman: BMP emoji
+        self.assertEqual('\u2603'.encode(), b'\xe2\x98\x83')
+        self.assertEqual(b'\xe2\x98\x83'.decode(), '\u2603')
+
+        # Indexing: It's a single character
+        self.assertEqual(len('Build a \u2603!'), 10)
+        self.assertEqual('Build a \u2603!'[9], '!')
+        self.assertEqual('Build a \u2603!'[8], '\u2603')
+        self.assertEqual('Build a \u2603!'[6:9], 'a \u2603')
+        self.assertEqual('Build a \u2603!'[:9], 'Build a \u2603')
+        self.assertEqual('Build a \u2603!'[6:], 'a \u2603!')
+
+        # Piece of pizza: Astral emoji
+        self.assertEqual('\U0001f355'.encode(), b'\xf0\x9f\x8d\x95')
+        self.assertEqual(b'\xf0\x9f\x8d\x95'.decode(), '\U0001f355')
+
+        # It's *still* a single character, even though it's a surrogate
+        # pair in JS
+        self.assertEqual(len('Love \U0001f355!'), 7)
+        self.assertEqual('Love \U0001f355!'[6], '!')
+        self.assertEqual('Love \U0001f355!'[5], '\U0001f355')
+        self.assertEqual('Love \U0001f355!'[4:6], ' \U0001f355')
+        self.assertEqual('Love \U0001f355!'[:6], 'Love \U0001f355')
+        self.assertEqual('Love \U0001f355!'[4:], ' \U0001f355!')
+
+
 if __name__ == '__main__':
     unittest.main()
 
