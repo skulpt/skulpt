@@ -198,6 +198,27 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(b'x' + b'y', b'xy')
         self.assertRaises(TypeError, lambda: b'x' + 'y')
 
+        # Repeat
+        self.assertEqual(b'x'*3, b'xxx')
+
+        # Search
+        self.assertTrue(b'y' in b'xyz')
+        self.assertFalse(b'a' in b'xyz')
+        self.assertEqual(b'abc'.find(b'b'), 1)
+        self.assertEqual(b'abc'.find(b'z'), -1)
+        self.assertRaises(TypeError, lambda: 'y' in b'xyz')
+        self.assertRaises(TypeError, lambda: b'xyz'.find('y'))
+        self.assertRaises(TypeError, lambda: b'y' in 'xyz')
+        self.assertRaises(TypeError, lambda: 'xyz'.find(b'y'))
+
+        # Index and slice
+        self.assertEqual(b'xyz'[2], b'z')
+        self.assertEqual(b'xyz'[-1], b'z')
+        self.assertEqual(b'xyz'[:2], b'xy')
+
+        # To and from hex
+        self.assertEqual(bytes.fromhex('2Ef0 F1f2 '), b'.\xf0\xf1\xf2')
+        self.assertEqual(b'\xf0\xf1\xf2'.hex(), 'f0f1f2')
 
 if __name__ == '__main__':
     unittest.main()

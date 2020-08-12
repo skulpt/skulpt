@@ -499,3 +499,17 @@ Sk.builtin.func.prototype["$r"] = function () {
         return new Sk.builtin.str("<function " + name + ">");
     }
 };
+
+// a Python implementation of @staticmethod
+Sk.builtin.staticfunc = function() {
+    Sk.builtin.func.apply(this, arguments);
+};
+Sk.abstr.setUpInheritance("staticfunction", Sk.builtin.staticfunc, Sk.builtin.func);
+
+Sk.exportSymbol("Sk.builtin.staticfunc", Sk.builtin.staticfunc);
+
+Sk.builtin.staticfunc.prototype.tp$name = "staticmethod";
+
+Sk.builtin.staticfunc.prototype.tp$descr_get = function () {
+    return this;
+};

@@ -1017,6 +1017,36 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
     return new Sk.builtin.str(v);
 });
 
+Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.staticfunc(function(hex) {
+    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
+    Sk.builtin.pyCheckType("hex", "string", Sk.builtin.checkString(hex));
+
+    let h = hex.v.replace(/\s*/g, "");
+    let v = "";
+
+    for (let i = 0; i < h.length; i += 2) {
+        let s = h.substr(i, 2)
+        let n = parseInt(s, 16);
+        if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
+            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
+        }
+        v += String.fromCharCode(n);
+    }
+
+    return new Sk.builtin.bytes(v);
+});
+
+Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function(self) {
+    // TODO Python 3.8 has added some args here
+    Sk.builtin.pyCheckArgsLen("hex", arguments.length, 1, 1);
+
+    let r = "";
+    for (let i=0; i < self.v.length; i++) {
+        r += ("0" + self.v.charCodeAt(i).toString(16)).substr(-2);
+    }
+    return new Sk.builtin.str(r);
+});
+
 Sk.builtin.str.prototype.nb$remainder = Sk.builtin.bytes.prototype.nb$remainder = function (rhs) {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
 
