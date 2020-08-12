@@ -371,7 +371,7 @@ Sk.builtin.bytes.prototype.sq$contains = function (item) {
     return false;
 };
 
-Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
+Sk.builtin.bytes.$decode = function (self, encoding, errors) {
     var i;
     var val;
     var final;
@@ -438,7 +438,7 @@ Sk.builtin.bytes.prototype.$decode = function (self, encoding, errors) {
     return new Sk.builtin.str(final);
 };
 
-Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(Sk.builtin.bytes.prototype.$decode);
+Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(Sk.builtin.bytes.$decode);
 
 Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
     var final;

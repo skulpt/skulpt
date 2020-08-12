@@ -26,7 +26,7 @@ Sk.builtin.str = function (x, encoding, errors) {
         if (!Sk.builtin.checkBytes(x)) {
             throw new TypeError("decoding " + Sk.abstr.typeName(x) + " is not supported");
         }
-        return Sk.misceval.callsimArray(x.decode, [x, encoding, errors]);
+        return Sk.builtin.bytes.$decode(x, encoding, errors);
     }
 
     if (x instanceof Sk.builtin.str) {
