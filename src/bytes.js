@@ -48,7 +48,7 @@ Sk.builtin.bytes = function (source) {
     if (!(this instanceof Sk.builtin.bytes)) {
         // called from python
         Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
-        return tp$new([...arguments]);
+        return newBytesFromPy(...arguments);
     }
 
     // deal with internal calls
@@ -65,7 +65,7 @@ Sk.builtin.bytes = function (source) {
         this.v = new Uint8Array(source);
     } else {
         // fall through case for subclassing called by Sk.abstr.superConstructor
-        const bytes_obj = tp$new([...arguments]);
+        const bytes_obj = newBytesFromPy(...arguments);
         this.v = bytes_obj.v;
     }
 };
@@ -106,7 +106,7 @@ function encodeAscii(source, errors) {
     return Uint8ArrayFromArray(data);
 }
 
-function tp$new(args) {
+function newBytesFromPy(...args) {
     let source,
         pySource,
         dunderBytes,
@@ -242,8 +242,10 @@ Sk.builtin.bytes.prototype["$r"] = function () {
 };
 
 Sk.builtin.bytes.prototype.mp$subscript = function (index) {
+    var ret;
+    var i;
     if (Sk.misceval.isIndex(index)) {
-        let i = Sk.misceval.asIndex(index);
+        i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.byteLength + i;
@@ -254,7 +256,7 @@ Sk.builtin.bytes.prototype.mp$subscript = function (index) {
             return new Sk.builtin.int_(this.v[i]);
         }
     } else if (index instanceof Sk.builtin.slice) {
-        const ret = [];
+        ret = [];
         index.sssiter$(this.v.byteLength, (i) => {
             ret.push(this.v[i]);
         });
