@@ -145,11 +145,11 @@ function newBytesFromPy(pySource, encoding, errors) {
         return strEncode(pySource, encoding, errors);
     } else if (Sk.builtin.checkInt(pySource)) {
         source = Sk.builtin.asnum$(pySource);
-        if (Math.abs(source) > Number.MAX_SAFE_INTEGER) {
-            throw new Sk.builtin.OverflowError("cannot fit 'int' into an index-sized integer");
-        } else if (source < 0) {
+        if (source < 0) {
             throw new Sk.builtin.ValueError("negative count");
-        }
+        } else if (source > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("cannot fit 'int' into an index-sized integer");
+        } 
         return new Sk.builtin.bytes(source);
     } else if (Sk.builtin.checkBytes(pySource)) {
         return new Sk.builtin.bytes(pySource.v);
