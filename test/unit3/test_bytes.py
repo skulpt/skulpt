@@ -2,6 +2,24 @@
 import unittest
 
 class BytesTests(unittest.TestCase):
+    def test_repr_str(self):
+        for f in str, repr:
+            # self.assertEqual(f(bytearray()), "bytearray(b'')")
+            # self.assertEqual(f(bytearray([0])), "bytearray(b'\\x00')")
+            # self.assertEqual(f(bytearray([0, 1, 254, 255])),
+            #                  "bytearray(b'\\x00\\x01\\xfe\\xff')")
+            self.assertEqual(f(b"abc"), "b'abc'")
+            self.assertEqual(f(b"'"), '''b"'"''') # '''
+            self.assertEqual(f(b"'\""), r"""b'\'"'""") # '
+
+    def test_to_str(self):
+        self.assertEqual(str(b''), "b''")
+        self.assertEqual(str(b'x'), "b'x'")
+        self.assertEqual(str(b'\x80'), "b'\\x80'")
+        # self.assertEqual(str(bytearray(b'')), "bytearray(b'')")
+        # self.assertEqual(str(bytearray(b'x')), "bytearray(b'x')")
+        # self.assertEqual(str(bytearray(b'\x80')), "bytearray(b'\\x80')")
+
     def test_integer_arg(self):
         self.assertRaises(TypeError, bytes, "3")
         a = bytes(4)
@@ -110,6 +128,35 @@ class BytesTests(unittest.TestCase):
         self.assertNotIn(bytes(b"d"), b)
         self.assertNotIn(bytes(b"dab"), b)
         self.assertNotIn(bytes(b"abd"), b)
+
+    def test_compare_bytes_to_bytearray(self):
+        self.assertEqual(b"abc" == bytes(b"abc"), True)
+        self.assertEqual(b"ab" != bytes(b"abc"), True)
+        # self.assertEqual(b"ab" <= bytes(b"abc"), True)
+        # self.assertEqual(b"ab" < bytes(b"abc"), True)
+        # self.assertEqual(b"abc" >= bytes(b"ab"), True)
+        # self.assertEqual(b"abc" > bytes(b"ab"), True)
+
+        self.assertEqual(b"abc" != bytes(b"abc"), False)
+        self.assertEqual(b"ab" == bytes(b"abc"), False)
+        # self.assertEqual(b"ab" > bytes(b"abc"), False)
+        # self.assertEqual(b"ab" >= bytes(b"abc"), False)
+        # self.assertEqual(b"abc" < bytes(b"ab"), False)
+        # self.assertEqual(b"abc" <= bytes(b"ab"), False)
+
+        self.assertEqual(bytes(b"abc") == b"abc", True)
+        self.assertEqual(bytes(b"ab") != b"abc", True)
+        # self.assertEqual(bytes(b"ab") <= b"abc", True)
+        # self.assertEqual(bytes(b"ab") < b"abc", True)
+        # self.assertEqual(bytes(b"abc") >= b"ab", True)
+        # self.assertEqual(bytes(b"abc") > b"ab", True)
+
+        self.assertEqual(bytes(b"abc") != b"abc", False)
+        self.assertEqual(bytes(b"ab") == b"abc", False)
+        # self.assertEqual(bytes(b"ab") > b"abc", False)
+        # self.assertEqual(bytes(b"ab") >= b"abc", False)
+        # self.assertEqual(bytes(b"abc") < b"ab", False)
+        # self.assertEqual(bytes(b"abc") <= b"ab", False)
 
     def test_decode(self):
         a = bytes("abc", "ascii")
@@ -238,6 +285,40 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(3 * b'dk3', b'dk3dk3dk3')
 
         self.assertRaises(TypeError, lambda x: x * x, a)
+
+    # def test_mod(self):
+    #     b = bytes(b'hello, %b!')
+    #     orig = b
+    #     b = b % b'world'
+    #     self.assertEqual(b, b'hello, world!')
+    #     self.assertEqual(orig, b'hello, %b!')
+    #     self.assertFalse(b is orig)
+    #     b = bytes(b'%s / 100 = %d%%')
+    #     a = b % (b'seventy-nine', 79)
+    #     self.assertEqual(a, b'seventy-nine / 100 = 79%')
+    #     self.assertIs(type(a), bytes)
+    #     # issue 29714
+    #     b = bytes(b'hello,\x00%b!')
+    #     b = b % b'world'
+    #     self.assertEqual(b, b'hello,\x00world!')
+    #     self.assertIs(type(b), bytes)
+
+    # def test_imod(self):
+    #     b = bytes(b'hello, %b!')
+    #     orig = b
+    #     b %= b'world'
+    #     self.assertEqual(b, b'hello, world!')
+    #     self.assertEqual(orig, b'hello, %b!')
+    #     self.assertFalse(b is orig)
+    #     b = bytes(b'%s / 100 = %d%%')
+    #     b %= (b'seventy-nine', 79)
+    #     self.assertEqual(b, b'seventy-nine / 100 = 79%')
+    #     self.assertIs(type(b), bytes)
+    #     # issue 29714
+    #     b = bytes(b'hello,\x00%b!')
+    #     b %= b'world'
+    #     self.assertEqual(b, b'hello,\x00world!')
+    #     self.assertIs(type(b), bytes)
 
     def test_fromhex(self):
         a = "0f34"
@@ -846,6 +927,62 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(TypeError, d.zfill, "2")
         self.assertRaises(TypeError, d.zfill)
         self.assertRaises(TypeError, d.zfill, 3, 3)
+
+    def test_none_arguments(self):
+        # issue 11828
+        b = bytes(b'hello')
+        l = bytes(b'l')
+        h = bytes(b'h')
+        x = bytes(b'x')
+        o = bytes(b'o')
+
+        self.assertEqual(2, b.find(l, None))
+        self.assertEqual(3, b.find(l, -2, None))
+        self.assertEqual(2, b.find(l, None, -2))
+        self.assertEqual(0, b.find(h, None, None))
+
+        self.assertEqual(3, b.rfind(l, None))
+        self.assertEqual(3, b.rfind(l, -2, None))
+        self.assertEqual(2, b.rfind(l, None, -2))
+        self.assertEqual(0, b.rfind(h, None, None))
+
+        self.assertEqual(2, b.index(l, None))
+        self.assertEqual(3, b.index(l, -2, None))
+        self.assertEqual(2, b.index(l, None, -2))
+        self.assertEqual(0, b.index(h, None, None))
+
+        self.assertEqual(3, b.rindex(l, None))
+        self.assertEqual(3, b.rindex(l, -2, None))
+        self.assertEqual(2, b.rindex(l, None, -2))
+        self.assertEqual(0, b.rindex(h, None, None))
+
+        self.assertEqual(2, b.count(l, None))
+        self.assertEqual(1, b.count(l, -2, None))
+        self.assertEqual(1, b.count(l, None, -2))
+        self.assertEqual(0, b.count(x, None, None))
+
+        self.assertEqual(True, b.endswith(o, None))
+        self.assertEqual(True, b.endswith(o, -2, None))
+        self.assertEqual(True, b.endswith(l, None, -2))
+        self.assertEqual(False, b.endswith(x, None, None))
+
+        self.assertEqual(True, b.startswith(h, None))
+        self.assertEqual(True, b.startswith(l, -2, None))
+        self.assertEqual(True, b.startswith(h, None, -2))
+        self.assertEqual(False, b.startswith(x, None, None))
+
+
+    # def test_integer_arguments_out_of_byte_range(self):
+    #     b = bytes(b'hello')
+    #     for method in (b.count, b.find, b.index, b.rfind, b.rindex):
+    #         self.assertRaises(ValueError, method, -1)
+    #         self.assertRaises(ValueError, method, 256)
+    #         self.assertRaises(ValueError, method, 9999)
+
+    def test_ord(self):
+        b = bytes(b'\0A\x7f\x80\xff')
+        self.assertEqual([ord(b[i:i+1]) for i in range(len(b))],
+                            [0, 65, 127, 128, 255])
 
 if __name__ == '__main__':
     unittest.main()  
