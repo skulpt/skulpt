@@ -1,5 +1,6 @@
 """ Unit testing for bytes object"""
 import unittest
+import sys
 
 class BytesTests(unittest.TestCase):
     def test_repr_str(self):
@@ -1021,6 +1022,38 @@ class BytesTests(unittest.TestCase):
         self.assertIs(type(bytes(A())), OtherBytesSubclass)
         self.assertEqual(BytesSubclass(A()), b'abc')
         self.assertIs(type(BytesSubclass(A())), BytesSubclass)
+
+    type2test = bytes
+    def test_constructor_type_errors(self):
+        self.assertRaises(TypeError, self.type2test, 0.0)
+        class C:
+            pass
+        self.assertRaises(TypeError, self.type2test, ["0"])
+        self.assertRaises(TypeError, self.type2test, [0.0])
+        self.assertRaises(TypeError, self.type2test, [None])
+        self.assertRaises(TypeError, self.type2test, [C()])
+        # self.assertRaises(TypeError, self.type2test, encoding='ascii') # kwargs not yet supportd
+        # self.assertRaises(TypeError, self.type2test, errors='ignore') # kwargs not yet supported
+        self.assertRaises(TypeError, self.type2test, 0, 'ascii')
+        self.assertRaises(TypeError, self.type2test, b'', 'ascii')
+        # self.assertRaises(TypeError, self.type2test, 0, errors='ignore') # kwargs not yet supported
+        # self.assertRaises(TypeError, self.type2test, b'', errors='ignore') # kwargs not yet supported
+        self.assertRaises(TypeError, self.type2test, '')
+        # self.assertRaises(TypeError, self.type2test, '', errors='ignore') # kwargs not yet supported
+        self.assertRaises(TypeError, self.type2test, '', b'ascii')
+        self.assertRaises(TypeError, self.type2test, '', 'ascii', b'ignore')
+
+    def test_constructor_value_errors(self):
+        self.assertRaises(ValueError, self.type2test, [-1])
+        self.assertRaises(ValueError, self.type2test, [-sys.maxsize])
+        self.assertRaises(ValueError, self.type2test, [-sys.maxsize-1])
+        self.assertRaises(ValueError, self.type2test, [-sys.maxsize-2])
+        self.assertRaises(ValueError, self.type2test, [-10**100])
+        self.assertRaises(ValueError, self.type2test, [256])
+        self.assertRaises(ValueError, self.type2test, [257])
+        self.assertRaises(ValueError, self.type2test, [sys.maxsize])
+        self.assertRaises(ValueError, self.type2test, [sys.maxsize+1])
+        self.assertRaises(ValueError, self.type2test, [10**100])
 
 if __name__ == '__main__':
     unittest.main()  

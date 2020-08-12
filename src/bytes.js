@@ -126,6 +126,10 @@ function newBytesFromPy(pySource, encoding, errors) {
         if (errors !== undefined && !Sk.builtin.checkString(errors)) {
             throw new Sk.builtin.TypeError("bytes() argument 3 must be str not " + Sk.abstr.typeName(encoding));
         }
+        if (!Sk.builtin.checkString(pySource)) {
+            // think ahead for kwarg support
+            throw new Sk.builtin.TypeError((encoding !== undefined ? "encoding" : "errors") + " without a string argument");
+        }
     }
 
     if (pySource === undefined) {
@@ -141,6 +145,8 @@ function newBytesFromPy(pySource, encoding, errors) {
         source = Sk.builtin.asnum$(pySource);
         if (Math.abs(source) > Number.MAX_SAFE_INTEGER) {
             throw new Sk.builtin.OverflowError("cannot fit 'int' into an index-sized integer");
+        } else if (source < 0) {
+            throw new Sk.builtin.ValueError("negative count");
         }
         return new Sk.builtin.bytes(source);
     } else if (Sk.builtin.checkBytes(pySource)) {
