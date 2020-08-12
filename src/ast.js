@@ -80,20 +80,6 @@ function strobj (s) {
     return new Sk.builtin.str(s);
 }
 
-function bytesobj (s) {
-    Sk.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
-    const ret = [];
-    for (let i in s) {
-        const c = s.charCodeAt(i);
-        if (c > 255) {
-            throw new Sk.builtin.SyntaxError("bytes can only contain ASCII literal characters");
-        } else {
-            ret.push(c);
-        }
-    }
-    return new Sk.builtin.bytes(ret);
-}
-
 /** @return {number} */
 function numStmts (n) {
     var ch;
@@ -2335,7 +2321,7 @@ function parsestr (c, n, s) {
                     // Sk.asserts.fail("unhandled escape: '" + ch.charCodeAt(0) + "'");
                 }
             }
-            else if (bytesmode && ch.charCodeAt(0) > 0xff) {
+            else if (bytesmode && ch.charCodeAt(0) > 0x7f) {
                 ast_error(c, n, "bytes can only contain ASCII literal characters");
             } else {
                 ret += ch;
@@ -2385,7 +2371,7 @@ function parsestr (c, n, s) {
     if (rawmode || s.indexOf("\\") === -1) {
         if (bytesmode) {
             for (let i=0; i<s.length; i++) {
-                if (s.charCodeAt(i) > 0xff) {
+                if (s.charCodeAt(i) > 0x7f) {
                     ast_error(c, n, "bytes can only contain ASCII literal characters");
                 }
             }
@@ -2648,19 +2634,11 @@ function parsestrplus (c, n) {
 
     for (let i = 0; i < NCH(n); ++i) {
         let chstr = CHILD(n, i).value;
-        let str, fmode, this_bytesmode;
-        try {
-            let r = parsestr(c, CHILD(n,i), chstr);
-            str = r[0];
-            fmode = r[1];
-            this_bytesmode = r[2];
-        } catch (e) {
-            if (e instanceof Sk.builtin.SyntaxError) {
-                ast_error(c, CHILD(n, i), e.tp$str().v);
-            } else {
-                ast_error(c, CHILD(n, i), "invalid string (possibly contains a unicode character)");
-            }
-        }
+        let r = parsestr(c, CHILD(n,i), chstr);
+        let str = r[0];
+        let fmode = r[1];
+        let this_bytesmode = r[2];
+
 
         /* Check that we're not mixing bytes with unicode. */
         if (i != 0 && bytesmode !== this_bytesmode) {

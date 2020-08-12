@@ -821,12 +821,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 const str = e.s.$jsstr();
                 for (let i = 0; i < str.length; i++) {
                     const c = str.charCodeAt(i);
-                    if (c > 0xff) {
-                        throw new Sk.builtin.SyntaxError("bytes can only contain ASCII literal characters");
-                    }
                     source.push(c);
                 }
-                return this.makeConstant("new Sk.builtin.bytes(new Uint8Array([", source.toString(), "]))");
+                return this.makeConstant("new Sk.builtin.bytes(new Uint8Array([", source.join(", "), "]))");
             }
             // else fall through and make a string instead
         case Sk.astnodes.Str:
