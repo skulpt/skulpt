@@ -115,6 +115,9 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('Build a \u2603!'[:9], 'Build a \u2603')
         self.assertEqual('Build a \u2603!'[6:], 'a \u2603!')
 
+        self.assertEqual('Build a \u2603!'.find('!'), 9)
+        self.assertEqual('Build a \u2603!'.find('\u2603'), 8)
+
         # Piece of pizza: Astral emoji
         self.assertEqual('\U0001f355'.encode(), b'\xf0\x9f\x8d\x95')
         self.assertEqual(b'\xf0\x9f\x8d\x95'.decode(), '\U0001f355')
@@ -127,6 +130,11 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('Love \U0001f355!'[4:6], ' \U0001f355')
         self.assertEqual('Love \U0001f355!'[:6], 'Love \U0001f355')
         self.assertEqual('Love \U0001f355!'[4:], ' \U0001f355!')
+
+        self.assertEqual('Love \U0001f355!'.find('!'), 6)
+        self.assertEqual('Love \U0001f355!'.find('\U0001f355', 0, 6), 5)
+        self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -1), 5)
+        self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -2), -1)
 
 
 if __name__ == '__main__':

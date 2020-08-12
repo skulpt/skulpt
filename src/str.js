@@ -651,38 +651,80 @@ Sk.builtin.str.prototype["center"] = Sk.builtin.bytes.prototype["center"] = new 
 
 });
 
-Sk.builtin.str.prototype["find"] = Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, tgt, start, end) {
-    var idx;
-    Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
-    if (!checkStringish(self, tgt)) {
-        throw new Sk.builtin.TypeError("expected a " + self.__class__.$englishname + " object");
-    }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
+function mkFind(isReversed) {
+    return new Sk.builtin.func(function (self, tgt, start, end) {
+        var idx;
+        Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
+        if (!checkStringish(self, tgt)) {
+            throw new Sk.builtin.TypeError("expected a " + self.__class__.$englishname + " object");
+        }
+        if ((start !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(start)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
+        if ((end !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(end)) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+        }
 
-    if (start === undefined || Sk.builtin.checkNone(start)) {
-        start = 0;
-    } else {
-        start = Sk.builtin.asnum$(start);
-        start = start >= 0 ? start : self.v.length + start;
-    }
+        let len = self.$hasAstralCodePoints() ? self.codepoints.length : self.v.length;
 
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = self.v.length;
-    } else {
-        end = Sk.builtin.asnum$(end);
-        end = end >= 0 ? end : self.v.length + end;
-    }
+        // Find start and end in Python coordinates
 
-    idx = self.v.indexOf(tgt.v, start);
-    idx = ((idx >= start) && (idx < end)) ? idx : -1;
+        if (start === undefined || start === Sk.builtin.none.none$) {
+            start = 0;
+        } else {
+            start = Sk.builtin.asnum$(start);
+            start = start >= 0 ? start : len + start;
+            if (start < 0) { start = 0; }
+        }
+        if (start > len) {
+            return new Sk.builtin.int_(-1);
+        }
 
-    return new Sk.builtin.int_(idx);
-});
+        if (end === undefined || end === Sk.builtin.none.none$) {
+            end = len;
+        } else {
+            end = Sk.builtin.asnum$(end);
+            end = end >= 0 ? end : len + end;
+        }
+        // This guard makes sure we don't, eg, look for self.codepoints[-1]
+        if (end < start) {
+            return new Sk.builtin.int_(-1);
+        }
+
+        if (self.$hasAstralCodePoints()) {
+            // Convert start and end to JS coordinates...
+
+            start = self.codepoints[start];
+            end = self.codepoints[end];
+            if (start === undefined) { start = self.v.length; }
+            if (end === undefined) { end = self.v.length; }
+
+            // ...do the search..
+            end -= tgt.v.length;
+            let jsidx = isReversed ? self.v.lastIndexOf(tgt.v, end) : self.v.indexOf(tgt.v, start);
+            jsidx = ((jsidx >= start) && (jsidx <= end)) ? jsidx : -1;
+
+            // ...and now convert them back
+
+            idx = -1;
+
+            for (let i = 0; i < len; i++) {
+                if (jsidx == self.codepoints[i]) { 
+                    idx = i;
+                }
+            }
+        } else {
+            // No astral codepoints, no conversion required
+            end -= tgt.v.length;
+            idx = isReversed ? self.v.lastIndexOf(tgt.v, end) : self.v.indexOf(tgt.v, start);
+            idx = ((idx >= start) && (idx <= end)) ? idx : -1;
+        }
+
+        return new Sk.builtin.int_(idx);
+    });
+};
+
+Sk.builtin.str.prototype["find"] = Sk.builtin.bytes.prototype["find"] = mkFind(false);
 
 Sk.builtin.str.prototype["index"] = Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
@@ -694,39 +736,7 @@ Sk.builtin.str.prototype["index"] = Sk.builtin.bytes.prototype["index"] = new Sk
     return idx;
 });
 
-Sk.builtin.str.prototype["rfind"] = Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, start, end) {
-    var idx;
-    Sk.builtin.pyCheckArgsLen("rfind", arguments.length, 2, 4);
-    if (!checkStringish(self, tgt)) {
-        throw new Sk.builtin.TypeError("expected a " + self.__class__.$englishname + " object");
-    }
-    if ((start !== undefined) && !Sk.builtin.checkInt(start) && !Sk.builtin.checkNone(start)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
-    if ((end !== undefined) && !Sk.builtin.checkInt(end) && !Sk.builtin.checkNone(end)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
-
-    if (start === undefined || Sk.builtin.checkNone(start)) {
-        start = 0;
-    } else {
-        start = Sk.builtin.asnum$(start);
-        start = start >= 0 ? start : self.v.length + start;
-    }
-
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = self.v.length;
-    } else {
-        end = Sk.builtin.asnum$(end);
-        end = end >= 0 ? end : self.v.length + end;
-    }
-
-    idx = self.v.lastIndexOf(tgt.v, end);
-    idx = (idx !== end) ? idx : self.v.lastIndexOf(tgt.v, end - 1);
-    idx = ((idx >= start) && (idx < end)) ? idx : -1;
-
-    return new Sk.builtin.int_(idx);
-});
+Sk.builtin.str.prototype["rfind"] = Sk.builtin.bytes.prototype["rfind"] = mkFind(true);
 
 Sk.builtin.str.prototype["rindex"] = Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
     var idx;
