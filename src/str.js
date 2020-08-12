@@ -225,19 +225,10 @@ Sk.builtin.str.prototype.sq$contains = function (ob) {
     return this.v.indexOf(ob.v) != -1;
 };
 
-Sk.builtin.bytes.prototype.sq$contains = function(ob) {
-    if (ob instanceof Sk.builtin.bytes) {
-        return this.v.indexOf(ob.v) != -1;
-    } else if (Sk.builtin.checkInt(ob)) {
-        let v = Sk.ffi.remapToJs(ob);
-        if (v < 0 || v > 0xff) {
-            throw new Sk.builtin.ValueError("byte must be in range (0, 256)");
-        }
-        return this.v.indexOf(String.fromCharCode(v)) != -1;
-    } else {
-        throw new Sk.builtin.TypeError("TypeError: 'In <bytes> requires a bytes-like object as left operand, not " + Sk.abstr.typeName(ob));
-    }
-};
+Sk.builtin.str.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
+    Sk.builtin.pyCheckArgsLen("__contains__", arguments.length - 1, 1, 1);
+    return new Sk.builtin.bool(self.v.indexOf(item.v) != -1);
+});
 
 Sk.builtin.str.prototype.__iter__ = new Sk.builtin.func(function (self) {
     return new Sk.builtin.str_iter_(self);
@@ -747,17 +738,130 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
     return idx;
 });
 
-Sk.builtin.str.prototype["startswith"] = Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", self.__class__.$englishname, checkStringish(self, tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
+Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length -1 , 1, 3);
+
+    if(Sk.abstr.typeName(prefix) != "str" && Sk.abstr.typeName(prefix) != "tuple"){
+        throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
+    }
+
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else {
+        start = Sk.misceval.asIndex(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = self.v.length;
+    } else {
+        end = Sk.misceval.asIndex(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
+    }
+
+    var substr = self.v.slice(start, end);
+
+    
+    if(Sk.abstr.typeName(prefix) == "tuple"){
+        var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
+        var it, i;
+        for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if(!tmpBool){
+                tmpBool = substr.indexOf(i.v) === 0;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
+            }
+        }
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    }
+
+    if(prefix.v == "" && start > end && end >= 0){
+        return Sk.builtin.bool.false$;
+    }
+
+    return new Sk.builtin.bool(substr.indexOf(prefix.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
-Sk.builtin.str.prototype["endswith"] = Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) {
-    Sk.builtin.pyCheckArgsLen("endswith", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("tgt", self.__class__.$englishname, checkStringish(self, tgt));
-    return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
+    Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
+
+    if(Sk.abstr.typeName(suffix) != "str" && Sk.abstr.typeName(suffix) != "tuple"){
+        throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
+    }
+
+    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else {
+        start = Sk.misceval.asIndex(start);
+        start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = self.v.length;
+    } else {
+        end = Sk.misceval.asIndex(end);
+        end = end >= 0 ? end : self.v.length + end;
+    }
+
+    if(start > self.v.length){
+        return Sk.builtin.bool.false$;
+    }
+
+    //take out the substring
+    var substr = self.v.slice(start, end);
+
+    if(Sk.abstr.typeName(suffix) == "tuple"){
+        var tmpBool = false, resultBool = false;
+        if(start > end){
+            tmpBool = start <= 0;
+        }
+        if(tmpBool){
+            return Sk.builtin.bool.true$;
+        }
+        var it, i;
+        for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if(!tmpBool){     
+                tmpBool = substr.indexOf(i.v, substr.length - i.v.length) !== -1;    
+            }
+            resultBool = resultBool || tmpBool;
+            if(resultBool){
+                break;
+            }
+        }
+        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    }
+
+    if(suffix.v == "" && start > end && end >= 0){
+        return Sk.builtin.bool.false$;
+    }
+    return new Sk.builtin.bool(substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
@@ -991,68 +1095,12 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encoding, errors) {
-    // TODO errors are currently always "strict"
-    // (other modes will require manual UTF-8-bashing)
-
     Sk.builtin.pyCheckArgsLen("encode", arguments.length, 1, 3);
     
     return new Sk.builtin.bytes(self, encoding || Sk.builtin.str.$utf8, errors);
 });
 
-Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encoding, errors) {
-    // TODO errors are currently always "strict"
-    // (other modes will require manual UTF-8-bashing)
-
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-
-    if (encoding) {
-        Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
-        if (!/^utf-?8$/i.test(encoding.v)) {
-            throw new Sk.builtin.ValueError("Only UTF-8 encoding and decoding is supported");
-        }
-    }
-
-    let v;
-    try {
-        v = decodeURIComponent(escape(self.v));
-    } catch (e) {
-        throw new Sk.builtin.UnicodeEncodeError("UTF-8 decoding failed");
-    }
-
-    return new Sk.builtin.str(v);
-});
-
-Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.staticfunc(function(hex) {
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-    Sk.builtin.pyCheckType("hex", "string", Sk.builtin.checkString(hex));
-
-    let h = hex.v.replace(/\s*/g, "");
-    let v = "";
-
-    for (let i = 0; i < h.length; i += 2) {
-        let s = h.substr(i, 2);
-        let n = parseInt(s, 16);
-        if (isNaN(n) || s.length != 2 || !/^[abcdefABCDEF0123456789]{2}$/.test(s)) {
-            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg");
-        }
-        v += String.fromCharCode(n);
-    }
-
-    return new Sk.builtin.bytes(v);
-});
-
-Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function(self) {
-    // TODO Python 3.8 has added some args here
-    Sk.builtin.pyCheckArgsLen("hex", arguments.length, 1, 1);
-
-    let r = "";
-    for (let i=0; i < self.v.length; i++) {
-        r += ("0" + self.v.charCodeAt(i).toString(16)).substr(-2);
-    }
-    return new Sk.builtin.str(r);
-});
-
-Sk.builtin.str.prototype.nb$remainder = Sk.builtin.bytes.prototype.nb$remainder = function (rhs) {
+Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
 
     // From http://docs.python.org/library/stdtypes.html#string-formatting the

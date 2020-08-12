@@ -2647,8 +2647,10 @@ function parsestrplus (c, n) {
     let bytesmode;
 
     for (let i = 0; i < NCH(n); ++i) {
+        let chstr = CHILD(n, i).value;
+        let str, fmode, this_bytesmode;
         try {
-            let r = parsestr(c, CHILD(n, i).value);
+            let r = parsestr(c, CHILD(n,i), chstr);
             str = r[0];
             fmode = r[1];
             this_bytesmode = r[2];
@@ -2658,7 +2660,6 @@ function parsestrplus (c, n) {
             } else {
                 ast_error(c, CHILD(n, i), "invalid string (possibly contains a unicode character)");
             }
-            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
 
         /* Check that we're not mixing bytes with unicode. */
