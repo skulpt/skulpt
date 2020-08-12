@@ -184,6 +184,10 @@ Sk.builtin.checkString = function (arg) {
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
+Sk.builtin.checkBytes = function (arg) {
+    return arg instanceof Sk.builtin.bytes;
+};
+
 Sk.builtin.checkClass = function (arg) {
     return (arg !== null && arg.sk$type);
 };

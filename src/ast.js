@@ -2241,90 +2241,96 @@ function astForIfexpr (c, n) {
  * s is a python-style string literal, including quote characters and u/r/b
  * prefixes. Returns [decoded string object, is-an-fstring]
  */
-function parsestr (c, s) {
-    var encodeUtf8 = function (s) {
-        return unescape(encodeURIComponent(s));
-    };
-    var decodeUtf8 = function (s) {
-        return decodeURIComponent(escape(s));
-    };
+function parsestr (c, n, s) {
+    var quote = s.charAt(0);
+    var rawmode = false;
+    var unicode = false;
+    var fmode = false;
+    var bytesmode = false;
+
     var decodeEscape = function (s, quote) {
         var d3;
         var d2;
         var d1;
         var d0;
-        var c;
+        var ch;
         var i;
         var len = s.length;
         var ret = "";
         for (i = 0; i < len; ++i) {
-            c = s.charAt(i);
-            if (c === "\\") {
+            ch = s.charAt(i);
+            if (ch === "\\") {
                 ++i;
-                c = s.charAt(i);
-                if (c === "n") {
+                ch = s.charAt(i);
+                if (ch === "n") {
                     ret += "\n";
                 }
-                else if (c === "\\") {
+                else if (ch === "\\") {
                     ret += "\\";
                 }
-                else if (c === "t") {
+                else if (ch === "t") {
                     ret += "\t";
                 }
-                else if (c === "r") {
+                else if (ch === "r") {
                     ret += "\r";
                 }
-                else if (c === "b") {
+                else if (ch === "b") {
                     ret += "\b";
                 }
-                else if (c === "f") {
+                else if (ch === "f") {
                     ret += "\f";
                 }
-                else if (c === "v") {
+                else if (ch === "v") {
                     ret += "\v";
                 }
-                else if (c === "0") {
+                else if (ch === "0") {
                     ret += "\0";
                 }
-                else if (c === '"') {
+                else if (ch === '"') {
                     ret += '"';
                 }
-                else if (c === '\'') {
+                else if (ch === '\'') {
                     ret += '\'';
                 }
-                else if (c === "\n") /* escaped newline, join lines */ {
+                else if (ch === "\n") /* escaped newline, join lines */ {
                 }
-                else if (c === "x") {
-                    d0 = s.charAt(++i);
-                    d1 = s.charAt(++i);
-                    ret += encodeUtf8(String.fromCharCode(parseInt(d0 + d1, 16)));
+                else if (ch === "x") {
+                    if (i+2 >= len) {
+                        ast_error(c, n, "Truncated \\xNN escape");
+                    }
+                    ret += String.fromCharCode(parseInt(s.substr(i+1,2), 16));
+                    i += 2;
                 }
-                else if (c === "u" || c === "U") {
-                    d0 = s.charAt(++i);
-                    d1 = s.charAt(++i);
-                    d2 = s.charAt(++i);
-                    d3 = s.charAt(++i);
-                    ret += encodeUtf8(String.fromCharCode(parseInt(d0 + d1, 16), parseInt(d2 + d3, 16)));
+                else if (!bytesmode && ch === "u") {
+                    if (i+4 >= len) {
+                        ast_error(c, n, "Truncated \\uXXXX escape");
+                    }
+                    ret += String.fromCharCode(parseInt(s.substr(i+1, 4), 16))
+                    i += 4;
+                }
+                else if (!bytesmode && ch === "U") {
+                    if (i+8 >= len) {
+                        ast_error(c, n, "Truncated \\UXXXXXXXX escape");
+                    }
+                    ret += String.fromCodePoint(parseInt(s.substr(i+1, 8), 16))
+                    i += 8;
                 }
                 else {
                     // Leave it alone
-                    ret += "\\" + c;
-                    // Sk.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
+                    ret += "\\" + ch;
+                    // Sk.asserts.fail("unhandled escape: '" + ch.charCodeAt(0) + "'");
                 }
             }
-            else {
-                ret += c;
+            else if (bytesmode && ch.charCodeAt(0) > 0x7f) {
+                ast_error(c, n, "bytes can only contain ASCII literal characters");
+            } else {
+                ret += ch;
             }
         }
-        return decodeUtf8(ret);
+        return ret;
     };
 
-    //print("parsestr", s);
-
-    var quote = s.charAt(0);
-    var rawmode = false;
-    var unicode = false;
-    var fmode = false;
+    //console.log("parsestr", s);
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
@@ -2342,7 +2348,7 @@ function parsestr (c, s) {
             rawmode = true;
         }
         else if (quote === "b" || quote === "B") {
-            Sk.asserts.assert(!"todo; haven't done b'' strings yet")
+            bytesmode = true;
         }
         else if (quote === "f" || quote === "F") {
             fmode = true;
@@ -2356,9 +2362,6 @@ function parsestr (c, s) {
 
     Sk.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
     s = s.substr(1, s.length - 2);
-    if (unicode) {
-        s = encodeUtf8(s);
-    }
 
     if (s.length >= 4 && s.charAt(0) === quote && s.charAt(1) === quote) {
         Sk.asserts.assert(s.charAt(s.length - 1) === quote && s.charAt(s.length - 2) === quote);
@@ -2366,9 +2369,16 @@ function parsestr (c, s) {
     }
 
     if (rawmode || s.indexOf("\\") === -1) {
-        return [strobj(decodeUtf8(s)), fmode];
+        if (bytesmode) {
+            for (let i=0; i<s.length; i++) {
+                if (s.charCodeAt(i) > 0x7f) {
+                    ast_error(c, n, "bytes can only contain ASCII literal characters");
+                }
+            }
+        }
+        return [strobj(s), fmode, bytesmode];
     }
-    return [strobj(decodeEscape(s, quote)), fmode];
+    return [strobj(decodeEscape(s, quote)), fmode, bytesmode];
 }
 
 function fstring_compile_expr(str, expr_start, expr_end, c, n) {
@@ -2620,21 +2630,27 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
 function parsestrplus (c, n) {
     let strs = [];
     let lastStrNode;
+    let bytesmode;
 
     for (let i = 0; i < NCH(n); ++i) {
         let chstr = CHILD(n, i).value;
-        let str, fmode;
-        try {
-            let r = parsestr(c, chstr);
-            str = r[0];
-            fmode = r[1];
-        } catch (x) {
-            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
+        let r = parsestr(c, CHILD(n,i), chstr);
+        let str = r[0];
+        let fmode = r[1];
+        let this_bytesmode = r[2];
+
+
+        /* Check that we're not mixing bytes with unicode. */
+        if (i != 0 && bytesmode !== this_bytesmode) {
+            ast_error(c, n, "cannot mix bytes and nonbytes literals");
         }
+        bytesmode = this_bytesmode;
+
         if (fmode) {
             if (!Sk.__future__.python3) {
                 throw new Sk.builtin.SyntaxError("invalid string (f-strings are not supported in Python 2)", c.c_filename, CHILD(n, i).lineno);
             }
+
             let jss = str.$jsstr();
             let [astnode, _] = fstring_parse(jss, 0, jss.length, false, 0, c, CHILD(n, i));
             strs.push.apply(strs, astnode.values);
@@ -2643,7 +2659,8 @@ function parsestrplus (c, n) {
             if (lastStrNode) {
                 lastStrNode.s = lastStrNode.s.sq$concat(str);
             } else {
-                lastStrNode = new Sk.astnodes.Str(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset)
+                let type = bytesmode ? Sk.astnodes.Bytes : Sk.astnodes.Str;
+                lastStrNode = new type(str, LINENO(n), n.col_offset, c.end_lineno, n.end_col_offset)
                 strs.push(lastStrNode);
             }
         }
