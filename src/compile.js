@@ -823,7 +823,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     const c = str.charCodeAt(i);
                     source.push(c);
                 }
-                return this.makeConstant("new Sk.builtin.bytes(new Uint8Array([", source.join(", "), "]))");
+                return this.makeConstant("new Sk.builtin.bytes([", source.join(", "), "])");
             }
             // else fall through and make a string instead
         case Sk.astnodes.Str:

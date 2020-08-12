@@ -58,7 +58,7 @@ Sk.builtin.bytes = function (source) {
         this.v = source;
     } else if (Array.isArray(source)) {
         Sk.asserts.assert(source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
-        this.v = Uint8Array.from(source);
+        this.v = Uint8ArrayFromArray(source);
     } else if (typeof source === "string") {
         this.v = Encoder.encode(source);
     } else if (typeof source === "number") {
@@ -103,7 +103,7 @@ function encodeAscii(source, errors) {
             data.push(val);
         }
     }
-    return Uint8Array.from(data);
+    return Uint8ArrayFromArray(data);
 }
 
 function tp$new(args) {
