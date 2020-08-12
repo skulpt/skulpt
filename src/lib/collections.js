@@ -892,6 +892,9 @@ var $builtinmodule = function (name) {
             n = Sk.builtin.asnum$(num);
             if(!Number.isInteger(n)){
                 throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(num) + "'");
+            }            
+            if(n > Number.MAX_SAFE_INTEGER){
+                throw new Sk.builtin.OverflowError("Python int too large to convert to ssize_t");
             }
             ret = [];
             var size = (this.tail - this.head) & this.mask;            
@@ -930,6 +933,9 @@ var $builtinmodule = function (name) {
             n = Sk.builtin.asnum$(num);
             if(!Number.isInteger(n)){
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(num) + "' object cannot be interpreted as an integer");
+            }
+            if(n > Number.MAX_SAFE_INTEGER){
+                throw new Sk.builtin.OverflowError("Python int too large to convert to ssize_t");
             }
 
             var head = self.head;
