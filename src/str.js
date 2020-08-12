@@ -83,6 +83,44 @@ Sk.builtin.bytes.$englishname = "bytes";
 Sk.builtin.str.$englishsingular = "char";
 Sk.builtin.bytes.$englishsingular = "byte";
 
+Sk.builtin.str.prototype.$hasAstralCodePoints = function() {
+    // If a string has astral code points, we have to work
+    // out where they are before we can do things like
+    // slicing, computing length, etc.
+    // We work this out when we need to.
+
+    if (this.codepoints === null) {
+        return false;
+    } else if (this.codepoints !== undefined) {
+        return true;
+    }
+    // Does this string contain astral code points? If so, we have to do things
+    // the slow way.
+    for (let i = 0; i < this.v.length; i++) {
+        let cc = this.v.charCodeAt(i);
+        if (cc >= 0xd800 && cc < 0xe000) {
+            // Yep, it's a surrogate pair. Mark off the
+            // indices of all the code points for O(1) seeking
+            // later
+
+            this.codepoints = [];
+            for (let j = 0; j < this.v.length; j++) {
+                this.codepoints.push(j);
+                cc = this.v.charCodeAt(j);
+                if (cc >= 0xd800 && cc < 0xdc00) {
+                    // High surrogate. Skip next char
+                    j++;
+                }
+            }
+            return true;
+        }
+    }
+    this.codepoints = null;
+    return false;
+}
+
+Sk.builtin.bytes.prototype.$hasAstralCodePoints = () => false;
+
 Sk.builtin.str.prototype.$jsstr = Sk.builtin.bytes.prototype.$jsstr = function () {
     return this.v;
 };
@@ -97,7 +135,7 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
         if (index < 0 || index >= this.v.length) {
             throw new Sk.builtin.IndexError(this.__class__.$englishname + " index out of range");
         }
-        if (this.codepoints) {
+        if (this.$hasAstralCodePoints()) {
             return new this.__class__(this.v.substring(this.codepoints[index], this.codepoints[index+1]));
         } else {
             return new this.__class__(this.v.charAt(index));
@@ -105,9 +143,9 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
     } else if (index instanceof Sk.builtin.slice) {
         ret = "";
         index.sssiter$(this, function (i, wrt) {
-            if (wrt.codepoints) {
+            if (wrt.$hasAstralCodePoints()) {
                 if (i >= 0 && i < wrt.codepoints.length) {
-                    ret += wrt.v.codePointAt(wrt.codePoints[i]);
+                    ret += wrt.v.substring(wrt.codepoints[i], wrt.codepoints[i+1]);
                 }
             } else if (i >= 0 && i < wrt.v.length) {
                 ret += wrt.v.charAt(i);
@@ -120,7 +158,7 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
 };
 
 Sk.builtin.str.prototype.sq$length = function () {
-    return this.codepoints ? this.codepoints.length : this.v.length;
+    return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
 };
 Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.length;
@@ -161,7 +199,7 @@ Sk.builtin.str.prototype.sq$slice = Sk.builtin.bytes.prototype.sq$slice = functi
     if (i1 < 0) {
         i1 = 0;
     }
-    if (this.codepoints) {
+    if (this.$hasAstralCodePoints()) {
         if (i1 >= this.codepoints.length) {
             return this.__class__.$emptystr;
         }
@@ -1292,7 +1330,7 @@ Sk.builtin.str_iter_ = function (obj) {
     this.$obj = obj.v.slice();
     this.tp$iter = () => this;
     this.$cls = obj.__class__;
-    if (obj.codepoints) {
+    if (obj.$hasAstralCodePoints()) {
         this.sq$length = obj.codepoints.length;
         this.$codepoints = obj.codepoints.slice();
         this.tp$iternext = function () {
