@@ -1049,7 +1049,18 @@ Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encodin
 
 Sk.builtin.str.$py2decode = new Sk.builtin.func(function (self, encoding, errors) {
     Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-    const pyBytes = new Sk.builtin.bytes(self.v);
+    let bytesStrAsArray = [];
+    let cc;
+    const str = self.v;
+    for (let i in str) {
+        cc = str.charCodeAt(i);
+        if (cc <= 0xff) {
+            bytesStrAsArray.push(cc);
+        } else {
+            throw new Sk.builtin.UnicodeDecodeError("invalid string (possibly contains a unicode character)");
+        }
+    }
+    const pyBytes = new Sk.builtin.bytes(bytesStrAsArray);
     return Sk.builtin.bytes.$decode(pyBytes, encoding, errors);
 });
 
