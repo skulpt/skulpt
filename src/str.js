@@ -129,13 +129,14 @@ Sk.builtin.str.prototype.mp$subscript = Sk.builtin.bytes.prototype.mp$subscript 
     var ret;
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
+        let len = this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
         if (index < 0) {
-            index = this.v.length + index;
+            index = len + index;
         }
-        if (index < 0 || index >= this.v.length) {
+        if (index < 0 || index >= len) {
             throw new Sk.builtin.IndexError(this.__class__.$englishname + " index out of range");
         }
-        if (this.$hasAstralCodePoints()) {
+        if (this.codepoints) {
             return new this.__class__(this.v.substring(this.codepoints[index], this.codepoints[index+1]));
         } else {
             return new this.__class__(this.v.charAt(index));
@@ -553,23 +554,30 @@ Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk
         throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
     }
 
-    if (start === undefined || Sk.builtin.checkNone(start)) {
+    let len = self.sq$length();
+
+    if (start === undefined) {
         start = 0;
     } else {
         start = Sk.builtin.asnum$(start);
-        start = start >= 0 ? start : self.v.length + start;
+        start = start >= 0 ? start : len + start;
+        if (start > len) {
+            // Guard against running off the end of the codepoints array
+            return new Sk.builtin.int_(0);
+        }
     }
 
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = self.v.length;
+    if (end === undefined) {
+        end = len;
     } else {
         end = Sk.builtin.asnum$(end);
-        end = end >= 0 ? end : self.v.length + end;
+        end = end >= 0 ? end : len + end;
     }
 
     normaltext = pat.v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     m = new RegExp(normaltext, "g");
-    slice = self.v.slice(start, end);
+    slice = self.v.slice(self.codepoints ? self.codepoints[start] : start,
+                            self.codepoints ? self.codepoints[end] : end);
     ctl = slice.match(m);
     if (!ctl) {
         return  new Sk.builtin.int_(0);
@@ -579,81 +587,49 @@ Sk.builtin.str.prototype["count"] = Sk.builtin.bytes.prototype["count"] = new Sk
 
 });
 
-Sk.builtin.str.prototype["ljust"] = Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, len, fillchar) {
-    var newstr;
-    Sk.builtin.pyCheckArgsLen("ljust", arguments.length, 2, 3);
-    if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
-    }
-    if ((fillchar !== undefined) && (!checkStringish(self, fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
-    }
-    if (fillchar === undefined) {
-        fillchar = " ";
-    } else {
-        fillchar = fillchar.v;
-    }
-    len = Sk.builtin.asnum$(len);
-    if (self.v.length >= len) {
-        return self;
-    } else {
-        newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, fillchar);
-        return new self.__class__(self.v + newstr);
-    }
-});
-
-Sk.builtin.str.prototype["rjust"] = Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, len, fillchar) {
-    var newstr;
-    Sk.builtin.pyCheckArgsLen("rjust", arguments.length, 2, 3);
-    if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
-    }
-    if ((fillchar !== undefined) && (!checkStringish(self, fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
-    }
-    if (fillchar === undefined) {
-        fillchar = " ";
-    } else {
-        fillchar = fillchar.v;
-    }
-    len = Sk.builtin.asnum$(len);
-    if (self.v.length >= len) {
-        return self;
-    } else {
-        newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, fillchar);
-        return new self.__class__(newstr + self.v);
-    }
-
-});
-
-Sk.builtin.str.prototype["center"] = Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function (self, len, fillchar) {
-    var newstr;
-    var newstr1;
-    Sk.builtin.pyCheckArgsLen("center", arguments.length, 2, 3);
-    if (!Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
-    }
-    if ((fillchar !== undefined) && (!checkStringish(self, fillchar) || fillchar.v.length !== 1)) {
-        throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
-    }
-    if (fillchar === undefined) {
-        fillchar = " ";
-    } else {
-        fillchar = fillchar.v;
-    }
-    len = Sk.builtin.asnum$(len);
-    if (self.v.length >= len) {
-        return self;
-    } else {
-        newstr1 = Array.prototype.join.call({length: Math.floor((len - self.v.length) / 2) + 1}, fillchar);
-        newstr = newstr1 + self.v + newstr1;
-        if (newstr.length < len) {
-            newstr = newstr + fillchar;
+function mkJust(isRight, isCenter) {
+    return new Sk.builtin.func(function (self, len, fillchar) {
+        var newstr;
+        Sk.builtin.pyCheckArgsLen(isCenter ? "center" : isRight ? "rjust" : "ljust",
+                                    arguments.length, 2, 3);
+        if (!Sk.builtin.checkInt(len)) {
+            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
         }
-        return new self.__class__(newstr);
-    }
+        if ((fillchar !== undefined) && (!checkStringish(self, fillchar) || fillchar.v.length !== 1 && fillchar.sq$length() !== 1)) {
+            throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
+        }
+        if (fillchar === undefined) {
+            fillchar = " ";
+        } else {
+            fillchar = fillchar.v;
+        }
+        len = Sk.builtin.asnum$(len);
+        let mylen = self.sq$length();
+        if (mylen >= len) {
+            return self;
+        } else if (isCenter) {
+            newstr = fillchar.repeat(Math.floor((len - mylen)/2));
 
-});
+            newstr = newstr + self.v + newstr;
+
+            if ((len - mylen) % 2) {
+                newstr += fillchar;
+            }
+
+            return new self.__class__(newstr);
+
+        } else {
+            newstr = fillchar.repeat(len - mylen);
+            return new self.__class__(isRight ? (newstr + self.v) : (self.v + newstr));
+        }
+    });
+}
+
+Sk.builtin.str.prototype["ljust"] = Sk.builtin.bytes.prototype["ljust"] = mkJust(false);
+
+Sk.builtin.str.prototype["rjust"] = Sk.builtin.bytes.prototype["rjust"] = mkJust(true);
+
+Sk.builtin.str.prototype["center"] = Sk.builtin.bytes.prototype["center"] = mkJust(false, true);
 
 function mkFind(isReversed) {
     return new Sk.builtin.func(function (self, tgt, start, end) {
@@ -804,7 +780,7 @@ Sk.builtin.str.prototype["zfill"] = Sk.builtin.bytes.prototype["zfill"] = new Sk
 
     Sk.builtin.pyCheckArgsLen("zfill", arguments.length, 2, 2);
     if (! Sk.builtin.checkInt(len)) {
-        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
+        throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
     }
 
     // figure out how many zeroes are needed to make the proper length
@@ -847,7 +823,7 @@ Sk.builtin.str.prototype["expandtabs"] = Sk.builtin.bytes.prototype["expandtabs"
 
 
     if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
-        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
+        throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(tabsize));
     }
     if (tabsize === undefined) {
         tabsize = 8;

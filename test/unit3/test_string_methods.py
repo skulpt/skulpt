@@ -134,8 +134,11 @@ class StringMethodsTests(unittest.TestCase):
 
         self.assertEqual(list('Love \U0001f355!'), ['L', 'o', 'v', 'e', ' ', '\U0001f355', '!'])
 
+        # Lookups and slices happen in Python (ie codepoint) coordinates
         self.assertEqual('Love \U0001f355!'[6], '!')
         self.assertEqual('Love \U0001f355!'[5], '\U0001f355')
+        self.assertEqual('Love \U0001f355!'[-2], '\U0001f355')
+
         self.assertEqual('Love \U0001f355!'[4:6], ' \U0001f355')
         self.assertEqual('Love \U0001f355!'[:6], 'Love \U0001f355')
         self.assertEqual('Love \U0001f355!'[4:], ' \U0001f355!')
@@ -144,10 +147,18 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('abc\U0001f355def'[-2::-2], 'e\U0001f355b')
         self.assertEqual('abc\U0001f355def'[-1::-2], 'fdca')
 
+        # find() happens in codepoint coordinates
         self.assertEqual('Love \U0001f355!'.find('!'), 6)
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', 0, 6), 5)
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -1), 5)
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -2), -1)
+
+        # count() too
+        self.assertEqual('Love \U0001f355!'.count('\U0001f355', -2), 1)
+        self.assertEqual('Love \U0001f355!'.count('\U0001f355', -1), 0)
+
+        # ljust() (same impl as rjust())
+        self.assertEqual('Love \U0001f355!'.ljust(10, '\U0001f355'), 'Love \U0001f355!\U0001f355\U0001f355\U0001f355')
 
     def test_bytes(self):
         # Bytes are not strings
@@ -182,6 +193,10 @@ class StringMethodsTests(unittest.TestCase):
         class D:
             pass
         self.assertRaises(TypeError, lambda: bytes(D()))
+
+        # Concatenate
+        self.assertEqual(b'x' + b'y', b'xy')
+        self.assertRaises(TypeError, lambda: b'x' + 'y')
 
 
 if __name__ == '__main__':
