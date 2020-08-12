@@ -204,14 +204,7 @@ Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
     return this;
 };
 
-/*
- Sk.builtin.list.prototype.sq$item = list_item;
- Sk.builtin.list.prototype.sq$slice = list_slice;
- */
-Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.prototype.list_ass_item_;
-Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.list_del_item_;
-Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.prototype.list_ass_slice_;
-Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.list_del_slice_;
+
 
 Sk.builtin.list.prototype.sq$contains = function (item) {
     var i;

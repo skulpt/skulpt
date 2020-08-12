@@ -197,21 +197,6 @@ Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repea
 Sk.builtin.str.prototype.sq$item = function () {
     Sk.asserts.fail();
 };
-Sk.builtin.str.prototype.sq$slice = function (i1, i2) {
-    i1 = Sk.builtin.asnum$(i1);
-    i2 = Sk.builtin.asnum$(i2);
-    if (i1 < 0) {
-        i1 = 0;
-    }
-    if (this.$hasAstralCodePoints()) {
-        if (i1 >= this.codepoints.length) {
-            return Sk.builtin.str.$emptystr;
-        }
-        return new Sk.builtin.str(this.v.substring(this.codepoints[i1], this.codepoints[i2]));
-    } else {
-        return new Sk.builtin.str(this.v.substring(i1, i2));
-    }
-};
 
 Sk.builtin.str.prototype.sq$contains = function (ob) {
     if (!(ob instanceof Sk.builtin.str)) {

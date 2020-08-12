@@ -537,9 +537,7 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
             return o.tp$setitem(key, v, canSuspend);
         } else if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v, canSuspend);
-        } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
-            return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
-        }
+        } 
     }
 
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support item assignment");

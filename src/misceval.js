@@ -117,20 +117,7 @@ Sk.misceval.asIndex = function (o) {
  * return u[v:w]
  */
 Sk.misceval.applySlice = function (u, v, w, canSuspend) {
-    var ihigh;
-    var ilow;
-    if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v);
-        if (ilow === undefined) {
-            ilow = 0;
-        }
-        ihigh = Sk.misceval.asIndex(w);
-        if (ihigh === undefined) {
-            ihigh = 1e100;
-        }
-        return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
-    }
-    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
+    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w), canSuspend);
 };
 Sk.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
 
@@ -138,24 +125,11 @@ Sk.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
  * u[v:w] = x
  */
 Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
-    var slice;
-    var ihigh;
-    var ilow;
-    if (u.sq$ass_slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
-        ilow = Sk.misceval.asIndex(v) || 0;
-        ihigh = Sk.misceval.asIndex(w) || 1e100;
-        if (x === null) {
-            Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
-        } else {
-            Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
-        }
+    const slice = new Sk.builtin.slice(v, w);
+    if (x === undefined) {
+        return Sk.abstr.objectDelItem(u, slice);
     } else {
-        slice = new Sk.builtin.slice(v, w);
-        if (x === null) {
-            return Sk.abstr.objectDelItem(u, slice);
-        } else {
-            return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
-        }
+        return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
     }
 };
 Sk.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
