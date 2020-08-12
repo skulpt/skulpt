@@ -153,7 +153,7 @@ function newBytesFromPy(pySource, encoding, errors) {
         return new Sk.builtin.bytes(source);
     } else if (Sk.builtin.checkBytes(pySource)) {
         return new Sk.builtin.bytes(pySource.v);
-    } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
+    } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) != null) {
         const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, [pySource]);
         return Sk.misceval.chain(ret, (bytesSource) => {
             if (!Sk.builtin.checkBytes(bytesSource)) {
@@ -175,7 +175,11 @@ function newBytesFromPy(pySource, encoding, errors) {
         });
         return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
     }
-    throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(pySource) + "' object into bytes");
+    let msg = "";
+    if (pySource.sk$object === undefined) {
+        msg += ", if calling constructor with a javascript object use 'new'";
+    }
+    throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(pySource) + "' object into bytes" + msg);
 }
 
 function makehexform(num) {
