@@ -1089,8 +1089,16 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encoding, errors) {
     Sk.builtin.pyCheckArgsLen("encode", arguments.length, 1, 3);
-    
-    return new Sk.builtin.bytes(self, encoding || Sk.builtin.str.$utf8, errors);
+    encoding = encoding || Sk.builtin.str.$utf8;
+    Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
+    encoding = encoding.v;
+    if (errors !== undefined) {
+        Sk.builtin.pyCheckType("errors", "string", Sk.builtin.checkString(errors));
+        errors = errors.v;
+    } else {
+        errors = "strict";
+    }
+    return Sk.builtin.bytes.$strEncode(self, encoding, errors);
 });
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {

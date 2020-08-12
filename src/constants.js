@@ -1,6 +1,4 @@
 Sk.builtin.str.$emptystr = new Sk.builtin.str("");
-Sk.builtin.bytes.$emptystr = new Sk.builtin.bytes("");
-
 
 /* Constants used for kwargs */
 

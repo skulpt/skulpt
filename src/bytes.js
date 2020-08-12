@@ -74,6 +74,7 @@ Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
 
 function strEncode(str, encoding, errors) {
     const source = str.$jsstr();
+    encoding = normalizeEncoding(encoding);
     let uint8;
     if (encoding === "ascii") {
         uint8 = encodeAscii(source, errors);
@@ -139,7 +140,7 @@ function tp$new(args) {
             throw new Sk.builtin.TypeError("string argument without an encoding");
         }
         errors = errors === null ? "strict" : errors.$jsstr();
-        encoding = normalizeEncoding(encoding.$jsstr());
+        encoding = encoding.$jsstr();
         return strEncode(pySource, encoding, errors);
     } else if (Sk.builtin.checkInt(pySource)) {
         source = Sk.builtin.asnum$(pySource);
