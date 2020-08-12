@@ -10,6 +10,8 @@ class Indexable:
         return self.value
 
 class BytesTests(unittest.TestCase):
+    type2test = bytes
+
     def test_repr_str(self):
         for f in str, repr:
             # self.assertEqual(f(bytearray()), "bytearray(b'')")
@@ -99,6 +101,42 @@ class BytesTests(unittest.TestCase):
         self.assertRaises(LookupError, bytes, "abc", "asd")
         self.assertRaises(UnicodeEncodeError, bytes, "ÿ", "ascii")
 
+    def test_compare(self):
+        b1 = self.type2test([1, 2, 3])
+        b2 = self.type2test([1, 2, 3])
+        b3 = self.type2test([1, 3])
+
+        self.assertEqual(b1, b2)
+        self.assertTrue(b2 != b3)
+        self.assertTrue(b1 <= b2)
+        self.assertTrue(b1 <= b3)
+        self.assertTrue(b1 <  b3)
+        self.assertTrue(b1 >= b2)
+        self.assertTrue(b3 >= b2)
+        self.assertTrue(b3 >  b2)
+
+        self.assertFalse(b1 != b2)
+        self.assertFalse(b2 == b3)
+        self.assertFalse(b1 >  b2)
+        self.assertFalse(b1 >  b3)
+        self.assertFalse(b1 >= b3)
+        self.assertFalse(b1 <  b2)
+        self.assertFalse(b3 <  b2)
+        self.assertFalse(b3 <= b2)
+
+    def test_compare_to_str(self):
+        # Byte comparisons with unicode should always fail!
+        # Test this for all expected byte orders and Unicode character
+        # sizes.
+        self.assertEqual(self.type2test(b"\0a\0b\0c") == "abc", False)
+        self.assertEqual(self.type2test(b"\0\0\0a\0\0\0b\0\0\0c") == "abc",
+                            False)
+        self.assertEqual(self.type2test(b"a\0b\0c\0") == "abc", False)
+        self.assertEqual(self.type2test(b"a\0\0\0b\0\0\0c\0\0\0") == "abc",
+                            False)
+        self.assertEqual(self.type2test() == str(), False)
+        self.assertEqual(self.type2test() != str(), True)
+
     def test_comparisons(self):
         a = bytes([1, 2, 3])
         b = bytes([1, 2, 3])
@@ -140,31 +178,31 @@ class BytesTests(unittest.TestCase):
     def test_compare_bytes_to_bytearray(self):
         self.assertEqual(b"abc" == bytes(b"abc"), True)
         self.assertEqual(b"ab" != bytes(b"abc"), True)
-        # self.assertEqual(b"ab" <= bytes(b"abc"), True)
-        # self.assertEqual(b"ab" < bytes(b"abc"), True)
-        # self.assertEqual(b"abc" >= bytes(b"ab"), True)
-        # self.assertEqual(b"abc" > bytes(b"ab"), True)
+        self.assertEqual(b"ab" <= bytes(b"abc"), True)
+        self.assertEqual(b"ab" < bytes(b"abc"), True)
+        self.assertEqual(b"abc" >= bytes(b"ab"), True)
+        self.assertEqual(b"abc" > bytes(b"ab"), True)
 
         self.assertEqual(b"abc" != bytes(b"abc"), False)
         self.assertEqual(b"ab" == bytes(b"abc"), False)
-        # self.assertEqual(b"ab" > bytes(b"abc"), False)
-        # self.assertEqual(b"ab" >= bytes(b"abc"), False)
-        # self.assertEqual(b"abc" < bytes(b"ab"), False)
-        # self.assertEqual(b"abc" <= bytes(b"ab"), False)
+        self.assertEqual(b"ab" > bytes(b"abc"), False)
+        self.assertEqual(b"ab" >= bytes(b"abc"), False)
+        self.assertEqual(b"abc" < bytes(b"ab"), False)
+        self.assertEqual(b"abc" <= bytes(b"ab"), False)
 
         self.assertEqual(bytes(b"abc") == b"abc", True)
         self.assertEqual(bytes(b"ab") != b"abc", True)
-        # self.assertEqual(bytes(b"ab") <= b"abc", True)
-        # self.assertEqual(bytes(b"ab") < b"abc", True)
-        # self.assertEqual(bytes(b"abc") >= b"ab", True)
-        # self.assertEqual(bytes(b"abc") > b"ab", True)
+        self.assertEqual(bytes(b"ab") <= b"abc", True)
+        self.assertEqual(bytes(b"ab") < b"abc", True)
+        self.assertEqual(bytes(b"abc") >= b"ab", True)
+        self.assertEqual(bytes(b"abc") > b"ab", True)
 
         self.assertEqual(bytes(b"abc") != b"abc", False)
         self.assertEqual(bytes(b"ab") == b"abc", False)
-        # self.assertEqual(bytes(b"ab") > b"abc", False)
-        # self.assertEqual(bytes(b"ab") >= b"abc", False)
-        # self.assertEqual(bytes(b"abc") < b"ab", False)
-        # self.assertEqual(bytes(b"abc") <= b"ab", False)
+        self.assertEqual(bytes(b"ab") > b"abc", False)
+        self.assertEqual(bytes(b"ab") >= b"abc", False)
+        self.assertEqual(bytes(b"abc") < b"ab", False)
+        self.assertEqual(bytes(b"abc") <= b"ab", False)
 
     def test_decode(self):
         a = bytes("abc", "ascii")
@@ -1029,8 +1067,6 @@ class BytesTests(unittest.TestCase):
         self.assertIs(type(bytes(A())), OtherBytesSubclass)
         self.assertEqual(BytesSubclass(A()), b'abc')
         self.assertIs(type(BytesSubclass(A())), BytesSubclass)
-
-    type2test = bytes
 
 
     def test_empty_sequence(self):

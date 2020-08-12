@@ -291,6 +291,19 @@ Sk.builtin.bytes.prototype.ob$ne = function (other) {
     return Sk.misceval.isTrue(ret) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
 };
 
+function slotCompareUint8(f) {
+    return function (other) {
+        if (!(other instanceof Sk.builtin.bytes)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        }
+        return f(this.v, other.v);
+    };
+}
+Sk.builtin.bytes.prototype.ob$lt = slotCompareUint8((v, w) => new Sk.builtin.bool(v < w));
+Sk.builtin.bytes.prototype.ob$le = slotCompareUint8((v, w) => new Sk.builtin.bool(v <= w));
+Sk.builtin.bytes.prototype.ob$gt = slotCompareUint8((v, w) => new Sk.builtin.bool(v > w));
+Sk.builtin.bytes.prototype.ob$ge = slotCompareUint8((v, w) => new Sk.builtin.bool(v >= w));
+
 Sk.builtin.bytes.prototype.sq$length = function () {
     return this.v.byteLength;
 };
