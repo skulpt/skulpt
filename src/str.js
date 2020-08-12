@@ -658,6 +658,8 @@ function indices(self, start, end) {
         end = end >= 0 ? end : len + end;
         if (end < 0) {
             end = 0;
+        } else if (end > len) {
+            end = len;
         }
     }
 
