@@ -1098,7 +1098,14 @@ Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encodin
     } else {
         errors = "strict";
     }
-    return Sk.builtin.bytes.$strEncode(self, encoding, errors);
+    const pyBytes = Sk.builtin.bytes.$strEncode(self, encoding, errors);
+    return Sk.__future__.python3 ? pyBytes : new Sk.builtin.str(pyBytes.$jsstr());
+});
+
+Sk.builtin.str.$py2decode = new Sk.builtin.func(function (self, encoding, errors) {
+    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
+    const pyBytes = new Sk.builtin.bytes(self.v);
+    return Sk.builtin.bytes.$decode(pyBytes, encoding, errors);
 });
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {
