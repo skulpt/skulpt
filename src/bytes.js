@@ -78,6 +78,9 @@ Sk.builtin.bytes.prototype.__class__ = Sk.builtin.bytes;
 function strEncode(pyStr, encoding, errors) {
     const source = pyStr.$jsstr();
     encoding = normalizeEncoding(encoding);
+    if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
+        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
+    }
     let uint8;
     if (encoding === "ascii") {
         uint8 = encodeAscii(source, errors);
