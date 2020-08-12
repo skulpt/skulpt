@@ -202,6 +202,8 @@ function makehexform(num) {
 };
 
 Sk.builtin.bytes.prototype.$jsstr = function () {
+    // returns bytes string - not a bidirectional conversion - use with caution
+    // i.e. new Sk.builtin.bytes(x.$jsstr()).v  is different to x.v;
     let ret = "";
     for (let i = 0; i <= this.v.byteLength; i++) {
         ret += String.fromCharCode(this.v[i]);
