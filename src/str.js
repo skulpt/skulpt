@@ -590,6 +590,7 @@ Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, sta
 
 });
 
+
 function mkJust(isRight, isCenter) {
     return new Sk.builtin.func(function (self, len, fillchar) {
         var newstr;
@@ -634,6 +635,45 @@ Sk.builtin.str.prototype["rjust"] = mkJust(true);
 
 Sk.builtin.str.prototype["center"] = mkJust(false, true);
 
+function indices(self, start, end) {
+    const len = self.sq$length();
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else if (!Sk.misceval.isIndex(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    } else {
+        start = Sk.misceval.asIndex(start);
+        start = start >= 0 ? start : len + start;
+        if (start < 0) {
+            start = 0;
+        }
+    }
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = len;
+    } else if (!Sk.misceval.isIndex(end)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    } else {
+        end = Sk.misceval.asIndex(end);
+        end = end >= 0 ? end : len + end;
+        if (end < 0) {
+            end = 0;
+        }
+    }
+
+    if (self.$hasAstralCodePoints()) {
+        start = self.codepoints[start];
+        end = self.codepoints[end];
+        start = start === undefined ? self.v.length : start;
+        end = end === undefined ? self.v.length : end;
+    }
+
+    return {
+        start: start,
+        end: end,
+    };
+}
+
+
 function mkFind(isReversed) {
     return new Sk.builtin.func(function (self, tgt, start, end) {
         var idx;
@@ -641,66 +681,33 @@ function mkFind(isReversed) {
         if (!Sk.builtin.checkString(tgt)) {
             throw new Sk.builtin.TypeError("expected a character buffer object");
         }
-        if ((start !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(start)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
-        if ((end !== undefined) && (end !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(end)) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-        }
+        ({ start, end } = indices(self, start, end));
 
-        let len = self.$hasAstralCodePoints() ? self.codepoints.length : self.v.length;
+        const len = self.sq$length();
 
-        // Find start and end in Python coordinates
-
-        if (start === undefined || start === Sk.builtin.none.none$) {
-            start = 0;
-        } else {
-            start = Sk.builtin.asnum$(start);
-            start = start >= 0 ? start : len + start;
-            if (start < 0) { start = 0; }
-        }
-        if (start > len) {
-            return new Sk.builtin.int_(-1);
-        }
-
-        if (end === undefined || end === Sk.builtin.none.none$) {
-            end = len;
-        } else {
-            end = Sk.builtin.asnum$(end);
-            end = end >= 0 ? end : len + end;
-        }
         // This guard makes sure we don't, eg, look for self.codepoints[-1]
         if (end < start) {
             return new Sk.builtin.int_(-1);
         }
 
+        // ...do the search..
+        end -= tgt.v.length;
+        let jsidx = isReversed ? self.v.lastIndexOf(tgt.v, end) : self.v.indexOf(tgt.v, start);
+        jsidx = jsidx >= start && jsidx <= end ? jsidx : -1;
+
         if (self.$hasAstralCodePoints()) {
-            // Convert start and end to JS coordinates...
-
-            start = self.codepoints[start];
-            end = self.codepoints[end];
-            if (start === undefined) { start = self.v.length; }
-            if (end === undefined) { end = self.v.length; }
-
-            // ...do the search..
-            end -= tgt.v.length;
-            let jsidx = isReversed ? self.v.lastIndexOf(tgt.v, end) : self.v.indexOf(tgt.v, start);
-            jsidx = ((jsidx >= start) && (jsidx <= end)) ? jsidx : -1;
-
             // ...and now convert them back
 
             idx = -1;
 
             for (let i = 0; i < len; i++) {
-                if (jsidx == self.codepoints[i]) { 
+                if (jsidx == self.codepoints[i]) {
                     idx = i;
                 }
             }
         } else {
             // No astral codepoints, no conversion required
-            end -= tgt.v.length;
-            idx = isReversed ? self.v.lastIndexOf(tgt.v, end) : self.v.indexOf(tgt.v, start);
-            idx = ((idx >= start) && (idx <= end)) ? idx : -1;
+            idx = jsidx;
         }
 
         return new Sk.builtin.int_(idx);
@@ -732,65 +739,31 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
 });
 
 Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length -1 , 1, 3);
+    Sk.builtin.pyCheckArgsLen("startswith", arguments.length - 1, 1, 3);
 
-    if(Sk.abstr.typeName(prefix) != "str" && Sk.abstr.typeName(prefix) != "tuple"){
+    if (!(prefix instanceof Sk.builtin.str) && !(prefix instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("startswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(prefix));
     }
 
-    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
-    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
+    ({ start, end } = indices(self, start, end));
 
-    if (start === undefined || Sk.builtin.checkNone(start)) {
-        start = 0;
-    } else {
-        start = Sk.misceval.asIndex(start);
-        start = start >= 0 ? start : self.v.length + start;
-    }
-
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = self.v.length;
-    } else {
-        end = Sk.misceval.asIndex(end);
-        end = end >= 0 ? end : self.v.length + end;
-    }
-
-    if(start > self.v.length){
+    if (start > end) {
         return Sk.builtin.bool.false$;
     }
 
-    var substr = self.v.slice(start, end);
+    let substr = self.v.slice(start, end);
 
-    
-    if(Sk.abstr.typeName(prefix) == "tuple"){
-        var tmpBool = false, resultBool = false;
-        if(start > end){
-            tmpBool = start <= 0;
-        }
-        if(tmpBool){
-            return Sk.builtin.bool.true$;
-        }
-        var it, i;
-        for (it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if(!tmpBool){
-                tmpBool = substr.indexOf(i.v) === 0;    
+    if (prefix instanceof Sk.builtin.tuple) {
+        for (let it = Sk.abstr.iter(prefix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if (!(i instanceof Sk.builtin.str)) {
+                throw new Sk.builtin.TypeError("tuple for startswith must only contain str, not " + Sk.abstr.typeName(i));
             }
-            resultBool = resultBool || tmpBool;
-            if(resultBool){
-                break;
+            if (substr.indexOf(i.v) === 0) {
+                return Sk.builtin.bool.true$;
             }
         }
-        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
-    }
-
-    if(prefix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
-
     return new Sk.builtin.bool(substr.indexOf(prefix.v) === 0);
 });
 
@@ -798,62 +771,31 @@ Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, pre
 Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
     Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
 
-    if(Sk.abstr.typeName(suffix) != "str" && Sk.abstr.typeName(suffix) != "tuple"){
+    if (!(suffix instanceof Sk.builtin.str) && !(suffix instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("endswith first arg must be str or a tuple of str, not " + Sk.abstr.typeName(suffix));
     }
 
-    if ((start !== undefined) && !Sk.misceval.isIndex(start) && !Sk.builtin.checkNone(start)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
-    if ((end !== undefined) && !Sk.misceval.isIndex(end) && !Sk.builtin.checkNone(end)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    }
+    ({ start, end } = indices(self, start, end));
 
-    if (start === undefined || Sk.builtin.checkNone(start)) {
-        start = 0;
-    } else {
-        start = Sk.misceval.asIndex(start);
-        start = start >= 0 ? start : self.v.length + start;
-    }
-
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = self.v.length;
-    } else {
-        end = Sk.misceval.asIndex(end);
-        end = end >= 0 ? end : self.v.length + end;
-    }
-
-    if(start > self.v.length){
+    if (start > end) {
         return Sk.builtin.bool.false$;
     }
 
-    //take out the substring
-    var substr = self.v.slice(start, end);
+    let substr = self.v.slice(start, end);
 
-    if(Sk.abstr.typeName(suffix) == "tuple"){
-        var tmpBool = false, resultBool = false;
-        if(start > end){
-            tmpBool = start <= 0;
-        }
-        if(tmpBool){
-            return Sk.builtin.bool.true$;
-        }
-        var it, i;
-        for (it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-            if(!tmpBool){     
-                tmpBool = substr.indexOf(i.v, substr.length - i.v.length) !== -1;    
+
+    if (suffix instanceof Sk.builtin.tuple) {
+        for (let it = Sk.abstr.iter(suffix), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            if (!(i instanceof Sk.builtin.str)) {
+                throw new Sk.builtin.TypeError("tuple for endswith must only contain str, not " + Sk.abstr.typeName(i));
             }
-            resultBool = resultBool || tmpBool;
-            if(resultBool){
-                break;
+            if (substr.indexOf(i.v, substr.length - i.v.length) !== -1) {
+                return Sk.builtin.bool.true$;
             }
         }
-        return resultBool?Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
-    }
-
-    if(suffix.v == "" && start > end && end >= 0){
         return Sk.builtin.bool.false$;
     }
+
     return new Sk.builtin.bool(substr.indexOf(suffix.v, substr.length - suffix.v.length) !== -1);
 });
 
