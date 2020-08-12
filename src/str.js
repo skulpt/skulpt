@@ -36,6 +36,7 @@ Sk.builtin.str = function (x, encoding, errors) {
         return new Sk.builtin.str(x);
     }
 
+
     // convert to js string
     if (x === true) {
         ret = "True";
@@ -76,7 +77,6 @@ Sk.builtin.str = function (x, encoding, errors) {
 
     this.__class__ = Sk.builtin.str;
     this.v = ret;
-    this["v"] = this.v;
     setInterned(ret, this);
     this.$mangled = fixReserved(ret);
     return this;
@@ -86,8 +86,6 @@ Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 
-Sk.builtin.str.$englishname = "string";
-Sk.builtin.str.$englishsingular = "char";
 
 Sk.builtin.str.prototype.$hasAstralCodePoints = function() {
     // If a string has astral code points, we have to work
@@ -131,10 +129,10 @@ Sk.builtin.str.prototype.$jsstr = function () {
 };
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
-    var ret;
+    let len;
     if (Sk.misceval.isIndex(index)) {
         index = Sk.misceval.asIndex(index);
-        let len = this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
+        len = this.sq$length();
         if (index < 0) {
             index = len + index;
         }
@@ -147,18 +145,15 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
             return new Sk.builtin.str(this.v.charAt(index));
         }
     } else if (index instanceof Sk.builtin.slice) {
-        ret = "";
-        if (this.$hasAstralCodePoints()) {
-            index.sssiter$(this.codepoints.length, (i, wrt) => {
-                if (i >= 0 && i < this.codepoints.length) {
-                    ret += this.v.substring(this.codepoints[i], this.codepoints[i+1]);
-                }
+        let ret = "";
+        len = this.sq$length();
+        if (this.codepoints) {
+            index.sssiter$(len, (i) => {
+                ret += this.v.substring(this.codepoints[i], this.codepoints[i+1]);
             });
         } else {
-            index.sssiter$(this, function (i, wrt) {
-                if (i >= 0 && i < wrt.v.length) {
-                    ret += wrt.v.charAt(i);
-                }
+            index.sssiter$(len, (i) => {
+                ret += this.v.charAt(i);
             });
         };
         return new Sk.builtin.str(ret);
@@ -167,18 +162,17 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
     }
 };
 
-
 Sk.builtin.str.prototype.sq$length = function () {
     return this.$hasAstralCodePoints() ? this.codepoints.length : this.v.length;
 };
 
 Sk.builtin.str.prototype.sq$concat = function (other) {
     var otypename;
-    if (!other || other.__class__ !== this.__class__) {
+    if (!other || !Sk.builtin.checkString(other)) {
         otypename = Sk.abstr.typeName(other);
-        throw new Sk.builtin.TypeError("cannot concatenate '" + this.tp$name + "' and '" + otypename + "' objects");
+        throw new Sk.builtin.TypeError("cannot concatenate 'str' and '" + otypename + "' objects");
     }
-    return new this.__class__(this.v + other.v);
+    return new Sk.builtin.str(this.v + other.v);
 };
 Sk.builtin.str.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
@@ -195,7 +189,7 @@ Sk.builtin.str.prototype.sq$repeat = function (n) {
     for (i = 0; i < n; ++i) {
         ret += this.v;
     }
-    return new this.__class__(ret);
+    return new Sk.builtin.str(ret);
 };
 Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
@@ -210,11 +204,11 @@ Sk.builtin.str.prototype.sq$slice = function (i1, i2) {
     }
     if (this.$hasAstralCodePoints()) {
         if (i1 >= this.codepoints.length) {
-            return this.__class__.$emptystr;
+            return Sk.builtin.str.$emptystr;
         }
-        return new this.__class__(this.v.substring(this.codepoints[i1], this.codepoints[i2]));
+        return new Sk.builtin.str(this.v.substring(this.codepoints[i1], this.codepoints[i2]));
     } else {
-        return new this.__class__(this.v.substring(i1, i2));
+        return new Sk.builtin.str(this.v.substring(i1, i2));
     }
 };
 
@@ -238,9 +232,8 @@ Sk.builtin.str.prototype.tp$iter = function () {
     return new Sk.builtin.str_iter_(this);
 };
 
-
-Sk.builtin.str.prototype.tp$richcompare =  function (other, op) {
-    if (!(other instanceof this.__class__)) {
+Sk.builtin.str.prototype.tp$richcompare = function (other, op) {
+    if (!(other instanceof Sk.builtin.str)) {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 
@@ -277,7 +270,7 @@ Sk.builtin.str.prototype["$r"] = function () {
     }
     //jshint ignore:end
     len = this.v.length;
-    ret = (this.__class__ === Sk.builtin.bytes) ? "b" + quote : quote;
+    ret = quote;
     for (i = 0; i < len; ++i) {
         c = this.v.charAt(i);
         cc = this.v.charCodeAt(i);
@@ -378,12 +371,12 @@ Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
     Sk.builtin.pyCheckType("seq", "iterable", Sk.builtin.checkIterable(seq));
     arrOfStrs = [];
     for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i.constructor !== self.__class__) {
-            throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected " + self.__class__.$englishname + ", " + typeof i + " found");
+        if (i.constructor !== Sk.builtin.str) {
+            throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected string, " + Sk.abstr.typeName(i) + " found");
         }
         arrOfStrs.push(i.v);
     }
-    return new self.__class__(arrOfStrs.join(self.v));
+    return new Sk.builtin.str(arrOfStrs.join(self.v));
 });
 
 Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howmany) {
@@ -399,7 +392,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
         on = null;
     }
     if ((on !== null) && !Sk.builtin.checkString(on)) {
-        throw new Sk.builtin.TypeError("expected " + self.__class__.$englishname);
+        throw new Sk.builtin.TypeError("expected a string");
     }
     if ((on !== null) && on.v === "") {
         throw new Sk.builtin.ValueError("empty separator");
@@ -431,7 +424,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
             // empty match
             break;
         }
-        result.push(new self.__class__(str.substring(index, match.index)));
+        result.push(new Sk.builtin.str(str.substring(index, match.index)));
         index = regex.lastIndex;
         splits += 1;
         if (howmany && (splits >= howmany)) {
@@ -440,7 +433,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     }
     str = str.substring(index);
     if (on !== null || (str.length > 0)) {
-        result.push(new self.__class__(str));
+        result.push(new Sk.builtin.str(str));
     }
 
     return new Sk.builtin.list(result);
@@ -450,8 +443,8 @@ Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("strip", arguments.length, 1, 2);
-    if ((chars !== undefined) && chars.__class__ !== self.__class__) {
-        throw new Sk.builtin.TypeError("strip arg must be None or " + self.__class__.$englishname);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        throw new Sk.builtin.TypeError("strip arg must be None or str");
     }
     if (chars === undefined) {
         pattern = /^\s+|\s+$/g;
@@ -459,15 +452,15 @@ Sk.builtin.str.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
         regex = Sk.builtin.str.re_escape_(chars.v);
         pattern = new RegExp("^[" + regex + "]+|[" + regex + "]+$", "g");
     }
-    return new self.__class__(self.v.replace(pattern, ""));
+    return new Sk.builtin.str(self.v.replace(pattern, ""));
 });
 
-Sk.builtin.str.prototype["lstrip"] =  new Sk.builtin.func(function (self, chars) {
+Sk.builtin.str.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("lstrip", arguments.length, 1, 2);
-    if ((chars !== undefined) && chars.__class__ !== self.__class__) {
-        throw new Sk.builtin.TypeError("lstrip arg must be None or " + self.__class__.$englishname);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        throw new Sk.builtin.TypeError("lstrip arg must be None or str");
     }
     if (chars === undefined) {
         pattern = /^\s+/g;
@@ -475,15 +468,15 @@ Sk.builtin.str.prototype["lstrip"] =  new Sk.builtin.func(function (self, chars)
         regex = Sk.builtin.str.re_escape_(chars.v);
         pattern = new RegExp("^[" + regex + "]+", "g");
     }
-    return new self.__class__(self.v.replace(pattern, ""));
+    return new Sk.builtin.str(self.v.replace(pattern, ""));
 });
 
-Sk.builtin.str.prototype["rstrip"] =  new Sk.builtin.func(function (self, chars) {
+Sk.builtin.str.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
     var regex;
     var pattern;
     Sk.builtin.pyCheckArgsLen("rstrip", arguments.length, 1, 2);
-    if ((chars !== undefined) && chars.__class__ !== self.__class__) {
-        throw new Sk.builtin.TypeError("rstrip arg must be None or " + self.__class__.$englishname);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+        throw new Sk.builtin.TypeError("rstrip arg must be None or str");
     }
     if (chars === undefined) {
         pattern = /\s+$/g;
@@ -491,7 +484,7 @@ Sk.builtin.str.prototype["rstrip"] =  new Sk.builtin.func(function (self, chars)
         regex = Sk.builtin.str.re_escape_(chars.v);
         pattern = new RegExp("[" + regex + "]+$", "g");
     }
-    return new self.__class__(self.v.replace(pattern, ""));
+    return new Sk.builtin.str(self.v.replace(pattern, ""));
 });
 
 Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(function (self, format_spec) {
@@ -518,34 +511,34 @@ Sk.builtin.str.prototype["partition"] = new Sk.builtin.func(function (self, sep)
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("partition", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, Sk.builtin.checkString(sep));
-    sepStr = new self.__class__(sep);
+    Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
+    sepStr = new Sk.builtin.str(sep);
     pos = self.v.indexOf(sepStr.v);
     if (pos < 0) {
-        return new Sk.builtin.tuple([self, self.__class__.$emptystr, self.__class__.$emptystr]);
+        return new Sk.builtin.tuple([self, Sk.builtin.str.$emptystr, Sk.builtin.str.$emptystr]);
     }
 
     return new Sk.builtin.tuple([
-        new self.__class__(self.v.substring(0, pos)),
+        new Sk.builtin.str(self.v.substring(0, pos)),
         sepStr,
-        new self.__class__(self.v.substring(pos + sepStr.v.length))]);
+        new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 });
 
 Sk.builtin.str.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
     var pos;
     var sepStr;
     Sk.builtin.pyCheckArgsLen("rpartition", arguments.length, 2, 2);
-    Sk.builtin.pyCheckType("sep", self.__class__.$englishname, Sk.builtin.checkString(sep));
-    sepStr = new self.__class__(sep);
+    Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
+    sepStr = new Sk.builtin.str(sep);
     pos = self.v.lastIndexOf(sepStr.v);
     if (pos < 0) {
-        return new Sk.builtin.tuple([self.__class__.$emptystr, self.__class__.$emptystr, self]);
+        return new Sk.builtin.tuple([Sk.builtin.str.$emptystr, Sk.builtin.str.$emptystr, self]);
     }
 
     return new Sk.builtin.tuple([
-        new self.__class__(self.v.substring(0, pos)),
+        new Sk.builtin.str(self.v.substring(0, pos)),
         sepStr,
-        new self.__class__(self.v.substring(pos + sepStr.v.length))]);
+        new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 });
 
 Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, start, end) {
@@ -606,7 +599,7 @@ function mkJust(isRight, isCenter) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(len));
         }
         if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar) || fillchar.v.length !== 1 && fillchar.sq$length() !== 1)) {
-            throw new Sk.builtin.TypeError("must be " + self.__class__.$englishsingular + ", not " + Sk.abstr.typeName(fillchar));
+            throw new Sk.builtin.TypeError("must be char, not " + Sk.abstr.typeName(fillchar));
         }
         if (fillchar === undefined) {
             fillchar = " ";
@@ -626,11 +619,11 @@ function mkJust(isRight, isCenter) {
                 newstr += fillchar;
             }
 
-            return new self.__class__(newstr);
+            return new Sk.builtin.str(newstr);
 
         } else {
             newstr = fillchar.repeat(len - mylen);
-            return new self.__class__(isRight ? (newstr + self.v) : (self.v + newstr));
+            return new Sk.builtin.str(isRight ? (newstr + self.v) : (self.v + newstr));
         }
     });
 }
@@ -646,7 +639,7 @@ function mkFind(isReversed) {
         var idx;
         Sk.builtin.pyCheckArgsLen("find", arguments.length, 2, 4);
         if (!Sk.builtin.checkString(tgt)) {
-            throw new Sk.builtin.TypeError("expected a " + self.__class__.$englishname + " object");
+            throw new Sk.builtin.TypeError("expected a character buffer object");
         }
         if ((start !== undefined) && (start !== Sk.builtin.none.none$) && !Sk.builtin.checkInt(start)) {
             throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
@@ -868,8 +861,8 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
     var c;
     var patt;
     Sk.builtin.pyCheckArgsLen("replace", arguments.length, 3, 4);
-    Sk.builtin.pyCheckType("oldS", self.__class__.$englishname, Sk.builtin.checkString(oldS));
-    Sk.builtin.pyCheckType("newS", self.__class__.$englishname, Sk.builtin.checkString(newS));
+    Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
+    Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
     if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
         throw new Sk.builtin.TypeError("integer argument expected, got " +
             Sk.abstr.typeName(count));
@@ -878,7 +871,7 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
     patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
 
     if ((count === undefined) || (count < 0)) {
-        return new self.__class__(self.v.replace(patt, newS.v));
+        return new Sk.builtin.str(self.v.replace(patt, newS.v));
     }
 
     c = 0;
@@ -891,7 +884,7 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
         return match;
     }
 
-    return new self.__class__(self.v.replace(patt, replacer));
+    return new Sk.builtin.str(self.v.replace(patt, replacer));
 });
 
 Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
@@ -915,7 +908,7 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     }
     // combine the string and the zeroes
     ret = str.substr(0, offset) + pad + str.substr(offset);
-    return new self.__class__(ret);
+    return new Sk.builtin.str(ret);
 
 
 });
@@ -958,7 +951,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     expanded = self.v.replace(/([^\r\n\t]*)\t/g, function(a, b) {
         return b + spaces.slice(b.length % tabsize);
     });
-    return new self.__class__(expanded);
+    return new Sk.builtin.str(expanded);
 });
 
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
@@ -971,7 +964,7 @@ Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
         return lc === c ? c.toUpperCase() : lc;
     });
 
-    return new self.__class__(ret);
+    return new Sk.builtin.str(ret);
 });
 
 Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
@@ -1022,7 +1015,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
         if (! keepends) {
             slice = slice.replace(/(\r|\n)/g, "");
         }
-        strs_w.push(new self.__class__(slice));
+        strs_w.push(new Sk.builtin.str(slice));
     }
     return new Sk.builtin.list(strs_w);
 });
@@ -1036,7 +1029,7 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
         return str[0].toUpperCase() + str.substr(1).toLowerCase();
     });
 
-    return new self.__class__(ret);
+    return new Sk.builtin.str(ret);
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
@@ -1119,8 +1112,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     var index;
     var regex;
     var val;
-
-    let self = this;
 
     if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
         rhs = new Sk.builtin.tuple([rhs]);
@@ -1374,7 +1365,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             }
             return r.v;
         } else if (conversionType === "s") {
-            r = new self.__class__(value);
+            r = new Sk.builtin.str(value);
             r = r.$jsstr();
             if (precision) {
                 return r.substr(0, precision);
@@ -1388,7 +1379,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         }
     };
     ret = this.v.replace(regex, replFunc);
-    return new self.__class__(ret);
+    return new Sk.builtin.str(ret);
 };
 
 /**
@@ -1402,7 +1393,6 @@ Sk.builtin.str_iter_ = function (obj) {
     this.$index = 0;
     this.$obj = obj.v.slice();
     this.tp$iter = () => this;
-    this.$cls = obj.__class__;
     if (obj.$hasAstralCodePoints()) {
         this.sq$length = obj.codepoints.length;
         this.$codepoints = obj.codepoints.slice();
@@ -1411,7 +1401,7 @@ Sk.builtin.str_iter_ = function (obj) {
                 return undefined;
             }
 
-            let r = new this.$cls(this.$obj.substring(this.$codepoints[this.$index], this.$codepoints[this.$index+1]));
+            let r = new Sk.builtin.str(this.$obj.substring(this.$codepoints[this.$index], this.$codepoints[this.$index+1]));
             this.$index++;
             return r;
         };
