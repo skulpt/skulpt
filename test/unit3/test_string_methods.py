@@ -136,6 +136,40 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -1), 5)
         self.assertEqual('Love \U0001f355!'.find('\U0001f355', None, -2), -1)
 
+    def test_bytes(self):
+        # Bytes are not strings
+        self.assertNotEqual(b'hello', 'hello')
+
+        # Construct from string
+        self.assertRaises(TypeError, lambda: bytes('hello'))
+        self.assertEqual(bytes('hello', 'utf-8'), b'hello')
+        self.assertEqual(bytes('Love \U0001f355!', 'utf-8'), b'Love \xf0\x9f\x8d\x95!')
+
+        # Construct from bytestrings
+        self.assertEqual(bytes(b'hello'), b'hello')
+
+        # Construct empty bytestrings
+        self.assertEqual(bytes(4), b'\x00\x00\x00\x00')
+
+        # Construct from object with __bytes__
+        class C:
+            def __bytes__(self):
+                return b'hello'
+
+            def __iter__(self):
+                # Gets pre-empted by __bytes__
+                return iter([1,2,3,4])
+        self.assertEqual(bytes(C()), b'hello')
+
+        # Construct from iterables
+        self.assertEqual(bytes([0xf0, 0x9f, 0x8d, 0x95]).decode(), '\U0001f355')
+        self.assertRaises(ValueError, lambda: bytes([0x100]))
+
+        # or give up
+        class D:
+            pass
+        self.assertRaises(TypeError, lambda: bytes(D()))
+
 
 if __name__ == '__main__':
     unittest.main()
