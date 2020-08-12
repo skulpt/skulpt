@@ -115,6 +115,8 @@ function tp$new(args) {
     if (args.length <= 1) {
         pySource = args[0];
     } else {
+        // either encoding is a py object or errors is a py object - currently kwargs not supported
+        // will fail if encoding is not a string || errors is not a string || pySource is not a string
         [pySource, encoding, errors] = args;
         encoding = encoding || null;
         errors = errors || null;
