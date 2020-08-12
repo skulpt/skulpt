@@ -213,6 +213,7 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
     // single is preferred
     var ashex;
     var c;
+    var cc;
     var i;
     var ret;
     var len;
@@ -226,6 +227,7 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
     ret = (this.__class__ === Sk.builtin.bytes) ? "b" + quote : quote;
     for (i = 0; i < len; ++i) {
         c = this.v.charAt(i);
+        cc = this.v.charCodeAt(i);
         if (c === quote || c === "\\") {
             ret += "\\" + c;
         } else if (c === "\t") {
@@ -234,10 +236,10 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
             ret += "\\n";
         } else if (c === "\r") {
             ret += "\\r";
-        } else if (c > 0xff && c < 0xd800 || c >= 0xe000) {
+        } else if (cc > 0xff && cc < 0xd800 || cc >= 0xe000) {
             // BMP
-            ret += "\\u" + ("000"+this.v.charCodeAt(i).toString(16)).slice(-4);
-        } else if (c >= 0xd800) {
+            ret += "\\u" + ("000"+cc.toString(16)).slice(-4);
+        } else if (cc >= 0xd800) {
             // Surrogate pair stuff
             let val = this.v.codePointAt(i);
             i++;
@@ -249,10 +251,10 @@ Sk.builtin.str.prototype["$r"] = Sk.builtin.bytes.prototype["$r"] = function () 
             } else {
                 ret += "\\u" + s.slice(-4);
             }
-        } else if (c > 0xff) {
+        } else if (cc > 0xff) {
             // Invalid!
             ret += "\\ufffd";
-        } else if (c < " " || c >= 0x7f) {
+        } else if (c < " " || cc >= 0x7f) {
             ashex = c.charCodeAt(0).toString(16);
             if (ashex.length < 2) {
                 ashex = "0" + ashex;
@@ -956,7 +958,7 @@ Sk.builtin.str.prototype["encode"] = new Sk.builtin.func(function (self, encodin
 
     let v;
     try {
-        v = unescape(encodeUriComponent(self.v));
+        v = unescape(encodeURIComponent(self.v));
     } catch (e) {
         throw new Sk.builtin.UnicodeEncodeError("UTF-8 encoding failed");
     }
@@ -979,7 +981,7 @@ Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(function (self, encod
 
     let v;
     try {
-        v = decodeUriComponent(escape(self.v));
+        v = decodeURIComponent(escape(self.v));
     } catch (e) {
         throw new Sk.builtin.UnicodeEncodeError("UTF-8 decoding failed");
     }

@@ -720,6 +720,26 @@ Compiler.prototype.cformattedvalue = function(e) {
     return this._gr("formatted", "Sk.abstr.objectFormat("+value+","+formatSpec+")");
 };
 
+function getJsLiteralForString(s) {
+    let r = "\"";
+    for (let i = 0; i < s.length; i++) {
+        let c = s.charCodeAt(i);
+        // Escape quotes, anything before space, and anything non-ASCII
+        if (c == 0x0a) {
+            r += "\\n";
+        } else if (c == 92) {
+            r += "\\\\";
+        } else if (c == 34 || c < 32 || c >= 0x7f && c < 0x100) {
+            r += "\\x" + ("0" + c.toString(16)).substr(-2);
+        } else if (c >= 0x100) {
+            r += "\\u" + ("000" + c.toString(16)).substr(-4);
+        } else {
+            r += s.charAt(i);
+        }
+    }
+    r += "\"";
+    return r;
+}
 
 /**
  *
@@ -796,13 +816,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return this.makeConstant("new Sk.builtin.complex(" + real_val + ", " + imag_val + ")");
             }
             Sk.asserts.fail("unhandled Num type");
+        case Sk.astnodes.Bytes:
+            if (Sk.__future__.python3) {
+                for (let i = 0; i < e.s.length; i++) {
+                    if (e.s[i] > String.fromCharCode(0x7f)) {
+                        throw new Sk.builtin.SyntaxError("bytes can only contain ASCII literal characters");
+                    }
+                }
+                return this.makeConstant("new Sk.builtin.bytes(", getJsLiteralForString(e.s.$jsstr()), ")");
+            }
+            // else fall through and make a string instead
         case Sk.astnodes.Str:
-            if (e.s instanceof Sk.builtin.bytes) {
-                let rep = Sk.builtin.bytes.prototype.$decode(e.s, Sk.builtin.str.$utf8)["$r"]().v;
-                return this.makeConstant("new Sk.builtin.bytes(", rep, ", Sk.builtin.str.$utf8)");
-            } else {
-                return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
-            }      
+            return this.makeConstant("new Sk.builtin.str(", getJsLiteralForString(e.s.$jsstr()), ")");
         case Sk.astnodes.Attribute:
             if (e.ctx !== Sk.astnodes.AugLoad && e.ctx !== Sk.astnodes.AugStore) {
                 val = this.vexpr(e.value);
