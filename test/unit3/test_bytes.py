@@ -2,6 +2,13 @@
 import unittest
 import sys
 
+
+class Indexable:
+    def __init__(self, value=0):
+        self.value = value
+    def __index__(self):
+        return self.value
+
 class BytesTests(unittest.TestCase):
     def test_repr_str(self):
         for f in str, repr:
@@ -1024,6 +1031,115 @@ class BytesTests(unittest.TestCase):
         self.assertIs(type(BytesSubclass(A())), BytesSubclass)
 
     type2test = bytes
+
+
+    def test_empty_sequence(self):
+        b = self.type2test()
+        self.assertEqual(len(b), 0)
+        self.assertRaises(IndexError, lambda: b[0])
+        self.assertRaises(IndexError, lambda: b[1])
+        self.assertRaises(IndexError, lambda: b[sys.maxsize])
+        self.assertRaises(IndexError, lambda: b[sys.maxsize+1])
+        self.assertRaises(IndexError, lambda: b[10**100])
+        self.assertRaises(IndexError, lambda: b[-1])
+        self.assertRaises(IndexError, lambda: b[-2])
+        self.assertRaises(IndexError, lambda: b[-sys.maxsize])
+        # self.assertRaises(IndexError, lambda: b[-sys.maxsize-1])
+        # self.assertRaises(IndexError, lambda: b[-sys.maxsize-2])
+        # self.assertRaises(IndexError, lambda: b[-10**100])
+
+    def test_from_iterable(self):
+        b = self.type2test(range(256))
+        self.assertEqual(len(b), 256)
+        self.assertEqual(list(b), list(range(256)))
+
+        # Non-sequence iterable.
+        b = self.type2test({42})
+        self.assertEqual(b, b"*")
+        b = self.type2test({43, 45})
+        self.assertIn(tuple(b), {(43, 45), (45, 43)})
+
+        # Iterator that has a __length_hint__.
+        b = self.type2test(iter(range(256)))
+        self.assertEqual(len(b), 256)
+        self.assertEqual(list(b), list(range(256)))
+
+        # Iterator that doesn't have a __length_hint__.
+        b = self.type2test(i for i in range(256) if i % 2)
+        self.assertEqual(len(b), 128)
+        self.assertEqual(list(b), list(range(256))[1::2])
+
+        # Sequence without __iter__.
+        class S:
+            def __getitem__(self, i):
+                return (1, 2, 3)[i]
+        b = self.type2test(S())
+        self.assertEqual(b, b"\x01\x02\x03")
+
+    def test_from_tuple(self):
+        # There is a special case for tuples.
+        b = self.type2test(tuple(range(256)))
+        self.assertEqual(len(b), 256)
+        self.assertEqual(list(b), list(range(256)))
+        b = self.type2test((1, 2, 3))
+        self.assertEqual(b, b"\x01\x02\x03")
+
+    def test_from_list(self):
+        # There is a special case for lists.
+        b = self.type2test(list(range(256)))
+        self.assertEqual(len(b), 256)
+        self.assertEqual(list(b), list(range(256)))
+        b = self.type2test([1, 2, 3])
+        self.assertEqual(b, b"\x01\x02\x03")
+
+    def test_from_mutating_list(self):
+        # Issue #34973: Crash in bytes constructor with mutating list.
+        class X:
+            def __index__(self):
+                a.clear()
+                return 42
+        a = [X(), X()]
+        # self.assertEqual(bytes(a), b'*') # skulpt handling of mutating list reducing in size
+
+        class Y:
+            def __index__(self):
+                if len(a) < 1000:
+                    a.append(self)
+                return 42
+        a = [Y()]
+        self.assertEqual(bytes(a), b'*' * 1000)  # should not crash
+
+    def test_from_index(self):
+        b = self.type2test([Indexable(), Indexable(1), Indexable(254),
+                            Indexable(255)])
+        self.assertEqual(list(b), [0, 1, 254, 255])
+        self.assertRaises(ValueError, self.type2test, [Indexable(-1)])
+        self.assertRaises(ValueError, self.type2test, [Indexable(256)])
+
+    # def test_from_buffer(self):
+    #     a = self.type2test(array.array('B', [1, 2, 3]))
+    #     self.assertEqual(a, b"\x01\x02\x03")
+    #     a = self.type2test(b"\x01\x02\x03")
+    #     self.assertEqual(a, b"\x01\x02\x03")
+
+    #     # Issues #29159 and #34974.
+    #     # Fallback when __index__ raises a TypeError
+    #     class B(bytes):
+    #         def __index__(self):
+    #             raise TypeError
+
+    #     self.assertEqual(self.type2test(B(b"foobar")), b"foobar")
+
+    def test_from_ssize(self):
+        self.assertEqual(self.type2test(0), b'')
+        self.assertEqual(self.type2test(1), b'\x00')
+        self.assertEqual(self.type2test(5), b'\x00\x00\x00\x00\x00')
+        self.assertRaises(ValueError, self.type2test, -1)
+
+        self.assertEqual(self.type2test('0', 'ascii'), b'0')
+        self.assertEqual(self.type2test(b'0'), b'0')
+        self.assertRaises(OverflowError, self.type2test, sys.maxsize + 1)
+
     def test_constructor_type_errors(self):
         self.assertRaises(TypeError, self.type2test, 0.0)
         class C:

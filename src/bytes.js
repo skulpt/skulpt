@@ -162,10 +162,10 @@ function newBytesFromPy(pySource, encoding, errors) {
     } else if (Sk.builtin.checkIterable(pySource)) {
         source = [];
         const r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
-            if (!Sk.builtin.checkInt(byte)) {
+            if (!Sk.misceval.isIndex(byte)) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(byte) + "' object cannot be interpreted as an integer");
             };
-            const n = Sk.builtin.asnum$(byte);
+            const n = Sk.misceval.asIndex(byte);
             if (n < 0 || n > 255) {
                 throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
             }
