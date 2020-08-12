@@ -198,7 +198,11 @@ function makehexform(num) {
 };
 
 Sk.builtin.bytes.prototype.$jsstr = function () {
-    return Decoder.decode(this.v);
+    let ret = "";
+    for (let i = 0; i <= this.v.byteLength; i++) {
+        ret += String.fromCharCode(this.v[i]);
+    }
+    return ret;
 };
 
 Sk.builtin.bytes.prototype["$r"] = function () {
@@ -298,7 +302,7 @@ function slotCompareUint8(f) {
         if (!(other instanceof Sk.builtin.bytes)) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return f(this.v, other.v);
+        return f(this.$jsstr(), other.$jsstr());
     };
 }
 Sk.builtin.bytes.prototype.ob$lt = slotCompareUint8((v, w) => new Sk.builtin.bool(v < w));
