@@ -59,7 +59,18 @@ Sk.builtin.bytes = function (source, encoding, errors) {
         Sk.asserts.assert(source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
         this.v = Uint8ArrayFromArray(source);
     } else if (typeof source === "string") {
-        this.v = Encoder.encode(source);
+        // fast path must be binary string https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
+        // i.e. the reverse of this.$jsstr();
+        let cc;
+        const arr = [];
+        for (let i in source) {
+            cc = source.charCodeAt(i);
+            if (cc > 0xff) {
+                throw new Sk.builtin.UnicodeDecodeError("invalid string (possibly contains a unicode character)");
+            }
+            arr.push(cc);
+        }
+        this.v = Uint8ArrayFromArray(arr);
     } else if (typeof source === "number") {
         this.v = new Uint8Array(source);
     } else {
@@ -76,6 +87,8 @@ Sk.builtin.bytes = function (source, encoding, errors) {
 Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
 
 Sk.builtin.bytes.prototype.__class__ = Sk.builtin.bytes;
+
+Sk.builtin.bytes.prototype.sk$builtinBase = Sk.builtin.bytes;
 
 function strEncode(pyStr, encoding, errors) {
     const source = pyStr.$jsstr();
@@ -202,13 +215,16 @@ function makehexform(num) {
 };
 
 Sk.builtin.bytes.prototype.$jsstr = function () {
-    // returns binary string - not bidirectional for non ascii characters - use with caution
-    // i.e. new Sk.builtin.bytes(x.$jsstr()).v  may be different to x.v;
+    // returns binary string - https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
     let ret = "";
     for (let i = 0; i < this.v.byteLength; i++) {
         ret += String.fromCharCode(this.v[i]);
     }
     return ret;
+};
+
+Sk.builtin.bytes.prototype.tp$hash = function () {
+    return Sk.builtin.hash(new Sk.builtin.str(this.$jsstr()));
 };
 
 Sk.builtin.bytes.prototype["$r"] = function () {
@@ -398,6 +414,8 @@ Sk.builtin.bytes.prototype.sq$contains = function (item) {
 
     return false;
 };
+
+Sk.builtin.bytes.prototype.nb$remainder = Sk.builtin.str.prototype.nb$remainder;
 
 Sk.builtin.bytes.$decode = function (self, encoding, errors) {
     var i;
@@ -1725,6 +1743,5 @@ Sk.builtin.bytes_iter_.prototype.next$ = function (self) {
     }
     return ret;
 };
-
 
 Sk.exportSymbol("Sk.builtin.bytes", Sk.builtin.bytes);
