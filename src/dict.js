@@ -16,12 +16,21 @@ Sk.builtin.dict = function dict (L) {
     }
 
     this.size = 0;
-    // entries will preserve insertion order of the key value pairs
     this.entries = {};
-    // buckets will keep track of non string hashes and collisions;
-    // each base_hash will be of the form #_123: [{lhs: key, rhs: value}, undefined, {lhs: key, rhs: value}];
-    // undefined will be the result of a deleted item
+    // entries will preserve insertion order of the key value pairs
+    // python {'a': None, 1: None, 34: None}
+    // skulpt {  '_a' : {lhs: str('a'), rhs: None}, // str keys won't clash so use _ + jsstr
+    //         '#0_1' : {lhs: int(1)  , rhs: None}, // zeroth entry with hash value = 1
+    //         '#0_34': {lhs: int(34) , rhs: None}  // zeroth entry with hash value = 34
+    //        }
+
     this.buckets = {};
+    // buckets keep track of items where the key is not a str (primarily used for hash collisions);
+    // each item in the bucket will be of the form 
+    // #_123: bucket // where bucket is a list of items
+    // #_123: [{lhs: 123, rhs: value}, undefined, {lhs: 123.0, rhs: value}];
+    // #_123 means these keys all have the same hash value = 123.
+    // undefined - the result of deleting an item with hash value = 123
 
     if (Array.isArray(L)) {
         // Handle dictionary literals
@@ -79,11 +88,12 @@ function kf(key) {
     if (key.$savedKeyHash_) {
         return key.$savedKeyHash_;
     }
-    if (Sk.builtin.checkString(key)) {
+    if (key.ob$type === Sk.builtin.str) {
         key_hash = "_" + key.$jsstr();
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     } else if (typeof key === "string") {
+        // temporary while sysModules allows javascript strings as keys - remove this if/when that changes
         return "_" + key;
     }
     key_hash = "#_" + Sk.builtin.hash(key).v;
@@ -101,19 +111,20 @@ Sk.builtin.dict.prototype.sk$asarray = function () {
 };
 
 Sk.builtin.dict.prototype.get$item_from_bucket = function (key, base_hash) {
+    // base_hash of the form #_hashNumber e.g. #_2
     const bucket = this.buckets[base_hash];
     let stored_key, item;
     if (bucket === undefined) {
         return;
     }
-    for (let i=0; i<bucket.length; i++) {
+    for (let i = 0; i < bucket.length; i++) {
         item = bucket[i];
         if (item === undefined) {
             continue;
         }
         stored_key = item.lhs;
         if (stored_key === key || Sk.misceval.richCompareBool(key, stored_key, "Eq")) {
-            return this.entries["#" + i + base_hash.slice(1,)];
+            return item;
         }
     }
     return;
@@ -160,10 +171,10 @@ Sk.builtin.dict.prototype.sq$contains = function (ob) {
 Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     const hash = kf(key);
     if (hash[0] === "_") {
-        // we have a string so pass it to the dictionary 
+        // we have a string so pass it to the dictionary
         if (this.entries[hash] === undefined) {
             this.size += 1;
-            this.entries[hash] = {lhs: key};
+            this.entries[hash] = { lhs: key };
         }
         this.entries[hash].rhs = w;
         return;
@@ -179,20 +190,24 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
 };
 
 Sk.builtin.dict.prototype.insert$item_from_bucket = function (key, value, base_hash) {
-    let key_hash, bucket = this.buckets[base_hash];
-    const item = {lhs: key, rhs: value};
+    // put a key, value pair in bucket and entries
+    // base_hash of the form #_hashValue e.g. #_923
+    let key_hash,
+        bucket = this.buckets[base_hash];
+    const item = { lhs: key, rhs: value };
     if (bucket === undefined) {
         bucket = this.buckets[base_hash] = [];
-        key_hash = "#" + 0 + base_hash.slice(1,);
+        key_hash = "#" + 0 + base_hash.slice(1); // this is the zeroth entry
         bucket.push(item);
     } else {
         // we might have a freeslot from deleting an item
-        const free_slot = bucket.indexOf(undefined);
-        if (free_slot !== -1) {
-            key_hash = "#" + free_slot + base_hash.slice(1,);
-            bucket[free_slot] = item;
+        // so either insert into freeslot or push
+        const free_slot_idx = bucket.indexOf(undefined);
+        if (free_slot_idx !== -1) {
+            key_hash = "#" + free_slot_idx + base_hash.slice(1);
+            bucket[free_slot_idx] = item;
         } else {
-            key_hash = "#" + bucket.length + base_hash.slice(1,);
+            key_hash = "#" + bucket.length + base_hash.slice(1);
             bucket.push(item);
         }
     }
@@ -203,22 +218,24 @@ Sk.builtin.dict.prototype.insert$item_from_bucket = function (key, value, base_h
 
 
 
-Sk.builtin.dict.prototype.pop$item_from_bucket = function(key, base_hash) {
+Sk.builtin.dict.prototype.pop$item_from_bucket = function (key, base_hash) {
+    // pop a key, value pair and remove reference in buckets and entries
+    // base_hash of the form #_hashValue e.g. #_923
     const bucket = this.buckets[base_hash];
     let stored_key, item;
     if (bucket === undefined) {
         return undefined;
     }
-    for (let i=0; i<bucket.length; i++) {
+    for (let i = 0; i < bucket.length; i++) {
         item = bucket[i];
         if (item === undefined) {
             continue;
         }
         stored_key = item.lhs;
         if (stored_key === key || Sk.misceval.richCompareBool(key, stored_key, "Eq")) {
-            const key_hash = "#" + i + base_hash.slice(1,); 
+            const key_hash = "#" + i + base_hash.slice(1);
             delete this.entries[key_hash];
-            bucket[i] = undefined;
+            bucket[i] = undefined; // undefined signals this slot is free for use in the event of reinsertion/collision
             return item;
         }
     }
