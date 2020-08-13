@@ -301,7 +301,16 @@ var $builtinmodule = function (name) {
             return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
         }
 
-        mod.OrderedDict.prototype.mp$ass_subscript = function(key, w)
+        mod.OrderedDict.prototype.mp$ass_subscript = function (key, value) {
+            if (value == undefined) {
+                this.del$subscript(key);
+            } else {
+                this.ass$subscritp(key, value);
+            }
+            return Sk.builtin.none.none$;
+        }
+
+        mod.OrderedDict.prototype.ass$subscript = function(key, w)
         {
             var idx = this.orderedkeys.indexOf(key);
             if (idx == -1)
@@ -312,7 +321,7 @@ var $builtinmodule = function (name) {
             return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
         }
 
-        mod.OrderedDict.prototype.mp$del_subscript = function(key)
+        mod.OrderedDict.prototype.del$subscript = function(key)
         {
             var idx = this.orderedkeys.indexOf(key);
             if (idx != -1)
@@ -320,7 +329,7 @@ var $builtinmodule = function (name) {
                 this.orderedkeys.splice(idx, 1);
             }
 
-            return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
+            return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key);
         }
 
         mod.OrderedDict.prototype.__iter__ = new Sk.builtin.func(function (self) {
@@ -672,6 +681,12 @@ var $builtinmodule = function (name) {
         });
 
         mod.deque.prototype['__delitem__'] = new Sk.builtin.func(function (self, idx) {
+            Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length -1, 1, 1);
+            return this.mp$ass_subscript(self, idx);
+        });    
+        
+        // del deque[index]
+        mod.deque.prototype.del$subscript = function(idx){
             var size = (self.tail - self.head) & self.mask;
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
@@ -695,11 +710,6 @@ var $builtinmodule = function (name) {
             if (size < self.mask >>> 1)
                 self.$resize(size, self.v.length >>> 1);
             return Sk.builtin.none.none$;
-        });    
-        
-        // del deque[index]
-        mod.deque.prototype.mp$del_subscript = function(idx){
-            mod.deque.prototype['__delitem__'].func_code(this, idx);
         }
         
         mod.deque.prototype['count'] = new Sk.builtin.func(function (self, x) { 
@@ -764,6 +774,15 @@ var $builtinmodule = function (name) {
         
          // set value via deque[index] = val
         mod.deque.prototype['mp$ass_subscript'] = function (idx, val) {
+            if (val === undefined) {
+                this.del$subscript(idx);
+            } else {
+                this.ass$subscript(idx, val);
+            }
+            return Sk.builtin.noen.none$;
+        }
+
+        mod.deque.prototype.ass$subscript = function (idx, val) {
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
                 throw new Sk.builtin.TypeError("sequence index must be integer, not '"+Sk.abstr.typeName(idx)+"'");

@@ -569,28 +569,10 @@ Sk.abstr.objectPositive = function (obj) {
 };
 
 Sk.abstr.objectDelItem = function (o, key) {
-    var otypename;
-    var keytypename;
-    var keyValue;
-    if (o !== null) {
-        if (o.mp$del_subscript) {
-            o.mp$del_subscript(key);
-            return;
-        }
-        if (o.sq$ass_item) {
-            keyValue = Sk.misceval.asIndex(key);
-            if (keyValue === undefined) {
-                keytypename = Sk.abstr.typeName(key);
-                throw new Sk.builtin.TypeError("sequence index must be integer, not '" + keytypename + "'");
-            }
-            Sk.abstr.sequenceDelItem(o, keyValue);
-            return;
-        }
-        // if o is a slice do something else...
+    if (o.mp$ass_subscript) {
+        return o.mp$ass_subscript(key);
     }
-
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
 };
 Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 

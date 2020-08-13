@@ -157,7 +157,17 @@ Sk.builtin.dict.prototype.sq$contains = function (ob) {
     return (res !== undefined);
 };
 
-Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
+Sk.builtin.dict.prototype.mp$ass_subscript = function (key, value) {
+    if (value === undefined) {
+        this.del$item(key);
+    } else {
+        this.set$item(key, value);
+    }
+    return Sk.builtin.none.none$;
+};
+
+
+Sk.builtin.dict.prototype.set$item = function (key, w) {
     const hash = kf(key);
     if (hash[0] === "_") {
         // we have a string so pass it to the dictionary 
@@ -225,8 +235,7 @@ Sk.builtin.dict.prototype.pop$item_from_bucket = function(key, base_hash) {
     return;
 };
 
-Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
-    Sk.builtin.pyCheckArgsLen("del", arguments.length, 1, 1, false, false);
+Sk.builtin.dict.prototype.del$item = function (key) {
     const hash = kf(key);
     let item, s, bucket;
     if (hash[0] === "_") {
@@ -615,7 +624,7 @@ Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, o
 
 Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length, 1, 1, false, true);
-    return Sk.builtin.dict.prototype.mp$del_subscript.call(self, item);
+    return Sk.builtin.dict.prototype.del$item.call(self, item);
 });
 
 Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, item) {

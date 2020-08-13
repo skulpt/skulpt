@@ -428,9 +428,7 @@ Sk.builtin.set.prototype["pop"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.set.prototype["remove"] = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgsLen("remove", arguments.length, 2, 2);
-
-    self.v.mp$del_subscript(item);
-    return Sk.builtin.none.none$;
+    return self.v.mp$ass_subscript(item);
 });
 
 Sk.builtin.set.prototype.__contains__ = new Sk.builtin.func(function(self, item) {

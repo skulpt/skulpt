@@ -61,47 +61,6 @@ Sk.builtin.list.prototype.list_extend_ = function (other) {
     return this;
 };
 
-Sk.builtin.list.prototype.list_del_item_ = function (i) {
-    i = Sk.builtin.asnum$(i);
-    if (i < 0 || i >= this.v.length) {
-        throw new Sk.builtin.IndexError("list assignment index out of range");
-    }
-    this.list_del_slice_(i, i + 1);
-};
-
-Sk.builtin.list.prototype.list_del_slice_ = function (ilow, ihigh) {
-    var args;
-    ilow = Sk.builtin.asnum$(ilow);
-    ihigh = Sk.builtin.asnum$(ihigh);
-    args = [];
-    args.unshift(ihigh - ilow);
-    args.unshift(ilow);
-    this.v.splice.apply(this.v, args);
-};
-
-Sk.builtin.list.prototype.list_ass_item_ = function (i, v) {
-    i = Sk.builtin.asnum$(i);
-    if (i < 0 || i >= this.v.length) {
-        throw new Sk.builtin.IndexError("list assignment index out of range");
-    }
-    this.v[i] = v;
-};
-
-Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
-    var args;
-    ilow = Sk.builtin.asnum$(ilow);
-    ihigh = Sk.builtin.asnum$(ihigh);
-
-    if (Sk.builtin.checkIterable(v)) {
-        args = new Sk.builtin.list(v, false).v.slice(0);
-    } else {
-        throw new Sk.builtin.TypeError("can only assign an iterable");
-    }
-    args.unshift(ihigh - ilow);
-    args.unshift(ilow);
-    this.v.splice.apply(this.v, args);
-};
-
 Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
@@ -276,7 +235,7 @@ Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
  */
 
-Sk.builtin.list.prototype.list_subscript_ = function (index) {
+Sk.builtin.list.prototype.mp$subscript = function (index) {
     var ret;
     var i;
     if (Sk.misceval.isIndex(index)) {
@@ -304,13 +263,27 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
-    var i;
-    var j;
-    var tosub;
-    var indices;
+Sk.builtin.list.prototype.mp$ass_subscript = function(index, value) {
+    if (value === undefined) {
+        this.del$subscript(index);
+    } else {
+        this.ass$subscript(index, value);
+    }
+    return Sk.builtin.none.none$;
+};
+
+/**
+ * @function
+ * @param {Sk.builtin.object} index
+ * @param {Sk.builtin.object} value
+ *
+ * @description
+ * called by mp$ass_subscript when assigning a value rather than deleting
+ *
+ */
+Sk.builtin.list.prototype.ass$subscript = function (index, value) {
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (typeof i !== "number") {
             throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
         }
@@ -318,81 +291,125 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
             if (i < 0) {
                 i = this.v.length + i;
             }
-            this.list_ass_item_(i, value);
+            this.ass$item(i, value);
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        const indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
-            this.list_ass_slice_(indices[0], indices[1], value);
+            this.ass$slice(indices[0], indices[1], value);
         } else {
-            tosub = [];
-            index.sssiter$(this, function (i, wrt) {
+            const tosub = [];
+            index.sssiter$(this.v.length, (i) => {
                 tosub.push(i);
             });
-            j = 0;
+            let j = 0;
             if (tosub.length !== value.v.length) {
                 throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
             }
-            for (i = 0; i < tosub.length; ++i) {
+            for (let i = 0; i < tosub.length; ++i) {
                 this.v.splice(tosub[i], 1, value.v[j]);
                 j += 1;
             }
         }
         return;
     }
-
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
-    var offdir;
-    var dec;
-    var self;
-    var indices;
-    var i;
+/**
+ * @function
+ * @param {Sk.builtin.object} index
+ *
+ * @description
+ * called by mp$ass_subscript when deleting an index/slice
+ *
+ */
+Sk.builtin.list.prototype.del$subscript = function (index) {
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
             }
-            this.list_del_item_(i);
+            this.del$item(i);
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        const indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
-            this.list_del_slice_(indices[0], indices[1]);
+            this.del$slice(indices[0], indices[1]);
         } else {
-            self = this;
-            dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-            offdir = indices[2] > 0 ? 1 : 0;
-            index.sssiter$(this, function (i, wrt) {
-                self.v.splice(i - dec, 1);
+            const lst = this.v;
+            let dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
+            const offdir = indices[2] > 0 ? 1 : 0;
+            index.sssiter$(lst.length, (i) => {
+                lst.splice(i - dec, 1);
                 dec += offdir;
             });
         }
         return;
     }
-
-    throw new Sk.builtin.TypeError("list indices must be integers, not " + typeof index);
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
-Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_subscript_;
-Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.list_del_subscript_;
+Sk.builtin.list.prototype.del$item = function (i) {
+    i = Sk.builtin.asnum$(i);
+    if (i < 0 || i >= this.v.length) {
+        throw new Sk.builtin.IndexError("list assignment index out of range");
+    }
+    this.del$slice(i, i + 1);
+};
+
+Sk.builtin.list.prototype.del$slice = function (ilow, ihigh) {
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
+    const args = [];
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
+Sk.builtin.list.prototype.ass$item = function (i, v) {
+    i = Sk.builtin.asnum$(i);
+    if (i < 0 || i >= this.v.length) {
+        throw new Sk.builtin.IndexError("list assignment index out of range");
+    }
+    this.v[i] = v;
+};
+
+Sk.builtin.list.prototype.ass$slice = function (ilow, ihigh, v) {
+    const args = [];
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
+
+    if (Sk.builtin.checkIterable(v)) {
+        const iter = Sk.abstr.iter(v);
+        for (let i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+            args.push(i);
+        }
+    } else {
+        throw new Sk.builtin.TypeError("can only assign an iterable");
+    }
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
 
 Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.list.prototype.list_subscript_.call(self, index);
+    Sk.builtin.pyCheckArgsLen("__getitem__", arguments.length - 1, 1, 1);
+    return self.mp$subscript(index);
 });
 
 Sk.builtin.list.prototype.__setitem__ = new Sk.builtin.func(function (self, index, val) {
-    return Sk.builtin.list.prototype.list_ass_subscript_.call(self, index, val);
+    Sk.builtin.pyCheckArgsLen("__setitem__", arguments.length - 1, 2, 2);
+    return self.mp$ass_subscript(index, val);
 });
 
 Sk.builtin.list.prototype.__delitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.list.prototype.list_del_subscript_.call(self, index);
+    Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length - 1, 1, 1);
+    return self.mp$ass_subscript(index);
 });
 
 /**
