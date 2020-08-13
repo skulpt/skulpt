@@ -22,7 +22,7 @@ var $builtinmodule = function (name) {
     var mouseClass;
     var vectorClass
 
-    var mod = {};
+    var mod = {__name__: new Sk.builtin.str("processing")};
     var imList = [];
     var looping = true;
     var instance = null;

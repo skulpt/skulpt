@@ -1,6 +1,6 @@
 var $builtinmodule = function(name)
 {
-  var mod = {};
+  var mod = {__name__: new Sk.builtin.str("webgl")};
 
   var makeFailHTML = function(msg) {
     return '' +
