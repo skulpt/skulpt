@@ -278,17 +278,6 @@ Sk.abstr.numberUnaryOp = function (v, op) {
 };
 Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
-//
-// Sequence
-//
-
-Sk.abstr.fixSeqIndex_ = function (seq, i) {
-    i = Sk.builtin.asnum$(i);
-    if (i < 0 && seq.sq$length) {
-        i += seq.sq$length();
-    }
-    return i;
-};
 
 /**
  * @param {*} seq
@@ -385,35 +374,15 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
 };
 
 Sk.abstr.sequenceGetItem = function (seq, i, canSuspend) {
-    var seqtypename;
-    if (seq.mp$subscript) {
-        return seq.mp$subscript(i);
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
+    return Sk.abstr.objectGetItem(seq, i, canSuspend);
 };
 
 Sk.abstr.sequenceSetItem = function (seq, i, x, canSuspend) {
-    var seqtypename;
-    if (seq.mp$ass_subscript) {
-        return seq.mp$ass_subscript(i, x);
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
+    return Sk.abstr.objectSetItem(seq, i, x, canSuspend);
 };
 
 Sk.abstr.sequenceDelItem = function (seq, i) {
-    var seqtypename;
-    if (seq.sq$del_item) {
-        i = Sk.abstr.fixSeqIndex_(seq, i);
-        seq.sq$del_item(i);
-        return;
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item deletion");
+    return Sk.abstr.objectDelItem(seq, i);
 };
 
 Sk.abstr.sequenceRepeat = function (f, seq, n) {
@@ -429,44 +398,15 @@ Sk.abstr.sequenceRepeat = function (f, seq, n) {
 };
 
 Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
-    var seqtypename;
-    if (seq.sq$slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        return seq.sq$slice(i1, i2);
-    } else if (seq.mp$subscript) {
-        return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsliceable");
+    return Sk.abstr.objectGetItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
 Sk.abstr.sequenceDelSlice = function (seq, i1, i2) {
-    var seqtypename;
-    if (seq.sq$del_slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        seq.sq$del_slice(i1, i2);
-        return;
-    }
-
-    seqtypename = Sk.abstr.typeName(seq);
-    throw new Sk.builtin.TypeError("'" + seqtypename + "' doesn't support slice deletion");
+    return Sk.abstr.objectDetItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
 Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
-    var seqtypename;
-    if (seq.sq$ass_slice) {
-        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        seq.sq$ass_slice(i1, i2, x);
-    } else if (seq.mp$ass_subscript) {
-        seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
-    } else {
-        seqtypename = Sk.abstr.typeName(seq);
-        throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
-    }
+    return Sk.abstr.objectSetItem(seq, new Sk.builtin.slice(i1, i2), x);
 };
 
 // seq - Python object to unpack
@@ -577,7 +517,6 @@ Sk.abstr.objectDelItem = function (o, key) {
 Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
-    var otypename;
     if (o !== null) {
         if (o.tp$getitem) {
             return o.tp$getitem(key, canSuspend);
@@ -588,13 +527,11 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
         }
     }
 
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support indexing");
 };
 Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
-    var otypename;
     if (o !== null) {
         if (o.tp$setitem) {
             return o.tp$setitem(key, v, canSuspend);
@@ -605,8 +542,7 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
         }
     }
 
-    otypename = Sk.abstr.typeName(o);
-    throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support item assignment");
 };
 Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
