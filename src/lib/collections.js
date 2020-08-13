@@ -305,7 +305,7 @@ var $builtinmodule = function (name) {
             if (value == undefined) {
                 this.del$subscript(key);
             } else {
-                this.ass$subscritp(key, value);
+                this.ass$subscript(key, value);
             }
             return Sk.builtin.none.none$;
         }
@@ -682,12 +682,12 @@ var $builtinmodule = function (name) {
 
         mod.deque.prototype['__delitem__'] = new Sk.builtin.func(function (self, idx) {
             Sk.builtin.pyCheckArgsLen("__delitem__", arguments.length -1, 1, 1);
-            return this.mp$ass_subscript(self, idx);
+            return self.mp$ass_subscript(idx);
         });    
         
         // del deque[index]
         mod.deque.prototype.del$subscript = function(idx){
-            var size = (self.tail - self.head) & self.mask;
+            var size = (this.tail - this.head) & this.mask;
             index = Sk.builtin.asnum$(idx);
             if(!Number.isInteger(index)){
                 throw new Sk.builtin.TypeError("'"+Sk.abstr.typeName(idx)+"' object cannot be interpreted as an integer");
@@ -697,18 +697,18 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.IndexError('deque index out of range');
             }
 
-            const pos = ((index >= 0 ? self.head : self.tail) + index) & self.mask;
+            const pos = ((index >= 0 ? this.head : this.tail) + index) & this.mask;
             var cur = pos;
             // Shift items backward 1 to erase position.
-            while (cur !== self.tail) {
-                const next = (cur + 1) & self.mask;
-                self.v[cur] = self.v[next];
+            while (cur !== this.tail) {
+                const next = (cur + 1) & this.mask;
+                this.v[cur] = this.v[next];
                 cur = next;
             }
             // Decrease tail position by 1.
-            self.tail = (self.tail - 1) & self.mask;
-            if (size < self.mask >>> 1)
-                self.$resize(size, self.v.length >>> 1);
+            this.tail = (this.tail - 1) & this.mask;
+            if (size < this.mask >>> 1)
+                this.$resize(size, this.v.length >>> 1);
             return Sk.builtin.none.none$;
         }
         
@@ -779,7 +779,7 @@ var $builtinmodule = function (name) {
             } else {
                 this.ass$subscript(idx, val);
             }
-            return Sk.builtin.noen.none$;
+            return Sk.builtin.none.none$;
         }
 
         mod.deque.prototype.ass$subscript = function (idx, val) {
