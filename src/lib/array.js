@@ -152,9 +152,10 @@ $builtinmodule = function (name) {
         });
     };
 
+    mod.__name__ = new Sk.builtin.str('array');
+
     mod.array = Sk.misceval.buildClass(mod, array, "array", []);
 
-    mod.__name__ = new Sk.builtin.str('array');
 
     return mod;
 };

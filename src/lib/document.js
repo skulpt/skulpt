@@ -1,6 +1,6 @@
 var $builtinmodule = function (name) {
     var elementClass;
-    var mod = {};
+    var mod = {__name__: new Sk.builtin.str("document")};
 
     mod.getElementById = new Sk.builtin.func(function (id) {
         var result = document.getElementById(id.v);

@@ -10,7 +10,7 @@ $builtinmodule = function (name) {
     var screen;
     var pixel;
     var eImage;
-    var mod = {};
+    var mod = {__name__: new Sk.builtin.str("image")};
     var updateCanvasAndSuspend;
     var initializeImage;
     var checkPixelRange;
