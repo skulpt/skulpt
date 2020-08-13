@@ -1,5 +1,7 @@
 """ Unit testing for frozensets (2)"""
 import unittest
+from random import randrange, shuffle
+
 
 s = frozenset(range(9))
 s1 = frozenset(range(5))
@@ -181,6 +183,44 @@ class FrozenSetTests(unittest.TestCase):
         self.assertRaises(TypeError, lambda: a | c)
         self.assertRaises(TypeError, lambda: a ^ c)
         self.assertRaises(TypeError, lambda: a - c)
+
+
+    thetype = frozenset
+    def test_hash(self):
+        self.assertEqual(hash(self.thetype('abcdeb')),
+                         hash(self.thetype('ebecda')))
+
+        # make sure that all permutations give the same hash value
+        n = 100
+        seq = [randrange(n) for i in range(n)]
+        results = set()
+        for i in range(200):
+            shuffle(seq)
+            results.add(hash(self.thetype(seq)))
+        self.assertEqual(len(results), 1)
+
+    def test_frozen_as_dictkey(self):
+        seq = list(range(10)) + list('abcdefg') + ['apple']
+        key1 = self.thetype(seq)
+        key2 = self.thetype(reversed(seq))
+        self.assertEqual(key1, key2)
+        self.assertNotEqual(id(key1), id(key2))
+        d = {}
+        d[key1] = 42
+        self.assertEqual(d[key2], 42)
+
+    def test_hash_caching(self):
+        f = self.thetype('abcdcda')
+        self.assertEqual(hash(f), hash(f))
+
+    def test_hash_effectiveness(self):
+        n = 13
+        hashvalues = set()
+        addhashvalue = hashvalues.add
+        elemmasks = [(i+1, 1<<i) for i in range(n)]
+        for i in range(2**n):
+            addhashvalue(hash(frozenset([e for e, m in elemmasks if m&i])))
+        self.assertEqual(len(hashvalues), 2**n)
    
 
 if __name__ == '__main__':
