@@ -61,6 +61,9 @@ Sk.builtin.frozenset.prototype["$r"] = function () {
     }
 };
 
+Sk.builtin.frozenset.prototype.sk$asarray = function () {
+    return this.v.sk$asarray();
+};
 Sk.builtin.frozenset.prototype.ob$eq = function (other) {
 
     if (this === other) {
