@@ -16,7 +16,7 @@ Sk.builtin.dict = function dict (L) {
     }
 
     this.size = 0;
-    this.entries = {};
+    this.entries = Object.create(null); // avoid clashes with Object.prototype
     // entries will preserve insertion order of the key value pairs
     // python {'a': None, 1: None, 34: None}
     // skulpt {  '_a' : {lhs: str('a'), rhs: None}, // str keys won't clash so use _ + jsstr
@@ -24,7 +24,7 @@ Sk.builtin.dict = function dict (L) {
     //         '#0_34': {lhs: int(34) , rhs: None}  // zeroth entry with hash value = 34
     //        }
 
-    this.buckets = {};
+    this.buckets = Object.create(null);
     // buckets keep track of items where the key is not a str (primarily used for hash collisions);
     // each item in the bucket will be of the form 
     // #_123: bucket // where bucket is a list of items
@@ -174,9 +174,10 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         // we have a string so pass it to the dictionary
         if (this.entries[hash] === undefined) {
             this.size += 1;
-            this.entries[hash] = { lhs: key };
+            this.entries[hash] = { lhs: key, rhs: w }; // pre-initialize
+        } else {
+            this.entries[hash].rhs = w;
         }
-        this.entries[hash].rhs = w;
         return;
     }
     let item = this.get$item_from_bucket(key, hash);
@@ -525,8 +526,8 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.protot
 
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgsLen("clear()", arguments.length, 0, 0, false, true);
-    self.entries = {};
-    self.buckets = {};
+    self.entries = Object.create(null);
+    self.buckets = Object.create(null);
     self.size = 0;
 });
 
