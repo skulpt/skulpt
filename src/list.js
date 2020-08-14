@@ -25,10 +25,8 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
             Sk.abstr.checkNoKwargs("list", kwargs);
             Sk.abstr.checkArgsLen("list", args, 0, 1);
-            const self = this;
-            let L = Sk.misceval.arrayFromIterable(args[0], true);
-            return Sk.misceval.chain(L, (l) => {
-                self.v = l;
+            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(args[0], true), (L) => {
+                this.v = L;
                 return Sk.builtin.none.none$;
             });
         },

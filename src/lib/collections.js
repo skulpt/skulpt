@@ -5,10 +5,10 @@ const collections_mod = function (keywds) {
     const _copy_dd_method_df = {
         $meth: function () {
             const L = [];
-            const self = this;
-            Sk.misceval.iterFor(Sk.abstr.iter(self), function (k) {
+            // this won't suspend
+            Sk.misceval.iterFor(Sk.abstr.iter(this), (k) => {
                 L.push(k);
-                L.push(self.mp$subscript(k));
+                L.push(this.mp$subscript(k));
             });
             return new collections.defaultdict(this.default_factory, L);
         },

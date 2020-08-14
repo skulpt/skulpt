@@ -65,10 +65,9 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
         }
         if (canSuspend) {
             ret = Sk.misceval.callsimOrSuspendArray(this.$callable, []);
-            const self = this;
-            return Sk.misceval.chain(ret, function (r) {
+            return Sk.misceval.chain(ret, (r) => {
                 if (Sk.misceval.richCompareBool(r, self.$sentinel, "Eq", true)) {
-                    self.$flag = true;
+                    this.$flag = true;
                     return undefined;
                 } else {
                     return r;

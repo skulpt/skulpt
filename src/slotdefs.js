@@ -392,15 +392,14 @@ slots.__getattribute__ = {
                 return slotFuncGetAttribute.call(this, pyName, canSuspend);
             }
             const getattributeFn = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$getattribute);
-            const self = this;
 
             let r = Sk.misceval.chain(
                 Sk.misceval.tryCatch(
                     () => {
                         if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
-                            return getattributeFn.d$wrapped.call(self, pyName, canSuspend);
+                            return getattributeFn.d$wrapped.call(this, pyName, canSuspend);
                         } else {
-                            return Sk.misceval.callsimOrSuspendArray(getattributeFn, [self, pyName]);
+                            return Sk.misceval.callsimOrSuspendArray(getattributeFn, [this, pyName]);
                         }
                     },
                     function (e) {
@@ -417,7 +416,7 @@ slots.__getattribute__ = {
                             if (val !== undefined) {
                                 return val;
                             }
-                            return Sk.misceval.callsimOrSuspendArray(getattrFn, [self, pyName]);
+                            return Sk.misceval.callsimOrSuspendArray(getattrFn, [this, pyName]);
                         },
                         function (e) {
                             if (e instanceof Sk.builtin.AttributeError) {
@@ -710,28 +709,17 @@ slots.__next__ = {
     $slot_name: "tp$iternext",
     $slot_func: function (dunderFunc) {
         return function tp$iternext(canSuspend) {
-            const self = this;
-            if (canSuspend) {
-                return Sk.misceval.tryCatch(
-                    () => Sk.misceval.callsimOrSuspendArray(dunderFunc, [self]),
-                    (e) => {
-                        if (e instanceof Sk.builtin.StopIteration) {
-                            return undefined;
-                        } else {
-                            throw e;
-                        }
+            const ret = Sk.misceval.tryCatch(
+                () => Sk.misceval.callsimOrSuspendArray(dunderFunc, [this]),
+                (e) => {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        return undefined;
+                    } else {
+                        throw e;
                     }
-                );
-            }
-            try {
-                return Sk.misceval.callsimArray(dunderFunc, [this]);
-            } catch (e) {
-                if (e instanceof Sk.builtin.StopIteration) {
-                    return undefined;
-                } else {
-                    throw e;
                 }
-            }
+            );
+            return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
         };
     },
     /**
