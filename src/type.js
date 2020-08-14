@@ -612,7 +612,7 @@ Sk.builtin.type.$best_base = function (bases) {
             winner = candidate;
             base = base_i;
         } else {
-            throw new Sk.builtin.TypeError("multiple bases have instance layout conficts");
+            throw new Sk.builtin.TypeError("multiple bases have instance layout conflicts");
         }
     }
     return base;
