@@ -99,21 +99,21 @@ Sk.builtin.dict.tp$call = function(args, kw) {
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
+var reg = /^[0-9!#_]/; // avoid clashes with complex key hashes str('1') => "!1"
+
 function kf(key) {
     // str => jsstr().replace(/^[0-9!#_]/, "!$&") avoids conflicts
     // other => hash.v value from builtin.hash (javascript number)
-    var reg = /^[0-9!#_]/; // avoid clashes with complex key hashes str('1') => "!1"
-    var rep = "!$&";
     let key_hash = key.$savedKeyHash_; 
     if (key_hash !== undefined) {
         return key_hash;
     } else if (key.ob$type === Sk.builtin.str) {
-        key_hash = key.$jsstr().replace(reg, rep);
+        key_hash = key.$jsstr().replace(reg, "!$&"); 
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     } else if (typeof key === "string") {
         // temporary while sysModules allows javascript strings as keys to python dicts
-        return key.replace(reg, rep);
+        return key.replace(reg, "!$&");
     }
     key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
     key.$savedKeyHash_ = key_hash;
