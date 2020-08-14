@@ -1148,7 +1148,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
  *
  * the main benefit of this helper function is to reduce some repetitive code for defining an iterator class
  *
- * If you want a generic iterator see {@link Sk.generic.iterator}
+ * If you want a generic iterator see {@link Sk.miscival.iterator}
  *
  * 
  * @example

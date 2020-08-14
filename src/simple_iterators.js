@@ -1,48 +1,6 @@
 /**
  * 
  * @constructor
- * 
- * @param {Function} fn
- * @param {boolean=} [handlesOwnSuspensions=false] - Does it handle its own suspension?
- * 
- * @description
- * Create a generic Python iterator that repeatedly calls a given JS function
- * until it returns 'undefined'. This function is useful for user defined Native classes
- * 
- * @example
- * // some immutable tuple like class where the v property is an array
- * MyClass.prototype.tp$iter = function() {
- *   let i = 0;
- *   const len = this.v.length;
- *   const self = this;
- *   return new Sk.generic.iterator(() => i >= len ? self.v[i++] : undefined);
- * }
- * @extends {Sk.builtin.object}
- * 
- */
-Sk.generic.iterator = Sk.abstr.buildIteratorClass("iterator", {
-    constructor : function iterator (fn, handlesOwnSuspensions) {
-        this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
-            let x = fn();
-            if (canSuspend || !x.$isSuspension) {
-                return x;
-            } else {
-                return Sk.misceval.retryOptionalSuspensionOrThrow(x);
-            }
-        };
-    }, 
-    iternext: function (canSuspend) { /* keep slot __next__ happy */
-        return this.tp$iternext(canSuspend);
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
-
-
-
-
-/**
- * 
- * @constructor
  * @extends {Sk.builtin.object}
  * @param {Sk.builtin.func} callable
  * @param {Sk.builtin.object} sentinel - if reached returns undefined

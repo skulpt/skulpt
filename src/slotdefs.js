@@ -684,7 +684,7 @@ slots.__ne__ = {
  * @implements __iter__
  * @suppress {checkTypes}
  * @returns {pyObject} must have a valid `tp$iternext` slot
- * See {@link Sk.abstr.buildIteratorClass} and {@link Sk.generic.iterator}
+ * See {@link Sk.abstr.buildIteratorClass} and {@link Sk.misceval.iterator}
  */
 slots.__iter__ = {
     $name: "__iter__",
@@ -2083,7 +2083,7 @@ Sk.setupDunderMethods = function (py3) {
         Sk.builtin.dict_reverse_valueiter_,
         Sk.builtin.range_iter_,
         Sk.builtin.revereserange_iter_,
-        Sk.generic.iterator,
+        Sk.misceval.iterator,
     ];
     const classes_with_bool = [Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.float_, Sk.builtin.complex];
     const classes_with_divide = classes_with_bool;
