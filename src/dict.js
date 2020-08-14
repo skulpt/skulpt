@@ -102,16 +102,18 @@ Sk.abstr.markUnhashable(Sk.builtin.dict);
 function kf(key) {
     // str => jsstr().replace(/^[0-9!#_]/, "!$&") avoids conflicts
     // other => hash.v value from builtin.hash (javascript number)
-    let key_hash = key.$savedKeyHash_;
+    var reg = /^[0-9!#_]/; // avoid clashes with complex key hashes str('1') => "!1"
+    var rep = "!$&";
+    let key_hash = key.$savedKeyHash_; 
     if (key_hash !== undefined) {
         return key_hash;
     } else if (key.ob$type === Sk.builtin.str) {
-        key_hash = key.$jsstr().replace(/^[0-9!#_]/, "!$&");
+        key_hash = key.$jsstr().replace(reg, rep);
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     } else if (typeof key === "string") {
         // temporary while sysModules allows javascript strings as keys to python dicts
-        return key.replace(/^[0-9!#_]/, "!$&");
+        return key.replace(reg, rep);
     }
     key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
     key.$savedKeyHash_ = key_hash;
@@ -210,9 +212,8 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
         bucket = this.buckets[hash_value];
     const item = { lhs: key, rhs: value };
     if (bucket === undefined) {
-        bucket = this.buckets[hash_value] = [];
+        bucket = this.buckets[hash_value] = [item];
         key_hash = "#" + hash_value + "_" + 0; // this is the zeroth entry
-        bucket.push(item);
     } else {
         // we might have a freeslot from deleting an item
         // so either insert into freeslot or push
@@ -236,7 +237,7 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
     const bucket = this.buckets[hash_value];
     let bucket_key, item;
     if (bucket === undefined) {
-        return undefined;
+        return;
     }
     for (let i = 0; i < bucket.length; i++) {
         item = bucket[i];
@@ -251,7 +252,6 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
             return item;
         }
     }
-    return;
 };
 
 Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
