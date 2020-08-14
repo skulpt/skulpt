@@ -56,7 +56,7 @@ Sk.builtin.str = function (x) {
 
     this.$mangled = fixReserved(ret);
     // quicker set_dict for strings by preallocating the $savedKeyHash
-    this.$savedKeyHash_ = "_" + ret;
+    this.$savedKeyHash_ = undefined;
     this.v = ret;
 };
 

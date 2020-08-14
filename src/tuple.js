@@ -11,25 +11,22 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple, "bad call to tuple, use 'new' with an Array");
         this.v = L;
     },
-    slots: /**@lends {Sk.builtin.tuple.prototype}*/{
+    slots: /**@lends {Sk.builtin.tuple.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$doc:
             "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.",
         $r: function () {
-            const bits = [];
-            for (let i = 0; i < this.v.length; ++i) {
-                bits[i] = Sk.misceval.objectRepr(this.v[i]);
-            }
-            let ret = bits.join(", ");
+            let ret = this.v.map((x) => Sk.misceval.objectRepr(x));
+            ret = ret.join(", ");
             if (this.v.length === 1) {
                 ret += ",";
             }
             return new Sk.builtin.str("(" + ret + ")");
         },
         /**
-         * @param {Array} args 
-         * @param {Array=} kwargs 
+         * @param {Array} args
+         * @param {Array=} kwargs
          * @ignore
          */
         tp$new: function (args, kwargs) {
@@ -47,8 +44,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                 return arg;
             }
             // make tuples suspendible
-            let L = Sk.misceval.arrayFromIterable(arg, true);
-            return Sk.misceval.chain(L, (l) => new Sk.builtin.tuple(l));
+            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (L) => new Sk.builtin.tuple(L));
         },
         tp$hash: function () {
             // the numbers and order are taken from Cpython
@@ -111,8 +107,8 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                 throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
             }
             const ret = [];
-            for (let i = 0; i < n; ++i) {
-                for (let j = 0; j < this.v.length; ++j) {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < this.v.length; j++) {
                     ret.push(this.v[j]);
                 }
             }
@@ -137,21 +133,8 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         tp$richcompare: function (w, op) {
             // w not a tuple
             if (!(w instanceof Sk.builtin.tuple)) {
-                // shortcuts for eq/not
-                if (op === "Eq") {
-                    return false;
-                }
-                if (op === "NotEq") {
-                    return true;
-                }
-
-                if (Sk.__future__.python3) {
-                    return Sk.builtin.NotImplemented.NotImplemented$;
-                }
-                // todo; other types should have an arbitrary order
-                return false;
+                return Sk.builtin.NotImplemented.NotImplemented$;
             }
-
             w = w.v;
             const v = this.v;
             const vl = v.length;
@@ -197,7 +180,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return Sk.misceval.richCompareBool(v[i], w[i], op);
         },
     },
-    proto: /**@lends {Sk.builtin.tuple.prototype}*/{
+    proto: /**@lends {Sk.builtin.tuple.prototype}*/ {
         $subtype_new: function (args, kwargs) {
             const instance = new this.constructor();
             // pass the args but ignore the kwargs for subtyping - these might be handled by the subtypes init method
@@ -209,7 +192,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return this.v.slice(0);
         },
     },
-    methods: /**@lends {Sk.builtin.tuple.prototype}*/{
+    methods: /**@lends {Sk.builtin.tuple.prototype}*/ {
         __getnewargs__: {
             $meth: function () {
                 return new Sk.builtin.tuple(this.v.slice(0));
@@ -218,7 +201,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             $textsig: "($self, /)",
             $doc: null,
         },
-        index: /**@lends {Sk.builtin.type.prototype}*/{
+        index: /**@lends {Sk.builtin.type.prototype}*/ {
             $meth: function (item, start, stop) {
                 // TODO: currently doesn't support start and stop
                 const len = this.v.length;

@@ -22,9 +22,9 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
         this.mapping = Object.create(null); // create from null to avoid name conflicts or prototype issues
         d = d || {};
-        const d_copy = { ...d }; 
+        const d_copy = { ...d };
         // we make a shallow copy in order to ignore inherited attributes from the prototype
-        // a lot of the $ properties are enumerable so won't be copied here 
+        // a lot of the $ properties are enumerable so won't be copied here
         // also constructor is enumerable so no need to worry about that
         this.size = 0;
         for (let key in d_copy) {
@@ -40,12 +40,8 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         $r: function () {
-            const bits = [];
-            for (let k in this.mapping) {
-                bits.push("'" + k + "': " + Sk.misceval.objectRepr(this.mapping[k]));
-            }
-            const repr = "mappingproxy({" + bits.join(", ") + "}";
-            return new Sk.builtin.str(repr);
+            const ret = Object.entries(this.mapping).map((x) => "'" + x[0] + "': " + Sk.misceval.objectRepr(x[1]));
+            return new Sk.builtin.str("mappingproxy({" + ret.join(", ") + "}");
         },
         mp$subscript: function (key) {
             const res = this.mp$lookup(key);
@@ -91,5 +87,3 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         sk$acceptable_as_base_class: false,
     },
 });
-
-Sk.exportSymbol("Sk.builtin.mappingproxy", Sk.builtin.mappingproxy);
