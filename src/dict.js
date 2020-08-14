@@ -15,25 +15,38 @@ Sk.builtin.dict = function dict (L) {
         L = [];
     }
 
+    /**
+     * the internal representation is a combination of a javascript hash map (this.entries)
+     * and a series of buckets (this.buckets) to account for collisions of the skulpt/python hash function
+     * 
+     * this.entries is used as a fast path for items where the key is a python str
+     * As well as to preserve insertion order for dict.items as per python 3.6
+     */
     this.size = 0;
     this.entries = Object.create(null); // avoid clashes with Object.prototype
-    // entries is a javascript hash table
-    // entries will preserve insertion order of the key value pairs 
-    // python {'a': None, 1: None, 34: None}
-    // skulpt {   '_a': {lhs: str('a'), rhs: None}, // key is a str here
-    //          '#1_0': {lhs: int(1)  , rhs: None}, // zeroth item in dict with hash value = 1
-    //         '#34_0': {lhs: int(34) , rhs: None}} // zeroth item in dict hash value = 3
-    // the keys of the javascript hash table must be strings so as to preserve insertion order
+    /**
+     * e.g. python {'a': None, 1: None, 34: None}
+     * 
+     * skulpt {    'a': {lhs: str('a'), rhs: None}, // key is a str here so no need to use the hash value
+     *          '#1_0': {lhs: int(1)  , rhs: None}, // zeroth item in dict with hash value = 1
+     *         '#34_0': {lhs: int(34) , rhs: None}} // zeroth item in dict hash value = 3
+     * 
+     * the js keys of this.entries must be strings so as to preserve insertion order
+     */
 
     this.buckets = {};
-    // buckets keep track of items where the python key is not a str (used for hash collisions);
-    // dict item where the key is a str do not go into buckets and only exist in this.entries
-    // each item in the bucket will be of the form  hash_value: bucket e.g.
-    // 123: [{lhs: key, rhs: value}] 
-    // collisions may result in a bucket like
-    // 123: [{lhs: 123, rhs: value}, undefined, {lhs: 123.0, rhs: value}];
-    // 123 is the hash value.
-    // undefined is the result of deleting an item with hash value = 123
+    /**
+     * buckets keep track of items where the python key is not a str (used for hash collisions);
+     * dict item where the key is a str do not go into buckets and only exist in this.entries
+     * each item in this.buckets will be of the form  `hash_value: bucket` e.g.
+     * 123: [{lhs: key, rhs: value}] 
+     * collisions may result in a bucket like
+     * 123: [{lhs: 123, rhs: value}, undefined, {lhs: 123.0, rhs: value}];
+     * 
+     * 123 is the hash value from builtin.hash
+     * undefined in the bucket is the result of deleting an item with hash value = 123
+     */
+
 
     if (Array.isArray(L)) {
         // Handle dictionary literals
@@ -87,37 +100,32 @@ Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
 function kf(key) {
-    // str => "_" + jsstr()
-    // other => hash value from builtin.hash
+    // str => jsstr().replace(/^[0-9!#_]/, "!$&") avoids conflicts
+    // other => hash.v value from builtin.hash (javascript number)
     let key_hash = key.$savedKeyHash_;
     if (key_hash !== undefined) {
         return key_hash;
     } else if (key.ob$type === Sk.builtin.str) {
-        key_hash = "_" + key.$jsstr();
+        key_hash = key.$jsstr().replace(/^[0-9!#_]/, "!$&");
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     } else if (typeof key === "string") {
         // temporary while sysModules allows javascript strings as keys to python dicts
-        return "_" + key;
+        return key.replace(/^[0-9!#_]/, "!$&");
     }
-    key_hash = Sk.builtin.hash(key).v;
+    key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
     key.$savedKeyHash_ = key_hash;
     return key_hash;
 };
 
 Sk.builtin.dict.prototype.sk$asarray = function () {
-    const all_keys = [];
-    const entries = this.entries;
-    for (let hash in entries) {
-        all_keys.push(entries[hash].lhs);
-    }
-    return all_keys;
+    return Object.values(this.entries).map((x) => x.lhs);
 };
 
-Sk.builtin.dict.prototype.get$item = function (key, hash_value) {
-    // slow path to get an item, check the bucket with specific hash_value until we get a match
+Sk.builtin.dict.prototype.get$bucket_item = function (key, hash_value) {
+    // slow path to get an item, check the bucket with specific hash_value until we find a match
     const bucket = this.buckets[hash_value];
-    let stored_key, item;
+    let bucket_key, item;
     if (bucket === undefined) {
         return;
     }
@@ -127,12 +135,11 @@ Sk.builtin.dict.prototype.get$item = function (key, hash_value) {
             // free slot from having deleted an item.
             continue;
         }
-        stored_key = item.lhs;
-        if (stored_key === key || Sk.misceval.richCompareBool(key, stored_key, "Eq")) {
+        bucket_key = item.lhs;
+        if (bucket_key === key || Sk.misceval.richCompareBool(key, bucket_key, "Eq")) {
             return item;
         }
     }
-    return;
 };
 
 // Perform dictionary lookup, either return value or undefined if key not in dictionary
@@ -144,7 +151,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
         item = this.entries[hash];
     } else {
         // we have a non-string - take the slow path
-        item = this.get$item(key, hash);
+        item = this.get$bucket_item(key, hash);
     }
     if (item !== undefined) {
         return item.rhs;
@@ -180,23 +187,22 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         // we have a string so add to entries directly
         if (this.entries[hash] === undefined) {
             this.size += 1;
-            this.entries[hash] = { lhs: key, rhs: w }; // pre-initialize
+            this.entries[hash] = { lhs: key, rhs: w }; 
         } else {
             this.entries[hash].rhs = w;
         }
-        return;
-    }
-    let item = this.get$item(key, hash);
-    if (item === undefined) {
-        item = this.insert$item(key, w, hash);
-        this.size += 1;
     } else {
-        item.rhs = w;
+        const item = this.get$bucket_item(key, hash);
+        if (item === undefined) {
+            this.set$bucket_item(key, w, hash);
+            this.size += 1;
+        } else {
+            item.rhs = w;
+        }
     }
-    return;
 };
 
-Sk.builtin.dict.prototype.insert$item = function (key, value, hash_value) {
+Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
     // put a key, value pair into appropriate bucket and insert into entries
     let key_hash,
         bucket = this.buckets[hash_value];
@@ -218,16 +224,15 @@ Sk.builtin.dict.prototype.insert$item = function (key, value, hash_value) {
         }
     }
     this.entries[key_hash] = item;
-    return item;
 };
 
 
 
 
-Sk.builtin.dict.prototype.pop$item = function (key, hash_value) {
+Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
     // pop a key, value pair and remove reference in buckets and entries
     const bucket = this.buckets[hash_value];
-    let stored_key, item;
+    let bucket_key, item;
     if (bucket === undefined) {
         return undefined;
     }
@@ -236,8 +241,8 @@ Sk.builtin.dict.prototype.pop$item = function (key, hash_value) {
         if (item === undefined) {
             continue;
         }
-        stored_key = item.lhs;
-        if (stored_key === key || Sk.misceval.richCompareBool(key, stored_key, "Eq")) {
+        bucket_key = item.lhs;
+        if (bucket_key === key || Sk.misceval.richCompareBool(key, bucket_key, "Eq")) {
             const key_hash = "#" + hash_value + "_" + i;
             delete this.entries[key_hash];
             bucket[i] = undefined; // undefined signals this slot is free for use in the event of reinsertion/collision
@@ -256,7 +261,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
         item = this.entries[hash];
         delete this.entries[hash];
     } else {
-        item = this.pop$item(key, hash);
+        item = this.pop$bucket_item(key, hash);
     }
 
     if (item !== undefined) {
@@ -323,7 +328,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
             delete self.entries[hash];
         }
     } else {
-        item = self.pop$item(key, hash);
+        item = self.pop$bucket_item(key, hash);
         if (item !== undefined) {
             value = item.rhs;
         }
