@@ -827,7 +827,7 @@ Sk.builtin.create_dict_iter_ = function (obj) {
 
     iterobj.$index = 0;
     iterobj.$obj = obj;
-    iterobj.$keys = obj.sk$asarray();;
+    iterobj.$keys = obj.sk$asarray();
     iterobj.tp$iter = function () {
         return iterobj;
     };
