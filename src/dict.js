@@ -183,16 +183,18 @@ Sk.builtin.dict.prototype.sq$contains = function (ob) {
 
 Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
     const hash = kf(key);
+    let item;
     if (typeof hash === "string") {
         // we have a string so add to entries directly
-        if (this.entries[hash] === undefined) {
+        item = this.entries[hash];
+        if (item === undefined) {
+            this.entries[hash] = { lhs: key, rhs: w };
             this.size += 1;
-            this.entries[hash] = { lhs: key, rhs: w }; 
         } else {
-            this.entries[hash].rhs = w;
+            item.rhs = w;
         }
     } else {
-        const item = this.get$bucket_item(key, hash);
+        item = this.get$bucket_item(key, hash);
         if (item === undefined) {
             this.set$bucket_item(key, w, hash);
             this.size += 1;
