@@ -57,9 +57,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         sq$length: function () {
             return this.get$size();
         },
-        tp$iter: function () {
-            return new Sk.builtin.dict_iter_(this);
-        },
+        tp$iter: Sk.builtin.dict.prototype.tp$iter,
     },
     methods: {
         get: Sk.builtin.dict.prototype.get.d$def, // just use the descriptor defn for get

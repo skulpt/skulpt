@@ -24,7 +24,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
         if (canSuspend) {
             ret = Sk.misceval.callsimOrSuspendArray(this.$callable, []);
             return Sk.misceval.chain(ret, (r) => {
-                if (Sk.misceval.richCompareBool(r, self.$sentinel, "Eq", true)) {
+                if (Sk.misceval.richCompareBool(r, this.$sentinel, "Eq", true)) {
                     this.$flag = true;
                     return undefined;
                 } else {
@@ -206,7 +206,6 @@ Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
 
 
 Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
-Sk.exportSymbol("Sk.builtin.dict_iter_", Sk.builtin.dict_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
 Sk.exportSymbol("Sk.builtin.seq_iter_", Sk.builtin.seq_iter_);
