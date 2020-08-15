@@ -362,6 +362,9 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
             const key_hash = "#" + hash_value + "_" + i;
             delete this.entries[key_hash];
             bucket[i] = undefined;
+            if (bucket.every((x) => x === undefined)) {
+                delete this.buckets[hash_value];
+            }
             return item;
         }
     }
@@ -387,9 +390,8 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
         bucket = this.buckets[hash_value];
     const item = { lhs: key, rhs: value };
     if (bucket === undefined) {
-        bucket = this.buckets[hash_value] = [];
+        this.buckets[hash_value] = [item];
         key_hash = "#" + hash_value + "_" + 0;
-        bucket.push(item);
     } else {
         // we might have a freeslot from deleting an item
         const free_slot_idx = bucket.indexOf(undefined);
@@ -402,7 +404,6 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
         }
     }
     this.entries[key_hash] = item;
-    return item;
 };
 
 /**
