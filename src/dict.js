@@ -601,6 +601,21 @@ Sk.builtin.dict.prototype.del$item = function (key) {
     throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
 };
 
+function as_set(self) {
+    return new Sk.builtin.set(Sk.misceval.arrayFromIterable(self));
+}
+function checkAnyView(view) {
+    return view instanceof dict_keys || view instanceof dict_items;
+}
+function all_contained_in(self, other) {
+    for (let it = Sk.abstr.iter(self), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (!Sk.abstr.sequenceContains(other, i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // compile shared slots
 const dict_view_slots = {
     tp$getattr: Sk.generic.getAttr,
@@ -618,21 +633,55 @@ const dict_view_slots = {
         this.in$repr = false;
         return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
     },
-    tp$richcompare: function () {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+    tp$richcompare: function (other, op) {
+        if (!(Sk.builtin.checkAnySet(other) || checkAnyView(other))) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        }
+        let result;
+        const len_self = this.sq$length();
+        const len_other = other.sq$length();
+        switch (op) {
+            case "NotEq":
+            case "Eq":
+                if (len_self === len_other) {
+                    result = all_contained_in(this, other);
+                }
+                result = op === "NotEq" ? !result : result;
+                break;
+            case "Lt":
+                if (len_self < len_other) {
+                    result = all_contained_in(this, other);
+                }
+                break;
+            case "LtE":
+                if (len_self <= len_other) {
+                    result = all_contained_in(this, other);
+                }
+                break;
+            case "Gt":
+                if (len_self > len_other) {
+                    result = all_contained_in(other, this);
+                }
+                break;
+            case "GtE":
+                if (len_self >= len_other) {
+                    result = all_contained_in(other, this);
+                }
+                break;
+        }
+        return result;
     },
-    nb$subtract: function () {
-        // TODO
-        return Sk.builtin.NotImplemented.NotImplemented$;
+    nb$subtract: function (other) {
+        return as_set(this).nb$subtract(other);
     },
-    nb$and: function () {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+    nb$and: function (other) {
+        return as_set(this).nb$and(other);
     },
-    nb$or: function () {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+    nb$or: function (other) {
+        return as_set(this).nb$or(other);
     },
-    nb$xor: function () {
-        return Sk.builtin.NotImplemented.NotImplemented$;
+    nb$xor: function (other) {
+        return as_set(this).nb$xor(other);
     },
     sq$length: function () {
         return this.dict.get$size();
@@ -666,6 +715,11 @@ function buildDictView(typename, slots, reverse_method) {
     options.flags = {
         sk$acceptable_as_base: false,
     };
+    if (typename === "dict_values") {
+        // dict_values doesn't have number or richcompare slots
+        delete options.slots.tp$as_number;
+        delete options.slots.tp$richcompare;
+    }
     return Sk.abstr.buildNativeClass(typename, options);
 }
 
@@ -687,16 +741,6 @@ var dict_keys = buildDictView(
 var dict_values = buildDictView(
     "dict_values",
     {
-        sq$contains: function (value) {
-            let rhs;
-            for (let item of Object.values(this.dict.entries)) {
-                rhs = item.rhs;
-                if (rhs === value || Sk.misceval.richCompareBool(rhs, value, "Eq")) {
-                    return true;
-                }
-            }
-            return false;
-        },
         tp$iter: function () {
             return new dict_valueiter_(this.dict);
         },
