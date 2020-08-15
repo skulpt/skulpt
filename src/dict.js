@@ -29,7 +29,7 @@ Sk.builtin.dict = function dict (L) {
      * 
      * skulpt {    'a': {lhs: str('a'), rhs: None}, // key is a str here so no need to use the hash value
      *          '#1_0': {lhs: int(1)  , rhs: None}, // zeroth item in dict with hash value = 1
-     *         '#34_0': {lhs: int(34) , rhs: None}} // zeroth item in dict hash value = 3
+     *         '#34_0': {lhs: int(34) , rhs: None}} // zeroth item in dict hash value = 34
      * 
      * the js keys of this.entries must be strings so as to preserve insertion order
      */
@@ -99,7 +99,8 @@ Sk.builtin.dict.tp$call = function(args, kw) {
 Sk.abstr.setUpInheritance("dict", Sk.builtin.dict, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.dict);
 
-var reg = /^[0-9!#_]/; // avoid clashes with complex key hashes str('1') => "!1"
+var reg = /^[0-9!#_]/; // avoid clashes with complex key hashes 
+// and adjust for js ints not preserving order: str('1') => "!1"
 
 function kf(key) {
     // str => jsstr().replace(/^[0-9!#_]/, "!$&") avoids conflicts
@@ -249,6 +250,9 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
             const key_hash = "#" + hash_value + "_" + i;
             delete this.entries[key_hash];
             bucket[i] = undefined; // undefined signals this slot is free for use in the event of reinsertion/collision
+            if (bucket.every((x) => x === undefined)) {
+                delete this.buckets[hash_value]; // delete empty bucket
+            }
             return item;
         }
     }
