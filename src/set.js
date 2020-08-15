@@ -310,6 +310,9 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         //     $doc: "S.__sizeof__() -> size of S in memory, in bytes" },
         symmetric_difference: {
             $meth: function (other) {
+                if (!Sk.builtin.checkAnySet(other)) {
+                    other = new Sk.builtin.set(Sk.misceval.arrayFromIterable(other));
+                }
                 const S = this.union.$meth.call(this, other);
                 const vals = S.sk$asarray();
                 const discard = Sk.builtin.set.prototype.discard.$meth;

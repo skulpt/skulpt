@@ -673,25 +673,33 @@ const dict_view_slots = {
         return result;
     },
     nb$subtract: function (other) {
-        return as_set(this).nb$subtract(other);
+        const set = as_set(this);
+        return set.difference.$meth.call(set, other);
     },
     nb$and: function (other) {
-        return as_set(this).nb$and(other);
+        const set = as_set(this);
+        return set.intersection.$meth.call(set, other);
     },
     nb$or: function (other) {
-        return as_set(this).nb$or(other);
+        const set = as_set(this);
+        return set.union.$meth.call(set, other);
     },
     nb$xor: function (other) {
-        return as_set(this).nb$xor(other);
+        const set = as_set(this);
+        return set.symmetric_difference.$meth.call(set, other);
     },
     sq$length: function () {
         return this.dict.get$size();
     },
 };
 
+
 function buildDictView(typename, slots, reverse_method) {
     const options = {
         constructor: function dict_view(dict) {
+            if (!(dict instanceof Sk.builtin.dict)) {
+                throw new Sk.builtin.TypeError("cannot create '" + Sk.abstr.typeName(this) + "' instances");
+            }
             this.dict = dict;
             this.in$repr = false;
         },
@@ -759,11 +767,12 @@ var dict_items = buildDictView(
                 return false;
             }
             const key = item.mp$subscript(new Sk.builtin.int_(0));
-            const value = this.dict.mp$lookup(key);
-            if (value === undefined) {
+            const value = item.mp$subscript(new Sk.builtin.int_(1));
+            const found = this.dict.mp$lookup(key);
+            if (found === undefined) {
                 return false;
             }
-            return new Sk.builtin.tuple([key, value]).ob$eq(item);
+            return found === value || Sk.misceval.richCompareBool(found, value, "Eq");
         },
         tp$iter: function () {
             return new dict_itemiter_(this.dict);

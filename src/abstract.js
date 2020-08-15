@@ -311,7 +311,7 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     const r = Sk.misceval.iterFor(
         Sk.abstr.iter(seq),
         function (i) {
-            if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+            if (i === ob || Sk.misceval.richCompareBool(i, ob, "Eq")) {
                 return new Sk.misceval.Break(true);
             } else {
                 return false;
