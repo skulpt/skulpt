@@ -1174,8 +1174,12 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
     iterator.slots.tp$iter = Sk.generic.selfIter;
     iterator.slots.tp$iternext = iterator.slots.tp$iternext || iterator.iternext;
     iterator.slots.tp$getattr = iterator.slots.tp$getattr || Sk.generic.getAttr;
-    return Sk.abstr.buildNativeClass(typename, iterator);
+    let ret = Sk.abstr.buildNativeClass(typename, iterator);
+    Sk.abstr.built$iterators.push(ret);
+    return ret;
 };
+
+Sk.abstr.built$iterators = [];
 
 Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
     for (let method_name in method_defs) {

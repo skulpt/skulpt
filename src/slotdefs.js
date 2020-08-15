@@ -2061,30 +2061,7 @@ Sk.setupDunderMethods = function (py3) {
         // assume python3 switch version if we have to
         return;
     }
-    const classes_with_next = [
-        Sk.builtin.list_iter_,
-        Sk.builtin.set_iter_,
-        Sk.builtin.str_iter_,
-        Sk.builtin.tuple_iter_,
-        Sk.builtin.generator,
-        Sk.builtin.enumerate,
-        Sk.builtin.filter_,
-        Sk.builtin.zip_,
-        Sk.builtin.reversed,
-        Sk.builtin.map_,
-        Sk.builtin.seq_iter_,
-        Sk.builtin.callable_iter_,
-        Sk.builtin.reverselist_iter_,
-        Sk.builtin.dict_iter_,
-        Sk.builtin.dict_itemiter_,
-        Sk.builtin.dict_valueiter_,
-        Sk.builtin.dict_reverse_iter_,
-        Sk.builtin.dict_reverse_itemiter_,
-        Sk.builtin.dict_reverse_valueiter_,
-        Sk.builtin.range_iter_,
-        Sk.builtin.revereserange_iter_,
-        Sk.misceval.iterator,
-    ];
+    const classes_with_next = Sk.abstr.built$iterators;
     const classes_with_bool = [Sk.builtin.int_, Sk.builtin.lng, Sk.builtin.float_, Sk.builtin.complex];
     const classes_with_divide = classes_with_bool;
     const number_slots = Sk.subSlots.number_slots;
