@@ -16,11 +16,11 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
         return this;
     },
     iternext: function (canSuspend) {
-        const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (next) => {
-            if (next === undefined) {
+        const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (i) => {
+            if (i === undefined) {
                 return undefined;
             }
-            return new Sk.builtin.tuple([new Sk.builtin.int_(this.$index++), next]);
+            return new Sk.builtin.tuple([new Sk.builtin.int_(this.$index++), i]);
         });
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
@@ -99,27 +99,26 @@ Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
  */
 Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
     constructor: function reversed(seq) {
-        this.idx = seq.sq$length() - 1;
-        this.seq = seq;
+        this.$idx = seq.sq$length() - 1;
+        this.$seq = seq;
         return this;
     },
-    iternext: function () {
-        if (this.idx < 0) {
+    iternext: function (canSuspend) {
+        if (this.$idx < 0) {
             return undefined;
         }
-        try {
-            const i = new Sk.builtin.int_(this.idx);
-            const next = Sk.abstr.objectGetItem(this.seq, i);
-            this.idx--;
-            return next;
-        } catch (e) {
-            if (e instanceof Sk.builtin.IndexError) {
-                this.idx = -1;
-                return undefined;
-            } else {
-                throw e;
+        const ret = Sk.misceval.tryCatch(
+            () => Sk.abstr.objectGetItem(this.$seq, new Sk.builtin.int_(this.$idx--), canSuspend),
+            (e) => {
+                if (e instanceof Sk.builtin.IndexError) {
+                    this.$idx = -1;
+                    return undefined;
+                } else {
+                    throw e;
+                }
             }
-        }
+        );
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc: "Return a reverse iterator over the values of the given sequence.",
@@ -146,8 +145,8 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
     },
     methods: {
         __length_hint__: {
-            $meth: function __length_hint__(self) {
-                return self.idx >= 0 ? new Sk.builtin.int_(self.idx) : new Sk.builtin.int_(0);
+            $meth: function __length_hint__() {
+                return this.$idx >= 0 ? new Sk.builtin.int_(this.$idx) : new Sk.builtin.int_(0);
             },
             $flags: { NoArgs: true },
         },
@@ -170,7 +169,7 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
         const tup = [];
         const ret = Sk.misceval.chain(
             Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
-                return Sk.misceval.chain(it.tp$iternext(true), (i) => {
+                return Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
                     }
@@ -227,7 +226,7 @@ Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
         const args = [];
         const ret = Sk.misceval.chain(
             Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
-                return Sk.misceval.chain(it.tp$iternext(true), (i) => {
+                return Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
                     }
