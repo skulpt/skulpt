@@ -51,19 +51,14 @@ Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
  */
 Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     constructor: function filter_(func, iterable) {
-        this.func = func;
-        this.iterable = iterable;
+        this.$func = func;
+        this.$iterable = iterable;
     },
-    iternext: function () {
-        let res, item;
-        while (res === undefined) {
-            item = this.iterable.tp$iternext();
-            if (item === undefined) {
-                return undefined;
-            }
-            res = this.check$filter(item);
-        }
-        return item;
+    iternext: function (canSuspend) {
+        const ret = Sk.misceval.iterFor(this.$iterable, (i) => {
+            return Sk.misceval.chain(this.check$filter(i), (i) => i ? new Sk.misceval.Break(i) : undefined);
+        });
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:
@@ -85,15 +80,12 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     proto: {
         check$filter: function (item) {
             let res;
-            if (this.func === null) {
+            if (this.$func === null) {
                 res = item;
             } else {
-                res = Sk.misceval.callsimArray(this.func, [item]);
+                res = Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
             }
-            if (Sk.misceval.isTrue(res)) {
-                return res;
-            }
-            return undefined;
+            return Sk.misceval.chain(res, (ret) => Sk.misceval.isTrue(ret) ? item : undefined);
         },
     },
 });
