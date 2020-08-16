@@ -17,34 +17,61 @@ Sk.builtin.dict = function dict (L) {
 
     /**
      * the internal representation is a combination of a javascript hash map (this.entries)
-     * and a series of buckets (this.buckets) to account for collisions of the skulpt/python hash function
+     * and a series of buckets (this.buckets) that account for collisions of hash values
      * 
-     * this.entries is used as a fast path for items where the key is a python str
-     * As well as to preserve insertion order for dict.items as per python 3.6
+     * `this.entries` contains all the items of the dict
+     * `this.entries` is directly accessed as a fast path for items where the key is a python str
+     * 
+     * All non py str keys also appear in `this.buckets`
+     * Lookups for non py str keys are necessarily slower
+     * We must iterate over the items in `this.buckets` to account for hash value collisions
+     * 
      */
     this.size = 0;
     this.entries = Object.create(null); // avoid clashes with Object.prototype
     /**
-     * e.g. python {'a': None, 1: None, 34: None}
+     * e.g. python 
+     * >>> {'a': None, 1: None, 2: None}
      * 
-     * skulpt {    'a': {lhs: str('a'), rhs: None}, // key is a str here so no need to use the hash value
-     *          '#1_0': {lhs: int(1)  , rhs: None}, // zeroth item in dict with hash value = 1
-     *         '#34_0': {lhs: int(34) , rhs: None}} // zeroth item in dict hash value = 34
+     * skulpt:
+     * this.entries {   'a': {lhs: str('a'), rhs: None}, // key is a str here so no need to use the hash value
+     *               '#1_0': {lhs: int(1)  , rhs: None}, // hash value = 1, zeroth item in respective bucket
+     *               '#2_0': {lhs: int(2)  , rhs: None}} // hash value = 2, zeroth item in respective bucket
      * 
-     * the js keys of this.entries must be strings so as to preserve insertion order
+     * (nb: the js keys of this.entries must be strings so as to preserve insertion order as per python 3.6)
      */
 
     this.buckets = {};
     /**
-     * buckets keep track of items where the python key is not a str (used for hash collisions);
-     * dict item where the key is a str do not go into buckets and only exist in this.entries
-     * each item in this.buckets will be of the form  `hash_value: bucket` e.g.
-     * 123: [{lhs: key, rhs: value}] 
-     * collisions may result in a bucket like
-     * 123: [{lhs: 123, rhs: value}, undefined, {lhs: 123.0, rhs: value}];
+     * `this.buckets` keeps track of items where there may be a collision of hash values
+     * these items appear both in this.entries (see above) and within a specific bucket
      * 
-     * 123 is the hash value from builtin.hash
-     * undefined in the bucket is the result of deleting an item with hash value = 123
+     * e.g. python
+     * >>> {'a': None, 1: None, 2: None}
+     * 
+     * skulpt:
+     * this.buckets { 1: [{lhs: int(1), rhs: None}],  // array of collisions with hash value = 1
+     *                2: [{lhs: int(2), rhs: None}] } // array of collisions with hash value = 2
+     * 
+     * `this.buckets` is a hash map of integer hash values, each mapping to an array of collisions (a bucket)
+     * 
+     * In the event of a collision a new item will be pushed to the respective bucket and added to this.entries
+     * 
+     * e.g.
+     * >>> class A: __hash__ = lambda self: 1
+     * >>> {1: None, A(): None} 
+     * # collision - both keys have a hash value of 1
+     * 
+     * this.buckets: { 1: [{lhs: int(1), rhs: None}, {lhs: A(), rhs: None}] } // bucket for hash value 1 has two items
+     * 
+     * this.entries: {'#1_0': {lhs: int(1), rhs: None}  // hash value = 1, zeroth item in respective bucket
+     *                '#1_1': {lhs: A()   , rhs: None}} // hash value = 1, first  item in respective bucket
+     * 
+     * items appear both in `this.buckets` and `this.entries`
+     * rational for the appearance in both places is to preserve insertion order 
+     * (js preserves insertion order of hashmaps where keys are javascript strings)
+     * 
+     * (nb: dict item where the key is a py str do not appear in `this.buckets` and only exist in `this.entries`)
      */
 
 
