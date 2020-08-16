@@ -55,9 +55,11 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         this.$iterable = iterable;
     },
     iternext: function (canSuspend) {
-        const ret = Sk.misceval.iterFor(this.$iterable, (i) => {
-            return Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined));
-        });
+        // iterate over iterable until we pass the predicate
+        // this.chcek$filter either returns the item or undefined
+        const ret = Sk.misceval.iterFor(this.$iterable, (i) =>
+            Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined))
+        );
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
@@ -168,14 +170,14 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     iternext: function (canSuspend) {
         const tup = [];
         const ret = Sk.misceval.chain(
-            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
-                return Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
+            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) =>
+                Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
                     }
                     tup.push(i);
-                });
-            }),
+                })
+            ),
             (endzip) => (endzip ? undefined : new Sk.builtin.tuple(tup))
         );
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
@@ -225,14 +227,14 @@ Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     iternext: function (canSuspend) {
         const args = [];
         const ret = Sk.misceval.chain(
-            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
-                return Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
+            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) =>
+                Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
                     }
                     args.push(i);
-                });
-            }),
+                })
+            ),
             (endmap) => (endmap ? undefined : Sk.misceval.callsimOrSuspendArray(this.$func, args))
         );
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
