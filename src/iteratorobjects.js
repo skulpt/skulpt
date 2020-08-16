@@ -9,44 +9,28 @@
 Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
     constructor: function enumerate(iterable, start) {
         if (!(this instanceof Sk.builtin.enumerate)) {
-            return new Sk.builtin.enumerate(iterable, start);
+            throw TypeError("Failed to construct 'enumerate': Please use the 'new' operator");
         }
         this.$iterable = iterable;
         this.$index = start;
         return this;
     },
     iternext: function (canSuspend) {
-        const next = this.$iterable.tp$iternext(canSuspend);
-        if (next === undefined) {
-            return undefined;
-        }
-        if (next.$isSuspension) {
-            return Sk.misceval.chain(next, (n) => {
-                if (n === undefined) {
-                    return undefined;
-                }
-                const idx = new Sk.builtin.int_(this.$index++);
-                return new Sk.builtin.tuple([idx, n]);
-            });
-        }
-        const idx = new Sk.builtin.int_(this.$index++);
-        return new Sk.builtin.tuple([idx, next]);
+        const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (next) => {
+            if (next === undefined) {
+                return undefined;
+            }
+            return new Sk.builtin.tuple([new Sk.builtin.int_(this.$index++), next]);
+        });
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:
             "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ...",
         tp$new: function (args, kwargs) {
-            args = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs);
-            if (args[0] === undefined) {
-                throw new Sk.builtin.TypeError("__new__() missing 1 required positional argument: 'iterable'");
-            }
-            const iterable = Sk.abstr.iter(args[0]);
-            let start = args[1];
-            if (start !== undefined) {
-                start = Sk.misceval.asIndexOrThrow(start);
-            } else {
-                start = 0;
-            }
+            let [iterable, start] = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs, [new Sk.builtin.int_(0)]);
+            iterable = Sk.abstr.iter(iterable);
+            start = Sk.misceval.asIndexOrThrow(start);
             if (this === Sk.builtin.enumerate.prototype) {
                 return new Sk.builtin.enumerate(iterable, start);
             } else {
@@ -85,14 +69,9 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         tp$doc:
             "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true.",
         tp$new: function (args, kwargs) {
-            args = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs);
-            if (args[0] === undefined) {
-                throw new Sk.builtin.TypeError("__new__() missing 2 required positional arguments: 'predicate' and 'iterable'");
-            } else if (args[1] === undefined) {
-                throw new Sk.builtin.TypeError("__new__() missing 1 required positional argument: 'iterable'");
-            }
-            const func = Sk.builtin.checkNone(args[0]) ? null : args[0];
-            const iterable = Sk.abstr.iter(args[1]);
+            let [func, iterable] = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs, []);
+            func = Sk.builtin.checkNone(func) ? null : func;
+            iterable = Sk.abstr.iter(iterable);
             // in theory you could subclass
             if (this === Sk.builtin.filter_.prototype) {
                 return new Sk.builtin.filter_(func, iterable);
