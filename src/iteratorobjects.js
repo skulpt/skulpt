@@ -56,7 +56,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     },
     iternext: function (canSuspend) {
         const ret = Sk.misceval.iterFor(this.$iterable, (i) => {
-            return Sk.misceval.chain(this.check$filter(i), (i) => i ? new Sk.misceval.Break(i) : undefined);
+            return Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined));
         });
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
@@ -85,7 +85,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
             } else {
                 res = Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
             }
-            return Sk.misceval.chain(res, (ret) => Sk.misceval.isTrue(ret) ? item : undefined);
+            return Sk.misceval.chain(res, (ret) => (Sk.misceval.isTrue(ret) ? item : undefined));
         },
     },
 });
@@ -161,22 +161,25 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
  */
 Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     constructor: function zip_(iters) {
-        this.iters = iters;
-        return this;
+        this.$iters = new Sk.builtin.tuple(iters);
+        if (iters.length === 0) {
+            this.tp$iternext = () => undefined;
+        }
     },
-    iternext: function () {
-        if (this.iters.length === 0) {
-            return undefined;
-        }
+    iternext: function (canSuspend) {
         const tup = [];
-        for (let i = 0; i < this.iters.length; i++) {
-            const next = this.iters[i].tp$iternext();
-            if (next === undefined) {
-                return undefined;
-            }
-            tup.push(next);
-        }
-        return new Sk.builtin.tuple(tup);
+        const ret = Sk.misceval.chain(
+            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
+                return Sk.misceval.chain(it.tp$iternext(true), (i) => {
+                    if (i === undefined) {
+                        return new Sk.misceval.Break(true);
+                    }
+                    tup.push(i);
+                });
+            }),
+            (endzip) => (endzip ? undefined : new Sk.builtin.tuple(tup))
+        );
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:
