@@ -697,7 +697,7 @@ const dict_view_slots = {
 function buildDictView(typename, slots, reverse_method) {
     const options = {
         constructor: function dict_view(dict) {
-            if (!(dict instanceof Sk.builtin.dict)) {
+            if (arguments.length !== 1) {
                 throw new Sk.builtin.TypeError("cannot create '" + Sk.abstr.typeName(this) + "' instances");
             }
             this.dict = dict;
