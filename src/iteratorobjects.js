@@ -220,21 +220,23 @@ Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);
  */
 Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     constructor: function map_(func, iters) {
-        this.func = func;
-        this.iters = iters;
-        return this;
+        this.$func = func;
+        this.$iters = new Sk.builtin.tuple(iters);
     },
-    iternext: function () {
+    iternext: function (canSuspend) {
         const args = [];
-        let next;
-        for (let i = 0; i < this.iters.length; i++) {
-            next = this.iters[i].tp$iternext();
-            if (next === undefined) {
-                return undefined;
-            }
-            args.push(next);
-        }
-        return Sk.misceval.callsimArray(this.func, args);
+        const ret = Sk.misceval.chain(
+            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) => {
+                return Sk.misceval.chain(it.tp$iternext(true), (i) => {
+                    if (i === undefined) {
+                        return new Sk.misceval.Break(true);
+                    }
+                    args.push(i);
+                });
+            }),
+            (endmap) => (endmap ? undefined : Sk.misceval.callsimOrSuspendArray(this.$func, args))
+        );
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:
