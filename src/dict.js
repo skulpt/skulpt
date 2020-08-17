@@ -707,10 +707,11 @@ function buildDictView(typename, slots, reverse_method) {
     options.slots = Object.assign(slots, dict_view_slots);
     options.methods = {
         isdisjoint: {
-            $meth: function () {
-                return Sk.builtin.NotImplemented.NotImplemented$;
+            $meth: function (other) {
+                const set = as_set(this);
+                return set.isdisjoint.$meth.call(set, other);
             },
-            $flags: {},
+            $flags: { OneArg: true },
             $textsig: null,
             $doc: "Return True if the view and the given iterable have a null intersection.",
         },

@@ -137,23 +137,23 @@ class DictSetTest(unittest.TestCase):
         self.assertEqual(d1.keys() - set(d3.keys()), {'a', 'b'})
         self.assertEqual(d1.keys() - (0, 1), {'a', 'b'})
 
-        # self.assertFalse(d1.keys().isdisjoint(d1.keys()))
-        # self.assertFalse(d1.keys().isdisjoint(d2.keys()))
-        # self.assertFalse(d1.keys().isdisjoint(list(d2.keys())))
-        # self.assertFalse(d1.keys().isdisjoint(set(d2.keys())))
-        # self.assertTrue(d1.keys().isdisjoint({'x', 'y', 'z'}))
-        # self.assertTrue(d1.keys().isdisjoint(['x', 'y', 'z']))
-        # self.assertTrue(d1.keys().isdisjoint(set(['x', 'y', 'z'])))
-        # self.assertTrue(d1.keys().isdisjoint(set(['x', 'y'])))
-        # self.assertTrue(d1.keys().isdisjoint(['x', 'y']))
-        # self.assertTrue(d1.keys().isdisjoint({}))
-        # self.assertTrue(d1.keys().isdisjoint(d3.keys()))
+        self.assertFalse(d1.keys().isdisjoint(d1.keys()))
+        self.assertFalse(d1.keys().isdisjoint(d2.keys()))
+        self.assertFalse(d1.keys().isdisjoint(list(d2.keys())))
+        self.assertFalse(d1.keys().isdisjoint(set(d2.keys())))
+        self.assertTrue(d1.keys().isdisjoint({'x', 'y', 'z'}))
+        self.assertTrue(d1.keys().isdisjoint(['x', 'y', 'z']))
+        self.assertTrue(d1.keys().isdisjoint(set(['x', 'y', 'z'])))
+        self.assertTrue(d1.keys().isdisjoint(set(['x', 'y'])))
+        self.assertTrue(d1.keys().isdisjoint(['x', 'y']))
+        self.assertTrue(d1.keys().isdisjoint({}))
+        self.assertTrue(d1.keys().isdisjoint(d3.keys()))
 
-        # de = {}
-        # self.assertTrue(de.keys().isdisjoint(set()))
-        # self.assertTrue(de.keys().isdisjoint([]))
-        # self.assertTrue(de.keys().isdisjoint(de.keys()))
-        # self.assertTrue(de.keys().isdisjoint([1]))
+        de = {}
+        self.assertTrue(de.keys().isdisjoint(set()))
+        self.assertTrue(de.keys().isdisjoint([]))
+        self.assertTrue(de.keys().isdisjoint(de.keys()))
+        self.assertTrue(de.keys().isdisjoint([1]))
 
     def test_items_set_operations(self):
         d1 = {'a': 1, 'b': 2}
@@ -194,22 +194,22 @@ class DictSetTest(unittest.TestCase):
         self.assertEqual(d1.items() - set(d2.items()), {('a', 1)})
         self.assertEqual(d1.items() - set(d3.items()), {('a', 1), ('b', 2)})
 
-        # self.assertFalse(d1.items().isdisjoint(d1.items()))
-        # self.assertFalse(d1.items().isdisjoint(d2.items()))
-        # self.assertFalse(d1.items().isdisjoint(list(d2.items())))
-        # self.assertFalse(d1.items().isdisjoint(set(d2.items())))
-        # self.assertTrue(d1.items().isdisjoint({'x', 'y', 'z'}))
-        # self.assertTrue(d1.items().isdisjoint(['x', 'y', 'z']))
-        # self.assertTrue(d1.items().isdisjoint(set(['x', 'y', 'z'])))
-        # self.assertTrue(d1.items().isdisjoint(set(['x', 'y'])))
-        # self.assertTrue(d1.items().isdisjoint({}))
-        # self.assertTrue(d1.items().isdisjoint(d3.items()))
+        self.assertFalse(d1.items().isdisjoint(d1.items()))
+        self.assertFalse(d1.items().isdisjoint(d2.items()))
+        self.assertFalse(d1.items().isdisjoint(list(d2.items())))
+        self.assertFalse(d1.items().isdisjoint(set(d2.items())))
+        self.assertTrue(d1.items().isdisjoint({'x', 'y', 'z'}))
+        self.assertTrue(d1.items().isdisjoint(['x', 'y', 'z']))
+        self.assertTrue(d1.items().isdisjoint(set(['x', 'y', 'z'])))
+        self.assertTrue(d1.items().isdisjoint(set(['x', 'y'])))
+        self.assertTrue(d1.items().isdisjoint({}))
+        self.assertTrue(d1.items().isdisjoint(d3.items()))
 
-        # de = {}
-        # self.assertTrue(de.items().isdisjoint(set()))
-        # self.assertTrue(de.items().isdisjoint([]))
-        # self.assertTrue(de.items().isdisjoint(de.items()))
-        # self.assertTrue(de.items().isdisjoint([1]))
+        de = {}
+        self.assertTrue(de.items().isdisjoint(set()))
+        self.assertTrue(de.items().isdisjoint([]))
+        self.assertTrue(de.items().isdisjoint(de.items()))
+        self.assertTrue(de.items().isdisjoint([1]))
 
     def test_set_operations_with_iterator(self):
         origin = {1: 2, 3: 4}
@@ -224,24 +224,24 @@ class DictSetTest(unittest.TestCase):
         self.assertEqual(items | iter([(1, 2)]), {(1, 2), (3, 4)})
         self.assertEqual(items - iter([(1, 2)]), {(3, 4)})
 
-    # def test_set_operations_with_noniterable(self):
-    #     with self.assertRaises(TypeError):
-    #         {}.keys() & 1
-    #     with self.assertRaises(TypeError):
-    #         {}.keys() | 1
-    #     with self.assertRaises(TypeError):
-    #         {}.keys() ^ 1
-    #     with self.assertRaises(TypeError):
-    #         {}.keys() - 1
+    def test_set_operations_with_noniterable(self):
+        with self.assertRaises(TypeError):
+            {}.keys() & 1
+        with self.assertRaises(TypeError):
+            {}.keys() | 1
+        with self.assertRaises(TypeError):
+            {}.keys() ^ 1
+        with self.assertRaises(TypeError):
+            {}.keys() - 1
 
-    #     with self.assertRaises(TypeError):
-    #         {}.items() & 1
-    #     with self.assertRaises(TypeError):
-    #         {}.items() | 1
-    #     with self.assertRaises(TypeError):
-    #         {}.items() ^ 1
-    #     with self.assertRaises(TypeError):
-    #         {}.items() - 1
+        with self.assertRaises(TypeError):
+            {}.items() & 1
+        with self.assertRaises(TypeError):
+            {}.items() | 1
+        with self.assertRaises(TypeError):
+            {}.items() ^ 1
+        with self.assertRaises(TypeError):
+            {}.items() - 1
 
     def test_recursive_repr(self):
         d = {}

@@ -177,7 +177,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     // subclass of v's type
     const w_type = w.constructor;
     const v_type = v.constructor;
-    const w_is_subclass = w_type !== v_type && w_type.sk$basetype === undefined && w instanceof v_type;
+    const w_is_subclass = w_type !== v_type && w_type.sk$baseClass === undefined && w instanceof v_type;
 
     // From the Python 2.7 docs:
     //
@@ -813,8 +813,9 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     let parent = child.prototype.tp$base || undefined;
     const bases = parent === undefined ? [] : [parent];
     if (parent === Sk.builtin.object || parent === undefined) {
-        child.sk$basetype = true;
+        child.sk$baseClass = true;
     }
+    child.prototype.sk$baseType = child;
     const mro = [child];
     for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
         if (!base.sk$abstract) {
@@ -827,6 +828,7 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         sk$prototypical: { value: true, writable: true },
         tp$mro: { value: mro, writable: true },
         tp$bases: { value: bases, writable: true },
+        sk$baseType: { value: child, writable: true }
     });
 };
 /**
