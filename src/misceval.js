@@ -1154,26 +1154,18 @@ Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
 /**
  * @function
  * @description
- * Perform a suspension-aware for-each on an array, without
- * blowing up the stack.
- * forFn() is called for each element in the array, with two
- * arguments: the current element and the previous return value
- * of forFn() (or initialValue on the first call). In this way,
- * iterFor() can be used as a simple for loop, or alternatively
- * as a 'reduce' operation. The return value of the final call to
- * forFn() will be the return value of iterFor() (after all
- * suspensions are resumed, that is; if the iterator is empty then
- * initialValue will be returned.)
+ * 
+ * As per iterFor but with an array rather than a python iterable
+ * Useful for iterating over args where doing so could result in a suspension
  *
  * @param {Array} args
  * @param {function(pyObject,*=)} forFn
  * @param {*=} initialValue
  */
-Sk.misceval.iterArgs = function (args, forFn, initialValue) {
+Sk.misceval.iterArray = function (args, forFn, initialValue) {
     Sk.asserts.assert(Array.isArray(args), "iterArgs requires an array");
-    j = 0;
-    args.tp$iternext = () => args[j++];
-    return Sk.misceval.iterFor(args, forFn, initialValue);
+    let i = 0;
+    return Sk.misceval.iterFor({tp$iternext: () => args[i++]}, forFn, initialValue);
 };
 
 /**

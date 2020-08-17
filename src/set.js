@@ -149,10 +149,10 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         difference: {
             $meth: function (...args) {
-                const tmp = this.set$copy();
+                const result = this.set$copy();
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArgs(args, (arg) => tmp.set$difference_update(arg)),
-                    () => tmp
+                    Sk.misceval.iterArray(args, (arg) => result.set$difference_update(arg)),
+                    () => result
                 );
             },
             $flags: { MinArgs: 0 },
@@ -162,7 +162,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         difference_update: {
             $meth: function (...args) {
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArgs(args, (arg) => this.set$difference_update(arg)),
+                    Sk.misceval.iterArray(args, (arg) => this.set$difference_update(arg)),
                     () => Sk.builtin.none.none$
                 );
             },
@@ -285,7 +285,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth: function (...args) {
                 const result = this.set$copy();
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArgs(args, (arg) => result.set$update(arg)),
+                    Sk.misceval.iterArray(args, (arg) => result.set$update(arg)),
                     () => result
                 );
             },
@@ -296,7 +296,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         update: {
             $meth: function (...args) {
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArgs(args, (arg) => this.set$update(arg)),
+                    Sk.misceval.iterArray(args, (arg) => this.set$update(arg)),
                     () => Sk.builtin.none.none$
                 );
             },
@@ -351,7 +351,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             }
             let result = this;
             return Sk.misceval.chain(
-                Sk.misceval.iterArgs(args, (arg) => {
+                Sk.misceval.iterArray(args, (arg) => {
                     return Sk.misceval.chain(result.set$intersection(arg), (res) => {
                         result = res;
                     });
