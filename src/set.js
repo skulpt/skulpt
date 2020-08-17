@@ -482,7 +482,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             $subtype_new: function (args, kwargs) {
                 const instance = new this.constructor();
                 // pass the args but ignore the kwargs for subtyping
-                return Sk.misceval.chain(Sk.builtin.frozenset.prototype.tp$new(args), (fs) => {
+                return Sk.misceval.chain(Sk.builtin.frozenset.prototype.tp$new(args), (frozenset) => {
                     instance.v = frozenset.v;
                     return instance;
                 });
