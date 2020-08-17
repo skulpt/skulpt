@@ -162,7 +162,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
  */
 Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     constructor: function zip_(iters) {
-        this.$iters = new Sk.builtin.tuple(iters);
+        this.$iters = iters;
         if (iters.length === 0) {
             this.tp$iternext = () => undefined;
         }
@@ -170,7 +170,7 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     iternext: function (canSuspend) {
         const tup = [];
         const ret = Sk.misceval.chain(
-            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) =>
+            Sk.misceval.iterArray(this.$iters, (it) =>
                 Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
@@ -222,12 +222,12 @@ Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);
 Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     constructor: function map_(func, iters) {
         this.$func = func;
-        this.$iters = new Sk.builtin.tuple(iters);
+        this.$iters = iters;
     },
     iternext: function (canSuspend) {
         const args = [];
         const ret = Sk.misceval.chain(
-            Sk.misceval.iterFor(Sk.abstr.iter(this.$iters), (it) =>
+            Sk.misceval.iterArray(this.$iters, (it) =>
                 Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
                         return new Sk.misceval.Break(true);
