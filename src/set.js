@@ -57,40 +57,25 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             switch (op) {
-                case "Eq":
-                    if (this.get$size() !== other.get$size()) {
-                        return false;
-                    }
-                    if (this === other) {
-                        return true;
-                    }
-                    return Sk.misceval.isTrue(this.issubset.$meth.call(this, other));
                 case "NotEq":
-                    const res = this.tp$richcompare(other, "Eq");
-                    if (res === Sk.builtin.NotImplemented.NotImplemented$) {
-                        return res;
+                case "Eq":
+                    let res;
+                    if (this === other) {
+                        res = true;
+                    } else if (this.get$size() !== other.get$size()) {
+                        res = false;
+                    } else {
+                        res = Sk.misceval.isTrue(this.set$issubset(other));
                     }
-                    return !res;
+                    return op === "Eq" ? res : !res;
                 case "LtE":
-                    if (this === other) {
-                        return true;
-                    }
-                    return Sk.misceval.isTrue(this.issubset.$meth.call(this, other));
+                    return this === other || Sk.misceval.isTrue(this.set$issubset(other));
                 case "GtE":
-                    if (this === other) {
-                        return true;
-                    }
-                    return Sk.misceval.isTrue(this.issuperset.$meth.call(this, other));
+                    return this === other || Sk.misceval.isTrue(other.set$issubset(this));
                 case "Lt":
-                    if (this.get$size() >= other.get$size()) {
-                        return false;
-                    }
-                    return Sk.misceval.isTrue(this.issubset.$meth.call(this, other));
+                    return this.get$size() < other.get$size() && Sk.misceval.isTrue(this.set$issubset(other));
                 case "Gt":
-                    if (this.get$size() <= other.get$size()) {
-                        return false;
-                    }
-                    return Sk.misceval.isTrue(this.issuperset.$meth.call(this, other));
+                    return this.get$size() > other.get$size() && Sk.misceval.isTrue(other.set$issubset(this));
             }
         },
         // number slots
@@ -225,20 +210,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 if (!Sk.builtin.checkAnySet(other)) {
                     other = this.set$make_basetype(other);
                 }
-                return Sk.misceval.chain(other, (other_set) => {
-                    const thisLength = this.get$size();
-                    const otherLength = other_set.get$size();
-                    if (thisLength > otherLength) {
-                        // every item in this set can't be in other if it's shorter!
-                        return Sk.builtin.bool.false$;
-                    }
-                    for (let it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                        if (!other_set.sq$contains(i)) {
-                            return Sk.builtin.bool.false$;
-                        }
-                    }
-                    return Sk.builtin.bool.true$;
-                });
+                return Sk.misceval.chain(other, (other_set) => this.set$issubset(other_set));
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -249,7 +221,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 if (!Sk.builtin.checkAnySet(other)) {
                     other = this.set$make_basetype(other);
                 }
-                return Sk.misceval.chain(other, (other_set) => other_set.issubset.$meth.call(other_set, this));
+                return Sk.misceval.chain(other, (other_set) => other_set.set$issubset(this));
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -380,10 +352,26 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             let result = this;
             return Sk.misceval.chain(
                 Sk.misceval.iterArgs(args, (arg) => {
-                    return Sk.misceval.chain(result.set$intersection(arg), (res) => {result = res;});
+                    return Sk.misceval.chain(result.set$intersection(arg), (res) => {
+                        result = res;
+                    });
                 }),
                 () => result
             );
+        },
+        set$issubset: function (other_set) {
+            const thisLength = this.get$size();
+            const otherLength = other_set.get$size();
+            if (thisLength > otherLength) {
+                // every item in this set can't be in other if it's shorter!
+                return Sk.builtin.bool.false$;
+            }
+            for (let it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                if (!other_set.sq$contains(i)) {
+                    return Sk.builtin.bool.false$;
+                }
+            }
+            return Sk.builtin.bool.true$;
         },
         set$symmetric_diff_update: function (other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
