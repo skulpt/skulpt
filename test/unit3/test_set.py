@@ -1,14 +1,14 @@
 import unittest
-from test import support
-import gc
-import weakref
+# from test import support
+# import gc
+# import weakref
 import operator
 import copy
-import pickle
+# import pickle
 from random import randrange, shuffle
-import warnings
+# import warnings
 import collections
-import collections.abc
+# import collections.abc
 import itertools
 
 class PassThru(Exception):
@@ -224,39 +224,41 @@ class TestJointOps:
         self.assertFalse(set('a').issubset('cbs'))
         self.assertFalse(set('cbs').issuperset('a'))
 
-    def test_pickling(self):
-        for i in range(pickle.HIGHEST_PROTOCOL + 1):
-            p = pickle.dumps(self.s, i)
-            dup = pickle.loads(p)
-            self.assertEqual(self.s, dup, "%s != %s" % (self.s, dup))
-            if type(self.s) not in (set, frozenset):
-                self.s.x = 10
-                p = pickle.dumps(self.s, i)
-                dup = pickle.loads(p)
-                self.assertEqual(self.s.x, dup.x)
+    # def test_pickling(self):
+    #     for i in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         p = pickle.dumps(self.s, i)
+    #         dup = pickle.loads(p)
+    #         self.assertEqual(self.s, dup, "%s != %s" % (self.s, dup))
+    #         if type(self.s) not in (set, frozenset):
+    #             self.s.x = 10
+    #             p = pickle.dumps(self.s, i)
+    #             dup = pickle.loads(p)
+    #             self.assertEqual(self.s.x, dup.x)
 
-    def test_iterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            itorg = iter(self.s)
-            data = self.thetype(self.s)
-            d = pickle.dumps(itorg, proto)
-            it = pickle.loads(d)
-            # Set iterators unpickle as list iterators due to the
-            # undefined order of set items.
-            # self.assertEqual(type(itorg), type(it))
-            self.assertIsInstance(it, collections.abc.Iterator)
-            self.assertEqual(self.thetype(it), data)
+    # def test_iterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         itorg = iter(self.s)
+    #         data = self.thetype(self.s)
+    #         d = pickle.dumps(itorg, proto)
+    #         it = pickle.loads(d)
+    #         # Set iterators unpickle as list iterators due to the
+    #         # undefined order of set items.
+    #         # self.assertEqual(type(itorg), type(it))
+    #         self.assertIsInstance(it, collections.abc.Iterator)
+    #         self.assertEqual(self.thetype(it), data)
 
-            it = pickle.loads(d)
-            try:
-                drop = next(it)
-            except StopIteration:
-                continue
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            self.assertEqual(self.thetype(it), data - self.thetype((drop,)))
+    #         it = pickle.loads(d)
+    #         try:
+    #             drop = next(it)
+    #         except StopIteration:
+    #             continue
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         self.assertEqual(self.thetype(it), data - self.thetype((drop,)))
 
     def test_deepcopy(self):
+        if self.thetype != self.basetype:
+            return # skulpt does not support deepcopy of subclasses of builtins
         class Tracer:
             def __init__(self, value):
                 self.value = value
@@ -317,19 +319,19 @@ class TestJointOps:
             name = repr(s).partition('(')[0]    # strip class name
             self.assertEqual(repr(s), '%s({%s(...)})' % (name, name))
 
-    def test_cyclical_print(self):
-        w = ReprWrapper()
-        s = self.thetype([w])
-        w.value = s
-        fo = open(support.TESTFN, "w")
-        try:
-            fo.write(str(s))
-            fo.close()
-            fo = open(support.TESTFN, "r")
-            self.assertEqual(fo.read(), repr(s))
-        finally:
-            fo.close()
-            support.unlink(support.TESTFN)
+    # def test_cyclical_print(self):
+    #     w = ReprWrapper()
+    #     s = self.thetype([w])
+    #     w.value = s
+    #     fo = open(support.TESTFN, "w")
+    #     try:
+    #         fo.write(str(s))
+    #         fo.close()
+    #         fo = open(support.TESTFN, "r")
+    #         self.assertEqual(fo.read(), repr(s))
+    #     finally:
+    #         fo.close()
+    #         support.unlink(support.TESTFN)
 
     def test_do_not_rehash_dict_keys(self):
         n = 10
@@ -350,20 +352,20 @@ class TestJointOps:
         self.assertEqual(sum(elem.hash_count for elem in d), n)
         self.assertEqual(d3, dict.fromkeys(d, 123))
 
-    def test_container_iterator(self):
-        # Bug #3680: tp_traverse was not implemented for set iterator object
-        class C(object):
-            pass
-        obj = C()
-        ref = weakref.ref(obj)
-        container = set([obj, 1])
-        obj.x = iter(container)
-        del obj, container
-        gc.collect()
-        self.assertTrue(ref() is None, "Cycle was not collected")
+    # def test_container_iterator(self):
+    #     # Bug #3680: tp_traverse was not implemented for set iterator object
+    #     class C(object):
+    #         pass
+    #     obj = C()
+    #     ref = weakref.ref(obj)
+    #     container = set([obj, 1])
+    #     obj.x = iter(container)
+    #     del obj, container
+    #     gc.collect()
+    #     self.assertTrue(ref() is None, "Cycle was not collected")
 
-    def test_free_after_iterating(self):
-        support.check_free_after_iterating(self, iter, self.thetype)
+    # def test_free_after_iterating(self):
+    #     support.check_free_after_iterating(self, iter, self.thetype)
 
 class TestSet(TestJointOps, unittest.TestCase):
     thetype = set
@@ -601,12 +603,12 @@ class TestSet(TestJointOps, unittest.TestCase):
         t ^= t
         self.assertEqual(t, self.thetype())
 
-    def test_weakref(self):
-        s = self.thetype('gallahad')
-        p = weakref.proxy(s)
-        self.assertEqual(str(p), str(s))
-        s = None
-        self.assertRaises(ReferenceError, str, p)
+    # def test_weakref(self):
+    #     s = self.thetype('gallahad')
+    #     p = weakref.proxy(s)
+    #     self.assertEqual(str(p), str(s))
+    #     s = None
+    #     self.assertRaises(ReferenceError, str, p)
 
     def test_rich_compare(self):
         class TestRichSetCompare:
@@ -644,10 +646,10 @@ class TestSet(TestJointOps, unittest.TestCase):
         myset >= myobj
         self.assertTrue(myobj.le_called)
 
-    @unittest.skipUnless(hasattr(set, "test_c_api"),
-                         'C API test only available in a debug build')
-    def test_c_api(self):
-        self.assertEqual(set().test_c_api(), True)
+    # @unittest.skipUnless(hasattr(set, "test_c_api"),
+    #                      'C API test only available in a debug build')
+    # def test_c_api(self):
+    #     self.assertEqual(set().test_c_api(), True)
 
 class SetSubclass(set):
     pass
@@ -729,24 +731,24 @@ class TestFrozenSet(TestJointOps, unittest.TestCase):
             addhashvalue(hash(frozenset([e for e, m in elemmasks if m&i])))
         self.assertEqual(len(hashvalues), 2**n)
 
-        def zf_range(n):
-            # https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers
-            nums = [frozenset()]
-            for i in range(n-1):
-                num = frozenset(nums)
-                nums.append(num)
-            return nums[:n]
+        # def zf_range(n):
+        #     # https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers
+        #     nums = [frozenset()]
+        #     for i in range(n-1):
+        #         num = frozenset(nums)
+        #         nums.append(num)
+        #     return nums[:n]
 
-        def powerset(s):
-            for i in range(len(s)+1):
-                yield from map(frozenset, itertools.combinations(s, i))
+        # def powerset(s):
+        #     for i in range(len(s)+1):
+        #         yield from map(frozenset, itertools.combinations(s, i))
 
-        for n in range(18):
-            t = 2 ** n
-            mask = t - 1
-            for nums in (range, zf_range):
-                u = len({h & mask for h in map(hash, powerset(nums(n)))})
-                self.assertGreater(4*u, t)
+        # for n in range(18):
+        #     t = 2 ** n
+        #     mask = t - 1
+        #     for nums in (range, zf_range):
+        #         u = len({h & mask for h in map(hash, powerset(nums(n)))})
+        #         self.assertGreater(4*u, t)
 
 class FrozenSetSubclass(frozenset):
     pass
@@ -803,16 +805,16 @@ class TestBasicOps:
         sorted_repr_values.sort()
         self.assertEqual(result, sorted_repr_values)
 
-    def test_print(self):
-        try:
-            fo = open(support.TESTFN, "w")
-            fo.write(str(self.set))
-            fo.close()
-            fo = open(support.TESTFN, "r")
-            self.assertEqual(fo.read(), repr(self.set))
-        finally:
-            fo.close()
-            support.unlink(support.TESTFN)
+    # def test_print(self):
+    #     try:
+    #         fo = open(support.TESTFN, "w")
+    #         fo.write(str(self.set))
+    #         fo.close()
+    #         fo = open(support.TESTFN, "r")
+    #         self.assertEqual(fo.read(), repr(self.set))
+    #     finally:
+    #         fo.close()
+    #         support.unlink(support.TESTFN)
 
     def test_length(self):
         self.assertEqual(len(self.set), self.length)
@@ -888,12 +890,12 @@ class TestBasicOps:
         setiter = iter(self.set)
         self.assertEqual(setiter.__length_hint__(), len(self.set))
 
-    def test_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            p = pickle.dumps(self.set, proto)
-            copy = pickle.loads(p)
-            self.assertEqual(self.set, copy,
-                             "%s != %s" % (self.set, copy))
+    # def test_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         p = pickle.dumps(self.set, proto)
+    #         copy = pickle.loads(p)
+    #         self.assertEqual(self.set, copy,
+    #                          "%s != %s" % (self.set, copy))
 
     def test_issue_37219(self):
         with self.assertRaises(TypeError):
@@ -972,35 +974,35 @@ class TestBasicOpsString(TestBasicOps, unittest.TestCase):
 
 #------------------------------------------------------------------------------
 
-class TestBasicOpsBytes(TestBasicOps, unittest.TestCase):
-    def setUp(self):
-        self.case   = "bytes set"
-        self.values = [b"a", b"b", b"c"]
-        self.set    = set(self.values)
-        self.dup    = set(self.values)
-        self.length = 3
+# class TestBasicOpsBytes(TestBasicOps, unittest.TestCase):
+#     def setUp(self):
+#         self.case   = "bytes set"
+#         self.values = [b"a", b"b", b"c"]
+#         self.set    = set(self.values)
+#         self.dup    = set(self.values)
+#         self.length = 3
 
-    def test_repr(self):
-        self.check_repr_against_values()
+#     def test_repr(self):
+#         self.check_repr_against_values()
 
 #------------------------------------------------------------------------------
 
-class TestBasicOpsMixedStringBytes(TestBasicOps, unittest.TestCase):
-    def setUp(self):
-        self._warning_filters = support.check_warnings()
-        self._warning_filters.__enter__()
-        warnings.simplefilter('ignore', BytesWarning)
-        self.case   = "string and bytes set"
-        self.values = ["a", "b", b"a", b"b"]
-        self.set    = set(self.values)
-        self.dup    = set(self.values)
-        self.length = 4
+# class TestBasicOpsMixedStringBytes(TestBasicOps, unittest.TestCase):
+#     def setUp(self):
+#         self._warning_filters = support.check_warnings()
+#         self._warning_filters.__enter__()
+#         warnings.simplefilter('ignore', BytesWarning)
+#         self.case   = "string and bytes set"
+#         self.values = ["a", "b", b"a", b"b"]
+#         self.set    = set(self.values)
+#         self.dup    = set(self.values)
+#         self.length = 4
 
-    def tearDown(self):
-        self._warning_filters.__exit__(None, None, None)
+#     def tearDown(self):
+#         self._warning_filters.__exit__(None, None, None)
 
-    def test_repr(self):
-        self.check_repr_against_values()
+#     def test_repr(self):
+#         self.check_repr_against_values()
 
 #==============================================================================
 
@@ -1304,8 +1306,9 @@ class TestSubsets:
         for case in "!=", "==", "<", "<=", ">", ">=":
             expected = case in self.cases
             # Test the binary infix spelling.
-            result = eval("x" + case + "y", locals())
-            self.assertEqual(result, expected)
+            # skulpt has no support for locals
+            # result = eval("x" + case + "y", locals())
+            # self.assertEqual(result, expected)
             # Test the "friendly" method-name spelling, if one exists.
             if case in TestSubsets.case2method:
                 method = getattr(x, TestSubsets.case2method[case])
@@ -1314,8 +1317,8 @@ class TestSubsets:
 
             # Now do the same for the operands reversed.
             rcase = TestSubsets.reverse[case]
-            result = eval("y" + rcase + "x", locals())
-            self.assertEqual(result, expected)
+            # result = eval("y" + rcase + "x", locals())
+            # self.assertEqual(result, expected)
             if rcase in TestSubsets.case2method:
                 method = getattr(y, TestSubsets.case2method[rcase])
                 result = method(x)
@@ -1785,18 +1788,19 @@ class TestWeirdBugs(unittest.TestCase):
         s.update(range(100))
         list(si)
 
-    def test_merge_and_mutate(self):
-        class X:
-            def __hash__(self):
-                return hash(0)
-            def __eq__(self, o):
-                other.clear()
-                return False
+    # Not yet supported in skulpt
+    # def test_merge_and_mutate(self):
+    #     class X:
+    #         def __hash__(self):
+    #             return hash(0)
+    #         def __eq__(self, o):
+    #             other.clear()
+    #             return False
 
-        other = set()
-        other = {X() for i in range(10)}
-        s = {0}
-        s.update(other)
+    #     other = set()
+    #     other = {X() for i in range(10)}
+    #     s = {0}
+    #     s.update(other)
 
 # Application tests (based on David Eppstein's graph recipes ====================================
 
