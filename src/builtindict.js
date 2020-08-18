@@ -46,6 +46,7 @@ Sk.builtins = {
     "ImportError"        : Sk.builtin.ImportError,
     "IndentationError"   : Sk.builtin.IndentationError,
     "IndexError"         : Sk.builtin.IndexError,
+    "LookupError"        : Sk.builtin.LookupError,
     "KeyError"           : Sk.builtin.KeyError,
     "TypeError"          : Sk.builtin.TypeError,
     "NameError"          : Sk.builtin.NameError,

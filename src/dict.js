@@ -96,7 +96,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 // Found in dictionary
                 return res;
             }
-            throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
+            throw new Sk.builtin.KeyError(key);
         },
         mp$ass_subscript: function (key, value) {
             if (value === undefined) {
@@ -172,7 +172,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 if (d !== undefined) {
                     return d;
                 }
-                throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
+                throw new Sk.builtin.KeyError(key);
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: null,
@@ -599,7 +599,7 @@ Sk.builtin.dict.prototype.del$item = function (key) {
         return;
     }
     // Not found in dictionary
-    throw new Sk.builtin.KeyError(Sk.misceval.objectRepr(key));
+    throw new Sk.builtin.KeyError(key);
 };
 
 function as_set(self) {

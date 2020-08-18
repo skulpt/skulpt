@@ -17,12 +17,13 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     constructor: function Exception (...args) {
         // internally args is either a string
         Sk.asserts.assert(this instanceof Sk.builtin.BaseException);
-        // hackage to allow shorter throws
-        // let msg = args[0];
-        // if (typeof msg === "string" ) {
-        //     msg = new Sk.builtin.str(msg);
-        // }
-        this.args = new Sk.builtin.tuple([new Sk.builtin.str(args[0])]);
+        // internal calls may be thrown as a javascript string
+        // for all internal calls only the first argument is included in args
+        let arg = args[0];
+        if (typeof arg === "string" ) {
+            arg = new Sk.builtin.str(arg);
+        }
+        this.args = new Sk.builtin.tuple(arg ? [arg] : []);
         this.traceback = [];
 
         // For errors occurring during normal execution, the line/col/etc
@@ -53,10 +54,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         },
         tp$init: function (args, kwargs) {
             Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kwargs);
-            if (this.args.v !== args) {
-                // we only initiate the args if they are not identical to the args from tp$new;
-                this.args.v = args;
-            }
+            this.args = new Sk.builtin.tuple(args); // reset args in __init__ method
             return Sk.builtin.none.none$;
         },
         $r: function () {
@@ -172,6 +170,18 @@ Sk.builtin.IndexError = function (...args) {
 };
 Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Exception);
 
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {*=} args Typically called with a single string argument
+ */
+Sk.builtin.LookupError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
+
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception
@@ -180,7 +190,7 @@ Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Except
 Sk.builtin.KeyError = function (...args) {
     Sk.builtin.Exception.apply(this, args);
 };
-Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.Exception);
+Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.LookupError);
 
 /**
  * @constructor
