@@ -161,6 +161,9 @@ Sk.builtin.object.prototype.tp$getsets = {
             if (!this.hp$type || !value.sk$klass) {
                 throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
             }
+            if (value.prototype.sk$baseType !== this.sk$baseType) {
+                throw new Sk.builtin.TypeError("__class__ assignment: '" + Sk.abstr.typeName(this) + "' object layout differs from '" + value.prototype.tp$name + "'");
+            }
             Object.setPrototypeOf(this, value.prototype);
             return;
         },
