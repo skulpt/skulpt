@@ -208,10 +208,6 @@ Sk.misceval.swappedOp_ = {
     "LtE"  : "GtE",
     "Gt"   : "Lt",
     "GtE"  : "LtE",
-    "Is"   : "IsNot",
-    "IsNot": "Is",
-    "In_"  : "NotIn",
-    "NotIn": "In_"
 };
 
 Sk.misceval.opSymbols = {
