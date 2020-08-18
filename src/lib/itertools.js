@@ -12,29 +12,27 @@ var $builtinmodule = function (name) {
             this.iter = iter;
             this.func = func;
             this.total = initial;
-            this.first_iter = true;
+            // different initial iteration
+            this.tp$iternext = () => {
+                this.total = Sk.builtin.checkNone(this.total) ? this.iter.tp$iternext() : this.total;
+                delete this.tp$iternext;
+                return this.total;
+            };
         },
         iternext: function (canSuspend) {
-            if (this.first_iter !== undefined) {
-                this.total = Sk.builtin.checkNone(this.total) ? this.iter.tp$iternext() : this.total;
-                this.first_iter = undefined;
-                return this.total;
-            }
             let element = this.iter.tp$iternext();
             if (element !== undefined) {
                 this.total = Sk.misceval.callsimArray(this.func, [this.total, element]);
                 return this.total;
             }
-            return;
         },
         slots: {
             tp$doc:
                 "accumulate(iterable[, func, initial]) --> accumulate object\n\nReturn series of accumulated sums (or other binary function results).",
             tp$new: function (args, kwargs) {
-                let iter, func, initial;
                 // initial is a keyword only argument;
                 Sk.abstr.checkArgsLen("accumulate", args, 0, 2);
-                [iter, func, initial] = Sk.abstr.copyKeywordsToNamedArgs("accumulate", ["iterable", "func", "initial"], args, kwargs, [
+                let [iter, func, initial] = Sk.abstr.copyKeywordsToNamedArgs("accumulate", ["iterable", "func", "initial"], args, kwargs, [
                     Sk.builtin.none.none$,
                     Sk.builtin.none.none$,
                 ]);
@@ -55,25 +53,26 @@ var $builtinmodule = function (name) {
         constructor: function (iterables) {
             this.iterables = iterables;
             this.current_it = null;
-            this.i = 0;
-        },
-        iternext: function (canSuspend) {
-            if (this.current_it === null) {
+            this.tp$iternext = () => {
+                // different initial iteration
+                delete this.tp$iternext;
                 this.current_it = this.iterables.tp$iternext();
                 if (this.current_it === undefined) {
+                    this.tp$iternext = () => undefined;
                     return;
                 }
                 this.current_it = Sk.abstr.iter(this.current_it);
-            } else if (this.current_it === undefined) {
-                return;
-            }
-
+                return this.tp$iternext();
+            };
+        },
+        iternext: function (canSuspend) {
             let element;
             while (element === undefined) {
                 element = this.current_it.tp$iternext();
                 if (element === undefined) {
                     this.current_it = this.iterables.tp$iternext();
                     if (this.current_it === undefined) {
+                        this.tp$iternext = () => undefined;
                         return;
                     }
                     this.current_it = Sk.abstr.iter(this.current_it);
@@ -140,16 +139,15 @@ var $builtinmodule = function (name) {
             this.r = r;
             this.indices = new Array(r).fill().map((_, i) => i);
             this.n = pool.length;
-            this.initial = true;
+            this.tp$iternext = () => {
+                if (this.r > this.n) {
+                    return;
+                }
+                delete this.tp$iternext;
+                return new Sk.builtin.tuple(this.pool.slice(0, this.r));
+            };
         },
         iternext: function (canSuspend) {
-            if (this.r > this.n) {
-                return;
-            }
-            if (this.initial !== undefined) {
-                this.initial = undefined;
-                return new Sk.builtin.tuple(this.pool.slice(0, this.r));
-            }
             let i,
                 found = false;
             for (i = this.r - 1; i >= 0; i--) {
@@ -184,17 +182,16 @@ var $builtinmodule = function (name) {
             this.r = r;
             this.indices = new Array(r).fill(0);
             this.n = pool.length;
-            this.initial = true;
-        },
-        iternext: function (canSuspend) {
-            if (this.r && !this.n) {
-                return;
-            }
-            if (this.initial !== undefined) {
-                this.initial = undefined;
+            this.tp$iternext = () => {
+                if (this.r && !this.n) {
+                    return;
+                }
+                delete this.tp$iternext;
                 const res = this.indices.map((i) => this.pool[i]);
                 return new Sk.builtin.tuple(res);
-            }
+            };
+        },
+        iternext: function (canSuspend) {
             let found = false;
             let i;
             for (i = this.r - 1; i >= 0; i--) {
@@ -486,11 +483,9 @@ var $builtinmodule = function (name) {
             this.previt = start;
             this.stop = stop;
             this.step = step;
-            this.initial = true;
-        },
-        iternext: function (canSuspend) {
-            if (this.initial !== undefined) {
-                this.initial = undefined;
+            // different first iteration
+            this.tp$iternext = () => {
+                delete this.tp$iternext;
                 if (this.previt >= this.stop) {
                     // consume generator up to stop and return
                     for (let i = 0; i < this.stop; i++) {
@@ -504,7 +499,9 @@ var $builtinmodule = function (name) {
                     }
                     return this.iter.tp$iternext();
                 }
-            }
+            };
+        },
+        iternext: function (canSuspend) {
             if (this.previt + this.step >= this.stop) {
                 // consume generator up to stop and return
                 for (let i = this.previt + 1; i < this.stop; i++) {
@@ -588,17 +585,16 @@ var $builtinmodule = function (name) {
             this.indices = new Array(n).fill().map((_, i) => i);
             this.cycles = new Array(r).fill().map((_, i) => n - i);
             this.n = n;
-            this.initial = true;
+            this.tp$iternext = () => {
+                // different initial iteration
+                if (this.r > this.n) {
+                    return;
+                }
+                delete this.tp$iternext;           
+                return new Sk.builtin.tuple(this.pool.slice(0, this.r));
+            };
         },
         iternext: function (canSuspend) {
-            if (this.r > this.n) {
-                return;
-            }
-            if (this.initial !== undefined) {
-                this.initial = undefined;
-                return new Sk.builtin.tuple(this.pool.slice(0, this.r));
-            }
-
             for (let i = this.r - 1; i >= 0; i--) {
                 this.cycles[i]--;
                 if (this.cycles[i] == 0) {
@@ -642,19 +638,17 @@ var $builtinmodule = function (name) {
             this.n = pools.length;
             this.indices = Array(pools.length).fill(0);
             this.pool_sizes = pools.map((x) => x.length);
-            this.initial = true;
-        },
-        iternext: function (canSuspend) {
-            if (this.initial !== undefined) {
-                this.initial = undefined;
+            this.tp$iternext = () => {
+                delete this.tp$iternext;
                 const res = this.indices.map((_, i) => this.pools[i][this.indices[i]]);
                 if (res.some((element) => element === undefined)) {
                     this.n = 0; // at least one pool arguments is an empty iterator
                     return;
                 }
                 return new Sk.builtin.tuple(res);
-            }
-
+            };
+        },
+        iternext: function (canSuspend) {
             let i = this.n - 1;
             while (i >= 0 && i < this.n) {
                 this.indices[i]++;
@@ -702,16 +696,14 @@ var $builtinmodule = function (name) {
         constructor: function (object, times) {
             this.object = object;
             this.times = times;
+            if (times === undefined) {
+                this.tp$iternext = () => {
+                    return this.object;
+                };
+            }
         },
         iternext: function (canSuspend) {
-            if (this.times === undefined) {
-                return this.object;
-            } else if (this.times > 0) {
-                this.times--;
-                return this.object;
-            } else {
-                return;
-            }
+            return this.times-- > 0 ? this.object : undefined;
         },
         slots: {
             tp$doc:
@@ -721,7 +713,6 @@ var $builtinmodule = function (name) {
                 [object, times] = Sk.abstr.copyKeywordsToNamedArgs("repeat", ["object", "times"], args, kwargs, [Sk.builtin.none.none$]);
                 if (!Sk.builtin.checkNone(times)) {
                     times = Sk.misceval.asIndexOrThrow(times);
-                    times = times < 0 ? 0 : times; //not important for the algorithm but the repr
                 } else {
                     times = undefined;
                 }
@@ -735,7 +726,7 @@ var $builtinmodule = function (name) {
             },
             $r: function () {
                 object_repr = Sk.misceval.objectRepr(this.object);
-                times_repr = this.times === undefined ? "" : ", " + this.times;
+                times_repr = this.times === undefined ? "" : ", " + (this.times >= 0 ? this.times : 0);
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + object_repr + times_repr + ")");
             },
         },
@@ -788,16 +779,16 @@ var $builtinmodule = function (name) {
         constructor: function (predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
-            this.failed;
         },
         iternext: function () {
             const x = this.iter.tp$iternext();
-            if (this.failed === undefined && x !== undefined) {
+            if (x !== undefined) {
                 const val = Sk.misceval.callsimArray(this.predicate, [x]);
                 if (Sk.misceval.isTrue(val)) {
                     return x;
                 } else {
-                    this.failed = true;
+                    // failed
+                    this.tp$iternext = () => undefined;
                 }
             }
         },
