@@ -20,6 +20,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             L.push(true);
         }
         this.v = new Sk.builtin.dict(L);
+        this.in$repr = false;
     },
     slots: /**@lends {Sk.builtin.set.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
@@ -30,12 +31,18 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         tp$init: function (args, kwargs) {
             Sk.abstr.checkNoKwargs("set", kwargs);
             Sk.abstr.checkArgsLen("set", args, 0, 1);
+            this.set$clear();
             const iterable = args[0];
             return Sk.misceval.chain(iterable && this.set$update(iterable), () => Sk.builtin.none.none$);
         },
         tp$new: Sk.generic.new,
         $r: function () {
+            if (this.in$repr) {
+                return new Sk.builtin.str(Sk.abstr.typeName(this) + "(...)");
+            }
+            this.in$repr = true;
             const ret = this.sk$asarray().map((x) => Sk.misceval.objectRepr(x));
+            this.in$repr = false;
             if (Sk.__future__.python3) {
                 if (ret.length === 0) {
                     return new Sk.builtin.str(Sk.abstr.typeName(this) + "()");
@@ -50,7 +57,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             }
         },
         tp$iter: function () {
-            return new Sk.builtin.set_iter_(this);
+            return new set_iter_(this);
         },
         tp$richcompare: function (other, op) {
             if (!Sk.builtin.checkAnySet(other)) {
@@ -92,23 +99,30 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return this.symmetric_difference.$meth.call(this, other);
         }),
         nb$inplace_subtract: numberSlot(function (other) {
-            return this.difference_update.$meth.call(this, other);
+            if (other === this) {
+                other = other.set$copy();
+            }
+            return Sk.misceval.chain(this.difference_update.$meth.call(this, other), () => this);
         }),
         nb$inplace_and: numberSlot(function (other) {
-            return this.intersection_update.$meth.call(this, other);
+            return Sk.misceval.chain(this.intersection_update.$meth.call(this, other), () => this);
         }),
         nb$inplace_or: numberSlot(function (other) {
-            return this.update.$meth.call(this, other);
+            return Sk.misceval.chain(this.update.$meth.call(this, other), () => this);
         }),
         nb$inplace_xor: numberSlot(function (other) {
-            return this.symmetric_difference_update.$meth.call(this, other);
+            if (other === this) {
+                other = other.set$copy();
+            }
+            return Sk.misceval.chain(this.symmetric_difference_update.$meth.call(this, other), () => this);
         }),
         // sequence or mapping slots
         sq$length: function () {
             return this.get$size();
         },
-        sq$contains: function (ob) {
-            return this.v.sq$contains(ob);
+        sq$contains: function (entry) {
+            entry = entry_or_hashable_set(entry);
+            return this.v.sq$contains(entry);
         },
     },
     methods: /**@lends {Sk.builtin.set.prototype}*/ {
@@ -123,7 +137,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         clear: {
             $meth: function () {
-                this.v = new Sk.builtin.dict([]);
+                this.set$clear();
                 return Sk.builtin.none.none$;
             },
             $flags: { NoArgs: true },
@@ -139,8 +153,9 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return a shallow copy of a set.",
         },
         discard: {
-            $meth: function (item) {
-                this.set$discard(item);
+            $meth: function (entry) {
+                entry = entry_or_hashable_set(entry);
+                this.set$discard(entry);
                 return Sk.builtin.none.none$;
             },
             $flags: { OneArg: true },
@@ -245,8 +260,12 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         //     $textsig: null,
         //     $doc: "Return state information for pickling." },
         remove: {
-            $meth: function (item) {
-                return this.v.mp$ass_subscript(item);
+            $meth: function (entry) {
+                const tmp = entry_or_hashable_set(entry);
+                if (this.v.mp$lookup(tmp)) {
+                    return this.v.mp$ass_subscript(tmp);
+                }
+                throw new Sk.builtin.KeyError(entry);
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -275,7 +294,14 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         symmetric_difference_update: {
             $meth: function (other) {
-                return Sk.misceval.chain(this.set$symmetric_diff_update(other), () => Sk.builtin.none.none$);
+                if (!Sk.builtin.checkAnySet(other)) {
+                    other = this.set$make_basetype(other);
+                }
+                return Sk.misceval.chain(
+                    other,
+                    (other_set) => this.set$symmetric_diff_update(other_set),
+                    () => Sk.builtin.none.none$
+                );
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -325,6 +351,9 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 return entry;
             }
             return null;
+        },
+        set$clear: function () {
+            this.v = new Sk.builtin.dict([]);
         },
         set$copy: function () {
             return new this.sk$baseType(this.sk$asarray());
@@ -415,6 +444,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             L.push(true);
         }
         this.v = new Sk.builtin.dict(L);
+        this.in$repr = false;
     },
     slots: /**@lends {Sk.builtin.frozenset.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
@@ -451,7 +481,13 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             if (arg !== undefined && arg.ob$type === Sk.builtin.frozenset) {
                 return arg;
             }
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (S) => new Sk.builtin.frozenset(S));
+            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (S) => {
+                if (!S.length) {
+                    // in cpython frozenset() on an empty set returns the same object
+                    return Sk.builtin.frozenset.$emptyset;
+                }
+                return new Sk.builtin.frozenset(S);
+            });
         },
         $r: set_proto.$r,
         tp$iter: set_proto.tp$iter,
@@ -466,7 +502,11 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         sq$contains: set_proto.sq$contains,
     },
     methods: /**@lends {Sk.builtin.frozenset.prototype}*/ {
-        copy: set_proto.copy.d$def,
+        copy: Object.assign({}, set_proto.copy.d$def, {
+            $meth: function () {
+                return this.constructor === this.sk$baseType ? this : new Sk.builtin.frozenset(this.sk$asarray());
+            },
+        }),
         difference: set_proto.difference.d$def,
         intersection: set_proto.intersection.d$def,
         isdisjoint: set_proto.isdisjoint.d$def,
@@ -492,6 +532,11 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
     ),
 });
 
+Sk.builtin.frozenset.$emptyset = Object.create(Sk.builtin.frozenset.prototype, {
+    v: { value: new Sk.builtin.dict([]), enumerable: true },
+    in$repr: { value: false, enumerable: true },
+});
+
 Sk.exportSymbol("Sk.builtin.frozenset", Sk.builtin.frozenset);
 
 function numberSlot(f) {
@@ -502,3 +547,30 @@ function numberSlot(f) {
         return f.call(this, other);
     };
 }
+
+function entry_or_hashable_set(entry) {
+    if (entry instanceof Sk.builtin.set && entry.tp$hash === Sk.builtin.none.none$) {
+        // cpython nuance
+        entry = new Sk.builtin.frozenset(Sk.misceval.arrayFromIterable(entry));
+    }
+    return entry;
+}
+
+/**
+ * @constructor
+ * @extends {Sk.builtin.object}
+ * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
+ * @private
+ */
+var set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
+    constructor: function set_iter_ (set) {
+        this.$index = 0;
+        this.$seq = set.sk$asarray();
+        this.$orig = set;
+    },
+    iternext: Sk.generic.iterNextWithArrayCheckSize,
+    methods: {
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});

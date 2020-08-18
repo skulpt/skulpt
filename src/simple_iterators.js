@@ -95,24 +95,7 @@ Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator
     flags: { sk$acceptable_as_base_class: false },
 });
 
-/**
- * @constructor
- * @extends {Sk.builtin.object}
- * @param {Sk.builtin.set|Sk.builtin.frozenset} set or frozenset
- * @private
- */
-Sk.builtin.set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
-    constructor: function set_iter_ (set) {
-        this.$index = 0;
-        this.$seq = set.sk$asarray();
-        this.$orig = set;
-    },
-    iternext: Sk.generic.iterNextWithArrayCheckSize,
-    methods: {
-        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
+
 
 /**
  * @constructor
@@ -208,6 +191,5 @@ Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
 Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
-Sk.exportSymbol("Sk.builtin.seq_iter_", Sk.builtin.seq_iter_);
 Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);
 Sk.exportSymbol("Sk.builtin.tuple_iter_", Sk.builtin.tuple_iter_);
