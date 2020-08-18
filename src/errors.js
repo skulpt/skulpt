@@ -184,6 +184,23 @@ Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Except
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
+Sk.builtin.LookupError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.LookupError)) {
+        o = Object.create(Sk.builtin.LookupError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+};
+Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.LookupError", Sk.builtin.LookupError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
 Sk.builtin.KeyError = function (args) {
     var o;
     if (!(this instanceof Sk.builtin.KeyError)) {
@@ -191,9 +208,9 @@ Sk.builtin.KeyError = function (args) {
         o.constructor.apply(o, arguments);
         return o;
     }
-    Sk.builtin.Exception.apply(this, arguments);
+    Sk.builtin.LookupError.apply(this, arguments);
 };
-Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.Exception);
+Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.LookupError);
 
 /**
  * @constructor
@@ -525,22 +542,6 @@ Sk.builtin.UnicodeEncodeError = function (args) {
 Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.LookupError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.LookupError)) {
-        o = Object.create(Sk.builtin.LookupError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.LookupError", Sk.builtin.LookupError);
 
 /**
  * @constructor
