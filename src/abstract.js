@@ -473,20 +473,19 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
         throw new Sk.builtin.TypeError(func_name + "() expected at most " + varnames.length + " arguments (" + nargs + " given)");
     }
     if (!kwargs.length && defaults === undefined) {
+        // no defaults supplied
         return args;
     } else if (nargs === varnames.length && !kwargs.length) {
+        // position only arguments match
         return args;
-    } else if (nargs === 0 && varnames.length === (defaults ? defaults.length : defaults)) {
-        // a fast case
+    } else if (nargs === 0 && varnames.length === (defaults && defaults.length)) {
+        // a fast case - no args so just return the defaults
         return defaults;
     }
-    args = args.slice(0); //[...args]; // make a shallow copy of args
+    args = args.slice(0); // make a copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
         const name = kwargs[i]; // JS string
-        if (name === null) {
-            continue;
-        }
         const value = kwargs[i + 1]; // Python value
         const idx = varnames.indexOf(name);
 
