@@ -218,6 +218,28 @@ class SetTests(unittest.TestCase):
         a = set(range(6))
         a.remove(5)
         self.assertEqual(a, set([0, 1, 2, 3, 4]))
+        self.assertRaises(KeyError, set('abc').remove, 'Q')
+
+    def test_remove_keyerror_unpacking(self):
+        # bug:  www.python.org/sf/1576657
+        s = set('simsalabim')
+        for v1 in ['Q', (1,)]:
+            try:
+                s.remove(v1)
+            except KeyError as e:
+                v2 = e.args[0]
+                self.assertEqual(v1, v2)
+            else:
+                self.fail()
+
+    def test_remove_absent(self):
+        s = set('simsalabim')
+        try:
+            s.remove("d")
+            self.fail("Removing missing element should have raised LookupError")
+        except LookupError:
+            pass
+
 
     def test_discard(self):
         empty = set([])
