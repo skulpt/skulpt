@@ -34,6 +34,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
                 this.size++;
             }
         }
+        this.$version = 0;
     },
     slots: {
         tp$getattr: Sk.generic.getAttr,
