@@ -20,7 +20,7 @@
 Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
     constructor: function mappingproxy(d) {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
-        this.mapping = Object.create(null); // create from null to avoid name conflicts or prototype issues
+        this.entries = Object.create(null); // create from null to avoid name conflicts or prototype issues
         d = d || {};
         const d_copy = { ...d };
         // we make a shallow copy in order to ignore inherited attributes from the prototype
@@ -30,7 +30,8 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         for (let key in d_copy) {
             const k = Sk.unfixReserved(key);
             if (!k.includes("$")) {
-                this.mapping[k] = d_copy[key];
+                this.entries[k] = {lhs: new Sk.builtin.str(k), rhs: d_copy[key]};
+                // this.entries matches the internal representation of dicts
                 this.size++;
             }
         }
@@ -41,7 +42,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         $r: function () {
-            const ret = Object.entries(this.mapping).map((x) => "'" + x[0] + "': " + Sk.misceval.objectRepr(x[1]));
+            const ret = Object.entries(this.entries).map((x) => "'" + x[0] + "': " + Sk.misceval.objectRepr(x[1].rhs));
             return new Sk.builtin.str("mappingproxy({" + ret.join(", ") + "}");
         },
         mp$subscript: function (key) {
@@ -69,13 +70,12 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
     proto: {
         mp$lookup: function (key) {
             if (Sk.builtin.checkString(key)) {
-                return this.mapping[key.$jsstr()];
-            } else {
-                return undefined;
+                const item = this.entries[key.$jsstr()];
+                return item && item.rhs;
             }
         },
         sk$asarray: function () {
-            return Object.keys(this.mapping).map((key) => new Sk.builtin.str(key));
+            return Object.values(this.entries).map((item) => item.lhs);
         },
         get$size: function () {
             // useful for using dict key iterators
