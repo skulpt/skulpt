@@ -120,7 +120,10 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         mp$ass_subscript: function (key, value) {
             if (value === undefined) {
-                this.del$item(key);
+                const item = this.del$item(key);
+                if (item === undefined) {
+                    throw new Sk.builtin.KeyError(key);
+                }
             } else {
                 this.set$item(key, value);
             }
@@ -623,10 +626,10 @@ Sk.builtin.dict.prototype.del$item = function (key) {
     if (item !== undefined) {
         this.size--;
         this.$version++;
-        return;
+        return item;
     }
     // Not found in dictionary
-    throw new Sk.builtin.KeyError(key);
+    return undefined;
 };
 
 function as_set(self) {

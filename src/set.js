@@ -346,8 +346,8 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$baseType(S));
         },
         set$discard: function (entry) {
-            if (this.v.mp$lookup(entry) !== undefined) {
-                this.v.del$item(entry);
+            const item = this.v.del$item(entry);
+            if (item !== undefined) {
                 return entry;
             }
             return null;
