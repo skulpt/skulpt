@@ -164,13 +164,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         pop: {
             $meth: function (key, d) {
-                const hash = getHash(key);
-                let item;
-                item = typeof hash === "string" ? this.entries[hash] : this.pop$bucket_item(key, hash);
+                const item = del$item(key);
                 if (item !== undefined) {
-                    delete this.entries[hash]; // delete in either case - integer hash value has no effect here
-                    this.size--;
-                    this.$version++;
                     return item.rhs;
                 }
                 // Not found in dictionary
@@ -187,12 +182,13 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         popitem: {
             $meth: function () {
                 // not particularly efficent but we get allkeys as an array to iter anyway
-                if (this.get$size() == 0) {
+                const size = this.get$size();
+                if (size === 0) {
                     throw new Sk.builtin.KeyError("popitem(): dictionary is empty");
                 }
-                const youngest_key = Object.values(this.entries)[this.size - 1].lhs;
-                const val = this.pop.$meth.call(this, youngest_key, Sk.builtin.none.none$);
-                return new Sk.builtin.tuple([youngest_key, val]);
+                const item = Object.values(this.entries)[size - 1];
+                this.del$item(item.lhs);
+                return new Sk.builtin.tuple([item.lhs, item.rhs]);
             },
             $flags: { NoArgs: true },
             $textsig: null,
