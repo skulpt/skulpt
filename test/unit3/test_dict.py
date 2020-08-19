@@ -1,13 +1,13 @@
 import collections
-import collections.abc
-import gc
-import pickle
+# import collections.abc
+# import gc
+# import pickle
 import random
 import string
-import sys
+# import sys
 import unittest
-import weakref
-from test import support
+# import weakref
+# from test import support
 
 
 class DictTest(unittest.TestCase):
@@ -26,16 +26,17 @@ class DictTest(unittest.TestCase):
         self.assertEqual(dict(), {})
         self.assertIsNot(dict(), {})
 
-    def test_literal_constructor(self):
-        # check literal constructor for different sized dicts
-        # (to exercise the BUILD_MAP oparg).
-        for n in (0, 1, 6, 256, 400):
-            items = [(''.join(random.sample(string.ascii_letters, 8)), i)
-                     for i in range(n)]
-            random.shuffle(items)
-            formatted_items = ('{!r}: {:d}'.format(k, v) for k, v in items)
-            dictliteral = '{' + ', '.join(formatted_items) + '}'
-            self.assertEqual(eval(dictliteral), dict(items))
+    # def test_literal_constructor(self):
+    # Skulpt does not support eval TODO
+    #     # check literal constructor for different sized dicts
+    #     # (to exercise the BUILD_MAP oparg).
+    #     for n in (0, 1, 6, 256, 400):
+    #         items = [(''.join(random.sample(string.ascii_letters, 8)), i)
+    #                  for i in range(n)]
+    #         random.shuffle(items)
+    #         formatted_items = ('{!r}: {:d}'.format(k, v) for k, v in items)
+    #         dictliteral = '{' + ', '.join(formatted_items) + '}'
+    #         self.assertEqual(eval(dictliteral), dict(items))
 
     def test_merge_operator(self):
 
@@ -199,22 +200,24 @@ class DictTest(unittest.TestCase):
                 raise Exc
         self.assertRaises(Exc, d.update, FailingUserDict())
 
-        class FailingUserDict:
-            def keys(self):
-                class BogonIter:
-                    def __init__(self):
-                        self.i = 1
-                    def __iter__(self):
-                        return self
-                    def __next__(self):
-                        if self.i:
-                            self.i = 0
-                            return 'a'
-                        raise Exc
-                return BogonIter()
-            def __getitem__(self, key):
-                return key
-        self.assertRaises(Exc, d.update, FailingUserDict())
+        # Skulpt can't handle nested classes and global variables TODO
+
+        # class FailingUserDict:
+        #     def keys(self):
+        #         class BogonIter:
+        #             def __init__(self):
+        #                 self.i = 1
+        #             def __iter__(self):
+        #                 return self
+        #             def __next__(self):
+        #                 if self.i:
+        #                     self.i = 0
+        #                     return 'a'
+        #                 raise Exc
+        #         return BogonIter()
+        #     def __getitem__(self, key):
+        #         return key
+        # self.assertRaises(Exc, d.update, FailingUserDict())
 
         class FailingUserDict:
             def keys(self):
@@ -260,13 +263,13 @@ class DictTest(unittest.TestCase):
         self.assertEqual(dictlike().fromkeys('a'), {'a':None})
         self.assertIsInstance(dictlike.fromkeys('a'), dictlike)
         self.assertIsInstance(dictlike().fromkeys('a'), dictlike)
-        class mydict(dict):
-            def __new__(cls):
-                return collections.UserDict()
-        ud = mydict.fromkeys('ab')
-        self.assertEqual(ud, {'a':None, 'b':None})
-        self.assertIsInstance(ud, collections.UserDict)
-        self.assertRaises(TypeError, dict.fromkeys)
+        # class mydict(dict):
+        #     def __new__(cls):
+        #         return collections.UserDict()
+        # ud = mydict.fromkeys('ab')
+        # self.assertEqual(ud, {'a':None, 'b':None})
+        # self.assertIsInstance(ud, collections.UserDict)
+        # self.assertRaises(TypeError, dict.fromkeys)
 
         class Exc(Exception): pass
 
@@ -316,30 +319,30 @@ class DictTest(unittest.TestCase):
         self.assertRaises(TypeError, d.copy, None)
 
     def test_copy_fuzz(self):
-        for dict_size in [10, 100, 1000, 10000, 100000]:
+        for dict_size in [10, 100, 1000, ]:
             dict_size = random.randrange(
                 dict_size // 2, dict_size + dict_size // 2)
-            with self.subTest(dict_size=dict_size):
-                d = {}
-                for i in range(dict_size):
-                    d[i] = i
+            # with self.subTest(dict_size=dict_size):
+            d = {}
+            for i in range(dict_size):
+                d[i] = i
 
-                d2 = d.copy()
-                self.assertIsNot(d2, d)
-                self.assertEqual(d, d2)
-                d2['key'] = 'value'
-                self.assertNotEqual(d, d2)
-                self.assertEqual(len(d2), len(d) + 1)
-
-    def test_copy_maintains_tracking(self):
-        class A:
-            pass
-
-        key = A()
-
-        for d in ({}, {'a': 1}, {key: 'val'}):
             d2 = d.copy()
-            self.assertEqual(gc.is_tracked(d), gc.is_tracked(d2))
+            self.assertIsNot(d2, d)
+            self.assertEqual(d, d2)
+            d2['key'] = 'value'
+            self.assertNotEqual(d, d2)
+            self.assertEqual(len(d2), len(d) + 1)
+
+    # def test_copy_maintains_tracking(self):
+    #     class A:
+    #         pass
+
+    #     key = A()
+
+    #     for d in ({}, {'a': 1}, {key: 'val'}):
+    #         d2 = d.copy()
+    #         self.assertEqual(gc.is_tracked(d), gc.is_tracked(d2))
 
     def test_copy_noncompact(self):
         # Dicts don't compact themselves on del/pop operations.
@@ -573,11 +576,11 @@ class DictTest(unittest.TestCase):
         d = {1: BadRepr()}
         self.assertRaises(Exc, repr, d)
 
-    def test_repr_deep(self):
-        d = {}
-        for i in range(sys.getrecursionlimit() + 100):
-            d = {1: d}
-        self.assertRaises(RecursionError, repr, d)
+    # def test_repr_deep(self):
+    #     d = {}
+    #     for i in range(sys.getrecursionlimit() + 100):
+    #         d = {1: d}
+    #     self.assertRaises(RecursionError, repr, d)
 
     def test_eq(self):
         self.assertEqual({}, {})
@@ -777,15 +780,28 @@ class DictTest(unittest.TestCase):
         x1 = BadDictKey()
         x2 = BadDictKey()
         d[x1] = 1
-        for stmt in ['d[x2] = 2',
-                     'z = d[x2]',
-                     'x2 in d',
-                     'd.get(x2)',
-                     'd.setdefault(x2, 42)',
-                     'd.pop(x2)',
-                     'd.update({x2: 2})']:
-            with self.assertRaises(CustomException):
-                exec(stmt, locals())
+        # for stmt in ['d[x2] = 2',
+        #              'z = d[x2]',
+        #              'x2 in d',
+        #              'd.get(x2)',
+        #              'd.setdefault(x2, 42)',
+        #              'd.pop(x2)',
+        #              'd.update({x2: 2})']:
+        #     with self.assertRaises(CustomException):
+        #         exec(stmt, locals())
+        with self.assertRaises(CustomException):
+           d[x2] = 2 
+        with self.assertRaises(CustomException):
+            z = d[x2]
+        with self.assertRaises(CustomException):
+            d.get(x2)
+        with self.assertRaises(CustomException):
+            d.setdefault(x2, 42)
+        with self.assertRaises(CustomException):
+            d.pop(x2)
+        with self.assertRaises(CustomException):
+            d.update({x2: 2})
+
 
     def test_resize1(self):
         # Dict resizing bug, found by Jack Jansen in 2.2 CVS development.
@@ -833,122 +849,122 @@ class DictTest(unittest.TestCase):
                  'f': None, 'g': None, 'h': None}
         d = {}
 
-    def test_container_iterator(self):
-        # Bug #3680: tp_traverse was not implemented for dictiter and
-        # dictview objects.
-        class C(object):
-            pass
-        views = (dict.items, dict.values, dict.keys)
-        for v in views:
-            obj = C()
-            ref = weakref.ref(obj)
-            container = {obj: 1}
-            obj.v = v(container)
-            obj.x = iter(obj.v)
-            del obj, container
-            gc.collect()
-            self.assertIs(ref(), None, "Cycle was not collected")
+    # def test_container_iterator(self):
+    #     # Bug #3680: tp_traverse was not implemented for dictiter and
+    #     # dictview objects.
+    #     class C(object):
+    #         pass
+    #     views = (dict.items, dict.values, dict.keys)
+    #     for v in views:
+    #         obj = C()
+    #         ref = weakref.ref(obj)
+    #         container = {obj: 1}
+    #         obj.v = v(container)
+    #         obj.x = iter(obj.v)
+    #         del obj, container
+    #         gc.collect()
+    #         self.assertIs(ref(), None, "Cycle was not collected")
 
-    def _not_tracked(self, t):
-        # Nested containers can take several collections to untrack
-        gc.collect()
-        gc.collect()
-        self.assertFalse(gc.is_tracked(t), t)
+    # def _not_tracked(self, t):
+    #     # Nested containers can take several collections to untrack
+    #     gc.collect()
+    #     gc.collect()
+    #     self.assertFalse(gc.is_tracked(t), t)
 
-    def _tracked(self, t):
-        self.assertTrue(gc.is_tracked(t), t)
-        gc.collect()
-        gc.collect()
-        self.assertTrue(gc.is_tracked(t), t)
+    # def _tracked(self, t):
+    #     self.assertTrue(gc.is_tracked(t), t)
+    #     gc.collect()
+    #     gc.collect()
+    #     self.assertTrue(gc.is_tracked(t), t)
 
-    @support.cpython_only
-    def test_track_literals(self):
-        # Test GC-optimization of dict literals
-        x, y, z, w = 1.5, "a", (1, None), []
+    # @support.cpython_only
+    # def test_track_literals(self):
+    #     # Test GC-optimization of dict literals
+    #     x, y, z, w = 1.5, "a", (1, None), []
 
-        self._not_tracked({})
-        self._not_tracked({x:(), y:x, z:1})
-        self._not_tracked({1: "a", "b": 2})
-        self._not_tracked({1: 2, (None, True, False, ()): int})
-        self._not_tracked({1: object()})
+    #     self._not_tracked({})
+    #     self._not_tracked({x:(), y:x, z:1})
+    #     self._not_tracked({1: "a", "b": 2})
+    #     self._not_tracked({1: 2, (None, True, False, ()): int})
+    #     self._not_tracked({1: object()})
 
-        # Dicts with mutable elements are always tracked, even if those
-        # elements are not tracked right now.
-        self._tracked({1: []})
-        self._tracked({1: ([],)})
-        self._tracked({1: {}})
-        self._tracked({1: set()})
+    #     # Dicts with mutable elements are always tracked, even if those
+    #     # elements are not tracked right now.
+    #     self._tracked({1: []})
+    #     self._tracked({1: ([],)})
+    #     self._tracked({1: {}})
+    #     self._tracked({1: set()})
 
-    @support.cpython_only
-    def test_track_dynamic(self):
-        # Test GC-optimization of dynamically-created dicts
-        class MyObject(object):
-            pass
-        x, y, z, w, o = 1.5, "a", (1, object()), [], MyObject()
+    # @support.cpython_only
+    # def test_track_dynamic(self):
+    #     # Test GC-optimization of dynamically-created dicts
+    #     class MyObject(object):
+    #         pass
+    #     x, y, z, w, o = 1.5, "a", (1, object()), [], MyObject()
 
-        d = dict()
-        self._not_tracked(d)
-        d[1] = "a"
-        self._not_tracked(d)
-        d[y] = 2
-        self._not_tracked(d)
-        d[z] = 3
-        self._not_tracked(d)
-        self._not_tracked(d.copy())
-        d[4] = w
-        self._tracked(d)
-        self._tracked(d.copy())
-        d[4] = None
-        self._not_tracked(d)
-        self._not_tracked(d.copy())
+    #     d = dict()
+    #     self._not_tracked(d)
+    #     d[1] = "a"
+    #     self._not_tracked(d)
+    #     d[y] = 2
+    #     self._not_tracked(d)
+    #     d[z] = 3
+    #     self._not_tracked(d)
+    #     self._not_tracked(d.copy())
+    #     d[4] = w
+    #     self._tracked(d)
+    #     self._tracked(d.copy())
+    #     d[4] = None
+    #     self._not_tracked(d)
+    #     self._not_tracked(d.copy())
 
-        # dd isn't tracked right now, but it may mutate and therefore d
-        # which contains it must be tracked.
-        d = dict()
-        dd = dict()
-        d[1] = dd
-        self._not_tracked(dd)
-        self._tracked(d)
-        dd[1] = d
-        self._tracked(dd)
+    #     # dd isn't tracked right now, but it may mutate and therefore d
+    #     # which contains it must be tracked.
+    #     d = dict()
+    #     dd = dict()
+    #     d[1] = dd
+    #     self._not_tracked(dd)
+    #     self._tracked(d)
+    #     dd[1] = d
+    #     self._tracked(dd)
 
-        d = dict.fromkeys([x, y, z])
-        self._not_tracked(d)
-        dd = dict()
-        dd.update(d)
-        self._not_tracked(dd)
-        d = dict.fromkeys([x, y, z, o])
-        self._tracked(d)
-        dd = dict()
-        dd.update(d)
-        self._tracked(dd)
+    #     d = dict.fromkeys([x, y, z])
+    #     self._not_tracked(d)
+    #     dd = dict()
+    #     dd.update(d)
+    #     self._not_tracked(dd)
+    #     d = dict.fromkeys([x, y, z, o])
+    #     self._tracked(d)
+    #     dd = dict()
+    #     dd.update(d)
+    #     self._tracked(dd)
 
-        d = dict(x=x, y=y, z=z)
-        self._not_tracked(d)
-        d = dict(x=x, y=y, z=z, w=w)
-        self._tracked(d)
-        d = dict()
-        d.update(x=x, y=y, z=z)
-        self._not_tracked(d)
-        d.update(w=w)
-        self._tracked(d)
+    #     d = dict(x=x, y=y, z=z)
+    #     self._not_tracked(d)
+    #     d = dict(x=x, y=y, z=z, w=w)
+    #     self._tracked(d)
+    #     d = dict()
+    #     d.update(x=x, y=y, z=z)
+    #     self._not_tracked(d)
+    #     d.update(w=w)
+    #     self._tracked(d)
 
-        d = dict([(x, y), (z, 1)])
-        self._not_tracked(d)
-        d = dict([(x, y), (z, w)])
-        self._tracked(d)
-        d = dict()
-        d.update([(x, y), (z, 1)])
-        self._not_tracked(d)
-        d.update([(x, y), (z, w)])
-        self._tracked(d)
+    #     d = dict([(x, y), (z, 1)])
+    #     self._not_tracked(d)
+    #     d = dict([(x, y), (z, w)])
+    #     self._tracked(d)
+    #     d = dict()
+    #     d.update([(x, y), (z, 1)])
+    #     self._not_tracked(d)
+    #     d.update([(x, y), (z, w)])
+    #     self._tracked(d)
 
-    @support.cpython_only
-    def test_track_subtypes(self):
-        # Dict subtypes are always tracked
-        class MyDict(dict):
-            pass
-        self._tracked(MyDict())
+    # @support.cpython_only
+    # def test_track_subtypes(self):
+    #     # Dict subtypes are always tracked
+    #     class MyDict(dict):
+    #         pass
+    #     self._tracked(MyDict())
 
     def make_shared_key_dict(self, n):
         class C:
@@ -962,239 +978,240 @@ class DictTest(unittest.TestCase):
 
         return dicts
 
-    @support.cpython_only
-    def test_splittable_setdefault(self):
-        """split table must be combined when setdefault()
-        breaks insertion order"""
-        a, b = self.make_shared_key_dict(2)
+    # @support.cpython_only
+    # def test_splittable_setdefault(self):
+    #     """split table must be combined when setdefault()
+    #     breaks insertion order"""
+    #     a, b = self.make_shared_key_dict(2)
 
-        a['a'] = 1
-        size_a = sys.getsizeof(a)
-        a['b'] = 2
-        b.setdefault('b', 2)
-        size_b = sys.getsizeof(b)
-        b['a'] = 1
+    #     a['a'] = 1
+    #     size_a = sys.getsizeof(a)
+    #     a['b'] = 2
+    #     b.setdefault('b', 2)
+    #     size_b = sys.getsizeof(b)
+    #     b['a'] = 1
 
-        self.assertGreater(size_b, size_a)
-        self.assertEqual(list(a), ['x', 'y', 'z', 'a', 'b'])
-        self.assertEqual(list(b), ['x', 'y', 'z', 'b', 'a'])
+    #     self.assertGreater(size_b, size_a)
+    #     self.assertEqual(list(a), ['x', 'y', 'z', 'a', 'b'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z', 'b', 'a'])
 
-    @support.cpython_only
-    def test_splittable_del(self):
-        """split table must be combined when del d[k]"""
-        a, b = self.make_shared_key_dict(2)
+    # @support.cpython_only
+    # def test_splittable_del(self):
+    #     """split table must be combined when del d[k]"""
+    #     a, b = self.make_shared_key_dict(2)
 
-        orig_size = sys.getsizeof(a)
+    #     orig_size = sys.getsizeof(a)
 
-        del a['y']  # split table is combined
-        with self.assertRaises(KeyError):
-            del a['y']
+    #     del a['y']  # split table is combined
+    #     with self.assertRaises(KeyError):
+    #         del a['y']
 
-        self.assertGreater(sys.getsizeof(a), orig_size)
-        self.assertEqual(list(a), ['x', 'z'])
-        self.assertEqual(list(b), ['x', 'y', 'z'])
+    #     self.assertGreater(sys.getsizeof(a), orig_size)
+    #     self.assertEqual(list(a), ['x', 'z'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z'])
 
-        # Two dicts have different insertion order.
-        a['y'] = 42
-        self.assertEqual(list(a), ['x', 'z', 'y'])
-        self.assertEqual(list(b), ['x', 'y', 'z'])
+    #     # Two dicts have different insertion order.
+    #     a['y'] = 42
+    #     self.assertEqual(list(a), ['x', 'z', 'y'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z'])
 
-    @support.cpython_only
-    def test_splittable_pop(self):
-        """split table must be combined when d.pop(k)"""
-        a, b = self.make_shared_key_dict(2)
+    # @support.cpython_only
+    # def test_splittable_pop(self):
+    #     """split table must be combined when d.pop(k)"""
+    #     a, b = self.make_shared_key_dict(2)
 
-        orig_size = sys.getsizeof(a)
+    #     orig_size = sys.getsizeof(a)
 
-        a.pop('y')  # split table is combined
-        with self.assertRaises(KeyError):
-            a.pop('y')
+    #     a.pop('y')  # split table is combined
+    #     with self.assertRaises(KeyError):
+    #         a.pop('y')
 
-        self.assertGreater(sys.getsizeof(a), orig_size)
-        self.assertEqual(list(a), ['x', 'z'])
-        self.assertEqual(list(b), ['x', 'y', 'z'])
+    #     self.assertGreater(sys.getsizeof(a), orig_size)
+    #     self.assertEqual(list(a), ['x', 'z'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z'])
 
-        # Two dicts have different insertion order.
-        a['y'] = 42
-        self.assertEqual(list(a), ['x', 'z', 'y'])
-        self.assertEqual(list(b), ['x', 'y', 'z'])
+    #     # Two dicts have different insertion order.
+    #     a['y'] = 42
+    #     self.assertEqual(list(a), ['x', 'z', 'y'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z'])
 
-    @support.cpython_only
-    def test_splittable_pop_pending(self):
-        """pop a pending key in a splitted table should not crash"""
-        a, b = self.make_shared_key_dict(2)
+    # @support.cpython_only
+    # def test_splittable_pop_pending(self):
+    #     """pop a pending key in a splitted table should not crash"""
+    #     a, b = self.make_shared_key_dict(2)
 
-        a['a'] = 4
-        with self.assertRaises(KeyError):
-            b.pop('a')
+    #     a['a'] = 4
+    #     with self.assertRaises(KeyError):
+    #         b.pop('a')
 
-    @support.cpython_only
-    def test_splittable_popitem(self):
-        """split table must be combined when d.popitem()"""
-        a, b = self.make_shared_key_dict(2)
+    # @support.cpython_only
+    # def test_splittable_popitem(self):
+    #     """split table must be combined when d.popitem()"""
+    #     a, b = self.make_shared_key_dict(2)
 
-        orig_size = sys.getsizeof(a)
+    #     orig_size = sys.getsizeof(a)
 
-        item = a.popitem()  # split table is combined
-        self.assertEqual(item, ('z', 3))
-        with self.assertRaises(KeyError):
-            del a['z']
+    #     item = a.popitem()  # split table is combined
+    #     self.assertEqual(item, ('z', 3))
+    #     with self.assertRaises(KeyError):
+    #         del a['z']
 
-        self.assertGreater(sys.getsizeof(a), orig_size)
-        self.assertEqual(list(a), ['x', 'y'])
-        self.assertEqual(list(b), ['x', 'y', 'z'])
+    #     self.assertGreater(sys.getsizeof(a), orig_size)
+    #     self.assertEqual(list(a), ['x', 'y'])
+    #     self.assertEqual(list(b), ['x', 'y', 'z'])
 
-    @support.cpython_only
-    def test_splittable_setattr_after_pop(self):
-        """setattr() must not convert combined table into split table."""
-        # Issue 28147
-        import _testcapi
+    # @support.cpython_only
+    # def test_splittable_setattr_after_pop(self):
+    #     """setattr() must not convert combined table into split table."""
+    #     # Issue 28147
+    #     import _testcapi
 
-        class C:
-            pass
-        a = C()
+    #     class C:
+    #         pass
+    #     a = C()
 
-        a.a = 1
-        self.assertTrue(_testcapi.dict_hassplittable(a.__dict__))
+    #     a.a = 1
+    #     self.assertTrue(_testcapi.dict_hassplittable(a.__dict__))
 
-        # dict.pop() convert it to combined table
-        a.__dict__.pop('a')
-        self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
+    #     # dict.pop() convert it to combined table
+    #     a.__dict__.pop('a')
+    #     self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
 
-        # But C should not convert a.__dict__ to split table again.
-        a.a = 1
-        self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
+    #     # But C should not convert a.__dict__ to split table again.
+    #     a.a = 1
+    #     self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
 
-        # Same for popitem()
-        a = C()
-        a.a = 2
-        self.assertTrue(_testcapi.dict_hassplittable(a.__dict__))
-        a.__dict__.popitem()
-        self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
-        a.a = 3
-        self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
+    #     # Same for popitem()
+    #     a = C()
+    #     a.a = 2
+    #     self.assertTrue(_testcapi.dict_hassplittable(a.__dict__))
+    #     a.__dict__.popitem()
+    #     self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
+    #     a.a = 3
+    #     self.assertFalse(_testcapi.dict_hassplittable(a.__dict__))
 
-    def test_iterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            it = iter(data)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            self.assertEqual(list(it), list(data))
+    # def test_iterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         it = iter(data)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         self.assertEqual(list(it), list(data))
 
-            it = pickle.loads(d)
-            try:
-                drop = next(it)
-            except StopIteration:
-                continue
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            del data[drop]
-            self.assertEqual(list(it), list(data))
+    #         it = pickle.loads(d)
+    #         try:
+    #             drop = next(it)
+    #         except StopIteration:
+    #             continue
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         del data[drop]
+    #         self.assertEqual(list(it), list(data))
 
-    def test_itemiterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            # dictviews aren't picklable, only their iterators
-            itorg = iter(data.items())
-            d = pickle.dumps(itorg, proto)
-            it = pickle.loads(d)
-            # note that the type of the unpickled iterator
-            # is not necessarily the same as the original.  It is
-            # merely an object supporting the iterator protocol, yielding
-            # the same objects as the original one.
-            # self.assertEqual(type(itorg), type(it))
-            self.assertIsInstance(it, collections.abc.Iterator)
-            self.assertEqual(dict(it), data)
+    # def test_itemiterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         # dictviews aren't picklable, only their iterators
+    #         itorg = iter(data.items())
+    #         d = pickle.dumps(itorg, proto)
+    #         it = pickle.loads(d)
+    #         # note that the type of the unpickled iterator
+    #         # is not necessarily the same as the original.  It is
+    #         # merely an object supporting the iterator protocol, yielding
+    #         # the same objects as the original one.
+    #         # self.assertEqual(type(itorg), type(it))
+    #         self.assertIsInstance(it, collections.abc.Iterator)
+    #         self.assertEqual(dict(it), data)
 
-            it = pickle.loads(d)
-            drop = next(it)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            del data[drop[0]]
-            self.assertEqual(dict(it), data)
+    #         it = pickle.loads(d)
+    #         drop = next(it)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         del data[drop[0]]
+    #         self.assertEqual(dict(it), data)
 
-    def test_valuesiterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            # data.values() isn't picklable, only its iterator
-            it = iter(data.values())
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            self.assertEqual(list(it), list(data.values()))
+    # def test_valuesiterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         # data.values() isn't picklable, only its iterator
+    #         it = iter(data.values())
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         self.assertEqual(list(it), list(data.values()))
 
-            it = pickle.loads(d)
-            drop = next(it)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            values = list(it) + [drop]
-            self.assertEqual(sorted(values), sorted(list(data.values())))
+    #         it = pickle.loads(d)
+    #         drop = next(it)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         values = list(it) + [drop]
+    #         self.assertEqual(sorted(values), sorted(list(data.values())))
 
-    def test_reverseiterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            it = reversed(data)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            self.assertEqual(list(it), list(reversed(data)))
+    # def test_reverseiterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         it = reversed(data)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         self.assertEqual(list(it), list(reversed(data)))
 
-            it = pickle.loads(d)
-            try:
-                drop = next(it)
-            except StopIteration:
-                continue
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            del data[drop]
-            self.assertEqual(list(it), list(reversed(data)))
+    #         it = pickle.loads(d)
+    #         try:
+    #             drop = next(it)
+    #         except StopIteration:
+    #             continue
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         del data[drop]
+    #         self.assertEqual(list(it), list(reversed(data)))
 
-    def test_reverseitemiterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            # dictviews aren't picklable, only their iterators
-            itorg = reversed(data.items())
-            d = pickle.dumps(itorg, proto)
-            it = pickle.loads(d)
-            # note that the type of the unpickled iterator
-            # is not necessarily the same as the original.  It is
-            # merely an object supporting the iterator protocol, yielding
-            # the same objects as the original one.
-            # self.assertEqual(type(itorg), type(it))
-            self.assertIsInstance(it, collections.abc.Iterator)
-            self.assertEqual(dict(it), data)
+    # def test_reverseitemiterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         # dictviews aren't picklable, only their iterators
+    #         itorg = reversed(data.items())
+    #         d = pickle.dumps(itorg, proto)
+    #         it = pickle.loads(d)
+    #         # note that the type of the unpickled iterator
+    #         # is not necessarily the same as the original.  It is
+    #         # merely an object supporting the iterator protocol, yielding
+    #         # the same objects as the original one.
+    #         # self.assertEqual(type(itorg), type(it))
+    #         self.assertIsInstance(it, collections.abc.Iterator)
+    #         self.assertEqual(dict(it), data)
 
-            it = pickle.loads(d)
-            drop = next(it)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            del data[drop[0]]
-            self.assertEqual(dict(it), data)
+    #         it = pickle.loads(d)
+    #         drop = next(it)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         del data[drop[0]]
+    #         self.assertEqual(dict(it), data)
 
-    def test_reversevaluesiterator_pickling(self):
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
-            data = {1:"a", 2:"b", 3:"c"}
-            # data.values() isn't picklable, only its iterator
-            it = reversed(data.values())
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            self.assertEqual(list(it), list(reversed(data.values())))
+    # def test_reversevaluesiterator_pickling(self):
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         data = {1:"a", 2:"b", 3:"c"}
+    #         # data.values() isn't picklable, only its iterator
+    #         it = reversed(data.values())
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         self.assertEqual(list(it), list(reversed(data.values())))
 
-            it = pickle.loads(d)
-            drop = next(it)
-            d = pickle.dumps(it, proto)
-            it = pickle.loads(d)
-            values = list(it) + [drop]
-            self.assertEqual(sorted(values), sorted(data.values()))
+    #         it = pickle.loads(d)
+    #         drop = next(it)
+    #         d = pickle.dumps(it, proto)
+    #         it = pickle.loads(d)
+    #         values = list(it) + [drop]
+    #         self.assertEqual(sorted(values), sorted(data.values()))
 
-    def test_instance_dict_getattr_str_subclass(self):
-        class Foo:
-            def __init__(self, msg):
-                self.msg = msg
-        f = Foo('123')
-        class _str(str):
-            pass
-        self.assertEqual(f.msg, getattr(f, _str('msg')))
-        self.assertEqual(f.msg, f.__dict__[_str('msg')])
+    # Skulpt does not support str subclasses TODO
+    # def test_instance_dict_getattr_str_subclass(self):
+    #     class Foo:
+    #         def __init__(self, msg):
+    #             self.msg = msg
+    #     f = Foo('123')
+    #     class _str(str):
+    #         pass
+    #     self.assertEqual(f.msg, getattr(f, _str('msg')))
+    #     self.assertEqual(f.msg, f.__dict__[_str('msg')])
 
     def test_object_set_item_single_instance_non_str_key(self):
         class Foo: pass
@@ -1247,10 +1264,15 @@ class DictTest(unittest.TestCase):
         self.assertRaises(RuntimeError, d.update, other)
 
     def test_free_after_iterating(self):
-        support.check_free_after_iterating(self, iter, dict)
-        support.check_free_after_iterating(self, lambda d: iter(d.keys()), dict)
-        support.check_free_after_iterating(self, lambda d: iter(d.values()), dict)
-        support.check_free_after_iterating(self, lambda d: iter(d.items()), dict)
+        def check_free_after_iterating(test, iter, cls, args=()):
+            class A(cls): pass
+            it = iter(A(*args))
+            test.assertRaises(StopIteration, next, it)
+
+        check_free_after_iterating(self, iter, dict)
+        check_free_after_iterating(self, lambda d: iter(d.keys()), dict)
+        check_free_after_iterating(self, lambda d: iter(d.values()), dict)
+        check_free_after_iterating(self, lambda d: iter(d.items()), dict)
 
     def test_equal_operator_modifying_operand(self):
         # test fix for seg fault reported in bpo-27945 part 3.
@@ -1333,19 +1355,20 @@ class DictTest(unittest.TestCase):
         pair = [X(), 123]
         dict([pair])
 
-    def test_oob_indexing_dictiter_iternextitem(self):
-        class X(int):
-            def __del__(self):
-                d.clear()
+    # Skulpt dict does not use __del__ here TODO
+    # def test_oob_indexing_dictiter_iternextitem(self):
+    #     class X(int):
+    #         def __del__(self):
+    #             d.clear()
 
-        d = {i: X(i) for i in range(8)}
+    #     d = {i: X(i) for i in range(8)}
 
-        def iter_and_mutate():
-            for result in d.items():
-                if result[0] == 2:
-                    d[2] = None # free d[2] --> X(2).__del__ was called
+    #     def iter_and_mutate():
+    #         for result in d.items():
+    #             if result[0] == 2:
+    #                 d[2] = None # free d[2] --> X(2).__del__ was called
 
-        self.assertRaises(RuntimeError, iter_and_mutate)
+    #     self.assertRaises(RuntimeError, iter_and_mutate)
 
     def test_reversed(self):
         d = {"a": 1, "b": 2, "foo": 0, "c": 3, "d": 4}
@@ -1410,46 +1433,46 @@ class DictTest(unittest.TestCase):
         self.assertEqual(pairs[::-1], list(dict(d).items()))
 
 
-class CAPITest(unittest.TestCase):
+# class CAPITest(unittest.TestCase):
 
-    # Test _PyDict_GetItem_KnownHash()
-    @support.cpython_only
-    def test_getitem_knownhash(self):
-        from _testcapi import dict_getitem_knownhash
+#     # Test _PyDict_GetItem_KnownHash()
+#     @support.cpython_only
+#     def test_getitem_knownhash(self):
+#         from _testcapi import dict_getitem_knownhash
 
-        d = {'x': 1, 'y': 2, 'z': 3}
-        self.assertEqual(dict_getitem_knownhash(d, 'x', hash('x')), 1)
-        self.assertEqual(dict_getitem_knownhash(d, 'y', hash('y')), 2)
-        self.assertEqual(dict_getitem_knownhash(d, 'z', hash('z')), 3)
+#         d = {'x': 1, 'y': 2, 'z': 3}
+#         self.assertEqual(dict_getitem_knownhash(d, 'x', hash('x')), 1)
+#         self.assertEqual(dict_getitem_knownhash(d, 'y', hash('y')), 2)
+#         self.assertEqual(dict_getitem_knownhash(d, 'z', hash('z')), 3)
 
-        # not a dict
-        self.assertRaises(SystemError, dict_getitem_knownhash, [], 1, hash(1))
-        # key does not exist
-        self.assertRaises(KeyError, dict_getitem_knownhash, {}, 1, hash(1))
+#         # not a dict
+#         self.assertRaises(SystemError, dict_getitem_knownhash, [], 1, hash(1))
+#         # key does not exist
+#         self.assertRaises(KeyError, dict_getitem_knownhash, {}, 1, hash(1))
 
-        class Exc(Exception): pass
-        class BadEq:
-            def __eq__(self, other):
-                raise Exc
-            def __hash__(self):
-                return 7
+#         class Exc(Exception): pass
+#         class BadEq:
+#             def __eq__(self, other):
+#                 raise Exc
+#             def __hash__(self):
+#                 return 7
 
-        k1, k2 = BadEq(), BadEq()
-        d = {k1: 1}
-        self.assertEqual(dict_getitem_knownhash(d, k1, hash(k1)), 1)
-        self.assertRaises(Exc, dict_getitem_knownhash, d, k2, hash(k2))
+#         k1, k2 = BadEq(), BadEq()
+#         d = {k1: 1}
+#         self.assertEqual(dict_getitem_knownhash(d, k1, hash(k1)), 1)
+#         self.assertRaises(Exc, dict_getitem_knownhash, d, k2, hash(k2))
 
 
-from test import mapping_tests
+# from test import mapping_tests
 
-class GeneralMappingTests(mapping_tests.BasicTestMappingProtocol):
-    type2test = dict
+# class GeneralMappingTests(mapping_tests.BasicTestMappingProtocol):
+#     type2test = dict
 
-class Dict(dict):
-    pass
+# class Dict(dict):
+#     pass
 
-class SubclassMappingTests(mapping_tests.BasicTestMappingProtocol):
-    type2test = Dict
+# class SubclassMappingTests(mapping_tests.BasicTestMappingProtocol):
+#     type2test = Dict
 
 
 if __name__ == "__main__":
