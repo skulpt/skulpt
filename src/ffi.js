@@ -84,10 +84,7 @@ Sk.ffi.remapToJs = function (obj) {
     var ret;
     if (obj instanceof Sk.builtin.dict) {
         ret = {};
-        const entries = obj.entries;
-        let item;
-        for (let keyhash in entries) {
-            item = entries[keyhash];
+        for (let item in Object.values(obj.entries)) {
             k = item.lhs;
             v = item.rhs;
             kAsJs = Sk.ffi.remapToJs(k);

@@ -65,19 +65,11 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             } else if (this.size !== other.size) {
                 res = false;
             } else {
-                let item, k, v, otherv;
-                const entries = this.entries;
+                let otherv;
                 res = true;
-                for (let key_hash in entries) {
-                    item = entries[key_hash];
-                    k = item.lhs;
-                    v = item.rhs;
-                    otherv = other.mp$lookup(k);
-                    if (otherv === undefined) {
-                        res = false;
-                        break;
-                    }
-                    if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
+                for (let item in Object.values(this.entries)) {
+                    otherv = other.mp$lookup(item.lhs);
+                    if (otherv === undefined || !Sk.misceval.richCompareBool(item.rhs, otherv, "Eq")) {
                         res = false;
                         break;
                     }
