@@ -28,6 +28,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             this.set$item(L[i], L[i + 1]);
         }
         this.in$repr = false;
+        this.$version = 0; // change version number anytime the keys change
     },
     slots: /**@lends {Sk.builtin.dict.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
@@ -126,15 +127,6 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return Sk.builtin.none.none$;
         },
     },
-    proto: /**@lends {Sk.builtin.dict.prototype}*/ {
-        get$size: function () {
-            // can't be overridden by subclasses so we use this for the dict key iterator
-            return this.size;
-        },
-        sk$asarray: function () {
-            return Object.values(this.entries).map((item) => item.lhs);
-        },
-    },
     methods: /**@lends {Sk.builtin.dict.prototype}*/ {
         __reversed__: {
             $meth: function () {
@@ -179,22 +171,13 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         pop: {
             $meth: function (key, d) {
                 const hash = getHash(key);
-                let item, value;
-                if (typeof hash === "string") {
-                    item = this.entries[hash];
-                    if (item !== undefined) {
-                        value = item.rhs;
-                        delete this.entries[hash];
-                    }
-                } else {
-                    item = this.pop$bucket_item(key, hash);
-                    if (item !== undefined) {
-                        value = item.rhs;
-                    }
-                }
-                if (value !== undefined) {
-                    this.size -= 1;
-                    return value;
+                let item;
+                item = typeof hash === "string" ? this.entries[hash] : this.pop$bucket_item(key, hash);
+                if (item !== undefined) {
+                    delete this.entries[hash]; // delete in either case - integer hash value has no effect here
+                    this.size--;
+                    this.$version++;
+                    return item.rhs;
                 }
                 // Not found in dictionary
                 if (d !== undefined) {
@@ -257,6 +240,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         clear: {
             $meth: function () {
                 this.size = 0;
+                this.$version++;
                 this.entries = Object.create(null);
                 this.buckets = {};
             },
@@ -266,9 +250,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         copy: {
             $meth: function () {
-                const newCopy = new Sk.builtin.dict([]);
-                newCopy.dict$merge(this);
-                return newCopy;
+                return this.dict$copy();
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -277,19 +259,37 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     },
     classmethods: /**@lends {Sk.builtin.dict.prototype}*/ {
         fromkeys: {
-            $flags: { MinArgs: 1, MaxArgs: 2 },
-            $textsig: "($type, iterable, value=None, /)",
             $meth: function fromkeys(seq, value) {
                 value = value || Sk.builtin.none.none$;
-                const dict = new Sk.builtin.dict([]);
+                let dict = this === Sk.builtin.dict ? new this() : this.tp$call([],[]);
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(seq), (key) => {
-                        dict.set$item(key, value);
-                    }),
+                    dict,
+                    (d) => {
+                        dict = d;
+                        return Sk.misceval.iterFor(Sk.abstr.iter(seq), (key) => {
+                            dict.mp$ass_subscript(key, value);
+                        });
+                    },
                     () => dict
                 );
             },
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: "($type, iterable, value=None, /)",
             $doc: "Create a new dictionary with keys from iterable and values set to value.",
+        },
+    },
+    proto: /**@lends {Sk.builtin.dict.prototype}*/ {
+        get$size: function () {
+            // can't be overridden by subclasses so we use this for the dict key iterator
+            return this.size;
+        },
+        sk$asarray: function () {
+            return Object.values(this.entries).map((item) => item.lhs);
+        },
+        dict$copy: function () {
+            const newCopy = new Sk.builtin.dict([]);
+            newCopy.dict$merge(this);
+            return newCopy;
         },
     },
 });
@@ -557,10 +557,10 @@ Sk.builtin.dict.prototype.dict$merge_seq = function (arg) {
             throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + idx + " to a sequence");
         }
         const seq = Sk.misceval.arrayFromIterable(i);
-        this.set$item(seq[0], seq[1]);
         if (seq.length !== 2) {
             throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + seq.length + "; 2 is required");
         }
+        this.set$item(seq[0], seq[1]);
         idx++;
     });
 };
@@ -584,7 +584,8 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
         item = this.entries[hash];
         if (item === undefined) {
             this.entries[hash] = { lhs: key, rhs: value };
-            this.size += 1;
+            this.size++;
+            this.$version++;
         } else {
             item.rhs = value;
         }
@@ -592,7 +593,8 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
         item = this.get$bucket_item(key, hash);
         if (item === undefined) {
             this.set$bucket_item(key, value, hash);
-            this.size += 1;
+            this.size++;
+            this.$version++;
         } else {
             item.rhs = value;
         }
@@ -619,7 +621,8 @@ Sk.builtin.dict.prototype.del$item = function (key) {
         item = this.pop$bucket_item(key, hash);
     }
     if (item !== undefined) {
-        this.size -= 1;
+        this.size--;
+        this.$version++;
         return;
     }
     // Not found in dictionary
