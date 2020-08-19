@@ -66,9 +66,6 @@ const collections_mod = function (keywds) {
                 const dict_str = Sk.builtin.dict.prototype.$r.call(this).v;
                 return new Sk.builtin.str("defaultdict(" + def_str + ", " + dict_str + ")");
             },
-            mp$subscript: function (key) {
-                return this.mp$lookup(key) || Sk.misceval.callsimArray(this.__missing__, [this, key]);
-            },
         },
     });
 

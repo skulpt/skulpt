@@ -90,11 +90,16 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         sq$contains: function (ob) {
             return this.mp$lookup(ob) !== undefined;
         },
-        mp$subscript: function (key) {
+        mp$subscript: function (key, canSuspend) {
             const res = this.mp$lookup(key);
             if (res !== undefined) {
                 // Found in dictionary
                 return res;
+            }
+            let missing = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$missing);  
+            if (missing !== undefined) {
+                const ret = Sk.misceval.callsimOrSuspendArray(missing, [this, key]);
+                return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
             }
             throw new Sk.builtin.KeyError(key);
         },
