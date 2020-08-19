@@ -565,7 +565,7 @@ function entry_or_hashable_set(entry) {
  * @private
  */
 var set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
-    constructor: function set_iter_ (set) {
+    constructor: function set_iter_(set) {
         this.$index = 0;
         this.$seq = set.sk$asarray();
         this.$orig = set;

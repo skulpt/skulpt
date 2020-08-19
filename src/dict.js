@@ -86,7 +86,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return op === "Eq" ? res : !res;
         },
         // as number slot
-        nb$or: function(other) {
+        nb$or: function (other) {
             if (!(other instanceof Sk.builtin.dict)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -94,9 +94,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             dict.dict$merge(other);
             return dict;
         },
-        nb$inplace_or: function(other){
-            this.update$common([other], [], "|");
-            return this;
+        nb$inplace_or: function (other) {
+            return Sk.misceval.chain(this.update$common([other], [], "|"), () => this);
         },
         // sequence or mapping slots
         sq$length: function () {
@@ -111,7 +110,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 // Found in dictionary
                 return res;
             }
-            let missing = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$missing);  
+            let missing = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$missing);
             if (missing !== undefined) {
                 const ret = Sk.misceval.callsimOrSuspendArray(missing, [this, key]);
                 return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
@@ -152,13 +151,13 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 // logic could be simpler here but some tests dictate we can't do too many lookups
                 let item;
                 const hash = getHash(key);
-                item = (typeof hash === "string") ?  this.entries[hash] : this.get$bucket_item(key, hash);
+                item = typeof hash === "string" ? this.entries[hash] : this.get$bucket_item(key, hash);
                 if (item !== undefined) {
                     return item.rhs;
                 }
                 default_ = default_ || Sk.builtin.none.none$;
-                if (typeof hash === "string" ) {
-                    this.entries[hash] = {lhs: key, rhs: default_};
+                if (typeof hash === "string") {
+                    this.entries[hash] = { lhs: key, rhs: default_ };
                 } else {
                     this.set$bucket_item(key, default_, hash);
                 }
@@ -264,7 +263,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         fromkeys: {
             $meth: function fromkeys(seq, value) {
                 value = value || Sk.builtin.none.none$;
-                let dict = this === Sk.builtin.dict ? new this() : this.tp$call([],[]);
+                let dict = this === Sk.builtin.dict ? new this() : this.tp$call([], []);
                 return Sk.misceval.chain(
                     dict,
                     (d) => {
@@ -307,7 +306,6 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
     },
 });
-
 
 function getHash(key) {
     let key_hash = key.$savedKeyHash_;
@@ -733,7 +731,6 @@ const dict_view_slots = {
         return this.dict.get$size();
     },
 };
-
 
 function buildDictView(typename, slots, reverse_method) {
     const options = {
