@@ -32,6 +32,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     slots: /**@lends {Sk.builtin.dict.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
+        tp$as_number: true,
         tp$hash: Sk.builtin.none.none$,
         tp$doc:
             "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)",
@@ -82,6 +83,19 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 }
             }
             return op === "Eq" ? res : !res;
+        },
+        // as number slot
+        nb$or: function(other) {
+            if (!(other instanceof Sk.builtin.dict)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            const dict = this.dict$copy();
+            dict.dict$merge(other);
+            return dict;
+        },
+        nb$inplace_or: function(other){
+            this.update$common([other], [], "|");
+            return this;
         },
         // sequence or mapping slots
         sq$length: function () {
