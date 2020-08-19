@@ -678,39 +678,27 @@ const dict_view_slots = {
         if (!(Sk.builtin.checkAnySet(other) || checkAnyView(other))) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        let result;
         const len_self = this.sq$length();
         const len_other = other.sq$length();
         switch (op) {
             case "NotEq":
             case "Eq":
-                if (len_self === len_other) {
-                    result = all_contained_in(this, other);
+                let res;
+                if (this === other) {
+                    res = true;
+                } else if (len_self === len_other) {
+                    res = all_contained_in(this, other);
                 }
-                result = op === "NotEq" ? !result : result;
-                break;
+                return op === "NotEq" ? !res : res;
             case "Lt":
-                if (len_self < len_other) {
-                    result = all_contained_in(this, other);
-                }
-                break;
+                return len_self < len_other && all_contained_in(this, other);
             case "LtE":
-                if (len_self <= len_other) {
-                    result = all_contained_in(this, other);
-                }
-                break;
+                return len_self <= len_other && all_contained_in(this, other);
             case "Gt":
-                if (len_self > len_other) {
-                    result = all_contained_in(other, this);
-                }
-                break;
+                return len_self > len_other && all_contained_in(other, this);
             case "GtE":
-                if (len_self >= len_other) {
-                    result = all_contained_in(other, this);
-                }
-                break;
+                return len_self >= len_other &&  all_contained_in(other, this);
         }
-        return result;
     },
     nb$subtract: function (other) {
         const set = as_set(this);
