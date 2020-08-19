@@ -811,24 +811,28 @@ var dict_items = buildDictView(
     }
 );
 
-function dict_iter_constructor(dict) {
-    this.$index = 0;
-    this.$seq = dict.sk$asarray();
-    this.$orig = dict;
-}
 
 /**
  * @param {string} typename
  * @param {Function} iternext
  * @param {Function=} constructor
  */
-function buildDictIterClass(typename, iternext, constructor) {
+function buildDictIterClass(typename, iternext, reversed) {
     return Sk.abstr.buildIteratorClass(typename, {
-        constructor:
-            constructor ||
-            function (dict) {
-                dict_iter_constructor.call(this, dict);
-            },
+        constructor: function dict_iter_constructor(dict) {
+            this.$index = 0;
+            this.$orig = dict;
+            this.tp$iternext = () => {
+                // only set up the array on the first iteration
+                this.$seq = dict.sk$asarray();
+                this.$version = dict.$version;
+                if (reversed) {
+                    this.$seq = this.$seq.reverse();
+                }
+                delete this.tp$iternext;
+                return this.tp$iternext();
+            };
+        },
         iternext: iternext,
         methods: {
             __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
@@ -837,22 +841,34 @@ function buildDictIterClass(typename, iternext, constructor) {
     });
 }
 
+function iternextCheckSize() {
+    if (this.$seq.length !== this.$orig.get$size()) {
+        const error_name = this.tp$name.split("_")[0];
+        throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
+    } else if (this.$version !== this.$orig.$version) {
+        throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
+    } else if (this.$index >= this.$seq.length) {
+        return undefined;
+    } 
+    return this.$seq[this.$index++];
+}
+
+
 /**
  * @constructor
  * @param {Sk.builtin.dict} dict
  */
-var dict_iter_ = buildDictIterClass("dict_keyiterator", Sk.generic.iterNextWithArrayCheckSize);
+var dict_iter_ = buildDictIterClass("dict_keyiterator", iternextCheckSize);
 
-function dict_iter_get_value_or_throw() {
-    const key = Sk.generic.iterNextWithArrayCheckSize.call(this);
+function getItemAsArray() {
+    const key = iternextCheckSize.call(this);
     if (key === undefined) {
         return undefined;
     }
     const res = this.$orig.mp$lookup(key);
     if (res !== undefined) {
-        return res;
+        return [key, res];
     }
-    // some what of a hack since we don't dynamically get keys unlike Python
     throw new Sk.builtin.RuntimeError(Sk.misceval.objectRepr(key) + " removed during iteration");
 }
 
@@ -861,7 +877,8 @@ function dict_iter_get_value_or_throw() {
  * @param {Sk.builtin.dict} dict
  */
 var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
-    return dict_iter_get_value_or_throw.call(this);
+    const item = getItemAsArray.call(this);
+    return item && item[1];
 });
 
 /**
@@ -869,30 +886,15 @@ var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
  * @param {Sk.builtin.dict} dict
  */
 var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
-    const idx = this.$index;
-    const val = dict_iter_get_value_or_throw.call(this);
-    if (val === undefined) {
-        return undefined;
-    }
-    return new Sk.builtin.tuple([this.$seq[idx], val]);
+    const item = getItemAsArray.call(this);
+    return item && new Sk.builtin.tuple(item);
 });
 
-function dict_reverse_iter_constructor(dict) {
-    dict_iter_constructor.call(this, dict);
-    this.$seq.reverse();
-}
+var dict_reverse_iter_ = buildDictIterClass("dict_reversekeyiterator", dict_iter_.prototype.tp$iternext, true);
 
-var dict_reverse_iter_ = buildDictIterClass("dict_reversekeyiterator", dict_iter_.prototype.tp$iternext, function (dict) {
-    dict_reverse_iter_constructor.call(this, dict);
-});
+var dict_reverse_itemiter_ = buildDictIterClass("dict_reverseitemiterator", dict_itemiter_.prototype.tp$iternext, true);
 
-var dict_reverse_itemiter_ = buildDictIterClass("dict_reverseitemiterator", dict_itemiter_.prototype.tp$iternext, function (dict) {
-    dict_reverse_iter_constructor.call(this, dict);
-});
-
-var dict_reverse_valueiter_ = buildDictIterClass("dict_reversevalueiterator", dict_valueiter_.prototype.tp$iternext, function (dict) {
-    dict_reverse_iter_constructor.call(this, dict);
-});
+var dict_reverse_valueiter_ = buildDictIterClass("dict_reversevalueiterator", dict_valueiter_.prototype.tp$iternext, true);
 
 
 
