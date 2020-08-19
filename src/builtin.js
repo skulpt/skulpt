@@ -595,39 +595,18 @@ Sk.builtin.isinstance = function isinstance(obj, type) {
     return Sk.builtin.bool.false$;
 };
 
-Sk.builtin.hash = function hash(value) {
-    var junk;
-
-    // Useless object to get compiler to allow check for __hash__ property
-    junk = {
-        __hash__: function () {
-            return 0;
-        },
-    };
-
-    if (value instanceof Object) {
-        if (Sk.builtin.checkNone(value.tp$hash)) {
-            // python sets the hash function to None , so we have to catch this case here
+Sk.builtin.hash = function hash(obj) {
+    const hash_func = obj.tp$hash;
+    if (hash_func) {
+        if (Sk.builtin.checkNone(hash_func)) {
             throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(value) + "'");
-        } else if (value.tp$hash !== undefined) {
-            if (value.$savedHash_) {
-                return value.$savedHash_;
-            }
-            value.$savedHash_ = value.tp$hash();
-            return value.$savedHash_;
-        } else {
-            if (value.__hash === undefined) {
-                Sk.builtin.hashCount += 1;
-                value.__hash = Sk.builtin.hashCount;
-            }
-            return new Sk.builtin.int_(value.__hash);
         }
-    } else if (typeof value === "number" || value === null || value === true || value === false) {
+        return obj.tp$hash();
+    } 
+    if (typeof value === "number" || value === null || value === true || value === false) {
         throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
-
     return new Sk.builtin.str(typeof value + " " + String(value));
-    // todo; throw properly for unhashable types
 };
 
 Sk.builtin.getattr = function getattr(obj, pyName, default_) {
