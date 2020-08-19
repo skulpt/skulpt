@@ -465,26 +465,22 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 Sk.builtin.dict.prototype.dict$merge = function (b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
     // so use this.set$item instead which can't be overridden by a subclass
+    let keys;
     if (b.tp$iter === Sk.builtin.dict.prototype.tp$iter) {
         // fast way used
-        const entries = b.entries;
-        let item;
-        for (let key_hash in entries) {
-            item = entries[key_hash];
-            this.set$item(item.lhs, item.rhs);
-        }
+        keys = b.tp$iter();
     } else {
         // generic slower way for a subclass that has overriden the tp$iter method
         // we'll just assume prototypical inheritance here!
-        const keys = Sk.misceval.callsimOrSuspendArray(b.keys, [b]);
-        return Sk.misceval.chain(keys, (keys) =>
-            Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
-                Sk.misceval.chain(b.mp$subscript(key), (v) => {
-                    this.set$item(key, v);
-                })
-            )
-        );
+        keys = Sk.misceval.callsimOrSuspendArray(b.keys, [b]);
     }
+    return Sk.misceval.chain(keys, (keys) =>
+        Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
+            Sk.misceval.chain(b.mp$subscript(key), (v) => {
+                this.set$item(key, v);
+            })
+        )
+    );
 };
 
 /**
