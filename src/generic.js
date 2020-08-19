@@ -217,12 +217,12 @@ Sk.generic.selfIter = function __iter__() {
  * typically used by mutable iterators like dict_iter_ and set_iter_
  */
 Sk.generic.iterNextWithArrayCheckSize = function __next__() {
-    if (this.$index >= this.$seq.length) {
-        return undefined;
-    } else if (this.$seq.length !== this.$orig.get$size()) {
+    if (this.$seq.length !== this.$orig.get$size()) {
         const error_name = this.tp$name.split("_")[0];
         throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
-    }
+    } else if (this.$index >= this.$seq.length) {
+        return undefined;
+    } 
     return this.$seq[this.$index++];
 };
 
