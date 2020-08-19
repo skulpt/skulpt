@@ -305,12 +305,14 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     },
 });
 
+var reg = /^[0-9!#_]/;
+
 function getHash(key) {
     let key_hash = key.$savedKeyHash_;
     if (key_hash !== undefined) {
         return key_hash;
     } else if (key.ob$type === Sk.builtin.str) {
-        key_hash = key.$jsstr().replace(/^[0-9!#_]/, "!$&"); // avoid numbers and clashes
+        key_hash = key.$jsstr().replace(reg, "!$&"); // avoid numbers and clashes
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     }
