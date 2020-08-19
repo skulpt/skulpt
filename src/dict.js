@@ -95,7 +95,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return dict;
         },
         nb$inplace_or: function (other) {
-            return Sk.misceval.chain(this.update$common([other], [], "|"), () => this);
+            return Sk.misceval.chain(this.update$onearg(other), () => this);
         },
         // sequence or mapping slots
         sq$length: function () {
@@ -287,6 +287,15 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         sk$asarray: function () {
             return Object.values(this.entries).map((item) => item.lhs);
+        },
+        update$onearg: function (arg) {
+            if (arg instanceof Sk.builtin.dict) {
+                return this.dict$merge(arg);
+            } else if (Sk.abstr.lookupSpecial(arg, new Sk.builtin.str("keys")) !== undefined) {
+                return this.dict$merge(arg);
+            } else {
+                return this.dict$merge_seq(arg);
+            }
         },
         dict$copy: function () {
             const newCopy = new Sk.builtin.dict([]);
@@ -533,13 +542,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
     const arg = args[0];
     let ret;
     if (arg !== undefined) {
-        if (arg instanceof Sk.builtin.dict) {
-            ret = this.dict$merge(arg);
-        } else if (Sk.abstr.lookupSpecial(arg, new Sk.builtin.str("keys")) !== undefined) {
-            ret = this.dict$merge(arg);
-        } else {
-            ret = this.dict$merge_seq(arg);
-        }
+        ret = this.update$onearg(arg);
     }
     return Sk.misceval.chain(ret, () => {
         if (kwargs) {
