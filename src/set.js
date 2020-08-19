@@ -356,7 +356,9 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             this.v = new Sk.builtin.dict([]);
         },
         set$copy: function () {
-            return new this.sk$baseType(this.sk$asarray());
+            const setCopy = new this.sk$baseType();
+            setCopy.v = this.v.dict$copy();
+            return setCopy;
         },
         set$difference_update: function (other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {

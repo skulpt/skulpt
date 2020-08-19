@@ -291,7 +291,18 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         dict$copy: function () {
             const newCopy = new Sk.builtin.dict([]);
-            newCopy.dict$merge(this);
+            newCopy.size = this.size;
+            for (let i in this.entries) {
+                const item = this.entries[i];
+                newCopy.entries[i] = { lhs: item.lhs, rhs: item.rhs };
+            }
+            for (let i in this.buckets) {
+                this_bucket = this.buckets[i];
+                newCopy.buckets[i] = bucket = [];
+                for (let j = 0; j < this_bucket.length; j++) {
+                    bucket.push(newCopy.entries["#" + i + "_" + j]);
+                }
+            }
             return newCopy;
         },
     },
