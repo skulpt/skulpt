@@ -285,6 +285,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     },
 });
 
+
 function getHash(key) {
     let key_hash = key.$savedKeyHash_;
     if (key_hash !== undefined) {
@@ -295,7 +296,6 @@ function getHash(key) {
         return key_hash;
     }
     key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
-    key.$savedKeyHash_ = key_hash;
     return key_hash;
 }
 
