@@ -822,7 +822,6 @@ var dict_items = buildDictView(
     }
 );
 
-
 /**
  * @param {string} typename
  * @param {Function} iternext
@@ -835,7 +834,9 @@ function buildDictIterClass(typename, iternext, reversed) {
             this.$orig = dict;
             this.tp$iternext = () => {
                 // only set up the array on the first iteration
-                this.$seq = dict.sk$asarray();
+                this.$entries = dict.entries;
+                this.$seq = Object.keys(dict.entries);
+                this.$len = this.$seq.length;
                 this.$version = dict.$version;
                 if (reversed) {
                     this.$seq = this.$seq.reverse();
@@ -852,44 +853,25 @@ function buildDictIterClass(typename, iternext, reversed) {
     });
 }
 
-function iternextCheckSize() {
-    if (this.$seq.length !== this.$orig.get$size()) {
+function itemIterNextCheckSize() {
+    if (this.$len !== this.$orig.get$size()) {
         const error_name = this.tp$name.split("_")[0];
         throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
     } else if (this.$version !== this.$orig.$version) {
         throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
-    } else if (this.$index >= this.$seq.length) {
-        return undefined;
-    } 
-    return this.$seq[this.$index++];
-}
-
-
-/**
- * @constructor
- * @param {Sk.builtin.dict} dict
- */
-var dict_iter_ = buildDictIterClass("dict_keyiterator", iternextCheckSize);
-
-function getItemAsArray() {
-    const key = iternextCheckSize.call(this);
-    if (key === undefined) {
+    } else if (this.$index >= this.$len) {
         return undefined;
     }
-    const res = this.$orig.mp$lookup(key);
-    if (res !== undefined) {
-        return [key, res];
-    }
-    throw new Sk.builtin.RuntimeError(Sk.misceval.objectRepr(key) + " removed during iteration");
+    return this.$entries[this.$seq[this.$index++]];
 }
 
 /**
  * @constructor
  * @param {Sk.builtin.dict} dict
  */
-var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
-    const item = getItemAsArray.call(this);
-    return item && item[1];
+var dict_iter_ = buildDictIterClass("dict_keyiterator", function () {
+    const item = itemIterNextCheckSize.call(this);
+    return item && item.lhs;
 });
 
 /**
@@ -897,17 +879,22 @@ var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
  * @param {Sk.builtin.dict} dict
  */
 var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
-    const item = getItemAsArray.call(this);
-    return item && new Sk.builtin.tuple(item);
+    const item = itemIterNextCheckSize.call(this);
+    return item && new Sk.builtin.tuple([item.lhs, item.rhs]);
+});
+
+/**
+ * @constructor
+ * @param {Sk.builtin.dict} dict
+ */
+var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
+    const item = itemIterNextCheckSize.call(this);
+    return item && item.rhs;
 });
 
 var dict_reverse_iter_ = buildDictIterClass("dict_reversekeyiterator", dict_iter_.prototype.tp$iternext, true);
-
 var dict_reverse_itemiter_ = buildDictIterClass("dict_reverseitemiterator", dict_itemiter_.prototype.tp$iternext, true);
-
 var dict_reverse_valueiter_ = buildDictIterClass("dict_reversevalueiterator", dict_valueiter_.prototype.tp$iternext, true);
-
-
 
 /**
  * Py2 methods
