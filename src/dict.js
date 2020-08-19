@@ -154,12 +154,21 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         setdefault: {
             $meth: function (key, default_) {
-                const res = this.mp$lookup(key);
-                if (res !== undefined) {
-                    return res;
+                // logic could be simpler here but some tests dictate we can't do too many lookups
+                let item;
+                const hash = getHash(key);
+                item = (typeof hash === "string") ?  this.entries[hash] : this.get$bucket_item(key, hash);
+                if (item !== undefined) {
+                    return item.rhs;
                 }
                 default_ = default_ || Sk.builtin.none.none$;
-                this.set$item(key, default_);
+                if (typeof hash === "string" ) {
+                    this.entries[hash] = {lhs: key, rhs: default_};
+                } else {
+                    this.set$bucket_item(key, default_, hash);
+                }
+                this.size++;
+                this.$version++;
                 return default_;
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
