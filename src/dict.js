@@ -295,6 +295,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 const item = this.entries[i];
                 newCopy.entries[i] = { lhs: item.lhs, rhs: item.rhs };
             }
+            let bucket, this_bucket;
             for (let i in this.buckets) {
                 this_bucket = this.buckets[i];
                 newCopy.buckets[i] = bucket = [];
@@ -855,8 +856,7 @@ function buildDictIterClass(typename, iternext, reversed) {
 
 function itemIterNextCheckSize() {
     if (this.$len !== this.$orig.get$size()) {
-        const error_name = this.tp$name.split("_")[0];
-        throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
+        throw new Sk.builtin.RuntimeError("dict changed size during iteration");
     } else if (this.$version !== this.$orig.$version) {
         throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
     } else if (this.$index >= this.$len) {
