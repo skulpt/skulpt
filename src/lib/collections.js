@@ -329,7 +329,7 @@ const collections_mod = function (keywds) {
                 $flags: { NamedArgs: ["last"], Defaults: [Sk.builtin.bool.true$] },
                 $meth: function (last) {
                     let key, val;
-                    if (this.orderedkeys.length == 0) {
+                    if (!this.orderedkeys.length) {
                         throw new Sk.builtin.KeyError("dictionary is empty");
                     }
                     key = this.orderedkeys[0];
@@ -340,6 +340,30 @@ const collections_mod = function (keywds) {
                     return new Sk.builtin.tuple([key, val]);
                 },
             },
+            move_to_end: {
+                $flags: { NamedArgs: ["key", "last"], Defaults: [Sk.builtin.bool.true$] },
+                $meth: function (key, last) {
+                    let orderedkey, idx = -1;
+                    for (let i = 0; i < this.orderedkeys.length; i++) {
+                        orderedkey = this.orderedkeys[i];
+                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")){
+                            idx = i;
+                            break;
+                        }
+                    }
+                    if (idx !== -1) {
+                        this.orderedkeys.splice(idx, 1);
+                    } else {
+                        throw new Sk.builtin.KeyError(key);
+                    }
+                    if (Sk.misceval.isTrue(last)) {
+                        this.orderedkeys.push(key);
+                    } else {
+                        this.orderedkeys.unshift(key);
+                    }
+                    return Sk.builtin.none.none$;
+                },
+            }
         },
         proto: {
             sk$asarray: function () {
