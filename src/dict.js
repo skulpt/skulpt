@@ -830,6 +830,7 @@ function buildDictIterClass(typename, iternext, reversed) {
             __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
         },
         flags: { sk$acceptable_as_base_class: false },
+        proto: { next$item: itemIterNextCheckSize },
     });
 }
 
@@ -849,7 +850,7 @@ function itemIterNextCheckSize() {
  * @param {Sk.builtin.dict} dict
  */
 var dict_iter_ = buildDictIterClass("dict_keyiterator", function () {
-    const item = itemIterNextCheckSize.call(this);
+    const item = this.next$item();
     return item && item.lhs;
 });
 
@@ -858,7 +859,7 @@ var dict_iter_ = buildDictIterClass("dict_keyiterator", function () {
  * @param {Sk.builtin.dict} dict
  */
 var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
-    const item = itemIterNextCheckSize.call(this);
+    const item = this.next$item();
     return item && new Sk.builtin.tuple([item.lhs, item.rhs]);
 });
 
@@ -867,7 +868,7 @@ var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
  * @param {Sk.builtin.dict} dict
  */
 var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
-    const item = itemIterNextCheckSize.call(this);
+    const item = this.next$item();
     return item && item.rhs;
 });
 
