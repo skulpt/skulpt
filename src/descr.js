@@ -358,7 +358,7 @@ Sk.builtin.classmethod_descriptor.prototype.tp$descr_get = function (obj, type, 
                 "' object"
         );
     }
-    return new Sk.builtin.sk_method(this.d$def, obj);
+    return new Sk.builtin.sk_method(this.d$def, type);
 };
 
 // initialize these classes now that they exist do OneTime initialization only takes care of builtinsdict these are in builtins
