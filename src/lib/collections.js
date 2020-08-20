@@ -300,7 +300,10 @@ const collections_mod = function (keywds) {
             },
             mp$ass_subscript: function (key, w) {
                 if (w === undefined) {
-                    this.del$item(key);
+                    const item = this.pop$item(key);
+                    if (item === undefined) {
+                        throw new Sk.builtin.KeyError(key);
+                    }
                 } else {
                     this.set$item(key, w);
                 }
@@ -314,10 +317,6 @@ const collections_mod = function (keywds) {
             pop: {
                 $flags: { NamedArgs: ["key", "default"], Defaults: [null] },
                 $meth: function (key, d) {
-                    const idx = this.orderedkeys.indexOf(key);
-                    if (idx != -1) {
-                        this.orderedkeys.splice(idx, 1);
-                    }
                     if (d === null) {
                         return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key]);
                     } else {
@@ -376,13 +375,12 @@ const collections_mod = function (keywds) {
                 }
                 Sk.builtin.dict.prototype.set$item.call(this, key, w);
             },
-            del$item: function (key) {
-                // oops need to edit this as it really doesn't ever get called... or maybe it does by dict;
+            pop$item: function (key) {
                 var idx = this.orderedkeys.indexOf(key);
                 if (idx != -1) {
                     this.orderedkeys.splice(idx, 1);
+                    return Sk.builtin.dict.prototype.pop$item.call(this, key);
                 }
-                Sk.builtin.dict.prototype.del$item.call(this, key);
             },
         },
     });

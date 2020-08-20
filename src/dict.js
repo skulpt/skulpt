@@ -65,9 +65,10 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             } else if (this.size !== other.size) {
                 res = false;
             } else {
-                let otherv;
+                let otherv, item;
                 res = true;
-                for (let item in Object.values(this.entries)) {
+                for (let entry_hash in this.entries) {
+                    item = this.entries[entry_hash];
                     otherv = other.mp$lookup(item.lhs);
                     if (otherv === undefined || !Sk.misceval.richCompareBool(item.rhs, otherv, "Eq")) {
                         res = false;
@@ -111,7 +112,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         mp$ass_subscript: function (key, value) {
             if (value === undefined) {
-                const item = this.del$item(key);
+                const item = this.pop$item(key);
                 if (item === undefined) {
                     throw new Sk.builtin.KeyError(key);
                 }
@@ -164,7 +165,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         pop: {
             $meth: function (key, d) {
-                const item = del$item(key);
+                const item = this.pop$item(key);
                 if (item !== undefined) {
                     return item.rhs;
                 }
@@ -187,7 +188,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                     throw new Sk.builtin.KeyError("popitem(): dictionary is empty");
                 }
                 const item = Object.values(this.entries)[size - 1];
-                this.del$item(item.lhs);
+                this.pop$item(item.lhs);
                 return new Sk.builtin.tuple([item.lhs, item.rhs]);
             },
             $flags: { NoArgs: true },
@@ -617,7 +618,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
  * @private
  *
  */
-Sk.builtin.dict.prototype.del$item = function (key) {
+Sk.builtin.dict.prototype.pop$item = function (key) {
     const hash = getHash(key);
     let item;
     if (typeof hash === "string") {
@@ -690,7 +691,7 @@ const dict_view_slots = {
             case "Gt":
                 return len_self > len_other && all_contained_in(other, this);
             case "GtE":
-                return len_self >= len_other &&  all_contained_in(other, this);
+                return len_self >= len_other && all_contained_in(other, this);
         }
     },
     nb$subtract: function (other) {
@@ -816,9 +817,7 @@ function buildDictIterClass(typename, iternext, reversed) {
             this.$orig = dict;
             this.tp$iternext = () => {
                 // only set up the array on the first iteration
-                this.$entries = dict.entries;
-                this.$seq = Object.keys(dict.entries);
-                this.$len = this.$seq.length;
+                this.$seq = Object.values(dict.entries);
                 this.$version = dict.$version;
                 if (reversed) {
                     this.$seq = this.$seq.reverse();
@@ -837,14 +836,13 @@ function buildDictIterClass(typename, iternext, reversed) {
 }
 
 function itemIterNextCheckSize() {
-    if (this.$len !== this.$orig.get$size()) {
-        throw new Sk.builtin.RuntimeError("dict changed size during iteration");
-    } else if (this.$version !== this.$orig.$version) {
+    if (this.$version !== this.$orig.$version) {
+        if (this.$len !== this.$orig.get$size()) {
+            throw new Sk.builtin.RuntimeError("dict changed size during iteration");
+        }
         throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
-    } else if (this.$index >= this.$len) {
-        return undefined;
     }
-    return this.$entries[this.$seq[this.$index++]];
+    return this.$seq[this.$index++];
 }
 
 /**

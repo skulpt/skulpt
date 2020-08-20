@@ -346,11 +346,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$baseType(S));
         },
         set$discard: function (entry) {
-            const item = this.v.del$item(entry);
-            if (item !== undefined) {
-                return entry;
-            }
-            return null;
+            return this.v.pop$item(entry);
         },
         set$clear: function () {
             this.v = new Sk.builtin.dict([]);
@@ -407,7 +403,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         set$symmetric_diff_update: function (other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                 const discarded = this.set$discard(entry);
-                if (discarded === null) {
+                if (discarded === undefined) {
                     this.set$add(entry);
                 }
             });
