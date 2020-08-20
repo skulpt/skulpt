@@ -201,23 +201,23 @@ class DictTest(unittest.TestCase):
         self.assertRaises(Exc, d.update, FailingUserDict())
 
         # Skulpt can't handle nested classes and global variables TODO
-
-        # class FailingUserDict:
-        #     def keys(self):
-        #         class BogonIter:
-        #             def __init__(self):
-        #                 self.i = 1
-        #             def __iter__(self):
-        #                 return self
-        #             def __next__(self):
-        #                 if self.i:
-        #                     self.i = 0
-        #                     return 'a'
-        #                 raise Exc
-        #         return BogonIter()
-        #     def __getitem__(self, key):
-        #         return key
-        # self.assertRaises(Exc, d.update, FailingUserDict())
+        # change this to KeyError
+        class FailingUserDict:
+            def keys(self):
+                class BogonIter:
+                    def __init__(self):
+                        self.i = 1
+                    def __iter__(self):
+                        return self
+                    def __next__(self):
+                        if self.i:
+                            self.i = 0
+                            return 'a'
+                        raise KeyError
+                return BogonIter()
+            def __getitem__(self, key):
+                return key
+        self.assertRaises(KeyError, d.update, FailingUserDict())
 
         class FailingUserDict:
             def keys(self):
