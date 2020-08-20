@@ -97,6 +97,22 @@ class TryExceptFinallyTest(unittest.TestCase):
         c = C()
         self.assertEqual(c.x, "Caught")
 
+    def test_bad_exception(self):
+        # Skulpt Bug
+        class InvalidException:
+            # does not inherit from BaseException
+            pass
+
+        with self.assertRaises(TypeError) as c:
+            raise InvalidException
+        self.assertIn("BaseException", c.exception.args[0])
+        
+        with self.assertRaises(TypeError):
+            raise InvalidException()
+
+        with self.assertRaises(TypeError):
+            raise 1
+
 if __name__ == '__main__':
     unittest.main()
             
