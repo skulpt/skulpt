@@ -198,7 +198,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         clear: {
             $meth: function () {
-                this.v = [];
+                this.v.length = 0;
                 return Sk.builtin.none.none$;
             },
             $flags: { NoArgs: true },
