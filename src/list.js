@@ -542,10 +542,12 @@ var reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
         this.$seq = lst.v;
     },
     iternext: function () {
-        if (this.$index < 0) {
+        const item = this.$seq[this.$index--];
+        if (item === undefined) {
+            this.tp$iternext = () => undefined;
             return undefined;
         }
-        return this.$seq[this.$index--];
+        return item;
     },
     methods: {
         __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
