@@ -13,6 +13,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
 
         Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.list, "bad call to list, use 'new' with an Array");
         this.v = L;
+        this.in$repr = false;
     },
     slots: /** @lends {Sk.builtin.list.prototype}*/ {
         tp$getattr: Sk.generic.getAttr,
@@ -31,13 +32,13 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             });
         },
         $r: function () {
-            if (this.$entered_repr !== undefined) {
+            if (this.in$repr) {
                 return new Sk.builtin.str("[...]");
             }
-            this.$entered_repr = true;
-            const ret = new Sk.builtin.str("[" + this.v.map((x) => Sk.misceval.objectRepr(x)).join(", ") + "]");
-            this.$entered_repr = undefined;
-            return ret;
+            this.in$repr = true;
+            const ret = this.v.map((x) => Sk.misceval.objectRepr(x));
+            this.in$repr = false;
+            return new Sk.builtin.str("[" + ret.join(", ") + "]");
         },
         tp$richcompare: function (other, op) {
             // if the comparison allows for equality then short-circuit it here
