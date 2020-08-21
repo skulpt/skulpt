@@ -288,13 +288,11 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         sort: {
             $meth: function (args, kwargs) {
                 Sk.abstr.checkNoArgs("sort", args);
-                const key_reverse = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], [], kwargs, [
+                const [key, reverse] = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], [], kwargs, [
                     Sk.builtin.none.none$,
                     Sk.builtin.bool.false$,
                 ]);
-                const key = key_reverse[0];
-                const reverse = key_reverse[1];
-                return this.$list_sort(undefined, key, reverse);
+                return this.list$sort(undefined, key, reverse);
             },
             $flags: { FastCall: true },
             $textsig: "($self, /, *, key=None, reverse=False)",
@@ -473,7 +471,7 @@ Sk.builtin.list.prototype.ass$slice = function (ilow, ihigh, v) {
  * @param {?=} key optional (keyword only argument in py3)
  * @param {?=} reverse optional (keyword only argument in py3)
  */
-Sk.builtin.list.prototype.$list_sort = function sort(cmp, key, reverse) {
+Sk.builtin.list.prototype.list$sort = function sort(cmp, key, reverse) {
     const has_key = key != null && key !== Sk.builtin.none.none$;
     const has_cmp = cmp != null && cmp !== Sk.builtin.none.none$;
     let rev, item;
@@ -581,7 +579,7 @@ Sk.builtin.list.py2$methods = {
     sort: {
         $name: "sort",
         $meth: function (cmp, key, reverse) {
-            return this.$list_sort(cmp, key, reverse);
+            return this.list$sort(cmp, key, reverse);
         },
         $flags: {
             NamedArgs: ["cmp", "key", "reverse"],

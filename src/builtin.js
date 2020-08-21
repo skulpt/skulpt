@@ -793,7 +793,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
     const lst = Sk.misceval.arrayFromIterable(iterable, true);
     return Sk.misceval.chain(lst, (L) => {
         L = new Sk.builtin.list(L);
-        L.$list_sort(cmp, key, reverse);
+        L.list$sort(cmp, key, reverse);
         return L;
     });
 };
