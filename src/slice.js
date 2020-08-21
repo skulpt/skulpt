@@ -166,16 +166,17 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
 
 Sk.builtin.slice.$indices = function (pyObj, start, end) {
     const len = pyObj.sq$length();
+    const msg = "slice indices must be integers or have an __index__ method";
     if (start === undefined || Sk.builtin.checkNone(start)) {
         start = 0;
     } else {
-        start = parseInt(Sk.misceval.asIndexOrThrow(start), 10);
+        start = parseInt(Sk.misceval.asIndexOrThrow(start, msg), 10);
     }
 
     if (end === undefined || Sk.builtin.checkNone(end)) {
         end = len;
     } else {
-        end = parseInt(Sk.misceval.asIndexOrThrow(end), 10);
+        end = parseInt(Sk.misceval.asIndexOrThrow(end, msg), 10);
     }
     if (start < 0) {
         start = start + len;
