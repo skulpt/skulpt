@@ -119,24 +119,14 @@ Sk.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
  * @returns {boolean} true if the object is iterable
  */
 Sk.builtin.checkIterable = function (arg) {
-    let ret = false;
-    if (arg !== undefined) {
-        try {
-            ret = Sk.abstr.iter(arg);
-            if (ret) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (e) {
-            if (e instanceof Sk.builtin.TypeError) {
-                return false;
-            } else {
-                throw e;
-            }
-        }
+    if (arg === undefined) {
+        return false;
     }
-    return ret;
+    if (arg.tp$iter) {
+        const iter = arg.tp$iter();
+        return iter.tp$iternext !== undefined;
+    }
+    return arg.mp$subscript !== undefined;
 };
 Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
