@@ -39,30 +39,25 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             this.$entered_repr = undefined;
             return ret;
         },
-        tp$richcompare: function (w, op) {
+        tp$richcompare: function (other, op) {
             // if the comparison allows for equality then short-circuit it here
-            if (this === w && Sk.misceval.opAllowsEquality(op)) {
+            if (this === other && Sk.misceval.opAllowsEquality(op)) {
                 return true;
             }
-            if (!(w instanceof Sk.builtin.list)) {
-                if (Sk.__future__.python3) {
-                    return Sk.builtin.NotImplemented.NotImplemented$;
-                }
-                return op === "NotEq" ? true : false; // py 2 mode...
+            if (!(other instanceof Sk.builtin.list)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
             }
-            let i;
             const v = this.v;
-            w = w.v;
+            const w = other.v;
             const vl = v.length;
             const wl = w.length;
-            if (vl != wl && (op === "Eq" || op === "NotEq")) {
+            if (vl !== wl && (op === "Eq" || op === "NotEq")) {
                 /* Shortcut: if the lengths differ, the lists differ */
                 return op === "Eq" ? false : true;
             }
+            let i;
             for (i = 0; i < vl && i < wl; ++i) {
-                if (v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq")) {
-                    continue;
-                } else {
+                if (!(v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq"))) {
                     break;
                 }
             }
