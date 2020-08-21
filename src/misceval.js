@@ -72,9 +72,43 @@ Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryO
  * @returns {boolean}
  */
 Sk.misceval.isIndex = function (o) {
-    return o.nb$index !== undefined || typeof o === "number";
+    return (o !== null && o !== undefined && o.nb$index !== undefined) || (typeof o === "number" && Number.isInteger(o));
 };
 Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
+
+
+function asIndex(o) {
+    let res;
+    if (o === null || o === undefined) {
+        // pass
+    } else if (o.constructor === Sk.builtin.int_) {
+        // the common case;
+        res = o.v;
+    } else if (o.nb$index) {
+        res = o.nb$index().v; // this slot will check the return value is an int.
+    } else if (typeof o === "number") {
+        if (Number.isInteger(o)) {
+            return o;
+        }
+    }
+    if (typeof res === "number") {
+        return res;
+    } else if (res instanceof JSBI) {
+        return res.toString();
+    }
+    return res;
+};
+
+Sk.misceval.asIndex = asIndex;
+
+Sk.misceval.asIndexSized = function (index, Err) {
+    const i = asIndex(index);
+    if (typeof i === "number") {
+        return i; // integer v property will by a javascript number if it is index sized
+    }
+    Err = Err || Sk.builtin.IndexError;
+    throw new Err("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
+};
 
 /**
  * @function
@@ -91,44 +125,12 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
  * @returns {number|string} 
  */
 Sk.misceval.asIndexOrThrow = function (obj, msg) {
-    let res;
-    if (obj.constructor === Sk.builtin.int_) {
-        // the fast case
-        res = obj.v;
-    } else if (typeof obj === "number") {
-        return obj;
-    } else if (obj.nb$index) {
-        res = obj.nb$index().v;
-    } else {
-        msg = msg || "'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index";
-        throw new Sk.builtin.TypeError(msg);
-    }
-    if (typeof res === "number") {
+    let res = asIndex(obj);
+    if (res !== undefined) {
         return res;
     }
-    return res.toString(); // then we definitely have a JSBI.BigInt so return it as a string.
-};
-
-
-Sk.misceval.asIndex = function (o) {
-    if (o === null || o === undefined) {
-        return undefined;
-    }
-    if (typeof o === "number") {
-        return o;
-    }
-    let res;
-    if (o.constructor === Sk.builtin.int_) {
-        res = o.v;
-    } else if (o.nb$index) {
-        res = o.nb$index().v; // this slot will check the return value is an int.
-    }
-    if (typeof res === "number") {
-        return res;
-    } else if (res instanceof JSBI) {
-        return res.toString();
-    }
-    return res;
+    msg = msg || "'" + Sk.abstr.typeName(obj) + "' object cannot be interpreted as an index";
+    throw new Sk.builtin.TypeError(msg);
 };
 
 /**

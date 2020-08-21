@@ -46,10 +46,9 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             if (arg === undefined) {
                 return new Sk.builtin.tuple([]);
             }
-            if (arg.ob$type === Sk.builtin.tuple) {
+            if (arg.constructor === Sk.builtin.tuple) {
                 return arg;
             }
-            // make tuples suspendible
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (L) => new Sk.builtin.tuple(L));
         },
         tp$hash: function () {
@@ -78,40 +77,29 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
 
         // sequence and mapping slots
         mp$subscript: function (index) {
-            let i;
             if (Sk.misceval.isIndex(index)) {
-                i = Sk.misceval.asIndex(index);
-                if (typeof i !== "number") {
-                    throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
+                let i = Sk.misceval.asIndexSized(index);
+                if (i < 0) {
+                    i = this.v.length + i;
                 }
-                if (i !== undefined) {
-                    if (i < 0) {
-                        i = this.v.length + i;
-                    }
-                    if (i < 0 || i >= this.v.length) {
-                        throw new Sk.builtin.IndexError("tuple index out of range");
-                    }
-                    return this.v[i];
+                if (i < 0 || i >= this.v.length) {
+                    throw new Sk.builtin.IndexError("tuple index out of range");
                 }
+                return this.v[i];
             } else if (index instanceof Sk.builtin.slice) {
                 const ret = [];
-                const lst = this.v;
-                index.sssiter$(lst.length, (i) => {
-                    ret.push(lst[i]);
+                index.sssiter$(this.v.length, (i) => {
+                    ret.push(this.v[i]);
                 });
                 return new Sk.builtin.tuple(ret);
             }
-
             throw new Sk.builtin.TypeError("tuple indices must be integers or slices, not " + Sk.abstr.typeName(index));
         },
         sq$length: function () {
             return this.v.length;
         },
         sq$repeat: function (n) {
-            n = Sk.misceval.asIndex(n);
-            if (typeof n !== "number") {
-                throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
-            }
+            n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
             if (n === 1 && this.constructor === Sk.builtin.tuple) {
                 return this;
             }
