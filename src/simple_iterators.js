@@ -46,54 +46,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
 
 
 
-/**
- * @constructor
- * @extends {Sk.builtin.object}
- * @param {Sk.builtin.list} lst
- * @private
- */
-Sk.builtin.list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
-    constructor: function list_iter_ (lst) {
-        this.$index = 0;
-        this.$seq = lst.v;
-        this.$done = false; // the list can change size but once we've consumed the iterator we must stop
-    },
-    iternext: function () {
-        if (this.$index >= this.$seq.length || this.$done) {
-            this.$done = true;
-            return undefined;
-        }
-        return this.$seq[this.$index++];
-    },
-    methods: {
-        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
 
-
-/**
- * @constructor
- * @extends {Sk.builtin.object}
- * @param {Sk.builtin.list} lst
- * @private
- */
-Sk.builtin.reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
-    constructor: function reverselist_iter_ (lst) {
-        this.$index = lst.v.length - 1;
-        this.$seq = lst.v;
-    },
-    iternext: function () {
-        if (this.$index < 0) {
-            return undefined;
-        }
-        return this.$seq[this.$index--];
-    },
-    methods: {
-        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
 
 
 
@@ -170,9 +123,5 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
 
 
 
-
-
 Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
-Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
-Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
 Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);

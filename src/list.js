@@ -97,7 +97,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             return Sk.misceval.richCompareBool(v[i], w[i], op);
         },
         tp$iter: function () {
-            return new Sk.builtin.list_iter_(this);
+            return new list_iter_(this);
         },
 
         // sequence and mapping slots
@@ -190,7 +190,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
     methods: /** @lends {Sk.builtin.list.prototype}*/ {
         __reversed__: {
             $meth: function () {
-                return new Sk.builtin.reverselist_iter_(this);
+                return new reverselist_iter_(this);
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -589,3 +589,45 @@ Sk.builtin.list.py2$methods = {
         $doc: "Stable sort *IN PLACE*.",
     },
 };
+
+/**
+ * @constructor
+ * @extends {Sk.builtin.object}
+ * @param {Sk.builtin.list} lst
+ * @private
+ */
+var list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
+    constructor: function list_iter_(lst) {
+        this.$index = 0;
+        this.$seq = lst.v;
+    },
+    iternext: Sk.generic.iterNextWithArray,
+    methods: {
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});
+
+/**
+ * @constructor
+ * @extends {Sk.builtin.object}
+ * @param {Sk.builtin.list} lst
+ * @private
+ */
+var reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
+    constructor: function reverselist_iter_(lst) {
+        this.$index = lst.v.length - 1;
+        this.$seq = lst.v;
+    },
+    iternext: function () {
+        if (this.$index < 0) {
+            this.tp$iternext = () => undefined;
+            return undefined;
+        }
+        return this.$seq[this.$index--];
+    },
+    methods: {
+        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
+    },
+    flags: { sk$acceptable_as_base_class: false },
+});
