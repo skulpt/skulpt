@@ -94,7 +94,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 return true;
             }
             // or, compare the differing element using the proper operator
-            return v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], op);
+            return Sk.misceval.richCompareBool(v[i], w[i], op);
         },
         tp$iter: function () {
             return new Sk.builtin.list_iter_(this);
@@ -165,12 +165,12 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             }
             return Sk.builtin.none.none$;
         },
-        nb$inplace_add: function (other) {
+        sq$inplace_concat: function (other) {
             other = Sk.misceval.arrayFromIterable(other);
             this.v.push(...other);
             return this;
         },
-        nb$inplace_multiply: function (n) {
+        sq$inplace_repeat: function (n) {
             if (!Sk.misceval.isIndex(n)) {
                 throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
             }

@@ -1938,6 +1938,8 @@ Sk.sequenceAndMappingSlots = {
     sq$concat: ["nb$add"],
     sq$repeat: ["nb$multiply", "nb$reflected_multiply"],
     mp$length: ["sq$length"],
+    sq$inplace_repeat: ["nb$inplace_multiply"],
+    sq$inplace_concat: ["nb$inplace_add"],
 };
 
 /**
