@@ -234,6 +234,7 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
  */
 Sk.generic.iterNextWithArray = function __next__() {
     if (this.$index >= this.$seq.length) {
+        this.tp$iternext = () => undefined; // consumed iterator
         return undefined;
     }
     return this.$seq[this.$index++];
