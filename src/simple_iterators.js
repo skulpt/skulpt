@@ -166,23 +166,7 @@ Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-/**
- * @constructor
- * @extends {Sk.builtin.object}
- * @param {Sk.builtin.tuple} tuple
- * @private
- */
-Sk.builtin.tuple_iter_ = Sk.abstr.buildIteratorClass("tuple_iterator", {
-    constructor: function tuple_iter_(tuple) {
-        this.$index = 0;
-        this.$seq = tuple.sk$asarray();
-    },
-    iternext: Sk.generic.iterNextWithArray,
-    methods: {
-        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
+
 
 
 
@@ -192,4 +176,3 @@ Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
 Sk.exportSymbol("Sk.builtin.list_iter_", Sk.builtin.list_iter_);
 Sk.exportSymbol("Sk.builtin.set_iter_", Sk.builtin.set_iter_);
 Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);
-Sk.exportSymbol("Sk.builtin.tuple_iter_", Sk.builtin.tuple_iter_);
