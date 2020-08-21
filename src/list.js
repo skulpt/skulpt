@@ -151,6 +151,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         sq$inplace_concat: function (other) {
             if (other === this) {
+                // prevent an infinite loop
                 this.v.push(...this.v);
                 return this;
             }
@@ -224,6 +225,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         extend: {
             $meth: function (iterable) {
                 if (iterable === this) {
+                    // prevent an infinite loop
                     this.v.push(...this.v);
                     return Sk.builtin.none.none$;
                 }
@@ -282,6 +284,10 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         index: {
             $meth: function (value, start, stop) {
+                if ((start !== undefined && !Sk.misceval.isIndex(start)) || (stop !== undefined && !Sk.misceval.isIndex(stop))) {
+                    // unusually can't have None here so check this first...
+                    throw new Sk.misceval.TypeError("slice indices must be integers or have an __index__ method");
+                }
                 const i = this.list$indexOf(value, start, stop);
                 if (i === -1) {
                     throw new Sk.builtin.ValueError(Sk.misceval.objectRepr(value) + " is not in list");
@@ -537,7 +543,6 @@ var reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
     },
     iternext: function () {
         if (this.$index < 0) {
-            this.tp$iternext = () => undefined;
             return undefined;
         }
         return this.$seq[this.$index--];
