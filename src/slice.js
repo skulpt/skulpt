@@ -49,7 +49,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             return t1.tp$richcompare(t2, op);
         },
     },
-    getsets: /**@lends {Sk.builtin.slice.prototype} */{
+    getsets: /**@lends {Sk.builtin.slice.prototype} */ {
         start: {
             $get: function () {
                 return this.start;
@@ -66,7 +66,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             },
         },
     },
-    methods: /**@lends {Sk.builtin.slice.prototype} */{
+    methods: /**@lends {Sk.builtin.slice.prototype} */ {
         indices: {
             $meth: function indices(length) {
                 length = Sk.misceval.asIndexOrThrow(length);
@@ -82,14 +82,14 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             $flags: { OneArg: true },
         },
     },
-    proto: /**@lends {Sk.builtin.slice.prototype} */{
+    proto: /**@lends {Sk.builtin.slice.prototype} */ {
         $slice_indices: function (length) {
             let start, stop, step;
             const msg = "slice indices must be integers or None or have an __index__ method";
             if (Sk.builtin.checkNone(this.step)) {
                 step = 1;
             } else {
-                step = Sk.misceval.asIndexOrThrow(this.step, msg);
+                step = parseInt(Sk.misceval.asIndexOrThrow(this.step, msg), 10);
                 if (step === 0) {
                     throw new Sk.builtin.ValueError("slice step cannot be zero");
                 }
@@ -97,19 +97,19 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             if (Sk.builtin.checkNone(this.start)) {
                 start = null;
             } else {
-                start = Sk.misceval.asIndexOrThrow(this.start, msg);
+                start = parseInt(Sk.misceval.asIndexOrThrow(this.start, msg), 10);
             }
             if (Sk.builtin.checkNone(this.stop)) {
                 stop = null;
             } else {
-                stop = Sk.misceval.asIndexOrThrow(this.stop, msg);
+                stop = parseInt(Sk.misceval.asIndexOrThrow(this.stop, msg), 10);
             }
 
             if (step > 0) {
                 if (start === null) {
                     start = 0;
                 } else if (start < 0) {
-                    start = length + start;
+                    start = start + length;
                     if (start < 0) {
                         start = 0;
                     }
@@ -143,8 +143,8 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         },
         /**
          * used by objects like str, list, tuple that can return a slice
-         * @param {number} len 
-         * @param {Function} f 
+         * @param {number} len
+         * @param {Function} f
          */
         sssiter$: function (len, f) {
             const sss = this.$slice_indices(len);
@@ -166,3 +166,31 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         sk$acceptable_as_base_class: false,
     },
 });
+
+Sk.builtin.slice.$indices = function (pyObj, start, end) {
+    const len = pyObj.sq$length();
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
+    } else {
+        start = parseInt(Sk.misceval.asIndexOrThrow(start), 10);
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = len;
+    } else {
+        end = parseInt(Sk.misceval.asIndexOrThrow(end), 10);
+    }
+    if (start < 0) {
+        start = start + len;
+        if (start < 0) {
+            start = 0;
+        }
+    }
+    end = end >= 0 ? end : end + len;
+    if (end < 0) {
+        end = 0;
+    } else if (end > len) {
+        end = len;
+    }
+    return { start: start, end: end };
+};
