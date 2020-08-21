@@ -73,8 +73,8 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
                 if (length < 0) {
                     throw new Sk.builtin.TypeError("length should not be negative");
                 }
-                const sss = this.$slice_indices(length);
-                return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), new Sk.builtin.int_(sss[1]), new Sk.builtin.int_(sss[2])]);
+                const {start, stop, step} = this.slice$indices(length);
+                return new Sk.builtin.tuple([new Sk.builtin.int_(start), new Sk.builtin.int_(stop), new Sk.builtin.int_(step)]);
             },
             $doc:
                 "S.indices(len) -> (start, stop, stride)\n\nAssuming a sequence of length len, calculate the start and stop\nindices, and the stride length of the extended slice described by\nS. Out of bounds indices are clipped in a manner consistent with the\nhandling of normal slices.",
@@ -83,13 +83,13 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         },
     },
     proto: /**@lends {Sk.builtin.slice.prototype} */ {
-        $slice_indices: function (length) {
+        slice$indices: function (length) {
             let start, stop, step;
             const msg = "slice indices must be integers or None or have an __index__ method";
             if (Sk.builtin.checkNone(this.step)) {
                 step = 1;
             } else {
-                step = parseInt(Sk.misceval.asIndexOrThrow(this.step, msg), 10);
+                step = Sk.misceval.asIndexOrThrow(this.step, msg);
                 if (step === 0) {
                     throw new Sk.builtin.ValueError("slice step cannot be zero");
                 }
@@ -97,12 +97,12 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
             if (Sk.builtin.checkNone(this.start)) {
                 start = null;
             } else {
-                start = parseInt(Sk.misceval.asIndexOrThrow(this.start, msg), 10);
+                start = Sk.misceval.asIndexOrThrow(this.start, msg);
             }
             if (Sk.builtin.checkNone(this.stop)) {
                 stop = null;
             } else {
-                stop = parseInt(Sk.misceval.asIndexOrThrow(this.stop, msg), 10);
+                stop = Sk.misceval.asIndexOrThrow(this.stop, msg);
             }
 
             if (step > 0) {
@@ -139,7 +139,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
                 }
             }
 
-            return [start, stop, step];
+            return {start: start, stop: stop, step: step};
         },
         /**
          * used by objects like str, list, tuple that can return a slice
@@ -147,10 +147,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
          * @param {Function} f
          */
         sssiter$: function (len, f) {
-            const sss = this.$slice_indices(len);
-            const start = sss[0];
-            const stop = sss[1];
-            const step = sss[2];
+            const {start, stop, step} = this.slice$indices(len);
             if (step > 0) {
                 for (let i = start; i < stop; i += step) {
                     f(i);

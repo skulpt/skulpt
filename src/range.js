@@ -74,14 +74,13 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
                 index.sssiter$(lst.length, (i) => {
                     ret.push(lst[i]);
                 });
-                const sss = index.$slice_indices();
-                const start = Sk.misceval.asIndex(lst[sss[0]]) || this.start;
-                const stop = Sk.misceval.asIndex(lst[sss[1]]) || this.stop;
-                let step;
+                let {start, stop, step} = index.slice$indices();
+                start = Sk.misceval.asIndex(lst[start]) || this.start;
+                stop = Sk.misceval.asIndex(lst[stop]) || this.stop;
                 if (typeof this.step === "number") {
-                    step = sss[2] * this.step;
+                    step = step * this.step;
                 } else {
-                    step = JSBI.multiply(this.step, JSBI.BigInt(sss[2]));
+                    step = JSBI.multiply(this.step, JSBI.BigInt(step));
                 }
                 return new Sk.builtin.range_(start, stop, step, ret);
             }
