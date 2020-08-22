@@ -47,11 +47,10 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         },
         // sequence and mapping slots
         sq$contains: function (item) {
-            if (Sk.builtin.checkInt(item)) {
-                for (let i = 0; i < this.v.length; i++) {
-                    if (this.v[i].ob$eq(item)) {
-                        return true;
-                    }
+            const lst = this.v;
+            for (let i = 0; i < lst.length; i++) {
+                if (Sk.misceval.richCompareBool(item, lst[i], "Eq")) {
+                    return true;
                 }
             }
             return false;
@@ -122,11 +121,9 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         count: {
             $meth: function (item) {
                 let count = 0;
-                if (Sk.builtin.checkInt(item)) {
-                    for (let i = 0; i < this.v.length; i++) {
-                        if (this.v[i].ob$eq(item)) {
-                            count++;
-                        }
+                for (let i = 0; i < this.v.length; i++) {
+                    if (Sk.misceval.richCompareBool(item, this.v[i], "Eq")) {
+                        count++;
                     }
                 }
                 return new Sk.builtin.int_(count);
@@ -137,11 +134,9 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         },
         index: {
             $meth: function (item) {
-                if (Sk.builtin.checkInt(item)) {
-                    for (let i = 0; i < this.v.length; i++) {
-                        if (this.v[i].ob$eq(item)) {
-                            return new Sk.builtin.int_(i);
-                        }
+                for (let i = 0; i < this.v.length; i++) {
+                    if (Sk.misceval.richCompareBool(item, this.v[i], "Eq")) {
+                        return new Sk.builtin.int_(i);
                     }
                 }
                 throw new Sk.builtin.ValueError(Sk.misceval.objectRepr(item) + "is not in range");
@@ -226,7 +221,7 @@ var range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
 });
 
 var reverserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
-    constructor: function reverserange_iter(range_obj) {
+    constructor: function range_iter(range_obj) {
         this.$seq = range_obj.v;
         this.$index = this.$seq.length - 1;
     },
