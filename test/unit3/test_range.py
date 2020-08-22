@@ -554,12 +554,12 @@ class RangeTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             rangeobj.step = 1
 
-        # with self.assertRaises(AttributeError):
-        #     del rangeobj.start
-        # with self.assertRaises(AttributeError):
-        #     del rangeobj.stop
-        # with self.assertRaises(AttributeError):
-        #     del rangeobj.step
+        with self.assertRaises(AttributeError):
+            del rangeobj.start
+        with self.assertRaises(AttributeError):
+            del rangeobj.stop
+        with self.assertRaises(AttributeError):
+            del rangeobj.step
 
     def test_str(self):
         self.assertEqual(str(range(4))[:5], "range")
