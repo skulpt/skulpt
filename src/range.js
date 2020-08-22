@@ -8,7 +8,7 @@ const JSBI = require("jsbi");
  * @param {Object} lst
  */
 Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
-    constructor: function range (start, stop, step, lst) {
+    constructor: function range(start, stop, step, lst) {
         this.start = start;
         this.stop = stop;
         this.step = step;
@@ -40,17 +40,18 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
             return new Sk.builtin.list(this.v).tp$richcompare(w, op);
         },
         tp$iter: function () {
-            return new Sk.builtin.range_iter_(this);
+            return new range_iter_(this);
         },
         nb$bool: function () {
             return this.v.length !== 0;
         },
         // sequence and mapping slots
         sq$contains: function (item) {
-            const lst = this.v;
-            for (let i = 0; i < lst.length; i++) {
-                if (Sk.misceval.richCompareBool(item, lst[i], "Eq")) {
-                    return true;
+            if (Sk.builtin.checkInt(item)) {
+                for (let i = 0; i < this.v.length; i++) {
+                    if (this.v[i].ob$eq(item)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -74,7 +75,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
                 index.sssiter$(lst.length, (i) => {
                     ret.push(lst[i]);
                 });
-                let {start, stop, step} = index.slice$indices();
+                let { start, stop, step } = index.slice$indices();
                 start = Sk.misceval.asIndex(lst[start]) || this.start;
                 stop = Sk.misceval.asIndex(lst[stop]) || this.stop;
                 if (typeof this.step === "number") {
@@ -107,7 +108,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
     methods: {
         __reversed__: {
             $meth: function () {
-                return new Sk.builtin.revereserange_iter_(this);
+                return new reverserange_iter_(this);
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -120,11 +121,12 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         //     $doc: "" },
         count: {
             $meth: function (item) {
-                const lst = this.v;
                 let count = 0;
-                for (let i = 0; i < lst.length; i++) {
-                    if (Sk.misceval.richCompareBool(item, lst[i], "Eq")) {
-                        count++;
+                if (Sk.builtin.checkInt(item)) {
+                    for (let i = 0; i < this.v.length; i++) {
+                        if (this.v[i].ob$eq(item)) {
+                            count++;
+                        }
                     }
                 }
                 return new Sk.builtin.int_(count);
@@ -135,10 +137,11 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         },
         index: {
             $meth: function (item) {
-                const lst = this.v;
-                for (let i = 0; i < lst.length; i++) {
-                    if (Sk.misceval.richCompareBool(item, lst[i], "Eq")) {
-                        return new Sk.builtin.int_(i);
+                if (Sk.builtin.checkInt(item)) {
+                    for (let i = 0; i < this.v.length; i++) {
+                        if (this.v[i].ob$eq(item)) {
+                            return new Sk.builtin.int_(i);
+                        }
                     }
                 }
                 throw new Sk.builtin.ValueError(Sk.misceval.objectRepr(item) + "is not in range");
@@ -206,8 +209,8 @@ function rangeFromPy(start, stop, step) {
     return new Sk.builtin.range_(start, stop, step, ret);
 }
 
-Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
-    constructor: function range_iter_ (range_obj) {
+var range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
+    constructor: function range_iter_(range_obj) {
         this.$index = 0;
         this.$seq = range_obj.v;
     },
@@ -222,19 +225,16 @@ Sk.builtin.range_iter_ = Sk.abstr.buildIteratorClass("range_iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-Sk.builtin.revereserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
-    constructor: function range_iter (range_obj) {
+var reverserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
+    constructor: function reverserange_iter(range_obj) {
         this.$seq = range_obj.v;
         this.$index = this.$seq.length - 1;
     },
     iternext: function () {
-        if (this.$index < 0) {
-            return undefined;
-        }
         return this.$seq[this.$index--];
     },
     methods: {
-        __length_hint__:  Sk.generic.iterReverseLengthHintMethodDef
+        __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
     },
     flags: { sk$acceptable_as_base_class: false },
 });
