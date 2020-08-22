@@ -343,7 +343,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             this.v.mp$ass_subscript(entry, true);
         },
         set$make_basetype: function (other) {
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$baseType(S));
+            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$builtinBase(S));
         },
         set$discard: function (entry) {
             return this.v.pop$item(entry);
@@ -352,7 +352,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             this.v = new Sk.builtin.dict([]);
         },
         set$copy: function () {
-            const setCopy = new this.sk$baseType();
+            const setCopy = new this.sk$builtinBase();
             setCopy.v = this.v.dict$copy();
             return setCopy;
         },
@@ -362,7 +362,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             });
         },
         set$intersection: function (other) {
-            const res = new this.sk$baseType();
+            const res = new this.sk$builtinBase();
             return Sk.misceval.chain(
                 Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                     if (this.sq$contains(entry)) {
@@ -502,7 +502,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
     methods: /**@lends {Sk.builtin.frozenset.prototype}*/ {
         copy: Object.assign({}, set_proto.copy.d$def, {
             $meth: function () {
-                return this.constructor === this.sk$baseType ? this : new Sk.builtin.frozenset(this.sk$asarray());
+                return this.constructor === this.sk$builtinBase ? this : new Sk.builtin.frozenset(this.sk$asarray());
             },
         }),
         difference: set_proto.difference.d$def,

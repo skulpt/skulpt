@@ -71,6 +71,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             return new Sk.builtin.int_(x | 0);
         },
+        tp$richcompare: Sk.generic.seqCompare,
         tp$iter: function () {
             return new tuple_iter_(this);
         },
@@ -125,56 +126,6 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             return false;
         },
-
-        // richcompare
-        tp$richcompare: function (w, op) {
-            // w not a tuple
-            if (!(w instanceof Sk.builtin.tuple)) {
-                return Sk.builtin.NotImplemented.NotImplemented$;
-            }
-            w = w.v;
-            const v = this.v;
-            const vl = v.length;
-            const wl = w.length;
-            let i;
-            for (i = 0; i < vl && i < wl; ++i) {
-                if (!(v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq"))) {
-                    break;
-                }
-            }
-
-            if (i >= vl || i >= wl) {
-                // no more items to compare, compare sizes
-                switch (op) {
-                    case "Lt":
-                        return vl < wl;
-                    case "LtE":
-                        return vl <= wl;
-                    case "Eq":
-                        return vl === wl;
-                    case "NotEq":
-                        return vl !== wl;
-                    case "Gt":
-                        return vl > wl;
-                    case "GtE":
-                        return vl >= wl;
-                    default:
-                        Sk.asserts.fail();
-                }
-            }
-
-            // we have an item that's different
-            // shortcuts for eq/not
-            if (op === "Eq") {
-                return false;
-            }
-            if (op === "NotEq") {
-                return true;
-            }
-
-            // or, compare the differing element using the proper operator
-            return Sk.misceval.richCompareBool(v[i], w[i], op);
-        },
     },
     proto: /**@lends {Sk.builtin.tuple.prototype}*/ {
         $subtype_new: function (args, kwargs) {
@@ -199,6 +150,10 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         },
         index: /**@lends {Sk.builtin.type.prototype}*/ {
             $meth: function (item, start, end) {
+                if ((start !== undefined && !Sk.misceval.isIndex(start)) || (end !== undefined && !Sk.misceval.isIndex(end))) {
+                    // unusually can't have None here so check this first...
+                    throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
+                }
                 ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
                 const obj = this.v;
                 for (let i = start; i < end; i++) {

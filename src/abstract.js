@@ -814,7 +814,7 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     if (parent === Sk.builtin.object || parent === undefined) {
         child.sk$baseClass = true;
     }
-    child.prototype.sk$baseType = child;
+    child.prototype.sk$builtinBase = child;
     const mro = [child];
     for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
         if (!base.sk$abstract) {
@@ -827,7 +827,7 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         sk$prototypical: { value: true, writable: true },
         tp$mro: { value: mro, writable: true },
         tp$bases: { value: bases, writable: true },
-        sk$baseType: { value: child, writable: true }
+        sk$builtinBase: { value: child, writable: true }
     });
 };
 /**

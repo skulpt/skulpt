@@ -284,3 +284,61 @@ Sk.generic.getSetDict = {
     $doc: "dictionary for instance variables (if defined)",
     $name: "__dict__",
 };
+
+/**
+ * Logic used by seq and tuple to do rich comparisons
+ */
+Sk.generic.seqCompare = function (other, op) {
+    if (this === other && Sk.misceval.opAllowsEquality(op)) {
+        return true;
+    }
+    // w not a tuple
+    if (!(other instanceof this.sk$builtinBase)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    const v = this.v;
+    const w = other.v;
+    const vl = v.length;
+    const wl = w.length;
+    let i;
+    if (vl !== wl && (op === "Eq" || op === "NotEq")) {
+        /* Shortcut: if the lengths differ, the tuples differ */
+        return op === "Eq" ? false : true;
+    }
+    for (i = 0; i < vl && i < wl; ++i) {
+        if (!(v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq"))) {
+            break;
+        }
+    }
+    if (i >= vl || i >= wl) {
+        // no more items to compare, compare sizes
+        switch (op) {
+            case "Lt":
+                return vl < wl;
+            case "LtE":
+                return vl <= wl;
+            case "Eq":
+                return vl === wl;
+            case "NotEq":
+                return vl !== wl;
+            case "Gt":
+                return vl > wl;
+            case "GtE":
+                return vl >= wl;
+            default:
+                Sk.asserts.fail();
+        }
+    }
+
+    // we have an item that's different
+    // shortcuts for eq/not
+    if (op === "Eq") {
+        return false;
+    }
+    if (op === "NotEq") {
+        return true;
+    }
+
+    // or, compare the differing element using the proper operator
+    return Sk.misceval.richCompareBool(v[i], w[i], op);
+};

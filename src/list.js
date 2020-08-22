@@ -40,58 +40,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             this.in$repr = false;
             return new Sk.builtin.str("[" + ret.join(", ") + "]");
         },
-        tp$richcompare: function (other, op) {
-            // if the comparison allows for equality then short-circuit it here
-            if (this === other && Sk.misceval.opAllowsEquality(op)) {
-                return true;
-            }
-            if (!(other instanceof Sk.builtin.list)) {
-                return Sk.builtin.NotImplemented.NotImplemented$;
-            }
-            const v = this.v;
-            const w = other.v;
-            const vl = v.length;
-            const wl = w.length;
-            if (vl !== wl && (op === "Eq" || op === "NotEq")) {
-                /* Shortcut: if the lengths differ, the lists differ */
-                return op === "Eq" ? false : true;
-            }
-            let i;
-            for (i = 0; i < vl && i < wl; ++i) {
-                if (!(v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq"))) {
-                    break;
-                }
-            }
-            if (i >= vl || i >= wl) {
-                // no more items to compare, compare sizes
-                switch (op) {
-                    case "Lt":
-                        return vl < wl;
-                    case "LtE":
-                        return vl <= wl;
-                    case "Eq":
-                        return vl === wl;
-                    case "NotEq":
-                        return vl !== wl;
-                    case "Gt":
-                        return vl > wl;
-                    case "GtE":
-                        return vl >= wl;
-                    default:
-                        Sk.asserts.fail();
-                }
-            }
-            // we have an item that's different
-            // shortcuts for eq/not
-            if (op === "Eq") {
-                return false;
-            }
-            if (op === "NotEq") {
-                return true;
-            }
-            // or, compare the differing element using the proper operator
-            return Sk.misceval.richCompareBool(v[i], w[i], op);
-        },
+        tp$richcompare: Sk.generic.seqCompare,
         tp$iter: function () {
             return new list_iter_(this);
         },
