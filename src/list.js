@@ -68,6 +68,9 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
             }
             n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
+            if (n * this.v.length > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.OverflowError();
+            }
             const ret = [];
             for (let i = 0; i < n; i++) {
                 for (let j = 0; j < this.v.length; j++) {
@@ -88,7 +91,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 });
                 return new Sk.builtin.list(ret);
             }
-            throw new Sk.builtin.TypeError("list indices must be integers or slice, not " + Sk.abstr.typeName(index));
+            throw new Sk.builtin.TypeError("list indices must be integers or slices, not " + Sk.abstr.typeName(index));
         },
         mp$ass_subscript: function (index, value) {
             if (value === undefined) {
@@ -117,6 +120,12 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             }
             n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
             const len = this.v.length;
+            if (n <= 0) {
+                this.v.length = 0;
+            } else if (n * len > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.OverflowError();
+            }
+            
             for (let i = 1; i < n; i++) {
                 for (let j = 0; j < len; j++) {
                     this.v.push(this.v[j]);
@@ -220,8 +229,10 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         sort: {
             $meth: function (args, kwargs) {
-                Sk.abstr.checkNoArgs("sort", args);
-                const [key, reverse] = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], [], kwargs, [
+                if (args.length) {
+                    throw new Sk.builtin.TypeError("sort() takes no positional arguments");
+                }
+                const [key, reverse] = Sk.abstr.copyKeywordsToNamedArgs("sort", ["key", "reverse"], args, kwargs, [
                     Sk.builtin.none.none$,
                     Sk.builtin.bool.false$,
                 ]);
@@ -251,9 +262,8 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             $meth: function (item) {
                 let count = 0;
                 const len = this.v.length;
-                const obj = this.v;
-                for (let i = 0; i < len; ++i) {
-                    if (obj[i] === item || Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
+                for (let i = 0; i < len; i++) {
+                    if (this.v[i] === item || Sk.misceval.richCompareBool(this.v[i], item, "Eq")) {
                         count += 1;
                     }
                 }
@@ -288,7 +298,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         list$indexOf: function (item, start, end) {
             ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
-            for (let i = start; i < end; ++i) {
+            for (let i = start; i < end && i < this.v.length; i++) {
                 if (this.v[i] === item || Sk.misceval.richCompareBool(this.v[i], item, "Eq")) {
                     return i;
                 }
@@ -309,7 +319,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                     this.ass$ext_slice(index, value);
                 }
             } else {
-                throw new Sk.builtin.TypeError("list indices must be integers or slice, not " + Sk.abstr.typeName(index));
+                throw new Sk.builtin.TypeError("list indices must be integers or slices, not " + Sk.abstr.typeName(index));
             }
         },
         ass$index: function (index, value) {
@@ -440,7 +450,7 @@ Sk.builtin.list.prototype.list$sort = function sort(cmp, key, reverse) {
     this.v = timsort.list.v;
 
     if (mucked) {
-        throw new Sk.builtin.OperationError("list modified during sort");
+        throw new Sk.builtin.ValueError("list modified during sort");
     }
 
     return Sk.builtin.none.none$;

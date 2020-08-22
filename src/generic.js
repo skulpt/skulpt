@@ -296,18 +296,18 @@ Sk.generic.seqCompare = function (other, op) {
     }
     const v = this.v;
     const w = other.v;
-    const vl = v.length;
-    const wl = w.length;
     let i;
-    if (vl !== wl && (op === "Eq" || op === "NotEq")) {
+    if (v.length !== w.length && (op === "Eq" || op === "NotEq")) {
         /* Shortcut: if the lengths differ, the tuples differ */
         return op === "Eq" ? false : true;
     }
-    for (i = 0; i < vl && i < wl; ++i) {
+    for (i = 0; i < v.length && i < w.length; ++i) {
         if (!(v[i] === w[i] || Sk.misceval.richCompareBool(v[i], w[i], "Eq"))) {
             break;
         }
     }
+    const vl = v.length; // it's possible for list lengths to have changed during iteration!
+    const wl = w.length;
     if (i >= vl || i >= wl) {
         // no more items to compare, compare sizes
         switch (op) {
