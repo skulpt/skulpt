@@ -286,7 +286,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             $meth: function (value, start, stop) {
                 if ((start !== undefined && !Sk.misceval.isIndex(start)) || (stop !== undefined && !Sk.misceval.isIndex(stop))) {
                     // unusually can't have None here so check this first...
-                    throw new Sk.misceval.TypeError("slice indices must be integers or have an __index__ method");
+                    throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
                 }
                 const i = this.list$indexOf(value, start, stop);
                 if (i === -1) {
@@ -436,7 +436,7 @@ Sk.builtin.list.prototype.list$sort = function sort(cmp, key, reverse) {
     let rev, item;
     if (reverse === undefined) {
         rev = false;
-    } else if (reverse === Sk.builtin.none.none$) {
+    } else if (!Sk.builtin.checkInt(reverse)) {
         throw new Sk.builtin.TypeError("an integer is required");
     } else {
         rev = Sk.misceval.isTrue(reverse);
@@ -500,12 +500,17 @@ Sk.builtin.list.prototype.list$sort = function sort(cmp, key, reverse) {
 Sk.builtin.list.py2$methods = {
     sort: {
         $name: "sort",
-        $meth: function (cmp, key, reverse) {
+        $meth: function (args, kwargs) {
+            const [cmp, key, reverse] = Sk.abstr.copyKeywordsToNamedArgs("sort", ["cmp", "key", "reverse"], args, kwargs, [
+                Sk.builtin.none.none$,
+                Sk.builtin.none.none$,
+                Sk.builtin.bool.false$,
+            ]);
             return this.list$sort(cmp, key, reverse);
         },
         $flags: {
-            NamedArgs: ["cmp", "key", "reverse"],
-            Defaults: [Sk.builtin.none.none$, Sk.builtin.none.none$, false], //use false since bool not defined yet
+            FastCall: true, // named args might be better here but one of the args is pyFalse
+            // and bool class does not exist yet. So use FastCall instead.
         },
         $textsig: "($self, cmp=None, key=None, reverse=False)",
         $doc: "Stable sort *IN PLACE*.",
