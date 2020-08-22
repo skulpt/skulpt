@@ -124,10 +124,10 @@ Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
  * 
  * @param {typeObject} builtin 
  */
-Sk.generic.new = function (builtin) {
+Sk.generic.new =  function (builtin) {
     const genericNew = function __new__(args, kwargs) {
         // this = prototype of an sk$type object.
-        if (this === builtin.prototype) {
+        if (this.constructor === builtin) {
             return new this.constructor();
         } else {
             const instance = new this.constructor();
@@ -155,7 +155,7 @@ Sk.generic.newMethodDef = {
     $meth: function (args, kwargs) {
         // this = a type object
         let this_name, subs_name;
-        const native_type_proto = this.prototype; 
+        const native_type_proto = this.prototype;
 
         if (args.length < 1) {
             this_name = native_type_proto.tp$name;
@@ -177,12 +177,10 @@ Sk.generic.newMethodDef = {
         /* from CPython: Check that the use doesn't do something silly and unsafe like
        object.__new__(dict).  To do this, we check that the
        most derived base that's not a heap type is this type. */
-        let static_proto = subtype.prototype;
-        let is_static_new = static_proto.hasOwnProperty("tp$new") ? static_proto.tp$new.sk$static_new : false;
-        while (!is_static_new) {
-            static_proto = static_proto.tp$base.prototype;
-            is_static_new = static_proto.hasOwnProperty("tp$new") ? static_proto.tp$new.sk$static_new : false;
-        }
+
+        /**@todo is  prototypical inheritance fine here - i think it is because of the best base algorithm*/
+        const static_proto = subtype.prototype.sk$staticNew.prototype;
+
         if (static_proto.tp$new !== native_type_proto.tp$new) {
             this_name = native_type_proto.tp$name;
             subs_name = subtype.prototype.tp$name;

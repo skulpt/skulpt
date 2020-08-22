@@ -813,8 +813,10 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     const bases = parent === undefined ? [] : [parent];
     if (parent === Sk.builtin.object || parent === undefined) {
         child.sk$baseClass = true;
+        Object.defineProperties(child.prototype, {
+            sk$builtinBase: { value: child, writable: true },
+        });
     }
-    child.prototype.sk$builtinBase = child;
     const mro = [child];
     for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
         if (!base.sk$abstract) {
@@ -827,7 +829,6 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         sk$prototypical: { value: true, writable: true },
         tp$mro: { value: mro, writable: true },
         tp$bases: { value: bases, writable: true },
-        sk$builtinBase: { value: child, writable: true }
     });
 };
 /**
@@ -936,7 +937,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
     if (slots.tp$new !== undefined) {
         proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
-        proto.tp$new.sk$static_new = true; // a flag for the slot
+        Object.defineProperty(proto, "sk$staticNew", {value: klass, writable: true});
     }
 
     function wrap_func(klass, dunder_name, wrapped_func) {
