@@ -155,13 +155,13 @@ Sk.builtin.object.prototype.tp$getsets = {
             return this.ob$type;
         },
         $set: function (value) {
-            if (!Sk.builtin.checkClass(value)) {
+            if (value === undefined) {
+                throw new Sk.builtin.TypeError("can't delete __class__ attribute");
+            } else if (!Sk.builtin.checkClass(value)) {
                 throw new Sk.builtin.TypeError("__class__ must be set to a class, not '" + Sk.abstr.typeName(value) + "' object");
-            }
-            if (!this.hp$type || !value.sk$klass) {
+            } else if (!this.hp$type || !value.sk$klass) {
                 throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
-            }
-            if (value.prototype.sk$builtinBase !== this.sk$builtinBase) {
+            } else if (value.prototype.sk$builtinBase !== this.sk$builtinBase) {
                 throw new Sk.builtin.TypeError("__class__ assignment: '" + Sk.abstr.typeName(this) + "' object layout differs from '" + value.prototype.tp$name + "'");
             }
             Object.setPrototypeOf(this, value.prototype);

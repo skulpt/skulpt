@@ -43,6 +43,7 @@ const collections_mod = function (keywds) {
                     return this.default_factory;
                 },
                 $set: function (value) {
+                    value = value || Sk.builtin.none.none$;
                     this.default_factory = value;
                 },
             },

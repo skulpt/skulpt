@@ -513,7 +513,9 @@ Sk.builtin.type.prototype.tp$getsets = {
             return new Sk.builtin.str(this.prototype.tp$name);
         },
         $set: function (value) {
-            if (!Sk.builtin.checkString(value)) {
+            if (value == undefined) {
+                throw new SK.builtin.TypeError("can't delete " + this.prototype.tp$name + ".__name__");
+            } else if (!Sk.builtin.checkString(value)) {
                 throw new Sk.builtin.TypeError(
                     "can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'"
                 );
@@ -531,6 +533,9 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
         $set: function (value) {
             // they can set the module to whatever they like
+            if (value === undefined) {
+                throw new Sk.builtin.TypeError("can't delete " + this.prototype.tp$name + ".__module__");
+            }
             this.prototype.__module__ = value;
         },
     },

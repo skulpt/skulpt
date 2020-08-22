@@ -116,7 +116,8 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
                 return this.$module;
             },
             $set: function (value) {
-                this.$module = value;
+                value = value || Sk.builtin.none.none$;
+                this.$module = value;           
             },
         },
         __doc__: {

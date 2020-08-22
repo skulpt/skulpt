@@ -112,6 +112,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 return this.prop$doc;
             },
             $set: function (value) {
+                value = value || Sk.builtin.none.none$;
                 this.prop$doc = value;
             }
         },

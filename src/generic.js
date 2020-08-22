@@ -274,10 +274,13 @@ Sk.generic.getSetDict = {
         return this.$d;
     },
     $set: function (value) {
-        if (!(value instanceof Sk.builtin.dict)) {
+        if (value === undefined) {
+            this.$d = new Sk.builtin.dict();
+        } else if (value instanceof Sk.builtin.dict) {
+            this.$d = value;
+        } else {
             throw new Sk.builtin.TypeError("__dict__ must be set to a dictionary, not a '" + Sk.abstr.typeName(value) + "'");
         }
-        this.$d = value;
     },
     $doc: "dictionary for instance variables (if defined)",
     $name: "__dict__",
