@@ -12,6 +12,7 @@ import sys
 # and changing number of builtin types implement *some* flavor of
 # iterator.  Don't check the type!  Use hasattr to check for both
 # "__iter__" and "next" attributes instead.
+MappingProxyType = type(type.__dict__)
 
 NoneType = type(None)
 TypeType = type

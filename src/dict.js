@@ -87,6 +87,15 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             dict.dict$merge(other);
             return dict;
         },
+        nb$reflected_or: function(other) {
+            if (!(other instanceof Sk.builtin.dict)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            // dict or is not commutative so must define reflected slot here.
+            const dict = other.dict$copy();
+            dict.dict$merge(this);
+            return dict;
+        },
         nb$inplace_or: function (other) {
             return Sk.misceval.chain(this.update$onearg(other), () => this);
         },
@@ -289,9 +298,11 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         dict$copy: function () {
             const newCopy = new Sk.builtin.dict([]);
             newCopy.size = this.size;
-            for (let i in this.entries) {
-                const item = this.entries[i];
-                newCopy.entries[i] = { lhs: item.lhs, rhs: item.rhs };
+            const entries = Object.entries(this.entries); // do it this way for mappingproxy
+            for (let i in entries) {
+                const key = entries[i][0];
+                const item = entries[i][1];
+                newCopy.entries[key] = { lhs: item.lhs, rhs: item.rhs };
             }
             let bucket, this_bucket;
             for (let i in this.buckets) {
