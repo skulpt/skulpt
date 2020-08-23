@@ -13,6 +13,10 @@ import sys
 # iterator.  Don't check the type!  Use hasattr to check for both
 # "__iter__" and "next" attributes instead.
 MappingProxyType = type(type.__dict__)
+WrapperDescriptorType = type(object.__init__)
+MethodWrapperType = type(object().__str__)
+MethodDescriptorType = type(str.join)
+ClassMethodDescriptorType = type(dict.__dict__['fromkeys'])
 
 NoneType = type(None)
 TypeType = type

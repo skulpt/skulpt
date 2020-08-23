@@ -577,27 +577,27 @@ import unittest
 #         self.assertGreater(object.__basicsize__, 0)
 #         self.assertGreater(tuple.__itemsize__, 0)
 
-#     def test_slot_wrapper_types(self):
-#         self.assertIsInstance(object.__init__, types.WrapperDescriptorType)
-#         self.assertIsInstance(object.__str__, types.WrapperDescriptorType)
-#         self.assertIsInstance(object.__lt__, types.WrapperDescriptorType)
-#         self.assertIsInstance(int.__lt__, types.WrapperDescriptorType)
+    def test_slot_wrapper_types(self):
+        self.assertIsInstance(object.__init__, types.WrapperDescriptorType)
+        self.assertIsInstance(object.__str__, types.WrapperDescriptorType)
+        self.assertIsInstance(object.__lt__, types.WrapperDescriptorType)
+        self.assertIsInstance(int.__lt__, types.WrapperDescriptorType)
 
-#     def test_method_wrapper_types(self):
-#         self.assertIsInstance(object().__init__, types.MethodWrapperType)
-#         self.assertIsInstance(object().__str__, types.MethodWrapperType)
-#         self.assertIsInstance(object().__lt__, types.MethodWrapperType)
-#         self.assertIsInstance((42).__lt__, types.MethodWrapperType)
+    def test_method_wrapper_types(self):
+        self.assertIsInstance(object().__init__, types.MethodWrapperType)
+        self.assertIsInstance(object().__str__, types.MethodWrapperType)
+        self.assertIsInstance(object().__lt__, types.MethodWrapperType)
+        self.assertIsInstance((42).__lt__, types.MethodWrapperType)
 
-#     def test_method_descriptor_types(self):
-#         self.assertIsInstance(str.join, types.MethodDescriptorType)
-#         self.assertIsInstance(list.append, types.MethodDescriptorType)
-#         self.assertIsInstance(''.join, types.BuiltinMethodType)
-#         self.assertIsInstance([].append, types.BuiltinMethodType)
+    def test_method_descriptor_types(self):
+        self.assertIsInstance(str.join, types.MethodDescriptorType)
+        self.assertIsInstance(list.append, types.MethodDescriptorType)
+        self.assertIsInstance(''.join, types.BuiltinMethodType)
+        self.assertIsInstance([].append, types.BuiltinMethodType)
 
-#         self.assertIsInstance(int.__dict__['from_bytes'], types.ClassMethodDescriptorType)
-#         self.assertIsInstance(int.from_bytes, types.BuiltinMethodType)
-#         self.assertIsInstance(int.__new__, types.BuiltinMethodType)
+        # self.assertIsInstance(int.__dict__['from_bytes'], types.ClassMethodDescriptorType)
+        # self.assertIsInstance(int.from_bytes, types.BuiltinMethodType)
+        # self.assertIsInstance(int.__new__, types.BuiltinMethodType)
 
 
 class MappingProxyTests(unittest.TestCase):
