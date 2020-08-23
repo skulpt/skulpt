@@ -71,7 +71,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             Sk.abstr.checkNoKwargs("mappingproxy", kwargs);
             Sk.abstr.checkOneArg("mappingproxy", args, kwargs);
             const mapping = args[0];
-            if (!(mapping instanceof Sk.builtin.dict)) {
+            if (!(mapping instanceof Sk.builtin.dict || mapping instanceof Sk.builtin.mappingproxy)) {
                 throw new Sk.builtin.TypeError("mappingproxy() argument must be a mapping, not " + Sk.abstr.typeName(mapping));
             }
             const mp = new Sk.builtin.mappingproxy();
