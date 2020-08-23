@@ -1,5 +1,3 @@
-var reg = /^[0-9!#_]/; // use the reg expression from dict.js
-
 /**
  *
  * @constructor
@@ -35,32 +33,10 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
         this.mapping = new Sk.builtin.dict([]);
         if (d !== undefined) {
-            // create get properties for the object literal
-            Object.defineProperties(this.mapping, {
-                entries: {
-                    get: () => {
-                        const entries = Object.create(null);
-                        const keys = Object.keys(d);
-                        for (let i = 0; i < keys.length; i++) {
-                            const key = keys[i];
-                            const k = Sk.unfixReserved(key);
-                            if (!k.includes("$")) {
-                                entries[k.replace(reg, "!$&")] = { lhs: new Sk.builtin.str(k), rhs: d[key] };
-                            }
-                        }
-                        return entries;
-                    },
-                    configurable: true,
-                },
-                size: {
-                    get: () => {
-                        return Object.keys(d)
-                            .map((k) => Sk.unfixReserved(k))
-                            .filter((k) => !k.includes("$")).length;
-                    },
-                    configurable: true,
-                },
-            });
+            // internal call so d is an object literal
+            // adust this.mapping.entries to be a custom getter
+            // allowing support for dynamic object literals
+            customEntriesGetter(this.mapping, d);
         }
     },
     slots: {
@@ -169,3 +145,34 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         sk$acceptable_as_base_class: false,
     },
 });
+
+
+var reg = /^[0-9!#_]/; // use the reg expression from dict.js
+
+function customEntriesGetter(mapping, d) {
+    Object.defineProperties(mapping, {
+        entries: {
+            get: () => {
+                const entries = Object.create(null);
+                const keys = Object.keys(d);
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const k = Sk.unfixReserved(key);
+                    if (!k.includes("$")) {
+                        entries[k.replace(reg, "!$&")] = { lhs: new Sk.builtin.str(k), rhs: d[key] };
+                    }
+                }
+                return entries;
+            },
+            configurable: true,
+        },
+        size: {
+            get: () => {
+                return Object.keys(d)
+                    .map((k) => Sk.unfixReserved(k))
+                    .filter((k) => !k.includes("$")).length;
+            },
+            configurable: true,
+        },
+    });
+}
