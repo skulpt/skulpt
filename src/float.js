@@ -212,8 +212,12 @@ function _str_to_float(str) {
         ret = NaN;
     } else if (!isNaN(str)) {
         ret = parseFloat(str);
-    } else {
-        throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
+        if (isNaN(ret)) {
+            ret = undefined;
+        }
+    } 
+    if (ret === undefined) {
+        throw new Sk.builtin.ValueError("could not convert string to float: " + Sk.misceval.objectRepr(new Sk.builtin.str(str)));
     }
     return new Sk.builtin.float_(ret);
 }
