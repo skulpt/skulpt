@@ -1201,7 +1201,11 @@ slots.__bool__ = {
     $name: "__bool__",
     $slot_name: "nb$bool",
     $slot_func: slotFuncNoArgsWithCheck("__bool__", Sk.builtin.checkBool, "bool", (res) => res.v !== 0),
-    $wrapper: wrapperCallNoArgs,
+    $wrapper:  function __bool__(self, args, kwargs) {
+        // this = the wrapped function
+        Sk.abstr.checkNoArgs(this.$name, args, kwargs);
+        return new Sk.builtin.bool(this.call(self));
+    },
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "self != 0",

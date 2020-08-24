@@ -430,7 +430,7 @@ function numberShiftSlot(number_func, bigint_func) {
             let v = this.v;
             let w = other.v;
             if (v === 0) {
-                return this;
+                return new Sk.builtin.int_(this.v);
             }
             if (typeof w === "number") {
                 if (w < 0) {

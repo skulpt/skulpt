@@ -502,7 +502,11 @@ Sk.builtin.type.prototype.tp$getsets = {
     },
     __doc__: {
         $get: function () {
-            if (this.prototype.__doc__) {
+            const doc = this.$typeLookup(Sk.builtin.str.$doc);
+            if (doc) {
+                if (doc.tp$descr_get !== undefined) {
+                    return doc.tp$descr_get(null, this);
+                }
                 return this.prototype.__doc__;
             }
             return Sk.builtin.none.none$;
@@ -544,7 +548,7 @@ Sk.builtin.type.prototype.tp$getsets = {
 Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     mro: {
         $meth: function () {
-            return new Sk.builtin.tuple(this.$buildMRO());
+            return new Sk.builtin.list(this.$buildMRO());
         },
         $flags: { NoArgs: true },
     },

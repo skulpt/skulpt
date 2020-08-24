@@ -39,6 +39,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         this.$self = self;
         this.$module = module ? new Sk.builtin.str(module) : Sk.builtin.none.none$;
         this.$name = method_def.$name || method_def.$meth.name || "<native JS>";
+        this.m$def = method_def;
 
         // useful to set the $textsig to determine the correct flags
         this.$textsig = method_def.$textsig;
@@ -109,6 +110,13 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         tp$call: function (args, kwargs) {
             return this.tp$call(args, kwargs);
         },
+        tp$richcompare: function(other, op) {
+            if ((op !== "Eq" && op !== "NotEq") || !(other instanceof Sk.builtin.sk_method)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            let eq = this.$self === other.$self && this.m$def.$meth === other.m$def.$meth;
+            return op === "Eq" ? eq : !eq;
+        }
     },
     getsets: {
         __module__: {
@@ -135,5 +143,11 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
                 return new Sk.builtin.str(this.$textsig);
             },
         },
+        __self__: {
+            $get: function () {
+                return this.$self || Sk.builtin.none.none$;
+            }
+        }
+
     },
 });

@@ -1187,7 +1187,7 @@ Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
     for (let method_name in method_defs) {
         const method_def = method_defs[method_name];
         method_def.$name = method_def.$name || method_name;
-        module[method_name] = new Sk.builtin.sk_method(method_def, undefined, module_name);
+        module[method_name] = new Sk.builtin.sk_method(method_def, module, module_name);
     }
 };
 
