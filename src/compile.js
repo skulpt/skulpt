@@ -1359,7 +1359,7 @@ Compiler.prototype.craise = function (s) {
         // for the Python version you're using.
 
         var instantiatedException = this.newBlock("exception now instantiated");
-        var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type || " + exc + ".prototype instanceof Sk.builtin.BaseException");
+        var isClass = this._gr("isclass", exc + ".prototype instanceof Sk.builtin.BaseException");
         this._jumpfalse(isClass, instantiatedException);
         //this._jumpfalse(instantiatedException, isClass);
 
@@ -1383,7 +1383,7 @@ Compiler.prototype.craise = function (s) {
         // TODO TODO TODO set cause appropriately
         // (and perhaps traceback for py2 if we care before it gets fully deprecated)
 
-        out("throw ",exc,";");
+        out("if (", exc, " instanceof Sk.builtin.BaseException) {throw ",exc,";} else {throw new Sk.builtin.TypeError('exceptions must derive from BaseException');};");
     }
     else {
         // re-raise
