@@ -48,7 +48,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     if (f) {
         return f.call(descr, this, type, canSuspend);
     }
-    if (descr != null) {
+    if (descr !== undefined) {
         return descr;
     }
     return;
