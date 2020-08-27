@@ -70,18 +70,14 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                 }
                 // could be cleaner but this is inline with cpython's version
                 const dict = this.tp$getattr(Sk.builtin.str.$dict);
-                if (dict !== undefined) {
-                    if (!Sk.builtin.checkMapping(dict)) {
-                        throw new Sk.builtin.TypeError("__dict__ is not a dictionary");
-                    }
-                    const dirfunc = dict.mp$lookup(Sk.builtin.str.$dir);
-                    let res;
-                    if (dirfunc !== undefined) {
-                        res = Sk.misceval.callsimOrSuspendArray(dirfunc, []);
-                    } else {
-                        res = new Sk.builtin.list(Sk.misceval.arrayFromIterable(dict));
-                    }
-                    return res;
+                if (!Sk.builtin.checkMapping(dict)) {
+                    throw new Sk.builtin.TypeError("__dict__ is not a dictionary");
+                }
+                const dirfunc = dict.mp$lookup(Sk.builtin.str.$dir);
+                if (dirfunc !== undefined) {
+                    return Sk.misceval.callsimOrSuspendArray(dirfunc, []);
+                } else {
+                    return new Sk.builtin.list(Sk.misceval.arrayFromIterable(dict));
                 }
             },
             $flags: { NoArgs: true },
