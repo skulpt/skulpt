@@ -66,17 +66,17 @@ var $builtinmodule = function (name) {
     mod.__add__ = mod.add;
 
     mod.and_ = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "BitAnd");
+        return Sk.abstr.numberBinOp(a, b, "BitAnd");
     });
     mod.__and__ = mod.and_;
 
     mod.div = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "Div");
+        return Sk.abstr.numberBinOp(a, b, "Div");
     });
     mod.__div__ = mod.div;
 
     mod.floordiv = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "FloorDiv");
+        return Sk.abstr.numberBinOp(a, b, "FloorDiv");
     });
     mod.__floordiv__ = mod.floordiv;
 
@@ -97,22 +97,22 @@ var $builtinmodule = function (name) {
     mod.__invert__ = mod.inv;
 
     mod.lshift = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "LShift");
+        return Sk.abstr.numberBinOp(a, b, "LShift");
     });
     mod.__lshift__ = mod.lshift;
 
     mod.mod = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "Mod");
+        return Sk.abstr.numberBinOp(a, b, "Mod");
     });
     mod.__mod__ = mod.mod;
 
     mod.divmod = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "DivMod");
+        return Sk.abstr.numberBinOp(a, b, "DivMod");
     });
     mod.__divmod__ = mod.divmod;
 
     mod.mul = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "Mult");
+        return Sk.abstr.numberBinOp(a, b, "Mult");
     });
     mod.__mul__ = mod.mul;
 
@@ -122,7 +122,7 @@ var $builtinmodule = function (name) {
     mod.__neg__ = mod.neg;
 
     mod.or_ = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "BitOr");
+        return Sk.abstr.numberBinOp(a, b, "BitOr");
     });
     mod.__or__ = mod.or_;
 
@@ -132,17 +132,17 @@ var $builtinmodule = function (name) {
     mod.__pos__ = mod.pos;
 
     mod.pow = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "Pow");
+        return Sk.abstr.numberBinOp(a, b, "Pow");
     });
     mod.__pow__ = mod.pow;
 
     mod.rshift = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "RShift");
+        return Sk.abstr.numberBinOp(a, b, "RShift");
     });
     mod.__rshift__ = mod.rshift;
 
     mod.sub = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "Sub");
+        return Sk.abstr.numberBinOp(a, b, "Sub");
     });
     mod.__sub__ = mod.sub;
 
@@ -150,7 +150,7 @@ var $builtinmodule = function (name) {
     mod.__truediv__ = mod.div;
 
     mod.xor = new Sk.builtin.func(function (a, b) {
-        return Sk.abstr.binary_op_(a, b, "BitXor");
+        return Sk.abstr.numberBinOp(a, b, "BitXor");
     });
     mod.__xor__ = mod.xor;
 
