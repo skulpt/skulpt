@@ -117,10 +117,8 @@ Sk.builtin.str.prototype.sq$length = function () {
 };
 
 Sk.builtin.str.prototype.sq$concat = function (other) {
-    var otypename;
-    if (!other || !Sk.builtin.checkString(other)) {
-        otypename = Sk.abstr.typeName(other);
-        throw new Sk.builtin.TypeError("cannot concatenate 'str' and '" + otypename + "' objects");
+    if (!(other instanceof Sk.builtin.str)) {
+        throw new Sk.builtin.TypeError("cannot concatenate 'str' and '" + Sk.abstr.typeName(other) + "' objects");
     }
     return new Sk.builtin.str(this.v + other.v);
 };
@@ -497,7 +495,7 @@ Sk.builtin.str.methods.ljust = function (self, len, fillchar) {
     }
     len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
-        return self;
+        return new Sk.builtin.str(self.v);
     } else {
         newstr = Array.prototype.join.call({ length: Math.floor(len - self.v.length) + 1 }, fillchar);
         return new Sk.builtin.str(self.v + newstr);
@@ -520,7 +518,7 @@ Sk.builtin.str.methods.rjust = function (self, len, fillchar) {
     }
     len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
-        return self;
+        return new Sk.builtin.str(self.v);
     } else {
         newstr = Array.prototype.join.call({ length: Math.floor(len - self.v.length) + 1 }, fillchar);
         return new Sk.builtin.str(newstr + self.v);
@@ -544,7 +542,7 @@ Sk.builtin.str.methods.center = function (self, len, fillchar) {
     }
     len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
-        return self;
+        return new Sk.builtin.str(self.v);
     } else {
         newstr1 = Array.prototype.join.call({ length: Math.floor((len - self.v.length) / 2) + 1 }, fillchar);
         newstr = newstr1 + self.v + newstr1;
@@ -1009,7 +1007,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     var regex;
     var val;
 
-    if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
+    if (rhs.constructor !== Sk.builtin.tuple && !(rhs instanceof Sk.builtin.dict || rhs instanceof Sk.builtin.mappingproxy)) {
         rhs = new Sk.builtin.tuple([rhs]);
     }
     // general approach is to use a regex that matches the format above, and

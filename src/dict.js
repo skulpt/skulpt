@@ -323,7 +323,7 @@ function getHash(key) {
     let key_hash = key.$savedKeyHash_;
     if (key_hash !== undefined) {
         return key_hash;
-    } else if (key.ob$type === Sk.builtin.str) {
+    } else if (key instanceof Sk.builtin.str) {
         key_hash = key.$jsstr().replace(reg, "!$&"); // avoid numbers and clashes
         key.$savedKeyHash_ = key_hash;
         return key_hash;
