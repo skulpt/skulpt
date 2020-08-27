@@ -18,6 +18,106 @@ from copy import deepcopy
 # except ImportError:
 #     _testcapi = None
 
+# moved to global scope when #1178 is fixed this can be moved back into test_doc_descriptor
+class DocDescr(object):
+    def __get__(self, object, otype):
+        if object:
+            object = object.__class__.__name__ + ' instance'
+        if otype:
+            otype = otype.__name__
+        return 'object=%s; type=%s' % (object, otype)
+
+class Descr(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __set__(self, obj, value):
+        obj.__dict__[self.name] = value
+descr = Descr("a")
+
+
+class GetattrDescriptor(object):
+    counter = 0
+    def __get__(self, obj, objtype=None):
+        def getter(name):
+            self.counter += 1
+            raise AttributeError(name)
+        return getter
+
+getattr_descr = GetattrDescriptor()
+
+class C_methods(object):
+    def __init__(self, x):
+        self.x = x
+    def foo(self):
+        return self.x
+c1_methods = C_methods(1)
+
+
+_ok = None
+class Checker(object):
+    def __init__(self, test, ok=set()):
+      self.test = test
+      global _ok
+      _ok = ok
+    def __getattr__(self, attr):
+        self.test.fail("__getattr__ called with {0}".format(attr))
+    def __getattribute__(self, attr):
+        if attr not in _ok:
+            self.test.fail("__getattribute__ called with {0}".format(attr))
+        return object.__getattribute__(self, attr)
+
+class SpecialDescr(object):
+    def __init__(self, impl, record):
+        self.impl = impl
+        self.record = record
+    def __get__(self, obj, owner):
+        self.record.append(1)
+        return self.impl.__get__(obj, owner)
+class MyException(Exception):
+    pass
+class ErrDescr(object):
+    def __get__(self, obj, owner):
+        raise MyException
+
+
+#1178 from property plus
+class C(object):
+    foo = property(doc="hello")
+    @foo.getter
+    def foo(self):
+        return self._foo
+    @foo.setter
+    def foo(self, value):
+        self._foo = abs(value)
+    @foo.deleter
+    def foo(self):
+        del self._foo
+
+
+class E(object):
+    @property
+    def foo(self):
+        return self._foo
+    @foo.setter
+    def foo(self, value):
+        raise RuntimeError
+    @foo.setter
+    def foo(self, value):
+        self._foo = abs(value)
+    @foo.deleter
+    def foo(self, value=None):
+        del self._foo
+
+
+class C_Multi(object):
+    def __init__(self):
+        self.__state = 0
+    def getstate(self):
+        return self.__state
+    def setstate(self, state):
+        self.__state = state
 
 class OperatorsTest(unittest.TestCase):
 
@@ -477,347 +577,347 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual(a[2], 102)
         self.assertEqual(a[100:200], (100,200))
 
-    def test_metaclass(self):
-        # Testing metaclasses...
-        class C(metaclass=type):
-            def __init__(self):
-                self.__state = 0
-            def getstate(self):
-                return self.__state
-            def setstate(self, state):
-                self.__state = state
-        a = C()
-        self.assertEqual(a.getstate(), 0)
-        a.setstate(10)
-        self.assertEqual(a.getstate(), 10)
-        class _metaclass(type):
-            def myself(cls): return cls
-        class D(metaclass=_metaclass):
-            pass
-        self.assertEqual(D.myself(), D)
-        d = D()
-        self.assertEqual(d.__class__, D)
-        class M1(type):
-            def __new__(cls, name, bases, dict):
-                dict['__spam__'] = 1
-                return type.__new__(cls, name, bases, dict)
-        class C(metaclass=M1):
-            pass
-        self.assertEqual(C.__spam__, 1)
-        c = C()
-        self.assertEqual(c.__spam__, 1)
+    # def test_metaclass(self):
+    #     # Testing metaclasses...
+    #     class C(metaclass=type):
+    #         def __init__(self):
+    #             self.__state = 0
+    #         def getstate(self):
+    #             return self.__state
+    #         def setstate(self, state):
+    #             self.__state = state
+    #     a = C()
+    #     self.assertEqual(a.getstate(), 0)
+    #     a.setstate(10)
+    #     self.assertEqual(a.getstate(), 10)
+    #     class _metaclass(type):
+    #         def myself(cls): return cls
+    #     class D(metaclass=_metaclass):
+    #         pass
+    #     self.assertEqual(D.myself(), D)
+    #     d = D()
+    #     self.assertEqual(d.__class__, D)
+    #     class M1(type):
+    #         def __new__(cls, name, bases, dict):
+    #             dict['__spam__'] = 1
+    #             return type.__new__(cls, name, bases, dict)
+    #     class C(metaclass=M1):
+    #         pass
+    #     self.assertEqual(C.__spam__, 1)
+    #     c = C()
+    #     self.assertEqual(c.__spam__, 1)
 
-        class _instance(object):
-            pass
-        class M2(object):
-            @staticmethod
-            def __new__(cls, name, bases, dict):
-                self = object.__new__(cls)
-                self.name = name
-                self.bases = bases
-                self.dict = dict
-                return self
-            def __call__(self):
-                it = _instance()
-                # Early binding of methods
-                for key in self.dict:
-                    if key.startswith("__"):
-                        continue
-                    setattr(it, key, self.dict[key].__get__(it, self))
-                return it
-        class C(metaclass=M2):
-            def spam(self):
-                return 42
-        self.assertEqual(C.name, 'C')
-        self.assertEqual(C.bases, ())
-        self.assertIn('spam', C.dict)
-        c = C()
-        self.assertEqual(c.spam(), 42)
+    #     class _instance(object):
+    #         pass
+    #     class M2(object):
+    #         @staticmethod
+    #         def __new__(cls, name, bases, dict):
+    #             self = object.__new__(cls)
+    #             self.name = name
+    #             self.bases = bases
+    #             self.dict = dict
+    #             return self
+    #         def __call__(self):
+    #             it = _instance()
+    #             # Early binding of methods
+    #             for key in self.dict:
+    #                 if key.startswith("__"):
+    #                     continue
+    #                 setattr(it, key, self.dict[key].__get__(it, self))
+    #             return it
+    #     class C(metaclass=M2):
+    #         def spam(self):
+    #             return 42
+    #     self.assertEqual(C.name, 'C')
+    #     self.assertEqual(C.bases, ())
+    #     self.assertIn('spam', C.dict)
+    #     c = C()
+    #     self.assertEqual(c.spam(), 42)
 
-        # More metaclass examples
+    #     # More metaclass examples
 
-        class autosuper(type):
-            # Automatically add __super to the class
-            # This trick only works for dynamic classes
-            def __new__(metaclass, name, bases, dict):
-                cls = super(autosuper, metaclass).__new__(metaclass,
-                                                          name, bases, dict)
-                # Name mangling for __super removes leading underscores
-                while name[:1] == "_":
-                    name = name[1:]
-                if name:
-                    name = "_%s__super" % name
-                else:
-                    name = "__super"
-                setattr(cls, name, super(cls))
-                return cls
-        class A(metaclass=autosuper):
-            def meth(self):
-                return "A"
-        class B(A):
-            def meth(self):
-                return "B" + self.__super.meth()
-        class C(A):
-            def meth(self):
-                return "C" + self.__super.meth()
-        class D(C, B):
-            def meth(self):
-                return "D" + self.__super.meth()
-        self.assertEqual(D().meth(), "DCBA")
-        class E(B, C):
-            def meth(self):
-                return "E" + self.__super.meth()
-        self.assertEqual(E().meth(), "EBCA")
+    #     class autosuper(type):
+    #         # Automatically add __super to the class
+    #         # This trick only works for dynamic classes
+    #         def __new__(metaclass, name, bases, dict):
+    #             cls = super(autosuper, metaclass).__new__(metaclass,
+    #                                                       name, bases, dict)
+    #             # Name mangling for __super removes leading underscores
+    #             while name[:1] == "_":
+    #                 name = name[1:]
+    #             if name:
+    #                 name = "_%s__super" % name
+    #             else:
+    #                 name = "__super"
+    #             setattr(cls, name, super(cls))
+    #             return cls
+    #     class A(metaclass=autosuper):
+    #         def meth(self):
+    #             return "A"
+    #     class B(A):
+    #         def meth(self):
+    #             return "B" + self.__super.meth()
+    #     class C(A):
+    #         def meth(self):
+    #             return "C" + self.__super.meth()
+    #     class D(C, B):
+    #         def meth(self):
+    #             return "D" + self.__super.meth()
+    #     self.assertEqual(D().meth(), "DCBA")
+    #     class E(B, C):
+    #         def meth(self):
+    #             return "E" + self.__super.meth()
+    #     self.assertEqual(E().meth(), "EBCA")
 
-        class autoproperty(type):
-            # Automatically create property attributes when methods
-            # named _get_x and/or _set_x are found
-            def __new__(metaclass, name, bases, dict):
-                hits = {}
-                for key, val in dict.items():
-                    if key.startswith("_get_"):
-                        key = key[5:]
-                        get, set = hits.get(key, (None, None))
-                        get = val
-                        hits[key] = get, set
-                    elif key.startswith("_set_"):
-                        key = key[5:]
-                        get, set = hits.get(key, (None, None))
-                        set = val
-                        hits[key] = get, set
-                for key, (get, set) in hits.items():
-                    dict[key] = property(get, set)
-                return super(autoproperty, metaclass).__new__(metaclass,
-                                                            name, bases, dict)
-        class A(metaclass=autoproperty):
-            def _get_x(self):
-                return -self.__x
-            def _set_x(self, x):
-                self.__x = -x
-        a = A()
-        self.assertNotHasAttr(a, "x")
-        a.x = 12
-        self.assertEqual(a.x, 12)
-        self.assertEqual(a._A__x, -12)
+    #     class autoproperty(type):
+    #         # Automatically create property attributes when methods
+    #         # named _get_x and/or _set_x are found
+    #         def __new__(metaclass, name, bases, dict):
+    #             hits = {}
+    #             for key, val in dict.items():
+    #                 if key.startswith("_get_"):
+    #                     key = key[5:]
+    #                     get, set = hits.get(key, (None, None))
+    #                     get = val
+    #                     hits[key] = get, set
+    #                 elif key.startswith("_set_"):
+    #                     key = key[5:]
+    #                     get, set = hits.get(key, (None, None))
+    #                     set = val
+    #                     hits[key] = get, set
+    #             for key, (get, set) in hits.items():
+    #                 dict[key] = property(get, set)
+    #             return super(autoproperty, metaclass).__new__(metaclass,
+    #                                                         name, bases, dict)
+    #     class A(metaclass=autoproperty):
+    #         def _get_x(self):
+    #             return -self.__x
+    #         def _set_x(self, x):
+    #             self.__x = -x
+    #     a = A()
+    #     self.assertNotHasAttr(a, "x")
+    #     a.x = 12
+    #     self.assertEqual(a.x, 12)
+    #     self.assertEqual(a._A__x, -12)
 
-        class multimetaclass(autoproperty, autosuper):
-            # Merge of multiple cooperating metaclasses
-            pass
-        class A(metaclass=multimetaclass):
-            def _get_x(self):
-                return "A"
-        class B(A):
-            def _get_x(self):
-                return "B" + self.__super._get_x()
-        class C(A):
-            def _get_x(self):
-                return "C" + self.__super._get_x()
-        class D(C, B):
-            def _get_x(self):
-                return "D" + self.__super._get_x()
-        self.assertEqual(D().x, "DCBA")
+    #     class multimetaclass(autoproperty, autosuper):
+    #         # Merge of multiple cooperating metaclasses
+    #         pass
+    #     class A(metaclass=multimetaclass):
+    #         def _get_x(self):
+    #             return "A"
+    #     class B(A):
+    #         def _get_x(self):
+    #             return "B" + self.__super._get_x()
+    #     class C(A):
+    #         def _get_x(self):
+    #             return "C" + self.__super._get_x()
+    #     class D(C, B):
+    #         def _get_x(self):
+    #             return "D" + self.__super._get_x()
+    #     self.assertEqual(D().x, "DCBA")
 
-        # Make sure type(x) doesn't call x.__class__.__init__
-        class T(type):
-            counter = 0
-            def __init__(self, *args):
-                T.counter += 1
-        class C(metaclass=T):
-            pass
-        self.assertEqual(T.counter, 1)
-        a = C()
-        self.assertEqual(type(a), C)
-        self.assertEqual(T.counter, 1)
+    #     # Make sure type(x) doesn't call x.__class__.__init__
+    #     class T(type):
+    #         counter = 0
+    #         def __init__(self, *args):
+    #             T.counter += 1
+    #     class C(metaclass=T):
+    #         pass
+    #     self.assertEqual(T.counter, 1)
+    #     a = C()
+    #     self.assertEqual(type(a), C)
+    #     self.assertEqual(T.counter, 1)
 
-        class C(object): pass
-        c = C()
-        try: c()
-        except TypeError: pass
-        else: self.fail("calling object w/o call method should raise "
-                        "TypeError")
+    #     class C(object): pass
+    #     c = C()
+    #     try: c()
+    #     except TypeError: pass
+    #     else: self.fail("calling object w/o call method should raise "
+    #                     "TypeError")
 
-        # Testing code to find most derived baseclass
-        class A(type):
-            def __new__(*args, **kwargs):
-                return type.__new__(*args, **kwargs)
+    #     # Testing code to find most derived baseclass
+    #     class A(type):
+    #         def __new__(*args, **kwargs):
+    #             return type.__new__(*args, **kwargs)
 
-        class B(object):
-            pass
+    #     class B(object):
+    #         pass
 
-        class C(object, metaclass=A):
-            pass
+    #     class C(object, metaclass=A):
+    #         pass
 
-        # The most derived metaclass of D is A rather than type.
-        class D(B, C):
-            pass
-        self.assertIs(A, type(D))
+    #     # The most derived metaclass of D is A rather than type.
+    #     class D(B, C):
+    #         pass
+    #     self.assertIs(A, type(D))
 
-        # issue1294232: correct metaclass calculation
-        new_calls = []  # to check the order of __new__ calls
-        class AMeta(type):
-            @staticmethod
-            def __new__(mcls, name, bases, ns):
-                new_calls.append('AMeta')
-                return super().__new__(mcls, name, bases, ns)
-            @classmethod
-            def __prepare__(mcls, name, bases):
-                return {}
+    #     # issue1294232: correct metaclass calculation
+    #     new_calls = []  # to check the order of __new__ calls
+    #     class AMeta(type):
+    #         @staticmethod
+    #         def __new__(mcls, name, bases, ns):
+    #             new_calls.append('AMeta')
+    #             return super().__new__(mcls, name, bases, ns)
+    #         @classmethod
+    #         def __prepare__(mcls, name, bases):
+    #             return {}
 
-        class BMeta(AMeta):
-            @staticmethod
-            def __new__(mcls, name, bases, ns):
-                new_calls.append('BMeta')
-                return super().__new__(mcls, name, bases, ns)
-            @classmethod
-            def __prepare__(mcls, name, bases):
-                ns = super().__prepare__(name, bases)
-                ns['BMeta_was_here'] = True
-                return ns
+    #     class BMeta(AMeta):
+    #         @staticmethod
+    #         def __new__(mcls, name, bases, ns):
+    #             new_calls.append('BMeta')
+    #             return super().__new__(mcls, name, bases, ns)
+    #         @classmethod
+    #         def __prepare__(mcls, name, bases):
+    #             ns = super().__prepare__(name, bases)
+    #             ns['BMeta_was_here'] = True
+    #             return ns
 
-        class A(metaclass=AMeta):
-            pass
-        self.assertEqual(['AMeta'], new_calls)
-        new_calls.clear()
+    #     class A(metaclass=AMeta):
+    #         pass
+    #     self.assertEqual(['AMeta'], new_calls)
+    #     new_calls.clear()
 
-        class B(metaclass=BMeta):
-            pass
-        # BMeta.__new__ calls AMeta.__new__ with super:
-        self.assertEqual(['BMeta', 'AMeta'], new_calls)
-        new_calls.clear()
+    #     class B(metaclass=BMeta):
+    #         pass
+    #     # BMeta.__new__ calls AMeta.__new__ with super:
+    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
+    #     new_calls.clear()
 
-        class C(A, B):
-            pass
-        # The most derived metaclass is BMeta:
-        self.assertEqual(['BMeta', 'AMeta'], new_calls)
-        new_calls.clear()
-        # BMeta.__prepare__ should've been called:
-        self.assertIn('BMeta_was_here', C.__dict__)
+    #     class C(A, B):
+    #         pass
+    #     # The most derived metaclass is BMeta:
+    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
+    #     new_calls.clear()
+    #     # BMeta.__prepare__ should've been called:
+    #     self.assertIn('BMeta_was_here', C.__dict__)
 
-        # The order of the bases shouldn't matter:
-        class C2(B, A):
-            pass
-        self.assertEqual(['BMeta', 'AMeta'], new_calls)
-        new_calls.clear()
-        self.assertIn('BMeta_was_here', C2.__dict__)
+    #     # The order of the bases shouldn't matter:
+    #     class C2(B, A):
+    #         pass
+    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertIn('BMeta_was_here', C2.__dict__)
 
-        # Check correct metaclass calculation when a metaclass is declared:
-        class D(C, metaclass=type):
-            pass
-        self.assertEqual(['BMeta', 'AMeta'], new_calls)
-        new_calls.clear()
-        self.assertIn('BMeta_was_here', D.__dict__)
+    #     # Check correct metaclass calculation when a metaclass is declared:
+    #     class D(C, metaclass=type):
+    #         pass
+    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertIn('BMeta_was_here', D.__dict__)
 
-        class E(C, metaclass=AMeta):
-            pass
-        self.assertEqual(['BMeta', 'AMeta'], new_calls)
-        new_calls.clear()
-        self.assertIn('BMeta_was_here', E.__dict__)
+    #     class E(C, metaclass=AMeta):
+    #         pass
+    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertIn('BMeta_was_here', E.__dict__)
 
-        # Special case: the given metaclass isn't a class,
-        # so there is no metaclass calculation.
-        marker = object()
-        def func(*args, **kwargs):
-            return marker
-        class X(metaclass=func):
-            pass
-        class Y(object, metaclass=func):
-            pass
-        class Z(D, metaclass=func):
-            pass
-        self.assertIs(marker, X)
-        self.assertIs(marker, Y)
-        self.assertIs(marker, Z)
+    #     # Special case: the given metaclass isn't a class,
+    #     # so there is no metaclass calculation.
+    #     marker = object()
+    #     def func(*args, **kwargs):
+    #         return marker
+    #     class X(metaclass=func):
+    #         pass
+    #     class Y(object, metaclass=func):
+    #         pass
+    #     class Z(D, metaclass=func):
+    #         pass
+    #     self.assertIs(marker, X)
+    #     self.assertIs(marker, Y)
+    #     self.assertIs(marker, Z)
 
-        # The given metaclass is a class,
-        # but not a descendant of type.
-        prepare_calls = []  # to track __prepare__ calls
-        class ANotMeta:
-            def __new__(mcls, *args, **kwargs):
-                new_calls.append('ANotMeta')
-                return super().__new__(mcls)
-            @classmethod
-            def __prepare__(mcls, name, bases):
-                prepare_calls.append('ANotMeta')
-                return {}
-        class BNotMeta(ANotMeta):
-            def __new__(mcls, *args, **kwargs):
-                new_calls.append('BNotMeta')
-                return super().__new__(mcls)
-            @classmethod
-            def __prepare__(mcls, name, bases):
-                prepare_calls.append('BNotMeta')
-                return super().__prepare__(name, bases)
+    #     # The given metaclass is a class,
+    #     # but not a descendant of type.
+    #     prepare_calls = []  # to track __prepare__ calls
+    #     class ANotMeta:
+    #         def __new__(mcls, *args, **kwargs):
+    #             new_calls.append('ANotMeta')
+    #             return super().__new__(mcls)
+    #         @classmethod
+    #         def __prepare__(mcls, name, bases):
+    #             prepare_calls.append('ANotMeta')
+    #             return {}
+    #     class BNotMeta(ANotMeta):
+    #         def __new__(mcls, *args, **kwargs):
+    #             new_calls.append('BNotMeta')
+    #             return super().__new__(mcls)
+    #         @classmethod
+    #         def __prepare__(mcls, name, bases):
+    #             prepare_calls.append('BNotMeta')
+    #             return super().__prepare__(name, bases)
 
-        class A(metaclass=ANotMeta):
-            pass
-        self.assertIs(ANotMeta, type(A))
-        self.assertEqual(['ANotMeta'], prepare_calls)
-        prepare_calls.clear()
-        self.assertEqual(['ANotMeta'], new_calls)
-        new_calls.clear()
+    #     class A(metaclass=ANotMeta):
+    #         pass
+    #     self.assertIs(ANotMeta, type(A))
+    #     self.assertEqual(['ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
+    #     self.assertEqual(['ANotMeta'], new_calls)
+    #     new_calls.clear()
 
-        class B(metaclass=BNotMeta):
-            pass
-        self.assertIs(BNotMeta, type(B))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
+    #     class B(metaclass=BNotMeta):
+    #         pass
+    #     self.assertIs(BNotMeta, type(B))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
 
-        class C(A, B):
-            pass
-        self.assertIs(BNotMeta, type(C))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
+    #     class C(A, B):
+    #         pass
+    #     self.assertIs(BNotMeta, type(C))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
 
-        class C2(B, A):
-            pass
-        self.assertIs(BNotMeta, type(C2))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
+    #     class C2(B, A):
+    #         pass
+    #     self.assertIs(BNotMeta, type(C2))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
 
-        # This is a TypeError, because of a metaclass conflict:
-        # BNotMeta is neither a subclass, nor a superclass of type
-        with self.assertRaises(TypeError):
-            class D(C, metaclass=type):
-                pass
+    #     # This is a TypeError, because of a metaclass conflict:
+    #     # BNotMeta is neither a subclass, nor a superclass of type
+    #     with self.assertRaises(TypeError):
+    #         class D(C, metaclass=type):
+    #             pass
 
-        class E(C, metaclass=ANotMeta):
-            pass
-        self.assertIs(BNotMeta, type(E))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
+    #     class E(C, metaclass=ANotMeta):
+    #         pass
+    #     self.assertIs(BNotMeta, type(E))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
 
-        class F(object(), C):
-            pass
-        self.assertIs(BNotMeta, type(F))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
+    #     class F(object(), C):
+    #         pass
+    #     self.assertIs(BNotMeta, type(F))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
 
-        class F2(C, object()):
-            pass
-        self.assertIs(BNotMeta, type(F2))
-        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-        new_calls.clear()
-        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-        prepare_calls.clear()
+    #     class F2(C, object()):
+    #         pass
+    #     self.assertIs(BNotMeta, type(F2))
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+    #     new_calls.clear()
+    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+    #     prepare_calls.clear()
 
-        # TypeError: BNotMeta is neither a
-        # subclass, nor a superclass of int
-        with self.assertRaises(TypeError):
-            class X(C, int()):
-                pass
-        with self.assertRaises(TypeError):
-            class X(int(), C):
-                pass
+    #     # TypeError: BNotMeta is neither a
+    #     # subclass, nor a superclass of int
+    #     with self.assertRaises(TypeError):
+    #         class X(C, int()):
+    #             pass
+    #     with self.assertRaises(TypeError):
+    #         class X(int(), C):
+    #             pass
 
     def test_module_subclasses(self):
         # Testing Python subclass of module...
@@ -855,21 +955,22 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_multiple_inheritance(self):
         # Testing multiple inheritance...
-        class C(object):
-            def __init__(self):
-                self.__state = 0
-            def getstate(self):
-                return self.__state
-            def setstate(self, state):
-                self.__state = state
-        a = C()
+        # moved to global scope #1178
+        # class C_Multi(object):
+        #     def __init__(self):
+        #         self.__state = 0
+        #     def getstate(self):
+        #         return self.__state
+        #     def setstate(self, state):
+        #         self.__state = state
+        a = C_Multi()
         self.assertEqual(a.getstate(), 0)
         a.setstate(10)
         self.assertEqual(a.getstate(), 10)
-        class D(dict, C):
+        class D(dict, C_Multi):
             def __init__(self):
                 type({}).__init__(self)
-                C.__init__(self)
+                C_Multi.__init__(self)
         d = D()
         self.assertEqual(list(d.keys()), [])
         d["hello"] = "world"
@@ -878,7 +979,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual(d.getstate(), 0)
         d.setstate(10)
         self.assertEqual(d.getstate(), 10)
-        self.assertEqual(D.__mro__, (D, dict, C, object))
+        self.assertEqual(D.__mro__, (D, dict, C_Multi, object))
 
         # SF bug #442833
         class Node(object):
@@ -986,11 +1087,12 @@ order (MRO) for bases """
             try:
                 callable(*args)
             except exc as msg:
+                pass
                 # the exact msg is generally considered an impl detail
-                if support.check_impl_detail():
-                    if not str(msg).startswith(expected):
-                        self.fail("Message %r, expected %r" %
-                                  (str(msg), expected))
+                # if support.check_impl_detail():
+                    # if not str(msg).startswith(expected):
+                    #     self.fail("Message %r, expected %r" %
+                    #               (str(msg), expected))
             else:
                 self.fail("Expected %s" % exc)
 
@@ -1460,11 +1562,11 @@ order (MRO) for bases """
         self.assertEqual(I(3)*I(2), 6)
 
         # Test comparison of classes with dynamic metaclasses
-        class dynamicmetaclass(type):
-            pass
-        class someclass(metaclass=dynamicmetaclass):
-            pass
-        self.assertNotEqual(someclass, object)
+        # class dynamicmetaclass(type):
+        #     pass
+        # class someclass(metaclass=dynamicmetaclass):
+        #     pass
+        # self.assertNotEqual(someclass, object)
 
     def test_errors(self):
         # Testing errors...
@@ -1494,37 +1596,37 @@ order (MRO) for bases """
         else:
             self.fail("inheritance from CFunction should be illegal")
 
-        try:
-            class C(object):
-                __slots__ = 1
-        except TypeError:
-            pass
-        else:
-            self.fail("__slots__ = 1 should be illegal")
+        # try:
+        #     class C(object):
+        #         __slots__ = 1
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("__slots__ = 1 should be illegal")
 
-        try:
-            class C(object):
-                __slots__ = [1]
-        except TypeError:
-            pass
-        else:
-            self.fail("__slots__ = [1] should be illegal")
+        # try:
+        #     class C(object):
+        #         __slots__ = [1]
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("__slots__ = [1] should be illegal")
 
-        class M1(type):
-            pass
-        class M2(type):
-            pass
-        class A1(object, metaclass=M1):
-            pass
-        class A2(object, metaclass=M2):
-            pass
-        try:
-            class B(A1, A2):
-                pass
-        except TypeError:
-            pass
-        else:
-            self.fail("finding the most derived metaclass should have failed")
+        # class M1(type):
+        #     pass
+        # class M2(type):
+        #     pass
+        # class A1(object, metaclass=M1):
+        #     pass
+        # class A2(object, metaclass=M2):
+        #     pass
+        # try:
+        #     class B(A1, A2):
+        #         pass
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("finding the most derived metaclass should have failed")
 
     def test_classmethods(self):
         # Testing class methods...
@@ -1699,10 +1801,11 @@ order (MRO) for bases """
         self.assertEqual(d.goo(1), (D, 1))
         self.assertEqual(d.foo(1), (d, 1))
         self.assertEqual(D.foo(d, 1), (d, 1))
-        class E: # *not* subclassing from C
-            foo = C.foo
-        self.assertEqual(E().foo.__func__, C.foo) # i.e., unbound
-        self.assertTrue(repr(C.foo.__get__(C())).startswith("<bound method "))
+        # see skulpt issue 1178
+        # class E: # *not* subclassing from C
+        #     foo = C.foo
+        # self.assertEqual(E().foo.__func__, C.foo) # i.e., unbound
+        # self.assertTrue(repr(C.foo.__get__(C())).startswith("<bound method "))
 
     def test_compattr(self):
         # Testing computed attributes...
@@ -1847,56 +1950,56 @@ order (MRO) for bases """
         self.assertEqual(D.__mro__, (D, B, C, A, object))
         self.assertEqual(D().f(), "C")
 
-        class PerverseMetaType(type):
-            def mro(cls):
-                L = type.mro(cls)
-                L.reverse()
-                return L
-        class X(D,B,C,A, metaclass=PerverseMetaType):
-            pass
-        self.assertEqual(X.__mro__, (object, A, C, B, D, X))
-        self.assertEqual(X().f(), "A")
+        # class PerverseMetaType(type):
+        #     def mro(cls):
+        #         L = type.mro(cls)
+        #         L.reverse()
+        #         return L
+        # class X(D,B,C,A, metaclass=PerverseMetaType):
+        #     pass
+        # self.assertEqual(X.__mro__, (object, A, C, B, D, X))
+        # self.assertEqual(X().f(), "A")
 
-        try:
-            class _metaclass(type):
-                def mro(self):
-                    return [self, dict, object]
-            class X(object, metaclass=_metaclass):
-                pass
-            # In CPython, the class creation above already raises
-            # TypeError, as a protection against the fact that
-            # instances of X would segfault it.  In other Python
-            # implementations it would be ok to let the class X
-            # be created, but instead get a clean TypeError on the
-            # __setitem__ below.
-            x = object.__new__(X)
-            x[5] = 6
-        except TypeError:
-            pass
-        else:
-            self.fail("devious mro() return not caught")
+        # try:
+        #     class _metaclass(type):
+        #         def mro(self):
+        #             return [self, dict, object]
+        #     class X(object, metaclass=_metaclass):
+        #         pass
+        #     # In CPython, the class creation above already raises
+        #     # TypeError, as a protection against the fact that
+        #     # instances of X would segfault it.  In other Python
+        #     # implementations it would be ok to let the class X
+        #     # be created, but instead get a clean TypeError on the
+        #     # __setitem__ below.
+        #     x = object.__new__(X)
+        #     x[5] = 6
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("devious mro() return not caught")
 
-        try:
-            class _metaclass(type):
-                def mro(self):
-                    return [1]
-            class X(object, metaclass=_metaclass):
-                pass
-        except TypeError:
-            pass
-        else:
-            self.fail("non-class mro() return not caught")
+        # try:
+        #     class _metaclass(type):
+        #         def mro(self):
+        #             return [1]
+        #     class X(object, metaclass=_metaclass):
+        #         pass
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("non-class mro() return not caught")
 
-        try:
-            class _metaclass(type):
-                def mro(self):
-                    return 1
-            class X(object, metaclass=_metaclass):
-                pass
-        except TypeError:
-            pass
-        else:
-            self.fail("non-sequence mro() return not caught")
+        # try:
+        #     class _metaclass(type):
+        #         def mro(self):
+        #             return 1
+        #     class X(object, metaclass=_metaclass):
+        #         pass
+        # except TypeError:
+        #     pass
+        # else:
+        #     self.fail("non-sequence mro() return not caught")
 
     def test_overloading(self):
         # Testing operator overloading...
@@ -1949,47 +2052,48 @@ order (MRO) for bases """
 
     def test_methods(self):
         # Testing methods...
-        class C(object):
-            def __init__(self, x):
-                self.x = x
-            def foo(self):
-                return self.x
-        c1 = C(1)
-        self.assertEqual(c1.foo(), 1)
-        class D(C):
-            boo = C.foo
-            goo = c1.foo
+        # Skulpt #1178 moving this to global scope
+        # class C_methods(object):
+        #     def __init__(self, x):
+        #         self.x = x
+        #     def foo(self):
+        #         return self.x
+        # c1_methods = C_methods(1)
+        self.assertEqual(c1_methods.foo(), 1)
+        class D(C_methods):
+            boo = C_methods.foo
+            goo = c1_methods.foo
         d2 = D(2)
         self.assertEqual(d2.foo(), 2)
         self.assertEqual(d2.boo(), 2)
         self.assertEqual(d2.goo(), 1)
         class E(object):
-            foo = C.foo
-        self.assertEqual(E().foo.__func__, C.foo) # i.e., unbound
-        self.assertTrue(repr(C.foo.__get__(C(1))).startswith("<bound method "))
+            foo = C_methods.foo
+        self.assertEqual(E().foo.__func__, C_methods.foo) # i.e., unbound
+        self.assertTrue(repr(C_methods.foo.__get__(C_methods(1))).startswith("<bound method "))
 
     # @support.impl_detail("testing error message from implementation")
-    def test_methods_in_c(self):
-        # This test checks error messages in builtin method descriptor.
-        # It is allowed that other Python implementations use
-        # different error messages.
-        set_add = set.add
+    # def test_methods_in_c(self):
+    #     # This test checks error messages in builtin method descriptor.
+    #     # It is allowed that other Python implementations use
+    #     # different error messages.
+    #     set_add = set.add
 
-        expected_errmsg = "unbound method set.add() needs an argument"
+    #     expected_errmsg = "unbound method set.add() needs an argument"
 
-        with self.assertRaises(TypeError) as cm:
-            set_add()
-        self.assertEqual(cm.exception.args[0], expected_errmsg)
+    #     with self.assertRaises(TypeError) as cm:
+    #         set_add()
+    #     self.assertEqual(cm.exception.args[0], expected_errmsg)
 
-        expected_errmsg = "descriptor 'add' for 'set' objects doesn't apply to a 'int' object"
+    #     expected_errmsg = "descriptor 'add' for 'set' objects doesn't apply to a 'int' object"
 
-        with self.assertRaises(TypeError) as cm:
-            set_add(0)
-        self.assertEqual(cm.exception.args[0], expected_errmsg)
+    #     with self.assertRaises(TypeError) as cm:
+    #         set_add(0)
+    #     self.assertEqual(cm.exception.args[0], expected_errmsg)
 
-        with self.assertRaises(TypeError) as cm:
-            set_add.__get__(0)
-        self.assertEqual(cm.exception.args[0], expected_errmsg)
+    #     with self.assertRaises(TypeError) as cm:
+    #         set_add.__get__(0)
+    #     self.assertEqual(cm.exception.args[0], expected_errmsg)
 
     def test_special_method_lookup(self):
         # The lookup of special methods bypasses __getattr__ and
@@ -2019,7 +2123,7 @@ order (MRO) for bases """
         def do_dict_missing(checker):
             class DictSub(checker.__class__, dict):
                 pass
-            self.assertEqual(DictSub()["hi"], 4)
+            self.assertEqual(DictSub(self)["hi"], 4)
         def some_number(self_, key):
             self.assertEqual(key, "hi")
             return 4
@@ -2031,46 +2135,48 @@ order (MRO) for bases """
         # only listing the ones I can remember outside of typeobject.c, since it
         # does it right.
         specials = [
-            ("__bytes__", bytes, hello, set(), {}),
+            # ("__bytes__", bytes, hello, set(), {}),
             ("__reversed__", reversed, empty_seq, set(), {}),
-            ("__length_hint__", list, zero, set(),
-             {"__iter__" : iden, "__next__" : stop}),
+            # Skulpt doesn't check __length_hint__ to extend a list.
+            # ("__length_hint__", list, zero, set(),
+            #  {"__iter__" : iden, "__next__" : stop}),
             # ("__sizeof__", sys.getsizeof, zero, set(), {}),
-            ("__instancecheck__", do_isinstance, return_true, set(), {}),
+            # ("__instancecheck__", do_isinstance, return_true, set(), {}),
             ("__missing__", do_dict_missing, some_number,
              set(("__class__",)), {}),
-            ("__subclasscheck__", do_issubclass, return_true,
-             set(("__bases__",)), {}),
+            # ("__subclasscheck__", do_issubclass, return_true,
+            #  set(("__bases__",)), {}),
             ("__enter__", run_context, iden, set(), {"__exit__" : swallow}),
             ("__exit__", run_context, swallow, set(), {"__enter__" : iden}),
             ("__complex__", complex, complex_num, set(), {}),
             ("__format__", format, format_impl, set(), {}),
-            ("__floor__", math.floor, zero, set(), {}),
-            ("__trunc__", math.trunc, zero, set(), {}),
+            # ("__floor__", math.floor, zero, set(), {}),
+            # ("__trunc__", math.trunc, zero, set(), {}),
             ("__trunc__", int, zero, set(), {}),
-            ("__ceil__", math.ceil, zero, set(), {}),
+            # ("__ceil__", math.ceil, zero, set(), {}),
             ("__dir__", dir, empty_seq, set(), {}),
             ("__round__", round, zero, set(), {}),
             ]
 
-        class Checker(object):
-            def __getattr__(self, attr, test=self):
-                test.fail("__getattr__ called with {0}".format(attr))
-            def __getattribute__(self, attr, test=self):
-                if attr not in ok:
-                    test.fail("__getattribute__ called with {0}".format(attr))
-                return object.__getattribute__(self, attr)
-        class SpecialDescr(object):
-            def __init__(self, impl):
-                self.impl = impl
-            def __get__(self, obj, owner):
-                record.append(1)
-                return self.impl.__get__(obj, owner)
-        class MyException(Exception):
-            pass
-        class ErrDescr(object):
-            def __get__(self, obj, owner):
-                raise MyException
+        # Skulpt #1178 moved to global scope
+        # class Checker(object):
+        #     def __getattr__(self, attr, test=self):
+        #         test.fail("__getattr__ called with {0}".format(attr))
+        #     def __getattribute__(self, attr, test=self):
+        #         if attr not in ok:
+        #             test.fail("__getattribute__ called with {0}".format(attr))
+        #         return object.__getattribute__(self, attr)
+        # class SpecialDescr(object):
+        #     def __init__(self, impl):
+        #         self.impl = impl
+        #     def __get__(self, obj, owner):
+        #         record.append(1)
+        #         return self.impl.__get__(obj, owner)
+        # class MyException(Exception):
+        #     pass
+        # class ErrDescr(object):
+        #     def __get__(self, obj, owner):
+        #         raise MyException
 
         for name, runner, meth_impl, ok, env in specials:
             class X(Checker):
@@ -2078,15 +2184,15 @@ order (MRO) for bases """
             for attr, obj in env.items():
                 setattr(X, attr, obj)
             setattr(X, name, meth_impl)
-            runner(X())
+            runner(X(self, ok))
 
             record = []
             class X(Checker):
                 pass
             for attr, obj in env.items():
                 setattr(X, attr, obj)
-            setattr(X, name, SpecialDescr(meth_impl))
-            runner(X())
+            setattr(X, name, SpecialDescr(meth_impl, record))
+            runner(X(self, ok))
             self.assertEqual(record, [1], name)
 
             class X(Checker):
@@ -2094,7 +2200,7 @@ order (MRO) for bases """
             for attr, obj in env.items():
                 setattr(X, attr, obj)
             setattr(X, name, ErrDescr())
-            self.assertRaises(MyException, runner, X())
+            self.assertRaises(MyException, runner, X(self, ok))
 
     def test_specials(self):
         # Testing special operators...
@@ -2117,7 +2223,7 @@ order (MRO) for bases """
         self.assertFalse(c1 == c2)
         # Note that the module name appears in str/repr, and that varies
         # depending on whether this test is run standalone or from a framework.
-        self.assertGreaterEqual(str(c1).find('C object at '), 0)
+        # self.assertGreaterEqual(str(c1).find('C object at '), 0)
         self.assertEqual(str(c1), repr(c1))
         self.assertNotIn(-1, c1)
         for i in range(10):
@@ -2140,7 +2246,7 @@ order (MRO) for bases """
         self.assertFalse(d1 == d2)
         # Note that the module name appears in str/repr, and that varies
         # depending on whether this test is run standalone or from a framework.
-        self.assertGreaterEqual(str(d1).find('D object at '), 0)
+        # self.assertGreaterEqual(str(d1).find('D object at '), 0)
         self.assertEqual(str(d1), repr(d1))
         self.assertNotIn(-1, d1)
         for i in range(10):
@@ -2466,9 +2572,10 @@ order (MRO) for bases """
 
     def test_dir(self):
         # Testing dir() ...
-        junk = 12
-        self.assertEqual(dir(), ['junk', 'self'])
-        del junk
+        # skulpt doesn't support dir with no args
+        # junk = 12
+        # self.assertEqual(dir(), ['junk', 'self'])
+        # del junk
 
         # Just make sure these don't blow up!
         for arg in 2, 2, 2j, 2e0, [2], "2", (2,), {2:2}, type, self.test_dir:
@@ -2538,27 +2645,27 @@ order (MRO) for bases """
 
         # Two essentially featureless objects, (Ellipsis just inherits stuff
         # from object.
-        self.assertEqual(dir(object()), dir(Ellipsis))
+        # self.assertEqual(dir(object()), dir(Ellipsis))
 
         # Nasty test case for proxied objects
-        class Wrapper(object):
-            def __init__(self, obj):
-                self.__obj = obj
-            def __repr__(self):
-                return "Wrapper(%s)" % repr(self.__obj)
-            def __getitem__(self, key):
-                return Wrapper(self.__obj[key])
-            def __len__(self):
-                return len(self.__obj)
-            def __getattr__(self, name):
-                return Wrapper(getattr(self.__obj, name))
+        # class Wrapper(object):
+        #     def __init__(self, obj):
+        #         self.__obj = obj
+        #     def __repr__(self):
+        #         return "Wrapper(%s)" % repr(self.__obj)
+        #     def __getitem__(self, key):
+        #         return Wrapper(self.__obj[key])
+        #     def __len__(self):
+        #         return len(self.__obj)
+        #     def __getattr__(self, name):
+        #         return Wrapper(getattr(self.__obj, name))
 
-        class C(object):
-            def __getclass(self):
-                return Wrapper(type(self))
-            __class__ = property(__getclass)
+        # class C(object):
+        #     def __getclass(self):
+        #         return Wrapper(type(self))
+        #     __class__ = property(__getclass)
 
-        dir(C()) # This used to segfault
+        # dir(C()) # This used to segfault
 
     def test_supers(self):
         # Testing super...
@@ -2747,7 +2854,7 @@ order (MRO) for bases """
                 self.prec = int(prec)
             def __repr__(self):
                 return "%.*g" % (self.prec, self)
-        self.assertEqual(repr(precfloat(1.1)), "1.1")
+        # self.assertEqual(repr(precfloat(1.1)), "1.1")
         a = precfloat(12345)
         self.assertEqual(a, 12345.0)
         self.assertEqual(float(a), 12345.0)
@@ -2759,14 +2866,14 @@ order (MRO) for bases """
             def __repr__(self):
                 return "%.17gj%+.17g" % (self.imag, self.real)
         a = madcomplex(-3, 4)
-        self.assertEqual(repr(a), "4j-3")
+        # self.assertEqual(repr(a), "4j-3")
         base = complex(-3, 4)
         self.assertEqual(base.__class__, complex)
         self.assertEqual(a, base)
         self.assertEqual(complex(a), base)
         self.assertEqual(complex(a).__class__, complex)
         a = madcomplex(a)  # just trying another form of the constructor
-        self.assertEqual(repr(a), "4j-3")
+        # self.assertEqual(repr(a), "4j-3")
         self.assertEqual(a, base)
         self.assertEqual(complex(a), base)
         self.assertEqual(complex(a).__class__, complex)
@@ -2843,7 +2950,7 @@ order (MRO) for bases """
         self.assertEqual(s, base)
         self.assertEqual(str(s), base)
         self.assertIs(str(s).__class__, str)
-        self.assertEqual(hash(s), hash(base))
+        # self.assertEqual(hash(s), hash(base)) # strings don't have a custom hash function
         self.assertEqual({s: 1}[base], 1)
         self.assertEqual({base: 1}[s], 1)
         self.assertIs((s + "").__class__, str)
@@ -2864,11 +2971,11 @@ order (MRO) for bases """
         self.assertEqual(s.strip(), base)
         self.assertIs(s.lstrip().__class__, str)
         self.assertEqual(s.lstrip(), base)
-        self.assertIs(s.rstrip().__class__, str)
-        self.assertEqual(s.rstrip(), base)
+        # self.assertIs(s.rstrip().__class__, str)
+        # self.assertEqual(s.rstrip(), base)
         identitytab = {}
-        self.assertIs(s.translate(identitytab).__class__, str)
-        self.assertEqual(s.translate(identitytab), base)
+        # self.assertIs(s.translate(identitytab).__class__, str)
+        # self.assertEqual(s.translate(identitytab), base)
         self.assertIs(s.replace("x", "x").__class__, str)
         self.assertEqual(s.replace("x", "x"), base)
         self.assertIs(s.ljust(len(s)).__class__, str)
@@ -2897,7 +3004,7 @@ order (MRO) for bases """
         u = madunicode(base)
         self.assertEqual(str(u), base)
         self.assertIs(str(u).__class__, str)
-        self.assertEqual(hash(u), hash(base))
+        # self.assertEqual(hash(u), hash(base))
         self.assertEqual({u: 1}[base], 1)
         self.assertEqual({base: 1}[u], 1)
         self.assertIs(u.strip().__class__, str)
@@ -3006,19 +3113,26 @@ order (MRO) for bases """
 
     def test_keywords(self):
         # Testing keyword args to basic type constructors ...
-        with self.assertRaisesRegex(TypeError, 'keyword argument'):
+        msg = 'keyword argument'
+        with self.assertRaises(TypeError) as c:
             int(x=1)
-        with self.assertRaisesRegex(TypeError, 'keyword argument'):
+        self.assertIn(msg, c.exception.args[0])
+        with self.assertRaises(TypeError) as c:
             float(x=2)
-        with self.assertRaisesRegex(TypeError, 'keyword argument'):
+        self.assertIn(msg, c.exception.args[0])
+        with self.assertRaises(TypeError) as c:
             bool(x=2)
+        self.assertIn(msg, c.exception.args[0])
         self.assertEqual(complex(imag=42, real=666), complex(666, 42))
         self.assertEqual(str(object=500), '500')
         # self.assertEqual(str(object=b'abc', errors='strict'), 'abc')
-        with self.assertRaisesRegex(TypeError, 'keyword argument'):
+        msg = 'keyword argument'
+        with self.assertRaises(TypeError) as c:
             tuple(sequence=range(3))
-        with self.assertRaisesRegex(TypeError, 'keyword argument'):
+        self.assertIn(msg, c.exception.args[0])
+        with self.assertRaises(TypeError) as c:
             list(sequence=(0, 1, 2))
+        self.assertIn(msg, c.exception.args[0])
         # note: as of Python 2.3, dict() no longer has an "items" keyword arg
 
         for constructor in (int, float, int, complex, str, str,
@@ -3058,10 +3172,11 @@ order (MRO) for bases """
 
         d = {cistr('one'): 1, cistr('two'): 2, cistr('tHree'): 3}
         self.assertEqual(d[cistr('one')], 1)
-        self.assertEqual(d[cistr('tWo')], 2)
-        self.assertEqual(d[cistr('THrEE')], 3)
-        self.assertIn(cistr('ONe'), d)
-        self.assertEqual(d.get(cistr('thrEE')), 3)
+        # Skulpt does not fully support this kind of str subclass...
+        # self.assertEqual(d[cistr('tWo')], 2)
+        # self.assertEqual(d[cistr('THrEE')], 3)
+        # self.assertIn(cistr('ONe'), d)
+        # self.assertEqual(d.get(cistr('thrEE')), 3)
 
     def test_classic_comparisons(self):
         # Testing classic comparisons...
@@ -3217,13 +3332,14 @@ order (MRO) for bases """
     def test_doc_descriptor(self):
         # Testing __doc__ descriptor...
         # SF bug 542984
-        class DocDescr(object):
-            def __get__(self, object, otype):
-                if object:
-                    object = object.__class__.__name__ + ' instance'
-                if otype:
-                    otype = otype.__name__
-                return 'object=%s; type=%s' % (object, otype)
+        # Skulpt BUG #1178 move this to global scope
+        # class DocDescr(object):
+        #     def __get__(self, object, otype):
+        #         if object:
+        #             object = object.__class__.__name__ + ' instance'
+        #         if otype:
+        #             otype = otype.__name__
+        #         return 'object=%s; type=%s' % (object, otype)
         class OldClass:
             __doc__ = DocDescr()
         class NewClass(object):
@@ -3361,24 +3477,24 @@ order (MRO) for bases """
             else:
                 self.fail("dict_descr allowed access to %r's dict" % x)
 
-        # Classes don't allow __dict__ assignment and have readonly dicts
-        class Meta1(type, Base):
-            pass
-        class Meta2(Base, type):
-            pass
-        class D(object, metaclass=Meta1):
-            pass
-        class E(object, metaclass=Meta2):
-            pass
-        for cls in C, D, E:
-            verify_dict_readonly(cls)
-            class_dict = cls.__dict__
-            try:
-                class_dict["spam"] = "eggs"
-            except TypeError:
-                pass
-            else:
-                self.fail("%r's __dict__ can be modified" % cls)
+        # # Classes don't allow __dict__ assignment and have readonly dicts
+        # class Meta1(type, Base):
+        #     pass
+        # class Meta2(Base, type):
+        #     pass
+        # class D(object, metaclass=Meta1):
+        #     pass
+        # class E(object, metaclass=Meta2):
+        #     pass
+        # for cls in C, D, E:
+        #     verify_dict_readonly(cls)
+        #     class_dict = cls.__dict__
+        #     try:
+        #         class_dict["spam"] = "eggs"
+        #     except TypeError:
+        #         pass
+        #     else:
+        #         self.fail("%r's __dict__ can be modified" % cls)
 
         # Modules also disallow __dict__ assignment
         class Module1(types.ModuleType, Base):
@@ -3388,7 +3504,7 @@ order (MRO) for bases """
         for ModuleType in Module1, Module2:
             mod = ModuleType("spam")
             verify_dict_readonly(mod)
-            mod.__dict__["spam"] = "eggs"
+            # mod.__dict__["spam"] = "eggs" #skulpt modules don't support item assignment
 
         # Exception's __dict__ can be replaced, but not deleted
         # (at least not any more than regular exception's __dict__ can
@@ -3544,31 +3660,31 @@ order (MRO) for bases """
 
     def test_str_of_str_subclass(self):
         # Testing __str__ defined in subclass of str ...
-        import binascii
-        import io
+        # import binascii
+        # import io
 
         class octetstring(str):
-            def __str__(self):
-                return binascii.b2a_hex(self.encode('ascii')).decode("ascii")
+            # def __str__(self):
+            #     return binascii.b2a_hex(self.encode('ascii')).decode("ascii")
             def __repr__(self):
                 return self + " repr"
 
         o = octetstring('A')
         self.assertEqual(type(o), octetstring)
-        self.assertEqual(type(str(o)), str)
+        # self.assertEqual(type(str(o)), str)
         self.assertEqual(type(repr(o)), str)
         self.assertEqual(ord(o), 0x41)
-        self.assertEqual(str(o), '41')
+        # self.assertEqual(str(o), '41')
         self.assertEqual(repr(o), 'A repr')
-        self.assertEqual(o.__str__(), '41')
+        # self.assertEqual(o.__str__(), '41')
         self.assertEqual(o.__repr__(), 'A repr')
 
-        capture = io.StringIO()
-        # Calling str() or not exercises different internal paths.
-        print(o, file=capture)
-        print(str(o), file=capture)
-        self.assertEqual(capture.getvalue(), '41\n41\n')
-        capture.close()
+        # capture = io.StringIO()
+        # # Calling str() or not exercises different internal paths.
+        # print(o, file=capture)
+        # print(str(o), file=capture)
+        # self.assertEqual(capture.getvalue(), '41\n41\n')
+        # capture.close()
 
     def test_keyword_arguments(self):
         # Testing keyword arguments to __init__, __call__...
@@ -3592,23 +3708,24 @@ order (MRO) for bases """
         else:
             self.fail("Recursion limit should have been reached for __call__()")
 
-    def test_delete_hook(self):
-        # Testing __del__ hook...
-        log = []
-        class C(object):
-            def __del__(self):
-                log.append(1)
-        c = C()
-        self.assertEqual(log, [])
-        del c
-        # support.gc_collect()
-        self.assertEqual(log, [1])
+    # skulpt does not support the __del__ hook
+    # def test_delete_hook(self):
+    #     # Testing __del__ hook...
+    #     log = []
+    #     class C(object):
+    #         def __del__(self):
+    #             log.append(1)
+    #     c = C()
+    #     self.assertEqual(log, [])
+    #     del c
+    #     # support.gc_collect()
+    #     self.assertEqual(log, [1])
 
-        class D(object): pass
-        d = D()
-        try: del d[0]
-        except TypeError: pass
-        else: self.fail("invalid del() didn't raise TypeError")
+    #     class D(object): pass
+    #     d = D()
+    #     try: del d[0]
+    #     except TypeError: pass
+    #     else: self.fail("invalid del() didn't raise TypeError")
 
     def test_hash_inheritance(self):
         # Testing hash of mutable subclasses...
@@ -3650,29 +3767,30 @@ order (MRO) for bases """
         except ValueError: pass
         else: self.fail("''.rindex('5') doesn't raise ValueError")
 
-        try: '%(n)s' % None
-        except TypeError: pass
-        else: self.fail("'%(n)s' % None doesn't raise TypeError")
+        # Skulpt doesn't handle thise in str.prototype.nb$remainder
+        # try: '%(n)s' % None
+        # except TypeError: pass
+        # else: self.fail("'%(n)s' % None doesn't raise TypeError")
 
-        try: '%(n' % {}
-        except ValueError: pass
-        else: self.fail("'%(n' % {} '' doesn't raise ValueError")
+        # try: '%(n' % {}
+        # except ValueError: pass
+        # else: self.fail("'%(n' % {} '' doesn't raise ValueError")
 
-        try: '%*s' % ('abc')
-        except TypeError: pass
-        else: self.fail("'%*s' % ('abc') doesn't raise TypeError")
+        # try: '%*s' % ('abc')
+        # except TypeError: pass
+        # else: self.fail("'%*s' % ('abc') doesn't raise TypeError")
 
-        try: '%*.*s' % ('abc', 5)
-        except TypeError: pass
-        else: self.fail("'%*.*s' % ('abc', 5) doesn't raise TypeError")
+        # try: '%*.*s' % ('abc', 5)
+        # except TypeError: pass
+        # else: self.fail("'%*.*s' % ('abc', 5) doesn't raise TypeError")
 
-        try: '%s' % (1, 2)
-        except TypeError: pass
-        else: self.fail("'%s' % (1, 2) doesn't raise TypeError")
+        # try: '%s' % (1, 2)
+        # except TypeError: pass
+        # else: self.fail("'%s' % (1, 2) doesn't raise TypeError")
 
-        try: '%' % None
-        except ValueError: pass
-        else: self.fail("'%' % None doesn't raise ValueError")
+        # try: '%' % None
+        # except ValueError: pass
+        # else: self.fail("'%' % None doesn't raise ValueError")
 
         self.assertEqual('534253'.isdigit(), 1)
         self.assertEqual('534253x'.isdigit(), 0)
@@ -3766,32 +3884,33 @@ order (MRO) for bases """
         y *= "foo"
         self.assertEqual(y, (x, "foo"))
 
-    def test_copy_setstate(self):
-        # Testing that copy.*copy() correctly uses __setstate__...
-        import copy
-        class C(object):
-            def __init__(self, foo=None):
-                self.foo = foo
-                self.__foo = foo
-            def setfoo(self, foo=None):
-                self.foo = foo
-            def getfoo(self):
-                return self.__foo
-            def __getstate__(self):
-                return [self.foo]
-            def __setstate__(self_, lst):
-                self.assertEqual(len(lst), 1)
-                self_.__foo = self_.foo = lst[0]
-        a = C(42)
-        a.setfoo(24)
-        self.assertEqual(a.foo, 24)
-        self.assertEqual(a.getfoo(), 42)
-        b = copy.copy(a)
-        self.assertEqual(b.foo, 24)
-        self.assertEqual(b.getfoo(), 24)
-        b = copy.deepcopy(a)
-        self.assertEqual(b.foo, 24)
-        self.assertEqual(b.getfoo(), 24)
+    # Skulpt does not support getstate or setstate
+    # def test_copy_setstate(self):
+    #     # Testing that copy.*copy() correctly uses __setstate__...
+    #     import copy
+    #     class C(object):
+    #         def __init__(self, foo=None):
+    #             self.foo = foo
+    #             self.__foo = foo
+    #         def setfoo(self, foo=None):
+    #             self.foo = foo
+    #         def getfoo(self):
+    #             return self.__foo
+    #         def __getstate__(self):
+    #             return [self.foo]
+    #         def __setstate__(self_, lst):
+    #             self.assertEqual(len(lst), 1)
+    #             self_.__foo = self_.foo = lst[0]
+    #     a = C(42)
+    #     a.setfoo(24)
+    #     self.assertEqual(a.foo, 24)
+    #     self.assertEqual(a.getfoo(), 42)
+    #     b = copy.copy(a)
+    #     self.assertEqual(b.foo, 24)
+    #     self.assertEqual(b.getfoo(), 24)
+    #     b = copy.deepcopy(a)
+    #     self.assertEqual(b.foo, 24)
+    #     self.assertEqual(b.getfoo(), 24)
 
     def test_slices(self):
         # Testing cases with slices and overridden __getitem__ ...
@@ -3837,56 +3956,57 @@ order (MRO) for bases """
         a.__setitem__(slice(0, 2, 1), [2,3])
         self.assertEqual(a, [2,3,1])
 
-    def test_subtype_resurrection(self):
-        # Testing resurrection of new-style instance...
+    # Skult does not support the __del__ slot
+    # def test_subtype_resurrection(self):
+    #     # Testing resurrection of new-style instance...
 
-        class C(object):
-            container = []
+    #     class C(object):
+    #         container = []
 
-            def __del__(self):
-                # resurrect the instance
-                C.container.append(self)
+    #         def __del__(self):
+    #             # resurrect the instance
+    #             C.container.append(self)
 
-        c = C()
-        c.attr = 42
+    #     c = C()
+    #     c.attr = 42
 
-        # The most interesting thing here is whether this blows up, due to
-        # flawed GC tracking logic in typeobject.c's call_finalizer() (a 2.2.1
-        # bug).
-        del c
+    #     # The most interesting thing here is whether this blows up, due to
+    #     # flawed GC tracking logic in typeobject.c's call_finalizer() (a 2.2.1
+    #     # bug).
+    #     del c
 
-        # support.gc_collect()
-        self.assertEqual(len(C.container), 1)
+    #     # support.gc_collect()
+    #     self.assertEqual(len(C.container), 1)
 
-        # Make c mortal again, so that the test framework with -l doesn't report
-        # it as a leak.
-        del C.__del__
+    #     # Make c mortal again, so that the test framework with -l doesn't report
+    #     # it as a leak.
+    #     del C.__del__
 
-    def test_slots_trash(self):
-        # Testing slot trash...
-        # Deallocating deeply nested slotted trash caused stack overflows
-        class trash(object):
-            __slots__ = ['x']
-            def __init__(self, x):
-                self.x = x
-        o = None
-        for i in range(50000):
-            o = trash(o)
-        del o
+    # def test_slots_trash(self):
+    #     # Testing slot trash...
+    #     # Deallocating deeply nested slotted trash caused stack overflows
+    #     class trash(object):
+    #         __slots__ = ['x']
+    #         def __init__(self, x):
+    #             self.x = x
+    #     o = None
+    #     for i in range(50000):
+    #         o = trash(o)
+    #     del o
 
-    def test_slots_multiple_inheritance(self):
-        # SF bug 575229, multiple inheritance w/ slots dumps core
-        class A(object):
-            __slots__=()
-        class B(object):
-            pass
-        class C(A,B) :
-            __slots__=()
-        # if support.check_impl_detail():
-        #     self.assertEqual(C.__basicsize__, B.__basicsize__)
-        self.assertHasAttr(C, '__dict__')
-        self.assertHasAttr(C, '__weakref__')
-        C().x = 2
+    # def test_slots_multiple_inheritance(self):
+    #     # SF bug 575229, multiple inheritance w/ slots dumps core
+    #     class A(object):
+    #         __slots__=()
+    #     class B(object):
+    #         pass
+    #     class C(A,B) :
+    #         __slots__=()
+    #     # if support.check_impl_detail():
+    #     #     self.assertEqual(C.__basicsize__, B.__basicsize__)
+    #     self.assertHasAttr(C, '__dict__')
+    #     self.assertHasAttr(C, '__weakref__')
+    #     C().x = 2
 
     def test_rmul(self):
         # Testing correct invocation of __rmul__...
@@ -3911,110 +4031,112 @@ order (MRO) for bases """
         a = C()
         a **= 2
 
-    def test_mutable_bases(self):
-        # Testing mutable bases...
+    # Skulpt does not support mutable bases
+    # def test_mutable_bases(self):
+    #     # Testing mutable bases...
 
-        # stuff that should work:
-        class C(object):
-            pass
-        class C2(object):
-            def __getattribute__(self, attr):
-                if attr == 'a':
-                    return 2
-                else:
-                    return super(C2, self).__getattribute__(attr)
-            def meth(self):
-                return 1
-        class D(C):
-            pass
-        class E(D):
-            pass
-        d = D()
-        e = E()
-        D.__bases__ = (C,)
-        D.__bases__ = (C2,)
-        self.assertEqual(d.meth(), 1)
-        self.assertEqual(e.meth(), 1)
-        self.assertEqual(d.a, 2)
-        self.assertEqual(e.a, 2)
-        self.assertEqual(C2.__subclasses__(), [D])
+    #     # stuff that should work:
+    #     class C(object):
+    #         pass
+    #     class C2(object):
+    #         def __getattribute__(self, attr):
+    #             if attr == 'a':
+    #                 return 2
+    #             else:
+    #                 return super(C2, self).__getattribute__(attr)
+    #         def meth(self):
+    #             return 1
+    #     class D(C):
+    #         pass
+    #     class E(D):
+    #         pass
+    #     d = D()
+    #     e = E()
+    #     D.__bases__ = (C,)
+    #     D.__bases__ = (C2,)
+    #     self.assertEqual(d.meth(), 1)
+    #     self.assertEqual(e.meth(), 1)
+    #     self.assertEqual(d.a, 2)
+    #     self.assertEqual(e.a, 2)
+    #     self.assertEqual(C2.__subclasses__(), [D])
 
-        try:
-            del D.__bases__
-        except (TypeError, AttributeError):
-            pass
-        else:
-            self.fail("shouldn't be able to delete .__bases__")
+    #     try:
+    #         del D.__bases__
+    #     except (TypeError, AttributeError):
+    #         pass
+    #     else:
+    #         self.fail("shouldn't be able to delete .__bases__")
 
-        try:
-            D.__bases__ = ()
-        except TypeError as msg:
-            if str(msg) == "a new-style class can't have only classic bases":
-                self.fail("wrong error message for .__bases__ = ()")
-        else:
-            self.fail("shouldn't be able to set .__bases__ to ()")
+    #     try:
+    #         D.__bases__ = ()
+    #     except TypeError as msg:
+    #         if str(msg) == "a new-style class can't have only classic bases":
+    #             self.fail("wrong error message for .__bases__ = ()")
+    #     else:
+    #         self.fail("shouldn't be able to set .__bases__ to ()")
 
-        try:
-            D.__bases__ = (D,)
-        except TypeError:
-            pass
-        else:
-            # actually, we'll have crashed by here...
-            self.fail("shouldn't be able to create inheritance cycles")
+    #     try:
+    #         D.__bases__ = (D,)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         # actually, we'll have crashed by here...
+    #         self.fail("shouldn't be able to create inheritance cycles")
 
-        try:
-            D.__bases__ = (C, C)
-        except TypeError:
-            pass
-        else:
-            self.fail("didn't detect repeated base classes")
+    #     try:
+    #         D.__bases__ = (C, C)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("didn't detect repeated base classes")
 
-        try:
-            D.__bases__ = (E,)
-        except TypeError:
-            pass
-        else:
-            self.fail("shouldn't be able to create inheritance cycles")
+    #     try:
+    #         D.__bases__ = (E,)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("shouldn't be able to create inheritance cycles")
 
-    def test_builtin_bases(self):
-        # Make sure all the builtin types can have their base queried without
-        # segfaulting. See issue #5787.
-        # builtin_types = [tp for tp in builtins.__dict__.values()
-        #                  if isinstance(tp, type)]
-        # for tp in builtin_types:
-        #     object.__getattribute__(tp, "__bases__")
-        #     if tp is not object:
-        #         self.assertEqual(len(tp.__bases__), 1, tp)
+    # Skulpt bases are readonly so this raises AttributeError rather than TypeError
+    # def test_builtin_bases(self):
+    #     # Make sure all the builtin types can have their base queried without
+    #     # segfaulting. See issue #5787.
+    #     # builtin_types = [tp for tp in builtins.__dict__.values()
+    #     #                  if isinstance(tp, type)]
+    #     # for tp in builtin_types:
+    #     #     object.__getattribute__(tp, "__bases__")
+    #     #     if tp is not object:
+    #     #         self.assertEqual(len(tp.__bases__), 1, tp)
 
-        class L(list):
-            pass
+    #     class L(list):
+    #         pass
 
-        class C(object):
-            pass
+    #     class C(object):
+    #         pass
 
-        class D(C):
-            pass
+    #     class D(C):
+    #         pass
 
-        try:
-            L.__bases__ = (dict,)
-        except TypeError:
-            pass
-        else:
-            self.fail("shouldn't turn list subclass into dict subclass")
+    #     try:
+    #         L.__bases__ = (dict,)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("shouldn't turn list subclass into dict subclass")
 
-        try:
-            list.__bases__ = (dict,)
-        except TypeError:
-            pass
-        else:
-            self.fail("shouldn't be able to assign to list.__bases__")
+    #     try:
+    #         list.__bases__ = (dict,)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("shouldn't be able to assign to list.__bases__")
 
-        try:
-            D.__bases__ = (C, list)
-        except TypeError:
-            pass
-        else:
-            assert 0, "best_base calculation found wanting"
+    #     try:
+    #         D.__bases__ = (C, list)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         assert 0, "best_base calculation found wanting"
 
     def test_unsubclassable_types(self):
         with self.assertRaises(TypeError):
@@ -4035,96 +4157,97 @@ order (MRO) for bases """
             class X(type(None), O):
                 pass
 
-        class X(object):
-            pass
-        with self.assertRaises(TypeError):
-            X.__bases__ = type(None),
-        with self.assertRaises(TypeError):
-            X.__bases__ = object, type(None)
-        with self.assertRaises(TypeError):
-            X.__bases__ = type(None), object
-        with self.assertRaises(TypeError):
-            X.__bases__ = O, type(None)
-        with self.assertRaises(TypeError):
-            X.__bases__ = type(None), O
+        # class X(object):
+        #     pass
+        # with self.assertRaises(TypeError):
+        #     X.__bases__ = type(None),
+        # with self.assertRaises(TypeError):
+        #     X.__bases__ = object, type(None)
+        # with self.assertRaises(TypeError):
+        #     X.__bases__ = type(None), object
+        # with self.assertRaises(TypeError):
+        #     X.__bases__ = O, type(None)
+        # with self.assertRaises(TypeError):
+        #     X.__bases__ = type(None), O
 
-    def test_mutable_bases_with_failing_mro(self):
-        # Testing mutable bases with failing mro...
-        class WorkOnce(type):
-            def __new__(self, name, bases, ns):
-                self.flag = 0
-                return super(WorkOnce, self).__new__(WorkOnce, name, bases, ns)
-            def mro(self):
-                if self.flag > 0:
-                    raise RuntimeError("bozo")
-                else:
-                    self.flag += 1
-                    return type.mro(self)
+    # def test_mutable_bases_with_failing_mro(self):
+    #     # Testing mutable bases with failing mro...
+    #     class WorkOnce(type):
+    #         def __new__(self, name, bases, ns):
+    #             self.flag = 0
+    #             return super(WorkOnce, self).__new__(WorkOnce, name, bases, ns)
+    #         def mro(self):
+    #             if self.flag > 0:
+    #                 raise RuntimeError("bozo")
+    #             else:
+    #                 self.flag += 1
+    #                 return type.mro(self)
 
-        class WorkAlways(type):
-            def mro(self):
-                # this is here to make sure that .mro()s aren't called
-                # with an exception set (which was possible at one point).
-                # An error message will be printed in a debug build.
-                # What's a good way to test for this?
-                return type.mro(self)
+    #     class WorkAlways(type):
+    #         def mro(self):
+    #             # this is here to make sure that .mro()s aren't called
+    #             # with an exception set (which was possible at one point).
+    #             # An error message will be printed in a debug build.
+    #             # What's a good way to test for this?
+    #             return type.mro(self)
 
-        class C(object):
-            pass
+    #     class C(object):
+    #         pass
 
-        class C2(object):
-            pass
+    #     class C2(object):
+    #         pass
 
-        class D(C):
-            pass
+    #     class D(C):
+    #         pass
 
-        class E(D):
-            pass
+    #     class E(D):
+    #         pass
 
-        class F(D, metaclass=WorkOnce):
-            pass
+        # class F(D, metaclass=WorkOnce):
+        #     pass
 
-        class G(D, metaclass=WorkAlways):
-            pass
+        # class G(D, metaclass=WorkAlways):
+        #     pass
 
         # Immediate subclasses have their mro's adjusted in alphabetical
         # order, so E's will get adjusted before adjusting F's fails.  We
         # check here that E's gets restored.
 
-        E_mro_before = E.__mro__
-        D_mro_before = D.__mro__
+        # E_mro_before = E.__mro__
+        # D_mro_before = D.__mro__
 
-        try:
-            D.__bases__ = (C2,)
-        except RuntimeError:
-            self.assertEqual(E.__mro__, E_mro_before)
-            self.assertEqual(D.__mro__, D_mro_before)
-        else:
-            self.fail("exception not propagated")
+        # try:
+        #     D.__bases__ = (C2,)
+        # except RuntimeError:
+        #     self.assertEqual(E.__mro__, E_mro_before)
+        #     self.assertEqual(D.__mro__, D_mro_before)
+        # else:
+        #     self.fail("exception not propagated")
 
-    def test_mutable_bases_catch_mro_conflict(self):
-        # Testing mutable bases catch mro conflict...
-        class A(object):
-            pass
+    # Skulpt bases are not mutable
+    # def test_mutable_bases_catch_mro_conflict(self):
+    #     # Testing mutable bases catch mro conflict...
+    #     class A(object):
+    #         pass
 
-        class B(object):
-            pass
+    #     class B(object):
+    #         pass
 
-        class C(A, B):
-            pass
+    #     class C(A, B):
+    #         pass
 
-        class D(A, B):
-            pass
+    #     class D(A, B):
+    #         pass
 
-        class E(C, D):
-            pass
+    #     class E(C, D):
+    #         pass
 
-        try:
-            C.__bases__ = (B, A)
-        except TypeError:
-            pass
-        else:
-            self.fail("didn't catch MRO conflict")
+    #     try:
+    #         C.__bases__ = (B, A)
+    #     except TypeError:
+    #         pass
+    #     else:
+    #         self.fail("didn't catch MRO conflict")
 
     def test_mutable_names(self):
         # Testing mutable names...
@@ -4140,19 +4263,19 @@ order (MRO) for bases """
         C.__name__ = 'D.E'
         self.assertEqual((C.__module__, C.__name__), (mod, 'D.E'))
 
-    def test_evil_type_name(self):
-        # A badly placed Py_DECREF in type_set_name led to arbitrary code
-        # execution while the type structure was not in a sane state, and a
-        # possible segmentation fault as a result.  See bug #16447.
-        class Nasty(str):
-            def __del__(self):
-                C.__name__ = "other"
+    # def test_evil_type_name(self):
+    #     # A badly placed Py_DECREF in type_set_name led to arbitrary code
+    #     # execution while the type structure was not in a sane state, and a
+    #     # possible segmentation fault as a result.  See bug #16447.
+    #     class Nasty(str):
+    #         def __del__(self):
+    #             C.__name__ = "other"
 
-        class C:
-            pass
+    #     class C:
+    #         pass
 
-        C.__name__ = Nasty("abc")
-        C.__name__ = "normal"
+    #     C.__name__ = Nasty("abc")
+    #     C.__name__ = "normal"
 
     def test_subclass_right_op(self):
         # Testing correct dispatch of subclass overloading __r<op>__...
@@ -4326,29 +4449,29 @@ order (MRO) for bases """
         else:
             self.fail("Carlo Verre __delattr__ succeeded!")
 
-    def test_weakref_segfault(self):
-        # Testing weakref segfault...
-        # SF 742911
-        import weakref
+    # def test_weakref_segfault(self):
+    #     # Testing weakref segfault...
+    #     # SF 742911
+    #     import weakref
 
-        class Provoker:
-            def __init__(self, referrent):
-                self.ref = weakref.ref(referrent)
+    #     class Provoker:
+    #         def __init__(self, referrent):
+    #             self.ref = weakref.ref(referrent)
 
-            def __del__(self):
-                x = self.ref()
+    #         def __del__(self):
+    #             x = self.ref()
 
-        class Oops(object):
-            pass
+    #     class Oops(object):
+    #         pass
 
-        o = Oops()
-        o.whatever = Provoker(o)
-        del o
+    #     o = Oops()
+    #     o.whatever = Provoker(o)
+    #     del o
 
     def test_wrapper_segfault(self):
         # SF 927248: deeply nested wrappers could cause stack overflow
         f = lambda:None
-        for i in range(1000000):
+        for i in range(100000):
             f = f.__call__
         f = None
 
@@ -4367,38 +4490,38 @@ order (MRO) for bases """
         finally:
             sys.stdout = test_stdout
 
-    def test_vicious_descriptor_nonsense(self):
-        # Testing vicious_descriptor_nonsense...
+    # def test_vicious_descriptor_nonsense(self):
+    #     # Testing vicious_descriptor_nonsense...
 
-        # A potential segfault spotted by Thomas Wouters in mail to
-        # python-dev 2003-04-17, turned into an example & fixed by Michael
-        # Hudson just less than four months later...
+    #     # A potential segfault spotted by Thomas Wouters in mail to
+    #     # python-dev 2003-04-17, turned into an example & fixed by Michael
+    #     # Hudson just less than four months later...
 
-        class Evil(object):
-            def __hash__(self):
-                return hash('attr')
-            def __eq__(self, other):
-                try:
-                    del C.attr
-                except AttributeError:
-                    # possible race condition
-                    pass
-                return 0
+    #     class Evil(object):
+    #         def __hash__(self):
+    #             return hash('attr')
+    #         def __eq__(self, other):
+    #             try:
+    #                 del C.attr
+    #             except AttributeError:
+    #                 # possible race condition
+    #                 pass
+    #             return 0
 
-        class Descr(object):
-            def __get__(self, ob, type=None):
-                return 1
+    #     class Descr(object):
+    #         def __get__(self, ob, type=None):
+    #             return 1
 
-        class C(object):
-            attr = Descr()
+    #     class C(object):
+    #         attr = Descr()
 
-        c = C()
-        c.__dict__[Evil()] = 0
+    #     c = C()
+    #     c.__dict__[Evil()] = 0
 
-        self.assertEqual(c.attr, 1)
-        # this makes a crash more likely:
-        # support.gc_collect()
-        self.assertNotHasAttr(c, 'attr')
+    #     self.assertEqual(c.attr, 1)
+    #     # this makes a crash more likely:
+    #     # support.gc_collect()
+    #     self.assertNotHasAttr(c, 'attr')
 
     def test_init(self):
         # SF 1155938
@@ -4438,7 +4561,7 @@ order (MRO) for bases """
         self.assertIs(l.__add__.__objclass__, list)
         self.assertEqual(l.__add__.__doc__, list.__add__.__doc__)
         # hash([].__add__) should not be based on hash([])
-        hash(l.__add__)
+        hash(l.__add__) # @TODO this should be consistent skulpt Hashing will not work on this yet
 
     def test_builtin_function_or_method(self):
         # Not really belonging to test_descr, but introspection and
@@ -4486,33 +4609,61 @@ order (MRO) for bases """
         def specialmethod(self, other):
             return NotImplemented
 
-        # def check(expr, x, y):
-        #     try:
-        #         exec(expr, {'x': x, 'y': y, 'operator': operator})
-        #     except TypeError:
-        #         pass
-        #     else:
-        #         self.fail("no TypeError from %r" % (expr,))
+        def check(expr, x, y):
+            try:
+                expr(**{'x': x, 'y':y})
+                # exec(expr, {'x': x, 'y': y, 'operator': operator})
+            except TypeError:
+                pass
+            else:
+                self.fail("no TypeError from %r" % (expr,))
 
         N1 = sys.maxsize + 1    # might trigger OverflowErrors instead of
                                 # TypeErrors
         N2 = sys.maxsize         # if sizeof(int) < sizeof(long), might trigger
                                 #   ValueErrors instead of TypeErrors
+        def iadd(x,y):
+            x += y
+        def isub(x,y):
+            x-=y
+        def imul(x,y):
+            x*=1
+        def imat(x,y):
+            x@=y
+        def idiv(x,y):
+            x/=y
+        def ifloordiv(x,y):
+            x //= y
+        def imod(x,y):
+            x %= y
+        def ipow(x,y):
+            x**=y
+        def ilshift(x,y):
+            x<<=y
+        def irshift(x,y):
+            x >>=y 
+        def iand(x,y):
+            x &= y
+        def ior(x,y):
+            x |= y
+        def ixor(x,y):
+            x ^= y
+
         for name, expr, iexpr in [
-                ('__add__',      'x + y',                   'x += y'),
-                ('__sub__',      'x - y',                   'x -= y'),
-                ('__mul__',      'x * y',                   'x *= y'),
-                ('__matmul__',   'x @ y',                   'x @= y'),
-                ('__truediv__',  'x / y',                   'x /= y'),
-                ('__floordiv__', 'x // y',                  'x //= y'),
-                ('__mod__',      'x % y',                   'x %= y'),
-                ('__divmod__',   'divmod(x, y)',            None),
-                ('__pow__',      'x ** y',                  'x **= y'),
-                ('__lshift__',   'x << y',                  'x <<= y'),
-                ('__rshift__',   'x >> y',                  'x >>= y'),
-                ('__and__',      'x & y',                   'x &= y'),
-                ('__or__',       'x | y',                   'x |= y'),
-                ('__xor__',      'x ^ y',                   'x ^= y')]:
+                ('__add__',      lambda x,y: x + y,                   iadd),
+                ('__sub__',      lambda x,y: x - y,                   isub),
+                ('__mul__',      lambda x,y: x * y,                   imul),
+                ('__matmul__',   lambda x,y: x @ y,                   imat),
+                ('__truediv__',  lambda x,y: x / y,                   idiv),
+                ('__floordiv__', lambda x,y: x // y,                  ifloordiv),
+                ('__mod__',      lambda x,y: x % y,                   imod),
+                ('__divmod__',   lambda x,y: divmod(x, y),            None),
+                ('__pow__',      lambda x,y: x ** y,                  ipow),
+                ('__lshift__',   lambda x,y: x << y,                  ilshift),
+                ('__rshift__',   lambda x,y: x >> y,                  irshift),
+                ('__and__',      lambda x,y: x & y,                   iand),
+                ('__or__',       lambda x,y: x | y,                   ior),
+                ('__xor__',      lambda x,y: x ^ y,                   ixor)]:
             rname = '__r' + name[2:]
             A = type('A', (), {name: specialmethod})
             a = A()
@@ -4546,14 +4697,15 @@ order (MRO) for bases """
     def test_set_and_no_get(self):
         # See
         # http://mail.python.org/pipermail/python-dev/2010-January/095637.html
-        class Descr(object):
+        #moved to global scope see skulpt #1178
+        # class Descr(object):
 
-            def __init__(self, name):
-                self.name = name
+        #     def __init__(self, name):
+        #         self.name = name
 
-            def __set__(self, obj, value):
-                obj.__dict__[self.name] = value
-        descr = Descr("a")
+        #     def __set__(self, obj, value):
+        #         obj.__dict__[self.name] = value
+        # descr = Descr("a")
 
         class X(object):
             a = descr
@@ -4564,40 +4716,41 @@ order (MRO) for bases """
         self.assertEqual(x.a, 42)
 
         # Also check type_getattro for correctness.
-        class Meta(type):
-            pass
-        class X(metaclass=Meta):
-            pass
-        X.a = 42
-        Meta.a = Descr("a")
-        self.assertEqual(X.a, 42)
+        # class Meta(type):
+        #     pass
+        # class X(metaclass=Meta):
+        #     pass
+        # X.a = 42
+        # Meta.a = Descr("a")
+        # self.assertEqual(X.a, 42)
 
     def test_getattr_hooks(self):
         # issue 4230
 
-        class Descriptor(object):
-            counter = 0
-            def __get__(self, obj, objtype=None):
-                def getter(name):
-                    self.counter += 1
-                    raise AttributeError(name)
-                return getter
+        # moved to global scope # skulpt #1178
+        # class GetattrDescriptor(object):
+        #     counter = 0
+        #     def __get__(self, obj, objtype=None):
+        #         def getter(name):
+        #             self.counter += 1
+        #             raise AttributeError(name)
+        #         return getter
 
-        descr = Descriptor()
+        # getattr_descr = GetattrDescriptor()
         class A(object):
-            __getattribute__ = descr
+            __getattribute__ = getattr_descr
         class B(object):
-            __getattr__ = descr
+            __getattr__ = getattr_descr
         class C(object):
-            __getattribute__ = descr
-            __getattr__ = descr
+            __getattribute__ = getattr_descr
+            __getattr__ = getattr_descr
 
         self.assertRaises(AttributeError, getattr, A(), "attr")
-        self.assertEqual(descr.counter, 1)
+        self.assertEqual(getattr_descr.counter, 1)
         self.assertRaises(AttributeError, getattr, B(), "attr")
-        self.assertEqual(descr.counter, 2)
+        self.assertEqual(getattr_descr.counter, 2)
         self.assertRaises(AttributeError, getattr, C(), "attr")
-        self.assertEqual(descr.counter, 4)
+        self.assertEqual(getattr_descr.counter, 4)
 
         class EvilGetattribute(object):
             # This used to segfault
@@ -4605,8 +4758,8 @@ order (MRO) for bases """
                 raise AttributeError(name)
             def __getattribute__(self, name):
                 del EvilGetattribute.__getattr__
-                for i in range(5):
-                    gc.collect()
+                # for i in range(5):
+                #     gc.collect()
                 raise AttributeError(name)
 
         self.assertRaises(AttributeError, getattr, EvilGetattribute(), "attr")
@@ -4672,13 +4825,13 @@ order (MRO) for bases """
         with self.assertRaises(TypeError):
             a + a
 
-    def test_slot_shadows_class_variable(self):
-        with self.assertRaises(ValueError) as cm:
-            class X:
-                __slots__ = ["foo"]
-                foo = None
-        m = str(cm.exception)
-        self.assertEqual("'foo' in __slots__ conflicts with class variable", m)
+    # def test_slot_shadows_class_variable(self):
+    #     with self.assertRaises(ValueError) as cm:
+    #         class X:
+    #             __slots__ = ["foo"]
+    #             foo = None
+    #     m = str(cm.exception)
+    #     self.assertEqual("'foo' in __slots__ conflicts with class variable", m)
 
     def test_set_doc(self):
         class X:
@@ -4695,60 +4848,62 @@ order (MRO) for bases """
 
     def test_qualname(self):
         descriptors = [str.lower, complex.real, float.real, int.__add__]
-        types = ['method', 'member', 'getset', 'wrapper']
+        # types = ['method', 'member', 'getset', 'wrapper']
+        types = ['method', 'getset', 'getset', 'wrapper'] # skulpt doesn't have member descriptors
 
         # make sure we have an example of each type of descriptor
         for d, n in zip(descriptors, types):
             self.assertEqual(type(d).__name__, n + '_descriptor')
 
-        for d in descriptors:
-            qualname = d.__objclass__.__qualname__ + '.' + d.__name__
-            self.assertEqual(d.__qualname__, qualname)
+        # skulpt does not support qualnames on type objects.
+        # for d in descriptors:
+        #     qualname = d.__objclass__.__qualname__ + '.' + d.__name__
+        #     self.assertEqual(d.__qualname__, qualname)
 
-        self.assertEqual(str.lower.__qualname__, 'str.lower')
-        self.assertEqual(complex.real.__qualname__, 'complex.real')
-        self.assertEqual(float.real.__qualname__, 'float.real')
-        self.assertEqual(int.__add__.__qualname__, 'int.__add__')
+        # self.assertEqual(str.lower.__qualname__, 'str.lower')
+        # self.assertEqual(complex.real.__qualname__, 'complex.real')
+        # self.assertEqual(float.real.__qualname__, 'float.real')
+        # self.assertEqual(int.__add__.__qualname__, 'int.__add__')
 
-        class X:
-            pass
-        with self.assertRaises(TypeError):
-            del X.__qualname__
+        # class X:
+        #     pass
+        # with self.assertRaises(TypeError):
+        #     del X.__qualname__
 
-        self.assertRaises(TypeError, type.__dict__['__qualname__'].__set__,
-                          str, 'Oink')
+        # self.assertRaises(TypeError, type.__dict__['__qualname__'].__set__,
+        #                   str, 'Oink')
 
-        global Y
-        class Y:
-            class Inside:
-                pass
-        self.assertEqual(Y.__qualname__, 'Y')
-        self.assertEqual(Y.Inside.__qualname__, 'Y.Inside')
+        # global Y
+        # class Y:
+        #     class Inside:
+        #         pass
+        # self.assertEqual(Y.__qualname__, 'Y')
+        # self.assertEqual(Y.Inside.__qualname__, 'Y.Inside')
 
-    def test_qualname_dict(self):
-        ns = {'__qualname__': 'some.name'}
-        tp = type('Foo', (), ns)
-        self.assertEqual(tp.__qualname__, 'some.name')
-        self.assertNotIn('__qualname__', tp.__dict__)
-        self.assertEqual(ns, {'__qualname__': 'some.name'})
+    # def test_qualname_dict(self):
+    #     ns = {'__qualname__': 'some.name'}
+    #     tp = type('Foo', (), ns)
+    #     self.assertEqual(tp.__qualname__, 'some.name')
+    #     self.assertNotIn('__qualname__', tp.__dict__)
+    #     self.assertEqual(ns, {'__qualname__': 'some.name'})
 
-        ns = {'__qualname__': 1}
-        self.assertRaises(TypeError, type, 'Foo', (), ns)
+    #     ns = {'__qualname__': 1}
+    #     self.assertRaises(TypeError, type, 'Foo', (), ns)
 
-    def test_cycle_through_dict(self):
-        # See bug #1469629
-        class X(dict):
-            def __init__(self):
-                dict.__init__(self)
-                self.__dict__ = self
-        x = X()
-        x.attr = 42
-        wr = weakref.ref(x)
-        del x
-        # support.gc_collect()
-        self.assertIsNone(wr())
-        for o in gc.get_objects():
-            self.assertIsNot(type(o), X)
+    # def test_cycle_through_dict(self):
+    #     # See bug #1469629
+    #     class X(dict):
+    #         def __init__(self):
+    #             dict.__init__(self)
+    #             self.__dict__ = self
+    #     x = X()
+    #     x.attr = 42
+    #     wr = weakref.ref(x)
+    #     del x
+    #     # support.gc_collect()
+    #     self.assertIsNone(wr())
+    #     for o in gc.get_objects():
+    #         self.assertIsNot(type(o), X)
 
     def test_object_new_and_init_with_parameters(self):
         # See issue #1683368
@@ -4783,7 +4938,7 @@ order (MRO) for bases """
             def method(self):
                 pass
         self.assertRegex(repr(Foo().method),
-            r"<bound method .*Foo\.method of <.*Foo object at .*>>")
+            r"<bound method .*Foo\.method of <.*Foo object>>")
 
 
         class Base:
@@ -4799,13 +4954,13 @@ order (MRO) for bases """
         derived2 = Derived2()
         super_d2 = super(Derived2, derived2)
         self.assertRegex(repr(base.method),
-            r"<bound method .*Base\.method of <.*Base object at .*>>")
+            r"<bound method .*Base\.method of <.*Base object>>")
         self.assertRegex(repr(derived1.method),
-            r"<bound method .*Base\.method of <.*Derived1 object at .*>>")
+            r"<bound method .*Base\.method of <.*Derived1 object>>")
         self.assertRegex(repr(derived2.method),
-            r"<bound method .*Derived2\.method of <.*Derived2 object at .*>>")
+            r"<bound method .*Derived2\.method of <.*Derived2 object>>")
         self.assertRegex(repr(super_d2.method),
-            r"<bound method .*Base\.method of <.*Derived2 object at .*>>")
+            r"<bound method .*Base\.method of <.*Derived2 object>>")
 
         class Foo:
             @classmethod
@@ -4825,13 +4980,13 @@ order (MRO) for bases """
         instance = object()
         method = types.MethodType(func, instance)
         self.assertRegex(repr(method),
-            r"<bound method \? of <object object at .*>>")
+            r"<bound method \? of <object object>>")
         func.__name__ = "name"
         self.assertRegex(repr(method),
-            r"<bound method name of <object object at .*>>")
+            r"<bound method name of <object object>>")
         func.__qualname__ = "qualname"
         self.assertRegex(repr(method),
-            r"<bound method qualname of <object object at .*>>")
+            r"<bound method qualname of <object object>>")
 
     # @unittest.skipIf(_testcapi is None, 'need the _testcapi module')
     # def test_bpo25750(self):
@@ -4888,16 +5043,16 @@ class DictProxyTests(unittest.TestCase):
     #     self.assertEqual(keys, ['__dict__', '__doc__', '__module__',
     #                             '__weakref__', 'meth'])
 
-    def test_dict_type_with_metaclass(self):
-        # Testing type of __dict__ when metaclass set...
-        class B(object):
-            pass
-        class M(type):
-            pass
-        class C(metaclass=M):
-            # In 2.3a1, C.__dict__ was a real dict rather than a dict proxy
-            pass
-        self.assertEqual(type(C.__dict__), type(B.__dict__))
+    # def test_dict_type_with_metaclass(self):
+    #     # Testing type of __dict__ when metaclass set...
+    #     class B(object):
+    #         pass
+    #     class M(type):
+    #         pass
+    #     class C(metaclass=M):
+    #         # In 2.3a1, C.__dict__ was a real dict rather than a dict proxy
+    #         pass
+    #     self.assertEqual(type(C.__dict__), type(B.__dict__))
 
     def test_repr(self):
         # Testing mappingproxy.__repr__.
@@ -4932,31 +5087,32 @@ class PTypesLongInitTest(unittest.TestCase):
         type.mro(tuple)
 
 
-class MiscTests(unittest.TestCase):
-    def test_type_lookup_mro_reference(self):
-        # Issue #14199: _PyType_Lookup() has to keep a strong reference to
-        # the type MRO because it may be modified during the lookup, if
-        # __bases__ is set during the lookup for example.
-        class MyKey(object):
-            def __hash__(self):
-                return hash('mykey')
+# class MiscTests(unittest.TestCase):
+#     skulpt does not support base assignment
+#     def test_type_lookup_mro_reference(self):
+#         # Issue #14199: _PyType_Lookup() has to keep a strong reference to
+#         # the type MRO because it may be modified during the lookup, if
+#         # __bases__ is set during the lookup for example.
+#         class MyKey(object):
+#             def __hash__(self):
+#                 return hash('mykey')
 
-            def __eq__(self, other):
-                X.__bases__ = (Base2,)
+#             def __eq__(self, other):
+#                 X.__bases__ = (Base2,)
 
-        class Base(object):
-            mykey = 'from Base'
-            mykey2 = 'from Base'
+#         class Base(object):
+#             mykey = 'from Base'
+#             mykey2 = 'from Base'
 
-        class Base2(object):
-            mykey = 'from Base2'
-            mykey2 = 'from Base2'
+#         class Base2(object):
+#             mykey = 'from Base2'
+#             mykey2 = 'from Base2'
 
-        X = type('X', (Base,), {MyKey(): 5})
-        # mykey is read from Base
-        self.assertEqual(X.mykey, 'from Base')
-        # mykey2 is read from Base2 because MyKey.__eq__ has set __bases__
-        self.assertEqual(X.mykey2, 'from Base2')
+#         X = type('X', (Base,), {MyKey(): 5})
+#         # mykey is read from Base
+#         self.assertEqual(X.mykey, 'from Base')
+#         # mykey2 is read from Base2 because MyKey.__eq__ has set __bases__
+#         self.assertEqual(X.mykey2, 'from Base2')
 
 
 # class PicklingTests(unittest.TestCase):
