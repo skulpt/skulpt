@@ -147,7 +147,7 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     // set __dict__ if not already on the prototype
     /**@todo __slots__ */
     if (klass.$typeLookup(Sk.builtin.str.$dict) === undefined) {
-        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, Sk.generic.getSetDict);
+        klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, subtype_dict_getset_description);
     }
 
     // copy properties from dict into klass.prototype
@@ -447,6 +447,9 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder, dunderFunc) {
     const slot_def = Sk.slots[dunder];
     const slot_name = slot_def.$slot_name;
     const proto = this.prototype;
+    if (proto.hasOwnProperty(slot_name)) {
+        delete proto[slot_name]; // required in order to override the multiple inheritance getter slots
+    }
     proto[slot_name] = slot_def.$slot_func(dunderFunc);
 };
 
@@ -509,17 +512,19 @@ Sk.builtin.type.prototype.tp$getsets = {
                 }
                 return this.prototype.__doc__;
             }
-            return Sk.builtin.none.none$;
         },
+        $set: function (value) {
+            check_special_type_attr(this, value, Sk.builtin.str.$doc);
+            this.prototype.__doc__ = value;
+        }
     },
     __name__: {
         $get: function () {
             return new Sk.builtin.str(this.prototype.tp$name);
         },
         $set: function (value) {
-            if (value == undefined) {
-                throw new SK.builtin.TypeError("can't delete " + this.prototype.tp$name + ".__name__");
-            } else if (!Sk.builtin.checkString(value)) {
+            check_special_type_attr(this, value, Sk.builtin.str.$name);
+            if (!Sk.builtin.checkString(value)) {
                 throw new Sk.builtin.TypeError(
                     "can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'"
                 );
@@ -537,9 +542,7 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
         $set: function (value) {
             // they can set the module to whatever they like
-            if (value === undefined) {
-                throw new Sk.builtin.TypeError("can't delete " + this.prototype.tp$name + ".__module__");
-            }
+            check_special_type_attr(this, value, Sk.builtin.str.$module);
             this.prototype.__module__ = value;
         },
     },
@@ -626,3 +629,44 @@ Sk.builtin.type.$best_base = function (bases) {
     }
     return base;
 };
+
+// similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
+const subtype_dict_getset_description = {
+    $get: function () {
+        const dict_descr = get_dict_descr_of_builtn_base(this.ob$type);
+        if (dict_descr !== undefined) {
+            return dict_descr.tp$descr_get(this, this.ob$type);
+        }
+        return Sk.generic.getSetDict.$get.call(this);
+    },
+    $set: function (value) {
+        const dict_descr = get_dict_descr_of_builtn_base(this.ob$type);
+        if (dict_descr !== undefined) {
+            return dict_descr.tp$descr_set(this, value);
+        }
+        return Sk.generic.getSetDict.$set.call(this, value);
+    },
+    $doc: "dictionary for instance variables (if defined)",
+    $name: "__dict__",
+};
+
+function get_dict_descr_of_builtn_base(type) {
+    while (type.prototype.tp$base !== undefined) {
+        if (type.sk$klass === undefined) {
+            if (type.prototype.hasOwnProperty("__dict__")) {
+                const descr = type.prototype.__dict__;
+                return Sk.builtin.checkDataDescr(descr) ? descr : undefined;
+            }
+        }
+        type = type.prototype.tp$base;
+    }
+}
+
+function check_special_type_attr (type, value, pyName) {
+    if (type.sk$klass === undefined) {
+        throw new Sk.builtin.TypeError("can't set " + type.prototype.tp$name + "." + pyName.$jsstr());
+    }
+    if (value === undefined) {
+        throw new Sk.builtin.TypeError("can't delete " + type.prototype.tp$name + "." + pyName.$jsstr());
+    }
+}
