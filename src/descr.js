@@ -65,7 +65,7 @@ const descriptorGetsets = {
             return this.d$def.$doc ? new Sk.builtin.str(this.d$def.$doc) : Sk.builtin.none.none$;
         },
     },
-    __obj_class__: {
+    __objclass__: {
         $get: function () {
             return this.d$type;
         },
@@ -110,7 +110,7 @@ Sk.builtin.getset_descriptor.prototype.tp$descr_set = function (obj, value) {
         return this.$set.call(obj, value);
     }
     throw new Sk.builtin.AttributeError(
-        "getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not writeable"
+        "attribute '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is readonly"
     );
 };
 
@@ -250,7 +250,8 @@ Sk.builtin.wrapper_descriptor.prototype.tp$call = function (args, kwargs) {
 };
 
 Sk.builtin.wrapper_descriptor.prototype.raw$call = function (self, args, kwargs) {
-    // the base might have some flags I guess...
+    // the base might have some flags I guess... see cpython version in descr.c
+    this.d$wrapped.$name = this.d$name; // hack since some slots use the same function (__setattr__, __delattr__)
     return this.d$def.$wrapper.call(this.d$wrapped, self, args, kwargs);
 };
 
@@ -278,6 +279,14 @@ Sk.builtin.method_wrapper = buildDescriptor("method_wrapper", undefined, functio
 });
 Sk.builtin.method_wrapper.prototype.tp$call = function (args, kwargs) {
     return this.m$descr.raw$call(this.m$self, args, kwargs);
+};
+
+Sk.builtin.method_wrapper.prototype.tp$richcompare= function(other, op) {
+    if ((op !== "Eq" && op !== "NotEq") || !(other instanceof Sk.builtin.method_wrapper)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    let eq = this.m$self === other.m$self && this.m$descr === other.m$descr;
+    return op === "Eq" ? eq : !eq;
 };
 
 Sk.builtin.method_wrapper.prototype.$r = function () {
