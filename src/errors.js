@@ -25,6 +25,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         }
         this.args = new Sk.builtin.tuple(arg ? [arg] : []);
         this.traceback = [];
+        this.$d = new Sk.builtin.dict();
 
         // For errors occurring during normal execution, the line/col/etc
         // of the error are populated by each stack frame of the runtime code,
@@ -72,7 +73,8 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     getsets: /**@lends {Sk.builtin.BaseException}*/{
         args: {
             $get: function () { return this.args; }
-        }
+        },
+        __dict__: Sk.generic.getSetDict,
     },
     proto: /**@lends {Sk.builtin.BaseException}*/{
         toString: function () { 
