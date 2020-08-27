@@ -142,7 +142,12 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
                 return obj.ob$type;
             } else {
                 /* Try the slow way */
-                /* Cpython has a slow way buy i'm not sure we need it */
+                const class_attr = obj.tp$getattr(Sk.builtin.str.$class);
+                if (class_attr !== undefined && class_attr !== obj.ob$type && Sk.builtin.checkClass(class_attr)) {
+                    if (class_attr.$isSubType(type)) {
+                        return class_attr;
+                    }
+                }
             }
             throw new Sk.builtin.TypeError("super(type, obj): obj must be an instance or subtype of type");
         },

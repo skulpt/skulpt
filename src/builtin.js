@@ -582,9 +582,24 @@ Sk.builtin.isinstance = function isinstance(obj, type) {
         throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
     }
 
-    // Normal case
+    // Fast path
+    const act_type = obj.ob$type;
+    if (act_type === type) {
+        return Sk.builtin.bool.true$;
+    }
     if (!(type instanceof Sk.builtin.tuple)) {
-        return obj.ob$type.$isSubType(type) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+        // attempt 1
+        if (act_type.$isSubType(type)) {
+            return Sk.builtin.bool.true$;
+        }
+        // fail so check if we have overriden __class__
+        const maybe_type = obj.tp$getattr(Sk.builtin.str.$class);
+        if (maybe_type == act_type) {
+            return Sk.builtin.bool.false$;
+        } else if (Sk.builtin.checkClass(maybe_type) && maybe_type.$isSubType(type)) {
+            return Sk.builtin.bool.true$;
+        }
+        return Sk.builtin.bool.false$;
     }
     // Handle tuple type argument
     for (let i = 0; i < type.v.length; ++i) {
