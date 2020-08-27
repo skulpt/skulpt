@@ -29,22 +29,43 @@ Sk.abstr.typeName = function (obj) {
     }
 };
 
-Sk.abstr.binop_type_error = function (v, w, name) {
-    const vtypename = Sk.abstr.typeName(v);
-    const wtypename = Sk.abstr.typeName(w);
-
-    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '" + vtypename + "' and '" + wtypename + "'");
+const binop_name_to_symbol = {
+    Add: "+",
+    Sub: "-",
+    Mult: "*",
+    MatMult: "@",
+    Div: "/",
+    FloorDiv: "//",
+    Mod: "%",
+    DivMod: "divmod()",
+    Pow: "**",
+    LShift: "<<",
+    RShift: ">>",
+    BitAnd: "&",
+    BitXor: "^",
+    BitOr: "|",
 };
 
-Sk.abstr.unop_type_error = function (v, name) {
-    var vtypename = Sk.abstr.typeName(v),
-        uop = {
-            UAdd: "+",
-            USub: "-",
-            Invert: "~",
-        }[name];
+function binop_type_error(v, w, name) {
+    const vtypename = Sk.abstr.typeName(v);
+    const wtypename = Sk.abstr.typeName(w);
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + binop_name_to_symbol[name] + ": '" + vtypename + "' and '" + wtypename + "'");
+};
 
-    throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
+function biniop_type_error(v, w, name) {
+    const vtypename = Sk.abstr.typeName(v);
+    const wtypename = Sk.abstr.typeName(w);
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + binop_name_to_symbol[name] + "=: '" + vtypename + "' and '" + wtypename + "'");
+};
+
+const uop_name_to_symbol = {
+    UAdd: "+",
+    USub: "-",
+    Invert: "~",
+};
+function unop_type_error(v, name) {
+    var vtypename = Sk.abstr.typeName(v);
+    throw new Sk.builtin.TypeError("bad operand type for unary " + uop_name_to_symbol[name] + ": '" + vtypename + "'");
 };
 
 /**
@@ -57,7 +78,7 @@ Sk.abstr.unop_type_error = function (v, name) {
  * 
  * @private
  */
-Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
+function boNameToSlotFuncLhs_(obj, name) {
     switch (name) {
         case "Add":
             return obj.nb$add;
@@ -92,7 +113,7 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
     }
 };
 
-Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
+function boNameToSlotFuncRhs_(obj, name) {
     switch (name) {
         case "Add":
             return obj.nb$reflected_add;
@@ -127,7 +148,7 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
     }
 };
 
-Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
+function iboNameToSlotFunc_(obj, name) {
     switch (name) {
         case "Add":
             return obj.nb$inplace_add;
@@ -160,7 +181,7 @@ Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
     }
 };
 
-Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
+function uoNameToSlotFunc_(obj, name) {
     switch (name) {
         case "USub":
             return obj.nb$negative;
@@ -171,7 +192,7 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     }
 };
 
-Sk.abstr.binary_op_ = function (v, w, opname) {
+function binary_op_(v, w, opname) {
     // All Python inheritance is now enforced with Javascript inheritance
     // (see Sk.abstr.setUpInheritance). This checks if w's type is a strict
     // subclass of v's type
@@ -191,8 +212,9 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     let wop;
     let ret;
     if (w_is_subclass) {
-        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
-        if (wop !== undefined) {
+        wop = boNameToSlotFuncRhs_(w, opname);
+        // only use the reflected slot if it has actually be overridden
+        if (wop !== undefined && wop !== boNameToSlotFuncRhs_(v, opname)) {
             ret = wop.call(w, v);
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -200,7 +222,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         }
     }
 
-    const vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
+    const vop = boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
         ret = vop.call(v, w);
         if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
@@ -209,7 +231,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
     }
     // Don't retry RHS if failed above
     if (!w_is_subclass) {
-        wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+        wop = boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
             ret = wop.call(w, v);
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
@@ -217,11 +239,11 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             }
         }
     }
-    Sk.abstr.binop_type_error(v, w, opname);
+
 };
 
-Sk.abstr.binary_iop_ = function (v, w, opname) {
-    const vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
+function binary_iop_(v, w, opname) {
+    const vop = iboNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
         const ret = vop.call(v, w);
         if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
@@ -229,15 +251,14 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         }
     }
     // If there wasn't an in-place operation, fall back to the binop
-    return Sk.abstr.binary_op_(v, w, opname);
+    return binary_op_(v, w, opname);
 };
 
-Sk.abstr.unary_op_ = function (v, opname) {
-    const vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
+function unary_op_(v, opname) {
+    const vop = uoNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
         return vop.call(v);
     }
-    Sk.abstr.unop_type_error(v, opname);
 };
 
 /**
@@ -251,7 +272,7 @@ Sk.abstr.unary_op_ = function (v, opname) {
  * @throws {Sk.builtin.TypeError}
  */
 Sk.abstr.numberBinOp = function (v, w, op) {
-    return Sk.abstr.binary_op_(v, w, op);
+    return binary_op_(v, w, op) || binop_type_error(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
@@ -266,7 +287,7 @@ Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
  * @throws {Sk.builtin.TypeError}
  */
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
-    return Sk.abstr.binary_iop_(v, w, op);
+    return binary_iop_(v, w, op) || biniop_type_error(v, w, op);
 };
 Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
@@ -283,7 +304,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     }
-    return Sk.abstr.unary_op_(v, op);
+    return unary_op_(v, op) || unop_type_error(v, op);
 };
 Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
