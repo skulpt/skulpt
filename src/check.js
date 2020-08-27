@@ -240,3 +240,11 @@ Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
 Sk.builtin.checkAnySet = function (arg) {
     return arg != null && (arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset);
 };
+
+Sk.builtin.checkMapping = function (arg) {
+    return (
+        arg instanceof Sk.builtin.dict ||
+        arg instanceof Sk.builtin.mappingproxy ||
+        (arg != null && arg.mp$subscript !== undefined && Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined)
+    );
+};

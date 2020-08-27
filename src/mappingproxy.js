@@ -47,7 +47,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             Sk.abstr.checkNoKwargs("mappingproxy", kwargs);
             Sk.abstr.checkOneArg("mappingproxy", args, kwargs);
             const mapping = args[0];
-            if (!(mapping instanceof Sk.builtin.dict || mapping instanceof Sk.builtin.mappingproxy)) {
+            if (!Sk.builtin.checkMapping(mapping)) {
                 throw new Sk.builtin.TypeError("mappingproxy() argument must be a mapping, not " + Sk.abstr.typeName(mapping));
             }
             const mp = new Sk.builtin.mappingproxy();
@@ -140,6 +140,9 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         str$keys: new Sk.builtin.str("keys"),
         str$items: new Sk.builtin.str("items"),
         str$values: new Sk.builtin.str("values"),
+        mp$lookup: function(key) {
+            return this.mapping.mp$lookup(key);
+        }
     },
     flags: {
         sk$acceptable_as_base_class: false,

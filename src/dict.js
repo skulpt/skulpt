@@ -289,7 +289,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         update$onearg: function (arg) {
             if (arg instanceof Sk.builtin.dict) {
                 return this.dict$merge(arg);
-            } else if (Sk.abstr.lookupSpecial(arg, new Sk.builtin.str("keys")) !== undefined) {
+            } else if (Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
                 return this.dict$merge(arg);
             } else {
                 return this.dict$merge_seq(arg);
@@ -502,18 +502,23 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
     if (b.tp$iter === Sk.builtin.dict.prototype.tp$iter) {
         // fast way used
         keys = b.tp$iter();
+        for (let key = keys.tp$iternext(); key !== undefined; key = keys.tp$iternext()) {
+            const v = b.mp$subscript(key);
+            this.set$item(key, v);
+        }
     } else {
         // generic slower way for a subclass that has overriden the tp$iter method
-        // we'll just assume prototypical inheritance here!
-        keys = Sk.misceval.callsimOrSuspendArray(b.keys, [b]);
+        // or other mapping types like mapping proxy
+        const keyfunc = Sk.abstr.lookupSpecial(b, Sk.builtin.str.$keys);
+
+        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc, []), (keys) =>
+            Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
+                Sk.misceval.chain(Sk.abstr.objectGetItem(b, key, true), (v) => {
+                    this.set$item(key, v);
+                })
+            )
+        );
     }
-    return Sk.misceval.chain(keys, (keys) =>
-        Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
-            Sk.misceval.chain(b.mp$subscript(key), (v) => {
-                this.set$item(key, v);
-            })
-        )
-    );
 };
 
 /**
