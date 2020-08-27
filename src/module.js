@@ -3,18 +3,18 @@
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
-    constructor: function module_ () {},
+    constructor: function module_() {
+        this.$d = {}; // set this now - we could subclass from Module so override sk$klass $d object
+    },
     slots: {
         tp$doc: "Create a module object.\n\nThe name must be a string; the optional doc argument can have any type.",
         tp$getattr: function (pyName, canSuspend) {
-            if (this.$d !== undefined) {
-                const jsMangled = pyName.$mangled;
-                const ret = this.$d[jsMangled];
-                if (ret !== undefined) {
-                    return ret;
-                }
+            const jsMangled = pyName.$mangled;
+            const ret = this.$d[jsMangled];
+            if (ret !== undefined) {
+                return ret;
             }
-            // technically this is the wrong way round but its seems performance wise better 
+            // technically this is the wrong way round but its seems performance wise better
             // to just return the module elements before checking for descriptors
             const descr = this.ob$type.$typeLookup(pyName);
             if (descr !== undefined) {
@@ -25,22 +25,17 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                 return descr;
             }
             // ok we've failed to find anything check if there is __getattr__ defined as per pep 562
-            if (this.$d !== undefined) {
-                const getattr = this.$d.__getattr__;
-                if (getattr !== undefined) {
-                    const res = Sk.misceval.callsimOrSuspendArray(getattr, [pyName]);
-                    return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
-                }
+            const getattr = this.$d.__getattr__;
+            if (getattr !== undefined) {
+                const res = Sk.misceval.callsimOrSuspendArray(getattr, [pyName]);
+                return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
             }
         },
         tp$setattr: Sk.generic.setAttr,
         tp$new: Sk.generic.new,
-        tp$init: function(args, kwargs) {
+        tp$init: function (args, kwargs) {
             const [name, doc] = Sk.abstr.copyKeywordsToNamedArgs("module", ["name", "doc"], args, kwargs, [Sk.builtin.none.none$]);
             Sk.builtin.pyCheckType("module", "string", name);
-            if (this.$d === undefined) {
-                this.$d = {};
-            }
             this.init$dict(name, doc);
             return Sk.builtin.none.none$;
         },
@@ -54,29 +49,26 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             }
             name = name === undefined ? "'?'" : name;
             let extra = this.from$file();
-            extra = extra === undefined ?  this.empty_or$loader() : extra;
+            extra = extra === undefined ? this.empty_or$loader() : extra;
             return new Sk.builtin.str("<module " + name + extra + ">");
-        }
+        },
     },
     getsets: {
         __dict__: {
             $get: function () {
                 // modules in skulpt have a $d as a js object so just return it as a mapping proxy;
                 // TODO we should really have a dict object
-                if (this.$d === undefined) {
-                    return Sk.builtin.none.none$;
-                }
                 return new Sk.builtin.mappingproxy(this.$d);
-            }
-        }
+            },
+        },
     },
     methods: {
         __dir__: {
             $meth: function () {
-                // could be cleaner but this is inline with cpython's version
-                if (this.$d === undefined) {
+                if (this.$d.__name__ === undefined) {
                     throw new Sk.builtin.SystemError("nameless module");
                 }
+                // could be cleaner but this is inline with cpython's version
                 const dict = this.tp$getattr(Sk.builtin.str.$dict);
                 if (dict !== undefined) {
                     if (!Sk.builtin.checkMapping(dict)) {
@@ -92,12 +84,12 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                     return res;
                 }
             },
-            $flags: {NoArgs: true},
+            $flags: { NoArgs: true },
             $doc: "__dir__() -> list\nspecialized dir() implementation",
-        }
+        },
     },
     proto: {
-        init$dict: function(name, doc) {
+        init$dict: function (name, doc) {
             this.$d.__name__ = name;
             this.$d.__doc__ = doc;
             this.$d.__package__ = Sk.builtin.none.none$;
@@ -105,7 +97,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             this.$d.__loader__ = Sk.builtin.none.none$;
         },
         sk$attrError: function () {
-            const name = this.$name() ;
+            const name = this.$name();
             return name === undefined ? "module" : "module " + name;
         },
         $name: function () {
@@ -123,13 +115,13 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                 }
             }
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
-            return loader === undefined || Sk.builtin.checkNone(loader) ? "" : " (" + Sk.misceval.objectRepr(loader) + ")"; 
+            return loader === undefined || Sk.builtin.checkNone(loader) ? "" : " (" + Sk.misceval.objectRepr(loader) + ")";
         },
         module$reprf: function () {
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
             return loader && loader.tp$getattr(new Sk.builtin.str("module_repr"));
-        }
-    }
+        },
+    },
 });
 
 Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);

@@ -24,7 +24,7 @@ class ModuleTests(unittest.TestCase):
         # An uninitialized module has no __dict__ or __name__,
         # and __doc__ is None
         foo = ModuleType.__new__(ModuleType)
-        self.assertTrue(foo.__dict__ is None)
+        self.assertFalse(foo.__dict__) # None or {} are acceptable
         self.assertRaises(SystemError, dir, foo)
         try:
             s = foo.__name__
