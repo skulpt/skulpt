@@ -1516,13 +1516,13 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$exit, true);");
+    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
     this._checkSuspension(s);
     exit = this._gr("exit", "$ret");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
-    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$enter, true);");
+    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
     this._checkSuspension(s);
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
