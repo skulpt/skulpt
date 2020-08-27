@@ -540,7 +540,7 @@ slots.__delattr__ = {
         Sk.abstr.checkOneArg(this.$name, args, kwargs);
         hackcheck(self, this);
         this.call(self, args[0]);
-        return res;
+        return Sk.builtin.none.none$;
     },
     $textsig: "($self, name, /)",
     $flags: { OneArg: true },

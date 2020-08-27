@@ -76,6 +76,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                         throw new Sk.builtin.TypeError("__dict__ is not a dictionary");
                     }
                     const dirfunc = dict.mp$lookup(Sk.builtin.str.$dir);
+                    let res;
                     if (dirfunc !== undefined) {
                         res = Sk.misceval.callsimOrSuspendArray(dirfunc, []);
                     } else {
