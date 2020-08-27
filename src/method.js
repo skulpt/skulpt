@@ -6,7 +6,7 @@
  *
  */
 Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
-    constructor: function method (func, self) {
+    constructor: function method(func, self) {
         Sk.asserts.assert(this instanceof Sk.builtin.method, "bad call to method constructor, use 'new'");
         this.im_func = func;
         this.im_self = self;
@@ -14,9 +14,9 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
     slots: {
         $r: function () {
             const def_name = "?";
-            const func = this.im_func;
-            const self = this.im_self;
-            return new Sk.builtin.str("<bound method " + (func.$qualname || def_name) + " of " + Sk.misceval.objectRepr(self) + ">");
+            let name = this.im_func.tp$getattr(Sk.builtin.str.$qualname) || this.im_func.tp$getattr(Sk.builtin.str.$name);
+            name = (name && name.v) || def_name;
+            return new Sk.builtin.str("<bound method " + name + " of " + Sk.misceval.objectRepr(this.im_self) + ">");
         },
         tp$hash: function () {
             const selfhash = Sk.builtin.asnum$(Sk.builtin.hash(this.im_self));
@@ -24,6 +24,9 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return new Sk.builtin.int_(selfhash + funchash);
         },
         tp$call: function (args, kwargs) {
+            if (this.im_func.tp$call === undefined) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this.im_func) + "' is not callable");
+            }
             return this.im_func.tp$call([this.im_self, ...args], kwargs);
         },
         tp$new: function (args, kwargs) {
@@ -59,14 +62,9 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return this;
         },
         tp$getattr: function (pyName, canSuspend) {
-            const descr = Sk.abstr.lookupSpecial(this, pyName); // true means we should mangle this pyName
+            const descr = Sk.abstr.lookupSpecial(this, pyName);
             if (descr !== undefined) {
-                const f = descr.tp$descr_get;
-                if (f !== undefined) {
-                    return f.call(descr, this, this.ob$type);
-                } else {
-                    return descr;
-                }
+                return descr;
             }
             return this.im_func.tp$getattr(pyName, canSuspend);
         },
