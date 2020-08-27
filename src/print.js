@@ -73,8 +73,9 @@ Sk.builtin.print = function print(args, kwargs) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
         Sk.misceval.callsimArray(kw_list.file.write, [kw_list.file, new Sk.builtin.str(s)]); // callsim to write function
     } else {
-        return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
-            return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(s)]);
+        return Sk.misceval.chain(Sk.importModule("sys", false, true), (sys) => {
+            const write = Sk.abstr.lookupSpecial(sys.$d.stdout, Sk.builtin.str.$write);
+            return write && Sk.misceval.callsimOrSuspendArray(write, [new Sk.builtin.str(s)]);
         });
     }
     // ToDo:
