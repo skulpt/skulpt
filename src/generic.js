@@ -231,11 +231,11 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
  * the $seq of the iterator must be an array
  */
 Sk.generic.iterNextWithArray = function __next__() {
-    if (this.$index >= this.$seq.length) {
+    const next = this.$seq[this.$index++];
+    if (next === undefined) {
         this.tp$iternext = () => undefined; // consumed iterator
-        return undefined;
     }
-    return this.$seq[this.$index++];
+    return next;
 };
 
 /**
