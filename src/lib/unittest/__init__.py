@@ -4,7 +4,7 @@ This is the start of something that behaves like
 the unittest module from cpython.
 
 '''
-
+import re
 
 class _AssertRaisesContext(object):
     """A context manager used to implement TestCase.assertRaises* methods."""
@@ -183,6 +183,32 @@ class TestCase(object):
         if not res and feedback == "":
             feedback = "Expected %s to not be an instance of %s" % (str(a),str(b))
         self.appendResult(res, a, b, feedback)
+
+    def assertRegex(self, text, expected_regex, feedback=""):
+        """Fail the test unless the text matches the regular expression."""
+        if isinstance(expected_regex, (str, )): #bytes
+            assert expected_regex, "expected_regex must not be empty."
+            expected_regex = re.compile(expected_regex)
+        if not expected_regex.search(text):
+            res = False
+            feedback = "Regex didn't match: %r not found in %r" % (
+                repr(expected_regex), text)
+        else:
+            res = True
+        self.appendResult(res, text, expected_regex, feedback)
+
+    def assertNotRegex(self, text, unexpected_regex, feedback=""):
+        """Fail the test if the text matches the regular expression."""
+        if isinstance(unexpected_regex, (str, )): # bytes
+            unexpected_regex = re.compile(unexpected_regex)
+        match = unexpected_regex.search(text)
+        if match:
+            feedback = 'Regex matched: %r matches %r in %r' % (
+                text[match.start() : match.end()],
+                repr(unexpected_regex),
+                text)
+            # _formatMessage ensures the longMessage option is respected
+        self.appendResult(not bool(match), text, unexpected_regex, feedback)
 
     def assertAlmostEqual(self, a, b, places=7, feedback="", delta=None):
 
