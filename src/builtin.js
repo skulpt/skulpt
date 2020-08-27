@@ -639,7 +639,7 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
             if (default_ !== undefined) {
                 return default_;
             }
-            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute " + pyName.$jsstr());
+            throw new Sk.builtin.AttributeError(obj.sk$attrError() + " has no attribute " + Sk.misceval.objectRepr(pyName));
         }
         return r;
     });

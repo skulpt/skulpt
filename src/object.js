@@ -11,12 +11,22 @@ Sk.builtin.object = function object() {
     Sk.asserts.assert(this instanceof Sk.builtin.object, "bad call to object, use 'new'");
 };
 
-Object.defineProperties(Sk.builtin.object.prototype, /**@lends {Sk.builtin.object.prototype}*/ {
-    ob$type: { value: Sk.builtin.object, writable: true },
-    tp$name: { value: "object", writable: true },
-    tp$base: { value: undefined, writable: true },
-    sk$object: { value: true },
-});
+Object.defineProperties(
+    Sk.builtin.object.prototype,
+    /**@lends {Sk.builtin.object.prototype}*/ {
+        ob$type: { value: Sk.builtin.object, writable: true },
+        tp$name: { value: "object", writable: true },
+        tp$base: { value: undefined, writable: true },
+        sk$object: { value: true },
+        sk$attrError: {
+            value: function () {
+                return "type object '" + this.prototype.tp$name + "'";
+            },
+            writable: true,
+        },
+        hp$type: { value: undefined, writable: true },
+    }
+);
 
 /**
  * @description

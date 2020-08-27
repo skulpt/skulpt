@@ -179,14 +179,23 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     return klass;
 };
 
-Object.defineProperties(Sk.builtin.type.prototype, /**@lends {Sk.builtin.type.prototype}*/ {
-    call: { value: Function.prototype.call },
-    apply: { value: Function.prototype.apply },
-    ob$type: { value: Sk.builtin.type, writable: true },
-    tp$name: { value: "type", writable: true },
-    tp$base: { value: Sk.builtin.object, writable: true },
-    sk$type: { value: true },
-});
+Object.defineProperties(
+    Sk.builtin.type.prototype,
+    /**@lends {Sk.builtin.type.prototype}*/ {
+        call: { value: Function.prototype.call },
+        apply: { value: Function.prototype.apply },
+        ob$type: { value: Sk.builtin.type, writable: true },
+        tp$name: { value: "type", writable: true },
+        tp$base: { value: Sk.builtin.object, writable: true },
+        sk$type: { value: true },
+        sk$attrError: {
+            value: function () {
+                return "type object '" + this.prototype.tp$name + "'";
+            },
+            writable: true,
+        },
+    }
+);
 
 /**
  * @param {Array} args

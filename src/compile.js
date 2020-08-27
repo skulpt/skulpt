@@ -800,8 +800,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 case Sk.astnodes.AugLoad:
                     out("$ret = ", augvar, ".tp$getattr(", mname, ", true);");
                     out("\nif ($ret === undefined) {");
-                    out("\nconst error_name =", augvar,".sk$type ? \"type object '\" +", augvar,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",augvar,") + \"' object\";");
-                    out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\nthrow new Sk.builtin.AttributeError(", augvar, ".sk$attrError() + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
                     out("\n};");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");
@@ -809,7 +808,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     out("$ret = ", val, ".tp$getattr(", mname, ", true);");
                     out("\nif ($ret === undefined) {");
                     out("\nconst error_name =", val,".sk$type ? \"type object '\" +", val,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",val,") + \"' object\";");
-                    out("\nthrow new Sk.builtin.AttributeError(error_name + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\nthrow new Sk.builtin.AttributeError(", val, ".sk$attrError() + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
                     out("\n};");
                     this._checkSuspension(e);
                     return this._gr("lattr", "$ret");

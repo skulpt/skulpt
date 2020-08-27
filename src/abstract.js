@@ -689,13 +689,11 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
     const ret = obj.tp$getattr(pyName, canSuspend);
     if (ret === undefined) {
-        const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName(obj) + "' object";
-        throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
+        throw new Sk.builtin.AttributeError(obj.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'");
     } else if (ret.$isSuspension) {
         return Sk.misceval.chain(ret, function (r) {
             if (r === undefined) {
-                const error_name = obj.sk$type ? "type object '" + obj.prototype.tp$name + "'" : "'" + Sk.abstr.typeName + "' object";
-                throw new Sk.builtin.AttributeError(error_name + " has no attribute '" + pyName.$jsstr() + "'");
+                throw new Sk.builtin.AttributeError(obj.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'");
             }
             return r;
         });
