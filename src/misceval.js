@@ -282,6 +282,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     const v_type = v.ob$type;
     const w_type = w.ob$type;
+    const w_is_subclass = w_type !== v_type && w_type.sk$baseClass === undefined && w_type.$isSubType(v_type);
 
     // Python 2 has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
@@ -428,24 +429,32 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         "LtE"  : "ob$le"
     };
 
-    // tp richcompare and all respective shortcuts guaranteed because we inherit from object
     shortcut = op2shortcut[op];
+    // similar rules apply as with binops - prioritize the reflected ops of subtypes
+    if (w_is_subclass) {
+        swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
+        if (w[swapped_shortcut] !== v[swapped_shortcut] && (ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
+    }
     if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
         return Sk.misceval.isTrue(ret); 
         // techincally this is not correct along with the compile code 
         // richcompare slots could return any pyObject ToDo - would require changing compile code
     }
 
-    swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-    if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
-        return Sk.misceval.isTrue(ret);
+    if (!w_is_subclass) {
+        swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
+        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
+        }
     }
 
     if (!Sk.__future__.python3) {
         const vcmp = Sk.abstr.lookupSpecial(v, Sk.builtin.str.$cmp);
         if (vcmp) {
             try {
-                ret = Sk.misceval.callsimArray(vcmp, [v, w]);
+                ret = Sk.misceval.callsimArray(vcmp, [w]);
                 if (Sk.builtin.checkNumber(ret)) {
                     ret = Sk.builtin.asnum$(ret);
                     if (op === "Eq") {
@@ -474,7 +483,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         if (wcmp) {
             // note, flipped on return value and call
             try {
-                ret = Sk.misceval.callsimArray(wcmp, [w, v]);
+                ret = Sk.misceval.callsimArray(wcmp, [v]);
                 if (Sk.builtin.checkNumber(ret)) {
                     ret = Sk.builtin.asnum$(ret);
                     if (op === "Eq") {
