@@ -1,11 +1,11 @@
-Sk.builtin.interned = Object.create(null); // avoid name conflicts with Object.prototype
+var interned = Object.create(null); // avoid name conflicts with Object.prototype
 
 function getInterned(x) {
-    return Sk.builtin.interned[x];
+    return interned[x];
 }
 
 function setInterned(x, pyStr) {
-    Sk.builtin.interned[x] = pyStr;
+    interned[x] = pyStr;
 }
 
 /**
