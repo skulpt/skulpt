@@ -65,9 +65,6 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     methods: {
         __dir__: {
             $meth: function () {
-                if (this.$d.__name__ === undefined) {
-                    throw new Sk.builtin.SystemError("nameless module");
-                }
                 // could be cleaner but this is inline with cpython's version
                 const dict = this.tp$getattr(Sk.builtin.str.$dict);
                 if (!Sk.builtin.checkMapping(dict)) {
