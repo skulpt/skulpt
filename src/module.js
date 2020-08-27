@@ -40,9 +40,9 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             return Sk.builtin.none.none$;
         },
         $r: function () {
-            let name = this.$name();
+            let name = this.get$name();
             if (name !== undefined) {
-                const module_reprf = this.module$reprf();
+                const module_reprf = this.get$mod_reprf();
                 if (module_reprf !== undefined) {
                     return Sk.misceval.callsimOrSuspendArray(module_reprf, [this]);
                 }
@@ -90,10 +90,10 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             this.$d.__loader__ = Sk.builtin.none.none$;
         },
         sk$attrError: function () {
-            const name = this.$name();
+            const name = this.get$name();
             return name === undefined ? "module" : "module " + name;
         },
-        $name: function () {
+        get$name: function () {
             const name = this.tp$getattr(Sk.builtin.str.$name);
             return name && Sk.misceval.objectRepr(name);
         },
@@ -102,18 +102,17 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             return file && " from " + Sk.misceval.objectRepr(file);
         },
         empty_or$loader: function () {
-            if (this.$js) {
-                if (this.$js.includes("$builtinmodule")) {
-                    return " (built-in)";
-                }
+            if (this.$js && this.$js.includes("$builtinmodule")) {
+                return " (built-in)";
             }
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
             return loader === undefined || Sk.builtin.checkNone(loader) ? "" : " (" + Sk.misceval.objectRepr(loader) + ")";
         },
-        module$reprf: function () {
+        get$mod_reprf: function () {
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
-            return loader && loader.tp$getattr(new Sk.builtin.str("module_repr"));
+            return loader && loader.tp$getattr(this.str$mod_repr);
         },
+        str$mod_repr: new Sk.builtin.str("module_repr"),
     },
 });
 
