@@ -60,6 +60,7 @@ Sk.builtins = {
     "RecursionError"     : Sk.builtin.RecursionError,
     "StopIteration"      : Sk.builtin.StopIteration,
     "SyntaxError"        : Sk.builtin.SyntaxError,
+    "SystemError"        : Sk.builtin.SystemError,
 
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
