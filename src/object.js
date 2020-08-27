@@ -240,7 +240,7 @@ Sk.builtin.none = function () {
     return Sk.builtin.none.none$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
-
+Sk.builtin.none.sk$acceptable_as_base_class = false;
 Sk.builtin.none.prototype.$r = function () {
     return new Sk.builtin.str("None");
 };
@@ -273,6 +273,7 @@ Sk.builtin.NotImplemented = function () {
     return Sk.builtin.NotImplemented.NotImplemented$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
+Sk.builtin.NotImplemented.sk$acceptable_as_base_class = false;
 
 Sk.builtin.NotImplemented.prototype.$r = function () {
     return new Sk.builtin.str("NotImplemented");
