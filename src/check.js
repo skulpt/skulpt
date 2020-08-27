@@ -136,7 +136,7 @@ Sk.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
  */
 Sk.builtin.checkCallable = function (obj) {
     // takes care of builtin functions and methods, builtins
-    return obj.tp$call !== undefined;
+    return obj != null && obj.tp$call !== undefined;
 };
 
 /**
@@ -147,10 +147,7 @@ Sk.builtin.checkCallable = function (obj) {
  * @param {*} arg 
  */
 Sk.builtin.checkNumber = function (arg) {
-    return (
-        arg != null &&
-        (typeof arg === "number" || arg instanceof Sk.builtin.int_ || arg instanceof Sk.builtin.float_ || arg instanceof Sk.builtin.lng)
-    );
+    return typeof arg === "number" || arg instanceof Sk.builtin.int_ || arg instanceof Sk.builtin.float_ || arg instanceof Sk.builtin.lng;
 };
 Sk.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -179,7 +176,7 @@ Sk.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
  * @param {*} arg 
  */
 Sk.builtin.checkFloat = function (arg) {
-    return arg != null && arg instanceof Sk.builtin.float_;
+    return arg instanceof Sk.builtin.float_;
 };
 Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
@@ -189,7 +186,7 @@ Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
  * @param {*} arg 
  */
 Sk.builtin.checkString = function (arg) {
-    return arg != null && arg.ob$type == Sk.builtin.str;
+    return arg instanceof Sk.builtin.str;
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
@@ -198,7 +195,7 @@ Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
  * @param {*} arg 
  */
 Sk.builtin.checkClass = function (arg) {
-    return arg != null && arg.sk$type;
+    return arg instanceof Sk.builtin.type;
 };
 Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
@@ -238,7 +235,7 @@ Sk.exportSymbol("Sk.builtin.checkDataDescr", Sk.builtin.checkDataDescr);
  * @param {*} arg 
  */
 Sk.builtin.checkAnySet = function (arg) {
-    return arg != null && (arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset);
+    return arg instanceof Sk.builtin.set || arg instanceof Sk.builtin.frozenset;
 };
 
 Sk.builtin.checkMapping = function (arg) {
