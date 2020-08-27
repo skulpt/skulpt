@@ -114,7 +114,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             let missing = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$missing);
             if (missing !== undefined) {
-                const ret = Sk.misceval.callsimOrSuspendArray(missing, [this, key]);
+                const ret = Sk.misceval.callsimOrSuspendArray(missing, [key]);
                 return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
             }
             throw new Sk.builtin.KeyError(key);

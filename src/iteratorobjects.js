@@ -132,7 +132,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
             let seq = args[0];
             const special = Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$reversed);
             if (special !== undefined) {
-                return Sk.misceval.callsimArray(special, [seq]);
+                return Sk.misceval.callsimArray(special, []);
             } else if (!Sk.builtin.checkSequence(seq) || Sk.abstr.lookupSpecial(seq, Sk.builtin.str.$len) === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not a sequence");
             }

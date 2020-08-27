@@ -164,9 +164,9 @@ Sk.builtin.round = function round(number, ndigits) {
     if (special !== undefined) {
         // method on builtin, provide this arg
         if (ndigits !== undefined) {
-            return Sk.misceval.callsimArray(special, [number, ndigits]);
+            return Sk.misceval.callsimArray(special, [ndigits]);
         } else {
-            return Sk.misceval.callsimArray(special, [number]);
+            return Sk.misceval.callsimArray(special, []);
         }
     } else {
         throw new Sk.builtin.TypeError("a float is required");
@@ -549,8 +549,7 @@ Sk.builtin.bin = function bin(x) {
 Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
         const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
-        const dir = Sk.misceval.callsimArray(obj_dir_func, [obj]);
-        return Sk.builtin.sorted(dir);
+        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(obj_dir_func, []), (dir) => Sk.builtin.sorted(dir));
         // now iter through the keys and check they are all stings
     }
     // then we want all the objects in the global scope

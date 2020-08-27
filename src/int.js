@@ -649,7 +649,7 @@ function getInt(x, base) {
     }
 
     if ((func = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$trunc))) {
-        res = Sk.misceval.callsimArray(func, [x]);
+        res = Sk.misceval.callsimArray(func, []);
         // check return type of magic methods
         if (!Sk.builtin.checkInt(res)) {
             throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");

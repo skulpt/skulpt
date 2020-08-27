@@ -590,7 +590,7 @@ Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
 Sk.abstr.objectFormat = function (obj, format_spec) {
     const meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format); // inherited from object so guaranteed to exist
-    const result = Sk.misceval.callsimArray(meth, [obj, format_spec]);
+    const result = Sk.misceval.callsimArray(meth, [format_spec]);
     if (!Sk.builtin.checkString(result)) {
         throw new Sk.builtin.TypeError("__format__ must return a str, not " + Sk.abstr.typeName(result));
     }
@@ -740,7 +740,13 @@ Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  * @param {Sk.builtin.str} pyName
  */
 Sk.abstr.lookupSpecial = function (obj, pyName) {
-    return obj.ob$type.$typeLookup(pyName);
+    let func = obj.ob$type && obj.ob$type.$typeLookup(pyName);
+    if (func === undefined) {
+        return;
+    } else if (func.tp$descr_get !== undefined) {
+        func = func.tp$descr_get(obj, obj.ob$type);
+    }
+    return func;
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
