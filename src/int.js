@@ -18,7 +18,7 @@ const JSBI = require("jsbi");
  * 
  */
 Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
-    constructor: function int_ (x) {
+    constructor: function int_(x) {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
         if (typeof x === "number" || x instanceof JSBI) {
@@ -32,17 +32,17 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         }
         this.v = v;
     },
-    slots: /** @lends {Sk.builtin.int_.prototype}*/{
+    slots: /** @lends {Sk.builtin.int_.prototype}*/ {
         tp$as_number: true,
         tp$doc:
             "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4",
         $r: function () {
             return new Sk.builtin.str(this.v.toString());
         },
-        tp$hash: function () {
-            return new Sk.builtin.int_(this.v);
-            // todo we shouldn't really have hashes so big for longs...
-        },
+        tp$hash: numberUnarySlot(
+            (v) => v,
+            (v) => JSBI.toNumber(JSBI.remainder(v, MaxSafeBig))
+        ),
         tp$new: function (args, kwargs) {
             let x, base;
             if (args.length + (kwargs ? kwargs.length : 0) === 1) {
@@ -190,17 +190,19 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return new Sk.builtin.long(this.v);
         },
     },
-    getsets: /** @lends {Sk.builtin.int_.prototype}*/{
+    getsets: /** @lends {Sk.builtin.int_.prototype}*/ {
         real: {
             $get: cloneSelf,
+            $doc: "the real part of a complex number",
         },
         imag: {
             $get: function () {
                 return new Sk.builtin.int_(0);
             },
+            $doc: "the imaginary part of a complex number",
         },
     },
-    methods: /** @lends {Sk.builtin.int_.prototype}*/{
+    methods: /** @lends {Sk.builtin.int_.prototype}*/ {
         conjugate: {
             $meth: cloneSelf,
             $flags: { NoArgs: true },
@@ -265,7 +267,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             $doc: Sk.builtin.none.none$,
         },
     },
-    proto: /** @lends {Sk.builtin.int_.prototype}*/{
+    proto: /** @lends {Sk.builtin.int_.prototype}*/ {
         str$: function (base, sign) {
             let tmp;
             if (base === undefined || base === 10) {

@@ -136,11 +136,13 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             $get: function () {
                 return new Sk.builtin.float_(this.real);
             },
+            $doc: "the real part of a complex number",
         },
         imag: {
             $get: function () {
                 return new Sk.builtin.float_(this.imag);
             },
+            $doc: "the imaginary part of a complex number",
         },
     },
     methods: /**@lends {Sk.builtin.complex.prototype}*/{
@@ -241,7 +243,7 @@ function try_complex_special_method(op) {
     const f = Sk.abstr.lookupSpecial(op, Sk.builtin.str.$complex);
     if (f !== undefined) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsimArray(f, [op]);
+        return Sk.misceval.callsimArray(f, []);
     }
     return null;
 }

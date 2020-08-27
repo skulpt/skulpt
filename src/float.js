@@ -133,11 +133,13 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
     getsets:  /**@lends {Sk.builtin.float_.prototype} */{
         real: {
             $get: cloneSelf,
+            $doc: "the real part of a complex number",
         },
         imag: {
             $get: function () {
                 return new Sk.builtin.float_(0.0);
             },
+            $doc: "the imaginary part of a complex number",
         },
     },
     methods:  /**@lends {Sk.builtin.float_.prototype} */{
