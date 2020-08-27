@@ -49,6 +49,9 @@ Sk.builtins = {
     "LookupError"        : Sk.builtin.LookupError,
     "KeyError"           : Sk.builtin.KeyError,
     "TypeError"          : Sk.builtin.TypeError,
+    "LookupError"        : Sk.builtin.LookupError,
+    "UnicodeDecodeError" : Sk.builtin.UnicodeDecodeError,
+    "UnicodeEncodeError" : Sk.builtin.UnicodeEncodeError,
     "NameError"          : Sk.builtin.NameError,
     "IOError"            : Sk.builtin.IOError,
     "NotImplementedError": Sk.builtin.NotImplementedError,
@@ -123,7 +126,7 @@ Sk.builtins = {
     "staticmethod" : Sk.builtin.staticmethod,
 };
 
-Sk.builtins.$method_defs = {
+const method_defs = {
     // __build_class__: {
     //     $meth: Sk.builtin.__build_class__,
     //     $flags: {},
@@ -160,12 +163,12 @@ Sk.builtins.$method_defs = {
         $doc: "Return True if bool(x) is True for any x in the iterable.\n\nIf the iterable is empty, return False.",
     },
 
-    // ascii: {
-    //     $meth: Sk.builtin.ascii,
-    //     $flags: {OneArg: true},
-    //     $textsig: "($module, obj, /)",
-    //     $doc: "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2."
-    // },
+    ascii: {
+        $meth: Sk.builtin.ascii,
+        $flags: {OneArg: true},
+        $textsig: "($module, obj, /)",
+        $doc: "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2."
+    },
 
     bin: {
         $meth: Sk.builtin.bin,
@@ -467,8 +470,8 @@ Sk.builtins.$method_defs = {
     },
 };
 
-for (let def_name in Sk.builtins.$method_defs) {
-    const method_def = Sk.builtins.$method_defs[def_name];
+for (let def_name in method_defs) {
+    const method_def = method_defs[def_name];
     method_def.$name = def_name;
     Sk.builtins[def_name] = new Sk.builtin.sk_method(method_def, undefined, "builtins");
 }
@@ -482,12 +485,16 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
+        delete Sk.builtins["basestring"];
         delete Sk.builtins["long_$rw$"];
         Sk.builtin.int_.prototype.$r = function () {
             return new Sk.builtin.str(this.v.toString());
         };
         delete Sk.builtin.int_.prototype.tp$str;
         delete Sk.builtin.bool.prototype.tp$str;
+        delete Sk.builtin.str.prototype.decode;
+        Sk.builtins["bytes"] = Sk.builtin.bytes;
+        Sk.builtins["ascii"] = new Sk.builtin.sk_method(method_defs.ascii, undefined, "builtins");
     } else {
         Sk.builtins["range"] = new Sk.builtin.sk_method(
             {
@@ -512,6 +519,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
         Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
+        Sk.builtins["basestring"] = Sk.builtin.str;
         Sk.builtins["long_$rw$"] = Sk.builtin.lng;
         Sk.builtin.int_.prototype.$r = function () {
             const v = this.v;
@@ -527,6 +535,9 @@ Sk.setupObjects = function (py3) {
         Sk.builtin.bool.prototype.tp$str = function () {
             return this.$r();
         };
+        Sk.builtin.str.prototype.decode = Sk.builtin.str.$py2decode;
+        delete Sk.builtins["bytes"];
+        delete Sk.builtins["ascii"];
     }
 };
 

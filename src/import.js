@@ -166,13 +166,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         topLevelModuleToReturn = topLevelModuleToReturn_;
 
         // if leaf is already in sys.modules, early out
-        try {
-            prev = Sk.sysmodules.mp$subscript(new Sk.builtin.str(modname));
+        prev = Sk.sysmodules.mp$lookup(new Sk.builtin.str(modname));
+        if (prev !== undefined) {
             // if we're a dotted module, return the top level, otherwise ourselves
             return topLevelModuleToReturn || prev;
-        } catch (x) {
-            // not in sys.modules, continue
         }
+        // not in sys.modules, continue
 
         return Sk.misceval.chain(undefined, function() {
             var codeAndPath, co, googClosure;
@@ -453,11 +452,8 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             relativeToPackageNames.length -= level-1;
             relativeToPackageName = relativeToPackageNames.join(".");
         }
-        try {
-            relativeToPackage = Sk.sysmodules.mp$subscript(new Sk.builtin.str(relativeToPackageName));
-        } catch(e) {
-            relativeToPackageName = undefined;
-        }
+
+        relativeToPackage = Sk.sysmodules.mp$lookup(new Sk.builtin.str(relativeToPackageName));
     }
 
     if (level > 0 && relativeToPackage === undefined) {

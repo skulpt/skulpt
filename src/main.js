@@ -34,6 +34,7 @@ require("./misceval.js");
 require("./simple_iterators.js");
 require("./list.js");
 require("./str.js");
+require("./bytes.js");
 require("./formatting.js");
 require("./tuple.js");
 require("./dict.js");

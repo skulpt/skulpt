@@ -700,9 +700,8 @@ Compiler.prototype.cformattedvalue = function(e) {
             value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
         case "a":
-            // TODO when repr() becomes more unicode-aware,
-            // we'll want to handle repr() and ascii() differently.
-            // For now, they're the same
+            value = this._gr("value", "Sk.builtin.ascii(",value,")");
+            break;
         case "r":
             value = this._gr("value", "Sk.builtin.repr(",value,")");
             break;
@@ -711,6 +710,26 @@ Compiler.prototype.cformattedvalue = function(e) {
     return this._gr("formatted", "Sk.abstr.objectFormat("+value+","+formatSpec+")");
 };
 
+function getJsLiteralForString(s) {
+    let r = "\"";
+    for (let i = 0; i < s.length; i++) {
+        let c = s.charCodeAt(i);
+        // Escape quotes, anything before space, and anything non-ASCII
+        if (c == 0x0a) {
+            r += "\\n";
+        } else if (c == 92) {
+            r += "\\\\";
+        } else if (c == 34 || c < 32 || c >= 0x7f && c < 0x100) {
+            r += "\\x" + ("0" + c.toString(16)).substr(-2);
+        } else if (c >= 0x100) {
+            r += "\\u" + ("000" + c.toString(16)).substr(-4);
+        } else {
+            r += s.charAt(i);
+        }
+    }
+    r += "\"";
+    return r;
+}
 
 /**
  *
@@ -786,8 +805,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return this.makeConstant("new Sk.builtin.complex(" + real_val + ", " + imag_val + ")");
             }
             Sk.asserts.fail("unhandled Num type");
+        case Sk.astnodes.Bytes:
+            if (Sk.__future__.python3) {
+                const source = [];
+                const str = e.s.$jsstr();
+                for (let i = 0; i < str.length; i++) {
+                    source.push(str.charCodeAt(i));
+                }
+                return this.makeConstant("new Sk.builtin.bytes([", source.join(", "), "])");
+            }
+            // else fall through and make a string instead
         case Sk.astnodes.Str:
-            return this.makeConstant("new Sk.builtin.str(", e.s["$r"]().v, ")");
+            return this.makeConstant("new Sk.builtin.str(", getJsLiteralForString(e.s.$jsstr()), ")");
         case Sk.astnodes.Attribute:
             if (e.ctx !== Sk.astnodes.AugLoad && e.ctx !== Sk.astnodes.AugStore) {
                 val = this.vexpr(e.value);
@@ -1320,7 +1349,7 @@ Compiler.prototype.craise = function (s) {
         // for the Python version you're using.
 
         var instantiatedException = this.newBlock("exception now instantiated");
-        var isClass = this._gr("isclass", exc + " instanceof Sk.builtin.type || " + exc + ".prototype instanceof Sk.builtin.BaseException");
+        var isClass = this._gr("isclass", exc + ".prototype instanceof Sk.builtin.BaseException");
         this._jumpfalse(isClass, instantiatedException);
         //this._jumpfalse(instantiatedException, isClass);
 
@@ -1344,7 +1373,7 @@ Compiler.prototype.craise = function (s) {
         // TODO TODO TODO set cause appropriately
         // (and perhaps traceback for py2 if we care before it gets fully deprecated)
 
-        out("throw ",exc,";");
+        out("if (", exc, " instanceof Sk.builtin.BaseException) {throw ",exc,";} else {throw new Sk.builtin.TypeError('exceptions must derive from BaseException');};");
     } else {
         // re-raise
         out("throw $err;");

@@ -27,13 +27,10 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         this.traceback = [];
         this.$d = new Sk.builtin.dict();
 
-        // For errors occurring during normal execution, the line/col/etc
-        // of the error are populated by each stack frame of the runtime code,
-        // but we can seed it with the supplied parameters.
         if (args.length >= 3) {
-
-            // if !this.args[1].v, this is an error, and the exception that causes it
-            // probably needs to be fixed, but we mark as "<unknown>" for now
+            // For errors occurring during normal execution, the line/col/etc
+            // of the error are populated by each stack frame of the runtime code,
+            // but we can seed it with the supplied parameters.
             this.traceback.push({
                 lineno: args[2],
                 filename: args[1] || "<unknown>"
@@ -401,6 +398,29 @@ Sk.builtin.SystemError = function (...args) {
 };
 Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
+
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {*=} args Typically called with a single string argument
+ */
+Sk.builtin.UnicodeDecodeError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {*=} args
+ */
+Sk.builtin.UnicodeEncodeError = function (...args) {
+    Sk.builtin.Exception.apply(this, args);
+};
+Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.Exception);
+Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
 /**
  * @constructor
