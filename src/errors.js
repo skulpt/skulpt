@@ -354,11 +354,29 @@ Sk.builtin.ExternalError = function (...args) {
     this.nativeError = args[0];
     if (!Sk.builtin.checkString(this.nativeError)) {
         args[0] = this.nativeError.toString();
+        if ((args[0]).startsWith("RangeError: Maximum call")) {
+            args[0] = "Maximum call stack size exceeded";
+            return new Sk.builtin.RecursionError(...args);
+        }
     }
     Sk.builtin.Exception.apply(this, args);
 };
 Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.Exception);
 Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
+
+
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {*=} args Typically called with a single string argument
+ */
+Sk.builtin.RecursionError = function (...args) {
+    Sk.builtin.RuntimeError.apply(this, args);
+};
+Sk.abstr.setUpInheritance("RecursionError", Sk.builtin.RecursionError, Sk.builtin.RuntimeError);
+Sk.exportSymbol("Sk.builtin.RecursionError", Sk.builtin.RecursionError);
+
 
 /**
  * @constructor

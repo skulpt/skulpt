@@ -57,6 +57,7 @@ Sk.builtins = {
     "OperationError"     : Sk.builtin.OperationError,
     "NegativePowerError" : Sk.builtin.NegativePowerError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
+    "RecursionError"     : Sk.builtin.RecursionError,
     "StopIteration"      : Sk.builtin.StopIteration,
     "SyntaxError"        : Sk.builtin.SyntaxError,
 
