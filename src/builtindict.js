@@ -49,7 +49,6 @@ Sk.builtins = {
     "LookupError"        : Sk.builtin.LookupError,
     "KeyError"           : Sk.builtin.KeyError,
     "TypeError"          : Sk.builtin.TypeError,
-    "LookupError"        : Sk.builtin.LookupError,
     "UnicodeDecodeError" : Sk.builtin.UnicodeDecodeError,
     "UnicodeEncodeError" : Sk.builtin.UnicodeEncodeError,
     "NameError"          : Sk.builtin.NameError,

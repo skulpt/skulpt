@@ -59,8 +59,8 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 throw new Sk.builtin.TypeError("str takes at most one argument (" + (args.length + kwargs.length) + " given)");
             } else {
                 const [x, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("str", ["object", "encoding", "errors"], args, kwargs);
-                if (x === undefined) {
-                    return new Sk.builtin.str("");
+                if (x === undefined || (encoding === undefined && errors === undefined)) {
+                    return new Sk.builtin.str(x);
                 }
                 // check the types of encoding and errors
                 if (encoding !== undefined && !Sk.builtin.checkString(encoding)) {
@@ -115,7 +115,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                     // Invalid!
                     ret += "\\ufffd";
                 } else if (c < " " || (cc >= 0x7f && !Sk.__future__.python3)) {
-                    const ashex = c.charCodeAt(0).toString(16);
+                    let ashex = c.charCodeAt(0).toString(16);
                     if (ashex.length < 2) {
                         ashex = "0" + ashex;
                     }
@@ -205,8 +205,8 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             if (n * this.v.length > Number.MAX_SAFE_INTEGER) {
                 throw new Sk.builtin.OverflowError();
             }
-            ret = "";
-            for (i = 0; i < n; i++) {
+            let ret = "";
+            for (let i = 0; i < n; i++) {
                 ret += this.v;
             }
             return new Sk.builtin.str(ret);
@@ -296,7 +296,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 const pyBytes = Sk.builtin.bytes.$strEncode(this, encoding, errors);
                 return Sk.__future__.python3 ? pyBytes : new Sk.builtin.str(pyBytes.$jsstr());
             },
-            $flags: {NamedArgs: ["encoding", "errors"], Defaults: ["utf-8", "strict"]},
+            $flags: { NamedArgs: ["encoding", "errors"], Defaults: ["utf-8", "strict"] },
             $textsig: "($self, /, encoding='utf-8', errors='strict')",
             $doc:
                 "Encode the string using the codec registered for encoding.\n\n  encoding\n    The encoding in which to encode the string.\n  errors\n    The error handling scheme to use for encoding errors.\n    The default is 'strict' meaning that encoding errors raise a\n    UnicodeEncodeError.  Other possible values are 'ignore', 'replace' and\n    'xmlcharrefreplace' as well as any other name registered with\n    codecs.register_error that can handle UnicodeEncodeErrors.",
@@ -311,10 +311,10 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                     return new Sk.builtin.str(this.v.replace(patt, newS));
                 }
                 let c = 0;
-                const ret = this.v.replace(patt, (match) => c++ < count ? newS : match);
+                const ret = this.v.replace(patt, (match) => (c++ < count ? newS : match));
                 return new Sk.builtin.str(ret);
             },
-            $flags: {MinArgs: 2, MaxArgs: 3},
+            $flags: { MinArgs: 2, MaxArgs: 3 },
             $textsig: "($self, old, new, count=-1, /)",
             $doc:
                 "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.",
@@ -325,12 +325,11 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 const codepoints = splitPoints(this, sep, maxsplit);
                 const ret = [];
                 for (let i = 0; i < codepoints.length; i++) {
-                    console.log(codepoints[i], codepoints[i + 1]);
                     ret.push(new Sk.builtin.str(this.v.substring(codepoints[i], codepoints[++i])));
                 }
-                return Sk.builtin.list(ret);
+                return new Sk.builtin.list(ret);
             },
-            $flags: {NamedArgs: ["sep", "maxsplit"], Defaults:[Sk.builtin.none.none$, new Sk.builtin.int_(-1)]},
+            $flags: { NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, -1] },
             $textsig: "($self, /, sep=None, maxsplit=-1)",
             $doc:
                 "Return a list of the words in the string, using sep as the delimiter string.\n\n  sep\n    The delimiter according which to split the string.\n    None (the default value) means split according to any whitespace,\n    and discard empty strings from the result.\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.",
@@ -350,9 +349,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 for (let i = from; i < codepoints.length; i++) {
                     ret.push(new Sk.builtin.str(this.v.substring(codepoints[i], codepoints[++i])));
                 }
-                return Sk.builtin.list(ret);
+                return new Sk.builtin.list(ret);
             },
-            $flags: {NamedArgs: ["sep", "maxsplit"], Defaults:[Sk.builtin.none.none$, new Sk.builtin.int_(-1)]},
+            $flags: { NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, -1] },
             $textsig: "($self, /, sep=None, maxsplit=-1)",
             $doc:
                 "Return a list of the words in the string, using sep as the delimiter string.\n\n  sep\n    The delimiter according which to split the string.\n    None (the default value) means split according to any whitespace,\n    and discard empty strings from the result.\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.\n\nSplits are done starting at the end of the string and working to the front.",
@@ -361,13 +360,13 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             $meth: function (seq) {
                 const arrOfStrs = [];
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(seq), (str) => {
-                        if (!(str instanceof Sk.builtin.str)) {
+                    Sk.misceval.iterFor(Sk.abstr.iter(seq), (i) => {
+                        if (!(i instanceof Sk.builtin.str)) {
                             throw new Sk.builtin.TypeError(
                                 "sequence item " + arrOfStrs.length + ": expected str, " + Sk.abstr.typeName(i) + " found"
                             );
                         }
-                        arrOfStrs.push(str.v);
+                        arrOfStrs.push(i.v);
                     }),
                     () => new Sk.builtin.str(arrOfStrs.join(this.v))
                 );
@@ -394,9 +393,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         // },
         title: {
             $meth: function title() {
-                const ret = this.v.replace(/[a-z][a-z]*/gi, function (str) {
-                    return str[0].toUpperCase() + str.substr(1).toLowerCase();
-                });
+                const ret = this.v.replace(/[a-z][a-z]*/gi, (str) => str[0].toUpperCase() + str.substr(1).toLowerCase());
                 return new Sk.builtin.str(ret);
             },
             $flags: { NoArgs: true },
@@ -443,7 +440,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 const expanded = this.v.replace(/([^\r\n\t]*)\t/g, (a, b) => b + spaces.slice(b.length % tabsize));
                 return new Sk.builtin.str(expanded);
             },
-            $flags: { NamedArgs: ["tabsize"], Defaults: [new Sk.builtin.int_(8)] },
+            $flags: { NamedArgs: ["tabsize"], Defaults: [8] },
             $textsig: "($self, /, tabsize=8)",
             $doc:
                 "Return a copy where all tab characters are expanded using spaces.\n\nIf tabsize is not given, a tab size of 8 characters is assumed.",
@@ -459,7 +456,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         },
         partition: {
             $meth: mkPartition(false),
-            $flags: { OneArg: True },
+            $flags: { OneArg: true },
             $textsig: "($self, sep, /)",
             $doc:
                 "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string.  If the separator is found,\nreturns a 3-tuple containing the part before the separator, the separator\nitself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing the original string\nand two empty strings.",
@@ -470,7 +467,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 if (val === -1) {
                     throw new Sk.builtin.ValueError("substring not found");
                 } else {
-                    return Sk.builtin.int_(val);
+                    return new Sk.builtin.int_(val);
                 }
             },
             $flags: { MinArgs: 1, MaxArgs: 3 },
@@ -514,7 +511,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 if (val === -1) {
                     throw new Sk.builtin.ValueError("substring not found");
                 } else {
-                    return Sk.builtin.int_(val);
+                    return new Sk.builtin.int_(val);
                 }
             },
             $flags: { MinArgs: 1, MaxArgs: 3 },
@@ -548,13 +545,16 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 const data = this.v;
                 const final = [];
                 const len = data.length;
-                let slice, ch, eol, sol=0;
+                let slice,
+                    ch,
+                    eol,
+                    sol = 0;
                 for (let i = 0; i < len; i++) {
                     ch = data.charAt(i);
                     if (data.charAt(i + 1) === "\n" && ch === "\r") {
                         eol = i + 2;
                         slice = data.slice(sol, eol);
-                        if (! keepends) {
+                        if (!keepends) {
                             slice = slice.replace(/(\r|\n)/g, "");
                         }
                         final.push(new Sk.builtin.str(slice));
@@ -562,7 +562,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                     } else if ((ch === "\n" && data.charAt(i - 1) !== "\r") || ch === "\r") {
                         eol = i + 1;
                         slice = data.slice(sol, eol);
-                        if (! keepends) {
+                        if (!keepends) {
                             slice = slice.replace(/(\r|\n)/g, "");
                         }
                         final.push(new Sk.builtin.str(slice));
@@ -572,14 +572,14 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 if (sol < len) {
                     eol = len;
                     slice = data.slice(sol, eol);
-                    if (! keepends) {
+                    if (!keepends) {
                         slice = slice.replace(/(\r|\n)/g, "");
                     }
                     final.push(new Sk.builtin.str(slice));
                 }
                 return new Sk.builtin.list(final);
             },
-            $flags: {NamedArgs: ["keepends"], Defaults: [false]},
+            $flags: { NamedArgs: ["keepends"], Defaults: [false] },
             $textsig: "($self, /, keepends=False)",
             $doc:
                 "Return a list of the lines in the string, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends is given and\ntrue.",
@@ -593,7 +593,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         },
         swapcase: {
             $meth: function () {
-                const ret = this.v.replace(/[a-z]/gi, function (c) {
+                const ret = this.v.replace(/[a-z]/gi, (c) => {
                     const lc = c.toLowerCase();
                     return lc === c ? c.toUpperCase() : lc;
                 });
@@ -612,7 +612,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         // },
         upper: {
             $meth: function () {
-                return new Sk.builtin.str(this.v.toLowerCase());
+                return new Sk.builtin.str(this.v.toUpperCase());
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -675,7 +675,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                         }
                         previous_is_cased = true;
                         cased = true;
-                    } else if (/[a-z]/.test(ch) && !/[A-Z]/.est(ch)) {
+                    } else if (/[a-z]/.test(ch) && !/[A-Z]/.test(ch)) {
                         if (!previous_is_cased) {
                             return Sk.builtin.bool.false$;
                         }
@@ -771,7 +771,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 // combine the string and the zeroes
                 return new Sk.builtin.str(this.v.substr(0, offset) + pad + this.v.substr(offset));
             },
-            $flags: { OneArg: tre },
+            $flags: { OneArg: true },
             $textsig: "($self, width, /)",
             $doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated.",
         },
@@ -802,10 +802,10 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         //     $doc: "Return the size of the string in memory, in bytes.",
         // },
         __getnewargs__: {
-            $meth: function() {
+            $meth: function () {
                 return new Sk.builtin.tuple(new Sk.builtin.str(this.v));
             },
-            $flags: {NoArgs: true},
+            $flags: { NoArgs: true },
             $textsig: null,
             $doc: null,
         },
@@ -815,7 +815,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
 Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 var re = /^[A-Za-z0-9]+$/;
-function re_escape_ (s) {
+function re_escape_(s) {
     let c;
     const ret = [];
     for (let i = 0; i < s.length; i++) {
@@ -831,7 +831,7 @@ function re_escape_ (s) {
         }
     }
     return ret.join("");
-};
+}
 
 // methods
 var special_chars = /([.*+?=|\\\/()\[\]\{\}^$])/g;
@@ -851,7 +851,6 @@ function splitPoints(self, sep, maxsplit) {
         const len = jsstr.length;
         jsstr = jsstr.replace(leading_whitespace, "");
         offset = len - jsstr.length;
-        console.log(offset);
     } else {
         // Escape special characters in null so we can use a regexp
         const s = sep.replace(special_chars, "\\$1");
@@ -863,7 +862,8 @@ function splitPoints(self, sep, maxsplit) {
     let index = 0;
     let splits = 0;
     let match;
-    while ((match = regex.exec(jsstr)) != null && splits > maxsplit) {
+    maxsplit = maxsplit < 0 ? Infinity : maxsplit;
+    while ((match = regex.exec(jsstr)) != null && splits < maxsplit) {
         if (match.index === regex.lastIndex) {
             // empty match
             break;
@@ -873,13 +873,12 @@ function splitPoints(self, sep, maxsplit) {
         index = regex.lastIndex;
         splits += 1;
     }
-    if (jsstr.length - index) {
+    if (sep !== null || jsstr.length - index) {
         pairs.push(index + offset);
         pairs.push(jsstr.length + offset);
     }
     return pairs;
-};
-
+}
 
 function mkStrip(pat, regf) {
     return function strip(chars) {
@@ -892,7 +891,7 @@ function mkStrip(pat, regf) {
         } else {
             throw new Sk.builtin.TypeError("strip arg must be None or str");
         }
-        return new self.sk$builtinBase(this.v.replace(pattern, ""));
+        return new Sk.builtin.str(this.v.replace(pattern, ""));
     };
 }
 
@@ -920,7 +919,6 @@ function mkPartition(isReversed) {
         ]);
     };
 }
-
 
 function mkJust(isRight, isCenter) {
     return function strJustify(len, fillchar) {
@@ -954,7 +952,7 @@ function mkJust(isRight, isCenter) {
 }
 
 function indices(self, start, end) {
-    ({start, end} = Sk.builtin.slice.$indices(self, start, end));
+    ({ start, end } = Sk.builtin.slice.$indices(self, start, end));
     if (self.$hasAstralCodePoints()) {
         start = self.codepoints[start];
         end = self.codepoints[end];
@@ -1044,7 +1042,7 @@ Sk.builtin.str.$py2decode = new Sk.builtin.func(function (self, encoding, errors
     return Sk.builtin.bytes.$decode(pyBytes, encoding, errors);
 });
 
-function strBytesRemainder (rhs) {
+function strBytesRemainder(rhs) {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
 
     // From http://docs.python.org/library/stdtypes.html#string-formatting the
@@ -1337,7 +1335,7 @@ function strBytesRemainder (rhs) {
     };
     ret = this.v.replace(regex, replFunc);
     return new Sk.builtin.str(ret);
-};
+}
 
 /**
  * @constructor
