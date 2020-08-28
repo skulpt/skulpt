@@ -105,6 +105,8 @@ Sk.misceval.asIndexSized = function (index, Err) {
     const i = asIndex(index);
     if (typeof i === "number") {
         return i; // integer v property will by a javascript number if it is index sized
+    } else if (i === undefined) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(index) + "' object cannot be interpreted as an index");
     }
     Err = Err || Sk.builtin.IndexError;
     throw new Err("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
