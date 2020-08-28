@@ -776,22 +776,22 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             $doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated.",
         },
         format: {
-            $meth: methods.format,
-            $flags: {},
+            $meth: Sk.formatting.format,
+            $flags: { FastCall: true },
             $textsig: null,
             $doc:
                 "S.format(*args, **kwargs) -> str\n\nReturn a formatted version of S, using substitutions from args and kwargs.\nThe substitutions are identified by braces ('{' and '}').",
         },
-        format_map: {
-            $meth: methods.format_map,
-            $flags: {},
-            $textsig: null,
-            $doc:
-                "S.format_map(mapping) -> str\n\nReturn a formatted version of S, using substitutions from mapping.\nThe substitutions are identified by braces ('{' and '}').",
-        },
+        // format_map: {
+        //     $meth: methods.format_map,
+        //     $flags: {},
+        //     $textsig: null,
+        //     $doc:
+        //         "S.format_map(mapping) -> str\n\nReturn a formatted version of S, using substitutions from mapping.\nThe substitutions are identified by braces ('{' and '}').",
+        // },
         __format__: {
-            $meth: methods.__format__,
-            $flags: {},
+            $meth: Sk.formatting.formatString,
+            $flags: { OneArg: true },
             $textsig: "($self, format_spec, /)",
             $doc: "Return a formatted version of the string as described by format_spec.",
         },
@@ -802,8 +802,10 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         //     $doc: "Return the size of the string in memory, in bytes.",
         // },
         __getnewargs__: {
-            $meth: methods.__getnewargs__,
-            $flags: {},
+            $meth: function() {
+                return new Sk.builtin.tuple(new Sk.builtin.str(this.v));
+            },
+            $flags: {NoArgs: true},
             $textsig: null,
             $doc: null,
         },
