@@ -63,15 +63,11 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                     return new Sk.builtin.str(x);
                 }
                 // check the types of encoding and errors
-                if (encoding !== undefined && !Sk.builtin.checkString(encoding)) {
-                    throw new Sk.builtin.TypeError("str() argument 2 must be str not " + Sk.abstr.typeName(encoding));
-                }
-                if (errors !== undefined && !Sk.builtin.checkString(errors)) {
-                    throw new Sk.builtin.TypeError("str() argument 3 must be str not " + Sk.abstr.typeName(encoding));
-                }
+                Sk.builtin.bytes.check$encodeArgs("str", encoding, errors);
                 if (!Sk.builtin.checkBytes(x)) {
                     throw new Sk.builtin.TypeError("decoding to str: need a bytes-like object, " + Sk.abstr.typeName(x) + " found");
                 }
+                return Sk.builtin.bytes.$decode.call(x, encoding, errors);
             }
         },
         $r: function () {
@@ -285,18 +281,11 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
     methods: /**@lends {Sk.builtin.str.prototype} */ {
         encode: {
             $meth: function encode(encoding, errors) {
-                if (typeof encoding !== "string") {
-                    Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(encoding));
-                    encoding = encoding.v;
-                }
-                if (typeof errors !== "string") {
-                    Sk.builtin.pyCheckType("encoding", "string", Sk.builtin.checkString(errors));
-                    errors = errors.v;
-                }
-                const pyBytes = Sk.builtin.bytes.$strEncode(this, encoding, errors);
+                ({ encoding, errors } = Sk.builtin.bytes.check$encodeArgs("encode", encoding, errors));
+                const pyBytes = Sk.builtin.bytes.str$encode(this, encoding, errors);
                 return Sk.__future__.python3 ? pyBytes : new Sk.builtin.str(pyBytes.$jsstr());
             },
-            $flags: { NamedArgs: ["encoding", "errors"], Defaults: ["utf-8", "strict"] },
+            $flags: { NamedArgs: ["encoding", "errors"] },
             $textsig: "($self, /, encoding='utf-8', errors='strict')",
             $doc:
                 "Encode the string using the codec registered for encoding.\n\n  encoding\n    The encoding in which to encode the string.\n  errors\n    The error handling scheme to use for encoding errors.\n    The default is 'strict' meaning that encoding errors raise a\n    UnicodeEncodeError.  Other possible values are 'ignore', 'replace' and\n    'xmlcharrefreplace' as well as any other name registered with\n    codecs.register_error that can handle UnicodeEncodeErrors.",
@@ -416,7 +405,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 }
                 const normaltext = pat.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
                 const m = new RegExp(normaltext, "g");
-                const slice = this.codepoints ? this.v.slice(this.codepoints[start], this.codepoints[end]) : this.v.slice(start, end);
+                const slice = this.v.slice(start, end);
                 const ctl = slice.match(m);
                 if (!ctl) {
                     return new Sk.builtin.int_(0);
@@ -954,9 +943,9 @@ function mkJust(isRight, isCenter) {
 function indices(self, start, end) {
     ({ start, end } = Sk.builtin.slice.$indices(self, start, end));
     if (self.$hasAstralCodePoints()) {
-        start = self.codepoints[start];
+        const tmp = self.codepoints[start];
+        start = tmp === undefined ? start + self.v.length - self.codepoints.length : tmp;
         end = self.codepoints[end];
-        start = start === undefined ? self.v.length : start;
         end = end === undefined ? self.v.length : end;
     }
     return {
@@ -996,7 +985,7 @@ function mkFind(isReversed) {
     };
 }
 
-function mkStartsEndswith(funcname, checkIdx) {
+function mkStartsEndswith(funcname, is_match) {
     return function (tgt, start, end) {
         if (!(tgt instanceof Sk.builtin.str) && !(tgt instanceof Sk.builtin.tuple)) {
             throw new Sk.builtin.TypeError(funcname + " first arg must be str or a tuple of str, not " + Sk.abstr.typeName(tgt));
@@ -1008,38 +997,30 @@ function mkStartsEndswith(funcname, checkIdx) {
             return Sk.builtin.bool.false$;
         }
 
-        const substr = this.codepoints ? this.v.slice(this.codepoints[start], this.codepoints[end]) : this.v.slice(start, end);
+        const substr = this.v.slice(start, end);
 
         if (tgt instanceof Sk.builtin.tuple) {
             for (let it = Sk.abstr.iter(tgt), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 if (!(i instanceof Sk.builtin.str)) {
                     throw new Sk.builtin.TypeError("tuple for " + funcname + " must only contain str, not " + Sk.abstr.typeName(i));
                 }
-                if (checkIdx(substr, i.v)) {
+                if (is_match(substr, i.v)) {
                     return Sk.builtin.bool.true$;
                 }
             }
             return Sk.builtin.bool.false$;
         }
-        return new Sk.builtin.bool(checkIdx(substr, tgt.v));
+        return new Sk.builtin.bool(is_match(substr, tgt.v));
     };
 }
 
-Sk.builtin.str.$py2decode = new Sk.builtin.func(function (self, encoding, errors) {
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length, 1, 3);
-    let bytesStrAsArray = [];
-    let cc;
-    const str = self.v;
-    for (let i in str) {
-        cc = str.charCodeAt(i);
-        if (cc <= 0xff) {
-            bytesStrAsArray.push(cc);
-        } else {
-            throw new Sk.builtin.UnicodeDecodeError("invalid string (possibly contains a unicode character)");
-        }
-    }
-    const pyBytes = new Sk.builtin.bytes(bytesStrAsArray);
-    return Sk.builtin.bytes.$decode(pyBytes, encoding, errors);
+Sk.builtin.str.$py2decode = new Sk.builtin.method_descriptor(Sk.builtin.str, {
+    $name: "decode",
+    $meth: function (encoding, errors) {
+        const pyBytes = new Sk.builtin.bytes(this.v);
+        return Sk.builtin.bytes.$decode.call(pyBytes, encoding, errors);
+    },
+    $flags: { NamedArgs: ["encoding", "errors"] },
 });
 
 function strBytesRemainder(rhs) {
