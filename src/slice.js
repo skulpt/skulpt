@@ -171,24 +171,26 @@ Sk.builtin.slice.$indices = function (pyObj, start, end) {
         start = 0;
     } else {
         start = parseInt(Sk.misceval.asIndexOrThrow(start, msg), 10);
+        if (start < 0) {
+            start = start + len;
+            if (start < 0) {
+                start = 0;
+            }
+        }
     }
 
     if (end === undefined || Sk.builtin.checkNone(end)) {
         end = len;
     } else {
         end = parseInt(Sk.misceval.asIndexOrThrow(end, msg), 10);
-    }
-    if (start < 0) {
-        start = start + len;
-        if (start < 0) {
-            start = 0;
+        if (end < 0) {
+            end = end + len;
+            if (end < 0) {
+                end = 0;
+            }
+        } else if (end > len) {
+            end = len;
         }
-    }
-    end = end >= 0 ? end : end + len;
-    if (end < 0) {
-        end = 0;
-    } else if (end > len) {
-        end = len;
     }
     return { start: start, end: end };
 };
