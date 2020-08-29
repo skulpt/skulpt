@@ -182,13 +182,23 @@ Sk.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
 /**
  * @description
- * Is the arg a strict instance of {@link Sk.builtin.str}
+ * Is the arg an instance of {@link Sk.builtin.str}
  * @param {*} arg 
  */
 Sk.builtin.checkString = function (arg) {
     return arg instanceof Sk.builtin.str;
 };
 Sk.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
+
+/**
+ * @description
+ * Is the arg an instance of {@link Sk.builtin.bytes}
+ * @param {*} arg 
+ */
+Sk.builtin.checkBytes = function (arg) {
+    return arg instanceof Sk.builtin.bytes;
+};
+
 
 /**
  * Is the arg an instance of {@link Sk.builtin.type}
