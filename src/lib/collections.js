@@ -891,7 +891,10 @@ var $builtinmodule = function (name) {
             var ret;
             n = Sk.builtin.asnum$(num);
             if(!Number.isInteger(n)){
-                throw new Sk.builtin.OverflowError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(num) + "'");
+                throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(num) + "'");
+            }            
+            if(n > Number.MAX_SAFE_INTEGER){
+                throw new Sk.builtin.OverflowError("Python int too large to convert to ssize_t");
             }
             ret = [];
             var size = (this.tail - this.head) & this.mask;            
@@ -929,7 +932,10 @@ var $builtinmodule = function (name) {
             Sk.builtin.pyCheckArgsLen("rotate", arguments.length, 0, 1, true, false);
             n = Sk.builtin.asnum$(num);
             if(!Number.isInteger(n)){
-                throw new Sk.builtin.OverflowError("'" + Sk.abstr.typeName(num) + "' object cannot be interpreted as an integer");
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(num) + "' object cannot be interpreted as an integer");
+            }
+            if(n > Number.MAX_SAFE_INTEGER){
+                throw new Sk.builtin.OverflowError("Python int too large to convert to ssize_t");
             }
 
             var head = self.head;
