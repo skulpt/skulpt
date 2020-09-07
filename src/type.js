@@ -121,17 +121,17 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     const best_base = Sk.builtin.type.$best_base(bases.v);
 
     // get the metaclass from kwargs
-    // todo this is not really the right way to do it...
-    let metaclass;
-    if (kwargs) {
-        const meta_idx = kwargs.indexOf("metaclass");
-        if (meta_idx >= 0) {
-            metaclass = kwargs[meta_idx + 1];
-            kwargs = kwargs.splice(meta_idx, 1);
-        }
-    }
+    // todo this is not really the right way to do it... but serves as proof of concept
+    // let metaclass;
+    // if (kwargs) {
+    //     const meta_idx = kwargs.indexOf("metaclass");
+    //     if (meta_idx >= 0) {
+    //         metaclass = kwargs[meta_idx + 1];
+    //         kwargs.splice(meta_idx, 2);
+    //     }
+    // }
 
-    Sk.abstr.setUpInheritance($name, klass, best_base, metaclass);
+    Sk.abstr.setUpInheritance($name, klass, best_base, this.constructor);
 
     klass.prototype.tp$bases = bases.v;
     klass.prototype.tp$mro = klass.$buildMRO();
@@ -154,6 +154,13 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
         const v = dict.mp$subscript(k);
         klass.prototype[k.v] = v;
+    }
+    // make __new__ a static method
+    if (klass.prototype.hasOwnProperty("__new__")) {
+        const newf = klass.prototype.__new__;
+        if (newf instanceof Sk.builtin.func) {
+            klass.prototype.__new__ = new Sk.builtin.staticmethod(newf);
+        }
     }
     klass.$allocateSlots();
 
