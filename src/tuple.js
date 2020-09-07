@@ -67,9 +67,8 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
         }
     } else if (index instanceof Sk.builtin.slice) {
         const ret = [];
-        const lst = this.v;
-        index.sssiter$(lst.length, (i) => {
-            ret.push(lst[i]);
+        index.sssiter$(this.v.length, (i) => {
+            ret.push(this.v[i]);
         });
         return new Sk.builtin.tuple(ret);
     }
