@@ -267,7 +267,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                     (d) => {
                         dict = d;
                         return Sk.misceval.iterFor(Sk.abstr.iter(seq), (key) => {
-                            dict.mp$ass_subscript(key, value);
+                            return dict.mp$ass_subscript(key, value, true);
                         });
                     },
                     () => dict
