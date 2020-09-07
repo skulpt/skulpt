@@ -159,7 +159,7 @@ Sk.builtin.file.$readline = function (self, size, prompt) {
 
         x = Sk.inputfun(lprompt);
 
-        if (x instanceof Promise || typeof x.then === 'function') {
+        if (x instanceof Promise || (x && typeof x.then === "function")) {
             susp = new Sk.misceval.Suspension();
 
             susp.resume = function() {
