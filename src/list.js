@@ -277,10 +277,8 @@ Sk.builtin.list.prototype.__contains__ = new Sk.builtin.func(function(self, item
  */
 
 Sk.builtin.list.prototype.list_subscript_ = function (index) {
-    var ret;
-    var i;
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (typeof i !== "number") {
             throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
         }
@@ -294,9 +292,9 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
             return this.v[i];
         }
     } else if (index instanceof Sk.builtin.slice) {
-        ret = [];
-        index.sssiter$(this, function (i, wrt) {
-            ret.push(wrt.v[i]);
+        const ret = [];
+        index.sssiter$(this.v.length, (i) => {
+            ret.push(this.v[i]);
         });
         return new Sk.builtin.list(ret, false);
     }
@@ -305,12 +303,8 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
 };
 
 Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
-    var i;
-    var j;
-    var tosub;
-    var indices;
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (typeof i !== "number") {
             throw new Sk.builtin.IndexError("cannot fit '" + Sk.abstr.typeName(index) + "' into an index-sized integer");
         }
@@ -322,19 +316,19 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        const indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_ass_slice_(indices[0], indices[1], value);
         } else {
-            tosub = [];
-            index.sssiter$(this, function (i, wrt) {
+            const tosub = [];
+            index.sssiter$(this.v.length, (i) => {
                 tosub.push(i);
             });
-            j = 0;
+            let j = 0;
             if (tosub.length !== value.v.length) {
                 throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
             }
-            for (i = 0; i < tosub.length; ++i) {
+            for (let i = 0; i < tosub.length; ++i) {
                 this.v.splice(tosub[i], 1, value.v[j]);
                 j += 1;
             }
@@ -346,13 +340,8 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
 };
 
 Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
-    var offdir;
-    var dec;
-    var self;
-    var indices;
-    var i;
     if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
+        let i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
@@ -361,15 +350,15 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.slice_indices_(this.v.length);
+        const indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_del_slice_(indices[0], indices[1]);
         } else {
-            self = this;
-            dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-            offdir = indices[2] > 0 ? 1 : 0;
-            index.sssiter$(this, function (i, wrt) {
-                self.v.splice(i - dec, 1);
+            const lst = this.v;
+            let dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
+            const offdir = indices[2] > 0 ? 1 : 0;
+            index.sssiter$(lst.length, (i) => {
+                lst.splice(i - dec, 1);
                 dec += offdir;
             });
         }
