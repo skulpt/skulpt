@@ -80,6 +80,7 @@ Sk.builtin.str = function (x, encoding, errors) {
     this.v = ret;
     setInterned(ret, this);
     this.$mangled = fixReserved(ret);
+    this.$savedKeyHash_ = undefined;
     return this;
 
 };
