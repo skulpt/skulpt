@@ -190,7 +190,6 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 
 Sk.builtin.dict.prototype.mp$subscript = function (key) {
     Sk.builtin.pyCheckArgsLen("[]", arguments.length, 1, 2, false, false);
-    var s;
     var res = this.mp$lookup(key);
 
     if (res !== undefined) {
@@ -198,8 +197,7 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
         return res;
     } else {
         // Not found in dictionary
-        s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        throw new Sk.builtin.KeyError(key);
     }
 };
 
@@ -286,7 +284,7 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
 Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
     Sk.builtin.pyCheckArgsLen("del", arguments.length, 1, 1, false, false);
     const hash = kf(key);
-    let item, s;
+    let item;
     if (typeof hash === "string") {
         // key is a string so remove from entries directly
         item = this.entries[hash];
@@ -300,8 +298,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
         return;
     }
     // Not found in dictionary
-    s = new Sk.builtin.str(key);
-    throw new Sk.builtin.KeyError(s.v);
+    throw new Sk.builtin.KeyError(key);
 };
 
 Sk.builtin.dict.prototype["$r"] = function () {
@@ -351,7 +348,7 @@ Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
 Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
     Sk.builtin.pyCheckArgsLen("pop()", arguments.length, 1, 2, false, true);
     const hash = kf(key);
-    let item, value, s;
+    let item, value;
     if (typeof hash === "string") {
         item = self.entries[hash];
         if (item !== undefined) {
@@ -374,8 +371,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         return d;
     }
 
-    s = new Sk.builtin.str(key);
-    throw new Sk.builtin.KeyError(s.v);
+    throw new Sk.builtin.KeyError(key);
 });
 
 Sk.builtin.dict.prototype.haskey$ = function (self, k) {
