@@ -143,9 +143,7 @@ function kf(key) {
         // temporary while sysModules allows javascript strings as keys to python dicts
         return key.replace(reg, "!$&");
     }
-    key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
-    key.$savedKeyHash_ = key_hash;
-    return key_hash;
+    return Sk.builtin.hash(key).v; // builtin.hash returns an int;
 };
 
 Sk.builtin.dict.prototype.sk$asarray = function () {
@@ -219,7 +217,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         item = this.entries[hash];
         if (item === undefined) {
             this.entries[hash] = { lhs: key, rhs: w };
-            this.size += 1;
+            this.size++;
         } else {
             item.rhs = w;
         }
@@ -227,7 +225,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
         item = this.get$bucket_item(key, hash);
         if (item === undefined) {
             this.set$bucket_item(key, w, hash);
-            this.size += 1;
+            this.size++;
         } else {
             item.rhs = w;
         }
@@ -240,7 +238,7 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
         bucket = this.buckets[hash_value];
     const item = { lhs: key, rhs: value };
     if (bucket === undefined) {
-        bucket = this.buckets[hash_value] = [item];
+        this.buckets[hash_value] = [item];
         key_hash = "#" + hash_value + "_" + 0; // this is the zeroth entry
     } else {
         // we might have a freeslot from deleting an item
@@ -298,7 +296,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
     }
 
     if (item !== undefined) {
-        this.size -= 1;
+        this.size--;
         return;
     }
     // Not found in dictionary
@@ -367,7 +365,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         }
     }
     if (value !== undefined) {
-        self.size -= 1;
+        self.size--;
         return value;
     }
 
