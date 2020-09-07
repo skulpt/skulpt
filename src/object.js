@@ -20,7 +20,7 @@ Object.defineProperties(
         sk$object: { value: true },
         sk$attrError: {
             value: function () {
-                return "'" + this.tp$name + "' + object";
+                return "'" + this.tp$name + "' object";
             },
             writable: true,
         },
