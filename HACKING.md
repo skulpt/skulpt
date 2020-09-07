@@ -667,12 +667,14 @@ and the non-module version. First off, the call to Sk.configure
 contains another key value pair which sets up a specialized read
 function. This is the function that is responsible for returning your
 module out of the large array of files that are contained in the
-skulpt-stdlib.js file. You will see that all of the modules are
+`skulpt-stdlib.js` file. You will see that all of the modules are
 contained in this one file, stored in a big JSON structure. The extra
-key value pair is: read: builtinRead
+key value pair is: `read: builtinRead`
 
 The read function is just for loading modules and is called when you do
-an import statement of some kind. In this case the function accesses the
+an import statement of some kind. This is an optional argument to `Sk.configure`, 
+the default implementation is as above. You can of course override this function 
+to implement bespoke module loading. In the default case the function accesses the
 variable builtinFiles which is created from the skulpt-stdlib.js file.
 The other difference, of course, is that you have to include
 skulpt-stdlib.js in your html file. Note that skulpt-stdlib.js must be

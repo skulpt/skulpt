@@ -11,10 +11,11 @@ class _AssertRaisesContext:
     def __init__(self, expected, test_case):
         self.test_case = test_case
         self.expected = expected
+        self.exception = None
 
     def _is_subtype(self, expected, basetype):
         if isinstance(expected, tuple):
-            return all(_is_subtype(e, basetype) for e in expected)
+            return all(self._is_subtype(e, basetype) for e in expected)
         return isinstance(expected, type) and issubclass(expected, basetype)
 
     def handle(self, args, kwargs):
@@ -45,6 +46,7 @@ class _AssertRaisesContext:
     def __exit__(self, exc_type, exc_value, tb):
         res = True
         feedback = ""
+        self.exception = exc_value
         try:
             act_exc = exc_type.__name__
         except AttributeError:

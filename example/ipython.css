@@ -1,0 +1,74 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    max-height: 80vh;
+    margin: auto;
+    width: 80vw;
+}
+#clickGuard {
+    flex-grow: 1;
+}
+
+#editor {
+    min-height: 30px;
+    padding: 7px;
+    overflow: scroll;
+}
+#editor > div {
+    min-height: 15px;
+    max-height: 200vh;
+    width: 100%;
+}
+#editor > div > .ace_gutter-cell:first-child {
+    margin-left: 0px;
+}
+
+.ace_gutter-cell {
+    visibility: hidden;
+    padding-left: 0;
+    padding-right: 13px;
+}
+
+.in-gutter::before {
+    content: "In [";
+}
+.out-gutter::after,
+.in-gutter::after {
+    content: "]:";
+    position: absolute;
+    right: 0;
+}
+.out-gutter::before {
+    content: "Out[";
+}
+.out-gutter::before,
+.in-gutter::before {
+    position: absolute;
+    left: 5px;
+    padding: 0;
+}
+
+.out-gutter,
+.in-gutter {
+    padding-left: 30px;
+    visibility: visible;
+    display: block;
+}
+
+.in-gutter {
+    color: mediumseagreen;
+}
+.out-gutter {
+    color: crimson;
+}
+.ace_gutter {
+    font-size: 11px;
+}
+.ace_gutter-cell:not(:first-child):after {
+    content: "...:";
+    visibility: visible;
+    position: absolute;
+    right: 0;
+    color: mediumseagreen;
+}

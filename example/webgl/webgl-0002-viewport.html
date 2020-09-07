@@ -65,12 +65,6 @@ gl.drawArrays(gl.TRIANGLES, 0, 6)
         output.innerHTML = output.innerHTML + text.replace(/</g, '&lt;');
       }
 
-      function builtinRead(x) {
-        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-          throw "File not found: '" + x + "'";
-        }
-        return Sk.builtinFiles["files"][x];
-      }
 
       function runit() {
         var prog = document.getElementById("code").value;
@@ -78,7 +72,7 @@ gl.drawArrays(gl.TRIANGLES, 0, 6)
         document.getElementById("my-output").innerHTML = '';
         Sk.canvas = "my-canvas";
         Sk.pre = "my-output";
-        Sk.configure({"output":outputHandler, "read":builtinRead});
+        Sk.configure({"output":outputHandler, });
         try {
            eval(Sk.importMainWithBody("<stdin>", false, prog));
         }

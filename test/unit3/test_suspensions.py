@@ -17,6 +17,10 @@ class sleepingEmptyIter:
       sleep(.01)
       raise StopIteration
 
+class sleepingClass:
+    def __bytes__ (self):
+        sleep(.01)
+        return b'abc'
 
 class Test_Suspensions(unittest.TestCase):
     def test_min_max(self):
@@ -45,6 +49,10 @@ class Test_Suspensions(unittest.TestCase):
     def test_builtin_types(self):
         self.assertEqual(list(sleeping_gen([1, 2, 3])), [1, 2, 3])
         self.assertEqual(tuple(sleeping_gen([1, 2, 3])), (1, 2, 3))
+
+    def test_bytes(self):
+        self.assertEqual(bytes(sleeping_gen([1,2,3])), bytes([1,2,3]))
+        self.assertEqual(bytes(sleepingClass()), b'abc')
 
 if __name__ == '__main__':
     unittest.main()

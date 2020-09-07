@@ -204,14 +204,10 @@ Sk.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments
 Sk.misceval.swappedOp_ = {
     "Eq"   : "Eq",
     "NotEq": "NotEq",
-    "Lt"   : "GtE",
-    "LtE"  : "Gt",
-    "Gt"   : "LtE",
-    "GtE"  : "Lt",
-    "Is"   : "IsNot",
-    "IsNot": "Is",
-    "In_"  : "NotIn",
-    "NotIn": "In_"
+    "Lt"   : "Gt",
+    "LtE"  : "GtE",
+    "Gt"   : "Lt",
+    "GtE"  : "LtE",
 };
 
 Sk.misceval.opSymbols = {

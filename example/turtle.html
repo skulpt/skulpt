@@ -28,14 +28,9 @@ wn.exitonclick()
 </textarea>
     <script>
         var prog = document.getElementById("code").value;
-	function builtinRead(x) {
-	    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-		    throw "File not found: '" + x + "'";
-	    return Sk.builtinFiles["files"][x];
-	}
+
     (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
 
-    Sk.configure({ read: builtinRead });
 
     Sk.misceval.asyncToPromise(function() {
       return Sk.importMainWithBody("<stdin>",false,prog,true);
