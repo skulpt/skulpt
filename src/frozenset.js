@@ -61,6 +61,25 @@ Sk.builtin.frozenset.prototype["$r"] = function () {
     }
 };
 
+Sk.builtin.frozenset.prototype.sk$asarray = function () {
+    return this.v.sk$asarray();
+};
+
+Sk.builtin.frozenset.prototype.tp$hash = function () {
+    // numbers taken from Cpython 2.7 hash function
+    let hash = 1927868237;
+    const entries = this.sk$asarray();
+    hash *= entries.length + 1;
+    for (let i = 0; i < entries.length; i++) {
+        const h = Sk.builtin.hash(entries[i]).v;
+        hash ^= (h ^ (h << 16) ^ 89869747) * 3644798167;
+    }
+    hash = hash * 69069 + 907133923;
+    hash = new Sk.builtin.int_(hash);
+    this.$savedHash_ = hash;
+    return hash;
+};
+
 Sk.builtin.frozenset.prototype.ob$eq = function (other) {
 
     if (this === other) {

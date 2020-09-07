@@ -63,6 +63,10 @@ Sk.builtin.set.prototype["$r"] = function () {
     }
 };
 
+Sk.builtin.set.prototype.sk$asarray = function () {
+    return this.v.sk$asarray();
+};
+
 Sk.builtin.set.prototype.ob$eq = function (other) {
 
     if (this === other) {
