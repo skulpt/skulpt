@@ -31,13 +31,17 @@
 
     ipythonExample = function (dom) {
         if (ace === undefined) {
-            Sk.asserts.fail("No ace");
+            throw Error("No ace");
         }
         this.editor = dom;
+
+        // focus the current inCell on clickGuard click event
         this.clickGuard = document.getElementById("clickGuard");
         this.clickGuard.addEventListener("click", () => {
             this.inCell.focus();
         });
+
+        // add a keyboard interrupt feature
         const keyboardInterrupt = (e) => {
             if (e.ctrlKey && e.key === "c") {
                 // faile safe for keyboard interrupt
@@ -47,21 +51,21 @@
         this.editor.addEventListener("keydown", keyboardInterrupt);
         this.clickGuard.addEventListener("keydown", keyboardInterrupt);
 
+        // prepend browser info
         const infoElement = document.createElement("DIV");
         infoElement.innerText = info;
-        infoElement.style.padding = "5px";
+        infoElement.style.margin = "5px";
         this.editor.appendChild(infoElement);
 
+        // setup some basics
         this.inputs = [];
         this.idx = 0;
-        this.inCell;
-        this.outCell;
-        this.printCell;
         this.newCells();
         this.outf = this.outf.bind(this);
         this.lineHeight = this.inCell.renderer.lineHeight || 16;
         this.pad = 15;
 
+        // configure the skulpt environment
         Sk.configure({
             output: this.outf,
             __future__: Sk.python3,
@@ -90,12 +94,12 @@
     ipythonExample.prototype.execute = function () {
         stopExecution = false;
         const code = this.inCell.getValue();
-        const codeAsPyStr = new Sk.builtin.str(code);
-        Sk.globals["_i" + this.inputs.length] = codeAsPyStr;
-        Sk.misceval.callsimArray(Sk.globals.In.append, [Sk.globals.In, codeAsPyStr]);
+        const codeAsPyStr = Sk.ffi.remapToPy(code);
+        Sk.globals["_i" + this.inputs.length] = codeAsPyStr; // add the input to globals as per ipython
+        Sk.globals.In.v.push(codeAsPyStr);
         this.inputs[this.inputs.length - 1] = code;
 
-        let compile_code = code.trimEnd() || "None";
+        let compile_code = code.trimEnd() || "None"; // always have a last line
 
         const lines = compile_code.split("\n");
         let last_line = lines[lines.length - 1];
@@ -110,8 +114,11 @@
             lines[lines.length - 1] = "_" + this.inputs.length + " = " + last_line;
         }
         compile_code = lines.join("\n");
+        // ace editor stuff
         this.inCell.setReadOnly(true);
         this.inCell.renderer.$cursorLayer.element.style.opacity = 0;
+
+        // allow suspension and check the stopExecution flag in case of keyboard interrupt
         const executionPromise = Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("ipython", false, compile_code, true), {
             "*": () => {
                 if (stopExecution) {
@@ -130,7 +137,7 @@
 
                 const last_input = Sk.globals["_" + this.inputs.length];
                 if (Sk.builtin.checkNone(last_input) || last_input === undefined) {
-                    delete Sk.globals["_" + this.inputs.length];
+                    delete Sk.globals["_" + this.inputs.length]; // if the last input evaluated to None remove it from globals
                 } else {
                     this.outCell.setValue(Sk.ffi.remapToJs(Sk.misceval.objectRepr(last_input)), -1);
                     if (last_input !== Sk.globals.Out) {
