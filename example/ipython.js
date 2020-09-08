@@ -49,7 +49,7 @@
 
         const infoElement = document.createElement("DIV");
         infoElement.innerText = info;
-        infoElement.style.padding = "5px";
+        infoElement.style.margin = "5px";
         this.editor.appendChild(infoElement);
 
         this.inputs = [];

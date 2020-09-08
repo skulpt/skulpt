@@ -7,10 +7,11 @@
 <link rel="stylesheet" type="text/css" href="ipython.css"/>
 
 <script>
+    // must run "npm run build" before using this example
     var ide;
     window.addEventListener("load", function (event) {
         var editor = document.getElementById("editor");
-        ide = new Sk.ipython(editor);
+        ide = new ipythonExample(editor);
     })
 </script>
 
