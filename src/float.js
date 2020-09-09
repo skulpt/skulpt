@@ -44,14 +44,21 @@ Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
 function _str_to_float(str) {
     let ret;
+    
+    if (/_[eE]|[eE]_|\._|_\.|[+-]_/.test(str)) {
+        throw new Sk.builtin.ValueError("could not convert string to float: '" + str + "'");
+    }
+
+    let tmp = str.charAt(0) + str.substring(1).replace(/_(?=[^_])/g, "");
+    
     if (str.match(/^-inf$/i)) {
         ret = -Infinity;
     } else if (str.match(/^[+]?inf$/i)) {
         ret = Infinity;
     } else if (str.match(/^[-+]?nan$/i)) {
         ret = NaN;
-    } else if (!isNaN(str)) {
-        ret = parseFloat(str);
+    } else if (!isNaN(tmp)) { 
+        ret = parseFloat(tmp);
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");
     }
