@@ -441,25 +441,20 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
 // at some point, but in the meantime we have this function to
 // unpack keyword dictionaries into our special format
 Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObject) {
-    return Sk.misceval.chain(
-        pyMapping.tp$getattr(new Sk.builtin.str("items")),
-        function (itemfn) {
-            if (!itemfn) {
-                throw new Sk.builtin.TypeError("Object is not a mapping");
+    if (!Sk.builtin.checkMapping(pyMapping)) {
+        throw new Sk.builtin.TypeError("Object is not a mapping");
+    }
+    const keys = Sk.misceval.callsimOrSuspendArray(Sk.abstr.lookupSpecial(pyMapping, Sk.builtin.str.$keys));
+    return Sk.misceval.chain(keys, (keys) =>
+        Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) => {
+            if (!Sk.builtin.checkString(key)) {
+                throw new Sk.builtin.TypeError((pyCodeObject.$qualname ? pyCodeObject.$qualname + "() " : "") + "keywords must be strings");
             }
-            return Sk.misceval.callsimOrSuspend(itemfn);
-        },
-        function (items) {
-            return Sk.misceval.iterFor(Sk.abstr.iter(items), function (item) {
-                if (!item || !item.v) {
-                    throw new Sk.builtin.TypeError("Object is not a mapping; items() does not return tuples");
-                }
-                if (!(item.v[0].ob$type === Sk.builtin.str)) {
-                    throw new Sk.builtin.TypeError((pyCodeObject.tp$name ? pyCodeObject.tp$name + ":" : "") + "keywords must be strings");
-                }
-                jsArray.push(item.v[0].v, item.v[1]);
+            return Sk.misceval.chain(pyMapping.mp$subscript(key, true), (val) => {
+                jsArray.push(key.v);
+                jsArray.push(val);
             });
-        }
+        })
     );
 };
 
