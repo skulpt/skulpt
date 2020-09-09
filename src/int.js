@@ -1143,6 +1143,18 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         base = 10;
     }
 
+    if (s.includes("__")) {
+        throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+    }
+
+    if (base !== 10) {
+        s = s.replace(/_(?=[^_])/g, "");
+    } else {
+        // avoid replacing initial `_` if present
+        // workaround since closure-compiler errors on lookbehinds
+        s = s.charAt(0) + s.substring(1).replace(/_(?=[^_])/g, "");
+    }
+
     if (s.length === 0) {
         throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
     }
