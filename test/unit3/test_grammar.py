@@ -79,34 +79,14 @@ INVALID_UNDERSCORE_LITERALS = [
     '(1+1.5_j)',
 ]
 
-class TokenTests(unittest.TestCase):
-    def test_underscore_literals(self):
-        self.assertEqual(0_0_0, 000)
-        self.assertEqual(4_2, 42)
-        self.assertEqual(1_0000_0000, 100000000)
-        self.assertEqual(0b1001_0100, 0b10010100)
-        self.assertEqual(0xffff_ffff, 0xffffffff)
-        self.assertEqual(0o5_7_7, 0o577)
-        self.assertEqual(1_00_00.5, 10000.5)
-        self.assertEqual(1_00_00.5e5, 10000.5e5)
-        self.assertEqual(1_00_00e5_1, 10000e51)
-        self.assertEqual(1e1_0, 1e10)
-        self.assertEqual(.1_4, .14)
-        self.assertEqual(.1_4e1, .14e1)
-        self.assertEqual(0b_0, 0b0)
-        self.assertEqual(0x_f, 0xf)
-        self.assertEqual(0o_5, 0o5)
-        self.assertEqual(1_00_00j, 10000j)
-        self.assertEqual(1_00_00.5j, 10000.5j)
-        self.assertEqual(1_00_00e5_1j, 10000e51j)
-        self.assertEqual(.1_4j, .14j)
-        self.assertEqual((1_2.5+3_3j), (12.5+33j))
-        self.assertEqual((.5_6j), (.56j))
-
-        # for lit in INVALID_UNDERSCORE_LITERALS:
-        #     self.assertRaises(SyntaxError, int, lit)
-        # Sanity check: no literal begins with an underscore
-        # self.assertRaises(NameError, eval, "_0")
+# class TokenTests(unittest.TestCase):
+    # def test_underscore_literals(self):
+    #     for lit in VALID_UNDERSCORE_LITERALS:
+    #         self.assertEqual(eval(lit), eval(lit.replace('_', '')))
+    #     for lit in INVALID_UNDERSCORE_LITERALS:
+    #         self.assertRaises(SyntaxError, eval, lit)
+    #     # Sanity check: no literal begins with an underscore
+    #     self.assertRaises(NameError, eval, "_0")
 
 if __name__ == '__main__':
     unittest.main()
