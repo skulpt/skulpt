@@ -271,6 +271,10 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
     if (val.indexOf("\0") !== -1 || val.length === 0 || val === "") {
         throw new Sk.builtin.ValueError("complex() arg is a malformed string");
     }
+    
+    if (/_[eE]|[eE]_|\._|_\.|[+-]_|_j|j_/.test(val)) {
+        throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
+    }
 
     // transform to unicode
     // ToDo: do we need this?
@@ -294,6 +298,8 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
             index++;
         }
     }
+
+    val = val.charAt(0) + val.substring(1).replace(/_(?=[^_])/g, "");
 
     /* a valid complex string usually takes one of the three forms:
 
