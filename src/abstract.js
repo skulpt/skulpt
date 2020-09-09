@@ -1007,7 +1007,11 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         for (let slot_name in reflected_slots) {
             if (slots[slot_name] !== undefined) {
                 const reflect_name = reflected_slots[slot_name].reflected;
-                if (slots[reflect_name] !== undefined) {
+                const reflected_slot = slots[reflect_name];
+                if (reflected_slot !== undefined) {
+                    if (reflected_slot === null) {
+                        delete slots[reflect_name]; // e.g. Counter doesn't want reflected slots
+                    }
                     continue;
                 }
                 const slot = reflected_slots[slot_name].slot;
