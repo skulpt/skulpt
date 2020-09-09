@@ -287,9 +287,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return Object.values(this.entries).map((item) => item.lhs);
         },
         update$onearg: function (arg) {
-            if (arg instanceof Sk.builtin.dict) {
-                return this.dict$merge(arg);
-            } else if (Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
+            if (Sk.builtin.checkMapping(arg)) {
                 return this.dict$merge(arg);
             } else {
                 return this.dict$merge_seq(arg);
@@ -516,7 +514,7 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
 
         return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc, []), (keys) =>
             Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
-                Sk.misceval.chain(Sk.abstr.objectGetItem(b, key, true), (v) => {
+                Sk.misceval.chain(b.mp$subscript(key, true), (v) => {
                     this.set$item(key, v);
                 })
             )
