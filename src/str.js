@@ -1364,7 +1364,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         }
     };
     if (index < rhs.sq$length()) {
-        throw Sk.builtin.TypeError("not all arguments converted during string formattin")
+        throw Sk.builtin.TypeError("not all arguments converted during string formattin");
     }
     ret = this.$jsstr().replace(regex, replFunc);
     return new strBytesConstructor(ret);
