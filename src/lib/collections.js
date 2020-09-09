@@ -39,8 +39,18 @@ function collections_mod(collections) {
         },
         base: Sk.builtin.dict,
         methods: {
-            copy: _copy_dd_method_df,
-            __copy__: _copy_dd_method_df,
+            copy: {
+                $meth: function () {
+                    return this.$copy();
+                },
+                $flags: { NoArgs: true },
+            },
+            __copy__: {
+                $meth: function () {
+                    return this.$copy();
+                },
+                $flags: { NoArgs: true },
+            },
             __missing__: {
                 $meth: function (key) {
                     if (Sk.builtin.checkNone(this.default_factory)) {
@@ -83,6 +93,17 @@ function collections_mod(collections) {
                 const def_str = Sk.misceval.objectRepr(this.default_factory);
                 const dict_str = Sk.builtin.dict.prototype.$r.call(this).v;
                 return new Sk.builtin.str("defaultdict(" + def_str + ", " + dict_str + ")");
+            },
+        },
+        proto: {
+            $copy: function () {
+                const L = [];
+                // this won't suspend
+                Sk.misceval.iterFor(Sk.abstr.iter(this), (k) => {
+                    L.push(k);
+                    L.push(this.mp$subscript(k));
+                });
+                return new collections.defaultdict(this.default_factory, L);
             },
         },
     });
@@ -492,10 +513,11 @@ function collections_mod(collections) {
             move_to_end: {
                 $flags: { NamedArgs: ["key", "last"], Defaults: [Sk.builtin.bool.true$] },
                 $meth: function (key, last) {
-                    let orderedkey, idx = -1;
+                    let orderedkey,
+                        idx = -1;
                     for (let i = 0; i < this.orderedkeys.length; i++) {
                         orderedkey = this.orderedkeys[i];
-                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")){
+                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")) {
                             idx = i;
                             break;
                         }
@@ -512,11 +534,11 @@ function collections_mod(collections) {
                     }
                     return Sk.builtin.none.none$;
                 },
-            }
+            },
         },
         proto: {
             sk$asarray: function () {
-                return this.orderedkeys.slice();
+                return this.orderedkeys.slice(0);
             },
             set$item: function (key, w) {
                 const idx = this.orderedkeys.indexOf(key);
@@ -1134,7 +1156,7 @@ function collections_mod(collections) {
                 },
                 $flags: { NoArgs: true },
             },
-        }
+        },
     });
 
     const _deque_reverse_iterator_iter_ = Sk.abstr.buildIteratorClass("_collections._deque_reverse_iterator", {
@@ -1153,8 +1175,8 @@ function collections_mod(collections) {
             return this.dq[pos];
         },
         methods: {
-            __length_hint__: Sk.generic.iterReverseLengthHintMethodDef
-        }
+            __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
+        },
     });
 
     // deque end
