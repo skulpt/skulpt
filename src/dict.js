@@ -314,6 +314,9 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             return newCopy;
         },
+        dict$items: function () {
+            return Object.values(this.entries).map((item) => [item.lhs, item.rhs]);
+        }
     },
 });
 
