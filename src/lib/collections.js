@@ -90,135 +90,90 @@ function collections_mod(collections) {
     collections.Counter = Sk.abstr.buildNativeClass("Counter", {
         constructor: function Counter() {
             this.$d = new Sk.builtin.dict();
+            Sk.builtin.dict.apply(this);
         },
         base: Sk.builtin.dict,
         methods: {
             elements: {
                 $flags: { NoArgs: true },
                 $meth: function () {
-                    const all_elements = [];
-                    for (let iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                        for (let i = 0; i < this.mp$subscript(k).v; i++) {
-                            all_elements.push(k);
-                        }
-                    }
-                    if (collections._chain === undefined) {
-                        let itertools = Sk.importModule("itertools", false, true);
-                        return Sk.misceval.chain(itertools, function (i) {
-                            collections._chain = i.$d.chain;
-                            return Sk.misceval.callsimArray(collections._chain, all_elements);
-                        });
-                    } else {
-                        return Sk.misceval.callsimArray(collections._chain, all_elements);
-                    }
+                    // this is how Cpython does it
+                    const from_iterable = collections._chain.tp$getattr(new Sk.builtin.str("from_iterable"));
+                    const starmap = collections._starmap;
+                    const repeat = collections._repeat;
+                    const tp_call = Sk.misceval.callsimArray;
+                    return tp_call(from_iterable, [tp_call(starmap, [repeat, tp_call(this.tp$getattr(this.str$items))])]);
                 },
             },
             most_common: {
-                $flags: {
-                    NamedArgs: ["n"],
-                    Defaults: [Sk.builtin.none.none$],
-                },
+                $flags: { NamedArgs: ["n"], Defaults: [Sk.builtin.none.none$] },
                 $meth: function (n) {
                     length = this.sq$length();
                     if (Sk.builtin.checkNone(n)) {
                         n = length;
                     } else {
-                        if (!Sk.builtin.checkInt(n)) {
-                            if (n instanceof Sk.builtin.float_) {
-                                throw new Sk.builtin.TypeError("integer argument expected, got float");
-                            } else {
-                                throw new Sk.builtin.TypeError("an integer is required");
-                            }
-                        }
-
-                        n = Sk.builtin.asnum$(n);
-                        n = n <= length ? n : length;
-                        n = n >= 0 ? n : 0;
+                        n = Sk.misceval.asIndexOrThrow(n);
+                        n = n > length ? length : n < 0 ? 0 : n;
                     }
-
-                    var most_common_elem = [];
-                    for (var iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                        most_common_elem.push([k, this.mp$subscript(k)]);
-                    }
-
-                    var sort_func = function (a, b) {
-                        if (a[1].v < b[1].v) {
+                    const most_common_elem = this.dict$items().sort((a, b) => {
+                        if (Sk.misceval.richCompareBool(a[1], b[1], "Lt")) {
                             return 1;
-                        } else if (a[1].v > b[1].v) {
+                        } else if (Sk.misceval.richCompareBool(a[1], b[1], "Gt")) {
                             return -1;
                         } else {
                             return 0;
                         }
-                    };
-                    most_common_elem = most_common_elem.sort(sort_func);
+                    });
 
-                    var ret = [];
-                    for (var i = 0; i < n; i++) {
-                        ret.push(new Sk.builtin.tuple(most_common_elem.shift()));
-                    }
-
-                    return new Sk.builtin.list(ret);
+                    return new Sk.builtin.list(most_common_elem.slice(0, n).map((x) => new Sk.builtin.tuple(x)));
                 },
             },
             update: {
                 $flags: { FastCall: true },
                 $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("update", args, 0, 1);
-                    let k, iter, count;
-                    const other = args[0];
-                    if (other !== undefined) {
-                        iter = Sk.abstr.iter(other);
-                    }
-                    if (other instanceof Sk.builtin.dict) {
-                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                            count = this.mp$subscript(k);
-                            this.mp$ass_subscript(k, count.nb$add(other.mp$subscript(k)));
-                        }
-                    } else if (iter) {
-                        const one = new Sk.builtin.int_(1);
-                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                            count = this.mp$subscript(k);
-                            this.mp$ass_subscript(k, count.nb$add(one));
-                        }
-                    }
-                    kwargs = kwargs || [];
-                    for (let i = 0; i < kwargs.length; i += 2) {
-                        k = new Sk.builtin.str(kwargs[i]);
-                        count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$add(kwargs[i + 1]));
-                    }
-                    return Sk.builtin.none.none$;
+                    return this.counter$update(args, kwargs);
                 },
             },
             subtract: {
                 $flags: { FastCall: true },
                 $meth: function (args, kwargs) {
                     Sk.abstr.checkArgsLen("subtract", args, 0, 1);
-                    let k, iter, count;
                     const other = args[0];
                     if (other !== undefined) {
-                        iter = Sk.abstr.iter(other);
-                    }
-                    if (other instanceof Sk.builtin.dict) {
-                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                            count = this.mp$subscript(k);
-                            this.mp$ass_subscript(k, count.nb$subtract(other.mp$subscript(k)));
-                        }
-                    } else if (iter) {
-                        const one = new Sk.builtin.int_(1);
-                        for (k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                            count = this.mp$subscript(k);
-                            this.mp$ass_subscript(k, count.nb$subtract(one));
+                        if (other instanceof Sk.builtin.dict) {
+                            for (let iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                                const count = this.mp$subscript(k);
+                                this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, other.mp$subscript(k), "Sub"));
+                            }
+                        } else {
+                            for (iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                                const count = this.mp$subscript(k);
+                                this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, this.$one, "Sub"));
+                            }
                         }
                     }
+
                     kwargs = kwargs || [];
                     for (let i = 0; i < kwargs.length; i += 2) {
-                        k = new Sk.builtin.str(kwargs[i]);
-                        count = this.mp$subscript(k);
-                        this.mp$ass_subscript(k, count.nb$subtract(kwargs[i + 1]));
+                        const k = new Sk.builtin.str(kwargs[i]);
+                        const count = this.mp$subscript(k);
+                        this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, kwargs[i + 1], "Sub"));
                     }
                     return Sk.builtin.none.none$;
                 },
+            },
+            __missing__: {
+                $meth: function (key) {
+                    return this.$zero;
+                },
+                $flags: { OneArg: true },
+            },
+            copy: {
+                $meth: function () {
+                    return Sk.misceval.callsimArray(collections.Counter, [this]);
+                },
+                $flags: { NoArgs: true },
             },
         },
         getsets: {
@@ -228,18 +183,195 @@ function collections_mod(collections) {
             tp$doc:
                 "Dict subclass for counting hashable items.  Sometimes called a bag\n    or multiset.  Elements are stored as dictionary keys and their counts\n    are stored as dictionary values.\n\n    >>> c = Counter('abcdeabcdabcaba')  # count elements from a string\n\n    >>> c.most_common(3)                # three most common elements\n    [('a', 5), ('b', 4), ('c', 3)]\n    >>> sorted(c)                       # list all unique elements\n    ['a', 'b', 'c', 'd', 'e']\n    >>> ''.join(sorted(c.elements()))   # list elements with repetitions\n    'aaaaabbbbcccdde'\n    >>> sum(c.values())                 # total of all counts\n    15\n\n    >>> c['a']                          # count of letter 'a'\n    5\n    >>> for elem in 'shazam':           # update counts from an iterable\n    ...     c[elem] += 1                # by adding 1 to each element's count\n    >>> c['a']                          # now there are seven 'a'\n    7\n    >>> del c['b']                      # remove all 'b'\n    >>> c['b']                          # now there are zero 'b'\n    0\n\n    >>> d = Counter('simsalabim')       # make another counter\n    >>> c.update(d)                     # add in the second counter\n    >>> c['a']                          # now there are nine 'a'\n    9\n\n    >>> c.clear()                       # empty the counter\n    >>> c\n    Counter()\n\n    Note:  If a count is set to zero or reduced to zero, it will remain\n    in the counter until the entry is deleted or the counter is cleared:\n\n    >>> c = Counter('aaabbc')\n    >>> c['b'] -= 2                     # reduce the count of 'b' by two\n    >>> c.most_common()                 # 'b' is still in, but its count is zero\n    [('a', 3), ('c', 1), ('b', 0)]\n\n",
             tp$init: function (args, kwargs) {
-                Sk.abstr.checkArgsLen(this.tp$name, args, 0, 1);
-                return Sk.misceval.callsimArray(this.update, [this, ...args], kwargs);
+                Sk.abstr.checkArgsLen(this.tpjs_name, args, 0, 1);
+                return this.counter$update(args, kwargs);
             },
             $r: function () {
-                var dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : "";
-                return new Sk.builtin.str("Counter(" + dict_str + ")");
+                /**@TODO this should be ordered by count */
+                const dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : "";
+                return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + dict_str + ")");
             },
-            mp$subscript: function (key) {
-                return this.mp$lookup(key) || new Sk.builtin.int_(0);
+            tp$as_sequence_or_mapping: true,
+            mp$ass_subscript: function (key, value) {
+                if (value === undefined) {
+                    return this.mp$lookup(key) && Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, value);
+                }
+                return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, value);
+            },
+            tp$as_number: true,
+            nb$positive: counterNumberSlot(function (result) {
+                for (let [elem, count] of this.dict$items()) {
+                    if (Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, count);
+                    }
+                }
+            }),
+            nb$negative: counterNumberSlot(function (result) {
+                for (let [elem, count] of this.dict$items()) {
+                    if (Sk.misceval.richCompareBool(count, this.$zero, "Lt")) {
+                        result.mp$ass_subscript(elem, Sk.abstr.numberBinOp(this.$zero, count, "Sub"));
+                    }
+                }
+            }),
+            nb$subtract: counterNumberSlot(function (result, other) {
+                for (let [elem, count] of this.dict$items()) {
+                    const newcount = Sk.abstr.numberBinOp(count, other.mp$subscript(elem), "Sub");
+                    if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, newcount);
+                    }
+                }
+                for (let [elem, count] of other.dict$items()) {
+                    if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Lt")) {
+                        result.mp$ass_subscript(elem, Sk.abstr.numberBinOp(this.$zero, count, "Sub"));
+                    }
+                }
+            }),
+            nb$add: counterNumberSlot(function (result, other) {
+                for (let [elem, count] of this.dict$items()) {
+                    const newcount = Sk.abstr.numberBinOp(count, other.mp$subscript(elem), "Add");
+                    if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, newcount);
+                    }
+                }
+                for (let [elem, count] of other.dict$items()) {
+                    if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, count);
+                    }
+                }
+            }),
+            nb$inplace_add: counterInplaceSlot("+", function (other) {
+                for (let [elem, count] of other.dict$items()) {
+                    const newcount = Sk.abstr.numberInplaceBinOp(this.mp$subscript(elem), count, "Add");
+                    this.mp$ass_subscript(elem, newcount);
+                }
+            }),
+            nb$inplace_subtract: counterInplaceSlot("-", function (other) {
+                for (let [elem, count] of other.dict$items()) {
+                    const newcount = Sk.abstr.numberInplaceBinOp(this.mp$subscript(elem), count, "Sub");
+                    this.mp$ass_subscript(elem, newcount);
+                }
+            }),
+            nb$or: counterNumberSlot(function (result, other) {
+                for (let [elem, count] of this.dict$items()) {
+                    const other_count = other.mp$subscript(elem);
+                    const newcount = Sk.misceval.richCompareBool(count, other_count, "Lt") ? other_count : count;
+                    if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, newcount);
+                    }
+                }
+                for (let [elem, count] of other.dict$items()) {
+                    if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, count);
+                    }
+                }
+            }),
+            nb$and: counterNumberSlot(function (result, other) {
+                for (let [elem, count] of this.dict$items()) {
+                    const other_count = other.mp$subscript(elem);
+                    const newcount = Sk.misceval.richCompareBool(count, other_count, "Lt") ? count : other_count;
+                    if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
+                        result.mp$ass_subscript(elem, newcount);
+                    }
+                }
+            }),
+            nb$inplace_and: counterInplaceSlot("&", function (other) {
+                for (let [elem, count] of this.dict$items()) {
+                    const other_count = other.mp$subscript(elem);
+                    if (Sk.misceval.richCompareBool(other_count, count, "Lt")) {
+                        this.mp$ass_subscript(elem, other_count);
+                    }
+                }
+            }),
+            nb$inplace_or: counterInplaceSlot("|", function (other) {
+                for (let [elem, other_count] of other.dict$items()) {
+                    if (Sk.misceval.richCompareBool(other_count, this.mp$subscript(elem), "Gt")) {
+                        this.mp$ass_subscript(elem, other_count);
+                    }
+                }
+            }),
+            nb$reflected_and: null, // Counter doesn't have reflected slots
+            nb$reflected_or: null,
+            nb$reflected_add: null,
+            nb$reflected_subtract: null,
+        },
+        proto: {
+            keep$positive: function () {
+                for (let [elem, count] of this.dict$items()) {
+                    if (Sk.misceval.richCompareBool(count, this.$zero, "LtE")) {
+                        this.mp$ass_subscript(elem); // delete the element
+                    }
+                }
+                return this;
+            },
+            $zero: new Sk.builtin.int_(0),
+            $one: new Sk.builtin.int_(1),
+            str$items: new Sk.builtin.str("items"),
+            counter$update: function (args, kwargs) {
+                const iterable = args[0];
+                if (iterable !== undefined) {
+                    if (Sk.builtin.checkMapping(iterable)) {
+                        if (!this.sq$length()) {
+                            // reach out to dict update function
+                            this.update$common(args, undefined, "update");
+                        } else {
+                            for (let iter = Sk.abstr.iter(iterable), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                                const count = this.mp$subscript(k);
+                                this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, iterable.mp$subscript(k), "Add"));
+                            }
+                        }
+                    } else {
+                        for (let iter = Sk.abstr.iter(iterable), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            const count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, this.$one, "Add"));
+                        }
+                    }
+                }
+                if (kwargs && kwargs.length) {
+                    if (!this.sq$length()) {
+                        // reach out to dict update function
+                        this.update$common([], kwargs, "update");
+                    } else {
+                        for (let i = 0; i < kwargs.length; i += 2) {
+                            const k = new Sk.builtin.str(kwargs[i]);
+                            const count = this.mp$subscript(k);
+                            this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, kwargs[i + 1], "Add"));
+                        }
+                    }
+                }
+
+                return Sk.builtin.none.none$;
+            },
+        },
+        classmethods: {
+            fromkeys: {
+                $meth: function fromkeys() {
+                    throw new Sk.builtin.NotImplementedError("Counter.fromkeys() is undefined.  Use Counter(iterable) instead.");
+                },
+                $flags: { MinArgs: 1, MaxArgs: 2 },
             },
         },
     });
+
+    function counterNumberSlot(f) {
+        return function (other) {
+            if (other !== undefined && !(other instanceof collections.Counter)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            const result = new collections.Counter();
+            f.call(this, result, other);
+            return result;
+        };
+    }
+    function counterInplaceSlot(symbol, f) {
+        return function (other) {
+            // can add anything with items defined but just support dict instances...
+            if (!(other instanceof Sk.builtin.dict)) {
+                throw new Sk.builtin.TypeError("Counter " + symbol + "= " + Sk.abstr.typeName(other) + " is not supported");
+            }
+            f.call(this, other);
+            return this.keep$positive();
+        };
+    }
 
     // OrderedDict
     const odict_iter_ = Sk.abstr.buildIteratorClass("odict_iterator", {
