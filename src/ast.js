@@ -2679,6 +2679,16 @@ function parsenumber (c, s, lineno) {
     var tmp;
     var end = s.charAt(s.length - 1);
 
+    if (/_[eE]|[eE]_|\._|j_/.test(s)) {
+        throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
+    }
+
+    if (/_\.|[+-]_|^0_\D|_j/.test(s)) {
+        throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
+    }
+    
+    s = s.replace(/_(?=[^_])/g, "");
+    
     // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {
         return Sk.builtin.complex.complex_subtype_from_string(s);
