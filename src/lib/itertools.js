@@ -710,8 +710,8 @@ var $builtinmodule = function (name) {
                 "repeat(object [,times]) -> create an iterator which returns the object\nfor the specified number of times.  If not specified, returns the object\nendlessly.",
             tp$new: function (args, kwargs) {
                 let object, times;
-                [object, times] = Sk.abstr.copyKeywordsToNamedArgs("repeat", ["object", "times"], args, kwargs, [Sk.builtin.none.none$]);
-                if (!Sk.builtin.checkNone(times)) {
+                [object, times] = Sk.abstr.copyKeywordsToNamedArgs("repeat", ["object", "times"], args, kwargs, [null]);
+                if (times !== null) {
                     times = Sk.misceval.asIndexOrThrow(times);
                 } else {
                     times = undefined;
