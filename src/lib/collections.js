@@ -1,20 +1,37 @@
-const collections_mod = function (keywds) {
+function $builtinmodule(name) {
     const collections = {};
+    // keyword.iskeyword and itertools.chain are required for collections
+    return Sk.misceval.chain(
+        Sk.importModule("keyword", false, true),
+        (keyword_mod) => {
+            collections._iskeyword = keyword_mod.$d.iskeyword;
+            return Sk.importModule("itertools", false, true);
+        },
+        (itertools_mod) => {
+            collections._chain = itertools_mod.$d.chain;
+            collections._starmap = itertools_mod.$d.starmap;
+            collections._repeat = itertools_mod.$d.repeat;
+        },
+        () => collections_mod(collections)
+    );
+}
+
+function collections_mod(collections) {
+    collections.__all__ = new Sk.builtin.list(
+        [
+            "deque",
+            "defaultdict",
+            "namedtuple",
+            // 'UserDict',
+            // 'UserList',
+            // 'UserString',
+            "Counter",
+            "OrderedDict",
+            // 'ChainMap'
+        ].map((x) => new Sk.builtin.str(x))
+    );
 
     // defaultdict object
-    const _copy_dd_method_df = {
-        $meth: function () {
-            const L = [];
-            // this won't suspend
-            Sk.misceval.iterFor(Sk.abstr.iter(this), (k) => {
-                L.push(k);
-                L.push(this.mp$subscript(k));
-            });
-            return new collections.defaultdict(this.default_factory, L);
-        },
-        $flags: { NoArgs: true },
-    };
-
     collections.defaultdict = Sk.abstr.buildNativeClass("collections.defaultdict", {
         constructor: function defaultdict(default_factory, L) {
             this.default_factory = default_factory;
@@ -1010,189 +1027,135 @@ const collections_mod = function (keywds) {
 
     // deque end
 
-    // namedtuple
-    collections.namedtuples = {};
+    // regex tests for name and fields
+    const startsw = new RegExp(/^[0-9].*/);
+    const startsw2 = new RegExp(/^[0-9_].*/);
+    const alnum = new RegExp(/^\w*$/);
+    const comma = /,/g;
+    const spaces = /\s+/;
 
-    const namedtuple = function namedtuple(name, fields, rename, defaults, module) {
-        if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [name]))) {
+    function namedtuple(name, fields, rename, defaults, module) {
+        name = name.tp$str();
+        if (Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [name]))) {
             throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: '" + Sk.misceval.objectRepr(name) + "'");
         }
-
-        const $name = name.$jsstr();
-        // regex tests for name and fields
-        const startsw = new RegExp(/^[0-9].*/);
-        const startsw2 = new RegExp(/^[0-9_].*/);
-        const alnum = new RegExp(/^\w*$/);
-        if (startsw.test($name) || !alnum.test($name) || !$name) {
-            throw new Sk.builtin.ValueError("Type names and field names must be valid identifiers: '" + $name + "'");
+        const js_name = name.$jsstr();
+        if (startsw.test(js_name) || !alnum.test(js_name) || !js_name) {
+            throw new Sk.builtin.ValueError("Type names and field names must be valid identifiers: '" + js_name + "'");
         }
 
-        let flds;
+        let flds, field_names;
         // fields could be a string or an iterable of strings
         if (Sk.builtin.checkString(fields)) {
-            flds = fields.$jsstr();
-            flds = flds.replace(/,/g, " ").split(/\s+/);
+            flds = fields.$jsstr().replace(comma, " ").split(spaces);
             if (flds.length == 1 && flds[0] === "") {
                 flds = [];
             }
+            field_names = flds.map((x) => new Sk.builtin.str(x));
         } else {
             flds = [];
-            iter = Sk.abstr.iter(fields);
-            for (i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
-                flds.push(Sk.ffi.remapToJs(i));
+            field_names = [];
+            for (let iter = Sk.abstr.iter(fields), i = iter.tp$iternext(); i !== undefined; i = iter.tp$iternext()) {
+                i = i.tp$str();
+                field_names.push(i);
+                flds.push(i.$jsstr());
             }
         }
 
         // rename fields
-        rename = Sk.misceval.isTrue(rename);
-        if (rename) {
-            let seen = new Set();
+        let seen = new Set();
+        if (Sk.misceval.isTrue(rename)) {
             for (i = 0; i < flds.length; i++) {
                 if (
-                    Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [Sk.ffi.remapToPy(flds[i])])) ||
+                    Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [field_names[i]])) ||
                     startsw2.test(flds[i]) ||
                     !alnum.test(flds[i]) ||
                     !flds[i] ||
                     seen.has(flds[i])
                 ) {
                     flds[i] = "_" + i;
+                    field_names[i] = new Sk.builtin.str("_" + i);
+                }
+                seen.add(flds[i]);
+            }
+        } else {
+            // check the field names
+            for (i = 0; i < flds.length; i++) {
+                if (Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [field_names[i]]))) {
+                    throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: '" + flds[i] + "'");
+                } else if (startsw2.test(flds[i])) {
+                    throw new Sk.builtin.ValueError("Field names cannot start with an underscore: '" + flds[i] + "'");
+                } else if (!alnum.test(flds[i]) || !flds[i]) {
+                    throw new Sk.builtin.ValueError("Type names and field names must be valid identifiers: '" + flds[i] + "'");
+                } else if (seen.has(flds[i])) {
+                    throw new Sk.builtin.ValueError("Encountered duplicate field name: '" + flds[i] + "'");
                 }
                 seen.add(flds[i]);
             }
         }
-
-        // check the field names
-        for (i = 0; i < flds.length; i++) {
-            if (Sk.ffi.remapToJs(Sk.misceval.callsimArray(keywds.$d["iskeyword"], [Sk.ffi.remapToPy(flds[i])]))) {
-                throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: '" + flds[i] + "'");
-            } else if ((startsw2.test(flds[i]) || !flds[i]) && !rename) {
-                throw new Sk.builtin.ValueError("Field names cannot start with an underscore: '" + flds[i] + "'");
-            } else if (!alnum.test(flds[i])) {
-                throw new Sk.builtin.ValueError("Type names and field names must be valid identifiers: '" + flds[i] + "'");
-            }
-        }
-
-        // check duplicates
-        let seen = new Set();
-        for (i = 0; i < flds.length; i++) {
-            if (seen.has(flds[i])) {
-                throw new Sk.builtin.ValueError("Encountered duplicate field name: '" + flds[i] + "'");
-            }
-            seen.add(flds[i]);
-        }
+        const _field_names = new Sk.builtin.tuple(field_names);
 
         // create array of default values
-        const dflts = [];
+        const dflts_dict = [];
+        let dflts = [];
         if (!Sk.builtin.checkNone(defaults)) {
-            defaults = Sk.abstr.iter(defaults);
-            for (let i = defaults.tp$iternext(); i !== undefined; i = defaults.tp$iternext()) {
-                dflts.push(i);
+            dflts = Sk.misceval.arrayFromIterable(defaults);
+            if (dflts.length > flds.length) {
+                throw new Sk.builtin.TypeError("Got more default values than field names");
+            }
+            for (let j = 0, i = field_names.length - dflts.length; i < field_names.length; j++, i++) {
+                dflts_dict.push(field_names[i]);
+                dflts_dict.push(dflts[j]);
             }
         }
-        if (dflts.length > flds.length) {
-            throw new Sk.builtin.TypeError("Got more default values than field names");
-        }
-
         // _field_defaults
-        const dflts_dict = [];
-        for (let i = flds.length - dflts.length; i < flds.length; i++) {
-            dflts_dict.push(new Sk.builtin.str(flds[i]));
-            dflts_dict.push(dflts[i - (flds.length - dflts.length)]);
-        }
         const _field_defaults = new Sk.builtin.dict(dflts_dict);
 
         // _make
-        const $make = function _make(_cls, iterable) {
-            iterable = Sk.abstr.iter(iterable);
-            values = [];
-            for (let i = iterable.tp$iternext(); i !== undefined; i = iterable.tp$iternext()) {
-                values.push(i);
-            }
-            return _cls.prototype.tp$new(values);
-        };
-        $make.co_varnames = ["_cls", "iterable"];
-        const _make = new Sk.builtin.classmethod(new Sk.builtin.func($make));
+        function _make(_cls, iterable) {
+            return _cls.prototype.tp$new(Sk.misceval.arrayFromIterable(iterable));
+        }
+        _make.co_varnames = ["_cls", "iterable"];
 
         // _asdict
-        const $asdict = function _asdict(self) {
+        function _asdict(self) {
             const asdict = [];
             for (let i = 0; i < self._fields.v.length; i++) {
                 asdict.push(self._fields.v[i]);
                 asdict.push(self.v[i]);
             }
             return new Sk.builtin.dict(asdict);
-        };
-        $asdict.co_varnames = ["self"];
-        const _asdict = new Sk.builtin.func($asdict);
+        }
+        _asdict.co_varnames = ["self"];
 
         // _replace
-        const $replace = function _replace(kwds, _self) {
-            const kwd_dict = {};
-            for (let i = 0; i < kwds.length; i = i + 2) {
-                kwd_dict[kwds[i].$jsstr()] = kwds[i + 1];
+        function _replace(kwargs, _self) {
+            // this is the call signature from skulpt kwargs is a list of pyObjects
+            kwargs = new Sk.builtin.dict(kwargs);
+            // this is the way Cpython does it.
+            const pop = kwargs.tp$getattr(new Sk.builtin.str("pop"));
+            // in the unlikely event that someone calls _replace with _self that isn't a named tuple
+            // throw an error if _make doesn't exist
+            const _make = Sk.abstr.gattr(_self, new Sk.builtin.str("_make"));
+            const call = Sk.misceval.callsimArray;
+            const res = call(_make, [call(Sk.builtin.map_, [pop, _field_names, _self])]);
+            if (kwargs.sq$length()) {
+                const keys = kwargs.sk$asarray();
+                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + keys.map((x) => "'" + x.$jsstr() + "'") + "]");
             }
-            // get the arguments to pass to the contructor
-            const args = [];
-            for (let i = 0; i < flds.length; i++) {
-                const key = flds[i];
-                const v = key in kwd_dict ? kwd_dict[key] : _self.v[i];
-                args.push(v);
-                delete kwd_dict[key];
-            }
-            // check if kwd_dict is empty
-            for (let _ in kwd_dict) {
-                // if we're here we got an enexpected kwarg
-                const key_list = Object.keys(kwd_dict).map((x) => "'" + x + "'");
-                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + key_list + "]");
-            }
-            return nt_klass.prototype.tp$new(args);
-        };
-        $replace.co_kwargs = 1;
-        $replace.co_varnames = ["_self"];
-        const _replace = new Sk.builtin.func($replace);
+            return res;
+        }
+        _replace.co_kwargs = 1;
+        _replace.co_varnames = ["_self"];
 
-        // Constructor for namedtuple
-        const nt_klass = Sk.abstr.buildNativeClass($name, {
-            constructor: function NamedTuple() {},
-            base: Sk.builtin.tuple,
-            slots: {
-                tp$doc: $name + "(" + flds.join(", ") + ")",
-                tp$new: function (args, kwargs) {
-                    args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
-                    const named_tuple_instance = new this.constructor();
-                    Sk.builtin.tuple.call(named_tuple_instance, args);
-                    return named_tuple_instance;
-                },
-                $r: function () {
-                    const bits = [];
-                    for (let i = 0; i < this.v.length; ++i) {
-                        bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]);
-                    }
-                    const pairs = bits.join(", ");
-                    cls = Sk.abstr.typeName(this);
-                    return new Sk.builtin.str(cls + "(" + pairs + ")");
-                },
-            },
-            proto: {
-                __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
-                __slots__: new Sk.builtin.tuple(),
-                _fields: new Sk.builtin.tuple(flds.map((x) => new Sk.builtin.str(x))),
-                _field_defaults: _field_defaults,
-                _make: _make,
-                _asdict: _asdict,
-                _replace: _replace,
-            },
-        });
-
-        // create the field properties
+        // create property getters for each field
+        const getters = {};
         for (let i = 0; i < flds.length; i++) {
-            const fld = Sk.fixReserved(flds[i]);
-            const fget = function (self) {
-                Sk.builtin.pyCheckArgs(fld, arguments, 0, 0, false, true);
+            function fget(self) {
                 return self.v[i];
-            };
-            fget.co_name = new Sk.builtin.str(fld);
-            nt_klass.prototype[fld] = new Sk.builtin.property(
+            }
+            fget.co_name = field_names[i];
+            getters[field_names[i].$mangled] = new Sk.builtin.property(
                 new Sk.builtin.func(fget),
                 undefined,
                 undefined,
@@ -1200,9 +1163,37 @@ const collections_mod = function (keywds) {
             );
         }
 
-        collections.namedtuples[$name] = nt_klass;
-        return nt_klass;
-    };
+        // build namedtuple class
+        return Sk.abstr.buildNativeClass(js_name, {
+            constructor: function NamedTuple() {},
+            base: Sk.builtin.tuple,
+            slots: {
+                tp$doc: js_name + "(" + flds.join(", ") + ")",
+                tp$new: function (args, kwargs) {
+                    args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
+                    const named_tuple_instance = new this.constructor();
+                    Sk.builtin.tuple.call(named_tuple_instance, args);
+                    return named_tuple_instance;
+                },
+                $r: function () {
+                    const bits = this.v.map((x, i) => flds[i] + "=" + Sk.misceval.objectRepr(x));
+                    return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + bits.join(", ") + ")");
+                },
+            },
+            proto: Object.assign(
+                {
+                    __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
+                    __slots__: new Sk.builtin.tuple(),
+                    _fields: _field_names,
+                    _field_defaults: _field_defaults,
+                    _make: new Sk.builtin.classmethod(new Sk.builtin.func(_make)),
+                    _asdict: new Sk.builtin.func(_asdict),
+                    _replace: new Sk.builtin.func(_replace),
+                },
+                getters
+            ),
+        });
+    }
 
     namedtuple.co_argcount = 2;
     namedtuple.co_kwonlyargcount = 3;
@@ -1212,8 +1203,4 @@ const collections_mod = function (keywds) {
     collections.namedtuple = new Sk.builtin.func(namedtuple);
 
     return collections;
-};
-
-var $builtinmodule = function (name) {
-    return Sk.misceval.chain(Sk.importModule("keyword", false, true), collections_mod);
-};
+}
