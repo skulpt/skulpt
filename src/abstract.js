@@ -482,6 +482,7 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
  * // Sk.abstr.sequenceUncpack(seq, 3, 3, false)
  * // return [int_(1), int_(2), int_(3)]
  * 
+ * 
  * a, *b, c = 1,2,3,4 
  * // Sk.abstr.sequenceUncpack(seq, 1, 2, true)
  * // return [int_(1), list(int_(2), int_(3)), int_(4)]
@@ -508,7 +509,7 @@ Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
     }
     const starred = [];
     for (let i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        starred.push[i];
+        starred.push(i);
     }
     const end = starred.length + breakIdx - numvals;
     if (end < 0) {
