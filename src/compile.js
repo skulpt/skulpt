@@ -337,11 +337,11 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     if (e.ctx === Sk.astnodes.Store) {
         if (hasStars) {
             if (!Sk.__future__.python3) {
-                throw new Sk.builtin.SyntaxError("assignment unpacking with stars is not supported in Python 2");
+                throw new Sk.builtin.SyntaxError("assignment unpacking with stars is not supported in Python 2", this.filename, e.lineno);
             }
             for (i = starIdx + 1; i < e.elts.length; i++) {
                 if (e.elts[i].constructor === Sk.astnodes.Starred) {
-                    throw new Sk.builtin.SyntaxError("too many starred expressions in assignment");
+                    throw new Sk.builtin.SyntaxError("too many starred expressions in assignment", this.filename, e.lineno);
                 }
             }
         }
