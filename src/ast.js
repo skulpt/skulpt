@@ -2673,21 +2673,24 @@ function parsestrplus (c, n) {
     }
 }
 
+const invalidSyntax = /_[eE]|[eE]_|\._|j_/;
+const invalidDecimalLiteral = /_\.|[+-]_|^0_\D|_j/;
+const validUnderscores = /_(?=[^_])/g;
 function parsenumber (c, s, lineno) {
     var neg;
     var val;
     var tmp;
     var end = s.charAt(s.length - 1);
 
-    if (/_[eE]|[eE]_|\._|j_/.test(s)) {
+    if (invalidSyntax.test(s)) {
         throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
     }
 
-    if (/_\.|[+-]_|^0_\D|_j/.test(s)) {
+    if (invalidDecimalLiteral.test(s)) {
         throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
     }
     
-    s = s.replace(/_(?=[^_])/g, "");
+    s = s.replace(validUnderscores, "");
     
     // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {
