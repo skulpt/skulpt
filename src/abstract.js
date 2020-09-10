@@ -469,29 +469,53 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
     }
 };
 
-// seq - Python object to unpack
-// n   - JavaScript number of items to unpack
-Sk.abstr.sequenceUnpack = function (seq, n) {
-    var res = [];
-    var it, i;
-
-    if (!Sk.builtin.checkIterable(seq)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+/**
+ * 
+ * @param {*} seq the iterable to unpack
+ * @param {*} breakIdx either the starred index or the number of elements to unpack if no star
+ * @param {*} numvals the total number of un-starred indices
+ * @param {*} hasStar is there a starred index
+ * 
+ * this function is used in compile code to unpack a sequence to an assignment statement
+ * e.g.
+ * a, b, c = 1, 2, 3 # seq is the tuple 1,2,3
+ * // Sk.abstr.sequenceUncpack(seq, 3, 3, false)
+ * // return [int_(1), int_(2), int_(3)]
+ * 
+ * a, *b, c = 1,2,3,4 
+ * // Sk.abstr.sequenceUncpack(seq, 1, 2, true)
+ * // return [int_(1), list(int_(2), int_(3)), int_(4)]
+ * 
+ */
+Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
+    const it = Sk.abstr.iter(seq);
+    const res = [];
+    for (let i = 0; i < breakIdx; i++) {
+        const nxt = it.tp$iternext();
+        if (nxt === undefined) {
+            break;
+        }
+        res.push(nxt);
     }
-
-    for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
-        (i !== undefined) && (res.length < n);
-        i = it.tp$iternext()) {
-        res.push(i);
+    if (res.length < breakIdx) {
+        throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + res.length + ")");
     }
-
-    if (res.length < n) {
-        throw new Sk.builtin.ValueError("need more than " + res.length + " values to unpack");
+    if (!hasStar) {
+        if (it.tp$iternext() !== undefined) {
+            throw new Sk.builtin.ValueError("too many values to unpack (expected " + breakIdx + ")");
+        }
+        return res;
     }
-    if (i !== undefined) {
-        throw new Sk.builtin.ValueError("too many values to unpack");
+    const starred = [];
+    for (let i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        starred.push[i];
     }
-
+    const end = starred.length + breakIdx - numvals;
+    if (end < 0) {
+        throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + (numvals + end) + ")");
+    }
+    res.push(new Sk.builtin.list(starred.slice(0, end)));
+    res.push(...starred.slice(end));
     // Return Javascript array of items
     return res;
 };

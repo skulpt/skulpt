@@ -160,6 +160,10 @@ function setContext (c, e, ctx, n) {
             }
             e.ctx = ctx;
             break;
+        case Sk.astnodes.Starred:
+            e.ctx = ctx;
+            setContext(c, e.value, ctx, n);
+            break;
         case Sk.astnodes.Subscript:
             e.ctx = ctx;
             break;
