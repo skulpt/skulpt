@@ -341,7 +341,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
             }
             for (i = starIdx + 1; i < e.elts.length; i++) {
                 if (e.elts[i].constructor === Sk.astnodes.Starred) {
-                    throw new Sk.builtin.SyntaxError("too many starred expressions in assignment", this.filename, e.lineno);
+                    throw new Sk.builtin.SyntaxError("multiple starred expressions in assignment", this.filename, e.lineno);
                 }
             }
         }

@@ -489,6 +489,9 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
  * 
  */
 Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
+    if (!Sk.builtin.checkIterable(seq)) {
+        throw new Sk.builtin.TypeError("cannot unpack non-iterable " + Sk.abstr.typeName(seq) + " object");
+    }
     const it = Sk.abstr.iter(seq);
     const res = [];
     for (let i = 0; i < breakIdx; i++) {
