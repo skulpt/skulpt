@@ -287,7 +287,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return Object.values(this.entries).map((item) => item.lhs);
         },
         update$onearg: function (arg) {
-            if (Sk.builtin.checkMapping(arg)) {
+            if (arg instanceof Sk.builtin.dict || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
                 return this.dict$merge(arg);
             } else {
                 return this.dict$merge_seq(arg);
