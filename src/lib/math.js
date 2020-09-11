@@ -1,12 +1,12 @@
 const $builtinmodule = function (name) {
-    const math = {};
-
-    // Mathematical Constants
-    math.pi = new Sk.builtin.float_(Math.PI);
-    math.e = new Sk.builtin.float_(Math.E);
-    math.tau = new Sk.builtin.float_(2 * Math.PI);
-    math.nan = new Sk.builtin.float_(NaN);
-    math.inf = new Sk.builtin.float_(Infinity);
+    const math = {
+        // Mathematical Constants
+        pi: new Sk.builtin.float_(Math.PI),
+        e: new Sk.builtin.float_(Math.E),
+        tau: new Sk.builtin.float_(2 * Math.PI),
+        nan: new Sk.builtin.float_(NaN),
+        inf: new Sk.builtin.float_(Infinity),
+    };
 
     // Number-theoretic and representation functions
     function ceil(x) {
