@@ -145,9 +145,10 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         },
         __self__: {
             $get: function () {
-                return this.$self || Sk.builtin.none.none$;
+                // self might be a module object - which means it was created inside a module before the module existed
+                // so look the name up in sysmodules
+                return this.$self || Sk.sysModules.mp$lookup(this.$module) || Sk.builtin.none.none$;
             }
         }
-
     },
 });
