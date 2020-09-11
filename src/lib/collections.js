@@ -11,6 +11,10 @@ function $builtinmodule(name) {
             collections._chain = itertools_mod.$d.chain;
             collections._starmap = itertools_mod.$d.starmap;
             collections._repeat = itertools_mod.$d.repeat;
+            return Sk.importModule("operator", false, true);
+        },
+        (operator) => {
+            collections._itemgetter = operator.$d.itemgetter;
         },
         () => collections_mod(collections)
     );
@@ -1305,12 +1309,8 @@ function collections_mod(collections) {
         // create property getters for each field
         const getters = {};
         for (let i = 0; i < flds.length; i++) {
-            function fget(self) {
-                return self.v[i];
-            }
-            fget.co_name = field_names[i];
             getters[field_names[i].$mangled] = new Sk.builtin.property(
-                new Sk.builtin.func(fget),
+                new collections._itemgetter([new Sk.builtin.int_(i)]),
                 undefined,
                 undefined,
                 new Sk.builtin.str("Alias for field number " + i)
