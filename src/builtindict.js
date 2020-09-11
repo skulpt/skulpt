@@ -125,7 +125,8 @@ Sk.builtins = {
     "staticmethod" : Sk.builtin.staticmethod,
 };
 
-const method_defs = {
+
+Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     // __build_class__: {
     //     $meth: Sk.builtin.__build_class__,
     //     $flags: {},
@@ -467,13 +468,8 @@ const method_defs = {
         $textsig: null,
         $doc: "vars([object]) -> dictionary\n\nWithout arguments, equivalent to locals().\nWith an argument, equivalent to object.__dict__.",
     },
-};
+});
 
-for (let def_name in method_defs) {
-    const method_def = method_defs[def_name];
-    method_def.$name = def_name;
-    Sk.builtins[def_name] = new Sk.builtin.sk_method(method_def, undefined, "builtins");
-}
 
 Sk.setupObjects = function (py3) {
     if (py3) {
@@ -493,7 +489,17 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtin.bool.prototype.tp$str;
         delete Sk.builtin.str.prototype.decode;
         Sk.builtins["bytes"] = Sk.builtin.bytes;
-        Sk.builtins["ascii"] = new Sk.builtin.sk_method(method_defs.ascii, undefined, "builtins");
+        Sk.builtins["ascii"] = new Sk.builtin.sk_method(
+            {
+                $meth: Sk.builtin.ascii,
+                $flags: { OneArg: true },
+                $textsig: "($module, obj, /)",
+                $doc:
+                    "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2.",
+            },
+            undefined,
+            "builtins"
+        );
     } else {
         Sk.builtins["range"] = new Sk.builtin.sk_method(
             {
