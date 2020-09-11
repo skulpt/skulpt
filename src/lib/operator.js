@@ -88,7 +88,7 @@ function $builtinmodule(name) {
                 Sk.abstr.checkArgsLen("itemgetter", args, 1, 1);
                 const obj = args[0];
                 if (this.oneitem) {
-                    return Sk.abstr.objectGetItem(obj, this.item);
+                    return Sk.abstr.objectGetItem(obj, this.item, true);
                 }
                 return new Sk.builtin.tuple(this.items.map((x) => Sk.abstr.objectGetItem(obj, x)));
             },
@@ -184,8 +184,9 @@ function $builtinmodule(name) {
                 Sk.abstr.checkNoKwargs("methodcaller", kwargs);
                 Sk.abstr.checkArgsLen("methodcaller", args, 1, 1);
                 const obj = args[0];
-                const func = Sk.abstr.gattr(obj, this.$name);
-                return Sk.misceval.callsimOrSuspendArray(func, this.args, this.kwargs);
+                return Sk.misceval.chain(Sk.abstr.gattr(obj, this.$name, true), (method) =>
+                    Sk.misceval.callsimOrSuspendArray(method, this.args, this.kwargs)
+                );
             },
             tp$doc:
                 "methodcaller(name, ...) --> methodcaller object\n\nReturn a callable object that calls the given method on its operand.\nAfter f = methodcaller('name'), the call f(r) returns r.name().\nAfter g = methodcaller('name', 'date', foo=1), the call g(r) returns\nr.name('date', foo=1).",
@@ -489,7 +490,7 @@ function $builtinmodule(name) {
         },
         setitem: {
             $meth: function setitem(a, b, c) {
-                return Sk.abstr.objectSetItem(a, b, c);
+                return Sk.abstr.objectSetItem(a, b, c, true);
             },
             $flags: { MinArgs: 3, MaxArgs: 3 },
             $textsig: "($module, a, b, c, /)",
