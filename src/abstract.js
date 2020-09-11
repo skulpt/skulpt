@@ -1207,11 +1207,11 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
 
 Sk.abstr.built$iterators = [];
 
-Sk.abstr.setUpModuleMethods = function (module_name, method_defs, module) {
+Sk.abstr.setUpModuleMethods = function (module_name, module, method_defs) {
     for (let method_name in method_defs) {
         const method_def = method_defs[method_name];
         method_def.$name = method_def.$name || method_name;
-        module[method_name] = new Sk.builtin.sk_method(method_def, module, module_name);
+        module[method_name] = new Sk.builtin.sk_method(method_def, undefined, module_name);
     }
 };
 
