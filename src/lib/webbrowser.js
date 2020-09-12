@@ -20,12 +20,12 @@ var $builtinmodule = function(name){
     });
 
     mod.open_new = new Sk.builtin.func(function open_new(url) {
-        Sk.builtin.pyCheckArgsLen("open_new", arguments.length + 1, 1, 3);
+        Sk.builtin.pyCheckArgsLen("open_new", arguments.length + 1, 1, 1);
         return open_tab(url);
     });
 
     mod.open_new_tab = new Sk.builtin.func(function open_new_tab(url) {
-        Sk.builtin.pyCheckArgsLen("open_new_tab", arguments.length + 1, 1, 3);
+        Sk.builtin.pyCheckArgsLen("open_new_tab", arguments.length + 1, 1, 1);
         return open_tab(url);
     });
 
