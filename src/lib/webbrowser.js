@@ -29,5 +29,10 @@ var $builtinmodule = function(name){
         return open_tab(url);
     });
 
+    mod.get = new Sk.builtin.func(function get() {
+        Sk.builtin.pyCheckArgsLen("get", arguments.length, 0, 1);
+        return $builtinmodule;
+    }
+
     return mod;
 };
