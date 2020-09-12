@@ -3,9 +3,7 @@ var $builtinmodule = function(name){
     var inBrowser = (typeof window != "undefined") && (typeof window.navigator != "undefined");
 
     mod.open = new Sk.builtin.func(function open(url) {
-        if (!(url instanceof Sk.builtin.str)) {
-            throw new Sk.builtin.TypeError("webbrowser.open expects 'str' for 'url'");
-        }
+        Sk.builtin.pyCheckType("url", "string", Sk.builtin.checkString(url));
         if (!inBrowser) {
             return Sk.builtin.bool.false$;
         }
