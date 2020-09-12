@@ -184,7 +184,7 @@ function rangeFromPy(start, stop, step) {
         start = i = JSBI.BigInt(start);
         step = JSBI.BigInt(step);
         stop = JSBI.BigInt(stop);
-        if (JSBI.greaterThan(step, JSBI.zero)) {
+        if (JSBI.greaterThan(step, JSBI.__ZERO)) {
             while (JSBI.lessThan(i, stop)) {
                 ret.push(new Sk.builtin.int_(convertIfSafe(i)));
                 i = JSBI.add(i, step);
@@ -232,10 +232,8 @@ var reverserange_iter_ = Sk.abstr.buildIteratorClass("range_reverseiterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-const MaxSafeBig = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
-const MaxSafeBigNeg = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
 function convertIfSafe(v) {
-    if (JSBI.lessThan(v, MaxSafeBig) && JSBI.greaterThan(v, MaxSafeBigNeg)) {
+    if (JSBI.lessThan(v, JSBI.__MAX_SAFE) && JSBI.greaterThan(v, JSBI.__MIN_SAFE)) {
         return JSBI.toNumber(v);
     }
     return v;

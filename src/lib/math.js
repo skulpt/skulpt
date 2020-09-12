@@ -208,7 +208,7 @@ const $builtinmodule = function (name) {
         }
         
         function _biggcd(a, b) {
-            if (JSBI.equal(b, JSBI.zero)) {
+            if (JSBI.equal(b, JSBI.__ZERO)) {
                 return a;
             }
             return _biggcd(b, JSBI.remainder(a, b));
@@ -226,7 +226,7 @@ const $builtinmodule = function (name) {
             _a = JSBI.BigInt(_a);
             _b = JSBI.BigInt(_b);
             res = _biggcd(_a, _b);
-            if (JSBI.lessThan(res, JSBI.zero)) {
+            if (JSBI.lessThan(res, JSBI.__ZERO)) {
                 res = JSBI.multiply(res, JSBI.BigInt(-1));
             } 
             return new Sk.builtin.int_(res.toString()); // int will convert strings
