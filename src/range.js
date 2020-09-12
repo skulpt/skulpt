@@ -1,5 +1,3 @@
-const JSBI = require("jsbi");
-
 /**
  * @constructor
  * @param {number} start
@@ -186,7 +184,7 @@ function rangeFromPy(start, stop, step) {
         start = i = JSBI.BigInt(start);
         step = JSBI.BigInt(step);
         stop = JSBI.BigInt(stop);
-        if (!step.sign) {
+        if (JSBI.greaterThan(step, JSBI.zero)) {
             while (JSBI.lessThan(i, stop)) {
                 ret.push(new Sk.builtin.int_(convertIfSafe(i)));
                 i = JSBI.add(i, step);

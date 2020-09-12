@@ -9,7 +9,7 @@ require("./util.js");
 // Global support functions
 Sk.global["strftime"] = require("strftime");
 Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
-Sk.global["JSBI"] = require("jsbi");
+require("./JSBI.js");
 require("setimmediate");
 
 // Skulpt

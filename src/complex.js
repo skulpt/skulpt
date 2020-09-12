@@ -1,5 +1,3 @@
-const JSBI = require("jsbi");
-
 /**
  * @description
  * see [Cpython complex_new](https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911)
@@ -609,7 +607,7 @@ function complexNumberSlot(f, suppressOverflow) {
         } else if (typeof other_v === "number") {
             b_real = other_v;
             b_imag = 0.0;
-        } else if (other_v instanceof JSBI) {
+        } else if (JSBI.__isBigInt(other_v)) {
             if (suppressOverflow === undefined) {
                 b_real = fromBigIntToNumberOrOverflow(other_v);
             } else {

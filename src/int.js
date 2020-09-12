@@ -1,7 +1,3 @@
-/**@constructor 
- * @ignore
-*/
-const JSBI = require("jsbi");
 
 /**
  * 
@@ -21,7 +17,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function int_(x) {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
-        if (typeof x === "number" || x instanceof JSBI) {
+        if (typeof x === "number" || JSBI.__isBigInt(x)) {
             v = x;
         } else if (typeof x === "string") {
             v = stringToNumberOrBig(x);
@@ -87,17 +83,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         nb$isnegative: function () {
             const v = this.v;
-            if (typeof v === "number") {
-                return v < 0;
-            }
-            return v.sign;
+            return typeof v === "number" ? v < 0 : JSBI.lessThan(v, JSBI.zero);
         },
         nb$ispositive: function () {
             const v = this.v;
-            if (typeof v === "number") {
-                return v >= 0;
-            }
-            return !v.sign;
+            return typeof v === "number" ? v < 0 : JSBI.greaterThanOrEqual(v, JSBI.zero);
         },
         nb$bool: function () {
             return this.v !== 0; // should be fine not to check BigInt here
@@ -109,11 +99,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 
         nb$add: numberSlot(
             (v, w) => v + w,
-            (v, w) => (!(v.sign ^ w.sign) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
+            (v, w) => (!(JSBI.lessThan(v, JSBI.zero) ^ JSBI.lessThan(w, JSBI.zero)) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
         ),
         nb$subtract: numberSlot(
             (v, w) => v - w,
-            (v, w) => (v.sign ^ w.sign ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
+            (v, w) => (JSBI.lessThan(v, JSBI.zero) ^ JSBI.lessThan(w, JSBI.zero) ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
         ),
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
         nb$divide: function (other) {
@@ -136,7 +126,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$or: numberBitSlot((v, w) => v | w, JSBI.bitwiseOr),
         nb$xor: numberBitSlot((v, w) => v ^ w, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, (v) => (v.sign ? JSBI.unaryMinus(v) : v)),
+        nb$abs: numberUnarySlot(Math.abs, (v) => (JSBI.lessThan(v, JSBI.zero) ? JSBI.unaryMinus(v) : v)),
 
         nb$lshift: numberShiftSlot((v, w) => {
             if (w < 53) {
@@ -696,7 +686,7 @@ function fromStrToBigWithBase(s, base) {
         power = JSBI.multiply(power, base);
     }
     if (neg) {
-        num.sign = true;
+        num = JSBI.multiply(num, JSBI.BigInt(-1));
     }
     return num;
 }

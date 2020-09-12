@@ -7,7 +7,6 @@
  * work, etc.
  */
 
-const JSBI = require("jsbi");
 
 Sk.builtin.asnum$ = function (a) {
     if (a === undefined) {
@@ -526,7 +525,7 @@ Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
     } else {
         str = prefix + str;
     }
-    if (radix !== 2 && !Sk.__future__.python3 && (x instanceof Sk.builtin.lng || v instanceof JSBI)) {
+    if (radix !== 2 && !Sk.__future__.python3 && (x instanceof Sk.builtin.lng || JSBI.__isBigInt(v))) {
         str += "L";
     }
     return new Sk.builtin.str(str);

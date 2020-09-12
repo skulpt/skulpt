@@ -51,7 +51,7 @@ const $builtinmodule = function (name) {
     function fabs(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         let _x = x.v;
-        if (_x instanceof JSBI) {
+        if (JSBI.__isBigInt(_x)) {
             _x = x.nb$float().v; //should raise OverflowError for large ints to floats
         }
         _x = Math.abs(_x);
@@ -207,9 +207,8 @@ const $builtinmodule = function (name) {
             return _gcd(b, a % b);
         }
         
-        const BigZero = JSBI.BigInt(0);
         function _biggcd(a, b) {
-            if (JSBI.equal(b, BigZero)) {
+            if (JSBI.equal(b, JSBI.zero)) {
                 return a;
             }
             return _biggcd(b, JSBI.remainder(a, b));
@@ -227,7 +226,9 @@ const $builtinmodule = function (name) {
             _a = JSBI.BigInt(_a);
             _b = JSBI.BigInt(_b);
             res = _biggcd(_a, _b);
-            res.sign = false;
+            if (JSBI.lessThan(res, JSBI.zero)) {
+                res = JSBI.multiply(res, JSBI.BigInt(-1));
+            } 
             return new Sk.builtin.int_(res.toString()); // int will convert strings
         }
     };

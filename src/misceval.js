@@ -7,7 +7,7 @@
  *
  */
 Sk.misceval = {};
-const JSBI = require("jsbi");
+
 /** @typedef {Sk.builtin.object}*/ var pyObject;
 
 /*
@@ -93,7 +93,7 @@ function asIndex(o) {
     }
     if (typeof res === "number") {
         return res;
-    } else if (res instanceof JSBI) {
+    } else if (JSBI.__isBigInt(res)) {
         return res.toString();
     }
     return res;

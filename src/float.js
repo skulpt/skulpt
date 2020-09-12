@@ -274,7 +274,7 @@ function numberSlot(f) {
         let w = other.v;
         if (typeof w === "number") {
             // pass
-        } else if (w instanceof JSBI) {
+        } else if (JSBI.__isBigInt(w)) {
             w = fromBigIntToNumberOrOverflow(w);
         } else {
             return Sk.builtin.NotImplemented.NotImplemented$;
