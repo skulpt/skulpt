@@ -10,12 +10,12 @@
  *
  */
 Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
-    constructor: function complex (real, imag) {
+    constructor: function complex(real, imag) {
         Sk.asserts.assert(this instanceof Sk.builtin.complex, "bad call to complex constructor, use 'new'");
         this.real = real;
         this.imag = imag;
     },
-    slots: /**@lends {Sk.builtin.complex.prototype}*/{
+    slots: /**@lends {Sk.builtin.complex.prototype}*/ {
         tp$as_number: true,
         tp$doc:
             "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.",
@@ -143,7 +143,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             $doc: "the imaginary part of a complex number",
         },
     },
-    methods: /**@lends {Sk.builtin.complex.prototype}*/{
+    methods: /**@lends {Sk.builtin.complex.prototype}*/ {
         conjugate: {
             $meth: function () {
                 return new Sk.builtin.complex(this.real, -this.imag);
@@ -204,7 +204,7 @@ Math.hypot =
  * Otherwise throws an error
  *
  * @param {Sk.builtin.object} op
- * 
+ *
  * @ignore
  */
 function PyFloat_AsDouble(op) {
@@ -230,7 +230,7 @@ function PyFloat_AsDouble(op) {
  *
  *
  * @param {Sk.builtin.object} op
- * 
+ *
  * @ignore
  */
 function try_complex_special_method(op) {
@@ -268,7 +268,7 @@ const _complex_check = Sk.builtin.checkComplex;
  *
  * @param {Sk.builtin.object} real
  * @param {Sk.builtin.object} imag
- * 
+ *
  * @ignore
  */
 function complex_from_py(real, imag) {
@@ -403,8 +403,8 @@ function complex_subtype_from_doubles(real, imag, type_prototype) {
  *
  * @function
  * @description Parses a string repr of a complex number
- * @param {*} val 
- * @param {Object=} type_prototype 
+ * @param {*} val
+ * @param {Object=} type_prototype
  * We leave this as Sk.builtin.complex since it is called by the compiler
  * @ignore
  */
@@ -592,7 +592,7 @@ function fromBigIntToNumberOrOverflow(big) {
  * A wrapper to do the checks before passing the this.real, this.imag, other.real, other.imag
  * to the number function
  * @ignore
- * @param {function(number, number, number, number)} f 
+ * @param {function(number, number, number, number)} f
  * @param {boolean=} suppressOverflow
  */
 function complexNumberSlot(f, suppressOverflow) {
