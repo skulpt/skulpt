@@ -79,14 +79,35 @@ INVALID_UNDERSCORE_LITERALS = [
     '(1+1.5_j)',
 ]
 
-# class TokenTests(unittest.TestCase):
-    # def test_underscore_literals(self):
-    #     for lit in VALID_UNDERSCORE_LITERALS:
-    #         self.assertEqual(eval(lit), eval(lit.replace('_', '')))
-    #     for lit in INVALID_UNDERSCORE_LITERALS:
-    #         self.assertRaises(SyntaxError, eval, lit)
-    #     # Sanity check: no literal begins with an underscore
-    #     self.assertRaises(NameError, eval, "_0")
+class TokenTests(unittest.TestCase):
+    def test_underscore_literals(self):
+        self.assertEqual(0b_0, 0b0)
+        self.assertEqual(0x_f, 0xf)
+        self.assertEqual(0o_5, 0o5)
+        self.assertEqual(1_00_00j, 10000j)
+        self.assertEqual(1_00_00.5j, 10000.5j)
+        self.assertEqual(1_00_00e5_1j, 10000e51j)
+        self.assertEqual(.1_4j, .14j)
+        self.assertEqual((1_2.5+3_3j), (12.5+33j))
+        
+        eval_alt = "Sk.importMainWithBody('test_literals', false, {0})"
+
+        for lit in VALID_UNDERSCORE_LITERALS:
+            try:
+                jseval(eval_alt.format(lit))
+            except Exception as e: # these will be ExternalErrors
+                self.assertNotIn("SyntaxError", repr(e))
+
+        for lit in INVALID_UNDERSCORE_LITERALS:
+            try:
+                jseval(eval_alt.format(lit))
+            except Exception as e: # these will be ExternalErrors
+                self.assertIn("SyntaxError", repr(e))
+            else:
+                self.fail(f"SyntaxError not raised for {lit}")
+        
+        # Sanity check: no literal begins with an underscore
+        # self.assertRaises(NameError, eval, "_0")
 
 if __name__ == '__main__':
     unittest.main()
