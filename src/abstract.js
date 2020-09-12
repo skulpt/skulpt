@@ -1134,7 +1134,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         Object.defineProperty(type_proto, p, {
             value: proto[p],
             writable: true,
-            enumerable: false,
+            enumerable: !(p.includes("$") || (p in Object.prototype)), // only make these private in these cases
         });
     }
     const flags = options.flags || {};
