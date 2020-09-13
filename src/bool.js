@@ -1,3 +1,5 @@
+const int_proto = Sk.builtin.int_.prototype;
+
 /**
  * @constructor
  * Sk.builtin.bool
@@ -31,7 +33,7 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
             return new Sk.builtin.bool(args[0]); //technically we don't need new but easier to keep consistent
         },
         $r: function () {
-            return this.v ? new Sk.builtin.str("True") : new Sk.builtin.str("False");
+            return this.v ? this.str$True : this.str$False;
         },
 
         tp$as_number: true,
@@ -39,19 +41,19 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v & other.v);
             } 
-            return Sk.builtin.int_.prototype.nb$and.call(this, other);
+            return int_proto.nb$and.call(this, other);
         },
         nb$or: function (other) {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v | other.v);
             } 
-            return Sk.builtin.int_.prototype.nb$or.call(this, other);
+            return int_proto.nb$or.call(this, other);
         },
         nb$xor: function (other) {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v ^ other.v);
             } 
-            return Sk.builtin.int_.prototype.nb$xor.call(this, other);
+            return int_proto.nb$xor.call(this, other);
         },
     },
     flags: {
@@ -64,6 +66,10 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
             },
             $flags: {OneArg: true},
         }
+    },
+    proto: {
+        str$False: new Sk.builtin.str("False"),
+        str$True: new Sk.builtin.str("True"),
     }
 });
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
