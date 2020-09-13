@@ -39,8 +39,10 @@ INVALID_UNDERSCORE_LITERALS = [
     '0_b0',
     '0_xf',
     '0_o5',
-    ## Old-style octal, still disallowed:
-    # '0_7', # allowed as parameter to `int()`
+    ## Old-style octal
+    ## allowed as parameters to `int` and `float`
+    ## but still disallowed as literals:
+    '0_7',
     '09_99',
     ## Multiple consecutive underscores:
     '4_______2',
@@ -108,7 +110,7 @@ class TokenTests(unittest.TestCase):
             self.assertRaises(SyntaxError, jseval, eval_alt.format(lit))
         
         # Sanity check: no literal begins with an underscore
-        # self.assertRaises(NameError, eval, "_0")
+        self.assertRaises(NameError, jseval, eval_alt.format("_0"))
 
 if __name__ == '__main__':
     unittest.main()

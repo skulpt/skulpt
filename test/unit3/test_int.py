@@ -221,6 +221,8 @@ class IntTestCases(unittest.TestCase):
             self.assertEqual(int(lit, 0), int(lit.replace('_', ''), 0))
 
         for lit in INVALID_UNDERSCORE_LITERALS:
+            if lit in ('0_7', '09_99'):  # octals are not recognized here
+                continue
             if any(ch in lit for ch in '.eEjJ'):
                 continue
             self.assertRaises(ValueError, int, lit, 0)
