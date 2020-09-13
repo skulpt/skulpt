@@ -183,35 +183,32 @@ class UnpackTest(unittest.TestCase):
         # @TODO support eval here
         expressions = {
             # Unpacking non-sequence
-            'a, *b = 7': 'TypeError: cannot unpack non-iterable int object',
+            'a, *b = 7': (TypeError, 'cannot unpack non-iterable int object'),
             # Unpacking sequence too short
-            'a, *b, c, d, e = range(3)': 'ValueError: not enough values to unpack (expected at least 4, got 3)',
+            'a, *b, c, d, e = range(3)': (ValueError, 'not enough values to unpack (expected at least 4, got 3)'),
             # Unpacking sequence too short and target appears last
-            'a, b, c, d, *e = range(3)' : 'ValueError: not enough values to unpack (expected at least 4, got 3)',
+            'a, b, c, d, *e = range(3)' : (ValueError, 'not enough values to unpack (expected at least 4, got 3)'),
             # Unpacking a sequence where the test for too long raises a different kind of error
-            'a, *b, c, d, e = BadSeq()' : 'BozoError: ',
+            'a, *b, c, d, e = BadSeq()' : (BozoError, ''),
             # general tests all fail
-            'a, *b, c, *d, e = range(10)' : 'SyntaxError: multiple starred expressions in assignment',
-            '[*b, *c] = range(10)': 'SyntaxError: multiple starred expressions in assignment',
-            'a,*b,*c,*d = range(4)': 'SyntaxError: multiple starred expressions in assignment',
-            '*a = range(10)': 'SyntaxError: starred assignment target must be in a list or tuple',
-            '*a' : 'SyntaxError: can\'t use starred expression here',
-            '*1': 'SyntaxError: can\'t use starred expression here',
-            'x = *a': 'SyntaxError: can\'t use starred expression here',
+            'a, *b, c, *d, e = range(10)' : (SyntaxError, 'multiple starred expressions in assignment'),
+            '[*b, *c] = range(10)': (SyntaxError, 'multiple starred expressions in assignment'),
+            'a,*b,*c,*d = range(4)': (SyntaxError, 'multiple starred expressions in assignment'),
+            '*a = range(10)': (SyntaxError, 'starred assignment target must be in a list or tuple'),
+            '*a' : (SyntaxError, 'can\'t use starred expression here'),
+            '*1': (SyntaxError, 'can\'t use starred expression here'),
+            'x = *a': (SyntaxError, 'can\'t use starred expression here'),
 
         }
 
         eval_alt = "Sk.retainGlobals = true; Sk.importMainWithBody('test_unpack', false, '{0}', true)"
-        for expr, error in expressions.items():
+        for expr, (error, msg) in expressions.items():
             try:
                 jseval(eval_alt.format(expr))
-            except Exception as e:
-                msg = repr(e)
-                exp_type, exp_msg = error.split(": ")
-                self.assertIn(exp_type, msg)
-                self.assertIn(exp_msg, msg)
+            except error as e:
+                self.assertIn(msg, str(e))
             else:
-                self.fail(f'error not raised for {expr}')
+                self.fail(f'{error} not raised for {expr}')
         jseval("Sk.retainGlobals = false")
 
 
