@@ -212,7 +212,7 @@ function collections_mod(collections) {
                 return this.counter$update(args, kwargs);
             },
             $r: function () {
-                /**@TODO this should be ordered by count */
+                /**@todo this should be ordered by count */
                 const dict_str = this.size > 0 ? Sk.builtin.dict.prototype.$r.call(this).v : "";
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + dict_str + ")");
             },

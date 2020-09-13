@@ -83,11 +83,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         nb$isnegative: function () {
             const v = this.v;
-            return typeof v === "number" ? v < 0 : JSBI.lessThan(v, JSBI.zero);
+            return typeof v === "number" ? v < 0 : JSBI.lessThan(v, JSBI.__ZERO);
         },
         nb$ispositive: function () {
             const v = this.v;
-            return typeof v === "number" ? v < 0 : JSBI.greaterThanOrEqual(v, JSBI.zero);
+            return typeof v === "number" ? v < 0 : JSBI.greaterThanOrEqual(v, JSBI.__ZERO);
         },
         nb$bool: function () {
             return this.v !== 0; // should be fine not to check BigInt here
@@ -99,11 +99,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 
         nb$add: numberSlot(
             (v, w) => v + w,
-            (v, w) => (!(JSBI.lessThan(v, JSBI.zero) ^ JSBI.lessThan(w, JSBI.zero)) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
+            (v, w) => (!(JSBI.lessThan(v, JSBI.__ZERO) ^ JSBI.lessThan(w, JSBI.__ZERO)) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
         ),
         nb$subtract: numberSlot(
             (v, w) => v - w,
-            (v, w) => (JSBI.lessThan(v, JSBI.zero) ^ JSBI.lessThan(w, JSBI.zero) ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
+            (v, w) => (JSBI.lessThan(v, JSBI.__ZERO) ^ JSBI.lessThan(w, JSBI.__ZERO) ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
         ),
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
         nb$divide: function (other) {
@@ -126,7 +126,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$or: numberBitSlot((v, w) => v | w, JSBI.bitwiseOr),
         nb$xor: numberBitSlot((v, w) => v ^ w, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, (v) => (JSBI.lessThan(v, JSBI.zero) ? JSBI.unaryMinus(v) : v)),
+        nb$abs: numberUnarySlot(Math.abs, (v) => (JSBI.lessThan(v, JSBI.__ZERO) ? JSBI.unaryMinus(v) : v)),
 
         nb$lshift: numberShiftSlot((v, w) => {
             if (w < 53) {
@@ -596,8 +596,8 @@ function numberOrStringWithinThreshold(v) {
 
 Sk.builtin.int_.withinThreshold = numberOrStringWithinThreshold;
 
-const MaxSafeBig = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
-const MaxSafeBigNeg = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
+const MaxSafeBig = JSBI.__MAX_SAFE;
+const MaxSafeBigNeg = JSBI.__MIN_SAFE;
 function convertIfSafe(v) {
     if (JSBI.lessThan(v, MaxSafeBig) && JSBI.greaterThan(v, MaxSafeBigNeg)) {
         return JSBI.toNumber(v);

@@ -1,5 +1,5 @@
 Sk.builtin.print = function print(args, kwargs) {
-    /** @TODO flush is allowed but has no effect */
+    /** @todo flush is allowed but has no effect */
     let [sep, end, file] = Sk.abstr.copyKeywordsToNamedArgs("print", ["sep", "end", "file", "flush"], [], kwargs);
 
     // check for sep; string or None

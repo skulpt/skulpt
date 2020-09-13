@@ -17,7 +17,7 @@ if (Sk.global.BigInt === undefined) {
     JSBI.__MIN_SAFE = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
 } else {
     Sk.global.JSBI = Object.assign(Object.create(null), {
-        BigInt: BigInt,
+        BigInt: Sk.global.BigInt,
         toNumber: (x) => Number(x),
         toString: (x) => x.toString(),
         __isBigInt: (x) => typeof x === "bigint",
@@ -41,8 +41,8 @@ if (Sk.global.BigInt === undefined) {
         greaterThanOrEqual: (x, y) => x >= y,
         equal: (x, y) => x == y,
         notEqual: (x, y) => x != y,
-        __ZERO: BigInt(0),
-        __MAX_SAFE: BigInt(Number.MAX_SAFE_INTEGER),
-        __MIN_SAFE: BigInt(-Number.MAX_SAFE_INTEGER)
+        __ZERO: Sk.global.BigInt(0),
+        __MAX_SAFE: Sk.global.BigInt(Number.MAX_SAFE_INTEGER),
+        __MIN_SAFE: Sk.global.BigInt(-Number.MAX_SAFE_INTEGER)
     });
 }
