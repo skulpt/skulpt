@@ -14,6 +14,8 @@ var $builtinmodule = function(name){
         return Sk.builtin.bool.true$;
     }
 
+    mod.__name__ = new Sk.builtin.str("webbrowser");
+
     mod.open = new Sk.builtin.func(function open(url) {
         Sk.builtin.pyCheckArgsLen("open", arguments.length + 1, 1, 3);
         return open_tab(url);
