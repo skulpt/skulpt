@@ -2690,7 +2690,9 @@ function parsenumber (c, s, lineno) {
         throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
     }
     
-    s = s.replace(validUnderscores, "");
+    if (s.includes("_")) {
+        s = s.replace(validUnderscores, "");
+    }
     
     // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {

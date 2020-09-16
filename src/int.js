@@ -1064,6 +1064,8 @@ Sk.builtin.int_.prototype.str$ = function (base, sign) {
     return tmp;
 };
 
+
+const validUnderscores = /_(?=[^_])/g;
 /**
  * Takes a JavaScript string and returns a number using the parser and negater
  *  functions (for int/long right now)
@@ -1143,16 +1145,18 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         base = 10;
     }
 
-    if (s.includes("__")) {
-        throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
-    }
+    if (s.includes("_")) {
+        if (s.includes("__")) {
+            throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+        }
 
-    if (base !== 10) {
-        s = s.replace(/_(?=[^_])/g, "");
-    } else {
-        // avoid replacing initial `_` if present
-        // workaround since closure-compiler errors on lookbehinds
-        s = s.charAt(0) + s.substring(1).replace(/_(?=[^_])/g, "");
+        if (base !== 10) {
+            s = s.replace(validUnderscores, "");
+        } else {
+            // avoid replacing initial `_` if present
+            // workaround since closure-compiler errors on lookbehinds
+            s = s.charAt(0) + s.substring(1).replace(validUnderscores, "");
+        }
     }
 
     if (s.length === 0) {

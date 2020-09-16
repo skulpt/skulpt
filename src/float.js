@@ -42,14 +42,19 @@ Sk.builtin.float_ = function (x) {
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
+const invalidUnderscores = /_[eE]|[eE]_|\._|_\.|[+-]_|__/;
+const validUnderscores = /_(?=[^_])/g;
 function _str_to_float(str) {
     let ret;
+    let tmp = str;
     
-    if (/_[eE]|[eE]_|\._|_\.|[+-]_/.test(str)) {
-        throw new Sk.builtin.ValueError("could not convert string to float: '" + str + "'");
+    if (str.includes("_")) {
+        if (invalidUnderscores.test(str)) {
+            throw new Sk.builtin.ValueError("could not convert string to float: '" + str + "'");
+        }
+    
+        tmp = str.charAt(0) + str.substring(1).replace(validUnderscores, "");
     }
-
-    let tmp = str.charAt(0) + str.substring(1).replace(/_(?=[^_])/g, "");
     
     if (str.match(/^-inf$/i)) {
         ret = -Infinity;
