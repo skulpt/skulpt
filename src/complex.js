@@ -244,6 +244,8 @@ Sk.builtin.complex.check_number_or_complex = function (other) {
     return other;
 };
 
+const invalidUnderscores = /_[eE]|[eE]_|\._|_\.|[+-]_|_j|j_/;
+const validUnderscores = /_(?=[^_])/g;
 /**
     Parses a string repr of a complex number
  */
@@ -271,7 +273,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
     if (val.indexOf("\0") !== -1 || val.length === 0 || val === "") {
         throw new Sk.builtin.ValueError("complex() arg is a malformed string");
     }
-
+    
     // transform to unicode
     // ToDo: do we need this?
     index = 0; // first char
@@ -293,6 +295,14 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
         while (val[index] === " ") {
             index++;
         }
+    }
+
+    if (val.indexOf("_") !== -1) {
+        if (invalidUnderscores.test(val)) {
+            throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
+        }
+
+        val = val.charAt(0) + val.substring(1).replace(validUnderscores, "");
     }
 
     /* a valid complex string usually takes one of the three forms:
