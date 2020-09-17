@@ -297,7 +297,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
         }
     }
 
-    if (val.includes("_")) {
+    if (val.indexOf("_") !== -1) {
         if (invalidUnderscores.test(val)) {
             throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
         }

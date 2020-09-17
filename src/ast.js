@@ -2682,7 +2682,7 @@ function parsenumber (c, s, lineno) {
     var tmp;
     var end = s.charAt(s.length - 1);
     
-    if (s.includes("_")) {
+    if (s.indexOf("_") !== -1) {
         if (invalidSyntax.test(s)) {
             throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
         }

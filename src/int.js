@@ -1145,8 +1145,8 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         base = 10;
     }
 
-    if (s.includes("_")) {
-        if (s.includes("__")) {
+    if (s.indexOf("_") !== -1) {
+        if (s.indexOf("__") !== -1) {
             throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
 

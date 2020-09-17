@@ -48,7 +48,7 @@ function _str_to_float(str) {
     let ret;
     let tmp = str;
     
-    if (str.includes("_")) {
+    if (str.indexOf("_") !== -1) {
         if (invalidUnderscores.test(str)) {
             throw new Sk.builtin.ValueError("could not convert string to float: '" + str + "'");
         }
