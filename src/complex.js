@@ -274,10 +274,6 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
         throw new Sk.builtin.ValueError("complex() arg is a malformed string");
     }
     
-    if (invalidUnderscores.test(val)) {
-        throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
-    }
-
     // transform to unicode
     // ToDo: do we need this?
     index = 0; // first char
@@ -302,6 +298,10 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
     }
 
     if (val.includes("_")) {
+        if (invalidUnderscores.test(val)) {
+            throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
+        }
+
         val = val.charAt(0) + val.substring(1).replace(validUnderscores, "");
     }
 

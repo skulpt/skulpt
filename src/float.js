@@ -62,7 +62,7 @@ function _str_to_float(str) {
         ret = Infinity;
     } else if (str.match(/^[-+]?nan$/i)) {
         ret = NaN;
-    } else if (!isNaN(tmp)) { 
+    } else if (!isNaN(tmp)) {
         ret = parseFloat(tmp);
     } else {
         throw new Sk.builtin.ValueError("float: Argument: " + str + " is not number");

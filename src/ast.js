@@ -2681,16 +2681,16 @@ function parsenumber (c, s, lineno) {
     var val;
     var tmp;
     var end = s.charAt(s.length - 1);
-
-    if (invalidSyntax.test(s)) {
-        throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
-    }
-
-    if (invalidDecimalLiteral.test(s)) {
-        throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
-    }
     
     if (s.includes("_")) {
+        if (invalidSyntax.test(s)) {
+            throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
+        }
+    
+        if (invalidDecimalLiteral.test(s)) {
+            throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
+        }
+        
         s = s.replace(validUnderscores, "");
     }
     
