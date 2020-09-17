@@ -325,21 +325,41 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     Sk.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
 
     let hasStars = false;
-    for (let elt of e.elts) {
-        if (elt.constructor === Sk.astnodes.Starred) { hasStars = true; break; }
+    let starIdx;
+    for (i = 0; i < e.elts.length; i++) {
+        if (e.elts[i].constructor === Sk.astnodes.Starred) {
+            hasStars = true;
+            starIdx = i;
+            break;
+        }
     }
 
     if (e.ctx === Sk.astnodes.Store) {
         if (hasStars) {
-            // TODO support this in Python 3 mode
-            throw new Sk.builtin.SyntaxError("Tuple unpacking with stars is not supported");
+            if (!Sk.__future__.python3) {
+                throw new Sk.builtin.SyntaxError("assignment unpacking with stars is not supported in Python 2", this.filename, e.lineno);
+            }
+            for (i = starIdx + 1; i < e.elts.length; i++) {
+                if (e.elts[i].constructor === Sk.astnodes.Starred) {
+                    throw new Sk.builtin.SyntaxError("multiple starred expressions in assignment", this.filename, e.lineno);
+                }
+            }
         }
-        items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
+        const breakIdx = hasStars ? starIdx : e.elts.length;
+        const numvals = hasStars ? e.elts.length - 1 : breakIdx;
+        out("$ret = Sk.abstr.sequenceUnpack(" + data + "," + breakIdx + "," + numvals + ", " + hasStars + ");");
+        this._checkSuspension();
+        items = this._gr("items", "$ret");
+        
         for (i = 0; i < e.elts.length; ++i) {
-            this.vexpr(e.elts[i], items + "[" + i + "]");
+            if (i === starIdx) {
+                this.vexpr(e.elts[i].value, items + "[" + i + "]");
+            } else {
+                this.vexpr(e.elts[i], items + "[" + i + "]");
+            }
         }
-    }
-    else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") { //because set's can't be assigned to.
+    } else if (e.ctx === Sk.astnodes.Load || tuporlist === "set") {
+        //because set's can't be assigned to.
 
         if (hasStars) {
             if (!Sk.__future__.python3) {
@@ -917,7 +937,14 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Set:
             return this.ctuplelistorset(e, data, 'set');
         case Sk.astnodes.Starred:
-            break;
+            switch (e.ctx) {
+                case Sk.astnodes.Store:
+                    /* In all legitimate cases, the Starred node was already replaced
+                     * by compiler_list/compiler_tuple. XXX: is that okay? */
+                    throw new Sk.builtin.SyntaxError("starred assignment target must be in a list or tuple", this.filename, e.lineno);
+                default:
+                    throw new Sk.builtin.SyntaxError("can't use starred expression here", this.filename, e.lineno);
+            }
         case Sk.astnodes.JoinedStr:
             return this.cjoinedstr(e);
         case Sk.astnodes.FormattedValue:
