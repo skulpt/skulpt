@@ -494,34 +494,50 @@ Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
     }
     const it = Sk.abstr.iter(seq);
     const res = [];
-    for (let i = 0; i < breakIdx; i++) {
-        const nxt = it.tp$iternext();
-        if (nxt === undefined) {
-            break;
+    let i = 0;
+    let upToStar;
+    if (breakIdx > 0) {
+        // iterator up to but not including the breakIdx
+        upToStar = Sk.misceval.iterFor(it, (nxt) => {
+            res.push(nxt);
+            if (++i === breakIdx) {
+                return new Sk.misceval.Break();
+            }
+        });
+    }
+
+    return Sk.misceval.chain(upToStar, () => {
+        if (res.length < breakIdx) {
+            throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + res.length + ")");
         }
-        res.push(nxt);
-    }
-    if (res.length < breakIdx) {
-        throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + res.length + ")");
-    }
-    if (!hasStar) {
-        if (it.tp$iternext() !== undefined) {
-            throw new Sk.builtin.ValueError("too many values to unpack (expected " + breakIdx + ")");
+        if (!hasStar) {
+            // check we've consumed the iterator
+            return Sk.misceval.chain(it.tp$iternext(true), (nxt) => {
+                if (nxt !== undefined) {
+                    throw new Sk.builtin.ValueError("too many values to unpack (expected " + breakIdx + ")");
+                }
+                return res;
+            });
         }
-        return res;
-    }
-    const starred = [];
-    for (let i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        starred.push(i);
-    }
-    const end = starred.length + breakIdx - numvals;
-    if (end < 0) {
-        throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + (numvals + end) + ")");
-    }
-    res.push(new Sk.builtin.list(starred.slice(0, end)));
-    res.push(...starred.slice(end));
-    // Return Javascript array of items
-    return res;
+        const starred = [];
+        return Sk.misceval.chain(
+            Sk.misceval.iterFor(it, (nxt) => {
+                starred.push(nxt);
+            }),
+            () => {
+                const starred_end = starred.length + breakIdx - numvals;
+                if (starred_end < 0) {
+                    throw new Sk.builtin.ValueError(
+                        "not enough values to unpack (expected at least " + numvals + ", got " + (numvals + starred_end) + ")"
+                    );
+                }
+                res.push(new Sk.builtin.list(starred.slice(0, starred_end)));
+                res.push(...starred.slice(starred_end));
+                // Return Javascript array of items
+                return res;
+            }
+        );
+    });
 };
 
 // Unpack mapping into a JS array of alternating keys/values, possibly suspending

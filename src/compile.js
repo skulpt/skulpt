@@ -347,7 +347,10 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
         }
         const breakIdx = hasStars ? starIdx : e.elts.length;
         const numvals = hasStars ? e.elts.length - 1 : breakIdx;
-        items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + breakIdx + "," + numvals + ", " + hasStars + ")");
+        out("$ret = Sk.abstr.sequenceUnpack(" + data + "," + breakIdx + "," + numvals + ", " + hasStars + ");");
+        this._checkSuspension();
+        items = this._gr("items", "$ret");
+        
         for (i = 0; i < e.elts.length; ++i) {
             if (i === starIdx) {
                 this.vexpr(e.elts[i].value, items + "[" + i + "]");
