@@ -594,39 +594,23 @@ Sk.exportSymbol("Sk.misceval.opAllowsEquality", Sk.misceval.opAllowsEquality);
  * @param {*} x 
  */
 Sk.misceval.isTrue = function (x) {
-    var ret;
-    if (x === true) {
+    if (x === true || x === Sk.builtin.bool.true$) {
         return true;
     }
-    if (x === false) {
+    if (x === false || x === Sk.builtin.bool.false$) {
         return false;
     }
-    if (x === null) {
+    if (x === null || x === undefined) {
         return false;
-    }
-    if (x === undefined) {
-        return false;
-    }
-    if (x.constructor === Sk.builtin.bool) {
-        return x.v !== 0;
-    }
-    if (x === Sk.builtin.none.none$) {
-        return false;
-    }
-    if (x === Sk.builtin.NotImplemented.NotImplemented$) {
-        return false;
-    }
-    if (typeof x === "number") {
-        return x !== 0;
     }
     if (x.nb$bool) {
-        return  x.nb$bool();
+        return x.nb$bool(); // the slot wrapper takes care of converting to js Boolean
     }
     if (x.sq$length) {
-        ret = x.sq$length(); // the slot wrapper takes care of the error message
-        return Sk.builtin.asnum$(ret) !== 0;
+        // the slot wrapper takes care of the error message and converting to js int
+        return x.sq$length() !== 0;
     }
-    return true;
+    return Boolean(x);
 };
 Sk.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 

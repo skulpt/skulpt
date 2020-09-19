@@ -28,6 +28,13 @@ Object.defineProperties(
     }
 );
 
+Object.defineProperties(
+    Sk.builtin.type.prototype,
+    /**@lends {Sk.builtin.type.prototype}*/ {
+        tp$base: { value: Sk.builtin.object, writable: true },
+    }
+);
+
 /**
  * @description
  * We aim to match python and javascript inheritance like
@@ -250,19 +257,20 @@ Sk.builtin.none = function () {
     return Sk.builtin.none.none$; // always return the same object
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
-Sk.builtin.none.sk$acceptable_as_base_class = false;
-Sk.builtin.none.prototype.$r = function () {
-    return new Sk.builtin.str("None");
-};
+Object.assign(Sk.builtin.none.prototype, {
+    tp$new: function (args, kwargs) {
+        Sk.abstr.checkNoArgs("NoneType", args, kwargs);
+        return Sk.builtin.none.none$;
+    },
+    $r: () => new Sk.builtin.str("None"),
+    tp$as_number: true,
+    nb$bool: () => false,
+});
 
-Sk.builtin.none.prototype.tp$hash = function () {
-    return new Sk.builtin.int_(0);
-};
+Object.defineProperties(Sk.builtin.none, {
+    sk$acceptable_as_base_class: {value: false}
+});
 
-Sk.builtin.none.prototype.tp$new = function (args, kwargs) {
-    Sk.abstr.checkNoArgs("NoneType", args, kwargs);
-    return Sk.builtin.none.none$;
-};
 
 /**
  * Python None value.

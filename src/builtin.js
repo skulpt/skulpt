@@ -177,8 +177,7 @@ Sk.builtin.len = function len(item) {
     let res;
     if (item.sq$length) {
         res = item.sq$length(true);
-    }
-    if (res === undefined) {
+    } else {
         throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
     }
     return Sk.misceval.chain(res, (r) => {
@@ -192,9 +191,7 @@ Sk.builtin.min = function min(args, kwargs) {
     if (!nargs) {
         throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
     }
-    const default_key = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
-    const $default = default_key[0];
-    const key = default_key[1];
+    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
 
     // if args is not a single iterable then default should not be included as a kwarg
     if (nargs > 1 && $default !== null) {
@@ -258,9 +255,7 @@ Sk.builtin.max = function max(args, kwargs) {
     if (!nargs) {
         throw new Sk.builtin.TypeError("max expected 1 argument, got 0");
     }
-    const default_key = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
-    const $default = default_key[0];
-    const key = default_key[1];
+    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
 
     // if args is not a single iterable then default should not be included as a kwarg
     if (nargs > 1 && $default !== null) {

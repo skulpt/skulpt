@@ -193,7 +193,6 @@ Object.defineProperties(
         apply: { value: Function.prototype.apply },
         ob$type: { value: Sk.builtin.type, writable: true },
         tp$name: { value: "type", writable: true },
-        tp$base: { value: Sk.builtin.object, writable: true },
         sk$type: { value: true },
         sk$attrError: {
             value: function () {
