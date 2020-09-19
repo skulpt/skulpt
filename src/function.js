@@ -49,6 +49,8 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         this.memoised = code.co_fastcall || undefined;
         if (code.co_fastcall) {
             this.tp$call = code;
+        } else {
+            this.tp$call = Sk.builtin.func.prototype.tp$call; // keep func the same shape
         }
         
     },
