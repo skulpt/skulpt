@@ -9,7 +9,8 @@ require("./util.js");
 // Global support functions
 Sk.global["strftime"] = require("strftime");
 Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
-require("./JSBI.js");
+require("../support/polyfills/JSBI");
+require("../support/polyfills/fromcodepoint");
 require("setimmediate");
 
 // Skulpt
@@ -27,7 +28,6 @@ require("./function.js");
 require("./sk_method.js");
 // can only do setUpSlots with tp$new from now since __new__ is a sk_method
 require("./builtin.js");
-require("./fromcodepoint.js");
 require("./errors.js");
 require("./method.js");
 require("./misceval.js");
