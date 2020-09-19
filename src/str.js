@@ -23,9 +23,13 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             ret = x;
         } else if (x === undefined) {
             ret = "";
-        } else if (x !== null && x.tp$str !== undefined) {
+        } else if (x === null) { 
+            ret = "None";
+        } else if (x.tp$str !== undefined) {
             // then we're a python object - all objects inherit from object which has tp$str
             return x.tp$str();
+        } else if (typeof x === "number") {
+            ret = Number.isFinite(x) ? String(x) : String(x).replace("Infinity", "inf").replace("NaN", "nan");
         } else {
             throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
         }
