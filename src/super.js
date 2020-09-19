@@ -61,7 +61,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
             if (i >= n) {
                 return Sk.generic.getAttr.call(this, pyName, canSuspend);
             }
-            const jsName = pyName.$jsstr();
+            const jsName = pyName.$mangled;
 
             let tmp, res;
             while (i < n) {
