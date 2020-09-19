@@ -23,12 +23,12 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
             return rangeFromPy(args[0], args[1], args[2]);
         },
         $r: function () {
-            let name = "range(" + this.start + ", " + this.stop;
+            let repr = "range(" + this.start + ", " + this.stop;
             if (this.step != 1) {
-                name += ", " + this.step;
+                repr += ", " + this.step;
             }
-            name += ")";
-            return new Sk.builtin.str(name);
+            repr += ")";
+            return new Sk.builtin.str(repr);
         },
         tp$richcompare: function (w, op) {
             if ((op !== "Eq" && op !== "NotEq") || w.ob$type !== Sk.builtin.range_) {
@@ -58,7 +58,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
         },
         mp$subscript: function (index) {
             if (Sk.misceval.isIndex(index)) {
-                let i = Sk.misceval.asIndex(index);
+                let i = Sk.misceval.asIndexSized(index);
                 if (i < 0) {
                     i = this.v.length + i;
                 }
@@ -72,7 +72,7 @@ Sk.builtin.range_ = Sk.abstr.buildNativeClass("range", {
                 index.sssiter$(lst.length, (i) => {
                     ret.push(lst[i]);
                 });
-                let { start, stop, step } = index.slice$indices();
+                let { start, stop, step } = index.slice$indices(lst.length);
                 start = Sk.misceval.asIndex(lst[start]) || this.start;
                 stop = Sk.misceval.asIndex(lst[stop]) || this.stop;
                 if (typeof this.step === "number") {

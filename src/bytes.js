@@ -29,7 +29,7 @@ const Decoder = new TextDecoder();
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
-    constructor: function (source) {
+    constructor: function bytes(source) {
         if (!(this instanceof Sk.builtin.bytes)) {
             throw new TypeError("bytes is a constructor use 'new'");
         }
@@ -65,7 +65,6 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
     },
     slots: /**@lends {Sk.builtin.bytes.prototype} */ {
         tp$getattr: Sk.generic.getAttr,
-        tp$as_sequence_or_mapping: true,
         tp$doc:
             "bytes(iterable_of_ints) -> bytes\nbytes(string, encoding[, errors]) -> bytes\nbytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer\nbytes(int) -> bytes object of size given by the parameter initialized with null bytes\nbytes() -> empty bytes object\n\nConstruct an immutable array of bytes from:\n  - an iterable yielding integers in range(256)\n  - a text string encoded using the specified encoding\n  - any object implementing the buffer API.\n  - an integer",
         tp$new: function (args, kwargs) {
@@ -108,7 +107,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             } else if (Sk.builtin.checkIterable(pySource)) {
                 let source = [];
                 let r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
-                    const n = Sk.misceval.asIndexOrThrow(byte);
+                    const n = Sk.misceval.asIndexSized(byte);
                     if (n < 0 || n > 255) {
                         throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
                     }
@@ -198,9 +197,13 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                     return (i === min_len && v.length >= w.length) || v[i] >= w[i];
             }
         },
+        tp$hash: function () {
+            return new Sk.builtin.str(this.$jsstr()).tp$hash();
+        },
+        tp$as_sequence_or_mapping: true,
         mp$subscript: function (index) {
             if (Sk.misceval.isIndex(index)) {
-                let i = Sk.misceval.asIndexSized(index);
+                let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
                 if (i !== undefined) {
                     if (i < 0) {
                         i = this.v.length + i;
@@ -276,7 +279,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             if (tgt instanceof Sk.builtin.bytes) {
                 return tgt.v;
             }
-            tgt = Sk.misceval.asIndexOrThrow(tgt, "argument should be integer or bytes-like object, not " + Sk.abstr.typeName(tgt));
+            tgt = Sk.misceval.asIndexOrThrow(tgt, "argument should be integer or bytes-like object, not {tp$name}");
             if (tgt < 0 || tgt > 0xff) {
                 throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
             }
@@ -319,6 +322,11 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             instance.v = bytes_instance.v;
             return instance;
         },
+        sk$asarray: function () {
+            const ret = [];
+            this.v.forEach((x) => {ret.push(new Sk.builtin.int_(x));});
+            return ret;
+        }
     },
     flags: {
         str$encode: strEncode,
@@ -406,10 +414,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         },
         expandtabs: {
             $meth: function (tabsize) {
-                if (!Sk.builtin.checkInt(tabsize)) {
-                    throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
-                }
-                tabsize = Sk.builtin.asnum$(tabsize);
+                tabsize = Sk.misceval.asIndexSized(tabsize, Sk.builtin.OverflowError, "an integer is required (got type {tp$nam})");
                 const final = [];
                 let linepos = 0;
                 for (let i = 0; i < this.v.length; i++) {
@@ -873,7 +878,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         },
         zfill: {
             $meth: function (width) {
-                width = Sk.misceval.asIndexSized(width);
+                width = Sk.misceval.asIndexSized(width, Sk.builtin.IndexError);
                 const fill_len = width - this.v.length;
                 if (fill_len <= 0) {
                     return new Sk.builtin.bytes(this.v);

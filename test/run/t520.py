@@ -8,7 +8,7 @@ z = isinstance(5, int)
 print z, type(z)
 
 print hash(True), type(hash(True))
-print hash(None), type(hash(None))
+print hash(None) is hash(None), type(hash(None))
 print hash("hello") > 0, type(hash("hello"))
 
 a = hasattr("hello", "not_a_method")

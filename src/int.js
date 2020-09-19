@@ -37,7 +37,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         tp$hash: numberUnarySlot(
             (v) => v,
-            (v) => JSBI.toNumber(JSBI.remainder(v, MaxSafeBig))
+            (v) => JSBI.toNumber(JSBI.remainder(v, JSBI.__MAX_SAFE))
         ),
         tp$new: function (args, kwargs) {
             let x, base;
@@ -68,7 +68,9 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         ob$le: compareSlot((v, w) => v <= w, JSBI.lessThanOrEqual),
 
         nb$int_: cloneSelf,
-        nb$index: cloneSelf,
+        nb$index: function () {
+            return this.v;
+        },
         nb$float_: function () {
             const v = this.v;
             if (typeof v === "number") {
@@ -99,11 +101,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 
         nb$add: numberSlot(
             (v, w) => v + w,
-            (v, w) => (!(JSBI.lessThan(v, JSBI.__ZERO) ^ JSBI.lessThan(w, JSBI.__ZERO)) ? JSBI.add(v, w) : convertIfSafe(JSBI.add(v, w)))
+            (v, w) => JSBI.numberIfSafe(JSBI.add(v, w))
         ),
         nb$subtract: numberSlot(
             (v, w) => v - w,
-            (v, w) => (JSBI.lessThan(v, JSBI.__ZERO) ^ JSBI.lessThan(w, JSBI.__ZERO) ? JSBI.subtract(v, w) : convertIfSafe(JSBI.subtract(v, w)))
+            (v, w) => JSBI.numberIfSafe(JSBI.subtract(v, w))
         ),
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
         nb$divide: function (other) {
@@ -145,7 +147,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 }
                 return tmp;
             },
-            (v, w) => convertIfSafe(JSBI.signedRightShift(v, w))
+            (v, w) => JSBI.numberIfSafe(JSBI.signedRightShift(v, w))
         ),
 
         nb$invert: numberUnarySlot((v) => ~v, JSBI.bitwiseNot),
@@ -160,18 +162,35 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                         ret = w < 0 ? new Sk.builtin.float_(power) : new Sk.builtin.int_(power);
                     }
                 }
+                function longpow(x, y, z) {
+                    let number = JSBI.BigInt(1);
+                    y = JSBI.greaterThan(y, JSBI.__ZERO) ?  y : JSBI.unaryMinus(y);
+                    while (JSBI.greaterThan(y, JSBI.__ZERO)) {
+                        if (JSBI.bitwiseAnd(y, JSBI.BigInt(1))) {
+                            number = JSBI.remainder(JSBI.multiply(number, x), z);
+                        }
+                        y = JSBI.signedRightShift(y, JSBI.BigInt(1));
+                        x = JSBI.remainder(JSBI.multiply(x, x), z);
+                    }
+                    return number;
+                }
+
                 if (ret === undefined) {
                     v = bigUp(v);
                     w = bigUp(w);
-                    ret = new Sk.builtin.int_(JSBI.exponentiate(v, w));
                 }
                 if (mod !== undefined) {
                     if (other.nb$isnegative()) {
-                        throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+                        throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
+                    } else if (mod.v === 0) {
+                        throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
                     }
-                    return ret.nb$remainder(mod);
+                    if (ret !== undefined) {
+                        return ret.nb$remainder(mod);
+                    }
+                    return new Sk.builtin.int_(longpow(v, w, bigUp(mod.v)));
                 } else {
-                    return ret;
+                    return new Sk.builtin.int_(JSBI.exponentiate(v, w));
                 }
             }
             return Sk.builtin.NotImplemented.NotImplemented$;
@@ -273,13 +292,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return tmp;
         },
         round$: function (ndigits) {
-            if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
-            }
             if (ndigits === undefined) {
                 ndigits = 0;
             } else {
-                ndigits = Sk.misceval.asIndex(ndigits);
+                ndigits = Sk.misceval.asIndexSized(ndigits);
             }
             const v = this.v;
             const multiplier = Math.pow(10, -ndigits);
@@ -410,7 +426,7 @@ function numberDivisionSlot(number_func, bigint_func) {
             }
             v = bigUp(v);
             w = bigUp(w);
-            return new Sk.builtin.int_(convertIfSafe(bigint_func(v, w)));
+            return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
@@ -459,7 +475,7 @@ function numberBitSlot(number_func, bigint_func) {
             }
             v = bigUp(v);
             w = bigUp(w);
-            return new Sk.builtin.int_(convertIfSafe(bigint_func(v, w)));
+            return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
@@ -596,14 +612,6 @@ function numberOrStringWithinThreshold(v) {
 
 Sk.builtin.int_.withinThreshold = numberOrStringWithinThreshold;
 
-const MaxSafeBig = JSBI.__MAX_SAFE;
-const MaxSafeBigNeg = JSBI.__MIN_SAFE;
-function convertIfSafe(v) {
-    if (JSBI.lessThan(v, MaxSafeBig) && JSBI.greaterThan(v, MaxSafeBigNeg)) {
-        return JSBI.toNumber(v);
-    }
-    return v;
-}
 function stringToNumberOrBig(s) {
     if (s <= Number.MAX_SAFE_INTEGER && s >= -Number.MAX_SAFE_INTEGER) {
         return +s;

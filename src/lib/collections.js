@@ -576,7 +576,7 @@ function collections_mod(collections) {
             tp$init: function (args, kwargs) {
                 [iterable, maxlen] = Sk.abstr.copyKeywordsToNamedArgs("deque", ["iterable", "maxlen"], args, kwargs);
                 if (maxlen !== undefined && !Sk.builtin.checkNone(maxlen)) {
-                    maxlen = Sk.misceval.asIndexOrThrow(maxlen, "an integer is required");
+                    maxlen = Sk.misceval.asIndexSized(maxlen, Sk.builtin.OverflowError, "an integer is required");
                     if (maxlen < 0) {
                         throw new Sk.builtin.ValueError("maxlen must be non-negative");
                     } else {
@@ -695,7 +695,7 @@ function collections_mod(collections) {
                 return (this.tail - this.head) & this.mask;
             },
             sq$repeat: function (n) {
-                n = Sk.misceval.asIndexOrThrow(n, "can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+                n = Sk.misceval.asIndexOrThrow(n, "can't multiply sequence by non-int of type '{tp$name}'");
                 const size = (this.tail - this.head) & this.mask;
                 const new_deque = this.$copy();
                 let pos;
@@ -740,10 +740,7 @@ function collections_mod(collections) {
                 return this;
             },
             nb$inplace_multiply: function (n) {
-                n = Sk.misceval.asIndexOrThrow(n, "can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
-                if (typeof n !== "number") {
-                    throw new Sk.builtin.OverflowError("cannot fit '" + Sk.abstr.typeName(n) + "' into an index-sized integer");
-                }
+                n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError, "can't multiply sequence by non-int of type '{tp$name}'");
                 if (n <= 0) {
                     this.$clear();
                 }
@@ -856,7 +853,7 @@ function collections_mod(collections) {
             },
             insert: {
                 $meth: function (index, value) {
-                    index = Sk.misceval.asIndexOrThrow(index, "integer argument expected, got " + Sk.abstr.typeName(index));
+                    index = Sk.misceval.asIndexOrThrow(index, "integer argument expected, got {tp$name}");
                     const size = (this.tail - this.head) & this.mask;
                     if (this.maxlen !== undefined && size >= this.maxlen) {
                         throw new Sk.builtin.IndexError("deque already at its maximum size");
@@ -962,9 +959,12 @@ function collections_mod(collections) {
                 $doc: "D.reverse() -- reverse *IN PLACE*",
             },
             rotate: {
-                $meth: function (num) {
-                    num = num || new Sk.builtin.int_(1);
-                    n = Sk.misceval.asIndexOrThrow(num, "'" + Sk.abstr.typeName(num) + "' object cannot be interpreted as an integer");
+                $meth: function (n) {
+                    if (n === undefined) {
+                        n = 1;
+                    } else {
+                        n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
+                    }
                     const head = this.head;
                     const tail = this.tail;
 

@@ -942,71 +942,21 @@ Sk.builtin.hasattr = function hasattr(obj, pyName) {
     return Sk.misceval.chain(res, (val) => (val === undefined ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$));
 };
 
-Sk.builtin.pow = function pow(a, b, c) {
-    var ret;
-    var res;
-    var right;
-    var left;
-    var c_num;
-    var b_num;
-    var a_num;
-
-    if (c === Sk.builtin.none.none$) {
-        c = undefined;
+Sk.builtin.pow = function pow(v, w, z) {
+    // skulpt does support ternary slots
+    if (z === undefined || Sk.builtin.checkNone(z)) {
+        return Sk.abstr.numberBinOp(v, w, "Pow");
     }
-
-    // add complex type hook here, builtin is messed up anyways
-    if (Sk.builtin.checkComplex(a)) {
-        return a.nb$power(b, c); // call complex pow function
-    }
-
-    a_num = Sk.builtin.asnum$(a);
-    b_num = Sk.builtin.asnum$(b);
-    c_num = Sk.builtin.asnum$(c);
-
-    if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
-        if (c === undefined) {
-            throw new Sk.builtin.TypeError(
-                "unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'"
-            );
+    // only support a third argument if they're all the integers.
+    if (!(Sk.builtin.checkInt(v) && Sk.builtin.checkInt(w) && Sk.builtin.checkInt(z))) {
+        if (Sk.builtin.checkFloat(v) || Sk.builtin.checkComplex(v)) {
+            return v.nb$power(w, z); // these slots for float and complex throw the correct errors
         }
         throw new Sk.builtin.TypeError(
-            "unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'"
+            "unsupported operand type(s) for ** or pow(): '" + Sk.abstr.typeName(v) + "', '" + Sk.abstr.typeName(w) + "', '" + Sk.abstr.typeName(z) + "'"
         );
     }
-    if (a_num < 0 && b instanceof Sk.builtin.float_) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
-    }
-
-    if (c === undefined) {
-        if (a instanceof Sk.builtin.float_ || b instanceof Sk.builtin.float_ || b_num < 0) {
-            return new Sk.builtin.float_(Math.pow(a_num, b_num));
-        }
-        left = new Sk.builtin.int_(a_num);
-        right = new Sk.builtin.int_(b_num);
-        res = left.nb$power(right);
-        return res;
-    } else {
-        if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
-            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
-        }
-        if (b_num < 0) {
-            if (Sk.__future__.exceptions) {
-                throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
-            } else {
-                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
-            }
-        }
-        if (c_num === 0) {
-            throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
-        }
-        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng || Math.pow(a_num, b_num) === Infinity) {
-            return a.nb$power(b, c);
-        } else {
-            ret = new Sk.builtin.int_(Math.pow(a_num, b_num));
-            return ret.nb$remainder(c);
-        }
-    }
+    return v.nb$power(w, z);
 };
 
 Sk.builtin.quit = function quit(msg) {

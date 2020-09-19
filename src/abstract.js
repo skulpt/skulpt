@@ -38,7 +38,7 @@ const binop_name_to_symbol = {
     FloorDiv: "//",
     Mod: "%",
     DivMod: "divmod()",
-    Pow: "**",
+    Pow: "** or pow()",
     LShift: "<<",
     RShift: ">>",
     BitAnd: "&",

@@ -99,6 +99,13 @@ function wrapperRichCompare(self, args, kwargs) {
     return new Sk.builtin.bool(res);
 }
 
+function wrapperCallBack(wrapper, callback) {
+    return function (self,args, kwargs) {
+        const res = wrapper.call(this, self, args, kwargs);
+        return callback(res);
+    };
+}
+
 /**
  * @description
  * Slot functions are wrappers around an Sk.builtin.func
@@ -385,7 +392,7 @@ slots.__str__ = {
 slots.__hash__ = {
     $name: "__hash__",
     $slot_name: "tp$hash",
-    $slot_func: slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int"),
+    $slot_func: slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int", (res) => typeof res.v === "number" ? res : res.tp$hash()),
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
@@ -859,17 +866,17 @@ slots.__len__ = {
             if (canSuspend) {
                 res = Sk.misceval.callsimOrSuspendArray(func, []);
                 return Sk.misceval.chain(res, (r) => {
-                    return Sk.misceval.asIndexOrThrow(r, "'" + Sk.abstr.typeName(r) + "' object cannot be interpreted as an integer");
+                    return Sk.misceval.asIndexOrThrow(r);
                 });
             } else {
                 res = Sk.misceval.callsimArray(func, []);
-                return Sk.misceval.asIndexOrThrow(res, "'" + Sk.abstr.typeName(res) + "' object cannot be interpreted as an integer");
+                return Sk.misceval.asIndexOrThrow(res);
             }
         };
     },
     $wrapper: function __len__(self, args, kwargs) {
         Sk.abstr.checkNoArgs("__len__", args, kwargs);
-        return new Sk.builtin.int_(self.sq$length(true));
+        return new Sk.builtin.int_(self.sq$length());
     },
     $flags: { NoArgs: true },
     $textsig: "($self, /)",
@@ -1644,8 +1651,8 @@ slots.__itruediv__ = {
 slots.__index__ = {
     $name: "__index__",
     $slot_name: "nb$index",
-    $slot_func: slotFuncNoArgsWithCheck("__index__", Sk.builtin.checkInt, "int"),
-    $wrapper: wrapperCallNoArgs,
+    $slot_func: slotFuncNoArgsWithCheck("__index__", Sk.builtin.checkInt, "int", (res) => res.v),
+    $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.int_(res)),
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "Return self converted to an integer, if self is suitable for use as an index into a list.",

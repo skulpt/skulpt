@@ -29,7 +29,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         tp$doc: "Convert a string or number to a floating point number, if possible.",
         tp$hash: function () {
             //todo - this hash function causes a lot of collisions - Cpython implementation is different
-            return this.nb$int_();
+            return this.nb$int_().tp$hash();
         },
         $r: function () {
             return new Sk.builtin.str(this.str$(10, true));
@@ -102,8 +102,8 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         nb$divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)])),
         nb$reflected_divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)])),
         
-        nb$power: numberSlot(power),
-        nb$reflected_power: numberSlot((v, w) => power(w, v)),
+        nb$power: ternarySlot(power),
+        nb$reflected_power: ternarySlot((v, w) => power(w, v)),
         
         nb$abs: function () {
             return new Sk.builtin.float_(Math.abs(this.v));
@@ -283,6 +283,16 @@ function numberSlot(f) {
     };
 }
 
+function ternarySlot(f) {
+    const binSlot = numberSlot(f);
+    return function (other, z) {
+        if (z !== undefined && !Sk.builtin.checkNone(z)) {
+            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
+        }
+        return binSlot.call(this, other);
+    };
+}
+
 function divide(v, w) {
     if (w === 0) {
         throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
@@ -374,10 +384,10 @@ function remainder(v, w) {
 
 function power(v, w) {
     if (v < 0 && w % 1 !== 0) {
-        throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
+        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
     }
     if (v === 0 && w < 0) {
-        throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
+        throw new Sk.builtin.ZeroDivisionError("0.0 cannot be raised to a negative power");
     }
 
     const result = Math.pow(v, w);
@@ -401,14 +411,11 @@ function power(v, w) {
  */
 Sk.builtin.float_.prototype.round$ = function (ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
-    if (ndigits !== undefined && !Sk.misceval.isIndex(ndigits)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
-    }
     number = Sk.builtin.asnum$(this);
     if (ndigits === undefined) {
         ndigs = 0;
     } else {
-        ndigs = Sk.misceval.asIndex(ndigits);
+        ndigs = Sk.misceval.asIndexSized(ndigits);
     }
 
     if (Sk.__future__.bankers_rounding) {

@@ -25,7 +25,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             if (Sk.builtin.int_.withinThreshold(v)) {
                 return new Sk.builtin.int_(parseInt(v, 10));
             }
-            return new Sk.builtin.int_(JSBI.BigInt(v));
+            return new Sk.builtin.int_(JSBI.BigInt(v)).tp$hash();
         },
         tp$getattr: Sk.generic.getAttr,
         tp$new: function (args, kwargs) {

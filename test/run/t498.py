@@ -76,5 +76,5 @@ except TypeError as e:
 try:
     print pow(4, -3, 2)
     print "you shouldn't see this"
-except TypeError as e:
+except ValueError as e:
     print repr(e)

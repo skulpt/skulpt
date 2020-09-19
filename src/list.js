@@ -81,7 +81,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         },
         mp$subscript: function (index) {
             if (Sk.misceval.isIndex(index)) {
-                let i = Sk.misceval.asIndexSized(index);
+                let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
                 i = this.list$inRange(i, "list index out of range");
                 return this.v[i];
             } else if (index instanceof Sk.builtin.slice) {
@@ -323,7 +323,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             }
         },
         ass$index: function (index, value) {
-            let i = Sk.misceval.asIndexSized(index);
+            let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
             i = this.list$inRange(i, "list assignment index out of range");
             this.v[i] = value;
         },
@@ -365,7 +365,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             }
         },
         del$index: function (index) {
-            let i = Sk.misceval.asIndexSized(index);
+            let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
             i = this.list$inRange(i, "list assignment index out of range");
             this.v.splice(i, 1);
         },
