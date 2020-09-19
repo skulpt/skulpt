@@ -624,6 +624,17 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     return result;
 };
 
+Sk.abstr.objectHash = function (obj) {
+    const hash_func = obj.tp$hash;
+    if (hash_func !== undefined) {
+        if (Sk.builtin.checkNone(hash_func)) {
+            throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(obj) + "'");
+        }
+        return obj.tp$hash();
+    }
+    throw new Sk.builtin.TypeError("unsupported Javascript type");
+};
+
 Sk.abstr.objectAdd = function (a, b) {
     if (a.nb$add) {
         return a.nb$add(b);

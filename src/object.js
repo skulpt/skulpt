@@ -132,19 +132,25 @@ Sk.builtin.object.prototype.tp$str = function () {
     return this.$r();
 };
 
+
+
+const hashMap = new Map();
 /**
  * Return the hash value of this instance.
  *
  * Javascript function, returns Python object.
  *
- * @return {Sk.builtin.int_} The hash value
+ * @return {Number} The hash value
  * @ignore
  */
 Sk.builtin.object.prototype.tp$hash = function () {
-    if (!this.$savedHash_) {
-        this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
+    let hash = hashMap.get(this);
+    if (hash !== undefined) {
+        return hash;
     }
-    return this.$savedHash_;
+    hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
+    hashMap.set(this, hash);
+    return hash;
 };
 
 Sk.builtin.object.prototype.tp$richcompare = function (other, op) {

@@ -21,9 +21,11 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.",
         tp$hash: function () {
             // _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
-            const v = this.imag * 1000003 + this.real;
+            const real_hash = new Sk.builtin.float_(this.real).tp$hash();
+            const imag_hash = new Sk.builtin.float_(this.imag).tp$hash();
+            const v = imag_hash * 1003 + real_hash;
             if (Sk.builtin.int_.withinThreshold(v)) {
-                return new Sk.builtin.int_(parseInt(v, 10));
+                return v;
             }
             return new Sk.builtin.int_(JSBI.BigInt(v)).tp$hash();
         },

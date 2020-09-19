@@ -663,14 +663,7 @@ Sk.builtin.isinstance = function isinstance(obj, type) {
 };
 
 Sk.builtin.hash = function hash(obj) {
-    const hash_func = obj.tp$hash;
-    if (hash_func !== undefined) {
-        if (Sk.builtin.checkNone(hash_func)) {
-            throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(obj) + "'");
-        }
-        return obj.tp$hash();
-    }
-    throw new Sk.builtin.TypeError("unsupported Javascript type");
+    return new Sk.builtin.int_(Sk.abstr.objectHash(obj));
 };
 
 Sk.builtin.getattr = function getattr(obj, pyName, default_) {

@@ -58,9 +58,9 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                 mult = 1000003;
             const len = this.v.length;
             for (let i = 0; i < len; ++i) {
-                y = Sk.builtin.hash(this.v[i]).v;
+                y = Sk.abstr.objectHash(this.v[i]);
                 if (y === -1) {
-                    return new Sk.builtin.int_(-1);
+                    return -1;
                 }
                 x = (x ^ y) * mult;
                 mult += 82520 + len + len;
@@ -69,7 +69,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             if (x === -1) {
                 x = -2;
             }
-            return new Sk.builtin.int_(x | 0);
+            return x | 0;
         },
         tp$richcompare: Sk.generic.seqCompare,
         tp$iter: function () {

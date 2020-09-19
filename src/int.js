@@ -35,10 +35,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         $r: function () {
             return new Sk.builtin.str(this.v.toString());
         },
-        tp$hash: numberUnarySlot(
-            (v) => v,
-            (v) => JSBI.toNumber(JSBI.remainder(v, JSBI.__MAX_SAFE))
-        ),
+        tp$hash: function () {
+            const v = this.v;
+            return typeof v === "number" ? v : JSBI.toNumber(JSBI.remainder(v, JSBI.__MAX_SAFE));
+        },
         tp$new: function (args, kwargs) {
             let x, base;
             if (args.length + (kwargs ? kwargs.length : 0) === 1) {

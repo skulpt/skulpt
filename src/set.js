@@ -456,12 +456,10 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             const entries = this.sk$asarray();
             hash *= entries.length + 1;
             for (let i = 0; i < entries.length; i++) {
-                const h = Sk.builtin.hash(entries[i]).v;
+                const h = Sk.abstr.objectHash(entries[i]);
                 hash ^= (h ^ (h << 16) ^ 89869747) * 3644798167;
             }
             hash = hash * 69069 + 907133923;
-            hash = new Sk.builtin.int_(hash);
-            this.$savedHash_ = hash;
             return hash;
         },
         /**

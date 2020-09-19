@@ -392,7 +392,7 @@ slots.__str__ = {
 slots.__hash__ = {
     $name: "__hash__",
     $slot_name: "tp$hash",
-    $slot_func: slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int", (res) => typeof res.v === "number" ? res : res.tp$hash()),
+    $slot_func: slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int", (res) => typeof res.v === "number" ? res.v : res.tp$hash()),
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
     $flags: { NoArgs: true },

@@ -1,5 +1,6 @@
 /** @typedef {Sk.builtin.object} */ var pyObject;
 
+const hashMap = Object.create(null);
 
 /**
  * @constructor
@@ -28,8 +29,21 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         tp$as_number: true,
         tp$doc: "Convert a string or number to a floating point number, if possible.",
         tp$hash: function () {
-            //todo - this hash function causes a lot of collisions - Cpython implementation is different
-            return this.nb$int_().tp$hash();
+            const v = this.v;
+            let hash = hashMap[v];
+            if (hash !== undefined) {
+                return hash;
+            } else if (Number.isInteger(v) && Sk.builtin.int_.withinThreshold(v)) {
+                hash = this.nb$int_().tp$hash();
+            } else if (Number.isFinite(v)) {
+                hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
+            } else if (Number.isNaN(v)) {
+                hash = 0;
+            } else {
+                return v > 0 ? 314159 : -314159;
+            }
+            hashMap[this.v] = hash;
+            return hash;
         },
         $r: function () {
             return new Sk.builtin.str(this.str$(10, true));

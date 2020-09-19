@@ -324,7 +324,7 @@ function getHash(key) {
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     }
-    key_hash = Sk.builtin.hash(key).v; // builtin.hash returns an int
+    key_hash = Sk.abstr.objectHash(key); // builtin.hash returns an int
     return key_hash;
 }
 
