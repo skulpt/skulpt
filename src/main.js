@@ -67,6 +67,5 @@ require("./timsort.js");
 require("./super.js");
 require("./builtindict.js");
 require("./constants.js");
-require("./internalpython.js");
 
 /* jshint ignore:end */
