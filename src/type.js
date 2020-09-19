@@ -151,10 +151,9 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     }
 
     // copy properties from dict into klass.prototype
-    for (let it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
-        const v = dict.mp$subscript(k);
-        klass.prototype[k.v] = v;
-    }
+    dict.$items().forEach(([key, val]) => {
+        klass.prototype[key.$mangled] = val;
+    });
     // make __new__ a static method
     if (klass.prototype.hasOwnProperty("__new__")) {
         const newf = klass.prototype.__new__;

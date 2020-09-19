@@ -162,7 +162,7 @@ function customEntriesGetter(mapping, d) {
                     const key = keys[i];
                     const k = Sk.unfixReserved(key);
                     if (!k.includes("$")) {
-                        entries[k.replace(reg, "!$&")] = { lhs: new Sk.builtin.str(k), rhs: d[key] };
+                        entries[k.replace(reg, "!$&")] = [new Sk.builtin.str(k), d[key]];
                     }
                 }
                 return entries;

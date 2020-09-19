@@ -44,7 +44,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             this.in$repr = true;
             // iterate over the keys - we don't use the dict iterator or mp$subscript here
-            const ret = Object.values(this.entries).map((x) => Sk.misceval.objectRepr(x.lhs) + ": " + Sk.misceval.objectRepr(x.rhs));
+            const ret = this.$items().map(([key, val]) => Sk.misceval.objectRepr(key) + ": " + Sk.misceval.objectRepr(val));
             this.in$repr = false;
             return new Sk.builtin.str("{" + ret.join(", ") + "}");
         },
@@ -65,16 +65,11 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             } else if (this.size !== other.size) {
                 res = false;
             } else {
-                let otherv, item;
-                res = true;
-                for (let entry_hash in this.entries) {
-                    item = this.entries[entry_hash];
-                    otherv = other.mp$lookup(item.lhs);
-                    if (otherv === undefined || !Sk.misceval.richCompareBool(item.rhs, otherv, "Eq")) {
-                        res = false;
-                        break;
-                    }
-                }
+                let otherv;
+                res = this.$items().every(([key, val]) => {
+                    otherv = other.mp$lookup(key);
+                    return otherv !== undefined && (otherv === val || Sk.misceval.richCompareBool(val, otherv, "Eq"));
+                });
             }
             return op === "Eq" ? res : !res;
         },
@@ -155,11 +150,11 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 const hash = getHash(key);
                 item = typeof hash === "string" ? this.entries[hash] : this.get$bucket_item(key, hash);
                 if (item !== undefined) {
-                    return item.rhs;
+                    return item[1];
                 }
                 default_ = default_ || Sk.builtin.none.none$;
                 if (typeof hash === "string") {
-                    this.entries[hash] = { lhs: key, rhs: default_ };
+                    this.entries[hash] = [key, default_];
                 } else {
                     this.set$bucket_item(key, default_, hash);
                 }
@@ -176,7 +171,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $meth: function (key, d) {
                 const item = this.pop$item(key);
                 if (item !== undefined) {
-                    return item.rhs;
+                    return item[1];
                 }
                 // Not found in dictionary
                 if (d !== undefined) {
@@ -196,9 +191,9 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 if (size === 0) {
                     throw new Sk.builtin.KeyError("popitem(): dictionary is empty");
                 }
-                const item = Object.values(this.entries)[size - 1];
-                this.pop$item(item.lhs);
-                return new Sk.builtin.tuple([item.lhs, item.rhs]);
+                const [key, val] = this.$items()[size - 1];
+                this.pop$item(key);
+                return new Sk.builtin.tuple([key, val]);
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -284,7 +279,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return this.size;
         },
         sk$asarray: function () {
-            return Object.values(this.entries).map((item) => item.lhs);
+            return Object.values(this.entries).map((item) => item[0]);
         },
         update$onearg: function (arg) {
             if (arg instanceof Sk.builtin.dict || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
@@ -300,7 +295,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             for (let i in entries) {
                 const key = entries[i][0];
                 const item = entries[i][1];
-                newCopy.entries[key] = { lhs: item.lhs, rhs: item.rhs };
+                newCopy.entries[key] = [item[0], item[1]];
             }
             let bucket, this_bucket;
             for (let i in this.buckets) {
@@ -312,8 +307,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             return newCopy;
         },
-        dict$items: function () {
-            return Object.values(this.entries).map((item) => [item.lhs, item.rhs]);
+        $items: function () {
+            return Object.values(this.entries);
         }
     },
 });
@@ -325,7 +320,7 @@ function getHash(key) {
     if (key_hash !== undefined) {
         return key_hash;
     } else if (key instanceof Sk.builtin.str) {
-        key_hash = key.$jsstr().replace(reg, "!$&"); // avoid numbers and clashes
+        key_hash = key.v.replace(reg, "!$&"); // avoid numbers and clashes
         key.$savedKeyHash_ = key_hash;
         return key_hash;
     }
@@ -346,7 +341,7 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
     }
     const item = this.entries[key_hash];
     if (item !== undefined) {
-        return item.rhs;
+        return item[1];
     }
     return;
 };
@@ -372,17 +367,16 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
  */
 Sk.builtin.dict.prototype.get$bucket_item = function (key, hash_value) {
     const bucket = this.buckets[hash_value];
-    let bucket_key, item;
     if (bucket === undefined) {
         return;
     }
+    let item;
     for (let i = 0; i < bucket.length; i++) {
         item = bucket[i];
         if (item === undefined) {
             continue;
         }
-        bucket_key = item.lhs;
-        if (bucket_key === key || Sk.misceval.richCompareBool(key, bucket_key, "Eq")) {
+        if (item[0] === key || Sk.misceval.richCompareBool(key, item[0], "Eq")) {
             return item;
         }
     }
@@ -410,8 +404,7 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
         if (item === undefined) {
             continue;
         }
-        bucket_key = item.lhs;
-        if (bucket_key === key || Sk.misceval.richCompareBool(key, bucket_key, "Eq")) {
+        if (item[0] === key || Sk.misceval.richCompareBool(key, item[0], "Eq")) {
             const key_hash = "#" + hash_value + "_" + i;
             delete this.entries[key_hash];
             bucket[i] = undefined;
@@ -435,13 +428,13 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
  * then will set the item in the entries and return the item
  * Note this should only be called and immediately preceded by assigning the value to the rhs
  *
- * @return {{lhs: Sk.builtin.object, rhs: Sk.builtin.object}}
+ * @return { [Sk.builtin.object, Sk.builtin.object] }
  * @private
  */
 Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
     let key_hash,
         bucket = this.buckets[hash_value];
-    const item = { lhs: key, rhs: value };
+    const item = [key, value];
     if (bucket === undefined) {
         this.buckets[hash_value] = [item];
         key_hash = "#" + hash_value + "_" + 0;
@@ -464,7 +457,7 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
  * @param {Sk.builtin.object} key - want to check if the key is inside the dict
  *
  * @return undefined if no key was found
- * or the item.rhs (value) if the key was found
+ * or the item[1] (value) if the key was found
  * @private
  */
 Sk.builtin.dict.prototype.mp$lookup = function (key) {
@@ -477,7 +470,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
         item = this.get$bucket_item(key, hash);
     }
     if (item !== undefined) {
-        return item.rhs;
+        return item[1];
     }
     // Not found in dictionary
     return undefined;
@@ -607,11 +600,11 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
         // we have a string so pass it to the dictionary
         item = this.entries[hash];
         if (item === undefined) {
-            this.entries[hash] = { lhs: key, rhs: value };
+            this.entries[hash] = [key, value];
             this.size++;
             this.$version++;
         } else {
-            item.rhs = value;
+            item[1] = value;
         }
     } else {
         item = this.get$bucket_item(key, hash);
@@ -620,7 +613,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
             this.size++;
             this.$version++;
         } else {
-            item.rhs = value;
+            item[1] = value;
         }
     }
 };
@@ -834,7 +827,7 @@ function buildDictIterClass(typename, iternext, reversed) {
             this.$orig = dict;
             this.tp$iternext = () => {
                 // only set up the array on the first iteration
-                this.$seq = Object.values(dict.entries);
+                this.$seq = dict.$items();
                 this.$version = dict.$version;
                 if (reversed) {
                     this.$seq = this.$seq.reverse();
@@ -868,7 +861,7 @@ function itemIterNextCheckSize() {
  */
 var dict_iter_ = buildDictIterClass("dict_keyiterator", function () {
     const item = this.next$item();
-    return item && item.lhs;
+    return item && item[0];
 });
 
 /**
@@ -877,7 +870,7 @@ var dict_iter_ = buildDictIterClass("dict_keyiterator", function () {
  */
 var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
     const item = this.next$item();
-    return item && new Sk.builtin.tuple([item.lhs, item.rhs]);
+    return item && new Sk.builtin.tuple([item[0], item[1]]);
 });
 
 /**
@@ -886,7 +879,7 @@ var dict_itemiter_ = buildDictIterClass("dict_itemiterator", function () {
  */
 var dict_valueiter_ = buildDictIterClass("dict_valueiterator", function () {
     const item = this.next$item();
-    return item && item.rhs;
+    return item && item[1];
 });
 
 var dict_reverse_iter_ = buildDictIterClass("dict_reversekeyiterator", dict_iter_.prototype.tp$iternext, true);
@@ -918,7 +911,7 @@ Sk.builtin.dict.py2$methods = {
     items: {
         $name: "items",
         $meth: function () {
-            return new Sk.builtin.list(Object.values(this.entries).map((item) => new Sk.builtin.tuple([item.lhs, item.rhs])));
+            return new Sk.builtin.list(this.$items().map(([key, val]) => new Sk.builtin.tuple([key, val])));
         },
         $flags: { NoArgs: true },
         $textsig: null,
@@ -927,7 +920,7 @@ Sk.builtin.dict.py2$methods = {
     values: {
         $name: "values",
         $meth: function () {
-            return new Sk.builtin.list(Object.values(this.entries).map((item) => item.rhs));
+            return new Sk.builtin.list(this.$items().map(([_, val]) => val));
         },
         $flags: { NoArgs: true },
         $textsig: null,

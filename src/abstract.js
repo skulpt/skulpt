@@ -441,11 +441,22 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
 // at some point, but in the meantime we have this function to
 // unpack keyword dictionaries into our special format
 Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObject) {
-    if (!Sk.builtin.checkMapping(pyMapping)) {
+    if (pyMapping instanceof Sk.builtin.dict) {
+        pyMapping.$items().forEach(([key, val]) => {
+            if (!Sk.builtin.checkString(key)) {
+                throw new Sk.builtin.TypeError((pyCodeObject.$qualname ? pyCodeObject.$qualname + "() " : "") + "keywords must be strings");
+            } 
+            jsArray.push(key.v);
+            jsArray.push(val);
+        });
+        return;
+    }
+
+    const keyf = Sk.abstr.lookupSpecial(pyMapping, Sk.builtin.str.$keys);
+    if (keyf === undefined) {
         throw new Sk.builtin.TypeError("Object is not a mapping");
     }
-    const keys = Sk.misceval.callsimOrSuspendArray(Sk.abstr.lookupSpecial(pyMapping, Sk.builtin.str.$keys));
-    return Sk.misceval.chain(keys, (keys) =>
+    return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyf), (keys) =>
         Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) => {
             if (!Sk.builtin.checkString(key)) {
                 throw new Sk.builtin.TypeError((pyCodeObject.$qualname ? pyCodeObject.$qualname + "() " : "") + "keywords must be strings");

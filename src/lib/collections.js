@@ -140,7 +140,7 @@ function collections_mod(collections) {
                         n = Sk.misceval.asIndexOrThrow(n);
                         n = n > length ? length : n < 0 ? 0 : n;
                     }
-                    const most_common_elem = this.dict$items().sort((a, b) => {
+                    const most_common_elem = this.$items().sort((a, b) => {
                         if (Sk.misceval.richCompareBool(a[1], b[1], "Lt")) {
                             return 1;
                         } else if (Sk.misceval.richCompareBool(a[1], b[1], "Gt")) {
@@ -225,94 +225,94 @@ function collections_mod(collections) {
             },
             tp$as_number: true,
             nb$positive: counterNumberSlot(function (result) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     if (Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, count);
                     }
-                }
+                });
             }),
             nb$negative: counterNumberSlot(function (result) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     if (Sk.misceval.richCompareBool(count, this.$zero, "Lt")) {
                         result.mp$ass_subscript(elem, Sk.abstr.numberBinOp(this.$zero, count, "Sub"));
                     }
-                }
+                });
             }),
             nb$subtract: counterNumberSlot(function (result, other) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     const newcount = Sk.abstr.numberBinOp(count, other.mp$subscript(elem), "Sub");
                     if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, newcount);
                     }
-                }
-                for (let [elem, count] of other.dict$items()) {
+                });
+                other.$items().forEach(([elem, count]) => {
                     if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Lt")) {
                         result.mp$ass_subscript(elem, Sk.abstr.numberBinOp(this.$zero, count, "Sub"));
                     }
-                }
+                });
             }),
             nb$add: counterNumberSlot(function (result, other) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     const newcount = Sk.abstr.numberBinOp(count, other.mp$subscript(elem), "Add");
                     if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, newcount);
                     }
-                }
-                for (let [elem, count] of other.dict$items()) {
+                });
+                other.$items().forEach(([elem, count]) => {
                     if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, count);
                     }
-                }
+                });
             }),
             nb$inplace_add: counterInplaceSlot("+", function (other) {
-                for (let [elem, count] of other.dict$items()) {
+                other.$items().forEach(([elem, count]) => {
                     const newcount = Sk.abstr.numberInplaceBinOp(this.mp$subscript(elem), count, "Add");
                     this.mp$ass_subscript(elem, newcount);
-                }
+                });
             }),
             nb$inplace_subtract: counterInplaceSlot("-", function (other) {
-                for (let [elem, count] of other.dict$items()) {
+                other.$items().forEach(([elem, count]) => {
                     const newcount = Sk.abstr.numberInplaceBinOp(this.mp$subscript(elem), count, "Sub");
                     this.mp$ass_subscript(elem, newcount);
-                }
+                });
             }),
             nb$or: counterNumberSlot(function (result, other) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     const other_count = other.mp$subscript(elem);
                     const newcount = Sk.misceval.richCompareBool(count, other_count, "Lt") ? other_count : count;
                     if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, newcount);
                     }
-                }
-                for (let [elem, count] of other.dict$items()) {
+                });
+                other.$items().forEach(([elem, count]) => {
                     if (this.mp$lookup(elem) === undefined && Sk.misceval.richCompareBool(count, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, count);
                     }
-                }
+                });
             }),
             nb$and: counterNumberSlot(function (result, other) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     const other_count = other.mp$subscript(elem);
                     const newcount = Sk.misceval.richCompareBool(count, other_count, "Lt") ? count : other_count;
                     if (Sk.misceval.richCompareBool(newcount, this.$zero, "Gt")) {
                         result.mp$ass_subscript(elem, newcount);
                     }
-                }
+                });
             }),
             nb$inplace_and: counterInplaceSlot("&", function (other) {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     const other_count = other.mp$subscript(elem);
                     if (Sk.misceval.richCompareBool(other_count, count, "Lt")) {
                         this.mp$ass_subscript(elem, other_count);
                     }
-                }
+                });
             }),
             nb$inplace_or: counterInplaceSlot("|", function (other) {
-                for (let [elem, other_count] of other.dict$items()) {
+                other.$items().forEach(([elem, other_count]) => {
                     if (Sk.misceval.richCompareBool(other_count, this.mp$subscript(elem), "Gt")) {
                         this.mp$ass_subscript(elem, other_count);
                     }
-                }
+                });
             }),
             nb$reflected_and: null, // Counter doesn't have reflected slots
             nb$reflected_or: null,
@@ -321,11 +321,11 @@ function collections_mod(collections) {
         },
         proto: {
             keep$positive: function () {
-                for (let [elem, count] of this.dict$items()) {
+                this.$items().forEach(([elem, count]) => {
                     if (Sk.misceval.richCompareBool(count, this.$zero, "LtE")) {
                         this.mp$ass_subscript(elem); // delete the element
                     }
-                }
+                });
                 return this;
             },
             $zero: new Sk.builtin.int_(0),
