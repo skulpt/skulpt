@@ -202,10 +202,3 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
     Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
 })();
 
-/**
- * worth noting that we don't use the new api for object since descr_objects are not yet initialized
- * object, type, NoneType, NotImplemented,
- * slot_wrapper, methods_descriptor, getsets_desciptor, class_descriptor
- * will be fully initialized in the import.js doOneTimeInitialization
- * @ignore
- */
