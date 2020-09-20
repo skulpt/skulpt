@@ -30,7 +30,9 @@ module.exports = (env, argv) => {
     };
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
+    var jsbifile = 'jsbi/dist/jsbi.mjs';
     var mod = {};
+    var languageOut = (env && env.languageOut) || '';
 
     if (argv.mode === 'production') {
         opt = {
@@ -42,14 +44,23 @@ module.exports = (env, argv) => {
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['fileoverviewTags', 'deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
-                    languageOut: (env && env.languageOut) ? env.languageOut : 'ECMASCRIPT_2015',
+                    languageOut: languageOut || 'ECMASCRIPT_2015',
                     externs: 'support/externs/sk.js',
+                    rewritePolyfills: true,
+                    // compiler flags here
+                    //
+                    // for debugging help, try these:
+                    //
                     // warningLevel: "QUIET",
+                    // formatting: 'PRETTY_PRINT',
+                    // debug: true,
+                    // renaming: false
                 })
             ]
         };
         outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
+        jsbifile = languageOut === "ECMASCRIPT5" || languageOut === "ECMASCRIPT3" ? "jsbi" : "jsbi/dist/jsbi.mjs";
         mod = {
             rules: [
                 {
@@ -88,7 +99,8 @@ module.exports = (env, argv) => {
         optimization: opt,
         resolve: {
             alias: {
-                'assert': assertfile
+                'assert': assertfile,
+                'jsbi' : jsbifile,
             }
         },
 

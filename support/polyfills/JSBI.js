@@ -8,13 +8,19 @@
  * but use BigInt as the primitive type
  * 
  */
-if (Sk.global.BigInt === undefined) {
-    Sk.global.JSBI = require("jsbi");
+const { default: __JSBI } = require("jsbi"); 
+// use jsbi which is es5 compliant - change to ES6 in the compilation version
+var globalThis = Sk.global;
+
+globalThis.JSBI = globalThis.BigInt !== undefined ? Object.create(null) : __JSBI;
+const JSBI = globalThis.JSBI;
+
+if (globalThis.BigInt === undefined) {
     // __isBigInt is not part of the public api so include it if this is ever removed
-    Sk.global.JSBI.__isBigInt = Sk.global.JSBI.__isBigInt || ((x) => x instanceof JSBI);
+    JSBI.__isBigInt = JSBI.__isBigInt || ((x) => x instanceof JSBI);
 } else {
-    Sk.global.JSBI = Object.assign(Object.create(null), {
-        BigInt: Sk.global.BigInt,
+    Object.assign(JSBI, {
+        BigInt: globalThis.BigInt,
         toNumber: (x) => Number(x),
         toString: (x) => x.toString(),
         __isBigInt: (x) => typeof x === "bigint",
@@ -40,7 +46,6 @@ if (Sk.global.BigInt === undefined) {
         notEqual: (x, y) => x != y,
     });
 }
-const JSBI = Sk.global.JSBI;
 JSBI.__ZERO = JSBI.BigInt(0);
 JSBI.__MAX_SAFE = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
 JSBI.__MIN_SAFE = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
