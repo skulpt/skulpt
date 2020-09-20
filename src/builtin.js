@@ -1000,13 +1000,15 @@ Sk.builtin.format = function format(value, format_spec) {
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
+const idMap = new Map();
+let _id = 0;
 Sk.builtin.id = function (obj) {
-    if (obj.__id === undefined) {
-        Sk.builtin.idCount += 1;
-        obj.__id = Sk.builtin.idCount;
+    const id = idMap.get(obj);
+    if (id !== undefined) {
+        return new Sk.builtin.int_(id);
     }
-
-    return new Sk.builtin.int_(obj.__id);
+    idMap.set(obj, _id);
+    return new Sk.builtin.int_(_id++);
 };
 
 Sk.builtin.bytearray = function bytearray() {
