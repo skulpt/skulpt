@@ -7,7 +7,7 @@
 Sk.abstr = {};
 
 /**@typedef {Sk.builtin.object}*/var pyObject;
-/** @typedef {Sk.builtin.type|Function}*/var typeObject;
+/** @typedef {Sk.builtin.type|FunctionConstructor}*/var typeObject;
 
 
 /**
@@ -818,28 +818,25 @@ Sk.abstr.markUnhashable = function (thisClass) {
  * builtins should inherit from Sk.builtin.object.
  *
  * @param {string} childName The Python name of the child (subclass).
- * @param {!typeObject} child     The subclass.
- * @param {typeObject=} [parent=Sk.builtin.object]    The base of child.
- * @param {typeObject=} [metaclass=Sk.builtin.type]
+ * @param {FunctionConstructor} child     The subclass.
+ * @param {FunctionConstructor=} [parent=Sk.builtin.object]    The base of child.
+ * @param {FunctionConstructor=} [metaclass=Sk.builtin.type]
  * 
- * @returns {!typeObject}
+ * @returns {FunctionConstructor}
  * 
  */
 Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     metaclass = metaclass || Sk.builtin.type;
-    parent = parent || Sk.builtin.object;
+    parent = parent === undefined ? Sk.builtin.object : parent;
+    const parentproto = parent !== null ? parent.prototype : null;
     Object.setPrototypeOf(child, metaclass.prototype);
-
-
-    child.prototype = Object.create(parent.prototype);
+    Object.setPrototypeOf(child.prototype, parentproto);
     Object.defineProperties(child.prototype, {
-        constructor: { value: child, writable: true },
+        sk$object: { value: child, writable: true },
         ob$type: { value: child, writable: true },
         tp$name: { value: childName, writable: true },
         tp$base: { value: parent, writable: true },
     });
-    
-    return child;
 };
 
 
@@ -847,24 +844,22 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
  * This function is called in {@link Sk.doOneTimeInitialization}
  * and {@link Sk.abstr.buildNativeClass}
  *
- * @param  {!typeObject} child
+ * @param  {FunctionConstructor} child
  *
  */
 Sk.abstr.setUpBuiltinMro = function (child) {
-    let parent = child.prototype.tp$base || undefined;
-    const bases = parent === undefined ? [] : [parent];
-    if (parent === Sk.builtin.object || parent === undefined) {
-        child.sk$baseClass = true;
-        Object.defineProperties(child.prototype, {
-            sk$builtinBase: { value: child, writable: true },
-        });
+    let base = child.prototype.tp$base;
+    const bases = base === null ? [] : [base];
+    if (base === Sk.builtin.object || base === null) {
+        Object.defineProperty(child, "sk$baseClass", { value: true, writable: true });
+        Object.defineProperty(child.prototype, "sk$builtinBase", { value: child, writable: true });
     }
     const mro = [child];
-    for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
-        if (!base.sk$abstract) {
-            mro.push(base);
-        }
+    while (base !== null) {
+        mro.push(base);
+        base = base.prototype.tp$base;
     }
+    
     // internally we keep the mro and bases as array objects
     // the wrapper descripor returns the tuple of the array
     Object.defineProperties(child.prototype, {
@@ -875,7 +870,7 @@ Sk.abstr.setUpBuiltinMro = function (child) {
 };
 /**
  * 
- * @param {!typeObject} klass 
+ * @param {FunctionConstructor} klass 
  * @param {Object=} getsets 
  */
 Sk.abstr.setUpGetSets = function (klass, getsets) {
@@ -896,7 +891,7 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
 
 /**
  * 
- * @param {typeObject} klass 
+ * @param {FunctionConstructor} klass 
  * @param {Object=} methods 
  */
 Sk.abstr.setUpMethods = function (klass, methods) {
@@ -915,7 +910,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
 
 /**
  * 
- * @param {typeObject} klass 
+ * @param {FunctionConstructor} klass 
  * @param {Object=} methods 
  */
 Sk.abstr.setUpClassMethods = function (klass, methods) {
@@ -927,54 +922,58 @@ Sk.abstr.setUpClassMethods = function (klass, methods) {
     }
 };
 
+
+const op2shortcut = Object.entries({
+    Eq: "ob$eq",
+    NotEq: "ob$ne",
+    Gt: "ob$gt",
+    GtE: "ob$ge",
+    Lt: "ob$lt",
+    LtE: "ob$le",
+});
 /**
  * 
- * @param {typeObject} klass
+ * @param {FunctionConstructor} klass
  * @param {Object=} slots 
  */
 Sk.abstr.setUpSlots = function (klass, slots) {
     const proto = klass.prototype;
-    const op2shortcut = {
-        Eq: "ob$eq",
-        NotEq: "ob$ne",
-        Gt: "ob$gt",
-        GtE: "ob$ge",
-        Lt: "ob$lt",
-        LtE: "ob$le",
-    };
     if (slots === undefined) {
-        // make a shallow copy so that we don't accidently consider parent slots
-        // maybe better to use .hasOwnProperty but this allows for more code reuse
-        slots = { ...klass.prototype };
+        slots = {...proto}; 
+        // make a shallow copy of the prototype - now we don't worry about the prototypical cahin
+        // nb: it means that only enumerable slots are copied;
     }
 
     if (slots.tp$new === Sk.generic.new) {
         slots.tp$new = Sk.generic.new(klass);
     }
 
-    for (let slot_name in slots) {
-        Object.defineProperty(proto, slot_name, {
-            value: slots[slot_name],
+    // make all slots non-enumerable - makes the dir implementation easier
+    Object.entries(slots).forEach(([slot, value]) => {
+        Object.defineProperty(proto, slot, {
+            value: value,
             writable: true,
             enumerable: false,
         });
+    });
+
+    if (Sk.builtin.wrapper_descriptor === undefined) {
+        return;
     }
 
     // set up richcompare skulpt slots
     if (slots.tp$richcompare !== undefined) {
-        for (let op in op2shortcut) {
-            const shortcut = op2shortcut[op];
-            slots[shortcut] =
-                slots[shortcut] ||
-                function (other) {
-                    return this.tp$richcompare(other, op);
-                };
-            Object.defineProperty(proto, shortcut, {
-                value: slots[shortcut],
-                writable: true,
-                enumerable: false,
-            });
-        }
+        op2shortcut.forEach(([op, shortcut]) => {
+            if (!slots.hasOwnProperty(shortcut)) {
+                Object.defineProperty(proto, shortcut, {
+                    value: function (other) {
+                        return this.tp$richcompare(other, op);
+                    },
+                    writable: true,
+                    enumerable: false,
+                });
+            }
+        });
     }
 
     if (slots.tp$new !== undefined) {
@@ -1010,11 +1009,13 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     // __hash__
-    const hash = slots.tp$hash;
-    if (hash == Sk.builtin.none.none$) {
-        klass.prototype.__hash__ = hash;
-    } else if (hash !== undefined) {
-        wrap_func(klass, "__hash__", hash);
+    if (slots.hasOwnProperty("tp$hash")) {
+        const hash = slots.tp$hash;
+        if (hash === Sk.builtin.none.none$) {
+            klass.prototype.__hash__ = hash;
+        } else if (hash !== undefined) {
+            wrap_func(klass, "__hash__", hash);
+        }
     }
 
     // as_number_slots
@@ -1091,7 +1092,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  * @function
  * @param {string} typename
  * @param {Object} options An object literal that provides the functionality of the typobject
- *
+ * @returns {FunctionConstructor}
  *
  * @description
  * this can be called to create a native typeobj
@@ -1109,20 +1110,20 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  * - proto: Object allocated onto the prototype useful for private methods
  * ```
  * See most builtin type objects for examples
- * 
  *
  */
 Sk.abstr.buildNativeClass = function (typename, options) {
     
     options = options || {};
-    /**@type {typeObject} */
+    /**@type {FunctionConstructor} */
     let typeobject;
     if (!options.hasOwnProperty("constructor")) {
         typeobject = function klass() {
             this.$d = new Sk.builtin.dict();
         };
     } else {
-        typeobject = options.constructor || new Function;
+        /**@type {FunctionConstructor} */
+        typeobject = options.constructor;
     }
     let mod;
     if (typename.includes(".")) {
@@ -1143,9 +1144,15 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots);
     }
 
-    Sk.abstr.setUpMethods(typeobject, options.methods || {});
-    Sk.abstr.setUpGetSets(typeobject, options.getsets || {});
-    Sk.abstr.setUpClassMethods(typeobject, options.classmethods || {});
+    if (Sk.builtin.classmethod_descriptor !== undefined) {
+        Sk.abstr.setUpMethods(typeobject, options.methods || {});
+        Sk.abstr.setUpGetSets(typeobject, options.getsets || {});
+        Sk.abstr.setUpClassMethods(typeobject, options.classmethods || {});
+    } else {
+        // savae these on the prototype for later when class_method_descriptor et al are defined
+        typeobject.prototype.tp$getsets = options.getsets;
+        typeobject.prototype.tp$methods = options.methods;
+    }
 
     if (mod !== undefined) {
         typeobject.prototype.__module__ = new Sk.builtin.str(mod);
@@ -1181,8 +1188,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
  * @function
  * 
  * @param {string} typename e.g. "itertools.chain"
- * @param {Object
- * } iterator minimum options `{constructor: function, iternext: function}`
+ * @param {Object} iterator minimum options `{constructor: function, iternext: function}`
  *
  * @description
  * effectively a wrapper for easily defining an iterator
@@ -1212,7 +1218,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         return this.$seq[this.$index++];
     }
 });
- * 
+ * @returns {FunctionConstructor}
  *
  */
 
