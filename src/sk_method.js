@@ -32,12 +32,12 @@
  * @param {string=} module
  */
 Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
-    constructor: function builtin_function_or_method (method_def, self, module) {
+    constructor: function builtin_function_or_method(method_def, self, module) {
         // here we set this.$meth binding it's call signature to self
         this.$meth = method_def.$meth.bind(self);
         this.$doc = method_def.$doc;
         this.$self = self;
-        this.$module = module ? new Sk.builtin.str(module) : Sk.builtin.none.none$;
+        this.$module = module ? new Sk.builtin.str(module) : null;
         this.$name = method_def.$name || method_def.$meth.name || "<native JS>";
         this.m$def = method_def;
 
@@ -95,8 +95,12 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             }
             return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
         },
-        $memoiseFlags: Sk.builtin.func.prototype.$memoiseFlags,
-        $resolveArgs: Sk.builtin.func.prototype.$resolveArgs,
+        $memoiseFlags: function () {
+            return Sk.builtin.func.prototype.$memoiseFlags.call(this);
+        },
+        $resolveArgs: function () {
+            return Sk.builtin.func.prototype.$resolveArgs.call(this);
+        },
     },
     flags: { sk$acceptable_as_base_class: false },
     slots: {
@@ -110,22 +114,22 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         tp$call: function (args, kwargs) {
             return this.tp$call(args, kwargs);
         },
-        tp$richcompare: function(other, op) {
+        tp$richcompare: function (other, op) {
             if ((op !== "Eq" && op !== "NotEq") || !(other instanceof Sk.builtin.sk_method)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             let eq = this.$self === other.$self && this.m$def.$meth === other.m$def.$meth;
             return op === "Eq" ? eq : !eq;
-        }
+        },
     },
     getsets: {
         __module__: {
             $get: function () {
-                return this.$module;
+                return this.$module || Sk.builtin.none.none$;
             },
             $set: function (value) {
                 value = value || Sk.builtin.none.none$;
-                this.$module = value;           
+                this.$module = value;
             },
         },
         __doc__: {
@@ -148,7 +152,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
                 // self might be a module object - which means it was created inside a module before the module existed
                 // so look the name up in sysmodules
                 return this.$self || Sk.sysModules.mp$lookup(this.$module) || Sk.builtin.none.none$;
-            }
-        }
+            },
+        },
     },
 });
