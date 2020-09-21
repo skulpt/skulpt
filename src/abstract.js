@@ -1141,10 +1141,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     // would need to change this for multiple inheritance.
     Sk.abstr.setUpBuiltinMro(typeobject);
 
-    if (options.slots !== undefined) {
-        // only setUpSlotWrappers if slots defined;
-        Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots);
-    }
+    Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots);
 
     if (Sk.builtin.classmethod_descriptor !== undefined) {
         Sk.abstr.setUpMethods(typeobject, options.methods || {});
