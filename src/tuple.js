@@ -7,8 +7,11 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
     constructor: function tuple(L) {
         if (L === undefined) {
             L = [];
+        } else if (!Array.isArray(L)) {
+            L = Sk.misceval.arrayFromIterable(L); 
+            // internal calls to constructor can't suspend - avoid using this
         }
-        Sk.asserts.assert(Array.isArray(L) && this instanceof Sk.builtin.tuple, "bad call to tuple, use 'new' with an Array");
+        Sk.asserts.assert(this instanceof Sk.builtin.tuple, "bad call to tuple, use 'new' with an Array of python objects");
         this.v = L;
         this.in$repr = false;
     },

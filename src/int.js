@@ -18,10 +18,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         let v;
         if (typeof x === "number" || JSBI.__isBigInt(x)) {
             v = x;
-        } else if (typeof x === "string") {
-            v = stringToNumberOrBig(x);
         } else if (x === undefined) {
             v = 0;
+        } else if (typeof x === "string") {
+            v = stringToNumberOrBig(x);
+        } else if (x.nb$int_) {
+            return x.nb$int_(); // allow this as a slow path
         } else {
             Sk.asserts.fail("bad argument to int constructor");
         }

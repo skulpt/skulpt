@@ -16,10 +16,12 @@ if (Sk.builtin === undefined) {
  * instead use {@link Sk.abstr.buildNativeClass} or
  * {@link Sk.misceval.buildClass}
  *
- *
  */
-Sk.builtin.type = function type() {
-    Sk.asserts.assert(false, "calling new Sk.builtin.type is not safe");
+Sk.builtin.type = function type(obj) {
+    if (this instanceof Sk.builtin.type) {
+        Sk.asserts.fail("calling new Sk.builtin.type is not safe");
+    }
+    return obj.ob$type; // allow this use of calling type
 };
 /** @typedef {Sk.builtin.type|Function} */ var typeObject;
 

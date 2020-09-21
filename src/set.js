@@ -12,8 +12,10 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
     constructor: function set(S) {
         if (S === undefined) {
             S = [];
+        } else if (!Array.isArray(S)) {
+            S = Sk.misceval.arrayFromIterable(S); // internal calls to constructor can't suspend;
         }
-        Sk.asserts.assert(Array.isArray(S) && this instanceof Sk.builtin.set, "Bad call to set - must be called with an Array and 'new'");
+        Sk.asserts.assert(this instanceof Sk.builtin.set, "Bad call to set - must be called with an Array and 'new'");
         const L = [];
         for (let i = 0; i < S.length; i++) {
             L.push(S[i]);

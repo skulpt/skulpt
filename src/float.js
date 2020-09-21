@@ -15,11 +15,13 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
         if (typeof x === "number") {
             this.v = x;
+        } else if (x === undefined) {
+            this.v = 0.0;
         } else if (typeof x === "string") {
             // be careful with converting a string as it could result in infinity
             this.v = parseFloat(x);
-        } else if (x === undefined) {
-            this.v = 0.0;
+        } else if (x.nb$float_) {
+            return x.nb$float_(); // allow this as a slow path
         } else {
             Sk.asserts.fail("bad argument to float constructor");
         }
