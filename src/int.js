@@ -1,4 +1,3 @@
-
 /**
  * 
  * @constructor
@@ -160,24 +159,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     const power = Math.pow(this.v, other.v);
                     if (numberOrStringWithinThreshold(power)) {
                         ret = w < 0 ? new Sk.builtin.float_(power) : new Sk.builtin.int_(power);
-                    }
-                }
-                function longpow(x, y, z) {
-                    let number = JSBI.BigInt(1);
-                    y = JSBI.greaterThan(y, JSBI.__ZERO) ?  y : JSBI.unaryMinus(y);
-                    while (JSBI.greaterThan(y, JSBI.__ZERO)) {
-                        if (JSBI.bitwiseAnd(y, JSBI.BigInt(1))) {
-                            number = JSBI.remainder(JSBI.multiply(number, x), z);
+                        if (mod === undefined) {
+                            return ret;
                         }
-                        y = JSBI.signedRightShift(y, JSBI.BigInt(1));
-                        x = JSBI.remainder(JSBI.multiply(x, x), z);
                     }
-                    return number;
-                }
-
-                if (ret === undefined) {
-                    v = bigUp(v);
-                    w = bigUp(w);
                 }
                 if (mod !== undefined) {
                     if (other.nb$isnegative()) {
@@ -188,10 +173,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     if (ret !== undefined) {
                         return ret.nb$remainder(mod);
                     }
-                    return new Sk.builtin.int_(longpow(v, w, bigUp(mod.v)));
-                } else {
-                    return new Sk.builtin.int_(JSBI.exponentiate(v, w));
+                    return new Sk.builtin.int_(longpow(bigUp(v), bigUp(w), bigUp(mod.v)));
                 }
+                // if we're here then we've fallen through so do bigint exponentiate
+                return new Sk.builtin.int_(JSBI.exponentiate(bigUp(v), bigUp(w)));
             }
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
@@ -479,6 +464,19 @@ function numberBitSlot(number_func, bigint_func) {
         }
         return Sk.builtin.NotImplemented.NotImplemented$;
     };
+}
+
+function longpow(x, y, z) {
+    let number = JSBI.BigInt(1);
+    y = JSBI.greaterThan(y, JSBI.__ZERO) ?  y : JSBI.unaryMinus(y);
+    while (JSBI.greaterThan(y, JSBI.__ZERO)) {
+        if (JSBI.bitwiseAnd(y, JSBI.BigInt(1))) {
+            number = JSBI.remainder(JSBI.multiply(number, x), z);
+        }
+        y = JSBI.signedRightShift(y, JSBI.BigInt(1));
+        x = JSBI.remainder(JSBI.multiply(x, x), z);
+    }
+    return number;
 }
 
 /**
