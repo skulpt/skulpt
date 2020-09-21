@@ -254,6 +254,7 @@ class StringMethodsTests(unittest.TestCase):
 
     def test_divmod_error(self):
         self.assertRaises(TypeError, lambda: "123d" % 321)
+        self.assertEqual('%(a)s' % {'a': 'foo', 'b': 'bar'}, 'foo')
 
 
 if __name__ == '__main__':

@@ -1364,7 +1364,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         }
     };
     ret = this.$jsstr().replace(regex, replFunc);
-    if (index < Sk.builtin.asnum$(Sk.builtin.len(rhs))) {
+    if (rhs instanceof Sk.builtin.tuple && index < Sk.builtin.asnum$(Sk.builtin.len(rhs))) {
         throw new Sk.builtin.TypeError("not all arguments converted during string formatting");
     }
     return new strBytesConstructor(ret);
