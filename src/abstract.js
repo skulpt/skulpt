@@ -975,40 +975,40 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         Object.defineProperty(proto, "sk$staticNew", {value: klass, writable: true});
     }
 
-    function wrap_func(klass, dunder_name, wrapped_func) {
+    function wrap_func(dunder_name, wrapped_func) {
         const slot_def = Sk.slots[dunder_name];
         // we do this here because in the generic.wrapperCall methods the wrapped_func
         // the wrapped func should have a $name property and a $flags property (for minArgs)
-        klass.prototype[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
+        proto[dunder_name] = new Sk.builtin.wrapper_descriptor(klass, slot_def, wrapped_func);
     }
-    function set_up_slot(slot_name, slots, klass, slot_mapping) {
-        const wrapped_func = slots[slot_name];
+
+    function set_up_slot(dunder_name, wrapped_func) {
         // some slots get multpile dunders
-        const dunder_name = slot_mapping[slot_name];
         if (typeof dunder_name === "string") {
-            wrap_func(klass, dunder_name, wrapped_func);
+            wrap_func(dunder_name, wrapped_func);
         } else {
-            for (let i = 0; i < dunder_name.length; i++) {
-                wrap_func(klass, dunder_name[i], wrapped_func);
-            }
+            dunder_name.forEach((related_dunder_name) => {
+                wrap_func(related_dunder_name, wrapped_func);
+            });
         }
     }
 
     // main slots
     const main_slots = Sk.subSlots.main_slots;
-    for (let slot_name in main_slots) {
-        if (slots[slot_name] !== undefined) {
-            set_up_slot(slot_name, slots, klass, main_slots);
+    Object.entries(main_slots).forEach(([slot_name, dunder_name]) => {
+        const wrapped_func = slots[slot_name];
+        if (wrapped_func !== undefined) {
+            set_up_slot(dunder_name, wrapped_func);
         }
-    }
+    });
 
     // __hash__
     if (slots.hasOwnProperty("tp$hash")) {
         const hash = slots.tp$hash;
         if (typeof hash === "function") {
-            wrap_func(klass, "__hash__", hash);
+            wrap_func("__hash__", hash);
         } else if (hash === Sk.builtin.none.none$) {
-            klass.prototype.__hash__ = hash;
+            proto.__hash__ = hash;
         } else {
             Sk.asserts.fail("invalid tp$hash");
         }
@@ -1023,35 +1023,32 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                 const reflect_name = reflected_slots[slot_name].reflected;
                 const reflected_slot = slots[reflect_name];
                 if (reflected_slot !== undefined) {
+                    // the reflected slot was already defined so don't recreate it
                     if (reflected_slot === null) {
                         delete slots[reflect_name]; // e.g. Counter doesn't want reflected slots
                     }
                     continue;
                 }
-                const slot = reflected_slots[slot_name].slot;
-                if (slot == null) {
+                let slot = reflected_slots[slot_name].slot;
+                if (slot === undefined) {
                     // then the reflected slot is the same as non reflected slot - like nb$add
-                    slots[reflect_name] = slots[slot_name];
-                    Object.defineProperty(proto, reflect_name, {
-                        value: slots[slot_name],
-                        writable: true,
-                        enumerable: false,
-                    });
+                    slot = slots[reflect_name] = slots[slot_name];
                 } else {
                     slots[reflect_name] = slot;
-                    Object.defineProperty(proto, reflect_name, {
-                        value: slot,
-                        writable: true,
-                        enumerable: false,
-                    });
                 }
+                Object.defineProperty(proto, reflect_name, {
+                    value: slot,
+                    writable: true,
+                    enumerable: false,
+                });
             }
         }
-        for (let slot_name in number_slots) {
-            if (slots[slot_name] !== undefined) {
-                set_up_slot(slot_name, slots, klass, number_slots);
+        Object.entries(number_slots).forEach(([slot_name, dunder_name]) => {
+            const wrapped_func = slots[slot_name];
+            if (wrapped_func !== undefined) {
+                set_up_slot(dunder_name, wrapped_func);
             }
-        }
+        });
     }
 
     // as_sequence_or_mapping slots
@@ -1060,22 +1057,23 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         for (let slot_name in Sk.sequenceAndMappingSlots) {
             if (slots[slot_name] !== undefined) {
                 const equiv_slots = Sk.sequenceAndMappingSlots[slot_name];
-                for (let i = 0; i < equiv_slots.length; i++) {
-                    const equiv_slot = equiv_slots[i];
-                    slots[equiv_slot] = slots[slot_name];
-                    Object.defineProperty(proto, equiv_slot, {
-                        value: slots[slot_name],
+                equiv_slots.forEach((equv_slot_name) => {
+                    const slot = slots[slot_name];
+                    slots[equv_slot_name] = slot;
+                    Object.defineProperty(proto, equv_slot_name, {
+                        value: slot,
                         writable: true,
                         enumerable: false,
                     });
-                }
+                });
             }
         }
-        for (let slot_name in sequence_and_mapping_slots) {
-            if (slots[slot_name] !== undefined) {
-                set_up_slot(slot_name, slots, klass, sequence_and_mapping_slots);
+        Object.entries(sequence_and_mapping_slots).forEach(([slot_name, dunder_name]) => {
+            const wrapped_func = slots[slot_name];
+            if (wrapped_func !== undefined) {
+                set_up_slot(dunder_name, wrapped_func);
             }
-        }
+        });
     }
 };
 
