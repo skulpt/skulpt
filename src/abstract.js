@@ -881,18 +881,11 @@ Sk.abstr.setUpBuiltinMro = function (child) {
  * @param {Object=} getsets 
  */
 Sk.abstr.setUpGetSets = function (klass, getsets) {
-    getsets = getsets || klass.prototype.tp$getsets || {};
-    for (let getset_name in getsets) {
-        const gsd = getsets[getset_name];
-        gsd.$name = getset_name;
-        klass.prototype[getset_name] = new Sk.builtin.getset_descriptor(klass, gsd);
-    }
-    // we check this later in onetimeInitialization
-    // it also means that you can create more getsets and then allocate them later
-    Object.defineProperty(klass.prototype, "tp$getsets", {
-        value: null,
-        writable: true,
-        enumerable: false,
+    const klass_proto = klass.prototype;
+    getsets = getsets || klass_proto.tp$getsets || {};
+    Object.entries(getsets).forEach(([getset_name, getset_def]) => {
+        getset_name.$name = getset_def;
+        klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
 };
 
@@ -902,16 +895,11 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
  * @param {Object=} methods 
  */
 Sk.abstr.setUpMethods = function (klass, methods) {
-    methods = methods || klass.prototype.tp$methods || {};
-    for (let method_name in methods) {
-        const method_def = methods[method_name];
+    const klass_proto = klass.prototype;
+    methods = methods || klass_proto.tp$methods || {};
+    Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
-    }
-    Object.defineProperty(klass.prototype, "tp$methods", {
-        value: null,
-        writable: true,
-        enumerable: false,
+        klass_proto[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
     });
 };
 
@@ -921,12 +909,12 @@ Sk.abstr.setUpMethods = function (klass, methods) {
  * @param {Object=} methods 
  */
 Sk.abstr.setUpClassMethods = function (klass, methods) {
+    const klass_proto = klass.prototype;
     methods = methods || {};
-    for (let method_name in methods) {
-        const method_def = methods[method_name];
+    Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass.prototype[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
-    }
+        klass_proto[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
+    });
 };
 
 
@@ -1043,14 +1031,14 @@ Sk.abstr.setUpSlots = function (klass, slots) {
                 const slot = reflected_slots[slot_name].slot;
                 if (slot == null) {
                     // then the reflected slot is the same as non reflected slot - like nb$add
-                    (slots[reflect_name] = slots[slot_name]),
+                    slots[reflect_name] = slots[slot_name];
                     Object.defineProperty(proto, reflect_name, {
                         value: slots[slot_name],
                         writable: true,
                         enumerable: false,
                     });
                 } else {
-                    (slots[reflect_name] = slot),
+                    slots[reflect_name] = slot;
                     Object.defineProperty(proto, reflect_name, {
                         value: slot,
                         writable: true,
@@ -1159,26 +1147,33 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     }
     const type_proto = typeobject.prototype;
     const proto = options.proto || {};
-    for (let p in proto) {
+
+    Object.entries(proto).forEach(([p, val]) => {
         Object.defineProperty(type_proto, p, {
-            value: proto[p],
+            value: val,
             writable: true,
-            enumerable: !(p.includes("$") || (p in Object.prototype)), // only make these private in these cases
+            enumerable: !(p.includes("$") || (p in Object.prototype)), 
+            // only make these private in these cases otherwise they're public methods
         });
-    }
+    });
+
     const flags = options.flags || {};
-    for (let f in flags) {
-        typeobject[f] = flags[f];
-    }
+    Object.entries(flags).forEach(([flag, val]) => {
+        Object.defineProperty(typeobject, flag, {
+            value: val,
+            writable: true,
+            enumerable: false,
+            // flags are not enumerable - these can't be accessed by lookups or appear on the dir since they're not on the prototype
+        }); 
+    });
 
     // str might not have been created yet
-
-    if (Sk.builtin.str !== undefined && typeobject.prototype.hasOwnProperty("tp$doc") && !typeobject.prototype.hasOwnProperty("__doc__")) {
-        const docstr = typeobject.prototype.tp$doc || null;
+    if (Sk.builtin.str !== undefined && type_proto.hasOwnProperty("tp$doc") && !type_proto.hasOwnProperty("__doc__")) {
+        const docstr = type_proto.tp$doc || null;
         if (typeof docstr === "string") {
-            typeobject.prototype.__doc__ = new Sk.builtin.str(docstr);
+            type_proto.__doc__ = new Sk.builtin.str(docstr);
         } else {
-            typeobject.prototype.__doc__ = Sk.builtin.none.none$;
+            type_proto.__doc__ = Sk.builtin.none.none$;
         }
     }
     return typeobject;
@@ -1236,11 +1231,10 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
 Sk.abstr.built$iterators = [];
 
 Sk.abstr.setUpModuleMethods = function (module_name, module, method_defs) {
-    for (let method_name in method_defs) {
-        const method_def = method_defs[method_name];
-        method_def.$name = method_def.$name || method_name;
+    Object.entries(method_defs).forEach(([method_name, method_def]) => {
+        method_def.$name = method_def.$name || method_name; // operator e.g. some methods share method_defs
         module[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
-    }
+    });
 };
 
 /**
