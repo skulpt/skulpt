@@ -1107,7 +1107,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
 
-        if ((mappingKey === undefined || mappingKey === "") && conversionType != "%") {
+        if ((mappingKey === undefined || mappingKey !== "") && conversionType != "%") {
             i = index++;
         } // ff passes '' not undef for some reason
 
@@ -1363,10 +1363,10 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             return "%";
         }
     };
-    if (index < rhs.sq$length()) {
-        throw Sk.builtin.TypeError("not all arguments converted during string formattin");
-    }
     ret = this.$jsstr().replace(regex, replFunc);
+    if (index < Sk.builtin.asnum$(Sk.builtin.len(rhs))) {
+        throw new Sk.builtin.TypeError("not all arguments converted during string formatting");
+    }
     return new strBytesConstructor(ret);
 };
 
