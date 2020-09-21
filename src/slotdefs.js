@@ -380,6 +380,7 @@ slots.__str__ = {
     $doc: "Return str(self).",
 };
 
+var hash_slot = slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int", (res) => typeof res.v === "number" ? res.v : res.tp$hash());
 /**
  * @memberof Sk.slots
  * @method tp$hash
@@ -392,7 +393,12 @@ slots.__str__ = {
 slots.__hash__ = {
     $name: "__hash__",
     $slot_name: "tp$hash",
-    $slot_func: slotFuncNoArgsWithCheck("__hash__", Sk.builtin.checkInt, "int", (res) => typeof res.v === "number" ? res.v : res.tp$hash()),
+    $slot_func: function (dunder_func) {
+        if (dunder_func === Sk.builtin.none.none$) {
+            return Sk.builtin.none.none$;
+        }
+        return hash_slot(dunder_func);
+    },
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
