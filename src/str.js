@@ -1,3 +1,4 @@
+var keyhash_regex = /^[0-9!#_]/;
 var interned = Object.create(null); // avoid name conflicts with Object.prototype
 
 function getInterned(x) {
@@ -44,7 +45,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
 
         this.$mangled = fixReserved(ret);
         // used by dict key hash function $savedKeyHash
-        this.$savedKeyHash_ = undefined;
+        this.$savedKeyHash = ret.replace(keyhash_regex, "!$&"); ;
         this.v = ret;
     },
     slots: /**@lends {Sk.builtin.str.prototype} */ {

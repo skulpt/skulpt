@@ -150,21 +150,18 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
 });
 
 
-var reg = /^[0-9!#_]/; // use the reg expression from dict.js
-
 function customEntriesGetter(mapping, d) {
     Object.defineProperties(mapping, {
         entries: {
             get: () => {
                 const entries = Object.create(null);
-                const keys = Object.keys(d);
-                for (let i = 0; i < keys.length; i++) {
-                    const key = keys[i];
-                    const k = Sk.unfixReserved(key);
-                    if (!k.includes("$")) {
-                        entries[k.replace(reg, "!$&")] = [new Sk.builtin.str(k), d[key]];
+                Object.entries(d).forEach(([key, val]) => {
+                    key = Sk.unfixReserved(key);
+                    if (!key.includes("$")) {
+                        key = new Sk.builtin.str(key);
+                        entries[key.$savedKeyHash] = [key, val];
                     }
-                }
+                });
                 return entries;
             },
             configurable: true,
