@@ -864,8 +864,15 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     // the wrapper descripor returns the tuple of the array
     Object.defineProperties(child.prototype, {
         sk$prototypical: { value: true, writable: true },
-        tp$mro: { value: mro, writable: true },
         tp$bases: { value: bases, writable: true },
+        tp$mro: { value: mro, writable: true },
+    });
+    Object.defineProperty(child, "$typeLookup", {
+        value: function (pyName) {
+            var jsName = pyName.$mangled;
+            return this.prototype[jsName];
+        },
+        writable: true,
     });
 };
 /**
