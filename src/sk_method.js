@@ -36,7 +36,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         // here we set this.$meth binding it's call signature to self
         this.$meth = method_def.$meth.bind(self);
         this.$doc = method_def.$doc;
-        this.$self = self;
+        this.$self = self || null;
         this.$module = module ? new Sk.builtin.str(module) : null;
         this.$name = method_def.$name || method_def.$meth.name || "<native JS>";
         this.m$def = method_def;
@@ -90,7 +90,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         $defaultCallMethod: function (args, kwargs) {
             // default implementation for all currently created functions that have yet to be be converted
             // and don't utilise flagged calls
-            if (this.$self !== undefined) {
+            if (this.$self !== null) {
                 return Sk.builtin.func.prototype.tp$call.call(this, [this.$self, ...args], kwargs);
             }
             return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
@@ -106,7 +106,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
     slots: {
         tp$getattr: Sk.generic.getAttr,
         $r: function () {
-            if (this.$self === undefined) {
+            if (this.$self === null) {
                 return new Sk.builtin.str("<built-in function " + this.$name + ">");
             }
             return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>");

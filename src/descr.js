@@ -92,12 +92,12 @@ const descrTextSig = {
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.getset_descriptor = buildDescriptor("getset_descriptor", undefined, {
-    constructor: function getset_descr(typeobj, d_base) {
-        this.d$def = d_base;
-        this.$get = d_base.$get;
-        this.$set = d_base.$set;
+    constructor: function getset_descr(typeobj, getset_def) {
+        this.d$def = getset_def;
+        this.$get = getset_def.$get;
+        this.$set = getset_def.$set;
         this.d$type = typeobj;
-        this.d$name = d_base.$name;
+        this.d$name = getset_def.$name;
     },
     slots: {
         tp$descr_get(obj, type) {

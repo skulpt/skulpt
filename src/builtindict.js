@@ -497,7 +497,7 @@ Sk.setupObjects = function (py3) {
                 $doc:
                     "Return an ASCII-only representation of an object.\n\nAs repr(), return a string containing a printable representation of an\nobject, but escape the non-ASCII characters in the string returned by\nrepr() using \\\\x, \\\\u or \\\\U escapes. This generates a string similar\nto that returned by repr() in Python 2.",
             },
-            undefined,
+            null,
             "builtins"
         );
     } else {
@@ -516,7 +516,7 @@ Sk.setupObjects = function (py3) {
                 $name: "xrange",
                 $flags: { MinArgs: 1, MaxArgs: 3 },
             },
-            undefined,
+            null,
             "builtins"
         );
         Sk.builtins["filter"] = new Sk.builtin.func(Sk.builtin.filter);
