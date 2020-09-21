@@ -15,7 +15,7 @@ var $builtinmodule = function (name) {
             // different initial iteration
             this.tp$iternext = () => {
                 this.total = Sk.builtin.checkNone(this.total) ? this.iter.tp$iternext() : this.total;
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 return this.total;
             };
         },
@@ -55,7 +55,7 @@ var $builtinmodule = function (name) {
             this.current_it = null;
             this.tp$iternext = () => {
                 // different initial iteration
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 this.current_it = this.iterables.tp$iternext();
                 if (this.current_it === undefined) {
                     this.tp$iternext = () => undefined;
@@ -143,7 +143,7 @@ var $builtinmodule = function (name) {
                 if (this.r > this.n) {
                     return;
                 }
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 return new Sk.builtin.tuple(this.pool.slice(0, this.r));
             };
         },
@@ -186,7 +186,7 @@ var $builtinmodule = function (name) {
                 if (this.r && !this.n) {
                     return;
                 }
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 const res = this.indices.map((i) => this.pool[i]);
                 return new Sk.builtin.tuple(res);
             };
@@ -485,7 +485,7 @@ var $builtinmodule = function (name) {
             this.step = step;
             // different first iteration
             this.tp$iternext = () => {
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 if (this.previt >= this.stop) {
                     // consume generator up to stop and return
                     for (let i = 0; i < this.stop; i++) {
@@ -590,7 +590,7 @@ var $builtinmodule = function (name) {
                 if (this.r > this.n) {
                     return;
                 }
-                this.tp$iternext = this.prototype.tp$iternext;           
+                this.tp$iternext = this.constructor.prototype.tp$iternext;           
                 return new Sk.builtin.tuple(this.pool.slice(0, this.r));
             };
         },
@@ -639,7 +639,7 @@ var $builtinmodule = function (name) {
             this.indices = Array(pools.length).fill(0);
             this.pool_sizes = pools.map((x) => x.length);
             this.tp$iternext = () => {
-                this.tp$iternext = this.prototype.tp$iternext;
+                this.tp$iternext = this.constructor.prototype.tp$iternext;
                 const res = this.indices.map((_, i) => this.pools[i][this.indices[i]]);
                 if (res.some((element) => element === undefined)) {
                     this.n = 0; // at least one pool arguments is an empty iterator
