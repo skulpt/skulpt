@@ -836,7 +836,6 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 case Sk.astnodes.Load:
                     out("$ret = ", val, ".tp$getattr(", mname, ", true);");
                     out("\nif ($ret === undefined) {");
-                    out("\nconst error_name =", val,".sk$type ? \"type object '\" +", val,".prototype.tp$name + \"'\" : \"'\" + Sk.abstr.typeName(",val,") + \"' object\";");
                     out("\nthrow new Sk.builtin.AttributeError(", val, ".sk$attrError() + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
                     out("\n};");
                     this._checkSuspension(e);
