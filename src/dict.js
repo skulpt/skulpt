@@ -313,14 +313,12 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     },
 });
 
-var reg = /^[0-9!#_]/;
-
 function getHash(key) {
     let key_hash = key.$savedKeyHash;
     if (key_hash !== undefined) {
         return key_hash;
     }
-    key_hash = Sk.abstr.objectHash(key); // builtin.hash returns an int
+    key_hash = Sk.abstr.objectHash(key);
     return key_hash;
 }
 
@@ -328,11 +326,13 @@ function getHash(key) {
  * @private
  * @param {Sk.builtin.str} pyName
  * @this {Sk.builtin.dict}
+ * 
+ * this is hot code!
  */
 Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
     /**@type {string} */
-    const key_hash = pyName.$savedKeyHash;
-    const item = this.entries[key_hash];
+    var key_hash = pyName.$savedKeyHash;
+    var item = this.entries[key_hash];
     if (item !== undefined) {
         return item[1];
     }
