@@ -825,7 +825,7 @@ function buildDictIterClass(typename, iternext, reversed) {
                 if (reversed) {
                     this.$seq = this.$seq.reverse();
                 }
-                delete this.tp$iternext;
+                this.tp$iternext = this.prototype.tp$iternext;
                 return this.tp$iternext();
             };
         },
