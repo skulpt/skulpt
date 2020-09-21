@@ -8,7 +8,7 @@ var $builtinmodule = function (name) {
     var mod = {};
 
     mod.accumulate = Sk.abstr.buildIteratorClass("itertools.accumulate", {
-        constructor(iter, func, initial) {
+        constructor: function accumulate(iter, func, initial) {
             this.iter = iter;
             this.func = func;
             this.total = initial;
@@ -50,7 +50,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.chain = Sk.abstr.buildIteratorClass("itertools.chain", {
-        constructor(iterables) {
+        constructor: function chain(iterables) {
             this.iterables = iterables;
             this.current_it = null;
             this.tp$iternext = () => {
@@ -134,7 +134,7 @@ var $builtinmodule = function (name) {
     }
 
     mod.combinations = Sk.abstr.buildIteratorClass("itertools.combinations", {
-        constructor(pool, r) {
+        constructor: function combinations(pool, r) {
             this.pool = pool;
             this.r = r;
             this.indices = new Array(r).fill().map((_, i) => i);
@@ -177,7 +177,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.combinations_with_replacement = Sk.abstr.buildIteratorClass("itertools.combinations_with_replacement", {
-        constructor(pool, r) {
+        constructor: function combinations_with_replacement(pool, r) {
             this.pool = pool;
             this.r = r;
             this.indices = new Array(r).fill(0);
@@ -221,7 +221,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.compress = Sk.abstr.buildIteratorClass("itertools.compress", {
-        constructor(data, selectors) {
+        constructor: function compress(data, selectors) {
             (this.data = data), (this.selectors = selectors);
         },
         iternext() {
@@ -340,7 +340,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.dropwhile = Sk.abstr.buildIteratorClass("itertools.dropwhile", {
-        constructor(predicate, iter) {
+        constructor: function dropwhile(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
             this.passed;
@@ -377,7 +377,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.filterfalse = Sk.abstr.buildIteratorClass("itertools.filterfalse", {
-        constructor(predicate, iter) {
+        constructor: function filterfalse(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
         },
@@ -416,7 +416,7 @@ var $builtinmodule = function (name) {
     });
 
     mod._grouper = Sk.abstr.buildIteratorClass("itertools._grouper", {
-        constructor(groupby, id) {
+        constructor: function _grouper(groupby, id) {
             this.groupby = groupby;
             this.tgtkey = groupby.tgtkey;
             this.id = groupby.id;
@@ -436,7 +436,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.groupby = Sk.abstr.buildIteratorClass("itertools.groupby", {
-        constructor(iter, keyf) {
+        constructor: function groupby(iter, keyf) {
             this.iter = iter;
             this.keyf = keyf;
             this.currval;
@@ -578,7 +578,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.permutations = Sk.abstr.buildIteratorClass("itertools.permutations", {
-        constructor(pool, r) {
+        constructor: function permutations(pool, r) {
             this.pool = pool;
             this.r = r;
             const n = pool.length;
@@ -633,7 +633,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.product = Sk.abstr.buildIteratorClass("itertools.product", {
-        constructor(pools) {
+        constructor: function product(pools) {
             this.pools = pools;
             this.n = pools.length;
             this.indices = Array(pools.length).fill(0);
@@ -693,7 +693,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.repeat = Sk.abstr.buildIteratorClass("itertools.repeat", {
-        constructor(object, times) {
+        constructor: function repeat(object, times) {
             this.object = object;
             this.times = times;
             if (times === undefined) {
@@ -745,7 +745,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.starmap = Sk.abstr.buildIteratorClass("itertools.starmap", {
-        constructor(func, iter) {
+        constructor: function starmap(func, iter) {
             this.func = func;
             this.iter = iter;
         },
@@ -776,7 +776,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.takewhile = Sk.abstr.buildIteratorClass("itertools.takewhile", {
-        constructor(predicate, iter) {
+        constructor: function takewhile(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
         },
@@ -816,7 +816,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.zip_longest = Sk.abstr.buildIteratorClass("itertools.zip_longest", {
-        constructor(iters, fillvalue) {
+        constructor: function zip_longest(iters, fillvalue) {
             this.iters = iters;
             this.fillvalue = fillvalue;
             this.active = this.iters.length;
