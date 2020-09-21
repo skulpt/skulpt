@@ -253,7 +253,7 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(b'\xf0\xf1\xf2'.hex(), 'f0f1f2')
 
     def test_divmod_error(self):
-        self.assertRaises(TypeError, "123d" % 321)
+        self.assertRaises(TypeError, lambda: "123d" % 321)
 
 
 if __name__ == '__main__':
