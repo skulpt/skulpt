@@ -1011,10 +1011,12 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     // __hash__
     if (slots.hasOwnProperty("tp$hash")) {
         const hash = slots.tp$hash;
-        if (hash === Sk.builtin.none.none$) {
-            klass.prototype.__hash__ = hash;
-        } else if (hash !== undefined) {
+        if (typeof hash === "function") {
             wrap_func(klass, "__hash__", hash);
+        } else if (hash === Sk.builtin.none.none$) {
+            klass.prototype.__hash__ = hash;
+        } else {
+            Sk.asserts.fail("invalid tp$hash");
         }
     }
 

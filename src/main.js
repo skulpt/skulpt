@@ -25,15 +25,20 @@ require("./descr.js");
 // can only setUpMethods / setUpGetsets / setUpSlots from now.
 require("./sk_method.js");
 // can only do setUpSlots with tp$new from now since __new__ is a sk_method
-[
-    Sk.builtin.object,
-    Sk.builtin.type,
-].forEach((cls) => {
+[Sk.builtin.object, Sk.builtin.type].forEach((cls) => {
     Sk.abstr.setUpSlots(cls);
     Sk.abstr.setUpMethods(cls);
     Sk.abstr.setUpGetSets(cls);
 });
 require("./nonetype");
+require("./formatting.js");
+require("./str.js");
+
+[Sk.builtin.str, Sk.builtin.none, Sk.builtin.NotImplemented, Sk.builtin.object, Sk.builtin.type].forEach((cls) => {
+    const cls_proto = cls.prototype;
+    cls_proto.__doc__ = cls_proto.tp$doc ? new Sk.builtin.str(cls_proto.tp$doc) : Sk.builtin.none.none$;
+});
+
 require("./function.js");
 require("./builtin.js");
 require("./errors.js");
@@ -41,8 +46,7 @@ require("./method.js");
 require("./misceval.js");
 require("./simple_iterators.js");
 require("./list.js");
-require("./formatting.js");
-require("./str.js");
+
 require("./bytes.js");
 require("./tuple.js");
 require("./dict.js");
