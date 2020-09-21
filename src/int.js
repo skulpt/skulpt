@@ -196,7 +196,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
         nb$lng() {
-            return new Sk.builtin.long(this.v);
+            return new Sk.builtin.lng(this.v);
         },
     },
     getsets: /** @lends {Sk.builtin.int_.prototype}*/ {
