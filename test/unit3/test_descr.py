@@ -4560,8 +4560,8 @@ order (MRO) for bases """
         self.assertIs(l.__add__.__self__, l)
         self.assertIs(l.__add__.__objclass__, list)
         self.assertEqual(l.__add__.__doc__, list.__add__.__doc__)
-        # hash([].__add__) should not be based on hash([])
-        hash(l.__add__) # @TODO this should be consistent skulpt Hashing will not work on this yet
+        hash([].__add__) #should not be based on hash([])
+        hash(l.__add__) 
 
     def test_builtin_function_or_method(self):
         # Not really belonging to test_descr, but introspection and
@@ -4579,7 +4579,7 @@ order (MRO) for bases """
         self.assertIs(l.append.__self__, l)
         # self.assertIs(l.append.__objclass__, list) --- could be added?
         self.assertEqual(l.append.__doc__, list.append.__doc__)
-        # hash([].append) should not be based on hash([])
+        hash([].append) #should not be based on hash([])
         hash(l.append)
 
     def test_special_unbound_method_types(self):

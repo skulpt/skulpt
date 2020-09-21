@@ -939,41 +939,40 @@ const op2shortcut = Object.entries({
 Sk.abstr.setUpSlots = function (klass, slots) {
     const proto = klass.prototype;
     if (slots === undefined) {
-        slots = {...proto}; 
-        // make a shallow copy of the prototype - now we don't worry about the prototypical cahin
-        // nb: it means that only enumerable slots are copied;
-    }
-
-    if (slots.tp$new === Sk.generic.new) {
-        slots.tp$new = Sk.generic.new(klass);
-    }
-
-    // make all slots non-enumerable - makes the dir implementation easier
-    Object.entries(slots).forEach(([slot, value]) => {
-        Object.defineProperty(proto, slot, {
-            value: value,
-            writable: true,
-            enumerable: false,
+        slots = {};
+        Object.entries(Object.getOwnPropertyDescriptors(proto)).forEach(([slot_name, descr]) => {
+            slots[slot_name] = descr.value;
         });
-    });
+        // direct calls to setup slots are done for final initialization in a few builtins
+    } else {
+        // adjust tp$new slot - can only initiate the function here
+        if (slots.tp$new === Sk.generic.new) {
+            slots.tp$new = Sk.generic.new(klass);
+        }
+        // set up richcompare skulpt slots
+        if (slots.tp$richcompare !== undefined) {
+            op2shortcut.forEach(([op, shortcut]) => {
+                if (!slots.hasOwnProperty(shortcut)) {
+                    slots[shortcut] = function (other) {
+                        return this.tp$richcompare(other, op);
+                    };
+                }
+            });
+        }
+        // make all slots non-enumerable - makes the dir implementation easier
+        Object.entries(slots).forEach(([slot_name, value]) => {
+            Object.defineProperty(proto, slot_name, {
+                value: value,
+                writable: true,
+                enumerable: false,
+            });
+        });
+    }
+
+    
 
     if (Sk.builtin.wrapper_descriptor === undefined) {
         return;
-    }
-
-    // set up richcompare skulpt slots
-    if (slots.tp$richcompare !== undefined) {
-        op2shortcut.forEach(([op, shortcut]) => {
-            if (!slots.hasOwnProperty(shortcut)) {
-                Object.defineProperty(proto, shortcut, {
-                    value: function (other) {
-                        return this.tp$richcompare(other, op);
-                    },
-                    writable: true,
-                    enumerable: false,
-                });
-            }
-        });
     }
 
     if (slots.tp$new !== undefined) {
@@ -1083,11 +1082,6 @@ Sk.abstr.setUpSlots = function (klass, slots) {
             }
         }
     }
-    // a flag to check during doOneTimeInitialization
-    Object.defineProperty(proto, "sk$slots", {
-        value: null,
-        writeable: true,
-    });
 };
 
 /**
@@ -1141,7 +1135,7 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     // would need to change this for multiple inheritance.
     Sk.abstr.setUpBuiltinMro(typeobject);
 
-    Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots);
+    Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots || {});
 
     if (Sk.builtin.classmethod_descriptor !== undefined) {
         Sk.abstr.setUpMethods(typeobject, options.methods || {});

@@ -194,14 +194,14 @@ Sk.builtin.LookupError = Sk.abstr.buildNativeClass("LookupError", {
 
 /**
  * @constructor
- * @extends Sk.builtin.Exception
+ * @extends Sk.builtin.LookupError
  * @param {...} args Typically called with a single string argument
  */
 Sk.builtin.KeyError = Sk.abstr.buildNativeClass("KeyError", {
     constructor: function KeyError(...args) {
-        Sk.builtin.Exception.apply(this, args);
+        Sk.builtin.LookupError.apply(this, args);
     },
-    base: Sk.builtin.Exception,
+    base: Sk.builtin.LookupError,
 });
 
 /**

@@ -511,10 +511,14 @@ Sk.builtin.type.prototype.tp$getsets = {
             const doc = this.$typeLookup(Sk.builtin.str.$doc);
             if (doc) {
                 if (doc.tp$descr_get !== undefined) {
+                    if (this === Sk.builtin.type) {
+                        return new Sk.builtin.str(this.prototype.tp$doc);
+                    }
                     return doc.tp$descr_get(null, this);
                 }
                 return this.prototype.__doc__;
             }
+            return Sk.builtin.none.none$;
         },
         $set: function (value) {
             check_special_type_attr(this, value, Sk.builtin.str.$doc);
@@ -654,7 +658,7 @@ const subtype_dict_getset_description = {
 };
 
 function get_dict_descr_of_builtn_base(type) {
-    while (type.prototype.tp$base !== undefined) {
+    while (type.prototype.tp$base !== null) {
         if (type.sk$klass === undefined) {
             if (type.prototype.hasOwnProperty("__dict__")) {
                 const descr = type.prototype.__dict__;

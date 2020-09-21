@@ -24,7 +24,7 @@ Sk.builtin.none = Sk.abstr.buildNativeClass("NoneType", {
         },
     },
     flags: {
-        sk$acceptable_as_base_class: true,
+        sk$acceptable_as_base_class: false,
     },
 });
 
@@ -57,9 +57,8 @@ Sk.builtin.NotImplemented = Sk.abstr.buildNativeClass("NotImplementedType", {
         },
     },
     flags: {
-        sk$acceptable_as_base_class: true,
+        sk$acceptable_as_base_class: false,
     }
-
 });
 
 /**
