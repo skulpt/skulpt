@@ -29,7 +29,22 @@ if (globalThis.BigInt === undefined) {
         bitwiseAnd: (x, y) => x & y,
         bitwiseOr: (x, y) => x | y,
         bitwiseXor: (x, y) => x ^ y,
-        exponentiate: (x, y) => x ** y,
+        /**
+         * x**y would be better but closure compilere changes that to Math.pow 
+         * https://github.com/google/closure-compiler/issues/3684 */
+        exponentiate: (x, y) => {
+            const One = JSBI.BigInt(1);
+            let number = One;
+            y = JSBI.greaterThan(y, JSBI.__ZERO) ?  y : JSBI.unaryMinus(y);
+            while (JSBI.greaterThan(y, JSBI.__ZERO)) {
+                if (JSBI.bitwiseAnd(y, One)) {
+                    number = JSBI.multiply(number, x);
+                }
+                y = JSBI.signedRightShift(y, One);
+                x = JSBI.multiply(x, x);
+            }
+            return number;
+        },
         multiply: (x, y) => x * y,
         divide: (x, y) => x / y,
         remainder: (x, y) => x % y,
@@ -51,3 +66,16 @@ JSBI.__MAX_SAFE = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
 JSBI.__MIN_SAFE = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
 JSBI.numberIfSafe = (val) =>  JSBI.lessThan(val, JSBI.__MAX_SAFE) && JSBI.greaterThan(val, JSBI.__MIN_SAFE) ? JSBI.toNumber(val) : val;
 
+JSBI.powermod = (x, y, z) => {
+    const One = JSBI.BigInt(1);
+    let number = One;
+    y = JSBI.greaterThan(y, JSBI.__ZERO) ? y : JSBI.unaryMinus(y);
+    while (JSBI.greaterThan(y, JSBI.__ZERO)) {
+        if (JSBI.bitwiseAnd(y, One)) {
+            number = JSBI.remainder(JSBI.multiply(number, x), z);
+        }
+        y = JSBI.signedRightShift(y, One);
+        x = JSBI.remainder(JSBI.multiply(x, x), z);
+    }
+    return number;
+};

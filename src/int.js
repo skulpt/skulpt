@@ -152,11 +152,16 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$invert: numberUnarySlot((v) => ~v, JSBI.bitwiseNot),
         nb$power(other, mod) {
             let ret;
+            if (mod !== undefined) {
+                if (Sk.builtin.checkNone(mod)) {
+                    mod = undefined;
+                }
+            }
             if (other instanceof Sk.builtin.int_ && (mod === undefined || mod instanceof Sk.builtin.int_)) {
                 let v = this.v;
                 let w = other.v;
                 if (typeof v === "number" && typeof w === "number") {
-                    const power = Math.pow(this.v, other.v);
+                    const power = Math.pow(v, w);
                     if (numberOrStringWithinThreshold(power)) {
                         ret = w < 0 ? new Sk.builtin.float_(power) : new Sk.builtin.int_(power);
                         if (mod === undefined) {
@@ -173,7 +178,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     if (ret !== undefined) {
                         return ret.nb$remainder(mod);
                     }
-                    return new Sk.builtin.int_(longpow(bigUp(v), bigUp(w), bigUp(mod.v)));
+                    return new Sk.builtin.int_(JSBI.powermod(bigUp(v), bigUp(w), bigUp(mod.v)));
                 }
                 // if we're here then we've fallen through so do bigint exponentiate
                 return new Sk.builtin.int_(JSBI.exponentiate(bigUp(v), bigUp(w)));
@@ -466,19 +471,6 @@ function numberBitSlot(number_func, bigint_func) {
     };
 }
 
-function longpow(x, y, z) {
-    let number = JSBI.BigInt(1);
-    y = JSBI.greaterThan(y, JSBI.__ZERO) ?  y : JSBI.unaryMinus(y);
-    while (JSBI.greaterThan(y, JSBI.__ZERO)) {
-        if (JSBI.bitwiseAnd(y, JSBI.BigInt(1))) {
-            number = JSBI.remainder(JSBI.multiply(number, x), z);
-        }
-        y = JSBI.signedRightShift(y, JSBI.BigInt(1));
-        x = JSBI.remainder(JSBI.multiply(x, x), z);
-    }
-    return number;
-}
-
 /**
  * Takes a JavaScript string and returns a number using the parser and negater
  *  functions (for int/long right now)
@@ -618,6 +610,8 @@ function stringToNumberOrBig(s) {
 }
 
 Sk.builtin.int_.stringToNumberOrBig = stringToNumberOrBig;
+
+
 function bigUp(v) {
     if (typeof v === "number") {
         return JSBI.BigInt(v);
