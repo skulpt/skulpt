@@ -226,6 +226,8 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             const instance = new this.constructor();
             // we call str new method with all the args and kwargs
             const str_instance = Sk.builtin.str.prototype.tp$new(args, kwargs);
+            instance.$mangled = str_instance.$mangled;
+            instance.$savedKeyHash = str_instance.$savedKeyHash ;
             instance.v = str_instance.v;
             return instance;
         },
