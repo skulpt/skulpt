@@ -29,8 +29,6 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
             if (this.obj != null) {
                 this.obj_type = this.$supercheck(a_type, this.obj);
             }
-
-            return Sk.builtin.none.none$;
         },
         $r() {
             if (this.obj) {

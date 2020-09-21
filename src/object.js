@@ -36,7 +36,6 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
                     throw new Sk.builtin.TypeError(Sk.abstr.typeName(this) + ".__init__() takes exactly one argument (the instance to initialize)");
                 }
             }
-            return Sk.builtin.none.none$;
         },
         tp$getattr: Sk.generic.getAttr,
         tp$setattr: Sk.generic.setAttr,

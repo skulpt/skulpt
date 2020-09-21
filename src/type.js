@@ -53,17 +53,14 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
             throw new Sk.builtin.TypeError("type() takes 1 or 3 arguments");
         }
     }
-    let obj,
-        self = this;
-
-    obj = this.prototype.tp$new(args, kwargs);
+    let obj = this.prototype.tp$new(args, kwargs);
 
     if (obj.$isSuspension) {
         return Sk.misceval.chain(
             obj,
-            function (o) {
+            (o) => {
                 obj = o;
-                if (!obj.ob$type.$isSubType(self)) {
+                if (!obj.ob$type.$isSubType(this)) {
                     // don't initialize an obj if it's type is not a subtype of this!
                     // typically obj$obtype === self so this check is fast
                     return;
@@ -72,12 +69,11 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
             },
             () => obj
         );
-    } else if (!obj.ob$type.$isSubType(self)) {
+    } else if (!obj.ob$type.$isSubType(this)) {
         return obj;
     } else {
         const res = obj.tp$init(args, kwargs);
-        Sk.asserts.assert(res !== undefined, "should return None in init method for " + obj.tp$name);
-        if (res.$isSuspension) {
+        if (res !== undefined && res.$isSuspension) {
             return Sk.misceval.chain(res, () => obj);
         }
         return obj;

@@ -37,7 +37,6 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             const [name, doc] = Sk.abstr.copyKeywordsToNamedArgs("module", ["name", "doc"], args, kwargs, [Sk.builtin.none.none$]);
             Sk.builtin.pyCheckType("module", "string", name);
             this.init$dict(name, doc);
-            return Sk.builtin.none.none$;
         },
         $r() {
             let name = this.get$name();

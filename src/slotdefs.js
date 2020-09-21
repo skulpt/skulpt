@@ -269,9 +269,8 @@ Sk.slots.__init__ = {
             return Sk.misceval.chain(ret, (r) => {
                 if (!Sk.builtin.checkNone(r) && r !== undefined) {
                     throw new Sk.builtin.TypeError("__init__() should return None, not " + Sk.abstr.typeName(r));
-                } else {
-                    return r;
                 }
+                return;
             });
         };
     },

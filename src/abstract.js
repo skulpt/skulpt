@@ -399,8 +399,8 @@ Sk.abstr.sequenceSetItem = function (seq, i, x, canSuspend) {
     return Sk.abstr.objectSetItem(seq, i, x, canSuspend);
 };
 
-Sk.abstr.sequenceDelItem = function (seq, i) {
-    return Sk.abstr.objectDelItem(seq, i);
+Sk.abstr.sequenceDelItem = function (seq, i, canSuspend) {
+    return Sk.abstr.objectDelItem(seq, i, canSuspend);
 };
 
 Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
@@ -659,9 +659,9 @@ Sk.abstr.objectPositive = function (obj) {
     throw new Sk.builtin.TypeError("bad operand type for unary +: '" + Sk.abstr.typeName(obj) + "'");
 };
 
-Sk.abstr.objectDelItem = function (o, key) {
+Sk.abstr.objectDelItem = function (o, key, canSuspend) {
     if (o.mp$ass_subscript) {
-        return o.mp$ass_subscript(key);
+        return o.mp$ass_subscript(key, undefined, canSuspend);
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' object does not support item deletion");
 };

@@ -422,7 +422,6 @@ function collections_mod(collections) {
                 Sk.abstr.checkArgsLen("OrderedDict", args, 0, 1);
                 args.unshift(this);
                 res = Sk.misceval.callsimArray(this.update, args, kwargs);
-                return Sk.builtin.none.none$;
             },
             tp$doc: "Dictionary that remembers insertion order",
             $r() {
@@ -482,7 +481,6 @@ function collections_mod(collections) {
                 } else {
                     this.set$item(key, w);
                 }
-                return Sk.builtin.none.none$;
             },
             tp$iter() {
                 return new odict_iter_(this);
@@ -587,7 +585,6 @@ function collections_mod(collections) {
                 if (iterable !== undefined) {
                     this.$extend(iterable);
                 }
-                return Sk.builtin.none.none$;
             },
             tp$getattr: Sk.generic.getAttr,
 
@@ -730,7 +727,6 @@ function collections_mod(collections) {
                 } else {
                     this.set$item(index, val);
                 }
-                return Sk.builtin.none.none$;
             },
             nb$inplace_add(other) {
                 this.maxlen = undefined;

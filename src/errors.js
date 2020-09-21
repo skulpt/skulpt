@@ -51,7 +51,6 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kwargs);
             this.args = new Sk.builtin.tuple(args); // reset args in __init__ method
-            return Sk.builtin.none.none$;
         },
         $r() {
             let ret = this.tp$name;

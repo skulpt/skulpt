@@ -28,7 +28,6 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             Sk.abstr.checkArgsLen("list", args, 0, 1);
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(args[0], true), (L) => {
                 this.v = L;
-                return Sk.builtin.none.none$;
             });
         },
         $r() {
@@ -99,7 +98,6 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             } else {
                 this.ass$subscript(index, value);
             }
-            return Sk.builtin.none.none$;
         },
         sq$inplace_concat(other) {
             if (other === this) {

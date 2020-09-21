@@ -36,7 +36,6 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             } else {
                 this.prop$doc = args[3];
             }
-            return Sk.builtin.none.none$;
         },
         tp$doc:
             "Property attribute.\n\n  fget\n    function to be used for getting an attribute value\n  fset\n    function to be used for setting an attribute value\n  fdel\n    function to be used for del'ing an attribute\n  doc\n    docstring\n\nTypical use is to define a managed attribute x:\n\nclass C(object):\n    def getx(self): return self._x\n    def setx(self, value): self._x = value\n    def delx(self): del self._x\n    x = property(getx, setx, delx, 'I'm the 'x' property.')\n\nDecorators make defining new properties or modifying existing ones easy:\n\nclass C(object):\n    @property\n    def x(self):\n        'I am the 'x' property.'\n        return self._x\n    @x.setter\n    def x(self, value):\n        self._x = value\n    @x.deleter\n    def x(self):\n        del self._x",
@@ -138,7 +137,6 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
             Sk.abstr.checkNoKwargs("classmethod", kwargs);
             Sk.abstr.checkArgsLen("classmethod", args, 1, 1);
             this.cm$callable = args[0];
-            return Sk.builtin.none.none$;
         },
         tp$doc:
             "classmethod(function) -> method\n\nConvert a function to be a class method.\n\nA class method receives the class as implicit first argument,\njust like an instance method receives the instance.\nTo declare a class method, use this idiom:\n\n  class C:\n      @classmethod\n      def f(cls, arg1, arg2, ...):\n          ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\nIf a class method is called for a derived class, the derived class\nobject is passed as the implied first argument.\n\nClass methods are different than C++ or Java static methods.\nIf you want those, see the staticmethod builtin.",
@@ -185,7 +183,6 @@ Sk.builtin.staticmethod = Sk.abstr.buildNativeClass("staticmethod", {
             Sk.abstr.checkNoKwargs("staticmethod", kwargs);
             Sk.abstr.checkArgsLen("staticmethod", args, 1, 1);
             this.sm$callable = args[0];
-            return Sk.builtin.none.none$;
         },
         tp$doc:
             "staticmethod(function) -> method\n\nConvert a function to be a static method.\n\nA static method does not receive an implicit first argument.\nTo declare a static method, use this idiom:\n\n     class C:\n         @staticmethod\n         def f(arg1, arg2, ...):\n             ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\n\nStatic methods in Python are similar to those found in Java or C++.\nFor a more advanced concept, see the classmethod builtin.",

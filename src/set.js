@@ -33,7 +33,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             Sk.abstr.checkArgsLen("set", args, 0, 1);
             this.set$clear();
             const iterable = args[0];
-            return Sk.misceval.chain(iterable && this.set$update(iterable), () => Sk.builtin.none.none$);
+            return iterable && this.set$update(iterable);
         },
         tp$new: Sk.generic.new,
         $r() {
@@ -263,7 +263,8 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth(entry) {
                 const tmp = entry_or_hashable_set(entry);
                 if (this.v.mp$lookup(tmp)) {
-                    return this.v.mp$ass_subscript(tmp);
+                    this.v.mp$ass_subscript(tmp);
+                    return Sk.builtin.none.none$;
                 }
                 throw new Sk.builtin.KeyError(entry);
             },

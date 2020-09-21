@@ -123,7 +123,6 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             } else {
                 this.set$item(key, value);
             }
-            return Sk.builtin.none.none$;
         },
     },
     methods: /**@lends {Sk.builtin.dict.prototype}*/ {
@@ -225,7 +224,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         update: {
             $meth(args, kwargs) {
-                return this.update$common(args, kwargs, "update");
+                return Sk.misceval.chain(this.update$common(args, kwargs, "update"), () => Sk.builtin.none.none$);
             },
             $flags: { FastCall: true },
             $textsig: null,
@@ -544,7 +543,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
                 this.set$item(new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
             }
         }
-        return Sk.builtin.none.none$;
+        return;
     });
 };
 
