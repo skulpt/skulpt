@@ -146,16 +146,16 @@ Sk.configure = function (options) {
     if (Sk.signals === true) {
         Sk.signals = {
             listeners: [],
-            addEventListener: function (handler) {
+            addEventListener(handler) {
                 Sk.signals.listeners.push(handler);
             },
-            removeEventListener: function (handler) {
+            removeEventListener(handler) {
                 var index = Sk.signals.listeners.indexOf(handler);
                 if (index >= 0) {
                     Sk.signals.listeners.splice(index, 1); // Remove items
                 }
             },
-            signal: function (signal, data) {
+            signal(signal, data) {
                 for (var i = 0; i < Sk.signals.listeners.length; i++) {
                     Sk.signals.listeners[i].call(null, signal, data);
                 }

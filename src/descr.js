@@ -61,17 +61,17 @@ function descriptorRepr() {
 
 const descriptorGetsets = {
     __doc__: {
-        $get: function () {
+        $get() {
             return this.d$def.$doc ? new Sk.builtin.str(this.d$def.$doc) : Sk.builtin.none.none$;
         },
     },
     __objclass__: {
-        $get: function () {
+        $get() {
             return this.d$type;
         },
     },
     __name__: {
-        $get: function () {
+        $get() {
             return new Sk.builtin.str(this.d$name);
         },
     },
@@ -79,7 +79,7 @@ const descriptorGetsets = {
 
 const descrTextSig = {
     __text_signature__: {
-        $get: function () {
+        $get() {
             return this.d$def.$textsig ? new Sk.builtin.str(this.d$def.$textsig) : Sk.builtin.none.none$;
         },
     },
@@ -158,7 +158,7 @@ Sk.builtin.method_descriptor = buildDescriptor("method_descriptor", "method", {
         }
     },
     slots: {
-        tp$call: function (args, kwargs) {
+        tp$call(args, kwargs) {
             return this.tp$call(args, kwargs);
         },
         tp$descr_get(obj, type) {
@@ -307,7 +307,7 @@ Sk.builtin.method_wrapper = buildDescriptor("method_wrapper", undefined, {
     },
     getsets: {
         __self__: {
-            $get: function () {
+            $get() {
                 return this.m$self;
             },
         },

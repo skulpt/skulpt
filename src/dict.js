@@ -37,7 +37,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         tp$hash: Sk.builtin.none.none$,
         tp$doc:
             "dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n        d[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)",
-        $r: function () {
+        $r() {
             if (this.in$repr) {
                 // prevents recursively calling repr;
                 return new Sk.builtin.str("{...}");
@@ -49,13 +49,13 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return new Sk.builtin.str("{" + ret.join(", ") + "}");
         },
         tp$new: Sk.generic.new,
-        tp$init: function (args, kwargs) {
+        tp$init(args, kwargs) {
             return this.update$common(args, kwargs, "dict");
         },
-        tp$iter: function () {
+        tp$iter() {
             return new dict_iter_(this);
         },
-        tp$richcompare: function (other, op) {
+        tp$richcompare(other, op) {
             let res;
             if (!(other instanceof Sk.builtin.dict) || (op !== "Eq" && op !== "NotEq")) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
@@ -74,7 +74,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return op === "Eq" ? res : !res;
         },
         // as number slot
-        nb$or: function (other) {
+        nb$or(other) {
             if (!(other instanceof Sk.builtin.dict)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -82,7 +82,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             dict.dict$merge(other);
             return dict;
         },
-        nb$reflected_or: function(other) {
+        nb$reflected_or(other) {
             if (!(other instanceof Sk.builtin.dict)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -91,17 +91,17 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             dict.dict$merge(this);
             return dict;
         },
-        nb$inplace_or: function (other) {
+        nb$inplace_or(other) {
             return Sk.misceval.chain(this.update$onearg(other), () => this);
         },
         // sequence or mapping slots
-        sq$length: function () {
+        sq$length() {
             return this.get$size();
         },
-        sq$contains: function (ob) {
+        sq$contains(ob) {
             return this.mp$lookup(ob) !== undefined;
         },
-        mp$subscript: function (key, canSuspend) {
+        mp$subscript(key, canSuspend) {
             const res = this.mp$lookup(key);
             if (res !== undefined) {
                 // Found in dictionary
@@ -114,7 +114,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             throw new Sk.builtin.KeyError(key);
         },
-        mp$ass_subscript: function (key, value) {
+        mp$ass_subscript(key, value) {
             if (value === undefined) {
                 const item = this.pop$item(key);
                 if (item === undefined) {
@@ -128,7 +128,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     },
     methods: /**@lends {Sk.builtin.dict.prototype}*/ {
         __reversed__: {
-            $meth: function () {
+            $meth() {
                 return new dict_reverse_iter_(this);
             },
             $flags: { NoArgs: true },
@@ -136,7 +136,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "Return a reverse iterator over the dict keys.",
         },
         get: {
-            $meth: function (key, d) {
+            $meth(key, d) {
                 return this.mp$lookup(key) || d || Sk.builtin.none.none$;
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
@@ -144,7 +144,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "Return the value for key if key is in the dictionary, else default.",
         },
         setdefault: {
-            $meth: function (key, default_) {
+            $meth(key, default_) {
                 // logic could be simpler here but some tests dictate we can't do too many lookups
                 let item;
                 const hash = getHash(key);
@@ -168,7 +168,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 "Insert key with a value of default if key is not in the dictionary.\n\nReturn the value for key if key is in the dictionary, else default.",
         },
         pop: {
-            $meth: function (key, d) {
+            $meth(key, d) {
                 const item = this.pop$item(key);
                 if (item !== undefined) {
                     return item[1];
@@ -185,7 +185,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 "D.pop(k[,d]) -> v, remove specified key and return the corresponding value.\nIf key is not found, d is returned if given, otherwise KeyError is raised",
         },
         popitem: {
-            $meth: function () {
+            $meth() {
                 // not particularly efficent but we get allkeys as an array to iter anyway
                 const size = this.get$size();
                 if (size === 0) {
@@ -200,7 +200,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.popitem() -> (k, v), remove and return some (key, value) pair as a\n2-tuple; but raise KeyError if D is empty.",
         },
         keys: {
-            $meth: function () {
+            $meth() {
                 return new dict_keys(this);
             },
             $flags: { NoArgs: true },
@@ -208,7 +208,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.keys() -> a set-like object providing a view on D's keys",
         },
         items: {
-            $meth: function () {
+            $meth() {
                 return new dict_items(this);
             },
             $flags: { NoArgs: true },
@@ -216,7 +216,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.items() -> a set-like object providing a view on D's items",
         },
         values: {
-            $meth: function () {
+            $meth() {
                 return new dict_values(this);
             },
             $flags: { NoArgs: true },
@@ -224,7 +224,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.values() -> an object providing a view on D's values",
         },
         update: {
-            $meth: function (args, kwargs) {
+            $meth(args, kwargs) {
                 return this.update$common(args, kwargs, "update");
             },
             $flags: { FastCall: true },
@@ -233,7 +233,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
                 "D.update([E, ]**F) -> None.  Update D from dict/iterable E and F.\nIf E is present and has a .keys() method, then does:  for k in E: D[k] = E[k]\nIf E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v\nIn either case, this is followed by: for k in F:  D[k] = F[k]",
         },
         clear: {
-            $meth: function () {
+            $meth() {
                 this.size = 0;
                 this.$version++;
                 this.entries = Object.create(null);
@@ -244,7 +244,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.clear() -> None.  Remove all items from D.",
         },
         copy: {
-            $meth: function () {
+            $meth() {
                 return this.dict$copy();
             },
             $flags: { NoArgs: true },
@@ -274,21 +274,21 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
     },
     proto: /**@lends {Sk.builtin.dict.prototype}*/ {
-        get$size: function () {
+        get$size() {
             // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
         },
-        sk$asarray: function () {
+        sk$asarray() {
             return Object.values(this.entries).map((item) => item[0]);
         },
-        update$onearg: function (arg) {
+        update$onearg(arg) {
             if (arg instanceof Sk.builtin.dict || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
                 return this.dict$merge(arg);
             } else {
                 return this.dict$merge_seq(arg);
             }
         },
-        dict$copy: function () {
+        dict$copy() {
             const newCopy = new Sk.builtin.dict([]);
             newCopy.size = this.size;
             const entries = Object.entries(this.entries); // do it this way for mappingproxy
@@ -307,7 +307,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             return newCopy;
         },
-        $items: function () {
+        $items() {
             return Object.values(this.entries);
         }
     },
@@ -660,7 +660,7 @@ const dict_view_slots = {
     tp$as_number: true,
     tp$as_sequence_or_mapping: true,
     tp$hash: Sk.builtin.none.none$,
-    $r: function () {
+    $r() {
         if (this.in$repr) {
             // prevent recursively calling oneself
             return new Sk.builtin.str("...");
@@ -671,7 +671,7 @@ const dict_view_slots = {
         this.in$repr = false;
         return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
     },
-    tp$richcompare: function (other, op) {
+    tp$richcompare(other, op) {
         if (!(Sk.builtin.checkAnySet(other) || checkAnyView(other))) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
@@ -697,23 +697,23 @@ const dict_view_slots = {
                 return len_self >= len_other && all_contained_in(other, this);
         }
     },
-    nb$subtract: function (other) {
+    nb$subtract(other) {
         const set = as_set(this);
         return set.difference.$meth.call(set, other);
     },
-    nb$and: function (other) {
+    nb$and(other) {
         const set = as_set(this);
         return set.intersection.$meth.call(set, other);
     },
-    nb$or: function (other) {
+    nb$or(other) {
         const set = as_set(this);
         return set.union.$meth.call(set, other);
     },
-    nb$xor: function (other) {
+    nb$xor(other) {
         const set = as_set(this);
         return set.symmetric_difference.$meth.call(set, other);
     },
-    sq$length: function () {
+    sq$length() {
         return this.dict.get$size();
     },
 };
@@ -731,7 +731,7 @@ function buildDictView(typename, slots, reverse_method) {
     options.slots = Object.assign(slots, dict_view_slots);
     options.methods = {
         isdisjoint: {
-            $meth: function (other) {
+            $meth(other) {
                 const set = as_set(this);
                 return set.isdisjoint.$meth.call(set, other);
             },
@@ -760,10 +760,10 @@ function buildDictView(typename, slots, reverse_method) {
 var dict_keys = buildDictView(
     "dict_keys",
     {
-        sq$contains: function (key) {
+        sq$contains(key) {
             return this.dict.mp$lookup(key) !== undefined;
         },
-        tp$iter: function () {
+        tp$iter() {
             return new dict_iter_(this.dict);
         },
     },
@@ -775,7 +775,7 @@ var dict_keys = buildDictView(
 var dict_values = buildDictView(
     "dict_values",
     {
-        tp$iter: function () {
+        tp$iter() {
             return new dict_valueiter_(this.dict);
         },
     },
@@ -787,7 +787,7 @@ var dict_values = buildDictView(
 var dict_items = buildDictView(
     "dict_items",
     {
-        sq$contains: function (item) {
+        sq$contains(item) {
             if (!(item instanceof Sk.builtin.tuple && item.sq$length() === 2)) {
                 return false;
             }
@@ -799,7 +799,7 @@ var dict_items = buildDictView(
             }
             return found === value || Sk.misceval.richCompareBool(found, value, "Eq");
         },
-        tp$iter: function () {
+        tp$iter() {
             return new dict_itemiter_(this.dict);
         },
     },
@@ -887,14 +887,14 @@ Sk.builtin.dict.py2$methods = {
     has_key: {
         $name: "has_key",
         $flags: { OneArg: true },
-        $meth: function (k) {
+        $meth(k) {
             return new Sk.builtin.bool(this.sq$contains(k));
         },
         $doc: "D.has_key(k) -> True if D has a key k, else False",
     },
     keys: {
         $name: "keys",
-        $meth: function () {
+        $meth() {
             return new Sk.builtin.list(this.sk$asarray());
         },
         $flags: { NoArgs: true },
@@ -903,7 +903,7 @@ Sk.builtin.dict.py2$methods = {
     },
     items: {
         $name: "items",
-        $meth: function () {
+        $meth() {
             return new Sk.builtin.list(this.$items().map(([key, val]) => new Sk.builtin.tuple([key, val])));
         },
         $flags: { NoArgs: true },
@@ -912,7 +912,7 @@ Sk.builtin.dict.py2$methods = {
     },
     values: {
         $name: "values",
-        $meth: function () {
+        $meth() {
             return new Sk.builtin.list(this.$items().map(([_, val]) => val));
         },
         $flags: { NoArgs: true },

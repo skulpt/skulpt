@@ -83,10 +83,10 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
     },
     getsets: {
         __class__: {
-            $get: function () {
+            $get() {
                 return this.ob$type;
             },
-            $set: function (value) {
+            $set(value) {
                 if (value === undefined) {
                     throw new Sk.builtin.TypeError("can't delete __class__ attribute");
                 } else if (!Sk.builtin.checkClass(value)) {
@@ -135,7 +135,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             $doc: "Default dir() implementation.",
         },
         __format__: {
-            $meth: function (format_spec) {
+            $meth(format_spec) {
                 let formatstr;
                 if (!Sk.builtin.checkString(format_spec)) {
                     if (Sk.__future__.exceptions) {

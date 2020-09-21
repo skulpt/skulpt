@@ -15,7 +15,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
         this.$sentinel = sentinel;
         this.$flag = false;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         let ret;
         if (this.$flag === true) {
             // Iterator has already completed
@@ -47,9 +47,6 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
 
 
 
-
-
-
 /**
  * @constructor
  * @extends {Sk.builtin.object}
@@ -61,7 +58,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
         this.$index = 0;
         this.$seq = seq;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         let ret;
         ret = Sk.misceval.tryCatch(
             () => {
@@ -80,7 +77,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
     methods: {
         __length_hint__: {
             $flags: { NoArgs: true },
-            $meth: function () {
+            $meth() {
                 if (this.$seq.sq$length) {
                     // sq$length will return Sk.miseval.asIndex
                     return this.$seq.sq$length() - this.$index;
@@ -95,33 +92,5 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
     flags: { sk$acceptable_as_base_class: false },
 });
 
-/**
- * @constructor
- * @extends {Sk.builtin.object}
- * @param {Sk.builtin.str} str
- * @private
- */
-Sk.builtin.str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
-    constructor: function str_iter_(str) {
-        this.$index = 0;
-        this.$seq = str.v.slice(0);
-        this.$length = str.sq$length();
-    },
-    iternext: function () {
-        if (this.$index >= this.$length) {
-            return undefined;
-        }
-        return new Sk.builtin.str(this.$seq.substr(this.$index++, 1));
-    },
-    methods: {
-        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
-    },
-    flags: { sk$acceptable_as_base_class: false },
-});
-
-
-
-
 
 Sk.exportSymbol("Sk.builtin.callable_iter_", Sk.builtin.callable_iter_);
-Sk.exportSymbol("Sk.builtin.str_iter_", Sk.builtin.str_iter_);

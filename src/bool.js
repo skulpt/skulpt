@@ -27,29 +27,29 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
     slots: {
         tp$doc:
             "bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed.",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("bool", kwargs);
             Sk.abstr.checkArgsLen("bool", args, 0, 1);
             return new Sk.builtin.bool(args[0]); //technically we don't need new but easier to keep consistent
         },
-        $r: function () {
+        $r() {
             return this.v ? this.str$True : this.str$False;
         },
 
         tp$as_number: true,
-        nb$and: function (other) {
+        nb$and(other) {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v & other.v);
             } 
             return int_proto.nb$and.call(this, other);
         },
-        nb$or: function (other) {
+        nb$or(other) {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v | other.v);
             } 
             return int_proto.nb$or.call(this, other);
         },
-        nb$xor: function (other) {
+        nb$xor(other) {
             if (other.ob$type === Sk.builtin.bool) {
                 return new Sk.builtin.bool(this.v ^ other.v);
             } 
@@ -61,7 +61,7 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
     },
     methods: {
         __format__: {
-            $meth: function () {
+            $meth() {
                 return this.$r();
             },
             $flags: {OneArg: true},

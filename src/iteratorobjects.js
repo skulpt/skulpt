@@ -15,7 +15,7 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
         this.$index = start;
         return this;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (i) => {
             if (i === undefined) {
                 return undefined;
@@ -27,7 +27,7 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
     slots: {
         tp$doc:
             "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ...",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             let [iterable, start] = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs, [new Sk.builtin.int_(0)]);
             iterable = Sk.abstr.iter(iterable);
             start = Sk.misceval.asIndexOrThrow(start);
@@ -54,7 +54,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         this.$func = func;
         this.$iterable = iterable;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         // iterate over iterable until we pass the predicate
         // this.chcek$filter either returns the item or undefined
         const ret = Sk.misceval.iterFor(this.$iterable, (i) =>
@@ -65,7 +65,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     slots: {
         tp$doc:
             "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true.",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             let [func, iterable] = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs, []);
             func = Sk.builtin.checkNone(func) ? null : func;
             iterable = Sk.abstr.iter(iterable);
@@ -80,7 +80,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         },
     },
     proto: {
-        check$filter: function (item) {
+        check$filter(item) {
             let res;
             if (this.$func === null) {
                 res = item;
@@ -105,7 +105,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
         this.$seq = seq;
         return this;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         if (this.$idx < 0) {
             return undefined;
         }
@@ -124,7 +124,7 @@ Sk.builtin.reversed = Sk.abstr.buildIteratorClass("reversed", {
     },
     slots: {
         tp$doc: "Return a reverse iterator over the values of the given sequence.",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (this === Sk.builtin.reversed.prototype) {
                 Sk.abstr.checkNoKwargs("reversed", kwargs);
             }
@@ -167,7 +167,7 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
             this.tp$iternext = () => undefined;
         }
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         const tup = [];
         const ret = Sk.misceval.chain(
             Sk.misceval.iterArray(this.$iters, (it) =>
@@ -185,7 +185,7 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     slots: {
         tp$doc:
             "zip(iter1 [,iter2 [...]]) --> zip object\n\nReturn a zip object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the shortest iterable in the argument sequence\nis exhausted and then it raises StopIteration.",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (this === Sk.builtin.zip_.prototype) {
                 Sk.abstr.checkNoKwargs("zip", kwargs);
             }
@@ -224,7 +224,7 @@ Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
         this.$func = func;
         this.$iters = iters;
     },
-    iternext: function (canSuspend) {
+    iternext(canSuspend) {
         const args = [];
         const ret = Sk.misceval.chain(
             Sk.misceval.iterArray(this.$iters, (it) =>
@@ -242,7 +242,7 @@ Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     slots: {
         tp$doc:
             "map(func, *iterables) --> map object\n\nMake an iterator that computes the function using arguments from\neach of the iterables.  Stops when the shortest iterable is exhausted.",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (this === Sk.builtin.map_.prototype) {
                 Sk.abstr.checkNoKwargs("map", kwargs);
             }

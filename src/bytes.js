@@ -67,7 +67,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         tp$getattr: Sk.generic.getAttr,
         tp$doc:
             "bytes(iterable_of_ints) -> bytes\nbytes(string, encoding[, errors]) -> bytes\nbytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer\nbytes(int) -> bytes object of size given by the parameter initialized with null bytes\nbytes() -> empty bytes object\n\nConstruct an immutable array of bytes from:\n  - an iterable yielding integers in range(256)\n  - a text string encoded using the specified encoding\n  - any object implementing the buffer API.\n  - an integer",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (this !== Sk.builtin.bytes.prototype) {
                 return this.$subtype_new(args, kwargs);
             }
@@ -117,7 +117,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
         },
-        $r: function () {
+        $r() {
             let num;
             let quote = "'";
             const hasdbl = this.v.indexOf(34) !== -1;
@@ -157,13 +157,13 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             ret = "b" + quote + ret + quote;
             return new Sk.builtin.str(ret);
         },
-        tp$str: function () {
+        tp$str() {
             return this.$r();
         },
-        tp$iter: function () {
+        tp$iter() {
             return new bytes_iter_(this);
         },
-        tp$richcompare: function (other, op) {
+        tp$richcompare(other, op) {
             if (this === other && Sk.misceval.opAllowsEquality(op)) {
                 return true;
             } else if (!(other instanceof Sk.builtin.bytes)) {
@@ -197,11 +197,11 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                     return (i === min_len && v.length >= w.length) || v[i] >= w[i];
             }
         },
-        tp$hash: function () {
+        tp$hash() {
             return new Sk.builtin.str(this.$jsstr()).tp$hash();
         },
         tp$as_sequence_or_mapping: true,
-        mp$subscript: function (index) {
+        mp$subscript(index) {
             if (Sk.misceval.isIndex(index)) {
                 let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
                 if (i !== undefined) {
@@ -222,10 +222,10 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             throw new Sk.builtin.TypeError("byte indices must be integers or slices, not " + Sk.abstr.typeName(index));
         },
-        sq$length: function () {
+        sq$length() {
             return this.v.length;
         },
-        sq$concat: function (other) {
+        sq$concat(other) {
             if (!(other instanceof Sk.builtin.bytes)) {
                 throw new Sk.builtin.TypeError("can't concat " + Sk.abstr.typeName(other) + " to bytes");
             }
@@ -239,7 +239,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return new Sk.builtin.bytes(ret);
         },
-        sq$repeat: function (n) {
+        sq$repeat(n) {
             if (!Sk.misceval.isIndex(n)) {
                 throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
             }
@@ -259,14 +259,14 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return new Sk.builtin.bytes(ret);
         },
-        sq$contains: function (tgt) {
+        sq$contains(tgt) {
             return this.find$left(tgt) !== -1;
         },
         // tp$as_number: true,
         // nb$remainder: strBytesRemainder,
     },
     proto: {
-        $jsstr: function () {
+        $jsstr() {
             // returns binary string - not bidirectional for non ascii characters - use with caution
             // i.e. new Sk.builtin.bytes(x.$jsstr()).v  may be different to x.v;
             let ret = "";
@@ -275,7 +275,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return ret;
         },
-        get$tgt: function (tgt) {
+        get$tgt(tgt) {
             if (tgt instanceof Sk.builtin.bytes) {
                 return tgt.v;
             }
@@ -285,7 +285,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return tgt;
         },
-        get$raw: function (tgt) {
+        get$raw(tgt) {
             if (tgt instanceof Sk.builtin.bytes) {
                 return tgt.v;
             }
@@ -305,7 +305,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return -1;
         },
-        find$subright: function (uint8, start, end) {
+        find$subright(uint8, start, end) {
             let i = end - uint8.length;
             while (i >= start) {
                 if (uint8.every((val, j) => val === this.v[i + j])) {
@@ -315,14 +315,14 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             }
             return -1;
         },
-        $subtype_new: function (args, kwargs) {
+        $subtype_new(args, kwargs) {
             const instance = new this.constructor();
             // we call bytes new method with all the args and kwargs
             const bytes_instance = Sk.builtin.bytes.prototype.tp$new(args, kwargs);
             instance.v = bytes_instance.v;
             return instance;
         },
-        sk$asarray: function () {
+        sk$asarray() {
             const ret = [];
             this.v.forEach((x) => {ret.push(new Sk.builtin.int_(x));});
             return ret;
@@ -335,7 +335,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
     },
     methods: {
         __getnewargs__: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.tuple(new Sk.builtin.bytes(this.v));
             },
             $flags: { NoArgs: true },
@@ -343,7 +343,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             $doc: null,
         },
         capitalize: {
-            $meth: function () {
+            $meth() {
                 const len = this.v.length;
                 if (len === 0) {
                     return new Sk.builtin.bytes(this.v);
@@ -369,7 +369,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "B.center(width[, fillchar]) -> copy of B\n\nReturn B centered in a string of length width.  Padding is\ndone using the specified fill character (default is a space).",
         },
         count: {
-            $meth: function (tgt, start, end) {
+            $meth(tgt, start, end) {
                 tgt = this.get$tgt(tgt);
                 ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
                 let count = 0;
@@ -413,7 +413,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "B.endswith(suffix[, start[, end]]) -> bool\n\nReturn True if B ends with the specified suffix, False otherwise.\nWith optional start, test B beginning at that position.\nWith optional end, stop comparing B at that position.\nsuffix can also be a tuple of bytes to try.",
         },
         expandtabs: {
-            $meth: function (tabsize) {
+            $meth(tabsize) {
                 tabsize = Sk.misceval.asIndexSized(tabsize, Sk.builtin.OverflowError, "an integer is required (got type {tp$nam})");
                 const final = [];
                 let linepos = 0;
@@ -448,7 +448,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "B.find(sub[, start[, end]]) -> int\n\nReturn the lowest index in B where subsection sub is found,\nsuch that sub is contained within B[start,end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure.",
         },
         hex: {
-            $meth: function () {
+            $meth() {
                 let final = "";
                 for (let i = 0; i < this.v.length; i++) {
                     final += this.v[i].toString(16).padStart(2, "0");
@@ -549,7 +549,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "B.isupper() -> bool\n\nReturn True if all cased characters in B are uppercase and there is\nat least one cased character in B, False otherwise.",
         },
         join: {
-            $meth: function (iterable) {
+            $meth(iterable) {
                 const final = [];
                 let i = 0;
                 return Sk.misceval.chain(
@@ -600,7 +600,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "Partition the bytes into three parts using the given separator.\n\nThis will search for the separator sep in the bytes. If the separator is found,\nreturns a 3-tuple containing the part before the separator, the separator\nitself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing the original bytes\nobject and two empty bytes objects.",
         },
         replace: {
-            $meth: function (oldB, newB, count) {
+            $meth(oldB, newB, count) {
                 oldB = this.get$raw(oldB);
                 newB = this.get$raw(newB);
                 count = count === undefined ? -1 : Sk.misceval.asIndexSized(count, Sk.builtin.OverflowError);
@@ -631,7 +631,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.",
         },
         rfind: {
-            $meth: function (tgt, start, end) {
+            $meth(tgt, start, end) {
                 return new Sk.builtin.int_(this.find$right(tgt, start, end));
             },
             $flags: { MinArgs: 1, MaxArgs: 3 },
@@ -778,7 +778,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "Return a list of the sections in the bytes, using sep as the delimiter.\n\n  sep\n    The delimiter according which to split the bytes.\n    None (the default value) means split on ASCII whitespace characters\n    (space, tab, return, newline, formfeed, vertical tab).\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.",
         },
         splitlines: {
-            $meth: function (keepends) {
+            $meth(keepends) {
                 keepends = Sk.misceval.isTrue(keepends);
                 const final = [];
                 let sol = 0;
@@ -837,7 +837,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             $doc: "B.swapcase() -> copy of B\n\nReturn a copy of B with uppercase ASCII characters converted\nto lowercase ASCII and vice versa.",
         },
         title: {
-            $meth: function () {
+            $meth() {
                 const len = this.v.length;
                 const final = new Uint8Array(len);
                 let inword = false;
@@ -862,7 +862,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 "B.title() -> copy of B\n\nReturn a titlecased version of B, i.e. ASCII words start with uppercase\ncharacters, all remaining cased characters have lowercase.",
         },
         // translate: {
-        //     $meth: function () {
+        //     $meth() {
         //         throw new Sk.builtin.NotImplementedError("translate() bytes method not implemented in Skulpt");
         //     },
         //     $flags: { NoArgs: true },
@@ -877,7 +877,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             $doc: "B.upper() -> copy of B\n\nReturn a copy of B with all ASCII characters converted to uppercase.",
         },
         zfill: {
-            $meth: function (width) {
+            $meth(width) {
                 width = Sk.misceval.asIndexSized(width, Sk.builtin.IndexError);
                 const fill_len = width - this.v.length;
                 if (fill_len <= 0) {
@@ -1270,7 +1270,7 @@ var bytes_iter_ = Sk.abstr.buildIteratorClass("bytes_iterator", {
         this.$index = 0;
         this.$seq = bytes.v;
     },
-    iternext: function () {
+    iternext() {
         const next = this.$seq[this.$index++];
         if (next === undefined) {
             return undefined;

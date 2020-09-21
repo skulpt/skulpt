@@ -78,12 +78,12 @@ function $builtinmodule(name) {
         },
         slots: {
             tp$getattr: Sk.generic.getAttr,
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("itemgetter", kwargs);
                 Sk.abstr.checkArgsLen("itemgetter", args, 1);
                 return new operator.itemgetter(args);
             },
-            tp$call: function (args, kwargs) {
+            tp$call(args, kwargs) {
                 Sk.abstr.checkNoKwargs("itemgetter", kwargs);
                 Sk.abstr.checkArgsLen("itemgetter", args, 1, 1);
                 const obj = args[0];
@@ -96,7 +96,7 @@ function $builtinmodule(name) {
                 "Return a callable object that fetches the given item(s) from its operand.\n\
             After f = itemgetter(2), the call f(r) returns r[2].\n\
             After g = itemgetter(2, 5, 3), the call g(r) returns (r[2], r[5], r[3])",
-            $r: function () {
+            $r() {
                 if (this.in$repr) {
                     return new Sk.builtin.str(this.tp$name + "(...)");
                 }
@@ -117,7 +117,7 @@ function $builtinmodule(name) {
         },
         slots: {
             tp$getattr: Sk.generic.getAttr,
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("attrgetter", kwargs);
                 Sk.abstr.checkArgsLen("attrgetter", args, 1);
                 const attrs = [];
@@ -139,7 +139,7 @@ function $builtinmodule(name) {
                 }
                 return new operator.attrgetter(attrs);
             },
-            tp$call: function (args, kwargs) {
+            tp$call(args, kwargs) {
                 Sk.abstr.checkNoKwargs("attrgetter", kwargs);
                 Sk.abstr.checkArgsLen("attrgetter", args, 1, 1);
                 const obj = args[0];
@@ -151,7 +151,7 @@ function $builtinmodule(name) {
             },
             tp$doc:
                 "attrgetter(attr, ...) --> attrgetter object\n\nReturn a callable object that fetches the given attribute(s) from its operand.\nAfter f = attrgetter('name'), the call f(r) returns r.name.\nAfter g = attrgetter('name', 'date'), the call g(r) returns (r.name, r.date).\nAfter h = attrgetter('name.first', 'name.last'), the call h(r) returns\n(r.name.first, r.name.last).",
-            $r: function () {
+            $r() {
                 if (this.in$repr) {
                     return new Sk.builtin.str(this.tp$name + "(...)");
                 }
@@ -172,7 +172,7 @@ function $builtinmodule(name) {
         },
         slots: {
             tp$getattr: Sk.generic.getAttr,
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkArgsLen("methodcaller", args, 1);
                 const $name = args[0];
                 if (!Sk.builtin.checkString($name)) {
@@ -180,7 +180,7 @@ function $builtinmodule(name) {
                 }
                 return new operator.methodcaller($name, args.slice(1), kwargs);
             },
-            tp$call: function (args, kwargs) {
+            tp$call(args, kwargs) {
                 Sk.abstr.checkNoKwargs("methodcaller", kwargs);
                 Sk.abstr.checkArgsLen("methodcaller", args, 1, 1);
                 const obj = args[0];
@@ -190,7 +190,7 @@ function $builtinmodule(name) {
             },
             tp$doc:
                 "methodcaller(name, ...) --> methodcaller object\n\nReturn a callable object that calls the given method on its operand.\nAfter f = methodcaller('name'), the call f(r) returns r.name().\nAfter g = methodcaller('name', 'date', foo=1), the call g(r) returns\nr.name('date', foo=1).",
-            $r: function () {
+            $r() {
                 if (this.in$repr) {
                     return new Sk.builtin.str(this.tp$name + "(...)");
                 }

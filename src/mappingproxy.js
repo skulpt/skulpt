@@ -19,7 +19,7 @@
  * We could potentially memoise the entries for static objects (builtin types @todo)
  * The problem with memoising for all type objects is that the mappingproxy
  * is a live view of the mapping rather than a static copy
- * 
+ *
  * ```python
  * >>> x = A.__dict__
  * >>> A.foo = 'bar'
@@ -43,7 +43,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         tp$getattr: Sk.generic.getAttr,
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("mappingproxy", kwargs);
             Sk.abstr.checkOneArg("mappingproxy", args, kwargs);
             const mapping = args[0];
@@ -57,44 +57,44 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         tp$richcompare(other, op) {
             return Sk.misceval.richCompareBool(this.mapping, other, op);
         },
-        tp$str: function () {
+        tp$str() {
             return this.mapping.tp$str();
         },
-        $r: function () {
+        $r() {
             return new Sk.builtin.str("mappingproxy(" + Sk.misceval.objectRepr(this.mapping) + ")");
         },
-        mp$subscript: function (key, canSuspend) {
+        mp$subscript(key, canSuspend) {
             return this.mapping.mp$subscript(key, canSuspend);
         },
-        sq$contains: function (key) {
+        sq$contains(key) {
             return this.mapping.sq$contains(key);
         },
-        sq$length: function () {
+        sq$length() {
             return this.mapping.sq$length();
         },
-        tp$iter: function () {
+        tp$iter() {
             return this.mapping.tp$iter();
         },
         tp$as_number: true,
-        nb$or: function (other) {
+        nb$or(other) {
             if (other instanceof Sk.builtin.mappingproxy) {
                 other = other.mapping;
             }
             return Sk.abstr.numberBinOp(this.mapping, other, "BitOr");
         },
-        nb$reflected_or: function (other) {
+        nb$reflected_or(other) {
             if (other instanceof Sk.builtin.mappingproxy) {
                 other = other.mapping;
             }
             return Sk.abstr.numberBinOp(other, this.mapping, "BitOr");
         },
-        nb$inplace_or: function (other) {
+        nb$inplace_or(other) {
             throw new Sk.builtin.TypeError("'|=' is not supported by " + Sk.abstr.typeName(this) + "; use '|' instead");
         },
     },
     methods: {
         get: {
-            $meth: function (args, kwargs) {
+            $meth(args, kwargs) {
                 return Sk.misceval.callsimArray(this.mapping.tp$getattr(this.str$get), args, kwargs);
             },
             $flags: { FastCall: true },
@@ -102,7 +102,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             $doc: "D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.",
         },
         keys: {
-            $meth: function () {
+            $meth() {
                 return Sk.misceval.callsimArray(this.mapping.tp$getattr(this.str$keys), []);
             },
             $flags: { NoArgs: true },
@@ -110,7 +110,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             $doc: "D.keys() -> a set-like object providing a view on D's keys",
         },
         items: {
-            $meth: function () {
+            $meth() {
                 return Sk.misceval.callsimArray(this.mapping.tp$getattr(this.str$items), []);
             },
             $flags: { NoArgs: true },
@@ -118,7 +118,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             $doc: "D.items() -> a set-like object providing a view on D's items",
         },
         values: {
-            $meth: function () {
+            $meth() {
                 return Sk.misceval.callsimArray(this.mapping.tp$getattr(this.str$values), []);
             },
             $flags: { NoArgs: true },
@@ -126,7 +126,7 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
             $doc: "D.values() -> a set-like object providing a view on D's values",
         },
         copy: {
-            $meth: function () {
+            $meth() {
                 return Sk.misceval.callsimArray(this.mapping.tp$getattr(this.str$copy), []);
             },
             $flags: { NoArgs: true },
@@ -140,15 +140,14 @@ Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
         str$keys: new Sk.builtin.str("keys"),
         str$items: new Sk.builtin.str("items"),
         str$values: new Sk.builtin.str("values"),
-        mp$lookup: function(key) {
+        mp$lookup(key) {
             return this.mapping.mp$lookup(key);
-        }
+        },
     },
     flags: {
         sk$acceptable_as_base_class: false,
     },
 });
-
 
 function customEntriesGetter(mapping, d) {
     Object.defineProperties(mapping, {

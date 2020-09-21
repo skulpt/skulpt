@@ -66,28 +66,28 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         }
     },
     proto: {
-        $fastCallNoKwargs: function (args, kwargs) {
+        $fastCallNoKwargs(args, kwargs) {
             Sk.abstr.checkNoKwargs(this.$name, kwargs);
             return this.$meth(args);
         },
-        $callNoArgs: function (args, kwargs) {
+        $callNoArgs(args, kwargs) {
             Sk.abstr.checkNoArgs(this.$name, args, kwargs);
             return this.$meth();
         },
-        $callOneArg: function (args, kwargs) {
+        $callOneArg(args, kwargs) {
             Sk.abstr.checkOneArg(this.$name, args, kwargs);
             return this.$meth(args[0]);
         },
-        $callNamedArgs: function (args, kwargs) {
+        $callNamedArgs(args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs(this.$name, this.$flags.NamedArgs, args, kwargs, this.$flags.Defaults);
             return this.$meth(...args);
         },
-        $callMinArgs: function (args, kwargs) {
+        $callMinArgs(args, kwargs) {
             Sk.abstr.checkNoKwargs(this.$name, kwargs);
             Sk.abstr.checkArgsLen(this.$name, args, this.$flags.MinArgs, this.$flags.MaxArgs);
             return this.$meth(...args);
         },
-        $defaultCallMethod: function (args, kwargs) {
+        $defaultCallMethod(args, kwargs) {
             // default implementation for all currently created functions that have yet to be be converted
             // and don't utilise flagged calls
             if (this.$self !== null) {
@@ -95,26 +95,26 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             }
             return Sk.builtin.func.prototype.tp$call.call(this, args, kwargs);
         },
-        $memoiseFlags: function () {
+        $memoiseFlags() {
             return Sk.builtin.func.prototype.$memoiseFlags.call(this);
         },
-        $resolveArgs: function () {
+        $resolveArgs() {
             return Sk.builtin.func.prototype.$resolveArgs.call(this);
         },
     },
     flags: { sk$acceptable_as_base_class: false },
     slots: {
         tp$getattr: Sk.generic.getAttr,
-        $r: function () {
+        $r() {
             if (this.$self === null) {
                 return new Sk.builtin.str("<built-in function " + this.$name + ">");
             }
             return new Sk.builtin.str("<built-in method " + this.$name + " of " + Sk.abstr.typeName(this.$self) + " object>");
         },
-        tp$call: function (args, kwargs) {
+        tp$call(args, kwargs) {
             return this.tp$call(args, kwargs);
         },
-        tp$richcompare: function (other, op) {
+        tp$richcompare(other, op) {
             if ((op !== "Eq" && op !== "NotEq") || !(other instanceof Sk.builtin.sk_method)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -124,31 +124,31 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
     },
     getsets: {
         __module__: {
-            $get: function () {
+            $get() {
                 return this.$module || Sk.builtin.none.none$;
             },
-            $set: function (value) {
+            $set(value) {
                 value = value || Sk.builtin.none.none$;
                 this.$module = value;
             },
         },
         __doc__: {
-            $get: function () {
+            $get() {
                 return this.$doc ? new Sk.builtin.str(this.$doc) : Sk.builtin.none.none$;
             },
         },
         __name__: {
-            $get: function () {
+            $get() {
                 return new Sk.builtin.str(this.$name);
             },
         },
         __text_signature__: {
-            $get: function () {
+            $get() {
                 return new Sk.builtin.str(this.$textsig);
             },
         },
         __self__: {
-            $get: function () {
+            $get() {
                 // self might be a module object - which means it was created inside a module before the module existed
                 // so look the name up in sysmodules
                 return this.$self || Sk.sysModules.mp$lookup(this.$module) || Sk.builtin.none.none$;

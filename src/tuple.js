@@ -17,7 +17,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         tp$as_sequence_or_mapping: true,
         tp$doc:
             "Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.",
-        $r: function () {
+        $r() {
             if (this.in$repr) {
                 return new Sk.builtin.str("(...)");
             }
@@ -35,7 +35,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
          * @param {Array=} kwargs
          * @ignore
          */
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             // this = Sk.builtin.prototype or a prototype that inherits from Sk.builtin.tuple.prototype
             if (this !== Sk.builtin.tuple.prototype) {
                 return this.$subtype_new(args, kwargs);
@@ -51,7 +51,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (L) => new Sk.builtin.tuple(L));
         },
-        tp$hash: function () {
+        tp$hash() {
             // the numbers and order are taken from Cpython
             let y,
                 x = 0x345678,
@@ -72,12 +72,12 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             return x | 0;
         },
         tp$richcompare: Sk.generic.seqCompare,
-        tp$iter: function () {
+        tp$iter() {
             return new tuple_iter_(this);
         },
 
         // sequence and mapping slots
-        mp$subscript: function (index) {
+        mp$subscript(index) {
             if (Sk.misceval.isIndex(index)) {
                 let i = Sk.misceval.asIndexSized(index);
                 if (i < 0) {
@@ -96,10 +96,10 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             throw new Sk.builtin.TypeError("tuple indices must be integers or slices, not " + Sk.abstr.typeName(index));
         },
-        sq$length: function () {
+        sq$length() {
             return this.v.length;
         },
-        sq$repeat: function (n) {
+        sq$repeat(n) {
             n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
             if (n === 1 && this.constructor === Sk.builtin.tuple) {
                 return this;
@@ -112,13 +112,13 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             }
             return new Sk.builtin.tuple(ret);
         },
-        sq$concat: function (other) {
+        sq$concat(other) {
             if (!(other instanceof Sk.builtin.tuple)) {
                 throw new Sk.builtin.TypeError("can only concatenate tuple (not '" + Sk.abstr.typeName(other) + "') to tuple");
             }
             return new Sk.builtin.tuple(this.v.concat(other.v));
         },
-        sq$contains: function (ob) {
+        sq$contains(ob) {
             for (let it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 if (i === ob || Sk.misceval.richCompareBool(i, ob, "Eq")) {
                     return true;
@@ -128,20 +128,20 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         },
     },
     proto: /**@lends {Sk.builtin.tuple.prototype}*/ {
-        $subtype_new: function (args, kwargs) {
+        $subtype_new(args, kwargs) {
             const instance = new this.constructor();
             // pass the args but ignore the kwargs for subtyping - these might be handled by the subtypes init method
             const tuple = Sk.builtin.tuple.prototype.tp$new(args);
             instance.v = tuple.v;
             return instance;
         },
-        sk$asarray: function () {
+        sk$asarray() {
             return this.v.slice(0);
         },
     },
     methods: /**@lends {Sk.builtin.tuple.prototype}*/ {
         __getnewargs__: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.tuple(this.v.slice(0));
             },
             $flags: { NoArgs: true },
@@ -149,7 +149,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             $doc: null,
         },
         index: /**@lends {Sk.builtin.type.prototype}*/ {
-            $meth: function (item, start, end) {
+            $meth(item, start, end) {
                 if ((start !== undefined && !Sk.misceval.isIndex(start)) || (end !== undefined && !Sk.misceval.isIndex(end))) {
                     // unusually can't have None here so check this first...
                     throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
@@ -168,7 +168,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             $doc: "Return first index of value.\n\nRaises ValueError if the value is not present.",
         },
         count: {
-            $meth: function (item) {
+            $meth(item) {
                 const len = this.v.length;
                 const obj = this.v;
                 let count = 0;

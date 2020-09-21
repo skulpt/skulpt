@@ -8,7 +8,7 @@ var $builtinmodule = function (name) {
     var mod = {};
 
     mod.accumulate = Sk.abstr.buildIteratorClass("itertools.accumulate", {
-        constructor: function (iter, func, initial) {
+        constructor(iter, func, initial) {
             this.iter = iter;
             this.func = func;
             this.total = initial;
@@ -19,7 +19,7 @@ var $builtinmodule = function (name) {
                 return this.total;
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let element = this.iter.tp$iternext();
             if (element !== undefined) {
                 this.total = Sk.misceval.callsimArray(this.func, [this.total, element]);
@@ -29,7 +29,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "accumulate(iterable[, func, initial]) --> accumulate object\n\nReturn series of accumulated sums (or other binary function results).",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 // initial is a keyword only argument;
                 Sk.abstr.checkArgsLen("accumulate", args, 0, 2);
                 let [iter, func, initial] = Sk.abstr.copyKeywordsToNamedArgs("accumulate", ["iterable", "func", "initial"], args, kwargs, [
@@ -50,7 +50,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.chain = Sk.abstr.buildIteratorClass("itertools.chain", {
-        constructor: function (iterables) {
+        constructor(iterables) {
             this.iterables = iterables;
             this.current_it = null;
             this.tp$iternext = () => {
@@ -65,7 +65,7 @@ var $builtinmodule = function (name) {
                 return this.tp$iternext();
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let element;
             while (element === undefined) {
                 element = this.current_it.tp$iternext();
@@ -84,7 +84,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "chain(*iterables) --> chain object\n\nReturn a chain object whose .__next__() method returns elements from the\nfirst iterable until it is exhausted, then elements from the next\niterable, until all of the iterables are exhausted.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("chain", kwargs);
                 args = new Sk.builtin.tuple(args.slice(0)).tp$iter();
                 if (this === mod.chain.prototype) {
@@ -98,7 +98,7 @@ var $builtinmodule = function (name) {
         },
         classmethods: {
             from_iterable: {
-                $meth: function (iterable) {
+                $meth(iterable) {
                     const iterables = Sk.abstr.iter(iterable);
                     return new mod.chain(iterables);
                 },
@@ -134,7 +134,7 @@ var $builtinmodule = function (name) {
     }
 
     mod.combinations = Sk.abstr.buildIteratorClass("itertools.combinations", {
-        constructor: function (pool, r) {
+        constructor(pool, r) {
             this.pool = pool;
             this.r = r;
             this.indices = new Array(r).fill().map((_, i) => i);
@@ -147,7 +147,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.tuple(this.pool.slice(0, this.r));
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let i,
                 found = false;
             for (i = this.r - 1; i >= 0; i--) {
@@ -170,14 +170,14 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "combinations(iterable, r) --> combinations object\n\nReturn successive r-length combinations of elements in the iterable.\n\ncombinations(range(4), 3) --> (0,1,2), (0,1,3), (0,2,3), (1,2,3)",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 return combinationsNew.call(this, mod.combinations.prototype, args, kwargs);
             },
         },
     });
 
     mod.combinations_with_replacement = Sk.abstr.buildIteratorClass("itertools.combinations_with_replacement", {
-        constructor: function (pool, r) {
+        constructor(pool, r) {
             this.pool = pool;
             this.r = r;
             this.indices = new Array(r).fill(0);
@@ -191,7 +191,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.tuple(res);
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let found = false;
             let i;
             for (i = this.r - 1; i >= 0; i--) {
@@ -214,17 +214,17 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "combinations_with_replacement(iterable, r) --> combinations_with_replacement object\n\nReturn successive r-length combinations of elements in the iterable\nallowing individual elements to have successive repeats.\ncombinations_with_replacement('ABC', 2) --> AA AB AC BB BC CC",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 return combinationsNew.call(this, mod.combinations_with_replacement.prototype, args, kwargs);
             },
         },
     });
 
     mod.compress = Sk.abstr.buildIteratorClass("itertools.compress", {
-        constructor: function (data, selectors) {
+        constructor(data, selectors) {
             (this.data = data), (this.selectors = selectors);
         },
-        iternext: function () {
+        iternext() {
             let d = this.data.tp$iternext();
             let s = this.selectors.tp$iternext();
             while (d !== undefined && s !== undefined) {
@@ -238,7 +238,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "compress(data, selectors) --> iterator over selected data\n\nReturn data elements corresponding to true selector elements.\nForms a shorter iterator from selected data elements using the\nselectors to choose the data elements.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let data, selectors;
                 [data, selectors] = Sk.abstr.copyKeywordsToNamedArgs("compress", ["data", "selectors"], args, kwargs, []);
                 data = Sk.abstr.iter(data);
@@ -259,7 +259,7 @@ var $builtinmodule = function (name) {
             this.start = start;
             this.step = step;
         },
-        iternext: function () {
+        iternext() {
             const tmp = this.start;
             this.start = Sk.abstr.numberBinOp(this.start, this.step, "Add");
             return tmp;
@@ -267,7 +267,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "count(start=0, step=1) --> count object\n\nReturn a count object whose .__next__() method returns consecutive values.\nEquivalent to:\n\n    def count(firstval=0, step=1):\n        x = firstval\n        while 1:\n            yield x\n            x += step\n",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 const [start, step] = Sk.abstr.copyKeywordsToNamedArgs("count", ["start", "step"], args, kwargs, [
                     new Sk.builtin.int_(0),
                     new Sk.builtin.int_(1),
@@ -286,7 +286,7 @@ var $builtinmodule = function (name) {
                     return instance;
                 }
             },
-            $r: function () {
+            $r() {
                 const start_repr = Sk.misceval.objectRepr(this.start);
                 let step_repr = Sk.misceval.objectRepr(this.step);
                 step_repr = step_repr === "1" ? "" : ", " + step_repr;
@@ -303,7 +303,7 @@ var $builtinmodule = function (name) {
             this.i = 0;
             this.length;
         },
-        iternext: function () {
+        iternext() {
             let element;
             if (!this.consumed) {
                 element = this.iter.tp$iternext();
@@ -325,7 +325,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "cycle(iterable) --> cycle object\n\nReturn elements from the iterable until it is exhausted.\nThen repeat the sequence indefinitely.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkOneArg("cycle", args, kwargs);
                 const iter = Sk.abstr.iter(args[0]);
                 if (this === mod.cycle.prototype) {
@@ -340,12 +340,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.dropwhile = Sk.abstr.buildIteratorClass("itertools.dropwhile", {
-        constructor: function (predicate, iter) {
+        constructor(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
             this.passed;
         },
-        iternext: function () {
+        iternext() {
             let x = this.iter.tp$iternext();
             while (this.passed === undefined && x !== undefined) {
                 const val = Sk.misceval.callsimArray(this.predicate, [x]);
@@ -360,7 +360,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "dropwhile(predicate, iterable) --> dropwhile object\n\nDrop items from the iterable while predicate(item) is true.\nAfterwards, return every element until the iterable is exhausted.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("dropwhile", kwargs);
                 Sk.abstr.checkArgsLen("dropwhile", args, 2, 2);
                 const predicate = args[0];
@@ -377,11 +377,11 @@ var $builtinmodule = function (name) {
     });
 
     mod.filterfalse = Sk.abstr.buildIteratorClass("itertools.filterfalse", {
-        constructor: function (predicate, iter) {
+        constructor(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let x = this.iter.tp$iternext();
             if (x === undefined) {
                 return;
@@ -399,7 +399,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "filterfalse(function or None, sequence) --> filterfalse object\n\nReturn those items of sequence for which function(item) is false.\nIf function is None, return the items that are false.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("filterfalse", kwargs);
                 Sk.abstr.checkArgsLen("filterfalse", args, 2, 2);
                 const predicate = Sk.builtin.checkNone(args[0]) ? Sk.builtin.bool : args[0];
@@ -416,12 +416,12 @@ var $builtinmodule = function (name) {
     });
 
     mod._grouper = Sk.abstr.buildIteratorClass("itertools._grouper", {
-        constructor: function (groupby, id) {
+        constructor(groupby, id) {
             this.groupby = groupby;
             this.tgtkey = groupby.tgtkey;
             this.id = groupby.id;
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             const compare = Sk.misceval.richCompareBool(this.groupby.currkey, this.tgtkey, "Eq");
             if (this.groupby.id === this.id && compare) {
                 let tmp = this.groupby.currval;
@@ -436,14 +436,14 @@ var $builtinmodule = function (name) {
     });
 
     mod.groupby = Sk.abstr.buildIteratorClass("itertools.groupby", {
-        constructor: function (iter, keyf) {
+        constructor(iter, keyf) {
             this.iter = iter;
             this.keyf = keyf;
             this.currval;
             this.currkey = this.tgtkey = new Sk.builtin.object();
             this.id;
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             this.id = new Object();
             let compare = Sk.misceval.richCompareBool(this.currkey, this.tgtkey, "Eq");
             while (compare) {
@@ -461,7 +461,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "groupby(iterable, key=None) -> make an iterator that returns consecutive\nkeys and groups from the iterable.  If the key function is not specified or\nis None, the element itself is used for grouping.\n",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let iter, key;
                 [iter, key] = Sk.abstr.copyKeywordsToNamedArgs("groupby", ["iterable", "key"], args, kwargs, [Sk.builtin.none.none$]);
                 iter = Sk.abstr.iter(iter);
@@ -501,7 +501,7 @@ var $builtinmodule = function (name) {
                 }
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             if (this.previt + this.step >= this.stop) {
                 // consume generator up to stop and return
                 for (let i = this.previt + 1; i < this.stop; i++) {
@@ -521,7 +521,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "islice(iterable, stop) --> islice object\nislice(iterable, start, stop[, step]) --> islice object\n\nReturn an iterator whose next() method returns selected values from an\niterable.  If start is specified, will skip all preceding elements;\notherwise, start defaults to zero.  Step defaults to one.  If\nspecified as another value, step determines how many values are \nskipped between successive calls.  Works like a slice() on a list\nbut returns an iterator.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("islice", kwargs);
                 Sk.abstr.checkArgsLen("islice", args, 2, 4);
                 const iter = Sk.abstr.iter(args[0]);
@@ -578,7 +578,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.permutations = Sk.abstr.buildIteratorClass("itertools.permutations", {
-        constructor: function (pool, r) {
+        constructor(pool, r) {
             this.pool = pool;
             this.r = r;
             const n = pool.length;
@@ -594,7 +594,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.tuple(this.pool.slice(0, this.r));
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             for (let i = this.r - 1; i >= 0; i--) {
                 this.cycles[i]--;
                 if (this.cycles[i] == 0) {
@@ -613,7 +613,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "permutations(iterable[, r]) --> permutations object\n\nReturn successive r-length permutations of elements in the iterable.\n\npermutations(range(3), 2) --> (0,1), (0,2), (1,0), (1,2), (2,0), (2,1)",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let iterable, r;
                 [iterable, r] = Sk.abstr.copyKeywordsToNamedArgs("permutations", ["iterable", "r"], args, kwargs, [Sk.builtin.none.none$]);
                 const pool = Sk.misceval.arrayFromIterable(iterable);
@@ -633,7 +633,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.product = Sk.abstr.buildIteratorClass("itertools.product", {
-        constructor: function (pools) {
+        constructor(pools) {
             this.pools = pools;
             this.n = pools.length;
             this.indices = Array(pools.length).fill(0);
@@ -648,7 +648,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.tuple(res);
             };
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             let i = this.n - 1;
             while (i >= 0 && i < this.n) {
                 this.indices[i]++;
@@ -670,7 +670,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "product(*iterables, repeat=1) --> product object\n\nCartesian product of input iterables.  Equivalent to nested for-loops.\n\nFor example, product(A, B) returns the same as:  ((x,y) for x in A for y in B).\nThe leftmost iterators are in the outermost for-loop, so the output tuples\ncycle in a manner similar to an odometer (with the rightmost element changing\non every iteration).\n\nTo compute the product of an iterable with itself, specify the number\nof repetitions with the optional repeat keyword argument. For example,\nproduct(A, repeat=4) means the same as product(A, A, A, A).\n\nproduct('ab', range(3)) --> ('a',0) ('a',1) ('a',2) ('b',0) ('b',1) ('b',2)\nproduct((0,1), (0,1), (0,1)) --> (0,0,0) (0,0,1) (0,1,0) (0,1,1) (1,0,0) ...",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let [repeat] = Sk.abstr.copyKeywordsToNamedArgs("product", ["repeat"], [], kwargs, [new Sk.builtin.int_(1)]);
                 repeat = Sk.misceval.asIndexSized(repeat, Sk.builtin.OverFlowError);
                 if (repeat < 0) {
@@ -693,7 +693,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.repeat = Sk.abstr.buildIteratorClass("itertools.repeat", {
-        constructor: function (object, times) {
+        constructor(object, times) {
             this.object = object;
             this.times = times;
             if (times === undefined) {
@@ -702,13 +702,13 @@ var $builtinmodule = function (name) {
                 };
             }
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             return this.times-- > 0 ? this.object : undefined;
         },
         slots: {
             tp$doc:
                 "repeat(object [,times]) -> create an iterator which returns the object\nfor the specified number of times.  If not specified, returns the object\nendlessly.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let object, times;
                 [object, times] = Sk.abstr.copyKeywordsToNamedArgs("repeat", ["object", "times"], args, kwargs, [null]);
                 if (times !== null) {
@@ -724,7 +724,7 @@ var $builtinmodule = function (name) {
                     return instance;
                 }
             },
-            $r: function () {
+            $r() {
                 object_repr = Sk.misceval.objectRepr(this.object);
                 times_repr = this.times === undefined ? "" : ", " + (this.times >= 0 ? this.times : 0);
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + object_repr + times_repr + ")");
@@ -732,7 +732,7 @@ var $builtinmodule = function (name) {
         },
         methods: {
             __lenght_hint__: {
-                $meth: function () {
+                $meth() {
                     if (this.times === undefined) {
                         throw new Sk.builtin.TypeError("len() of unsized object");
                     }
@@ -745,11 +745,11 @@ var $builtinmodule = function (name) {
     });
 
     mod.starmap = Sk.abstr.buildIteratorClass("itertools.starmap", {
-        constructor: function (func, iter) {
+        constructor(func, iter) {
             this.func = func;
             this.iter = iter;
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             const args = this.iter.tp$iternext();
             if (args === undefined) {
                 return;
@@ -759,7 +759,7 @@ var $builtinmodule = function (name) {
             return val;
         },
         slots: {
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 let func, iter;
                 [func, iter] = Sk.abstr.copyKeywordsToNamedArgs("starmap", ["func", "iterable"], args, kwargs, []);
                 iter = Sk.abstr.iter(iter);
@@ -776,11 +776,11 @@ var $builtinmodule = function (name) {
     });
 
     mod.takewhile = Sk.abstr.buildIteratorClass("itertools.takewhile", {
-        constructor: function (predicate, iter) {
+        constructor(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
         },
-        iternext: function () {
+        iternext() {
             const x = this.iter.tp$iternext();
             if (x !== undefined) {
                 const val = Sk.misceval.callsimArray(this.predicate, [x]);
@@ -795,7 +795,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "takewhile(predicate, iterable) --> takewhile object\n\nReturn successive entries from an iterable as long as the \npredicate evaluates to true for each entry.",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkNoKwargs("takewhile", kwargs);
                 Sk.abstr.checkArgsLen("takewhile", args, 2, 2);
                 const predicate = args[0];
@@ -816,12 +816,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.zip_longest = Sk.abstr.buildIteratorClass("itertools.zip_longest", {
-        constructor: function (iters, fillvalue) {
+        constructor(iters, fillvalue) {
             this.iters = iters;
             this.fillvalue = fillvalue;
             this.active = this.iters.length;
         },
-        iternext: function (canSuspend) {
+        iternext(canSuspend) {
             if (!this.active) {
                 return;
             }
@@ -844,7 +844,7 @@ var $builtinmodule = function (name) {
         slots: {
             tp$doc:
                 "zip_longest(iter1 [,iter2 [...]], [fillvalue=None]) --> zip_longest object\n\nReturn a zip_longest object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the longest iterable in the argument sequence\nis exhausted and then it raises StopIteration.  When the shorter iterables\nare exhausted, the fillvalue is substituted in their place.  The fillvalue\ndefaults to None or can be specified by a keyword argument.\n",
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 const [fillvalue] = Sk.abstr.copyKeywordsToNamedArgs("zip_longest", ["fillvalue"], [], kwargs, [Sk.builtin.none.none$]);
                 const iterables = [];
                 for (let i = 0; i < args.length; i++) {

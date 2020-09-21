@@ -8,7 +8,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     },
     slots: {
         tp$doc: "Create a module object.\n\nThe name must be a string; the optional doc argument can have any type.",
-        tp$getattr: function (pyName, canSuspend) {
+        tp$getattr(pyName, canSuspend) {
             const jsMangled = pyName.$mangled;
             const ret = this.$d[jsMangled];
             if (ret !== undefined) {
@@ -33,13 +33,13 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
         },
         tp$setattr: Sk.generic.setAttr,
         tp$new: Sk.generic.new,
-        tp$init: function (args, kwargs) {
+        tp$init(args, kwargs) {
             const [name, doc] = Sk.abstr.copyKeywordsToNamedArgs("module", ["name", "doc"], args, kwargs, [Sk.builtin.none.none$]);
             Sk.builtin.pyCheckType("module", "string", name);
             this.init$dict(name, doc);
             return Sk.builtin.none.none$;
         },
-        $r: function () {
+        $r() {
             let name = this.get$name();
             if (name !== undefined) {
                 const module_reprf = this.get$mod_reprf();
@@ -55,7 +55,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     },
     getsets: {
         __dict__: {
-            $get: function () {
+            $get() {
                 // modules in skulpt have a $d as a js object so just return it as a mapping proxy;
                 // TODO we should really have a dict object
                 return new Sk.builtin.mappingproxy(this.$d);
@@ -64,7 +64,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     },
     methods: {
         __dir__: {
-            $meth: function () {
+            $meth() {
                 // could be cleaner but this is inline with cpython's version
                 const dict = this.tp$getattr(Sk.builtin.str.$dict);
                 if (!Sk.builtin.checkMapping(dict)) {
@@ -82,33 +82,33 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
         },
     },
     proto: {
-        init$dict: function (name, doc) {
+        init$dict(name, doc) {
             this.$d.__name__ = name;
             this.$d.__doc__ = doc;
             this.$d.__package__ = Sk.builtin.none.none$;
             this.$d.__spec__ = Sk.builtin.none.none$;
             this.$d.__loader__ = Sk.builtin.none.none$;
         },
-        sk$attrError: function () {
+        sk$attrError() {
             const name = this.get$name();
             return name === undefined ? "module" : "module " + name;
         },
-        get$name: function () {
+        get$name() {
             const name = this.tp$getattr(Sk.builtin.str.$name);
             return name && Sk.misceval.objectRepr(name);
         },
-        from$file: function () {
+        from$file() {
             const file = this.tp$getattr(Sk.builtin.str.$file);
             return file && " from " + Sk.misceval.objectRepr(file);
         },
-        empty_or$loader: function () {
+        empty_or$loader() {
             if (this.$js && this.$js.includes("$builtinmodule")) {
                 return " (built-in)";
             }
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
             return loader === undefined || Sk.builtin.checkNone(loader) ? "" : " (" + Sk.misceval.objectRepr(loader) + ")";
         },
-        get$mod_reprf: function () {
+        get$mod_reprf() {
             const loader = this.tp$getattr(Sk.builtin.str.$loader);
             return loader && loader.tp$getattr(this.str$mod_repr);
         },

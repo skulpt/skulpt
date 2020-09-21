@@ -152,7 +152,7 @@ Sk.generic.new =  function (builtin) {
  * 
  */
 Sk.generic.newMethodDef = {
-    $meth: function (args, kwargs) {
+    $meth(args, kwargs) {
         // this = a type object
         let this_name, subs_name;
         const native_type_proto = this.prototype;
@@ -270,10 +270,10 @@ Sk.generic.iterReverseLengthHintMethodDef = {
  * typical implementation of `__dict__` for type objects that support it
  */
 Sk.generic.getSetDict = {
-    $get: function () {
+    $get() {
         return this.$d;
     },
-    $set: function (value) {
+    $set(value) {
         if (value === undefined) {
             this.$d = new Sk.builtin.dict();
         } else if (value instanceof Sk.builtin.dict) {

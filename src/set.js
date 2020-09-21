@@ -28,7 +28,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         tp$as_sequence_or_mapping: true,
         tp$hash: Sk.builtin.none.none$,
         tp$doc: "set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.",
-        tp$init: function (args, kwargs) {
+        tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs("set", kwargs);
             Sk.abstr.checkArgsLen("set", args, 0, 1);
             this.set$clear();
@@ -36,7 +36,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return Sk.misceval.chain(iterable && this.set$update(iterable), () => Sk.builtin.none.none$);
         },
         tp$new: Sk.generic.new,
-        $r: function () {
+        $r() {
             if (this.in$repr) {
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "(...)");
             }
@@ -56,10 +56,10 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "([" + ret.join(", ") + "])");
             }
         },
-        tp$iter: function () {
+        tp$iter() {
             return new set_iter_(this);
         },
-        tp$richcompare: function (other, op) {
+        tp$richcompare(other, op) {
             if (!Sk.builtin.checkAnySet(other)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -117,17 +117,17 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return Sk.misceval.chain(this.symmetric_difference_update.$meth.call(this, other), () => this);
         }),
         // sequence or mapping slots
-        sq$length: function () {
+        sq$length() {
             return this.get$size();
         },
-        sq$contains: function (entry) {
+        sq$contains(entry) {
             entry = entry_or_hashable_set(entry);
             return this.v.sq$contains(entry);
         },
     },
     methods: /**@lends {Sk.builtin.set.prototype}*/ {
         add: {
-            $meth: function (item) {
+            $meth(item) {
                 this.set$add(item);
                 return Sk.builtin.none.none$;
             },
@@ -136,7 +136,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Add an element to a set.\n\nThis has no effect if the element is already present.",
         },
         clear: {
-            $meth: function () {
+            $meth() {
                 this.set$clear();
                 return Sk.builtin.none.none$;
             },
@@ -145,7 +145,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Remove all elements from this set.",
         },
         copy: {
-            $meth: function () {
+            $meth() {
                 return this.set$copy();
             },
             $flags: { NoArgs: true },
@@ -153,7 +153,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return a shallow copy of a set.",
         },
         discard: {
-            $meth: function (entry) {
+            $meth(entry) {
                 entry = entry_or_hashable_set(entry);
                 this.set$discard(entry);
                 return Sk.builtin.none.none$;
@@ -163,7 +163,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Remove an element from a set if it is a member.\n\nIf the element is not a member, do nothing.",
         },
         difference: {
-            $meth: function (...args) {
+            $meth(...args) {
                 const result = this.set$copy();
                 return Sk.misceval.chain(
                     Sk.misceval.iterArray(args, (arg) => result.set$difference_update(arg)),
@@ -175,7 +175,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return the difference of two or more sets as a new set.\n\n(i.e. all elements that are in this set but not the others.)",
         },
         difference_update: {
-            $meth: function (...args) {
+            $meth(...args) {
                 return Sk.misceval.chain(
                     Sk.misceval.iterArray(args, (arg) => this.set$difference_update(arg)),
                     () => Sk.builtin.none.none$
@@ -186,7 +186,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Remove all elements of another set from this set.",
         },
         intersection: {
-            $meth: function (...args) {
+            $meth(...args) {
                 return this.set$intersection_multi(...args);
             },
             $flags: { MinArgs: 0 },
@@ -194,7 +194,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return the intersection of two sets as a new set.\n\n(i.e. all elements that are in both sets.)",
         },
         intersection_update: {
-            $meth: function (...args) {
+            $meth(...args) {
                 return Sk.misceval.chain(this.set$intersection_multi(...args), (res) => {
                     this.swap$bodies(res);
                     return Sk.builtin.none.none$;
@@ -205,7 +205,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Update a set with the intersection of itself and another.",
         },
         isdisjoint: {
-            $meth: function (other) {
+            $meth(other) {
                 // requires all items in this to not be in other
                 return Sk.misceval.chain(
                     Sk.misceval.iterFor(Sk.abstr.iter(other), (i) => {
@@ -221,7 +221,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return True if two sets have a null intersection.",
         },
         issubset: {
-            $meth: function (other) {
+            $meth(other) {
                 if (!Sk.builtin.checkAnySet(other)) {
                     other = this.set$make_basetype(other);
                 }
@@ -232,7 +232,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Report whether another set contains this set.",
         },
         issuperset: {
-            $meth: function (other) {
+            $meth(other) {
                 if (!Sk.builtin.checkAnySet(other)) {
                     other = this.set$make_basetype(other);
                 }
@@ -243,7 +243,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Report whether this set contains another set.",
         },
         pop: {
-            $meth: function () {
+            $meth() {
                 if (this.get$size() === 0) {
                     throw new Sk.builtin.KeyError("pop from an empty set");
                 }
@@ -260,7 +260,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         //     $textsig: null,
         //     $doc: "Return state information for pickling." },
         remove: {
-            $meth: function (entry) {
+            $meth(entry) {
                 const tmp = entry_or_hashable_set(entry);
                 if (this.v.mp$lookup(tmp)) {
                     return this.v.mp$ass_subscript(tmp);
@@ -277,7 +277,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         //     $textsig: null,
         //     $doc: "S.__sizeof__() -> size of S in memory, in bytes" },
         symmetric_difference: {
-            $meth: function (other) {
+            $meth(other) {
                 let other_set;
                 return Sk.misceval.chain(
                     this.set$make_basetype(other),
@@ -293,7 +293,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return the symmetric difference of two sets as a new set.\n\n(i.e. all elements that are in exactly one of the sets.)",
         },
         symmetric_difference_update: {
-            $meth: function (other) {
+            $meth(other) {
                 if (!Sk.builtin.checkAnySet(other)) {
                     other = this.set$make_basetype(other);
                 }
@@ -308,7 +308,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Update a set with the symmetric difference of itself and another.",
         },
         union: {
-            $meth: function (...args) {
+            $meth(...args) {
                 const result = this.set$copy();
                 return Sk.misceval.chain(
                     Sk.misceval.iterArray(args, (arg) => result.set$update(arg)),
@@ -320,7 +320,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Return the union of sets as a new set.\n\n(i.e. all elements that are in either set.)",
         },
         update: {
-            $meth: function (...args) {
+            $meth(...args) {
                 return Sk.misceval.chain(
                     Sk.misceval.iterArray(args, (arg) => this.set$update(arg)),
                     () => Sk.builtin.none.none$
@@ -332,36 +332,36 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
     },
     proto: /**@lends {Sk.builtin.set.prototype}*/ Object.assign(set_private_, {
-        sk$asarray: function () {
+        sk$asarray() {
             return this.v.sk$asarray();
         },
-        get$size: function () {
+        get$size() {
             // this method cannot be overriden by subclasses
             return this.v.sq$length();
         },
-        set$add: function (entry) {
+        set$add(entry) {
             this.v.mp$ass_subscript(entry, true);
         },
-        set$make_basetype: function (other) {
+        set$make_basetype(other) {
             return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$builtinBase(S));
         },
-        set$discard: function (entry) {
+        set$discard(entry) {
             return this.v.pop$item(entry);
         },
-        set$clear: function () {
+        set$clear() {
             this.v = new Sk.builtin.dict([]);
         },
-        set$copy: function () {
+        set$copy() {
             const setCopy = new this.sk$builtinBase();
             setCopy.v = this.v.dict$copy();
             return setCopy;
         },
-        set$difference_update: function (other) {
+        set$difference_update(other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                 this.set$discard(entry);
             });
         },
-        set$intersection: function (other) {
+        set$intersection(other) {
             const res = new this.sk$builtinBase();
             return Sk.misceval.chain(
                 Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
@@ -372,7 +372,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 () => res
             );
         },
-        set$intersection_multi: function (...args) {
+        set$intersection_multi(...args) {
             if (!args.length) {
                 return this.set$copy();
             }
@@ -386,7 +386,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 () => result
             );
         },
-        set$issubset: function (other_set) {
+        set$issubset(other_set) {
             const thisLength = this.get$size();
             const otherLength = other_set.get$size();
             if (thisLength > otherLength) {
@@ -400,7 +400,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             }
             return Sk.builtin.bool.true$;
         },
-        set$symmetric_diff_update: function (other) {
+        set$symmetric_diff_update(other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                 const discarded = this.set$discard(entry);
                 if (discarded === undefined) {
@@ -408,12 +408,12 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
                 }
             });
         },
-        set$update: function (other) {
+        set$update(other) {
             return Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                 this.set$add(entry);
             });
         },
-        swap$bodies: function (other) {
+        swap$bodies(other) {
             this.v = other.v;
         },
     }),
@@ -450,7 +450,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         tp$as_sequence_or_mapping: true,
         tp$doc:
             "frozenset() -> empty frozenset object\nfrozenset(iterable) -> frozenset object\n\nBuild an immutable unordered collection of unique elements.",
-        tp$hash: function () {
+        tp$hash() {
             // numbers taken from Cpython 2.7 hash function
             let hash = 1927868237;
             const entries = this.sk$asarray();
@@ -467,7 +467,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
          * @param {Array=} kwargs
          * @ignore
          */
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (this !== Sk.builtin.frozenset.prototype) {
                 return this.$subtype_new(args, kwargs);
             }
@@ -499,7 +499,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
     },
     methods: /**@lends {Sk.builtin.frozenset.prototype}*/ {
         copy: Object.assign({}, set_proto.copy.d$def, {
-            $meth: function () {
+            $meth() {
                 return this.constructor === this.sk$builtinBase ? this : new Sk.builtin.frozenset(this.sk$asarray());
             },
         }),
@@ -515,7 +515,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
     },
     proto: /**@lends {Sk.builtin.frozenset.prototype}*/ Object.assign(
         {
-            $subtype_new: function (args, kwargs) {
+            $subtype_new(args, kwargs) {
                 const instance = new this.constructor();
                 // pass the args but ignore the kwargs for subtyping
                 return Sk.misceval.chain(Sk.builtin.frozenset.prototype.tp$new(args), (frozenset) => {

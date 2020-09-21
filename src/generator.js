@@ -47,11 +47,11 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         this.func_closure = closure;
     },
     slots: {
-        $r: function () {
+        $r() {
             return new Sk.builtin.str("<generator object " + this.func_code.co_name.v + ">");
         },
     },
-    iternext: function (canSuspend, yielded) {
+    iternext(canSuspend, yielded) {
         var ret;
         var args;
         var self = this;

@@ -19,7 +19,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         tp$as_number: true,
         tp$doc:
             "Create a complex number from a real part and an optional imaginary part.\n\nThis is equivalent to (real + imag*1j) where imag defaults to 0.",
-        tp$hash: function () {
+        tp$hash() {
             // _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
             const real_hash = new Sk.builtin.float_(this.real).tp$hash();
             const imag_hash = new Sk.builtin.float_(this.imag).tp$hash();
@@ -30,11 +30,11 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             return new Sk.builtin.int_(JSBI.BigInt(v)).tp$hash();
         },
         tp$getattr: Sk.generic.getAttr,
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             args = Sk.abstr.copyKeywordsToNamedArgs("complex", ["real", "imag"], args, kwargs, [null, null]);
             return complex_from_py.call(this, args[0], args[1]);
         },
-        tp$richcompare: function (w, op) {
+        tp$richcompare(w, op) {
             if (op !== "Eq" && op !== "NotEq") {
                 if (Sk.builtin.checkNumber(w) || _complex_check(w)) {
                     throw new Sk.builtin.TypeError("no ordering relation is defined for complex numbers");
@@ -46,27 +46,27 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
                 return op === "Eq" ? equal : !equal;
             }, true).call(this, w);
         },
-        $r: function () {
+        $r() {
             return complex_format(this, null, "g");
         },
 
         // number slots
-        nb$int_: function () {
+        nb$int_() {
             throw new Sk.builtin.TypeError("can't convert complex to int");
         },
-        nb$lng: function () {
+        nb$lng() {
             throw new Sk.builtin.TypeError("can't convert complex to long");
         },
-        nb$float_: function () {
+        nb$float_() {
             throw new Sk.builtin.TypeError("can't convert complex to float");
         },
-        nb$positive: function () {
+        nb$positive() {
             return new Sk.builtin.complex(this.real, this.imag);
         },
-        nb$negative: function () {
+        nb$negative() {
             return new Sk.builtin.complex(-this.real, -this.imag);
         },
-        nb$bool: function () {
+        nb$bool() {
             return this.real || this.imag;
         },
         nb$add: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
@@ -85,29 +85,29 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         nb$reflected_divide: complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
             return divide(b_real, b_imag, a_real, a_imag);
         }),
-        nb$floor_divide: function (other) {
+        nb$floor_divide(other) {
             throw new Sk.builtin.TypeError("can't take floor of complex number.");
         },
-        nb$reflected_floor_divide: function (other) {
+        nb$reflected_floor_divide(other) {
             throw new Sk.builtin.TypeError("can't take floor of complex number.");
         },
-        nb$remainder: function (other) {
+        nb$remainder(other) {
             throw new Sk.builtin.TypeError("can't mod complex numbers.");
         },
-        nb$reflected_remainder: function (other) {
+        nb$reflected_remainder(other) {
             throw new Sk.builtin.TypeError("can't mod complex numbers.");
         },
-        nb$divmod: function (other) {
+        nb$divmod(other) {
             throw new Sk.builtin.TypeError("can't take floor or mod of complex number.");
         },
-        nb$power: function (other, z) {
+        nb$power(other, z) {
             if (z != null && !Sk.builtin.checkNone(z)) {
                 throw new Sk.builtin.ValueError("complex modulo");
             }
             return power.call(this, other);
         },
 
-        nb$abs: function () {
+        nb$abs() {
             const _real = this.real;
             const _imag = this.imag;
             if (!_is_finite(_real) || !_is_finite(_imag)) {
@@ -133,13 +133,13 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
     },
     getsets: {
         real: {
-            $get: function () {
+            $get() {
                 return new Sk.builtin.float_(this.real);
             },
             $doc: "the real part of a complex number",
         },
         imag: {
-            $get: function () {
+            $get() {
                 return new Sk.builtin.float_(this.imag);
             },
             $doc: "the imaginary part of a complex number",
@@ -147,7 +147,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
     },
     methods: /**@lends {Sk.builtin.complex.prototype}*/ {
         conjugate: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.complex(this.real, -this.imag);
             },
             $flags: { NoArgs: true },
@@ -155,7 +155,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             $doc: "complex.conjugate() -> complex\n\nReturn the complex conjugate of its argument. (3-4j).conjugate() == 3+4j.",
         },
         __getnewargs__: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.tuple([new Sk.builtin.float_(this.real), new Sk.builtin.float_(this.imag)]);
             },
             $flags: { NoArgs: true },
@@ -163,7 +163,7 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             $doc: Sk.builtin.none.none$,
         },
         __format__: {
-            $meth: function (format_spec) {
+            $meth(format_spec) {
                 if (Sk.builtin.checkString(format_spec)) {
                     // currently just returns not implemented.
                     return _PyComplex_FormatAdvanced(this, format_spec);

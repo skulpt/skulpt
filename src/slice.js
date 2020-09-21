@@ -27,18 +27,18 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
         tp$getattr: Sk.generic.getAttr,
         tp$doc: "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2]).",
         tp$hash: Sk.builtin.none.none$,
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("slice", kwargs);
             Sk.abstr.checkArgsLen("slice", args, 1, 3);
             return new Sk.builtin.slice(...args);
         },
-        $r: function () {
+        $r() {
             const a = Sk.misceval.objectRepr(this.start);
             const b = Sk.misceval.objectRepr(this.stop);
             const c = Sk.misceval.objectRepr(this.step);
             return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
         },
-        tp$richcompare: function (w, op) {
+        tp$richcompare(w, op) {
             // w not a slice - it's not subclassable so no need to use instanceof here
             if (w.ob$type !== Sk.builtin.slice) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
@@ -51,17 +51,17 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     },
     getsets: /**@lends {Sk.builtin.slice.prototype} */ {
         start: {
-            $get: function () {
+            $get() {
                 return this.start;
             },
         },
         step: {
-            $get: function () {
+            $get() {
                 return this.step;
             },
         },
         stop: {
-            $get: function () {
+            $get() {
                 return this.stop;
             },
         },
@@ -157,7 +157,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
 
             return {start: start, stop: stop, step: step};
         },
-        slice$indices: function (length, sized) {
+        slice$indices(length, sized) {
             let {start, stop, step} = this.slice$as_indices(true, sized);
             return this.$wrt(length, start, stop, step, sized);
         },
@@ -166,7 +166,7 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
          * @param {number} len
          * @param {Function} f
          */
-        sssiter$: function (len, f) {
+        sssiter$(len, f) {
             let {start, stop, step} = this.slice$indices(len, true);
             if (step > 0) {
                 for (let i = start; i < stop; i += step) {

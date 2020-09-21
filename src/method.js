@@ -12,24 +12,24 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
         this.im_self = self;
     },
     slots: {
-        $r: function () {
+        $r() {
             const def_name = "?";
             let name = this.im_func.tp$getattr(Sk.builtin.str.$qualname) || this.im_func.tp$getattr(Sk.builtin.str.$name);
             name = (name && name.v) || def_name;
             return new Sk.builtin.str("<bound method " + name + " of " + Sk.misceval.objectRepr(this.im_self) + ">");
         },
-        tp$hash: function () {
+        tp$hash() {
             const selfhash = Sk.abstr.objectHash(this.im_self);
             const funchash = Sk.abstr.objectHash(this.im_func);
             return selfhash + funchash;
         },
-        tp$call: function (args, kwargs) {
+        tp$call(args, kwargs) {
             if (this.im_func.tp$call === undefined) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this.im_func) + "' is not callable");
             }
             return this.im_func.tp$call([this.im_self, ...args], kwargs);
         },
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("method", kwargs);
             Sk.abstr.checkArgsLen("method", args, 2, 2);
             const func = args[0];
@@ -42,7 +42,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             }
             return new Sk.builtin.method(func, self);
         },
-        tp$richcompare: function (other, op) {
+        tp$richcompare(other, op) {
             if ((op != "Eq" && op != "NotEq") || !(other instanceof Sk.builtin.method)) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
@@ -58,10 +58,10 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
                 return !eq;
             }
         },
-        tp$descr_get: function (obj, obtype) {
+        tp$descr_get(obj, obtype) {
             return this;
         },
-        tp$getattr: function (pyName, canSuspend) {
+        tp$getattr(pyName, canSuspend) {
             const descr = Sk.abstr.lookupSpecial(this, pyName);
             if (descr !== undefined) {
                 return descr;
@@ -71,17 +71,17 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
     },
     getsets: {
         __func__: {
-            $get: function () {
+            $get() {
                 return this.im_func;
             },
         },
         __self__: {
-            $get: function () {
+            $get() {
                 return this.im_self;
             },
         },
         __doc__: {
-            $get: function () {
+            $get() {
                 return this.im_func.tp$getattr(Sk.builtin.str.$doc);
             },
         },

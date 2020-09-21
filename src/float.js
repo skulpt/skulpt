@@ -28,7 +28,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         tp$gettattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$doc: "Convert a string or number to a floating point number, if possible.",
-        tp$hash: function () {
+        tp$hash() {
             const v = this.v;
             let hash = hashMap[v];
             if (hash !== undefined) {
@@ -45,10 +45,10 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             hashMap[this.v] = hash;
             return hash;
         },
-        $r: function () {
+        $r() {
             return new Sk.builtin.str(this.str$(10, true));
         },
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (kwargs && kwargs.length) {
                 throw new Sk.builtin.TypeError("float() takes no keyword arguments");
             } else if (args && args.length > 1) {
@@ -77,7 +77,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         },
 
         // number slots
-        nb$int_: function () {
+        nb$int_() {
             let v = this.v;
             if (v < 0) {
                 v = Math.ceil(v);
@@ -94,7 +94,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             }
         },
         nb$float_: cloneSelf,
-        nb$lng: function () {
+        nb$lng() {
             return new Sk.builtin.lng(this.nb$int_().v);
         },
         nb$add: numberSlot((v, w) => new Sk.builtin.float_(v + w)),
@@ -119,22 +119,22 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         nb$power: ternarySlot(power),
         nb$reflected_power: ternarySlot((v, w) => power(w, v)),
         
-        nb$abs: function () {
+        nb$abs() {
             return new Sk.builtin.float_(Math.abs(this.v));
         },
-        nb$negative: function () {
+        nb$negative() {
             return new Sk.builtin.float_(-this.v);
         },
-        nb$positive: function () {
+        nb$positive() {
             return new Sk.builtin.float_(this.v);
         },
-        nb$bool: function () {
+        nb$bool() {
             return this.v !== 0;
         },
-        nb$isnegative: function () {
+        nb$isnegative() {
             return this.v < 0;
         },
-        nb$ispositive: function () {
+        nb$ispositive() {
             return this.v >= 0;
         },
         ob$eq: numberSlot((v, w) => v == w),
@@ -150,7 +150,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: "the real part of a complex number",
         },
         imag: {
-            $get: function () {
+            $get() {
                 return new Sk.builtin.float_(0.0);
             },
             $doc: "the imaginary part of a complex number",
@@ -164,7 +164,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: "Return self, the complex conjugate of any float.",
         },
         __trunc__: {
-            $meth: function () {
+            $meth() {
                 return this.nb$int_();
             },
             $flags: { NoArgs: true },
@@ -172,7 +172,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: "Return the Integral closest to x between 0 and x.",
         },
         __round__: {
-            $meth: function (ndigits) {
+            $meth(ndigits) {
                 return this.round$(ndigits);
             },
             $flags: { MinArgs: 0, MaxArgs: 1 },
@@ -194,7 +194,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         //         "Return a hexadecimal representation of a floating-point number.\n\n>>> (-0.1).hex()\n'-0x1.999999999999ap-4'\n>>> 3.14159.hex()\n'0x1.921f9f01b866ep+1'",
         // },
         is_integer: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.bool(Number.isInteger(this.v));
             },
             $flags: { NoArgs: true },
@@ -202,7 +202,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: "Return True if the float is an integer.",
         },
         __getnewargs__: {
-            $meth: function () {
+            $meth() {
                 return new Sk.builtin.tuple([this]);
             },
             $flags: { NoArgs: true },

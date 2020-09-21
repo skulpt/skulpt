@@ -30,7 +30,7 @@ Object.defineProperties(
         apply: { value: Function.prototype.apply },
         sk$type: { value: true },
         sk$attrError: {
-            value: function () {
+            value() {
                 return "type object '" + this.prototype.tp$name + "'";
             },
             writable: true,
@@ -479,12 +479,12 @@ Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
 
 Sk.builtin.type.prototype.tp$getsets = {
     __base__: {
-        $get: function () {
+        $get() {
             return this.prototype.tp$base || Sk.builtin.none.none$;
         },
     },
     __bases__: {
-        $get: function () {
+        $get() {
             if (this.sk$tuple_bases === undefined) {
                 this.sk$tuple_bases = new Sk.builtin.tuple(this.prototype.tp$bases);
                 // make sure we always return the same tuple
@@ -493,7 +493,7 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
     },
     __mro__: {
-        $get: function () {
+        $get() {
             if (this.sk$tuple_mro === undefined) {
                 this.sk$tuple_mro = new Sk.builtin.tuple(this.prototype.tp$mro);
                 // make sure we always return the same tuple
@@ -502,12 +502,12 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
     },
     __dict__: {
-        $get: function () {
+        $get() {
             return new Sk.builtin.mappingproxy(this.prototype);
         },
     },
     __doc__: {
-        $get: function () {
+        $get() {
             const doc = this.$typeLookup(Sk.builtin.str.$doc);
             if (doc) {
                 if (doc.tp$descr_get !== undefined) {
@@ -520,16 +520,16 @@ Sk.builtin.type.prototype.tp$getsets = {
             }
             return Sk.builtin.none.none$;
         },
-        $set: function (value) {
+        $set(value) {
             check_special_type_attr(this, value, Sk.builtin.str.$doc);
             this.prototype.__doc__ = value;
         },
     },
     __name__: {
-        $get: function () {
+        $get() {
             return new Sk.builtin.str(this.prototype.tp$name);
         },
-        $set: function (value) {
+        $set(value) {
             check_special_type_attr(this, value, Sk.builtin.str.$name);
             if (!Sk.builtin.checkString(value)) {
                 throw new Sk.builtin.TypeError(
@@ -540,14 +540,14 @@ Sk.builtin.type.prototype.tp$getsets = {
         },
     },
     __module__: {
-        $get: function () {
+        $get() {
             let mod = this.prototype.__module__;
             if (mod && !(mod.ob$type === Sk.builtin.getset_descriptor)) {
                 return mod;
             }
             return new Sk.builtin.str("builtins");
         },
-        $set: function (value) {
+        $set(value) {
             // they can set the module to whatever they like
             check_special_type_attr(this, value, Sk.builtin.str.$module);
             this.prototype.__module__ = value;
@@ -557,7 +557,7 @@ Sk.builtin.type.prototype.tp$getsets = {
 
 Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     mro: {
-        $meth: function () {
+        $meth() {
             return new Sk.builtin.list(this.$buildMRO());
         },
         $flags: { NoArgs: true },
@@ -639,14 +639,14 @@ Sk.builtin.type.$best_base = function (bases) {
 
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
-    $get: function () {
+    $get() {
         const dict_descr = get_dict_descr_of_builtn_base(this.ob$type);
         if (dict_descr !== undefined) {
             return dict_descr.tp$descr_get(this, this.ob$type);
         }
         return Sk.generic.getSetDict.$get.call(this);
     },
-    $set: function (value) {
+    $set(value) {
         const dict_descr = get_dict_descr_of_builtn_base(this.ob$type);
         if (dict_descr !== undefined) {
             return dict_descr.tp$descr_set(this, value);

@@ -12,7 +12,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     const getsets = {};
     for (let i = 0; i < flds.length; i++) {
         getsets[flds[i]] = {
-            $get: function () { return this.v[i]; },
+            $get() { return this.v[i]; },
             $doc: docs[i]
         };
     }
@@ -29,7 +29,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         },
         base: Sk.builtin.tuple,
         slots: {
-            tp$new: function (args, kwargs) {
+            tp$new(args, kwargs) {
                 Sk.abstr.checkOneArg(nm, args, kwargs);
                 const v = [];
                 const arg = args[0];
@@ -42,7 +42,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 return new structseq(v);
             },
             tp$doc: doc ? doc : Sk.builtin.none.none$,
-            $r: function () {
+            $r() {
                 var ret;
                 var i;
                 var bits;
@@ -63,7 +63,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         },
         methods: {
             __reduce__: {
-                $meth: function () {
+                $meth() {
                     throw new Sk.builtin.NotImplementedError("__reduce__ is not implemented");
                 },
                 $flags: { NoArgs: true }

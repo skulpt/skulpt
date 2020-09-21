@@ -38,7 +38,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     slots: /**@lends {Sk.builtin.BaseException}*/ {
         tp$getattr: Sk.generic.getAttr,
         tp$doc: "Common base class for all exceptions",
-        tp$new: function (args, kwargs) {
+        tp$new(args, kwargs) {
             if (!this.hp$type) {
                 // then we have a builtin constructor so just return it as new this
                 return new this.constructor();
@@ -48,17 +48,17 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
                 return instance;
             }
         },
-        tp$init: function (args, kwargs) {
+        tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kwargs);
             this.args = new Sk.builtin.tuple(args); // reset args in __init__ method
             return Sk.builtin.none.none$;
         },
-        $r: function () {
+        $r() {
             let ret = this.tp$name;
             ret += "(" + this.args.v.map((x) => Sk.misceval.objectRepr(x)).join(", ") + ")";
             return new Sk.builtin.str(ret);
         },
-        tp$str: function () {
+        tp$str() {
             if (this.args.v.length <= 1) {
                 return new Sk.builtin.str(this.args.v[0]);
             }
@@ -67,14 +67,14 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
     },
     getsets: /**@lends {Sk.builtin.BaseException}*/ {
         args: {
-            $get: function () {
+            $get() {
                 return this.args;
             },
         },
         __dict__: Sk.generic.getSetDict,
     },
     proto: /**@lends {Sk.builtin.BaseException}*/ {
-        toString: function () {
+        toString() {
             let ret = this.tp$name;
             ret += ": " + this.tp$str().v;
 
