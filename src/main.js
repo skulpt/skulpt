@@ -36,7 +36,7 @@ require("./str.js");
 
 [Sk.builtin.str, Sk.builtin.none, Sk.builtin.NotImplemented, Sk.builtin.object].forEach((cls) => {
     const cls_proto = cls.prototype;
-    cls_proto.__doc__ = cls_proto.tp$doc ? new Sk.builtin.str(cls_proto.tp$doc) : Sk.builtin.none.none$;
+    cls_proto.__doc__ = cls_proto.hasOwnProperty("tp$doc") ? new Sk.builtin.str(cls_proto.tp$doc) : Sk.builtin.none.none$;
 });
 
 require("./function.js");
