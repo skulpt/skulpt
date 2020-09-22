@@ -1827,7 +1827,7 @@ var py2$slots = {
  * See the source code for a full list of slots split into apprpriate categories
  */
 Sk.subSlots = {
-    main_slots: {
+    main_slots: Object.entries({
         // nb we handle tp$new differently
         // tp_slots
         tp$init: "__init__",
@@ -1855,9 +1855,9 @@ Sk.subSlots = {
         // iter
         tp$iter: "__iter__",
         tp$iternext: "__next__",
-    },
+    }),
 
-    number_slots: {
+    number_slots: Object.entries({
         nb$abs: "__abs__",
         nb$negative: "__neg__",
         nb$positive: "__pos__",
@@ -1911,9 +1911,9 @@ Sk.subSlots = {
         nb$matrix_multiply: "__matmul__",
         nb$reflected_matrix_multiply: "__rmatmul__",
         nb$inplace_matrix_multiply: "__imatmul__",
-    },
+    }),
 
-    sequence_and_mapping_slots: {
+    sequence_and_mapping_slots: Object.entries({
         // sequence and mapping slots
         sq$length: "__len__",
         sq$contains: "__contains__",
@@ -1924,7 +1924,7 @@ Sk.subSlots = {
         nb$reflected_multiply: "__rmul__",
         nb$inplace_add: "__iadd__",
         nb$inplace_multiply: "__imul__",
-    },
+    }),
 };
 
 Sk.reflectedNumberSlots = {
@@ -2152,6 +2152,8 @@ Sk.setupDunderMethods = function (py3) {
     const classes_with_divide = classes_with_bool;
     const number_slots = Sk.subSlots.number_slots;
     const main_slots = Sk.subSlots.main_slots;
+    const indexofnext = main_slots.findIndex((x) => x[0] === "tp$iternext");
+    const indexofbool = number_slots.findIndex((x) => x[0] === "nb$bool");
     const dunderToSkulpt = Sk.dunderToSkulpt;
 
     function switch_version(classes_with, old_meth, new_meth) {
@@ -2187,8 +2189,8 @@ Sk.setupDunderMethods = function (py3) {
             delete cls_proto.__rdiv__;
         }
 
-        main_slots.tp$iternext = "__next__";
-        number_slots.nb$bool = "__bool__";
+        main_slots[indexofnext][1] = "__next__";
+        number_slots[indexofbool][1] = "__bool__";
         switch_version(classes_with_next, "next", "__next__");
         switch_version(classes_with_bool, "__bool__", "__nonzero__");
     } else {
@@ -2213,8 +2215,8 @@ Sk.setupDunderMethods = function (py3) {
             delete slots[slot_name];
         }
 
-        main_slots.tp$iternext = "next";
-        number_slots.nb$bool = "__nonzero__";
+        main_slots[indexofnext][1] = "next";
+        number_slots[indexofbool][1] = "__nonzero__";
         switch_version(classes_with_next, "__next__", "next");
         switch_version(classes_with_bool, "__nonzero__", "__bool__");
 

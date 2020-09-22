@@ -1054,8 +1054,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     // main slots
-    const main_slots = Sk.subSlots.main_slots;
-    Object.entries(main_slots).forEach(([slot_name, dunder_name]) => {
+    Sk.subSlots.main_slots.forEach(([slot_name, dunder_name]) => {
         const wrapped_func = slots[slot_name];
         if (wrapped_func !== undefined) {
             set_up_slot(dunder_name, wrapped_func);
@@ -1075,9 +1074,8 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     // number_slots
-    const number_slots = Sk.subSlots.number_slots;
     if (slots.tp$as_number) {
-        Object.entries(number_slots).forEach(([slot_name, dunder_name]) => {
+        Sk.subSlots.number_slots.forEach(([slot_name, dunder_name]) => {
             const wrapped_func = slots[slot_name];
             if (wrapped_func !== undefined) {
                 set_up_slot(dunder_name, wrapped_func);
@@ -1086,13 +1084,14 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     }
 
     // as_sequence_or_mapping slots
-    const sequence_and_mapping_slots = Sk.subSlots.sequence_and_mapping_slots;
-    Object.entries(sequence_and_mapping_slots).forEach(([slot_name, dunder_name]) => {
-        const wrapped_func = slots[slot_name];
-        if (wrapped_func !== undefined) {
-            set_up_slot(dunder_name, wrapped_func);
-        }
-    });
+    if (slots.tp$as_sequence_or_mapping) {
+        Sk.subSlots.sequence_and_mapping_slots.forEach(([slot_name, dunder_name]) => {
+            const wrapped_func = slots[slot_name];
+            if (wrapped_func !== undefined) {
+                set_up_slot(dunder_name, wrapped_func);
+            }
+        });
+    }
 
     Object.defineProperty(proto, "tp$slots", { value: null, writable: true });
 };
