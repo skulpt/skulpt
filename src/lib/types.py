@@ -22,7 +22,9 @@ NoneType = type(None)
 TypeType = type
 ObjectType = object
 IntType = int
-# LongType = long
+try:
+    LongType = long
+except: pass
 FloatType = float
 BooleanType = bool
 try:
