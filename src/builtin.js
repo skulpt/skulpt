@@ -696,10 +696,7 @@ Sk.builtin.setattr = function setattr(obj, pyName, value) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const res = obj.tp$setattr(pyName, value, true);
-    return Sk.misceval.chain(res, () => {
-        return Sk.builtin.none.none$;
-    });
+    return Sk.misceval.chain(obj.tp$setattr(pyName, value, true), () => Sk.builtin.none.none$);
 };
 
 Sk.builtin.raw_input = function (prompt) {

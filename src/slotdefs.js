@@ -158,20 +158,25 @@ function slotFuncOneArg(dunderFunc) {
 }
 
 function slotFuncGetAttribute(pyName, canSuspend) {
-    let func = this.ob$type.$typeLookup(Sk.builtin.str.$getattribute);
-    let res;
-    if (func instanceof Sk.builtin.wrapper_descriptor) {
-        return func.d$wrapped.call(this, pyName, canSuspend);
+    let getattributeFn = this.ob$type.$typeLookup(Sk.builtin.str.$getattribute);
+    if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
+        // we're assuming here that internal tp$getattr won't raise an exception
+        return getattributeFn.d$wrapped.call(this, pyName, canSuspend);
     }
-    if (func.tp$descr_get) {
-        func = func.tp$descr_get(this);
+    if (getattributeFn.tp$descr_get) {
+        getattributeFn = getattributeFn.tp$descr_get(this);
     }
-    if (canSuspend) {
-        res = Sk.misceval.callsimOrSuspendArray(func, [pyName]);
-    } else {
-        res = Sk.misceval.callsimArray(func, [pyName]);
-    }
-    return res;
+    const ret = Sk.misceval.tryCatch(
+        () => Sk.misceval.callsimOrSuspendArray(getattributeFn, [pyName]),
+        (e) => {
+            if (e instanceof Sk.builtin.AttributeError) {
+                return undefined;
+            } else {
+                throw e;
+            }
+        }
+    );
+    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 }
 
 function slotFuncFastCall(dunderFunc) {
@@ -205,15 +210,16 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
             if (func.tp$descr_get) {
                 func = func.tp$descr_get(this);
             }
-            const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
+            
             if (func !== undefined) {
-                res = value === undefined ? call_version(func, [pyObject]) : call_version(func, [pyObject, value]);
+                const args = value === undefined ? [pyObject] : [pyObject, value];
+                res = Sk.misceval.callsimOrSuspendArray(func, args);
             } else if (error_msg) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object " + error_msg);
             } else {
                 throw new Sk.builtin.AttributeError(dunderName);
             }
-            return res;
+            return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
         };
     };
 }
@@ -426,23 +432,19 @@ slots.__getattribute__ = {
         return function tp$getattr(pyName, canSuspend) {
             let getattrFn = this.ob$type.$typeLookup(Sk.builtin.str.$getattr);
             if (getattrFn === undefined) {
-                // we don't support dynamically created __getattr__ but hey...
                 this.constructor.prototype.tp$getattr = slotFuncGetAttribute;
                 return slotFuncGetAttribute.call(this, pyName, canSuspend);
             }
-            let getattributeFn = this.ob$type.$typeLookup(Sk.builtin.str.$getattribute);
-
-            let r = Sk.misceval.chain(
+            const ret = Sk.misceval.chain(slotFuncGetAttribute.call(this, pyName, canSuspend), (val) =>
                 Sk.misceval.tryCatch(
                     () => {
-                        if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
-                            return getattributeFn.d$wrapped.call(this, pyName, canSuspend);
-                        } else {
-                            if (getattributeFn.tp$descr_get) {
-                                getattributeFn = getattributeFn.tp$descr_get(this);
-                            }
-                            return Sk.misceval.callsimOrSuspendArray(getattributeFn, [pyName]);
+                        if (val !== undefined) {
+                            return val;
                         }
+                        if (getattrFn.tp$descr_get) {
+                            getattrFn = getattrFn.tp$descr_get(this);
+                        }
+                        return Sk.misceval.callsimOrSuspendArray(getattrFn, [pyName]);
                     },
                     function (e) {
                         if (e instanceof Sk.builtin.AttributeError) {
@@ -451,28 +453,9 @@ slots.__getattribute__ = {
                             throw e;
                         }
                     }
-                ),
-                (val) =>
-                    Sk.misceval.tryCatch(
-                        () => {
-                            if (val !== undefined) {
-                                return val;
-                            }
-                            if (getattrFn.tp$descr_get) {
-                                getattrFn = getattrFn.tp$descr_get(this);
-                            }
-                            return Sk.misceval.callsimOrSuspendArray(getattrFn, [pyName]);
-                        },
-                        function (e) {
-                            if (e instanceof Sk.builtin.AttributeError) {
-                                return undefined;
-                            } else {
-                                throw e;
-                            }
-                        }
-                    )
+                )
             );
-            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
         };
     },
     $wrapper: function (self, args, kwargs) {
@@ -573,7 +556,6 @@ slots.__get__ = {
     $slot_name: "tp$descr_get",
     $slot_func: function (dunderFunc) {
         return function tp$descr_get(obj, obtype, canSuspend) {
-            const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
             if (obj === null) {
                 obj = Sk.builtin.none.none$;
             }
@@ -581,7 +563,8 @@ slots.__get__ = {
                 obtype = Sk.builtin.none.none$;
             }
             const func = dunderFunc.tp$descr_get ? dunderFunc.tp$descr_get(this) :  dunderFunc;
-            return call_version(func, [obj, obtype]);
+            const ret = Sk.misceval.callsimOrSuspendArray(func, [obj, obtype]);
+            return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
         };
     },
     $wrapper: function (self, args, kwargs) {
@@ -938,8 +921,8 @@ slots.__getitem__ = {
     $slot_func: function (dunderFunc) {
         return function mp$subscript(key, canSuspend) {
             const func = dunderFunc.tp$descr_get ? dunderFunc.tp$descr_get(this) :  dunderFunc;
-            const call_version = canSuspend ? Sk.misceval.callsimOrSuspendArray : Sk.misceval.callsimArray;
-            return call_version(func, [key]);
+            const ret = Sk.misceval.callsimOrSuspendArray(func, [key]);
+            return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
         };
     },
     $wrapper: wrapperCallOneArg,
