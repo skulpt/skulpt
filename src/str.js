@@ -1107,7 +1107,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
 
-        if ((mappingKey === undefined || mappingKey !== "") && conversionType != "%") {
+        if ((mappingKey === undefined || mappingKey === "") && conversionType != "%") {
             i = index++;
         } // ff passes '' not undef for some reason
 
