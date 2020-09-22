@@ -875,18 +875,22 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         writable: true,
     });
 };
+
 /**
- * 
  * @param {FunctionConstructor} klass 
  * @param {Object=} getsets 
  */
 Sk.abstr.setUpGetSets = function (klass, getsets) {
+    if (Sk.builtin.getset_descriptor === undefined) {
+        return;
+    }
     const klass_proto = klass.prototype;
     getsets = getsets || klass_proto.tp$getsets || {};
     Object.entries(getsets).forEach(([getset_name, getset_def]) => {
         getset_name.$name = getset_def;
         klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
+    Object.defineProperty(klass_proto, "tp$getsets", { value: null, writable: true });
 };
 
 /**
@@ -895,12 +899,16 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
  * @param {Object=} methods 
  */
 Sk.abstr.setUpMethods = function (klass, methods) {
+    if (Sk.builtin.method_descriptor === undefined) {
+        return;
+    }
     const klass_proto = klass.prototype;
     methods = methods || klass_proto.tp$methods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
         klass_proto[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
     });
+    Object.defineProperty(klass_proto, "tp$methods", { value: null, writable: true });
 };
 
 /**
@@ -909,14 +917,17 @@ Sk.abstr.setUpMethods = function (klass, methods) {
  * @param {Object=} methods 
  */
 Sk.abstr.setUpClassMethods = function (klass, methods) {
+    if (Sk.builtin.classmethod_descriptor === undefined) {
+        return;
+    }
     const klass_proto = klass.prototype;
-    methods = methods || {};
+    methods = methods || klass_proto.tp$classmethods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
         klass_proto[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
     });
+    Object.defineProperty(klass_proto, "tp$classmethods", { value: null, writable: true });
 };
-
 
 const op2shortcut = Object.entries({
     Eq: "ob$eq",
@@ -926,52 +937,96 @@ const op2shortcut = Object.entries({
     Lt: "ob$lt",
     LtE: "ob$le",
 });
+
+function _set_up_richcompare_wrappers(slots) {
+    op2shortcut.forEach(([op, shortcut]) => {
+        slots[shortcut] = function (other) {
+            return this.tp$richcompare(other, op);
+        };
+    });
+}
+
+function _set_up_reflected_number_slots(slots) {
+    // do the reflected slots
+    const reflected_slots = Sk.reflectedNumberSlots;
+    Object.keys(reflected_slots).forEach((slot_name) => {
+        if (slots[slot_name] !== undefined) {
+            const reflected_slot_def = reflected_slots[slot_name];
+            const reflect_name = reflected_slot_def.reflected;
+            const reflected_slot = slots[reflect_name];
+            if (reflected_slot !== undefined) {
+                // the reflected slot was already defined so don't recreate it
+                if (reflected_slot === null) {
+                    delete slots[reflect_name]; // e.g. Counter doesn't want reflected slots
+                }
+            } else {
+                // either the reflected slot is a function or it's undefined
+                // if it's undefined then the reflected slot is the same as non reflected slot - like nb$add
+                slots[reflect_name] = reflected_slot_def.slot || slots[slot_name];
+            }
+        }
+    });
+}
+
+function _set_up_sequence_to_number_slots(slots) {
+    const sequenceToNumber = Sk.sequenceAndMappingSlots;
+    Object.keys(sequenceToNumber).forEach((slot_name) => {
+        if (slots[slot_name] !== undefined) {
+            const equiv_slots = sequenceToNumber[slot_name];
+            equiv_slots.forEach((equv_slot_name) => {
+                slots[equv_slot_name] = slots[slot_name];
+            });
+        }
+    });
+}
+
 /**
  * 
  * @param {FunctionConstructor} klass
  * @param {Object=} slots 
  */
 Sk.abstr.setUpSlots = function (klass, slots) {
-    const proto = klass.prototype;
-    if (slots === undefined) {
-        slots = {};
-        Object.entries(Object.getOwnPropertyDescriptors(proto)).forEach(([slot_name, descr]) => {
-            slots[slot_name] = descr.value;
-        });
-        // direct calls to setup slots are done for final initialization in a few builtins
-    } else {
-        // adjust tp$new slot - can only initiate the function here
-        if (slots.tp$new === Sk.generic.new) {
-            slots.tp$new = Sk.generic.new(klass);
-        }
-        // set up richcompare skulpt slots
-        if (slots.tp$richcompare !== undefined) {
-            op2shortcut.forEach(([op, shortcut]) => {
-                if (!slots.hasOwnProperty(shortcut)) {
-                    slots[shortcut] = function (other) {
-                        return this.tp$richcompare(other, op);
-                    };
-                }
-            });
-        }
-        // make all slots non-enumerable - makes the dir implementation easier
-        Object.entries(slots).forEach(([slot_name, value]) => {
-            Object.defineProperty(proto, slot_name, {
-                value: value,
-                writable: true,
-                enumerable: false,
-            });
-        });
-    }
-
-    
-
     if (Sk.builtin.wrapper_descriptor === undefined) {
         return;
     }
+    const proto = klass.prototype;
+    slots = slots || proto.tp$slots || {};
 
-    if (slots.tp$new !== undefined) {
+    // set up the raw slots on the proto
+
+    // start with tp$new - we couldn't call genericnew before the klass was defined so call it now
+    if (slots.tp$new === Sk.generic.new) {
+        slots.tp$new = Sk.generic.new(klass);
+    }
+
+    // wrap ob$eq slots into tp$richcompare
+    if (slots.tp$richcompare) {
+        // Either a klass defines a tp$richcompare slot or ob$eq slots
+        // if tp$richcompare is defined then create all the ob$eq slots
+        _set_up_richcompare_wrappers(slots);
+    }
+
+    // setup some reflected slots
+    if (slots.tp$as_number) {
+        _set_up_reflected_number_slots(slots);
+    }
+
+    // turn sequence slots into number slots
+    if (slots.tp$as_sequence_or_mapping) {
+        _set_up_sequence_to_number_slots(slots);
+    }
+
+    // make all slots non-enumerable - makes the dir implementation easier
+    Object.entries(slots).forEach(([slot_name, value]) => {
+        Object.defineProperty(proto, slot_name, {
+            value: value,
+            writable: true,
+        });
+    });
+
+    if (slots.tp$new) {
         proto.__new__ = new Sk.builtin.sk_method(Sk.generic.newMethodDef, klass);
+        // this property is used in the implementation of calling __new__
         Object.defineProperty(proto, "sk$staticNew", {value: klass, writable: true});
     }
 
@@ -1003,8 +1058,8 @@ Sk.abstr.setUpSlots = function (klass, slots) {
     });
 
     // __hash__
-    if (slots.hasOwnProperty("tp$hash")) {
-        const hash = slots.tp$hash;
+    const hash = slots.tp$hash;
+    if (hash !== undefined) {   
         if (typeof hash === "function") {
             wrap_func("__hash__", hash);
         } else if (hash === Sk.builtin.none.none$) {
@@ -1014,35 +1069,9 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         }
     }
 
-    // as_number_slots
+    // number_slots
     const number_slots = Sk.subSlots.number_slots;
-    const reflected_slots = Sk.reflectedNumberSlots;
-    if (slots.tp$as_number !== undefined) {
-        for (let slot_name in reflected_slots) {
-            if (slots[slot_name] !== undefined) {
-                const reflect_name = reflected_slots[slot_name].reflected;
-                const reflected_slot = slots[reflect_name];
-                if (reflected_slot !== undefined) {
-                    // the reflected slot was already defined so don't recreate it
-                    if (reflected_slot === null) {
-                        delete slots[reflect_name]; // e.g. Counter doesn't want reflected slots
-                    }
-                    continue;
-                }
-                let slot = reflected_slots[slot_name].slot;
-                if (slot === undefined) {
-                    // then the reflected slot is the same as non reflected slot - like nb$add
-                    slot = slots[reflect_name] = slots[slot_name];
-                } else {
-                    slots[reflect_name] = slot;
-                }
-                Object.defineProperty(proto, reflect_name, {
-                    value: slot,
-                    writable: true,
-                    enumerable: false,
-                });
-            }
-        }
+    if (slots.tp$as_number) {
         Object.entries(number_slots).forEach(([slot_name, dunder_name]) => {
             const wrapped_func = slots[slot_name];
             if (wrapped_func !== undefined) {
@@ -1053,28 +1082,14 @@ Sk.abstr.setUpSlots = function (klass, slots) {
 
     // as_sequence_or_mapping slots
     const sequence_and_mapping_slots = Sk.subSlots.sequence_and_mapping_slots;
-    if (slots.tp$as_sequence_or_mapping !== undefined) {
-        for (let slot_name in Sk.sequenceAndMappingSlots) {
-            if (slots[slot_name] !== undefined) {
-                const equiv_slots = Sk.sequenceAndMappingSlots[slot_name];
-                equiv_slots.forEach((equv_slot_name) => {
-                    const slot = slots[slot_name];
-                    slots[equv_slot_name] = slot;
-                    Object.defineProperty(proto, equv_slot_name, {
-                        value: slot,
-                        writable: true,
-                        enumerable: false,
-                    });
-                });
-            }
+    Object.entries(sequence_and_mapping_slots).forEach(([slot_name, dunder_name]) => {
+        const wrapped_func = slots[slot_name];
+        if (wrapped_func !== undefined) {
+            set_up_slot(dunder_name, wrapped_func);
         }
-        Object.entries(sequence_and_mapping_slots).forEach(([slot_name, dunder_name]) => {
-            const wrapped_func = slots[slot_name];
-            if (wrapped_func !== undefined) {
-                set_up_slot(dunder_name, wrapped_func);
-            }
-        });
-    }
+    });
+
+    Object.defineProperty(proto, "tp$slots", { value: null, writable: true });
 };
 
 /**
@@ -1102,18 +1117,12 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  *
  */
 Sk.abstr.buildNativeClass = function (typename, options) {
-    
     options = options || {};
+    Sk.asserts.assert(options.hasOwnProperty("constructor"), "A constructor is required to build a native class");
+
     /**@type {FunctionConstructor} */
-    let typeobject;
-    if (!options.hasOwnProperty("constructor")) {
-        typeobject = function klass() {
-            this.$d = new Sk.builtin.dict();
-        };
-    } else {
-        /**@type {FunctionConstructor} */
-        typeobject = options.constructor;
-    }
+    let typeobject = options.constructor;
+
     let mod;
     if (typename.includes(".")) {
         // you should define the module like "collections.defaultdict" for static classes
@@ -1121,31 +1130,32 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         typename = mod_typename.pop();
         mod = mod_typename.join(".");
     }
-    const meta = options.meta || undefined;
+    // set the prototypical chains for inheritance
+    Sk.abstr.setUpInheritance(typename, typeobject, options.base, options.meta);
 
-    Sk.abstr.setUpInheritance(typename, typeobject, options.base, meta);
-
-    // would need to change this for multiple inheritance.
+    // Native classes can only be single inheritance objects
     Sk.abstr.setUpBuiltinMro(typeobject);
 
-    Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots || {});
+    const type_proto = typeobject.prototype;
 
-    if (Sk.builtin.classmethod_descriptor !== undefined) {
-        Sk.abstr.setUpMethods(typeobject, options.methods || {});
-        Sk.abstr.setUpGetSets(typeobject, options.getsets || {});
-        Sk.abstr.setUpClassMethods(typeobject, options.classmethods || {});
-    } else {
-        // savae these on the prototype for later when class_method_descriptor et al are defined
-        typeobject.prototype.tp$getsets = options.getsets;
-        typeobject.prototype.tp$methods = options.methods;
-    }
+    Object.defineProperties(type_proto, {
+        // memoise these and make them null later
+        tp$slots: {value: options.slots, writable: true},
+        tp$getsets: {value: options.getsets, writable: true},
+        tp$methods: {value: options.methods, writable: true},
+        tp$classmethods: {value: options.classmethods, writable: true},
+    });
+
+    Sk.abstr.setUpSlots(typeobject, /**@lends {typeobject.prototype} */ options.slots || {});
+    Sk.abstr.setUpMethods(typeobject, options.methods);
+    Sk.abstr.setUpGetSets(typeobject, options.getsets);
+    Sk.abstr.setUpClassMethods(typeobject, options.classmethods);
 
     if (mod !== undefined) {
-        typeobject.prototype.__module__ = new Sk.builtin.str(mod);
+        type_proto.__module__ = new Sk.builtin.str(mod);
     }
-    const type_proto = typeobject.prototype;
+    
     const proto = options.proto || {};
-
     Object.entries(proto).forEach(([p, val]) => {
         Object.defineProperty(type_proto, p, {
             value: val,
@@ -1160,8 +1170,6 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         Object.defineProperty(typeobject, flag, {
             value: val,
             writable: true,
-            enumerable: false,
-            // flags are not enumerable - these can't be accessed by lookups or appear on the dir since they're not on the prototype
         }); 
     });
 
