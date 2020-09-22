@@ -892,7 +892,7 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
     const klass_proto = klass.prototype;
     getsets = getsets || klass_proto.tp$getsets || {};
     Object.entries(getsets).forEach(([getset_name, getset_def]) => {
-        getset_name.$name = getset_def;
+        getset_def.$name = getset_name;
         klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
     Object.defineProperty(klass_proto, "tp$getsets", { value: null, writable: true });
