@@ -776,11 +776,16 @@ Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  * @param {Sk.builtin.str} pyName
  */
 Sk.abstr.lookupSpecial = function (obj, pyName) {
-    let func = obj.ob$type && obj.ob$type.$typeLookup(pyName);
+    var obtype = obj.ob$type;
+    if (obtype === undefined) {
+        Sk.asserts.fail("javascript object sent to lookupSpecial");
+        return;
+    }
+    var func = obtype.$typeLookup(pyName);
     if (func === undefined) {
         return;
     } else if (func.tp$descr_get !== undefined) {
-        func = func.tp$descr_get(obj, obj.ob$type);
+        func = func.tp$descr_get(obj, obtype);
     }
     return func;
 };
