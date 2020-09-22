@@ -23,14 +23,33 @@ Sk.builtin.type = function type(obj) {
     }
     return obj.ob$type; // allow this use of calling type
 };
-/** @typedef {Sk.builtin.type|Function} */ var typeObject;
 
 Object.defineProperties(
     Sk.builtin.type.prototype,
     /**@lends {Sk.builtin.type.prototype}*/ {
         call: { value: Function.prototype.call },
         apply: { value: Function.prototype.apply },
+        tp$slots: {
+            value: {
+                tp$doc: "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type",
+                tp$call,
+                tp$new,
+                tp$getattr,
+                tp$setattr,
+                $r,
+            },
+            writable: true,
+        },
+        tp$methods: { value: null, writable: true }, // define these later
+        tp$getsets: { value: null, writable: true },
         sk$type: { value: true },
+        $isSubType: { value: $isSubType },
+        $allocateSlot: { value: $allocateSlot },
+        $allocateSlots: { value: $allocateSlots },
+        $allocateGetterSlot: { value: $allocateGetterSlot },
+        $typeLookup: { value: $typeLookup, writable: true },
+        $mroMerge: { value: $mroMerge },
+        $buildMRO: { value: $buildMRO },
         sk$attrError: {
             value() {
                 return "type object '" + this.prototype.tp$name + "'";
@@ -40,12 +59,10 @@ Object.defineProperties(
     }
 );
 
-Sk.builtin.type.prototype.tp$doc = "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type";
-
 /**
  * @this {typeObject | Sk.builtin.type}
  */
-Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
+function tp$call(args, kwargs) {
     if (this === Sk.builtin.type) {
         // check the args are 1 - only interested in the 1 argument form if
         // if the nargs and nkeywords != 1 or 3 and zero raise an error
@@ -80,9 +97,9 @@ Sk.builtin.type.prototype.tp$call = function (args, kwargs) {
         }
         return obj;
     }
-};
+}
 
-Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
+function tp$new(args, kwargs) {
     // currently skulpt does not support metatypes...
     // metatype.prototype = this
     if (args.length !== 3) {
@@ -147,13 +164,13 @@ Sk.builtin.type.prototype.tp$new = function (args, kwargs) {
     klass.$allocateSlots();
 
     return klass;
-};
+}
 
 /**
  * @param {Array} args
  * @param {Array=} kwargs
  */
-Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
+function tp$init(args, kwargs) {
     if (args && args.length == 1 && kwargs && kwargs.length) {
         throw new Sk.builtin.TypeError("type.__init__() takes no keyword arguments");
     } else if (args.length != 3 && args.length != 1) {
@@ -161,9 +178,9 @@ Sk.builtin.type.prototype.tp$init = function (args, kwargs) {
     }
     // according to Cpython we just call the object init method here
     return Sk.builtin.object.prototype.tp$init.call(this, []);
-};
+}
 
-Sk.builtin.type.prototype.$r = function () {
+function $r() {
     let mod = this.prototype.__module__;
     let cname = "";
     let ctype = "class";
@@ -176,8 +193,9 @@ Sk.builtin.type.prototype.$r = function () {
         ctype = "type";
     }
     return new Sk.builtin.str("<" + ctype + " '" + cname + this.prototype.tp$name + "'>");
-};
-Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
+}
+
+function tp$getattr(pyName, canSuspend) {
     // first check that the pyName is indeed a string
     let res;
     const metatype = this.ob$type;
@@ -213,9 +231,9 @@ Sk.builtin.type.prototype.tp$getattr = function (pyName, canSuspend) {
         return meta_attribute;
     }
     return;
-};
+}
 
-Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
+function tp$setattr(pyName, value, canSuspend) {
     if (!this.sk$klass) {
         if (value !== undefined) {
             throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
@@ -260,21 +278,13 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value, canSuspend) {
             this.$allocateSlot(jsName, value);
         }
     }
-};
-
-Sk.builtin.type.prototype.$typeLookup = function (pyName) {
-    // all type objects override this function depending on they're prototypical inheritance
-    // we use the logic here as a fall back
-    if (this.prototype.sk$prototypical) {
-        return fastLookup.call(this, pyName);
-    }
-    return slowLookup.call(this, pyName);
-};
+}
 
 function fastLookup(pyName) {
     var jsName = pyName.$mangled;
     return this.prototype[jsName];
 }
+
 function slowLookup(pyName) {
     var jsName = pyName.$mangled;
     const mro = this.prototype.tp$mro;
@@ -285,6 +295,19 @@ function slowLookup(pyName) {
         }
     }
     return undefined;
+}
+
+function $typeLookup(pyName) {
+    // all type objects override this function depending on they're prototypical inheritance
+    // we use the logic here as a fall back
+    if (this.prototype.sk$prototypical) {
+        return fastLookup.call(this, pyName);
+    }
+    return slowLookup.call(this, pyName);
+}
+
+function $isSubType(other) {
+    return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 }
 
 function setUpKlass($name, klass, bases, meta) {
@@ -309,7 +332,44 @@ function setUpKlass($name, klass, bases, meta) {
     });
 }
 
-Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
+// this function is used to determine the class constructor inheritance.
+function best_base_(bases) {
+    if (bases.length === 0) {
+        bases.push(Sk.builtin.object);
+    }
+    function solid_base(type) {
+        // if we support slots we would need to change this function - for now it just checks for the builtin.
+        if (type.sk$klass === undefined) {
+            return type;
+        }
+        return solid_base(type.prototype.tp$base);
+    }
+
+    let base, winner, candidate, base_i;
+    for (let i = 0; i < bases.length; i++) {
+        base_i = bases[i];
+        if (!Sk.builtin.checkClass(base_i)) {
+            throw new Sk.builtin.TypeError("bases must be 'type' objects");
+        } else if (base_i.sk$acceptable_as_base_class === false) {
+            throw new Sk.builtin.TypeError("type '" + base_i.prototype.tp$name + "' is not an acceptable base type");
+        }
+        candidate = solid_base(base_i); // basically the builtin I think
+        if (winner === undefined) {
+            winner = candidate;
+            base = base_i;
+        } else if (winner.$isSubType(candidate)) {
+            // carry on
+        } else if (candidate.$isSubType(winner)) {
+            winner = candidate;
+            base = base_i;
+        } else {
+            throw new Sk.builtin.TypeError("multiple bases have instance layout conflicts");
+        }
+    }
+    return base;
+}
+
+function $mroMerge(seqs) {
     this.prototype.sk$prototypical = true; // assume true to start with
     let seq, i, j;
     const res = [];
@@ -374,7 +434,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
             }
         }
     }
-};
+}
 
 /*
  * C3 MRO (aka CPL) linearization. Figures out which order to search through
@@ -392,7 +452,7 @@ Sk.builtin.type.prototype.$mroMerge_ = function (seqs) {
  * (http://mail.python.org/pipermail/python-dev/2002-October/029176.html) when
  * discussing its addition to Python.
  */
-Sk.builtin.type.prototype.$buildMRO = function () {
+function $buildMRO() {
     // MERGE(klass + mro(bases) + bases)
     const all = [[this]];
     const kbases = this.prototype.tp$bases;
@@ -407,14 +467,10 @@ Sk.builtin.type.prototype.$buildMRO = function () {
     }
     all.push(bases);
 
-    return this.$mroMerge_(all);
-};
+    return this.$mroMerge(all);
+}
 
-Sk.builtin.type.prototype.$isSubType = function (other) {
-    return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
-};
-
-Sk.builtin.type.prototype.$allocateSlots = function () {
+function $allocateSlots() {
     // only allocate certain slots
     const proto = this.prototype;
     if (this.prototype.sk$prototypical) {
@@ -432,9 +488,9 @@ Sk.builtin.type.prototype.$allocateSlots = function () {
             }
         });
     }
-};
+}
 
-Sk.builtin.type.prototype.$allocateSlot = function (dunder, dunderFunc) {
+function $allocateSlot(dunder, dunderFunc) {
     const slot_def = Sk.slots[dunder];
     const slot_name = slot_def.$slot_name;
     const proto = this.prototype;
@@ -442,9 +498,9 @@ Sk.builtin.type.prototype.$allocateSlot = function (dunder, dunderFunc) {
         delete proto[slot_name]; // required in order to override the multiple inheritance getter slots
     }
     proto[slot_name] = slot_def.$slot_func(dunderFunc);
-};
+}
 
-Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
+function $allocateGetterSlot(dunder) {
     const slot_name = Sk.slots[dunder].$slot_name;
     const proto = this.prototype;
     if (proto.hasOwnProperty(slot_name)) {
@@ -463,7 +519,7 @@ Sk.builtin.type.prototype.$allocateGetterSlot = function (dunder) {
             }
         },
     });
-};
+}
 
 Sk.builtin.type.prototype.tp$getsets = {
     __base__: {
@@ -586,44 +642,6 @@ Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
         $doc: "Specialized __dir__ implementation for types.",
     },
 };
-
-// we could move this to the prototype but this is called before the klass constructor inheritance is set
-// this function is used to determine the class constructor inheritance.
-function best_base_(bases) {
-    if (bases.length === 0) {
-        bases.push(Sk.builtin.object);
-    }
-    function solid_base(type) {
-        // if we support slots we would need to change this function - for now it just checks for the builtin.
-        if (type.sk$klass === undefined) {
-            return type;
-        }
-        return solid_base(type.prototype.tp$base);
-    }
-
-    let base, winner, candidate, base_i;
-    for (let i = 0; i < bases.length; i++) {
-        base_i = bases[i];
-        if (!Sk.builtin.checkClass(base_i)) {
-            throw new Sk.builtin.TypeError("bases must be 'type' objects");
-        } else if (base_i.sk$acceptable_as_base_class === false) {
-            throw new Sk.builtin.TypeError("type '" + base_i.prototype.tp$name + "' is not an acceptable base type");
-        }
-        candidate = solid_base(base_i); // basically the builtin I think
-        if (winner === undefined) {
-            winner = candidate;
-            base = base_i;
-        } else if (winner.$isSubType(candidate)) {
-            // carry on
-        } else if (candidate.$isSubType(winner)) {
-            winner = candidate;
-            base = base_i;
-        } else {
-            throw new Sk.builtin.TypeError("multiple bases have instance layout conflicts");
-        }
-    }
-    return base;
-}
 
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
