@@ -24,9 +24,6 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return selfhash + funchash;
         },
         tp$call(args, kwargs) {
-            if (this.im_func.tp$call === undefined) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this.im_func) + "' is not callable");
-            }
             return this.im_func.tp$call([this.im_self, ...args], kwargs);
         },
         tp$new(args, kwargs) {
