@@ -19,7 +19,6 @@ require("./abstract.js");
 require("./object.js");
 require("./function.js");
 require("./builtin.js");
-require("./fromcodepoint.js");
 require("./errors.js");
 require("./method.js");
 require("./misceval.js");
