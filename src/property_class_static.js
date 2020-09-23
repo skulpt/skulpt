@@ -152,9 +152,6 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
             if (f) {
                 return f.call(callable, type);
             }
-            if (!Sk.builtin.checkCallable(callable)) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(callable) + "' object is not callable");
-            }
             return new Sk.builtin.method(callable, type);
         },
     },

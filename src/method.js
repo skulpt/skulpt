@@ -10,6 +10,7 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
         Sk.asserts.assert(this instanceof Sk.builtin.method, "bad call to method constructor, use 'new'");
         this.im_func = func;
         this.im_self = self;
+        this.im_call = func.tp$call;
     },
     slots: {
         $r() {
@@ -24,7 +25,12 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             return selfhash + funchash;
         },
         tp$call(args, kwargs) {
-            return this.im_func.tp$call([this.im_self, ...args], kwargs);
+            var im_call = this.im_call;
+            if (im_call === undefined) {
+                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this.im_func) + "' object is not callable");
+            }
+            args = [this.im_self, ...args];
+            return im_call.call(this.im_func, args, kwargs);
         },
         tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("method", kwargs);
