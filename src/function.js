@@ -46,13 +46,12 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         }
         this.func_closure = closure;
         this.$memoiseFlags();
-        this.memoised = code.co_fastcall || undefined;
+        this.memoised = code.co_fastcall || null;
         if (code.co_fastcall) {
-            this.tp$call = code;
+            this.tp$call = code.bind(this);
         } else {
-            this.tp$call = Sk.builtin.func.prototype.tp$call; // keep func the same shape
+            this.tp$call = Sk.builtin.func.prototype.tp$call.bind(this); // keep func the same shape
         }
-        
     },
     slots: {
         tp$getattr: Sk.generic.getAttr,
