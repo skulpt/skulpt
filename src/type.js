@@ -205,7 +205,8 @@ function tp$getattr(pyName, canSuspend) {
     let meta_get;
     if (meta_attribute !== undefined) {
         meta_get = meta_attribute.tp$descr_get;
-        if (meta_get !== undefined && Sk.builtin.checkDataDescr(meta_attribute)) {
+        if (meta_get !== undefined && meta_attribute.tp$descr_set !== undefined) {
+            // then we're a data descriptor
             res = meta_get.call(meta_attribute, this, metatype, canSuspend);
             return res;
         }

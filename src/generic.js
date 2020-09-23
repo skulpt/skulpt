@@ -32,7 +32,8 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
     // look in the type for a descriptor
     if (descr !== undefined) {
         f = descr.tp$descr_get;
-        if (f && Sk.builtin.checkDataDescr(descr)) {
+        if (f !== undefined && f.tp$descr_set !== undefined) {
+            // then we're a data descriptor
             return f.call(descr, this, type, canSuspend);
         }
     }
@@ -45,7 +46,7 @@ Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
             return res;
         }
     }
-    if (f) {
+    if (f !== undefined) {
         return f.call(descr, this, type, canSuspend);
     }
     if (descr !== undefined) {
