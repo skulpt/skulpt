@@ -1,20 +1,4 @@
 /**
- * hypot is a ESCMA6 function and maybe not available across all browsers
- */
-Math.hypot = Math.hypot || function() {
-    var y = 0;
-    var length = arguments.length;
-
-    for (var i = 0; i < length; i++) {
-        if (arguments[i] === Infinity || arguments[i] === -Infinity) {
-            return Infinity;
-        }
-        y += arguments[i] * arguments[i];
-    }
-    return Math.sqrt(y);
-};
-
-/**
  * complex_new see https://hg.python.org/cpython/file/f0e2caad4200/Objects/complexobject.c#l911
  * @constructor
  * @param {Object} real part of the complex number
