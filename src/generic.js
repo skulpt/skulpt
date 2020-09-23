@@ -1,9 +1,9 @@
 /**
  * @namespace Sk.generic
- * 
+ *
  * @description
  * Some useful default methods for native classes
- * 
+ *
  */
 Sk.generic = {};
 
@@ -12,17 +12,17 @@ Sk.generic = {};
 
 /**
  * @method
- * 
+ *
  * @param {Sk.builtin.str} pyName Python string name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
- * 
+ *
  * @description
  * The default implementation of __getattribute__. This is used by most instances and will be inherited from object.
- * 
+ *
  * If undefined is returned by this method then the object has no attribute
- * It is the responsibility of the user to throw the error. 
+ * It is the responsibility of the user to throw the error.
  * Currently this is thrown in Sk.abstr.gattr or directly in compile code
- * 
+ *
  * @return {Sk.builtin.object|undefined}
  */
 Sk.generic.getAttr = function __getattribute__(pyName, canSuspend) {
@@ -58,21 +58,21 @@ Sk.exportSymbol("Sk.generic.getAttr", Sk.generic.getAttr);
 
 /**
  * @method
- * 
+ *
  * @description
  * The default implementation of __setattr__/__delattr__ used by most instance objects
  * There is no return value for this function
  * An error will be thrown if no attribute exists
- * 
+ *
  * A value=undefined signifies that the attribute is to be deleted
- * 
+ *
  * @param {Sk.builtin.str} pyName
  * @param {Sk.builtin.object|undefined} value
  * @param {boolean=} canSuspend ? can this function suspend
  * @return {undefined}
  */
 Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
-    const descr = this.ob$type.$typeLookup(pyName); 
+    const descr = this.ob$type.$typeLookup(pyName);
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
         const f = descr.tp$descr_set;
@@ -108,24 +108,23 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
             }
         }
     }
-    throw new Sk.builtin.AttributeError(this.sk$attrError() +  " has no attribute '" + pyName.$jsstr() + "'");
+    throw new Sk.builtin.AttributeError(this.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'");
 };
 Sk.exportSymbol("Sk.generic.setAttr", Sk.generic.setAttr);
 
-
 /**
  * @method
- * 
+ *
  * @description
  * The default implementation of tp$new for builtin type objects that are mutable
  * args and kwargs are ignored
  * either a new instance of the builtin is returned or an instance of a subtype
- * 
+ *
  * @see {Sk.builtin.type.prototype.tp$new}
- * 
- * @param {typeObject} builtin 
+ *
+ * @param {typeObject} builtin
  */
-Sk.generic.new =  function (builtin) {
+Sk.generic.new = function (builtin) {
     const genericNew = function __new__(args, kwargs) {
         // this = prototype of an sk$type object.
         if (this.constructor === builtin) {
@@ -142,15 +141,15 @@ Sk.generic.new =  function (builtin) {
 
 /**
  * @method
- * 
+ *
  * @description
  * method definitaion for __new__ that wraps tp$new
  * typically called by subtypes using super().__new__(args, kwargs)
- * 
+ *
  * the algorithm follows Cpython
- * 
+ *
  * @see {Sk.slots.__new__}
- * 
+ *
  */
 Sk.generic.newMethodDef = {
     $meth(args, kwargs) {
@@ -198,7 +197,7 @@ Sk.generic.newMethodDef = {
 /**
  * @description
  * used by most iterators that return self
- * 
+ *
  * @function
  */
 Sk.generic.selfIter = function __iter__() {
@@ -212,7 +211,7 @@ Sk.generic.selfIter = function __iter__() {
  * the $seq of the iterator must be an array
  * $orig must be provided and must have a get$size private method
  * note we do not use sq$length since this can be override by subclasses
- * 
+ *
  * typically used by mutable iterators like dict_iter_ and set_iter_
  */
 Sk.generic.iterNextWithArrayCheckSize = function __next__() {
@@ -221,7 +220,7 @@ Sk.generic.iterNextWithArrayCheckSize = function __next__() {
         throw new Sk.builtin.RuntimeError(error_name + " changed size during iteration");
     } else if (this.$index >= this.$seq.length) {
         return undefined;
-    } 
+    }
     return this.$seq[this.$index++];
 };
 
@@ -241,7 +240,7 @@ Sk.generic.iterNextWithArray = function __next__() {
 
 /**
  * @method
- * 
+ *
  * @description
  * compares the $seq.length to the $index
  */
@@ -254,7 +253,7 @@ Sk.generic.iterLengthHintWithArrayMethodDef = {
 
 /**
  * @method
- * 
+ *
  * @description
  * returns the current index
  */
@@ -264,7 +263,6 @@ Sk.generic.iterReverseLengthHintMethodDef = {
     },
     $flags: { NoArgs: true },
 };
-
 
 /**
  * @description
