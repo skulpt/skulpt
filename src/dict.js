@@ -845,7 +845,7 @@ Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
     throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
 });
 
-Sk.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
+
 
 Sk.builtin.create_dict_iter_ = function (obj) {
     const iterobj = {};

@@ -471,4 +471,4 @@ function _tokenize(filename, readline, encoding, yield_) {
 
 Sk._tokenize = _tokenize;
 
-Sk.exportSymbol("Sk._tokenize", Sk._tokenize);
+

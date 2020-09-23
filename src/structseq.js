@@ -95,4 +95,4 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
 
     return cons;
 };
-Sk.exportSymbol("Sk.builtin.make_structseq", Sk.builtin.make_structseq);
+

@@ -75,7 +75,7 @@ Sk.setupDunderMethods = function (py3) {
     }
 };
 
-Sk.exportSymbol("Sk.setupDunderMethods", Sk.setupDunderMethods);
+
 /**
  *
  * @constructor

@@ -387,7 +387,7 @@ Sk.builtin.frozenset.prototype["copy"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.frozenset(self);
 });
 
-Sk.exportSymbol("Sk.builtin.frozenset", Sk.builtin.frozenset);
+
 
 Sk.builtin.frozenset.prototype.__contains__ = new Sk.builtin.func(function(self, item) {
     Sk.builtin.pyCheckArgsLen("__contains__", arguments.length, 2, 2);

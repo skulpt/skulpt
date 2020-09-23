@@ -31,7 +31,7 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     };
 };
 
-Sk.exportSymbol("Sk.builtin.method", Sk.builtin.method);
+
 Sk.abstr.setUpInheritance("instancemethod", Sk.builtin.method, Sk.builtin.object);
 
 Sk.builtin.method.prototype.tp$name = "method";

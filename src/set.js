@@ -442,7 +442,7 @@ Sk.builtin.set.prototype.__contains__ = new Sk.builtin.func(function(self, item)
     return new Sk.builtin.bool(self.sq$contains(item));
 });
 
-Sk.exportSymbol("Sk.builtin.set", Sk.builtin.set);
+
 
 /**
  * @constructor

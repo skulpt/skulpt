@@ -35,7 +35,7 @@ Sk.misceval.Suspension = function Suspension(resume, child, data) {
         this.data = data;
     }
 };
-Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
+
 
 /**
  *
@@ -53,7 +53,7 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
     }
     return susp;
 };
-Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
+
 
 /**
  * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
@@ -69,7 +69,7 @@ Sk.misceval.isIndex = function (o) {
     }
     return false;
 };
-Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
+
 
 Sk.misceval.asIndex = function (o) {
     var idxfn, ret;
@@ -132,7 +132,7 @@ Sk.misceval.applySlice = function (u, v, w, canSuspend) {
     }
     return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
 };
-Sk.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
+
 
 /**
  * u[v:w] = x
@@ -158,7 +158,7 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
         }
     }
 };
-Sk.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
+
 
 /**
  * Used by min() and max() to get an array from arbitrary input.
@@ -196,7 +196,7 @@ Sk.misceval.arrayFromArguments = function (args) {
 
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
 };
-Sk.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
+
 
 /**
  * for reversed comparison: Gt -> Lt, etc.
@@ -533,7 +533,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     throw new Sk.builtin.TypeError("'" + Sk.misceval.opSymbols[op] + "' not supported between instances of '" + vname + "' and '" + wname + "'");
     //throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
-Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
+
 
 Sk.misceval.objectRepr = function (v) {
     Sk.asserts.assert(v !== undefined, "trying to repr undefined");
@@ -568,7 +568,7 @@ Sk.misceval.objectRepr = function (v) {
         return v["$r"]();
     }
 };
-Sk.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
+
 
 Sk.misceval.opAllowsEquality = function (op) {
     switch (op) {
@@ -579,7 +579,7 @@ Sk.misceval.opAllowsEquality = function (op) {
     }
     return false;
 };
-Sk.exportSymbol("Sk.misceval.opAllowsEquality", Sk.misceval.opAllowsEquality);
+
 
 Sk.misceval.isTrue = function (x) {
     var ret;
@@ -647,7 +647,7 @@ Sk.misceval.isTrue = function (x) {
     }
     return true;
 };
-Sk.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
+
 
 Sk.misceval.softspace_ = false;
 Sk.misceval.print_ = function (x) {
@@ -674,7 +674,7 @@ Sk.misceval.print_ = function (x) {
         }
     });
 };
-Sk.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
+
 
 /**
  * @param {string} name
@@ -697,7 +697,7 @@ Sk.misceval.loadname = function (name, other) {
 
     throw new Sk.builtin.NameError("name '" + Sk.unfixReserved(name) + "' is not defined");
 };
-Sk.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
+
 
 /**
  *
@@ -778,7 +778,7 @@ Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.apply(func, kwdict, varargseq, kws, args);
 };
-Sk.exportSymbol("Sk.misceval.call", Sk.misceval.call);
+
 
 /**
  * @param {?Object} suspensionHandlers
@@ -797,7 +797,7 @@ Sk.misceval.callAsync = function (suspensionHandlers, func, kwdict, varargseq, k
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.applyAsync(suspensionHandlers, func, kwdict, varargseq, kws, args);
 };
-Sk.exportSymbol("Sk.misceval.callAsync", Sk.misceval.callAsync);
+
 
 
 Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args) {
@@ -805,7 +805,7 @@ Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args) {
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
 };
-Sk.exportSymbol("Sk.misceval.callOrSuspend", Sk.misceval.callOrSuspend);
+
 
 /**
  * @param {Object} func the thing to call
@@ -815,7 +815,7 @@ Sk.misceval.callsim = function (func, args) {
     args = Array.prototype.slice.call(arguments, 1);
     return Sk.misceval.apply(func, undefined, undefined, undefined, args);
 };
-Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
+
 
 /**
  * @param {Object} func the thing to call
@@ -828,7 +828,7 @@ Sk.misceval.callsimArray = function(func, args, kws) {
     var argarray = args ? args : [];
     return Sk.misceval.apply(func, undefined, undefined, kws, argarray);
 };
-Sk.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
+
 
 /**
  * @param {?Object} suspensionHandlers any custom suspension handlers
@@ -839,7 +839,7 @@ Sk.misceval.callsimAsync = function (suspensionHandlers, func, args) {
     args = Array.prototype.slice.call(arguments, 2);
     return Sk.misceval.applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
 };
-Sk.exportSymbol("Sk.misceval.callsimAsync", Sk.misceval.callsimAsync);
+
 
 
 /**
@@ -850,7 +850,7 @@ Sk.misceval.callsimOrSuspend = function (func, args) {
     args = Array.prototype.slice.call(arguments, 1);
     return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
 };
-Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+
 
 /**
  * @param {Object} func the thing to call
@@ -873,7 +873,7 @@ Sk.misceval.callsimOrSuspendArray = function (func, args, kws) {
         return Sk.misceval.applyOrSuspend(func, undefined, undefined, kws, args);
     }
 };
-Sk.exportSymbol("Sk.misceval.callsimOrSuspendArray", Sk.misceval.callsimOrSuspendArray);
+
 
 /**
  * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
@@ -886,7 +886,7 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
         return r;
     }
 };
-Sk.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
+
 
 /**
  * Wraps anything that can return an Sk.misceval.Suspension, and returns a
@@ -1004,14 +1004,14 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
         }
     });
 };
-Sk.exportSymbol("Sk.misceval.asyncToPromise", Sk.misceval.asyncToPromise);
+
 
 Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, args) {
     return Sk.misceval.asyncToPromise(function() {
         return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
     }, suspHandlers);
 };
-Sk.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
+
 
 /**
  * Chain together a set of functions, each of which might return a value or
@@ -1073,7 +1073,7 @@ Sk.misceval.chain = function (initialValue, chainedFns) {
         return r;
     })(value);
 };
-Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
+
 
 
 /**
@@ -1104,7 +1104,7 @@ Sk.misceval.tryCatch = function (tryFn, catchFn) {
         return r;
     }
 };
-Sk.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
+
 
 /**
  * Perform a suspension-aware for-each on an iterator, without
@@ -1154,7 +1154,7 @@ Sk.misceval.iterFor = function (iter, forFn, initialValue) {
         return prevValue;
     })(iter.tp$iternext(true));
 };
-Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
+
 
 /**
  * @function
@@ -1200,7 +1200,7 @@ Sk.misceval.Break = function(brValue) {
 
     this.brValue = brValue;
 };
-Sk.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
+
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
@@ -1250,7 +1250,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
 };
-Sk.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
+
 
 /**
  * Do the boilerplate suspension stuff.
@@ -1273,7 +1273,7 @@ Sk.misceval.promiseToSuspension = function(promise) {
 
     return suspension;
 };
-Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
+
 
 /**
  * Constructs a class object given a code object representing the body
@@ -1329,4 +1329,4 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
 
     return klass;
 };
-Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
+

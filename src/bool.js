@@ -89,7 +89,7 @@ Sk.builtin.bool.prototype.ob$ge = function (other) {
     return Sk.builtin.int_.prototype.ob$ge.call(this, other);
 };
 
-Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
+
 
 /**
  * Python bool True constant.

@@ -159,10 +159,10 @@ Sk.token.ISTERMINAL = ISTERMINAL;
 Sk.token.ISNONTERMINAL = ISNONTERMINAL;
 Sk.token.ISEOF = ISEOF;
 
-Sk.exportSymbol("Sk.token", Sk.token);
-Sk.exportSymbol("Sk.token.tokens", Sk.token.tokens);
-Sk.exportSymbol("Sk.token.tok_name", Sk.token.tok_name);
-Sk.exportSymbol("Sk.token.EXACT_TOKEN_TYPES");
-Sk.exportSymbol("Sk.token.ISTERMINAL", Sk.token.ISTERMINAL);
-Sk.exportSymbol("Sk.token.ISNONTERMINAL", Sk.token.ISNONTERMINAL);
-Sk.exportSymbol("Sk.token.ISEOF", Sk.token.ISEOF);
+
+
+
+
+
+
+

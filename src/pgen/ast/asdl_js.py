@@ -383,7 +383,7 @@ def main(asdlfile, outputfile):
         )
     v.visit(mod)
 
-    f.write('Sk.exportSymbol("Sk.astnodes", Sk.astnodes);\n');
+    f.write('\n');
     
     f.close()
 

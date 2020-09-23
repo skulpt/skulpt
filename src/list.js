@@ -619,7 +619,7 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
 Sk.builtin.list.prototype["sort"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 
-Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);
+
 
 /**
  * @constructor

@@ -84,7 +84,7 @@ Sk.builtin.str = function (x, encoding, errors) {
     return this;
 
 };
-Sk.exportSymbol("Sk.builtin.str", Sk.builtin.str);
+
 
 Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
 

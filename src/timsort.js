@@ -729,5 +729,5 @@ Sk.builtin.listSlice.prototype.reverse = function () {
     }
 };
 
-Sk.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
-Sk.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);
+
+

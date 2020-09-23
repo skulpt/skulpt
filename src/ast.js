@@ -260,7 +260,7 @@ Sk.setupOperators = function (py3) {
         }
     }
 }
-Sk.exportSymbol("Sk.setupOperators", Sk.setupOperators);
+
 
 function getOperator (n) {
     if (operatorMap[n.type] === undefined) {
@@ -3399,5 +3399,5 @@ Sk.astDump = function (node) {
     return _format(node, "");
 };
 
-Sk.exportSymbol("Sk.astFromParse", Sk.astFromParse);
-Sk.exportSymbol("Sk.astDump", Sk.astDump);
+
+
