@@ -1,6 +1,10 @@
 /** @typedef {Sk.builtin.object} */ var pyObject;
 
-const hashMap = Object.create(null);
+const hashMap = Object.create(null, {
+    Infinity: { value: 314159 },
+    "-Infinity": { value: -314159 },
+    NaN: { value: 0 },
+});
 
 /**
  * @constructor
@@ -11,7 +15,7 @@ const hashMap = Object.create(null);
  * @return {Sk.builtin.float_} Python float
  */
 Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
-    constructor: function float_ (x) {
+    constructor: function float_(x) {
         Sk.asserts.assert(this instanceof Sk.builtin.float_, "bad call to float use 'new'");
         if (typeof x === "number") {
             this.v = x;
@@ -26,7 +30,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             Sk.asserts.fail("bad argument to float constructor");
         }
     },
-    slots: /**@lends {Sk.builtin.float_.prototype} */{
+    slots: /**@lends {Sk.builtin.float_.prototype} */ {
         tp$gettattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$doc: "Convert a string or number to a floating point number, if possible.",
@@ -35,14 +39,10 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             let hash = hashMap[v];
             if (hash !== undefined) {
                 return hash;
-            } else if (Number.isInteger(v) && Sk.builtin.int_.withinThreshold(v)) {
+            } else if (Number.isInteger(v)) {
                 hash = this.nb$int_().tp$hash();
-            } else if (Number.isFinite(v)) {
-                hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
-            } else if (Number.isNaN(v)) {
-                hash = 0;
             } else {
-                return v > 0 ? 314159 : -314159;
+                hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
             }
             hashMap[this.v] = hash;
             return hash;
@@ -100,27 +100,27 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             return new Sk.builtin.lng(this.nb$int_().v);
         },
         nb$add: numberSlot((v, w) => new Sk.builtin.float_(v + w)),
-        
+
         nb$subtract: numberSlot((v, w) => new Sk.builtin.float_(v - w)),
         nb$reflected_subtract: numberSlot((v, w) => new Sk.builtin.float_(w - v)),
-        
+
         nb$multiply: numberSlot((v, w) => new Sk.builtin.float_(v * w)),
-        
+
         nb$divide: numberSlot(divide),
         nb$reflected_divide: numberSlot((v, w) => divide(w, v)),
-        
+
         nb$floor_divide: numberSlot(floordivide),
         nb$reflected_floor_divide: numberSlot((v, w) => floordivide(w, v)),
 
         nb$remainder: numberSlot(remainder),
         nb$reflected_remainder: numberSlot((v, w) => remainder(w, v)),
-        
+
         nb$divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(v, w), remainder(v, w)])),
         nb$reflected_divmod: numberSlot((v, w) => new Sk.builtin.tuple([floordivide(w, v), remainder(w, v)])),
-        
+
         nb$power: ternarySlot(power),
         nb$reflected_power: ternarySlot((v, w) => power(w, v)),
-        
+
         nb$abs() {
             return new Sk.builtin.float_(Math.abs(this.v));
         },
@@ -146,7 +146,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         ob$lt: numberSlot((v, w) => v < w),
         ob$le: numberSlot((v, w) => v <= w),
     },
-    getsets:  /**@lends {Sk.builtin.float_.prototype} */{
+    getsets: /**@lends {Sk.builtin.float_.prototype} */ {
         real: {
             $get: cloneSelf,
             $doc: "the real part of a complex number",
@@ -158,7 +158,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: "the imaginary part of a complex number",
         },
     },
-    methods:  /**@lends {Sk.builtin.float_.prototype} */{
+    methods: /**@lends {Sk.builtin.float_.prototype} */ {
         conjugate: {
             $meth: cloneSelf,
             $flags: { NoArgs: true },
@@ -217,7 +217,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $textsig: "($self, format_spec, /)",
             $doc: Sk.builtin.none.none$,
         },
-    }
+    },
 });
 
 function _str_to_float(str) {
@@ -233,7 +233,7 @@ function _str_to_float(str) {
         if (isNaN(ret)) {
             ret = undefined;
         }
-    } 
+    }
     if (ret === undefined) {
         throw new Sk.builtin.ValueError("could not convert string to float: " + Sk.misceval.objectRepr(new Sk.builtin.str(str)));
     }
@@ -269,7 +269,6 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
     }
     return false;
 };
-
 
 /**
  * Returns this instance's value as a string formatted using fixed-point notation.
@@ -423,7 +422,7 @@ function power(v, w) {
  *
  * @param  {pyObject=} ndigits The number of digits after the decimal point to which to round.
  * @return {Sk.builtin.float_|Sk.builtin.int_} The rounded float.
- * 
+ *
  */
 Sk.builtin.float_.prototype.round$ = function (ndigits) {
     var result, multiplier, number, num10, rounded, bankRound, ndigs;
@@ -537,7 +536,6 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 
     return tmp;
 };
-
 
 Sk.builtin.float_.py2$methods = {};
 
