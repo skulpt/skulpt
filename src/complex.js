@@ -179,24 +179,6 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
 
 Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
-/**
- * hypot is a ESCMA6 function and maybe not available across all browsers
- * @ignore
- */
-Math.hypot =
-    Math.hypot ||
-    function () {
-        var y = 0;
-        var length = arguments.length;
-
-        for (var i = 0; i < length; i++) {
-            if (arguments[i] === Infinity || arguments[i] === -Infinity) {
-                return Infinity;
-            }
-            y += arguments[i] * arguments[i];
-        }
-        return Math.sqrt(y);
-    };
 
 /**
  * @function
