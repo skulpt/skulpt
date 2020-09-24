@@ -130,7 +130,7 @@ Sk.configure = function (options) {
     Sk.inputfunTakesPrompt = options["inputfunTakesPrompt"] || false;
     Sk.asserts.assert(typeof Sk.inputfunTakesPrompt === "boolean");
 
-    Sk.retainGlobals = options["retainglobals"] || false;
+    Sk.retainGlobals = options["retainglobals"] || options["retainGlobals"] || false;
     Sk.asserts.assert(typeof Sk.retainGlobals === "boolean");
 
     Sk.debugging = options["debugging"] || false;
@@ -256,11 +256,16 @@ Sk.yieldLimit = Number.POSITIVE_INFINITY;
 Sk.output = function (x) {};
 
 /*
- * Replacable function to load modules with (called via import, etc.)
+ * Replaceable function to load modules with (called via import, etc.)
  * todo; this should be an async api
  */
 Sk.read = function (x) {
-    throw "Sk.read has not been implemented";
+    if (Sk.builtinFiles === undefined) {
+        throw "skulpt-stdlib.js has not been loaded";
+    } else if (Sk.builtinFiles.files[x] === undefined) {
+        throw "File not found: '" + x + "'";
+    }
+    return Sk.builtinFiles.files[x];
 };
 
 /*

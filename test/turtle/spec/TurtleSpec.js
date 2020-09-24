@@ -1,12 +1,6 @@
 describe("Turtle", function () {
     'use strict';
-    var builtinRead = function (x) {
-            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-                throw "File not found: '" + x + "'";
-            }
-            return Sk.builtinFiles["files"][x];
-        },
-        c,
+	var c,
         ref = document.createElement('canvas'),
         loadImage = function (file) {
             var a = new Image();
@@ -31,7 +25,6 @@ describe("Turtle", function () {
             output: function(s) {
                 console.log(s);
             },
-            read: builtinRead
         });
         c = document.createElement('canvas');
         c.id = "turtlecanvas";
@@ -184,13 +177,7 @@ describe("Turtle", function () {
 
 describe("Turtle (non-animated)", function () {
 	'use strict';
-	var builtinRead = function (x) {
-			if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-				throw "File not found: '" + x + "'";
-			}
-			return Sk.builtinFiles["files"][x];
-		},
-		c,
+	var c,
 		ref = document.createElement('canvas'),
 		loadImage = function (file, done) {
 			var a = new Image();
@@ -216,7 +203,6 @@ describe("Turtle (non-animated)", function () {
 			output: function(s) {
 				console.log(s);
 			},
-			read: builtinRead
 		});
 		c = document.createElement('canvas')
 		c.id = "turtlecanvas";

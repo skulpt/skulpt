@@ -54,5 +54,14 @@ class Test_Suspensions(unittest.TestCase):
         self.assertEqual(bytes(sleeping_gen([1,2,3])), bytes([1,2,3]))
         self.assertEqual(bytes(sleepingClass()), b'abc')
 
+    def test_starred_assignment(self):
+        x = [1,2,3]
+        a, b, c = sleeping_gen(x)
+        self.assertEqual([a, b, c], x)
+        a, b, *c = sleeping_gen(x)
+        self.assertEqual((a, b, c), (1, 2, [3]))
+        *a, = sleeping_gen(x)
+        self.assertEqual(a, x)
+
 if __name__ == '__main__':
     unittest.main()

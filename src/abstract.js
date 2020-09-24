@@ -415,23 +415,75 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
     return Sk.abstr.objectSetItem(seq, new Sk.builtin.slice(i1, i2));
 };
 
-// seq - Python object to unpack
-// n   - JavaScript number of items to unpack
-Sk.abstr.sequenceUnpack = function (seq, n) {
-    const res = [];
+/**
+ * 
+ * @param {*} seq the iterable to unpack
+ * @param {*} breakIdx either the starred index or the number of elements to unpack if no star
+ * @param {*} numvals the total number of un-starred indices
+ * @param {*} hasStar is there a starred index
+ * 
+ * this function is used in compile code to unpack a sequence to an assignment statement
+ * e.g.
+ * a, b, c = 1, 2, 3 # seq is the tuple 1,2,3
+ * // Sk.abstr.sequenceUncpack(seq, 3, 3, false)
+ * // return [int_(1), int_(2), int_(3)]
+ * 
+ * 
+ * a, *b, c = 1,2,3,4 
+ * // Sk.abstr.sequenceUncpack(seq, 1, 2, true)
+ * // return [int_(1), list(int_(2), int_(3)), int_(4)]
+ * 
+ */
+Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
+    if (!Sk.builtin.checkIterable(seq)) {
+        throw new Sk.builtin.TypeError("cannot unpack non-iterable " + Sk.abstr.typeName(seq) + " object");
+    }
     const it = Sk.abstr.iter(seq);
-    let i;
-    for (i = it.tp$iternext(); i !== undefined && res.length < n; i = it.tp$iternext()) {
-        res.push(i);
+    const res = [];
+    let i = 0;
+    let upToStar;
+    if (breakIdx > 0) {
+        // iterator up to but not including the breakIdx
+        upToStar = Sk.misceval.iterFor(it, (nxt) => {
+            res.push(nxt);
+            if (++i === breakIdx) {
+                return new Sk.misceval.Break();
+            }
+        });
     }
-    if (res.length < n) {
-        throw new Sk.builtin.ValueError("need more than " + res.length + " values to unpack");
-    }
-    if (i !== undefined) {
-        throw new Sk.builtin.ValueError("too many values to unpack");
-    }
-    // Return Javascript array of items
-    return res;
+
+    return Sk.misceval.chain(upToStar, () => {
+        if (res.length < breakIdx) {
+            throw new Sk.builtin.ValueError("not enough values to unpack (expected at least " + numvals + ", got " + res.length + ")");
+        }
+        if (!hasStar) {
+            // check we've consumed the iterator
+            return Sk.misceval.chain(it.tp$iternext(true), (nxt) => {
+                if (nxt !== undefined) {
+                    throw new Sk.builtin.ValueError("too many values to unpack (expected " + breakIdx + ")");
+                }
+                return res;
+            });
+        }
+        const starred = [];
+        return Sk.misceval.chain(
+            Sk.misceval.iterFor(it, (nxt) => {
+                starred.push(nxt);
+            }),
+            () => {
+                const starred_end = starred.length + breakIdx - numvals;
+                if (starred_end < 0) {
+                    throw new Sk.builtin.ValueError(
+                        "not enough values to unpack (expected at least " + numvals + ", got " + (numvals + starred_end) + ")"
+                    );
+                }
+                res.push(new Sk.builtin.list(starred.slice(0, starred_end)));
+                res.push(...starred.slice(starred_end));
+                // Return Javascript array of items
+                return res;
+            }
+        );
+    });
 };
 
 // Unpack mapping into a JS array of alternating keys/values, possibly suspending

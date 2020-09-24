@@ -1,5 +1,5 @@
 var $builtinmodule = function (name) {
-    var mod = {};
+    var mod = {__name__: new Sk.builtin.str("re")};
 
     var validGroups, convert, getFlags, _split, _findall, matchobj, _search, _match, regexobj;
 

@@ -262,8 +262,8 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         sq$contains(tgt) {
             return this.find$left(tgt) !== -1;
         },
-        // tp$as_number: true,
-        // nb$remainder: strBytesRemainder,
+        tp$as_number: true,
+        nb$remainder: Sk.builtin.str.prototype.nb$remainder,
     },
     proto: {
         $jsstr() {

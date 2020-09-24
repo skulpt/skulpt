@@ -1,0 +1,22 @@
+<script src="../dist/skulpt.min.js" type="text/javascript"></script>
+<script src="../dist/skulpt-stdlib.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/ace.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/mode-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/theme-gruvbox.min.js"></script>
+<script src="ipython.js"></script>
+<link rel="stylesheet" type="text/css" href="ipython.css"/>
+
+<script>
+    // must run "npm run build" before using this example
+    var ide;
+    window.addEventListener("load", function (event) {
+        var editor = document.getElementById("editor");
+        ide = new ipythonExample(editor);
+    })
+</script>
+
+<div class="container ace-gruvbox ace_editor">
+    <div id="editor" class="ace-gruvbox ace_editor" style="font-size: 10px;"> </div>
+    <div id="clickGuard"></div>
+</div>
+

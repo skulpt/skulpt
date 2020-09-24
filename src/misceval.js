@@ -232,12 +232,12 @@ Sk.misceval.iterator = Sk.abstr.buildIteratorClass("iterator", {
  * @ignore
  */
 Sk.misceval.swappedOp_ = {
-    Eq: "Eq",
-    NotEq: "NotEq",
-    Lt: "Gt",
-    LtE: "GtE",
-    Gt: "Lt",
-    GtE: "LtE",
+    "Eq"   : "Eq",
+    "NotEq": "NotEq",
+    "Lt"   : "Gt",
+    "LtE"  : "GtE",
+    "Gt"   : "Lt",
+    "GtE"  : "LtE",
 };
 
 Sk.misceval.opSymbols = {

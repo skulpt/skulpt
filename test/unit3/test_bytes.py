@@ -334,39 +334,47 @@ class BytesTests(unittest.TestCase):
 
         self.assertRaises(TypeError, lambda x: x * x, a)
 
-    # def test_mod(self):
-    #     b = bytes(b'hello, %b!')
-    #     orig = b
-    #     b = b % b'world'
-    #     self.assertEqual(b, b'hello, world!')
-    #     self.assertEqual(orig, b'hello, %b!')
-    #     self.assertFalse(b is orig)
-    #     b = bytes(b'%s / 100 = %d%%')
-    #     a = b % (b'seventy-nine', 79)
-    #     self.assertEqual(a, b'seventy-nine / 100 = 79%')
-    #     self.assertIs(type(a), bytes)
-    #     # issue 29714
-    #     b = bytes(b'hello,\x00%b!')
-    #     b = b % b'world'
-    #     self.assertEqual(b, b'hello,\x00world!')
-    #     self.assertIs(type(b), bytes)
+    def test_mod(self):
+        b = bytes(b'hello, %b!')
+        orig = b
+        b = b % b'world'
+        self.assertEqual(b, b'hello, world!')
+        self.assertEqual(orig, b'hello, %b!')
+        self.assertFalse(b is orig)
+        b = bytes(b'%s / 100 = %d%%')
+        a = b % (b'seventy-nine', 79)
+        self.assertEqual(a, b'seventy-nine / 100 = 79%')
+        self.assertIs(type(a), bytes)
+        # issue 29714
+        b = bytes(b'hello,\x00%b!')
+        b = b % b'world'
+        self.assertEqual(b, b'hello,\x00world!')
+        self.assertIs(type(b), bytes)
 
-    # def test_imod(self):
-    #     b = bytes(b'hello, %b!')
-    #     orig = b
-    #     b %= b'world'
-    #     self.assertEqual(b, b'hello, world!')
-    #     self.assertEqual(orig, b'hello, %b!')
-    #     self.assertFalse(b is orig)
-    #     b = bytes(b'%s / 100 = %d%%')
-    #     b %= (b'seventy-nine', 79)
-    #     self.assertEqual(b, b'seventy-nine / 100 = 79%')
-    #     self.assertIs(type(b), bytes)
-    #     # issue 29714
-    #     b = bytes(b'hello,\x00%b!')
-    #     b %= b'world'
-    #     self.assertEqual(b, b'hello,\x00world!')
-    #     self.assertIs(type(b), bytes)
+        # test mapping
+        self.assertEqual(b'%(foo)s' % {b'foo': b'bar'}, b'bar')
+        x = b'\xf0\x9f\x8d\x95 %b'
+        self.assertEqual(x % b'foo', b'\xf0\x9f\x8d\x95 foo')
+        self.assertEqual(x % b'\xf0\x9f\x8d\x95', b'\xf0\x9f\x8d\x95 \xf0\x9f\x8d\x95')
+        # self.assertEqual(b'abc%(\xc2\xa2)s' % {b'\xc2\xa2': b'd'}, b'abcd') #skulpt fails with \ in the brackets
+
+
+    def test_imod(self):
+        b = bytes(b'hello, %b!')
+        orig = b
+        b %= b'world'
+        self.assertEqual(b, b'hello, world!')
+        self.assertEqual(orig, b'hello, %b!')
+        self.assertFalse(b is orig)
+        b = bytes(b'%s / 100 = %d%%')
+        b %= (b'seventy-nine', 79)
+        self.assertEqual(b, b'seventy-nine / 100 = 79%')
+        self.assertIs(type(b), bytes)
+        # issue 29714
+        b = bytes(b'hello,\x00%b!')
+        b %= b'world'
+        self.assertEqual(b, b'hello,\x00world!')
+        self.assertIs(type(b), bytes)
 
     def test_fromhex(self):
         a = "0f34"

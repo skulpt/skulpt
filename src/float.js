@@ -220,17 +220,27 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
     },
 });
 
+const invalidUnderscores = /_[eE]|[eE]_|\._|_\.|[+-]_|__/;
+const validUnderscores = /_(?=[^_])/g;
 function _str_to_float(str) {
     let ret;
+    let tmp = str;
+    if (str.indexOf("_") !== -1) {
+        if (invalidUnderscores.test(str)) {
+            throw new Sk.builtin.ValueError("could not convert string to float: '" + str + "'");
+        }
+        tmp = str.charAt(0) + str.substring(1).replace(validUnderscores, "");
+    }
+
     if (str.match(/^-inf$/i)) {
         ret = -Infinity;
     } else if (str.match(/^[+]?inf$/i)) {
         ret = Infinity;
     } else if (str.match(/^[-+]?nan$/i)) {
         ret = NaN;
-    } else if (!isNaN(str)) {
-        ret = parseFloat(str);
-        if (isNaN(ret)) {
+    } else if (!isNaN(tmp)) {
+        ret = parseFloat(tmp);
+        if (Number.isNaN(ret)) {
             ret = undefined;
         }
     }

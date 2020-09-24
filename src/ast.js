@@ -160,6 +160,10 @@ function setContext (c, e, ctx, n) {
             }
             e.ctx = ctx;
             break;
+        case Sk.astnodes.Starred:
+            e.ctx = ctx;
+            setContext(c, e.value, ctx, n);
+            break;
         case Sk.astnodes.Subscript:
             e.ctx = ctx;
             break;
@@ -2673,12 +2677,27 @@ function parsestrplus (c, n) {
     }
 }
 
+const invalidSyntax = /_[eE]|[eE]_|\._|j_/;
+const invalidDecimalLiteral = /_\.|[+-]_|^0_\D|_j/;
+const validUnderscores = /_(?=[^_])/g;
 function parsenumber (c, s, lineno) {
     var neg;
     var val;
     var tmp;
     var end = s.charAt(s.length - 1);
-
+    
+    if (s.indexOf("_") !== -1) {
+        if (invalidSyntax.test(s)) {
+            throw new Sk.builtin.SyntaxError("invalid syntax", c.c_filename, lineno);
+        }
+    
+        if (invalidDecimalLiteral.test(s)) {
+            throw new Sk.builtin.SyntaxError("invalid decimal literal", c.c_filename, lineno);
+        }
+        
+        s = s.replace(validUnderscores, "");
+    }
+    
     // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {
         return Sk.builtin.complex.complex_subtype_from_string(s);

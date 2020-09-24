@@ -179,7 +179,6 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
 
 Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
 
-
 /**
  * @function
  *
@@ -383,6 +382,8 @@ function complex_subtype_from_doubles(real, imag, type_prototype) {
     }
 }
 
+const invalidUnderscores = /_[eE]|[eE]_|\._|_\.|[+-]_|_j|j_/;
+const validUnderscores = /_(?=[^_])/g;
 /**
  *
  * @function
@@ -440,6 +441,14 @@ Sk.builtin.complex.complex_subtype_from_string = function (val, type_prototype) 
         while (val[index] === " ") {
             index++;
         }
+    }
+
+    if (val.indexOf("_") !== -1) {
+        if (invalidUnderscores.test(val)) {
+            throw new Sk.builtin.ValueError("could not convert string to complex: '" + val + "'");
+        }
+
+        val = val.charAt(0) + val.substring(1).replace(validUnderscores, "");
     }
 
     /* a valid complex string usually takes one of the three forms:
