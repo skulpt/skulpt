@@ -253,9 +253,9 @@ Misc
     Slot("__invert__", "nb$invert", "unary",
          opcode="UNARY_INVERT"),
     Slot("__coerce__", "nb$coerce", "coercion"),  # not needed
-    Slot("__int__", "nb$int_", "unary"),  # expects exact int as return
-    Slot("__long__", "nb$lng", "unary"),  # expects exact long as return
-    Slot("__float__", "nb$float_", "unary"),  # expects exact float as return
+    Slot("__int__", "nb$int", "unary"),  # expects exact int as return
+    Slot("__long__", "nb$long", "unary"),  # expects exact long as return
+    Slot("__float__", "nb$float", "unary"),  # expects exact float as return
     Slot("__oct__", "nb$oct", "unary"),
     Slot("__hex__", "nb$hex", "unary"),
 

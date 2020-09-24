@@ -350,7 +350,7 @@ Sk.builtin.sum = function sum(iter, start) {
             if (i.constructor === Sk.builtin.int_) {
                 tot = tot.nb$add(i);
             } else if (i.constructor === Sk.builtin.float_) {
-                tot = tot.nb$float_().nb$add(i);
+                tot = tot.nb$float().nb$add(i);
                 return new Sk.misceval.Break("float");
             } else {
                 tot = Sk.abstr.numberBinOp(tot, i, "Add");

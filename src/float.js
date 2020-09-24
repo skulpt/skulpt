@@ -24,8 +24,8 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         } else if (typeof x === "string") {
             // be careful with converting a string as it could result in infinity
             this.v = parseFloat(x);
-        } else if (x.nb$float_) {
-            return x.nb$float_(); // allow this as a slow path
+        } else if (x.nb$float) {
+            return x.nb$float(); // allow this as a slow path
         } else {
             Sk.asserts.fail("bad argument to float constructor");
         }
@@ -40,7 +40,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             if (hash !== undefined) {
                 return hash;
             } else if (Number.isInteger(v)) {
-                hash = this.nb$int_().tp$hash();
+                hash = this.nb$int().tp$hash();
             } else {
                 hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
             }
@@ -61,8 +61,8 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             // is args always an empty list?
             if (arg === undefined) {
                 x = new Sk.builtin.float_(0.0);
-            } else if (arg.nb$float_) {
-                x = arg.nb$float_();
+            } else if (arg.nb$float) {
+                x = arg.nb$float();
             } else if (Sk.builtin.checkString(arg)) {
                 x = _str_to_float(arg.v);
             }
@@ -79,7 +79,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         },
 
         // number slots
-        nb$int_() {
+        nb$int() {
             let v = this.v;
             if (v < 0) {
                 v = Math.ceil(v);
@@ -95,9 +95,9 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
                 return new Sk.builtin.int_(JSBI.BigInt(v));
             }
         },
-        nb$float_: cloneSelf,
-        nb$lng() {
-            return new Sk.builtin.lng(this.nb$int_().v);
+        nb$float: cloneSelf,
+        nb$long() {
+            return new Sk.builtin.lng(this.nb$int().v);
         },
         nb$add: numberSlot((v, w) => new Sk.builtin.float_(v + w)),
 
@@ -167,7 +167,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         },
         __trunc__: {
             $meth() {
-                return this.nb$int_();
+                return this.nb$int();
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",

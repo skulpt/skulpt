@@ -7,7 +7,7 @@
  * If the number is a string then the size will be checked to determined whether it should be a number or BigInt
  * It assumed that a number passed it is within `Number.MaxSafeInteger`
  * Similarly if a BigInt is passed it is assumed that this is larger than `Number.MaxSafeInteger`
- * Internal code like `float.nb$int_` checks the resulting JS instance before calling `new Sk.builtin.int_`
+ * Internal code like `float.nb$int` checks the resulting JS instance before calling `new Sk.builtin.int_`
  * 
  * @param  {number|JSBI|string=} x
  * 
@@ -22,8 +22,8 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             v = 0;
         } else if (typeof x === "string") {
             v = stringToNumberOrBig(x);
-        } else if (x.nb$int_) {
-            return x.nb$int_(); // allow this as a slow path
+        } else if (x.nb$int) {
+            return x.nb$int(); // allow this as a slow path
         } else {
             Sk.asserts.fail("bad argument to int constructor");
         }
@@ -68,11 +68,11 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         ob$lt: compareSlot((v, w) => v < w, JSBI.lessThan),
         ob$le: compareSlot((v, w) => v <= w, JSBI.lessThanOrEqual),
 
-        nb$int_: cloneSelf,
+        nb$int: cloneSelf,
         nb$index() {
             return this.v;
         },
-        nb$float_() {
+        nb$float() {
             const v = this.v;
             if (typeof v === "number") {
                 return new Sk.builtin.float_(v);
@@ -111,7 +111,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
         nb$divide(other) {
             if (Sk.__future__.division) {
-                return this.nb$float_().nb$divide(other);
+                return this.nb$float().nb$divide(other);
             }
             return this.nb$floor_divide(other);
         },
@@ -187,7 +187,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
             return Sk.builtin.NotImplemented.NotImplemented$;
         },
-        nb$lng() {
+        nb$long() {
             return new Sk.builtin.lng(this.v);
         },
     },
@@ -654,8 +654,8 @@ function getInt(x, base) {
         return new Sk.builtin.int_(Sk.str2number(x.v, base));
     } else if (base !== null) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
-    } else if (x.nb$int_) {
-        return x.nb$int_();
+    } else if (x.nb$int) {
+        return x.nb$int();
     }
 
     if ((func = Sk.abstr.lookupSpecial(x, Sk.builtin.str.$trunc))) {

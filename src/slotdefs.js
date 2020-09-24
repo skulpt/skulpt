@@ -975,7 +975,7 @@ slots.__delitem__ = {
  *
  * Examples:
  * - [nb$add]{@link Sk.slots.nb$add}
- * - [nb$int_]{@link Sk.slots.nb$int_}
+ * - [nb$int]{@link Sk.slots.nb$int}
  * - [nb$divide]{@link Sk.slots.nb$divide} - note we do not use `nb$true_divide`
  * - [nb$bool]{@link Sk.slots.nb$bool} - should return a js boolean
  *
@@ -1511,13 +1511,13 @@ slots.__ior__ = {
 };
 /**
  * @memberof Sk.slots
- * @method nb$int_
+ * @method nb$int
  * @implements __int__
  * @suppress {checkTypes}
  */
 slots.__int__ = {
     $name: "__int__",
-    $slot_name: "nb$int_",
+    $slot_name: "nb$int",
     $slot_func: slotFuncNoArgsWithCheck("__int__", Sk.builtin.checkInt, "int"),
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
@@ -1526,13 +1526,13 @@ slots.__int__ = {
 };
 /**
  * @memberof Sk.slots
- * @method nb$float_
+ * @method nb$float
  * @implements __float__
  * @suppress {checkTypes}
  */
 slots.__float__ = {
     $name: "__float__",
-    $slot_name: "nb$float_",
+    $slot_name: "nb$float",
     $slot_func: slotFuncNoArgsWithCheck("__float__", Sk.builtin.checkFloat, "float"),
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
@@ -1747,7 +1747,7 @@ slots.__imatmul__ = {
 // py2 ONLY slots
 slots.__long__ = {
     $name: "__long__",
-    $slot_name: "nb$lng",
+    $slot_name: "nb$long",
     $slot_func: slotFuncNoArgsWithCheck("__long__", Sk.builtin.checkInt, "int"),
     $wrapper: wrapperCallNoArgs,
     $textsig: "($self, /)",
@@ -1843,9 +1843,9 @@ Sk.subSlots = {
         nb$abs: "__abs__",
         nb$negative: "__neg__",
         nb$positive: "__pos__",
-        nb$int_: "__int__",
-        nb$lng: "__long__",
-        nb$float_: "__float__",
+        nb$int: "__int__",
+        nb$long: "__long__",
+        nb$float: "__float__",
         nb$add: "__add__",
         nb$reflected_add: "__radd__",
         nb$inplace_add: "__iadd__",
@@ -2052,8 +2052,8 @@ Sk.dunderToSkulpt = {
     __abs__: "nb$abs",
     __neg__: "nb$negative",
     __pos__: "nb$positive",
-    __int__: "nb$int_",
-    __float__: "nb$float_",
+    __int__: "nb$int",
+    __float__: "nb$float",
 
     __add__: "nb$add",
     __radd__: "nb$reflected_add",
@@ -2082,7 +2082,7 @@ Sk.dunderToSkulpt = {
 
     __bool__: "nb$bool",
     // py2 only
-    __long__: "nb$lng",
+    __long__: "nb$long",
 
     __lshift__: "nb$lshift",
     __rlshift__: "nb$reflected_lshift",

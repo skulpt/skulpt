@@ -104,10 +104,10 @@ const $builtinmodule = function (name) {
         let _x = x.v;
         let _y = y.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         }
         if (typeof _y !== "number") {
-            _y = y.nb$float_().v;
+            _y = y.nb$float().v;
         }
 
         if ((_y == Infinity || _y == -Infinity) && isFinite(_x)) {
@@ -168,7 +168,7 @@ const $builtinmodule = function (name) {
             i = 0;
             let _x = x.v;
             if (typeof _x !== "number") {
-                _x = x.nb$float_().v;
+                _x = x.nb$float().v;
             }
             x = _x;
             for (let j = 0, len = partials.length; j < len; j++) {
@@ -321,7 +321,7 @@ const $builtinmodule = function (name) {
 
         let _x = x.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         } 
         const _i = Sk.builtin.asnum$(i);
 
@@ -373,10 +373,10 @@ const $builtinmodule = function (name) {
         let _x = x.v;
         let _y = y.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         }
         if (typeof _y !== "number") {
-            _y = y.nb$float_().v;
+            _y = y.nb$float().v;
         }
 
         // deal with most common cases first
@@ -430,7 +430,7 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         let _x = x.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         }
         if (_x == Infinity || _x == -Infinity || isNaN(_x)) {
             return new Sk.builtin.float_(Math.exp(_x));
@@ -501,7 +501,7 @@ const $builtinmodule = function (name) {
 
         let _x = x.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         }
 
         if (_x <= -1.0) {
@@ -568,10 +568,10 @@ const $builtinmodule = function (name) {
         let _x = x.v;
         let _y = y.v;
         if (typeof _x !== "number") {
-            _x = x.nb$float_().v;
+            _x = x.nb$float().v;
         }
         if (typeof _y !== "number") {
-            _y = y.nb$float_().v;
+            _y = y.nb$float().v;
         }
 
         if (_x == 0 && _y < 0) {

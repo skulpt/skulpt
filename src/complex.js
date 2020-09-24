@@ -51,13 +51,13 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
         },
 
         // number slots
-        nb$int_() {
+        nb$int() {
             throw new Sk.builtin.TypeError("can't convert complex to int");
         },
-        nb$lng() {
+        nb$long() {
             throw new Sk.builtin.TypeError("can't convert complex to long");
         },
-        nb$float_() {
+        nb$float() {
             throw new Sk.builtin.TypeError("can't convert complex to float");
         },
         nb$positive() {
@@ -194,8 +194,8 @@ function PyFloat_AsDouble(op) {
     let v = op.v;
     if (typeof v === "number") {
         return v;
-    } else if (op.nb$float_) {
-        v = op.nb$float_();
+    } else if (op.nb$float) {
+        v = op.nb$float();
     }
     if (v === undefined) {
         throw new Sk.builtin.TypeError("a float is required");
@@ -293,7 +293,7 @@ function complex_from_py(real, imag) {
 
     // just a temporary function to match cpython
     function check_number(nb) {
-        return nb.nb$float_ !== undefined;
+        return nb.nb$float !== undefined;
     }
 
     if (r != null) {
