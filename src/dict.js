@@ -430,7 +430,6 @@ function pop$bucket_item(key, hash_value) {
  * then will set the item in the entries and return the item
  * Note this should only be called and immediately preceded by assigning the value to the rhs
  *
- * @return { [Sk.builtin.object, Sk.builtin.object] }
  * @private
  */
 function set$bucket_item(key, value, hash_value) {

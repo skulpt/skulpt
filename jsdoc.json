@@ -20,7 +20,6 @@
             "src/str.js",
             "src/dict.js",
             "src/tuple.js",
-            "src/iteratorobjects.js",
             "src/simple_iterators.js",
             "src/slice.js",
             "src/float.js",

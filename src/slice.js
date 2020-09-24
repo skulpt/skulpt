@@ -191,6 +191,8 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
  * @param {*} end 
  * 
  * @private
+ * 
+ * @description
  * helper function for methods that adjust their start, end arguments with respect to
  * a python sequence type object
  */
