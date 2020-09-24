@@ -312,6 +312,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         $items() {
             return Object.values(this.entries);
         },
+        set$item,
         get$bucket_item,
         pop$bucket_item,
         set$bucket_item,
@@ -645,6 +646,9 @@ function pop$item(key) {
     // Not found in dictionary
     return undefined;
 };
+
+
+/******** Start of Dict Views ********/
 
 function as_set(self) {
     return new Sk.builtin.set(Sk.misceval.arrayFromIterable(self));
