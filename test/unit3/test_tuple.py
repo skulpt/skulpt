@@ -1,7 +1,6 @@
-"""Test compiler changes for unary ops (+, -, ~) introduced in Python 2.2"""
-
 import unittest
-
+import seq_tests
+from seq_tests import ALWAYS_EQ, NEVER_EQ
 
 """
 Tests common to tuple, list and UserList.UserList
@@ -13,30 +12,6 @@ import sys
 # import pickle
 # from test import support
 # from test.support import ALWAYS_EQ, NEVER_EQ
-
-class _ALWAYS_EQ:
-    """
-    Object that is equal to anything.
-    """
-    def __eq__(self, other):
-        return True
-    def __ne__(self, other):
-        return False
-
-ALWAYS_EQ = _ALWAYS_EQ()
-
-class _NEVER_EQ:
-    """
-    Object that is not equal to anything.
-    """
-    def __eq__(self, other):
-        return False
-    def __ne__(self, other):
-        return True
-    def __hash__(self):
-        return 1
-
-NEVER_EQ = _NEVER_EQ()
 
 # Various iterables
 # This is used for checking the constructor (here and in test_deque.py)
@@ -480,7 +455,7 @@ import unittest
 RUN_ALL_HASH_TESTS = False
 JUST_SHOW_HASH_RESULTS = False # if RUN_ALL_HASH_TESTS, just display
 
-class TupleTest(CommonTest, unittest.TestCase):
+class TupleTest(seq_tests.CommonTest, unittest.TestCase):
     type2test = tuple
 
     def test_getitem_error(self):
