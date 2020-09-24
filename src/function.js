@@ -144,12 +144,13 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             this.$defaults = this.func_code.$defaults || [];
             this.$kwdefs = this.func_code.$kwdefs || [];
         },
+        $resolveArgs,
 
     }
 });
 
 
-Sk.builtin.func.prototype.$resolveArgs = function (posargs, kw) {
+function $resolveArgs(posargs, kw) {
     // The rest of this function is a logical Javascript port of
     // _PyEval_EvalCodeWithName, and follows its logic,
     // plus fast-paths imported from _PyFunction_FastCall* as marked

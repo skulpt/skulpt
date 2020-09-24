@@ -287,6 +287,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         sk$asarray() {
             return this.v.slice(0);
         },
+        list$sort,
         list$inRange(i, msg) {
             if (i < 0) {
                 i += this.v.length;
@@ -385,11 +386,15 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
 Sk.exportSymbol("Sk.builtin.list", Sk.builtin.list);
 
 /**
+ * @function
+ * 
  * @param {?=} cmp optional (not supported in py3)
  * @param {?=} key optional (keyword only argument in py3)
  * @param {?=} reverse optional (keyword only argument in py3)
+ * 
+ * @private
  */
-Sk.builtin.list.prototype.list$sort = function sort(cmp, key, reverse) {
+function list$sort(cmp, key, reverse) {
     const has_key = key != null && key !== Sk.builtin.none.none$;
     const has_cmp = cmp != null && cmp !== Sk.builtin.none.none$;
     let rev, item;

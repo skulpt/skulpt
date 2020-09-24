@@ -45,7 +45,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
 
         this.$mangled = fixReserved(ret);
         // used by dict key hash function $savedKeyHash
-        this.$savedKeyHash = ret.replace(keyhash_regex, "!$&"); ;
+        this.$savedKeyHash = ret.replace(keyhash_regex, "!$&");
         this.v = ret;
     },
     slots: /**@lends {Sk.builtin.str.prototype} */ {

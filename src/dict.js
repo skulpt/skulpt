@@ -273,6 +273,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
     },
     proto: /**@lends {Sk.builtin.dict.prototype}*/ {
+        quick$lookup,
+        mp$lookup,
         get$size() {
             // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
@@ -280,6 +282,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         sk$asarray() {
             return Object.values(this.entries).map((item) => item[0]);
         },
+        update$common,
         update$onearg(arg) {
             if (arg instanceof Sk.builtin.dict || Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined) {
                 return this.dict$merge(arg);
@@ -308,7 +311,12 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         $items() {
             return Object.values(this.entries);
-        }
+        },
+        get$bucket_item,
+        pop$bucket_item,
+        set$bucket_item,
+        dict$merge,
+        dict$merge_seq,
     },
 });
 
@@ -328,7 +336,7 @@ function getHash(key) {
  * 
  * this is hot code!
  */
-Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
+function quick$lookup(pyName) {
     /**@type {string} */
     var key_hash = pyName.$savedKeyHash;
     var item = this.entries[key_hash];
@@ -357,7 +365,7 @@ Sk.builtin.dict.prototype.quick$lookup = function (pyName) {
  * @return {pyObject|undefined} the item if found or undefined if not found
  * @private
  */
-Sk.builtin.dict.prototype.get$bucket_item = function (key, hash_value) {
+function get$bucket_item(key, hash_value) {
     const bucket = this.buckets[hash_value];
     if (bucket === undefined) {
         return;
@@ -385,7 +393,7 @@ Sk.builtin.dict.prototype.get$bucket_item = function (key, hash_value) {
  * also removes the item from entries
  * @private
  */
-Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
+function pop$bucket_item(key, hash_value) {
     const bucket = this.buckets[hash_value];
     let bucket_key, item;
     if (bucket === undefined) {
@@ -423,7 +431,7 @@ Sk.builtin.dict.prototype.pop$bucket_item = function (key, hash_value) {
  * @return { [Sk.builtin.object, Sk.builtin.object] }
  * @private
  */
-Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
+function set$bucket_item(key, value, hash_value) {
     let key_hash,
         bucket = this.buckets[hash_value];
     const item = [key, value];
@@ -452,7 +460,7 @@ Sk.builtin.dict.prototype.set$bucket_item = function (key, value, hash_value) {
  * or the item[1] (value) if the key was found
  * @private
  */
-Sk.builtin.dict.prototype.mp$lookup = function (key) {
+function mp$lookup(key) {
     let item;
     const hash = getHash(key);
     if (typeof hash === "string") {
@@ -481,7 +489,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
  * Instead we use this.set$item which is the dict implementation of mp$ass_subscript
  * @private
  */
-Sk.builtin.dict.prototype.dict$merge = function (b) {
+function dict$merge(b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
     // so use this.set$item instead which can't be overridden by a subclass
     let keys;
@@ -530,7 +538,7 @@ Sk.builtin.dict.prototype.dict$merge = function (b) {
  * @private
  *
  */
-Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
+function update$common(args, kwargs, func_name) {
     Sk.abstr.checkArgsLen(func_name, args, 0, 1);
     const arg = args[0];
     let ret;
@@ -559,7 +567,7 @@ Sk.builtin.dict.prototype.update$common = function (args, kwargs, func_name) {
  * @private
  *
  */
-Sk.builtin.dict.prototype.dict$merge_seq = function (arg) {
+function dict$merge_seq(arg) {
     let idx = 0;
     return Sk.misceval.iterFor(Sk.abstr.iter(arg), (i) => {
         if (!Sk.builtin.checkIterable(i)) {
@@ -585,7 +593,7 @@ Sk.builtin.dict.prototype.dict$merge_seq = function (arg) {
  * @private
  *
  */
-Sk.builtin.dict.prototype.set$item = function (key, value) {
+function set$item(key, value) {
     const hash = getHash(key);
     let item;
     if (typeof hash === "string") {
@@ -620,7 +628,7 @@ Sk.builtin.dict.prototype.set$item = function (key, value) {
  * @private
  *
  */
-Sk.builtin.dict.prototype.pop$item = function (key) {
+function pop$item(key) {
     const hash = getHash(key);
     let item;
     if (typeof hash === "string") {
