@@ -316,6 +316,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         get$bucket_item,
         pop$bucket_item,
         set$bucket_item,
+        pop$item,
         dict$merge,
         dict$merge_seq,
     },
