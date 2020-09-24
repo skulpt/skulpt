@@ -432,7 +432,6 @@ slots.__getattribute__ = {
         return function tp$getattr(pyName, canSuspend) {
             let getattrFn = this.ob$type.$typeLookup(Sk.builtin.str.$getattr);
             if (getattrFn === undefined) {
-                this.constructor.prototype.tp$getattr = slotFuncGetAttribute;
                 return slotFuncGetAttribute.call(this, pyName, canSuspend);
             }
             const ret = Sk.misceval.chain(slotFuncGetAttribute.call(this, pyName, canSuspend), (val) =>

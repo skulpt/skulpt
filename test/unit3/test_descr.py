@@ -3625,6 +3625,13 @@ order (MRO) for bases """
             pass
         else:
             self.fail("d.foo should be undefined now")
+        
+        b = B()
+        B.__getattribute__ = __getattribute__
+        self.assertEqual(b.foo, 24)
+        self.assertEqual(d.foo, 24)
+        C.__getattr__ = __getattr__
+        self.assertEqual(d.spam, 'hello')
 
         # # Test a nasty bug in recurse_down_subclasses()
         # class A(object):
