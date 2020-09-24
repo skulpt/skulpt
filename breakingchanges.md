@@ -171,7 +171,9 @@
 - `getSetDict`
 
 **`Sk.misceval.`**
-- `asIndexOrThrow`
+- `asIndex` - will return the internal representation of the integer - or undefined if tho indexable - could be a number or a bigint (JSBI) only used 
+- `asIndexOrThrow` - does `asIndex` but throws an error if the number is not indexable - with an optional message parameter.
+- `asIndexSized` - throws an error if the object is not indexable, returns a Number always, Option to throw an error if the index is larger than `Number.MAX_SAFE_INTEGER`. This is the goto method for most buitins now. 
 - `Iterator` - a python class that easily wraps an iterator
 - `arrayFromIterable` - optional canSuspend implementation that returns an array from a python iterator
 

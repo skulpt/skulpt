@@ -97,8 +97,30 @@ function asIndexOrThrow(index, msg) {
     throw new Sk.builtin.TypeError(msg);
 }
 
+/**
+ * 
+ * @param {*} index 
+ * 
+ * @description
+ * will return an integer javascript number
+ * if the value is larger than Number.MAX_SAFE_INTEGER will return a BigInt
+ * if the object passed is not a valid indexable object then it will return undefined
+ * if you want to throw an error instead of returning undefined use {@link Sk.misceval.asIndexOrThrow}
+ * If you know you want a number and not a BigInt - use {@link Sk.misceval.asIndexSized}
+ */
 Sk.misceval.asIndex = asIndex;
 
+
+/**
+ * 
+ * @param {*} index 
+ * @param {Sk.builtin.Exception=} Err provided an excption type if you wish to throw an exception
+ * @param {string} msg an option message if the index passed is not a valid indexable object
+ * 
+ * @description
+ * this function will always return a `Number` whose size is less than `Number.MAX_SAFE_INTEGER`
+ * If you provide an err then this function will throw an error if the index is larger than `Number.MAX_SAFE_INTEGER`
+ */
 Sk.misceval.asIndexSized = function (index, Err, msg) {
     const i = asIndexOrThrow(index, msg);
     if (typeof i === "number") {
