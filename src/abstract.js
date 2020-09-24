@@ -676,6 +676,13 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     return result;
 };
 
+/**
+ * 
+ * @param {pyObject} obj 
+ * 
+ * @returns {Number} the hash value a number less than Number.MAX_SAFE_INTEGER 
+ * @throws {Sk.buitin.TypeError} if the object is unhashable
+ */
 Sk.abstr.objectHash = function (obj) {
     const hash_func = obj.tp$hash;
     if (hash_func !== undefined) {

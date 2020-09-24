@@ -78,6 +78,8 @@
 - `mp$subscript` should not be called by a js object (see changes in `random.js`)
 - `quick$lookup` added to `dict.prototype` which is a fast way to lookup up `str` keys
 - `dict.prototype.entries` rather than has values that are `arrays` of key value pairs
+- `object.prototype.tp$hash` will no longer add `$savedHash_` to the object - instead it uses a javascript map and assigns objects to a random number less than `Number.MAX_SAFE_INTEGER` rather than incrementing the hash value each time. 
+- `float.prototype.tp$hash` for integers this will be the same value as `Sk.builtin.int.prototype.tp$hash` for non integers this will be a random number less than `Number.MAX_SAFE_INTEGER`. Previously this was the number rounded down - but this creates a lot of collisions. 
 
 
 
