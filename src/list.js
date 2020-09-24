@@ -172,7 +172,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
         insert: {
             $meth(i, x) {
                 i = Sk.misceval.asIndexSized(i, Sk.builtin.OverflowError);
-                const { start } = Sk.builtin.slice.$indices(this, i);
+                const { start } = Sk.builtin.slice.startEnd$wrt(this, i);
                 this.v.splice(start, 0, x);
                 return Sk.builtin.none.none$;
             },
@@ -298,7 +298,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             throw new Sk.builtin.IndexError(msg);
         },
         list$indexOf(item, start, end) {
-            ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
+            ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
             for (let i = start; i < end && i < this.v.length; i++) {
                 if (this.v[i] === item || Sk.misceval.richCompareBool(this.v[i], item, "Eq")) {
                     return i;

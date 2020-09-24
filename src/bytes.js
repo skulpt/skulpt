@@ -371,7 +371,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         count: {
             $meth(tgt, start, end) {
                 tgt = this.get$tgt(tgt);
-                ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
+                ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
                 let count = 0;
                 if (typeof tgt === "number") {
                     for (let i = start; i < end; i++) {
@@ -1076,7 +1076,7 @@ function mkStartsEndsWith(funcname, is_match) {
         if (!(prefix instanceof Sk.builtin.bytes || prefix instanceof Sk.builtin.tuple)) {
             throw new Sk.builtin.TypeError(funcname + " first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(prefix));
         }
-        ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
+        ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
         if (end < start) {
             return Sk.builtin.bool.false$;
         }
@@ -1099,7 +1099,7 @@ function mkStartsEndsWith(funcname, is_match) {
 function mkFind(isReversed) {
     return function find(tgt, start, end) {
         tgt = this.get$tgt(tgt);
-        ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
+        ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
         if (end < start) {
             return -1;
         }

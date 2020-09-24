@@ -948,7 +948,7 @@ function mkJust(isRight, isCenter) {
 }
 
 function indices(self, start, end) {
-    ({ start, end } = Sk.builtin.slice.$indices(self, start, end));
+    ({ start, end } = Sk.builtin.slice.startEnd$wrt(self, start, end));
     if (self.$hasAstralCodePoints()) {
         const tmp = self.codepoints[start];
         start = tmp === undefined ? start + self.v.length - self.codepoints.length : tmp;

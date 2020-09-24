@@ -184,7 +184,17 @@ Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
     },
 });
 
-Sk.builtin.slice.$indices = function (pyObj, start, end) {
+/**
+ * 
+ * @param {*} pyObj 
+ * @param {*} start 
+ * @param {*} end 
+ * 
+ * @private
+ * helper function for methods that adjust their start, end arguments with respect to
+ * a python sequence type object
+ */
+Sk.builtin.slice.startEnd$wrt = function (pyObj, start, end) {
     const len = pyObj.sq$length();
     const msg = "slice indices must be integers or have an __index__ method";
     if (start === undefined || Sk.builtin.checkNone(start)) {

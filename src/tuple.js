@@ -157,7 +157,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
                     // unusually can't have None here so check this first...
                     throw new Sk.builtin.TypeError("slice indices must be integers or have an __index__ method");
                 }
-                ({ start, end } = Sk.builtin.slice.$indices(this, start, end));
+                ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
                 const obj = this.v;
                 for (let i = start; i < end; i++) {
                     if (obj[i] === item || Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
