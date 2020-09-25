@@ -43,6 +43,7 @@ var $builtinmodule = function (name) {
 
     getFlags = function (flags) {
         var jsflags = "g";
+        flags = Sk.ffi.remapToJs(flags);
         if ((flags & mod.IGNORECASE.v) == mod.IGNORECASE.v) {
             jsflags += "i";
         }
