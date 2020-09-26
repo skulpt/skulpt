@@ -4,18 +4,18 @@ var $builtinmodule = function (name) {
     var validGroups, convert, getFlags, _split, _findall, matchobj, _search, _match, regexobj;
 
     // Constants (mostly unsupported)
-    mod.I = 2;
-    mod.IGNORECASE = 2;
-    // mod.L = 4;
-    // mod.LOCALE = 4;
-    mod.M = 8;
-    mod.MULTILINE = 8;
-    // mod.S = 16;
-    // mod.DOTALL = 16;
-    // mod.U = 32;
-    // mod.UNICODE = 32;
-    // mod.X = 64;
-    // mod.VERBOSE = 64;
+    mod.I = Sk.builtin.int_(2);
+    mod.IGNORECASE = Sk.builtin.int_(2);
+    // mod.L = Sk.builtin.int_(4);
+    // mod.LOCALE = Sk.builtin.int_(4);
+    mod.M = Sk.builtin.int_(8);
+    mod.MULTILINE = Sk.builtin.int_(8);
+    // mod.S = Sk.builtin.int_(16);
+    // mod.DOTALL = Sk.builtin.int_(16);
+    // mod.U = Sk.builtin.int_(32);
+    // mod.UNICODE = Sk.builtin.int_(32);
+    // mod.X = Sk.builtin.int_(64);
+    // mod.VERBOSE = Sk.builtin.int_(64);
 
     validGroups = ["(?:", "(?=", "(?!"];
 
@@ -43,10 +43,11 @@ var $builtinmodule = function (name) {
 
     getFlags = function (flags) {
         var jsflags = "g";
-        if ((flags & mod.IGNORECASE) == mod.IGNORECASE) {
+        flags = Sk.builtin.asnum$(flags);
+        if ((flags & mod.IGNORECASE.v) == mod.IGNORECASE.v) {
             jsflags += "i";
         }
-        if ((flags & mod.MULTILINE) == mod.MULTILINE) {
+        if ((flags & mod.MULTILINE.v) == mod.MULTILINE.v) {
             jsflags += "m";
         }
         return jsflags;
