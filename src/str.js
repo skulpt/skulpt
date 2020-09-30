@@ -1366,15 +1366,16 @@ var str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
                 }
                 return new Sk.builtin.str(str.v.substring(i, this.$seq[++this.$index]));
             };
+        } else {
+            this.$seq = str.v;
+            this.tp$iternext = () => {
+                const ch = this.$seq[this.$index++];
+                if (ch === undefined) {
+                    return undefined;
+                }
+                return new Sk.builtin.str(ch);
+            };
         }
-        this.$seq = str.v;
-        this.tp$iternext = () => {
-            const ch = this.$seq[this.$index++];
-            if (ch === undefined) {
-                return undefined;
-            }
-            return new Sk.builtin.str(ch);
-        };
     },
     iternext() {
         return this.tp$iternext();
