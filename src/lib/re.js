@@ -204,7 +204,7 @@ function $builtinmodule(name) {
         "cannot use LOCALE flag with a str pattern": re.L,
         "ASCII and UNICODE flags are incompatible": new re.RegexFlag(re.A.valueOf() | re.U.valueOf()),
     });
-    const inline_regex = /\(\?([i|s|a|m|u|x]+)\)/g;
+    const inline_regex = /\(\?([isamux]+)\)/g;
 
     function adjustFlags(pyPattern, pyFlag) {
         let jsPattern = pyPattern.toString();
