@@ -1373,15 +1373,8 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
 };
 
 Sk.builtin.globals = function globals () {
-    var i, unmangled;
-    var ret = new Sk.builtin.dict([]);
-    for (i in Sk["globals"]) {
-        unmangled = Sk.unfixReserved(i);
-        ret.mp$ass_subscript(new Sk.builtin.str(unmangled), Sk["globals"][i]);
-    }
-
-    return ret;
-
+    const globals = (Sk._state && Sk._state.globals) || {};
+    return new Sk.builtin.mappingproxy(globals);
 };
 
 Sk.builtin.divmod = function divmod (a, b) {
@@ -1534,8 +1527,9 @@ Sk.builtin.iter = function iter (obj, sentinel) {
     }
 };
 
-Sk.builtin.locals = function locals () {
-    throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
+Sk.builtin.locals = function locals() {
+    const locals = (Sk._state && Sk._state.locals) || {};
+    return new Sk.builtin.mappingproxy(locals);
 };
 Sk.builtin.memoryview = function memoryview () {
     throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented");

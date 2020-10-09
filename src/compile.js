@@ -1184,6 +1184,7 @@ Compiler.prototype.outputAllUnits = function () {
                 generatedBlocks[block] = true;
 
                 ret += "case " + block + ": /* --- " + blocks[block]._name + " --- */";
+                ret += "\nSk._state = {globals: $gbl, locals: $loc};";
                 ret += blocks[block].join("");
 
                 if (blocks[block]._next !== null) {
@@ -2564,10 +2565,11 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
                     out("if (", mangled, " === undefined) { throw new Sk.builtin.UnboundLocalError('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
                     return mangled;
                 case Sk.astnodes.Store:
-                    out(mangled, "=", dataToStore, ";");
+                    out("$loc.",mangled, "=", mangled, "=", dataToStore, ";");
                     break;
                 case Sk.astnodes.Del:
-                    out("delete ", mangled, ";");
+                    out("delete $loc.", mangled, ";");
+                    out("delete", mangled, ";");
                     break;
                 default:
                     Sk.asserts.fail("unhandled");
