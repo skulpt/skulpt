@@ -3,10 +3,22 @@
  * Sk.builtin.super_
  */
 Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
-    constructor: function super_() {
+    constructor: function super_(a_type, other_self) {
         // internally we never use this method
-        // use Sk.misceval.callsimArray(Sk.builtin.super_, [a_type, obj]);
         Sk.asserts.assert(this instanceof Sk.builtin.super_, "bad call to super, use 'new'");
+        // internal calls can use this method but it 
+        this.type = a_type;
+        this.obj = other_self;
+        if (a_type !== undefined) {
+            if (!Sk.builtin.checkClass(a_type)) {
+                throw new Sk.builtin.TypeError("must be type, not " + Sk.abstr.typeName(a_type));
+            }
+        }
+        if (this.obj !== undefined) {
+            this.obj_type = this.$supercheck(a_type, this.obj);
+        } else {
+            this.obj_type = null;
+        }
     },
     slots: {
         tp$doc:
