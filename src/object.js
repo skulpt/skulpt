@@ -156,7 +156,9 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
     },
     proto: /**@lends {Sk.builtin.object.prototype}*/ {
         valueOf: Object.prototype.valueOf,
-        toString: Object.prototype.toString,
+        toString: function() {
+            return this.tp$str().v;
+        },
         hasOwnProperty: Object.prototype.hasOwnProperty,
         hp$type: undefined,
         // private method used for error messages
