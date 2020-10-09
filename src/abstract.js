@@ -850,6 +850,15 @@ Sk.abstr.lookupSpecial = function (obj, pyName) {
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
+
+Sk.abstr.typeLookup = function (type_obj, pyName) {
+    const res = type_obj.$typeLookup(pyName);
+    if (res !== undefined && res.tp$descr_get) {
+        return res.tp$descr_get(null, type_obj);
+    }
+    return res;
+};
+
 /**
  * Mark a class as unhashable and prevent its `__hash__` function from being called.
  * @param  {*} thisClass The class to mark as unhashable.
