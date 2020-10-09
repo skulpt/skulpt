@@ -140,7 +140,9 @@ function tp$new(args, kwargs) {
     setUpKlass($name, klass, bases, this.constructor);
 
     // set some defaults which can be overridden by the dict object
-    klass.prototype.__module__ = Sk.globals["__name__"];
+    if (Sk.globals) {
+        klass.prototype.__module__ = Sk.globals["__name__"];
+    }
     klass.prototype.__doc__ = Sk.builtin.none.none$;
 
     // set __dict__ if not already on the prototype
