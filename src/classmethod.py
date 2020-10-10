@@ -7,6 +7,6 @@ class classmethod(object):
     def __get__(self, obj, klass=None):
         if klass is None:
             klass = type(obj)
-        def newfunc(*args):
-            return self.f(klass, *args)
+        def newfunc(*args, **kwargs):
+            return self.f(klass, *args, **kwargs)
         return newfunc
