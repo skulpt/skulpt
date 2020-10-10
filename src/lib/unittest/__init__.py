@@ -1,3 +1,4 @@
+import sys
 __author__ = 'bmiller'
 '''
 This is the start of something that behaves like
@@ -265,18 +266,17 @@ class TestCase:
         self.assertFailed += 1
 
     def showSummary(self):
-        pct = self.numPassed / (self.numPassed+self.numFailed) * 100
+        pct = self.numPassed / max(1, self.numPassed+self.numFailed) * 100
         print("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
                                                self.numPassed, self.numFailed))
 
 
-
-def main(verbosity=1):
-    glob = globals() # globals() still needs work
-    for name in glob:
-        if type(glob[name]) == type and issubclass(glob[name], TestCase):
+def main(verbosity=1, module='__main__'):
+    module = sys.modules[module]
+    for name, tc in module.__dict__.items():
+        if type(tc) == type and issubclass(tc, TestCase):
             try:
-                tc = glob[name]()
+                tc = tc()
                 tc.verbosity = verbosity
                 tc.main()
             except:
