@@ -1373,7 +1373,7 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
 };
 
 Sk.builtin.globals = function globals () {
-    const globals = (Sk._state && Sk._state.globals) || {};
+    const globals = (Sk._frame && Sk._frame.globals) || {};
     return new Sk.builtin.mappingproxy(globals);
 };
 
@@ -1528,7 +1528,7 @@ Sk.builtin.iter = function iter (obj, sentinel) {
 };
 
 Sk.builtin.locals = function locals() {
-    const locals = (Sk._state && Sk._state.locals) || {};
+    const locals = (Sk._frame && Sk._frame.locals) || {};
     return new Sk.builtin.mappingproxy(locals);
 };
 Sk.builtin.memoryview = function memoryview () {
