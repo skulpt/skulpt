@@ -2579,7 +2579,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
                     break;
                 case Sk.astnodes.Del:
                     out("delete $loc.", mangled, ";");
-                    out("delete", mangled, ";");
+                    out("delete ", mangled, ";");
                     break;
                 default:
                     Sk.asserts.fail("unhandled");
