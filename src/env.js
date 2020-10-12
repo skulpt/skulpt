@@ -213,6 +213,7 @@ Sk.configure = function (options) {
     Sk.setupDunderMethods(Sk.__future__.python3);
     setupDictIterators(Sk.__future__.python3);
     Sk.setupObjects(Sk.__future__.python3);
+    setupPy2NotEqualOp(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
@@ -416,3 +417,21 @@ function setupDictIterators (python3) {
     }
 };
 
+
+function setupPy2NotEqualOp(py3) {
+    // Patch to sort out <> for py2
+    const Funny = Sk.token.Funny;
+    let idx = Funny.indexOf("<>|");
+    if (py3) {
+        if (idx > 0) {
+            Sk.token.Funny = Funny.slice(0, idx) + Funny.slice(idx + 3);
+        }
+        delete Sk.token.EXACT_TOKEN_TYPES["<>"];
+    } else {
+        if (idx === -1) {
+            idx = Funny.indexOf("<");
+            Sk.token.Funny = Funny.slice(0, idx) + "<>|" + Funny.slice(idx);
+        }
+        Sk.token.EXACT_TOKEN_TYPES["<>"] = Sk.token.tokens.T_NOTEQUAL;
+    }
+}

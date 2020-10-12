@@ -171,7 +171,8 @@ var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
 // of =.
 var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
 var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
-var Funny = group('\\r?\\n', Special);
+Sk.token.Funny = group('\\r?\\n', Special);
+
 
 // these aren't actually used
 // var PlainToken = group(Number_, Funny, String_, Name);
@@ -228,7 +229,7 @@ function _tokenize(filename, readline, encoding, yield_) {
     var Intnumber = group(Hexnumber, Binnumber,
                           (Sk.__future__.silent_octal_literal ? SilentOctnumber : Octnumber), Decnumber);
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
-    var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
+    var PseudoToken = Whitespace + group(PseudoExtras, Number_, Sk.token.Funny, ContStr, Name);
 
     const PseudoTokenRegexp = new RegExp(PseudoToken);
 
