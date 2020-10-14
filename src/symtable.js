@@ -235,7 +235,7 @@ SymbolTableScope.prototype._identsMatching = function (f) {
     return ret;
 };
 SymbolTableScope.prototype.get_parameters = function () {
-    Sk.asserts.assert(this.get_type() == "function", "get_parameters only valid for function scopes");
+    Sk.asserts.assert(() => this.get_type() == "function", "get_parameters only valid for function scopes");
     if (!this._funcParams) {
         this._funcParams = this._identsMatching(function (x) {
             return x & DEF_PARAM;
@@ -244,7 +244,7 @@ SymbolTableScope.prototype.get_parameters = function () {
     return this._funcParams;
 };
 SymbolTableScope.prototype.get_locals = function () {
-    Sk.asserts.assert(this.get_type() == "function", "get_locals only valid for function scopes");
+    Sk.asserts.assert(() => this.get_type() == "function", "get_locals only valid for function scopes");
     if (!this._funcLocals) {
         this._funcLocals = this._identsMatching(function (x) {
             return x & DEF_BOUND;
@@ -253,7 +253,7 @@ SymbolTableScope.prototype.get_locals = function () {
     return this._funcLocals;
 };
 SymbolTableScope.prototype.get_globals = function () {
-    Sk.asserts.assert(this.get_type() == "function", "get_globals only valid for function scopes");
+    Sk.asserts.assert(() => this.get_type() == "function", "get_globals only valid for function scopes");
     if (!this._funcGlobals) {
         this._funcGlobals = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -263,7 +263,7 @@ SymbolTableScope.prototype.get_globals = function () {
     return this._funcGlobals;
 };
 SymbolTableScope.prototype.get_frees = function () {
-    Sk.asserts.assert(this.get_type() == "function", "get_frees only valid for function scopes");
+    Sk.asserts.assert(() => this.get_type() == "function", "get_frees only valid for function scopes");
     if (!this._funcFrees) {
         this._funcFrees = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -275,7 +275,7 @@ SymbolTableScope.prototype.get_frees = function () {
 SymbolTableScope.prototype.get_methods = function () {
     var i;
     var all;
-    Sk.asserts.assert(this.get_type() == "class", "get_methods only valid for class scopes");
+    Sk.asserts.assert(() => this.get_type() == "class", "get_methods only valid for class scopes");
     if (!this._classMethods) {
         // todo; uniq?
         all = [];
@@ -317,9 +317,9 @@ function SymbolTable (filename) {
 }
 SymbolTable.prototype.getStsForAst = function (ast) {
     var v;
-    Sk.asserts.assert(ast.scopeId !== undefined, "ast wasn't added to st?");
+    Sk.asserts.assert(() => ast.scopeId !== undefined, "ast wasn't added to st?");
     v = this.stss[ast.scopeId];
-    Sk.asserts.assert(v !== undefined, "unknown sym tab entry");
+    Sk.asserts.assert(() => v !== undefined, "unknown sym tab entry");
     return v;
 };
 
@@ -328,7 +328,7 @@ SymbolTable.prototype.SEQStmt = function (nodes) {
     var i;
     var len;
     if (nodes !== null) {
-        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        Sk.asserts.assert(() => Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
         len = nodes.length;
         for (i = 0; i < len; ++i) {
             val = nodes[i];
@@ -344,7 +344,7 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
     var i;
     var len;
     if (nodes !== null) {
-        Sk.asserts.assert(Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
+        Sk.asserts.assert(() => Sk.isArrayLike(nodes), "SEQ: nodes isn't array? got " + nodes.toString());
         len = nodes.length;
         for (i = 0; i < len; ++i) {
             val = nodes[i];
@@ -482,7 +482,7 @@ SymbolTable.prototype.visitStmt = function (s) {
     var nameslen;
     var tmp;
     var e_name;
-    Sk.asserts.assert(s !== undefined, "visitStmt called with undefined");
+    Sk.asserts.assert(() => s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
         case Sk.astnodes.FunctionDef:
             this.addDef(s.name, DEF_LOCAL, s.lineno);
@@ -668,7 +668,7 @@ function VISIT_SEQ(visitFunc, seq) {
 
 SymbolTable.prototype.visitExpr = function (e) {
     var i;
-    Sk.asserts.assert(e !== undefined, "visitExpr called with undefined");
+    Sk.asserts.assert(() => e !== undefined, "visitExpr called with undefined");
     // console.log("  e: ", e.constructor.name);
     switch (e.constructor) {
         case Sk.astnodes.BoolOp:

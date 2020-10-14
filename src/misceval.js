@@ -236,8 +236,8 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
         swapped_shortcut,
         shortcut;
 
-    Sk.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
-    Sk.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    Sk.asserts.assert(() => (v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    Sk.asserts.assert(() => (w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
     const v_type = v.ob$type;
     const w_type = w.ob$type;
@@ -536,7 +536,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 Sk.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function (v) {
-    Sk.asserts.assert(v !== undefined, "trying to repr undefined");
+    Sk.asserts.assert(() => v !== undefined, "trying to repr undefined");
     if ((v === null) || (v === Sk.builtin.none.none$)) {
         return new Sk.builtin.str("None");
     } else if (v === true) {

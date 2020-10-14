@@ -56,7 +56,7 @@ Sk.builtin.bytes = function (source, encoding, errors) {
     } else if (source instanceof Uint8Array) {
         this.v = source;
     } else if (Array.isArray(source)) {
-        Sk.asserts.assert(source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
+        Sk.asserts.assert(() => source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
         this.v = Uint8ArrayFromArray(source);
     } else if (typeof source === "string") {
         // fast path must be binary string https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary

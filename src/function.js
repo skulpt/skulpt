@@ -293,7 +293,7 @@ Sk.builtin.func.prototype.$memoiseFlags = function() {
 };
 
 Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
-    Sk.asserts.assert(!(obj === undefined && objtype === undefined));
+    Sk.asserts.assert(() => !(obj === undefined && objtype === undefined));
     if (objtype && objtype.prototype && objtype.prototype.tp$name in Sk.builtin && Sk.builtin[objtype.prototype.tp$name] === objtype) {
         // it's a builtin
         return new Sk.builtin.method(this, obj, objtype, true);

@@ -90,7 +90,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (pyName, canSuspend) {
     var getf;
 
     tp = this.ob$type;
-    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(() => tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
     //print("getattr", tp.tp$name, name);
@@ -180,7 +180,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
     var descr;
     var f;
 
-    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(() => tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
 

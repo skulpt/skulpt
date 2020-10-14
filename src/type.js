@@ -431,8 +431,8 @@ Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
 };
 
 Sk.builtin.type.makeIntoTypeObj = function (name, t) {
-    Sk.asserts.assert(name !== undefined);
-    Sk.asserts.assert(t !== undefined);
+    Sk.asserts.assert(() => name !== undefined);
+    Sk.asserts.assert(() => t !== undefined);
     Object.setPrototypeOf(t, Sk.builtin.type.prototype);
     return t;
 };

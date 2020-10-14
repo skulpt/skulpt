@@ -14,7 +14,7 @@ Sk.builtin.PyType_IsSubtype = function PyType_IsSubtype(a, b) {
     if (mro) {
         /* Deal with multiple inheritance without recursion
            by walking the MRO tuple */
-        Sk.asserts.assert(mro instanceof Sk.builtin.tuple);
+        Sk.asserts.assert(() => mro instanceof Sk.builtin.tuple);
         for (var i = 0; i < mro.v.length; i++) {
             if (mro.v[i] == b) {
                 return true;
@@ -83,7 +83,7 @@ Sk.builtin.super_.prototype.tp$getattr = function (pyName, canSuspend) {
     var jsName = pyName.$jsstr();
 
     tp = this.obj_type;
-    Sk.asserts.assert(tp !== undefined, "object has no ob$type!");
+    Sk.asserts.assert(() => tp !== undefined, "object has no ob$type!");
 
     dict = this.obj["$d"] || this.obj.constructor["$d"];
 

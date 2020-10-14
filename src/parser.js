@@ -102,7 +102,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             v = this.grammar.labels[i][1];
             if (ilabel === i) {
                 // look it up in the list of labels
-                Sk.asserts.assert(t < 256);
+                Sk.asserts.assert(() => t < 256);
                 // shift a token; we're done with it
                 this.shift(type, value, newstate, context);
                 // pop while we are in an accept-only state
