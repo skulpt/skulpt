@@ -1,4 +1,7 @@
 import unittest
+import test.ann_module as ann_module
+from test import ann_module2
+import test
 
 # Note: since several test cases filter out floats by looking for "e" and ".",
 # don't add hexadecimal literals that contain "e" or "E".
@@ -111,6 +114,72 @@ class TokenTests(unittest.TestCase):
         
         # Sanity check: no literal begins with an underscore
         self.assertRaises(NameError, jseval, eval_alt.format("_0"))
+
+
+    def test_var_annot_basic_semantics(self):
+        # execution order
+        with self.assertRaises(ZeroDivisionError):
+            no_name[does_not_exist]: no_name_again = 1/0
+        with self.assertRaises(NameError):
+            no_name[does_not_exist]: 1/0 = 0
+        global var_annot_global
+
+        # function semantics
+        def f():
+            st: str = "Hello"
+            a.b: int = (1, 2)
+            return st
+        # self.assertEqual(f.__annotations__, {})
+        def f_OK():
+            x: 1/0
+        f_OK()
+        def fbad():
+            x: int
+            print(x)
+        # throw's name error
+        # with self.assertRaises(UnboundLocalError):
+            fbad()
+        def f2bad():
+            (no_such_global): int
+            print(no_such_global)
+        try:
+            f2bad()
+        except Exception as e:
+            self.assertIs(type(e), NameError)
+
+        # class semantics
+        class C:
+            __foo: int
+            s: str = "attr"
+            z = 2
+            def __init__(self, x):
+                self.x: int = x
+        self.assertEqual(C.__annotations__, {'_C__foo': int, 's': str})
+        with self.assertRaises(NameError):
+            class CBad:
+                no_such_name_defined.attr: int = 0
+        with self.assertRaises(NameError):
+            class Cbad2(C):
+                x: int
+                x.y: list = []
+
+    def test_var_annot_metaclass_semantics(self):
+        class CMeta(type):
+            @classmethod
+            def __prepare__(metacls, name, bases, **kwds):
+                return {'__annotations__': CNS()}
+        class CC(metaclass=CMeta):
+            XX: 'ANNOT'
+        # self.assertEqual(CC.__annotations__['xx'], 'ANNOT')
+
+    def test_var_annot_module_semantics(self):
+        with self.assertRaises(AttributeError):
+            print(test.__annotations__)
+        self.assertEqual(ann_module.__annotations__,
+                     {1: 2, 'x': int, 'y': str})#, 'f': typing.Tuple[int, int]})
+        self.assertEqual(ann_module.M.__annotations__,
+                              {'123': 123, 'o': type})
+        self.assertEqual(ann_module2.__annotations__, {})
 
 if __name__ == '__main__':
     unittest.main()

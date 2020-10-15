@@ -973,6 +973,30 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     return ret;
 };
 
+
+Compiler.prototype.cannassign = function (s) {
+    const target = s.target;
+    let val = s.value;
+    // perform the actual assignment first
+    if (val) {
+        val = this.vexpr(s.value);
+        this.vexpr(target, val);
+    }
+    switch (target.constructor) {
+        case Sk.astnodes.Name:
+            if (s.simple && (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock || this.u.ste.blockType == Sk.SYMTAB_CONSTS.ModuleBlock)) {
+                const val = this.vexpr(s.annotation);
+                // out(
+                //     "var $ann; if ($loc.__annotations__ !== undefined) {$ann = $loc.__annotations__} else {$ann = $loc.__annotations__ = new Sk.builtin.dict()}"
+                // );
+                let mangled = fixReserved(mangleName(this.u.private_, target.id).v);
+                const key = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
+                this.chandlesubscr(Sk.astnodes.Store, "$loc.__annotations__", key, val);
+            }
+    }
+};
+
+
 Compiler.prototype.caugassign = function (s) {
     var to;
     var augsub;
@@ -2445,10 +2469,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             }
             break;
         case Sk.astnodes.AnnAssign:
-            val = this.vexpr(s.value);
-            this.vexpr(s.target, val);
-            this.vexpr(s.annotation);
-            break;
+            return this.cannassign(s);
         case Sk.astnodes.AugAssign:
             return this.caugassign(s);
         case Sk.astnodes.Print:
@@ -2732,7 +2753,51 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
+    /* Every annotated class and module should have __annotations__. */
+    if (find_ann(stmts)) {
+        this.u.varDeclsCode += "$loc.__annotations__ = new Sk.builtin.dict();";
+    }
 };
+
+function find_ann(stmts) {
+    let res = 0;
+    if (stmts == null) {
+        return 0;
+    }
+    for (let i = 0; i < stmts.length; i++) {
+        const st = stmts[i];
+        switch (st.constructor) {
+            case Sk.astnodes.AnnAssign:
+                return 1;
+            case Sk.astnodes.For:
+            case Sk.astnodes.AsyncFor:
+            case Sk.astnodes.While:
+            case Sk.astnodes.If:
+                res = find_ann(st.body) || find_ann(st.orelse);
+                break;
+            case Sk.astnodes.With:
+            case Sk.astnodes.AsyncWith:
+                res = find_ann(st.body);
+                break;
+            case Sk.astnodes.Try:
+                const handlers = st.handlers;
+                for (let j = 0; j < handlers.length; j++) {
+                    if (find_ann(handlers[j].body)) {
+                        return 1;
+                    }
+                }
+                res = find_ann(st.body) || find_ann(st.finalbody) || find_ann(st.orelse);
+                break;
+            default:
+                res = 0;
+        }
+        if (res) {
+            break;
+        }
+    }
+    return res;
+}
+
 
 Compiler.prototype.cprint = function (s) {
     var i;
