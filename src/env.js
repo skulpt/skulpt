@@ -213,6 +213,7 @@ Sk.configure = function (options) {
     Sk.setupDunderMethods(Sk.__future__.python3);
     setupDictIterators(Sk.__future__.python3);
     Sk.setupObjects(Sk.__future__.python3);
+    Sk.token.setupTokens(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
