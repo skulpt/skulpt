@@ -1026,7 +1026,7 @@ Sk.builtin.setattr = function setattr (obj, pyName, value) {
     return Sk.builtin.none.none$;
 };
 
-Sk.builtin.raw_input = function (prompt) {
+Sk.builtin.input$ = function (prompt) {
     var lprompt = prompt ? prompt : "";
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
@@ -1042,7 +1042,15 @@ Sk.builtin.raw_input = function (prompt) {
     });
 };
 
-Sk.builtin.input = Sk.builtin.raw_input;
+Sk.builtin.raw_input = function (prompt) {
+    if (Sk.__future__.python3) {
+        throw new Sk.builtin.NameError("name 'raw_input' is not defined");
+    } else {
+        return Sk.builtin.input$(prompt);
+    }
+};
+
+Sk.builtin.input = Sk.builtin.input$;
 
 Sk.builtin.jseval = function jseval (evalcode) {
     const result = Sk.global["eval"](Sk.ffi.remapToJs(evalcode));
