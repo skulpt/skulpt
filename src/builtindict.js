@@ -124,6 +124,7 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
         delete Sk.builtins["basestring"];
+        delete Sk.builtins["raw_input"];
         delete Sk.builtin.str.prototype.decode;
         Sk.builtins["bytes"] = Sk.builtin.bytes;
         Sk.builtins["ascii"] = new Sk.builtin.func(Sk.builtin.ascii);
