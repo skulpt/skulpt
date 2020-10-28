@@ -137,6 +137,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.builtins["basestring"] = Sk.builtin.str;
+        Sk.builtins["raw_input"] = new Sk.builtin.func(Sk.builtin.raw_input);
         Sk.builtin.str.prototype.decode = Sk.builtin.str.$py2decode;
         delete Sk.builtins["bytes"];
         delete Sk.builtins["ascii"];
