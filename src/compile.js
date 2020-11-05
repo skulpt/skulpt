@@ -402,20 +402,64 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     }
 };
 
-Compiler.prototype.cdict = function (e) {
-    var v;
-    var i;
-    var items;
-    items = [];
-    if (e.keys !== null) {
-        Sk.asserts.assert(e.values.length === e.keys.length);
-        for (i = 0; i < e.values.length; ++i) {
-            v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
-            items.push(this.vexpr(e.keys[i]));
-            items.push(v);
-        }
+Compiler.prototype.csubdict = function(e, begin, end) {
+    const items = [];
+    for (let i = begin; i < end; i++) {
+        items.push(this.vexpr(e.keys[i]));
+        items.push(this.vexpr(e.values[i])); 
     }
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
+}
+
+Compiler.prototype.cdict = function (e) {
+    let have_dict = 0;
+    let is_unpacking = false;
+    const n = e.values ? e.values.length : 0;
+    let elements = 0;
+    let main_dict;
+    let sub_dict;
+
+    for (let i = 0; i<n; i++) {
+        is_unpacking = e.keys[i] === null;
+        if (is_unpacking) {
+            if (elements) {
+                sub_dict = this.csubdict(e, i-elements, i);
+                if (have_dict) {
+                    out(main_dict, ".dict$merge(", sub_dict, ");");
+                    // update the current dict (this won't suspend)
+                } else {
+                    main_dict = sub_dict;
+                    have_dict = 1;
+                }
+                elements = 0;
+            }
+            if (have_dict === 0) {
+                main_dict = this._gr("loaddict", "new Sk.builtins.dict([])");
+                have_dict = 1;
+            }
+            sub_dict = this.vexpr(e.values[i]);
+            out("$ret = ", main_dict, ".dict$merge(", sub_dict, ");");
+            this._checkSuspension(e);
+            // could suspend
+        } else {
+            elements ++;
+        }
+    }
+    if (elements) {
+        sub_dict = this.csubdict(e, n-elements, n)
+        if (have_dict) {
+            out(main_dict, ".dict$merge(", sub_dict, ");");
+            // update the current dict (this won't suspend)
+        } else {
+            main_dict = sub_dict;
+            have_dict = 1;
+        }
+    }
+    if (have_dict === 0) {
+        // add op buildmap
+        main_dict = this._gr("loaddict", "new Sk.builtins.dict([])");
+    }
+    return main_dict;
 };
 
 Compiler.prototype.clistcomp = function(e) {
