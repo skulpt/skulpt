@@ -39,18 +39,20 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         tp$getattr: Sk.generic.getAttr,
         tp$doc: "Common base class for all exceptions",
         tp$new(args, kwargs) {
+            let instance;
             if (!this.hp$type) {
                 // then we have a builtin constructor so just return it as new this
-                return new this.constructor();
+                instance = new this.constructor();
             } else {
-                const instance = new this.constructor();
+                instance = new this.constructor();
                 Sk.builtin.BaseException.call(instance);
-                return instance;
             }
+            // called from python so do the args here
+            instance.args = new Sk.builtin.tuple(args.slice()); // reset args in __init__ method
+            return instance;
         },
         tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kwargs);
-            this.args = new Sk.builtin.tuple(args); // reset args in __init__ method
         },
         $r() {
             let ret = this.tp$name;
