@@ -404,7 +404,7 @@ slots.__hash__ = {
         }
         return hash_slot(dunder_func);
     },
-    $wrapper: wrapperCallNoArgs,
+    $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.int_(res)),
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "Return hash(self).",
@@ -861,10 +861,7 @@ slots.__len__ = {
             }
         };
     },
-    $wrapper: function __len__(self, args, kwargs) {
-        Sk.abstr.checkNoArgs("__len__", args, kwargs);
-        return new Sk.builtin.int_(self.sq$length());
-    },
+    $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.int_(res)),
     $flags: { NoArgs: true },
     $textsig: "($self, /)",
     $doc: "Return len(self).",
@@ -895,10 +892,8 @@ slots.__contains__ = {
             return res;
         };
     },
-    $wrapper: function __contains__(self, args, kwargs) {
-        Sk.abstr.checkOneArg("__contains__", args, kwargs);
-        return new Sk.builtin.bool(this.call(self, args[0], true));
-    },
+    // todo - allow for suspensions - but no internal functions suspend here
+    $wrapper: wrapperCallBack(wrapperCallOneArg, (res) => new Sk.builtin.bool(res)),
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return key in self.",
@@ -1260,11 +1255,7 @@ slots.__bool__ = {
     $name: "__bool__",
     $slot_name: "nb$bool",
     $slot_func: slotFuncNoArgsWithCheck("__bool__", Sk.builtin.checkBool, "bool", (res) => res.v !== 0),
-    $wrapper: function __bool__(self, args, kwargs) {
-        // this = the wrapped function
-        Sk.abstr.checkNoArgs(this.$name, args, kwargs);
-        return new Sk.builtin.bool(this.call(self));
-    },
+    $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.bool(res)),
     $textsig: "($self, /)",
     $flags: { NoArgs: true },
     $doc: "self != 0",
@@ -1769,7 +1760,7 @@ var py2$slots = {
         $name: "__nonzero__",
         $slot_name: "nb$bool",
         $slot_func: slotFuncNoArgsWithCheck("__nonzero__", Sk.builtin.checkInt, "int", (res) => res.v !== 0),
-        $wrapper: wrapperCallNoArgs,
+        $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.bool(res)),
         $textsig: "($self, /)",
         $flags: { NoArgs: true },
         $doc: "x.__nonzero__() <==> x != 0",
