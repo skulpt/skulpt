@@ -30,7 +30,7 @@ Sk.builtin.print = function print(args, kwargs) {
     }
 
     // loop through outputs and create output string
-    const output = new Sk.builtin.str(args.map((x) => x.tp$str().v).join(sep) + end);
+    const output = new Sk.builtin.str(args.map((x) => new Sk.builtin.str(x).toString()).join(sep) + end);
 
     if (file_write !== undefined) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
@@ -42,3 +42,6 @@ Sk.builtin.print = function print(args, kwargs) {
         });
     }
 };
+
+// add this flag so that if Sk.misceval.call(Sk.builtin.print) is used then it knows how to deal with args
+Sk.builtin.print.co_fastcall = 1;

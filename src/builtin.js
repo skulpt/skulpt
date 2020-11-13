@@ -311,6 +311,9 @@ Sk.builtin.max = function max(args, kwargs) {
     );
 };
 
+// incase someone calls these functions via Sk.misceval.call
+Sk.builtin.min.co_fastcall = Sk.builtin.max.co_fastcall = 1;
+
 Sk.builtin.any = function any(iter) {
     return Sk.misceval.chain(
         Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
