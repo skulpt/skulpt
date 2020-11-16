@@ -1355,7 +1355,7 @@ var $builtinmodule = function (name) {
         mod.renderMode = mode;
     });
 
-    mod.exitp = new Sk.builtin.func(function (h, w) {
+    mod.exitp = new Sk.builtin.func(function () {
         mod.processing.exit();
     });
 
