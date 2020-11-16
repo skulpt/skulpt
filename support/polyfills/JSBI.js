@@ -8,14 +8,12 @@
  * but use BigInt as the primitive type
  *
  */
-const { default: __JSBI } = require("jsbi");
+const __JSBI = require("jsbi");
 // use jsbi which is es5 compliant - change to ES6 in the compilation version
-var globalThis = Sk.global;
 
-globalThis.JSBI = globalThis.BigInt !== undefined ? Object.create(null) : __JSBI;
-const JSBI = globalThis.JSBI;
+const JSBI = Sk.global.JSBI = Sk.global.BigInt !== undefined ? {} : __JSBI;
 
-if (globalThis.BigInt === undefined) {
+if (Sk.global.BigInt === undefined) {
     // __isBigInt is not part of the public api so include it if this is ever removed
     JSBI.__isBigInt = JSBI.__isBigInt || ((x) => x instanceof JSBI);
     JSBI.powermod = (x, y, z) => {
@@ -33,7 +31,7 @@ if (globalThis.BigInt === undefined) {
     };
 } else {
     Object.assign(JSBI, {
-        BigInt: globalThis.BigInt,
+        BigInt: Sk.global.BigInt,
         toNumber: (x) => Number(x),
         toString: (x) => x.toString(),
         __isBigInt: (x) => typeof x === "bigint",

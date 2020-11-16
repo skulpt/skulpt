@@ -30,7 +30,6 @@ module.exports = (env, argv) => {
     };
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
-    var jsbifile = 'jsbi/dist/jsbi.mjs';
     var mod = {};
     var languageOut = (env && env.languageOut) || '';
 
@@ -60,7 +59,6 @@ module.exports = (env, argv) => {
         };
         outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
-        jsbifile = languageOut === "ECMASCRIPT5" || languageOut === "ECMASCRIPT3" ? "jsbi" : "jsbi/dist/jsbi.mjs";
         mod = {
             rules: [
                 {
@@ -100,7 +98,6 @@ module.exports = (env, argv) => {
         resolve: {
             alias: {
                 'assert': assertfile,
-                'jsbi' : jsbifile,
             }
         },
 
