@@ -81,6 +81,7 @@ var tokens = {
 // #--end constants--
 
 var EXACT_TOKEN_TYPES = {
+    // "<>": tokens.T_NOTEQUAL, Only in py2
     "!=": tokens.T_NOTEQUAL,
     "%": tokens.T_PERCENT,
     "%=": tokens.T_PERCENTEQUAL,
