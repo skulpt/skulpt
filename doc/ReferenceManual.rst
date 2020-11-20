@@ -122,6 +122,7 @@ Although the more I think about it the more I think we just need to do a better 
 Sk.misceval
 
 Misc
+
 * Sk.misceval.Suspension = function Suspension(resume, child, data)
 * Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message)
 * Sk.misceval.isIndex = function (o)
