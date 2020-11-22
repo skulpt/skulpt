@@ -164,6 +164,16 @@ var $builtinmodule = function (name) {
         );
     }
 
+    function from_seconds(secs, asUtc) {
+        var d = new Date();
+        if (secs) {
+            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
+            var seconds = Sk.builtin.asnum$(secs);
+            d.setTime(seconds * 1000);
+        }
+        return date_to_struct_time(d, asUtc);
+    }
+
     function localtime_f(secs) {
         Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
         var d = new Date();
