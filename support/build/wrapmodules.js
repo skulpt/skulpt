@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const minify = require('babel-minify');
+const { minify } = require('terser');
 
 /**
  * If this optional file exists in the top level directory, it will be
@@ -22,29 +22,34 @@ const minify = require('babel-minify');
  */
 const excludeFileName = "libexcludes.json";
 
-function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
-    dirs.forEach((dir) => {
+async function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
+    await Promise.all(dirs.map(async (dir) => {
         let files = fs.readdirSync(dir);
 
-        files.forEach((file) => {
+        await Promise.all(files.map(async (file) => {
             let fullname = dir + '/' + file;
 
             if (!excludes.includes(fullname)) {
                 let stat = fs.statSync(fullname)
 
                 if (recursive && stat.isDirectory()) {
-                    processDirectories([fullname], recursive, exts, ret, minifyjs, excludes);
+                    await processDirectories([fullname], recursive, exts, ret, minifyjs, excludes);
                 } else if (stat.isFile()) {
                     let ext = path.extname(file);
                     if (exts.includes(ext)) {
                         let contents = fs.readFileSync(fullname, 'utf8');
                         if (minifyjs && (ext == ".js")) {
-                            let result = minify(contents, {
-                                mangle: {
-                                    keepFnName: true,
+                            let result = await minify(contents, {
+                                compress: {
+                                    keep_classnames: true,
+                                    keep_fnames: true,
+                                    drop_debugger: false,
+                                    typeofs: false,
                                 },
-                                deadcode: {
-                                    keepFnName: true,
+                                mangle: {
+                                    keep_classnames: true,
+                                    keep_fnames: true,
+                                    safari10: true,
                                 },
                             });
                             contents = result.code;
@@ -53,8 +58,8 @@ function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
                     }
                 }
             }
-        });
-    });
+        }));
+    }));
 };
 
 
