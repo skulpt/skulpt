@@ -174,28 +174,14 @@ var $builtinmodule = function (name) {
         return date_to_struct_time(d, asUtc);
     }
 
-    function localtime_f(secs) {
+    mod.localtime = new Sk.builtin.func(function(secs) {
         Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
-        var d = new Date();
-        if (secs) {
-            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
-            var seconds = Sk.builtin.asnum$(secs);
-            d.setTime(seconds * 1000);
-        }
-        return date_to_struct_time(d);
-    }
-
-    mod.localtime = new Sk.builtin.func(localtime_f);
+        return from_seconds(secs, false);
+    });
 
     mod.gmtime = new Sk.builtin.func(function(secs) {
-        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
-        var d = new Date();
-        if (secs) {
-            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
-            var seconds = Sk.builtin.asnum$(secs);
-            d.setTime(seconds * 1000);
-        }
-        return date_to_struct_time(d, true);
+        Sk.builtin.pyCheckArgsLen("gmtime", arguments.length, 0, 1);
+        return from_seconds(secs, true);
     });
 
     var monthnames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
