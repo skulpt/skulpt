@@ -80,8 +80,9 @@ async function buildJsonFile(name, dirs, exts, outfile, options) {
     console.log("Updated " + outfile + ".");
 }
 
+async function main() {
 if (process.argv.includes("internal")) {
-    // buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
+    // await buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
 } else if (process.argv.includes("builtin")) {
     let excludes = [];
     if (fs.existsSync(excludeFileName)) {
@@ -93,15 +94,16 @@ if (process.argv.includes("internal")) {
         excludes: excludes
     };
 
-    buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], [".js", ".py"], "dist/skulpt-stdlib.js", opts)
+    await buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], [".js", ".py"], "dist/skulpt-stdlib.js", opts)
 } else if (process.argv.includes("unit2")) {
     if (!fs.existsSync("support/tmp")) {
 	fs.mkdirSync("support/tmp");
     }
-    buildJsonFile("unit2", ["test/unit"], [".py"], "support/tmp/unit2.js", { recursive: true });
+    await buildJsonFile("unit2", ["test/unit"], [".py"], "support/tmp/unit2.js", { recursive: true });
 } else if (process.argv.includes("unit3")) {
     if (!fs.existsSync("support/tmp")) {
 	fs.mkdirSync("support/tmp");
     }
-    buildJsonFile("unit3", ["test/unit3"], [".py"], "support/tmp/unit3.js");
+    await buildJsonFile("unit3", ["test/unit3"], [".py"], "support/tmp/unit3.js");
+}
 }
