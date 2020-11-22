@@ -99,7 +99,25 @@ class TimeTestCase(unittest.TestCase):
         self.assertEqual([x*2 for x in gen.sleeping_generator()], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
 
     def test_strftime(self):
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
+        # Skulpt computes the timezone offset in 2002, so use a date
+        # in that year.  The following number was computed by running
+        #
+        #     import datetime
+        #     print((datetime.date(2002, 2, 3) - datetime.date(1970, 1, 1)).days)
+        #
+        # in CPython.
+        #
+        days_to_20020203 = 11721
+        seconds_within_day = 3661  # One hour + one minute + one second
+        timestamp_to_test = (
+            days_to_20020203 * 24 * 60 * 60  # Unix timestamps ignore leap seconds
+            + seconds_within_day
+            + time.timezone
+        )
+        self.assertEqual(
+            time.strftime("%b %d %Y %H:%M:%S", time.localtime(timestamp_to_test)),
+            "Feb 03 2002 01:01:01"
+        );
 
     def _test_dir(self):
         # this test fails because the compare 
