@@ -124,3 +124,10 @@ async function main() {
         );
     }
 }
+
+main().then(() => {
+    console.log("wrapmodules done");
+}).catch((err) => {
+    console.log("wrapmodules FAILED");
+    console.log(err);
+});
