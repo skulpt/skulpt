@@ -81,29 +81,46 @@ async function buildJsonFile(name, dirs, exts, outfile, options) {
 }
 
 async function main() {
-if (process.argv.includes("internal")) {
-    // await buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
-} else if (process.argv.includes("builtin")) {
-    let excludes = [];
-    if (fs.existsSync(excludeFileName)) {
-        excludes = JSON.parse(fs.readFileSync(excludeFileName));
-    }
-    let opts = {
-        recursive: true,
-        minifyjs: true,
-        excludes: excludes
-    };
+    if (process.argv.includes("internal")) {
+        // await buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
+    } else if (process.argv.includes("builtin")) {
+        let excludes = [];
+        if (fs.existsSync(excludeFileName)) {
+            excludes = JSON.parse(fs.readFileSync(excludeFileName));
+        }
+        let opts = {
+            recursive: true,
+            minifyjs: true,
+            excludes: excludes
+        };
 
-    await buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], [".js", ".py"], "dist/skulpt-stdlib.js", opts)
-} else if (process.argv.includes("unit2")) {
-    if (!fs.existsSync("support/tmp")) {
-	fs.mkdirSync("support/tmp");
+        await buildJsonFile(
+            "builtinFiles",
+            ["src/builtin", "src/lib"],
+            [".js", ".py"],
+            "dist/skulpt-stdlib.js",
+            opts
+        );
+    } else if (process.argv.includes("unit2")) {
+        if (!fs.existsSync("support/tmp")) {
+            fs.mkdirSync("support/tmp");
+        }
+        await buildJsonFile(
+            "unit2",
+            ["test/unit"],
+            [".py"],
+            "support/tmp/unit2.js",
+            { recursive: true }
+        );
+    } else if (process.argv.includes("unit3")) {
+        if (!fs.existsSync("support/tmp")) {
+            fs.mkdirSync("support/tmp");
+        }
+        await buildJsonFile(
+            "unit3",
+            ["test/unit3"],
+            [".py"],
+            "support/tmp/unit3.js"
+        );
     }
-    await buildJsonFile("unit2", ["test/unit"], [".py"], "support/tmp/unit2.js", { recursive: true });
-} else if (process.argv.includes("unit3")) {
-    if (!fs.existsSync("support/tmp")) {
-	fs.mkdirSync("support/tmp");
-    }
-    await buildJsonFile("unit3", ["test/unit3"], [".py"], "support/tmp/unit3.js");
-}
 }
