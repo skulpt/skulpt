@@ -63,7 +63,7 @@ async function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes
 };
 
 
-function buildJsonFile(name, dirs, exts, outfile, options) {
+async function buildJsonFile(name, dirs, exts, outfile, options) {
     options = options || {};
     let recursive = options.recursive || false;
     let minifyjs = options.minifyjs || false;
@@ -73,7 +73,7 @@ function buildJsonFile(name, dirs, exts, outfile, options) {
 
     ret.files = {};
 
-    processDirectories(dirs, recursive, exts, ret, minifyjs, excludes);
+    await processDirectories(dirs, recursive, exts, ret, minifyjs, excludes);
 
     let contents = "Sk." + name + "=" + JSON.stringify(ret);
     fs.writeFileSync(outfile, contents, 'utf8');
