@@ -190,7 +190,7 @@ var $builtinmodule = function (name) {
     function asctime_f(time) {
         if (!time || Sk.builtin.checkNone(time))
         {
-            time = localtime_f();
+            time = from_seconds();
         } else if (!(time instanceof struct_time_f)) {
             time = new struct_time_f(time);
         }
@@ -215,7 +215,7 @@ var $builtinmodule = function (name) {
     mod.asctime = new Sk.builtin.func(asctime_f);
 
     mod.ctime = new Sk.builtin.func(function(secs) {
-        return asctime_f(localtime_f(secs));
+        return asctime_f(from_seconds(secs));
     });
 
     function mktime_f(time) {
