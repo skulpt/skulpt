@@ -1676,12 +1676,7 @@ function generateTurtleModule(_target) {
         context.restore();
         context.save();
         context.scale(1 / xScale, 1 / yScale);
-        // test
-        if (lly <= 0) {
-            context.translate(-llx, -ury);
-        } else {
-            context.translate(-llx, -(ury - lly) - lly);
-        } 
+        context.translate(-llx, -ury);
     }
 
     function pushUndo(turtle) {
