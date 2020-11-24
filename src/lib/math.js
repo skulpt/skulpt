@@ -306,7 +306,7 @@ var $builtinmodule = function (name) {
     mod.isnan = new Sk.builtin.func(function isnan(x) {
         // Return True if x is a NaN (not a number), and False otherwise.
         Sk.builtin.pyCheckArgsLen("isnan", arguments.length, 1, 1);
-        Sk.builtin.pyCheckType("x", "float", Sk.builtin.checkFloat(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
         if (isNaN(_x)) {
