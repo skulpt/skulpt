@@ -1,6 +1,7 @@
 __author__ = 'Jacco Kulman'
 
 import unittest
+import re
 import time
 
 class TimeTestCase(unittest.TestCase):
@@ -142,6 +143,23 @@ class TimeTestCase(unittest.TestCase):
             'timezone', 
             'tzname', 
             'tzset']);
+
+
+class BadTimeFunctionArgsLength(unittest.TestCase):
+    def setUp(self):
+        self.t = 1606419201
+        self.t_struct = time.gmtime(self.t)
+
+    def assertFailsArgsLengthCheck(self, regex, fun, *args):
+        # TODO: assertRaisesRegex() would be useful here.
+        with self.assertRaises(TypeError) as raise_context:
+            fun(*args)
+        if raise_context.exception is not None:
+            exception_msg = str(raise_context.exception)
+            if not re.search(regex, exception_msg):
+                self.fail(f"exception matching '{regex}' not raised:"
+                          f" '{exception_msg}'")
+
 
 if __name__ == '__main__':
     unittest.main()
