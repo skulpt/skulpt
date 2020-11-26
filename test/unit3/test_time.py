@@ -160,6 +160,57 @@ class BadTimeFunctionArgsLength(unittest.TestCase):
                 self.fail(f"exception matching '{regex}' not raised:"
                           f" '{exception_msg}'")
 
+    def test_asctime(self):
+        # asctime([t])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.asctime, self.t_struct, "arg 2")
+
+    def test_ctime(self):
+        # ctime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.ctime, self.t, "arg 2")
+
+    def test_gmtime(self):
+        # gmtime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.gmtime, self.t, "arg 2")
+
+    def test_localtime(self):
+        # localtime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.localtime, self.t, "arg 2")
+
+    def test_mktime(self):
+        # mktime(t)
+        self.assertFailsArgsLengthCheck(
+            "exactly 1 argument",
+            time.mktime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "exactly 1 argument",
+            time.mktime, self.t_struct, "arg 2")
+
+    def test_strftime(self):
+        # strftime(format[, t])
+        self.assertFailsArgsLengthCheck(
+            "at least 1 argument",
+            time.strftime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "at most 2 arguments",
+            time.strftime, "%Y%m%d", self.t_struct, "arg 3")
+
+    def test_strptime(self):
+        # strptime(string[, format])
+        self.assertFailsArgsLengthCheck(
+            "at least 1 argument",
+            time.strptime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "at most 2 arguments",
+            time.strptime, "2020-11-26", "%Y-%m-%d", "arg 3")
+
 
 if __name__ == '__main__':
     unittest.main()
