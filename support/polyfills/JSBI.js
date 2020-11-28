@@ -15,7 +15,8 @@ const JSBI = Sk.global.JSBI = Sk.global.BigInt !== undefined ? {} : __JSBI;
 
 if (Sk.global.BigInt === undefined) {
     // __isBigInt is not part of the public api so include it if this is ever removed
-    JSBI.__isBigInt = JSBI.__isBigInt || ((x) => x instanceof JSBI);
+    const __isBigInt = JSBI.__isBigInt; // fixes a bug with null values passed to __isBigInt
+    JSBI.__isBigInt = __isBigInt ? (x) => x !== null && __isBigInt(x) : (x) => x instanceof JSBI;
     JSBI.powermod = (x, y, z) => {
         const One = JSBI.BigInt(1);
         let number = One;
