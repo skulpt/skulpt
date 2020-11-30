@@ -253,7 +253,7 @@ function _tokenize(filename, readline, encoding, yield_) {
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
     var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
 
-    const PseudoTokenRegexp = new RegExp(PseudoToken);
+    const PseudoTokenRegexp = new RegExp(PseudoToken, 'u');
 
     var lnum = 0,
         parenlev = 0,
