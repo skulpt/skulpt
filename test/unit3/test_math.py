@@ -1468,6 +1468,7 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isnan(float("inf")))
         self.assertFalse(math.isnan(0.))
         self.assertFalse(math.isnan(1.))
+        self.assertFalse(math.isnan(30))
 
     def testIsinf(self):
         self.assertTrue(math.isinf(float("inf")))
