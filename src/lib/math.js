@@ -591,8 +591,11 @@ var $builtinmodule = function (name) {
     mod.sqrt = new Sk.builtin.func(function sqrt(x) {
         Sk.builtin.pyCheckArgsLen("sqrt", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        return new Sk.builtin.float_(Math.sqrt(Sk.builtin.asnum$(x)));
+        const _x = Sk.builtin.asnum$(x);
+        if (_x < 0) {
+            throw new Sk.builtin.ValueError("math domain error");
+        }
+        return new Sk.builtin.float_(Math.sqrt(_x));
     });
 
     // Trigonometric functions and Hyperbolic
