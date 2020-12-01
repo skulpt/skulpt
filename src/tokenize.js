@@ -253,7 +253,7 @@ function _tokenize(filename, readline, encoding, yield_) {
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
     var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
 
-    const PseudoTokenRegexp = new RegExp(PseudoToken, 'u');
+  const PseudoTokenRegexp = new RegExp(PseudoToken, 'u');
 
     var lnum = 0,
         parenlev = 0,
@@ -403,7 +403,8 @@ function _tokenize(filename, readline, encoding, yield_) {
 
                 var token = line.substring(start, end);
                 var initial = line[start];
-                //console.log("token:",token, "initial:",initial, start, end);
+                console.log("token:",token, "initial:",initial, start, end);
+                debugger;
                 if (contains(numchars, initial) ||                 // ordinary number
                     (initial == '.' && token != '.' && token != '...')) {
                     yield_(new TokenInfo(tokens.T_NUMBER, token, spos, epos, line));
