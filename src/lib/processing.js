@@ -1815,7 +1815,7 @@ var $builtinmodule = function (name) {
 	    return new_vec;
 	});
 	
-	$loc.set = new Sk.builtin.func(function (self, x, y, x) {
+	$loc.set = new Sk.builtin.func(function (self, x, y, z) {
 	    // set() Sets the x, y, z component of the vector
 	    if (typeof(z) === "undefined") {
 		self.v.set(x.v, y.v);
