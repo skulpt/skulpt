@@ -49,7 +49,8 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             // i.e. the reverse of this.$jsstr();
             let cc;
             const uint8 = new Uint8Array(source.length);
-            for (let i in source) {
+            const len = source.length;
+            for (let i = 0; i < len; i++) {
                 cc = source.charCodeAt(i);
                 if (cc > 0xff) {
                     throw new Sk.builtin.UnicodeDecodeError("invalid string at index " + i + " (possibly contains a unicode character)");
