@@ -969,7 +969,7 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
             return Sk.builtin.bool.true$;
         }
     }
-    return Sk.misceval.bool.false$;
+    return Sk.builtin.bool.false$;
 };
 
 Sk.builtin.globals = function globals () {
