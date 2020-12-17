@@ -822,8 +822,8 @@ Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  * kws should be an array of string/pyObject pairs as key/values
  */
 Sk.misceval.callsimArray = function (func, args, kws) {
-    var argarray = args ? args : [];
-    return Sk.misceval.apply(func, undefined, undefined, kws, argarray);
+    args = args || [];
+    return Sk.misceval.retryOptionalSuspensionOrThrow(Sk.misceval.callsimOrSuspendArray(func, args, kws));
 };
 Sk.exportSymbol("Sk.misceval.callsimArray", Sk.misceval.callsimArray);
 
@@ -862,10 +862,8 @@ Sk.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
  *
  */
 Sk.misceval.callsimOrSuspendArray = function (func, args, kws) {
-    if (!args) {
-        args = [];
-    }
-    if (func.tp$call) {
+    args = args || [];
+    if (func !== undefined && func.tp$call) {
         return func.tp$call(args, kws);
     } else {
         // Slow path handles things like calling native JS fns
