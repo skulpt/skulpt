@@ -573,7 +573,7 @@ function generateTurtleModule(_target) {
             this._filling    = false;
             this._undoBuffer = [];
             this._speed      = 3;
-            this._computed_speed = 5;
+            this._computed_speed = 15;
             this._colorMode  = 1.0;
             this._state      = undefined;
 
@@ -849,9 +849,39 @@ function generateTurtleModule(_target) {
         };
 
         proto.$speed = function(speed) {
-            if (speed !== undefined) {
-                this._speed          = Math.max(0, Math.min(1000, speed));
-                this._computed_speed = Math.max(0, speed * 2 - 1);
+            if (typeof(speed) !== "undefined") {
+                if (typeof(speed) !== "string" && typeof(speed) !== "number") {
+                    throw new Sk.builtin.TypeError("speed expected a string or number");
+                }
+                if (typeof(speed) === "string") {
+                    if (speed === "fastest") {
+                        speed = 0;
+                    } else if (speed === "fast") {
+                        speed = 10;
+                    } else if (speed === "normal") {
+                        speed = 6;
+                    } else if (speed === "slow") {
+                        speed = 3;
+                    } else if (speed === "slowest") {
+                        speed = 1;
+                    } else {
+                        speed = this._speed;
+                    }
+                }
+                if (typeof(speed) === "number") {
+                    if (speed > 10 || speed < 0.5) {
+                        speed = 0;
+                    }
+                    if (speed === 0) {
+                        _config.animate = false;
+                        getFrameManager().refreshInterval(0);
+                    } else {
+                        _config.animate = true;
+                        getFrameManager().refreshInterval(this.$delay());
+                    }
+                }
+                this._speed = speed;
+                this._computed_speed = speed * 5;
                 return this.addUpdate(undefined, false, {speed:this._computed_speed});
             }
 
