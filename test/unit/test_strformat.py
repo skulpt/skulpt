@@ -77,5 +77,11 @@ class string_format(unittest.TestCase):
         d = datetime.datetime(2010, 7, 4, 12, 15, 58)
         self.assertEqual('2010-07-04 12:15:58', '{:%Y-%m-%d %H:%M:%S}'.format(d))
 
+    def test_scientific_notation(self):
+        self.assertEqual('1.234568e+08', "{:e}".format(123456789))
+        self.assertEqual('1.234568E+08', "{:E}".format(123456789))
+        self.assertEqual('1.234568e+16', "{:e}".format(12345678987654321))
+        self.assertEqual('1e+08', "{:.0e}".format(123456789))
+
 if __name__ == '__main__':
     unittest.main()

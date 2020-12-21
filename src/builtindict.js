@@ -487,6 +487,7 @@ Sk.setupObjects = function (py3) {
         };
         delete Sk.builtin.int_.prototype.tp$str;
         delete Sk.builtin.bool.prototype.tp$str;
+        delete Sk.builtins["raw_input"];
         delete Sk.builtin.str.prototype.decode;
         Sk.builtins["bytes"] = Sk.builtin.bytes;
         Sk.builtins["ascii"] = new Sk.builtin.sk_method(
@@ -540,6 +541,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtin.bool.prototype.tp$str = function () {
             return this.$r();
         };
+        Sk.builtins["raw_input"] = new Sk.builtin.func(Sk.builtin.raw_input);
         Sk.builtin.str.prototype.decode = Sk.builtin.str.$py2decode;
         delete Sk.builtins["bytes"];
         delete Sk.builtins["ascii"];

@@ -189,6 +189,9 @@ let formatNumber = function(num, formatSpec, isFractional) {
                     result += ".0";
                 }
             }
+            if (conversionType.toLowerCase()==="e") {
+                result = result.replace(/^([-+]?[0-9]*\.?[0-9]+[eE][-+]?)([0-9])?$/, "$10$2");
+            }
             if (m[FMT.COMMA]){
                 var parts = result.toString().split(".");
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");

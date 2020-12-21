@@ -300,7 +300,7 @@ const $builtinmodule = function (name) {
 
     function isnan(x) {
         // Return True if x is a NaN (not a number), and False otherwise.
-        Sk.builtin.pyCheckType("x", "float", Sk.builtin.checkFloat(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
         if (isNaN(_x)) {
@@ -595,8 +595,11 @@ const $builtinmodule = function (name) {
 
     function sqrt(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        return new Sk.builtin.float_(Math.sqrt(Sk.builtin.asnum$(x)));
+        const _x = Sk.builtin.asnum$(x);
+        if (_x < 0) {
+            throw new Sk.builtin.ValueError("math domain error");
+        }
+        return new Sk.builtin.float_(Math.sqrt(_x));
     };
 
     // Trigonometric functions and Hyperbolic

@@ -1389,8 +1389,8 @@ class MathTests(unittest.TestCase):
         self.ftest('sqrt(1)', math.sqrt(1), 1)
         self.ftest('sqrt(4)', math.sqrt(4), 2)
         self.assertEqual(math.sqrt(INF), INF)
-        # self.assertRaises(ValueError, math.sqrt, -1)
-        # self.assertRaises(ValueError, math.sqrt, NINF)
+        self.assertRaises(ValueError, math.sqrt, -1)
+        self.assertRaises(ValueError, math.sqrt, NINF)
         self.assertTrue(math.isnan(math.sqrt(NAN)))
 
     def testTan(self):
@@ -1468,6 +1468,7 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isnan(float("inf")))
         self.assertFalse(math.isnan(0.))
         self.assertFalse(math.isnan(1.))
+        self.assertFalse(math.isnan(30))
 
     def testIsinf(self):
         self.assertTrue(math.isinf(float("inf")))
