@@ -849,43 +849,36 @@ function generateTurtleModule(_target) {
         };
 
         proto.$speed = function(speed) {
-            if (typeof(speed) !== "undefined") {
-                if (typeof(speed) !== "string" && typeof(speed) !== "number") {
-                    throw new Sk.builtin.TypeError("speed expected a string or number");
-                }
+            if (typeof(speed) === "undefined") {
+                return this._speed;
+            }
+            const speeds = {"fastest":0, "fast":10, "normal":6, "slow":3, "slowest":1};
+            if (speed in speeds) {
+                speed = speeds[speed];
+            }
+            if (typeof(speed) !== "number") {
                 if (typeof(speed) === "string") {
-                    if (speed === "fastest") {
-                        speed = 0;
-                    } else if (speed === "fast") {
-                        speed = 10;
-                    } else if (speed === "normal") {
-                        speed = 6;
-                    } else if (speed === "slow") {
-                        speed = 3;
-                    } else if (speed === "slowest") {
-                        speed = 1;
-                    } else {
-                        speed = this._speed;
-                    }
+                    const valid_speeds = Object.keys(speeds).join(", ");
+                    throw new Sk.builtin.TypeError("speed string expected one of " + valid_speeds);
                 }
-                if (typeof(speed) === "number") {
-                    if (speed > 10 || speed < 0.5) {
-                        speed = 0;
-                    }
-                    if (speed === 0) {
-                        _config.animate = false;
-                        getFrameManager().refreshInterval(0);
-                    } else {
-                        _config.animate = true;
-                        getFrameManager().refreshInterval(this.$delay());
-                    }
-                }
-                this._speed = speed;
-                this._computed_speed = speed * 5;
-                return this.addUpdate(undefined, false, {speed:this._computed_speed});
+                throw new Sk.builtin.TypeError("speed expected a string or number");
+            }
+            if (speed > 0.5 && speed < 10.5) {
+                speed = Sk.builtin.asnum$(Sk.builtin.round(Sk.builtin.assk$(speed)));
+            } else {
+                speed = 0;
+            }
+            if (speed === 0) {
+                _config.animate = false;
+                getFrameManager().refreshInterval(0);
+            } else {
+                _config.animate = true;
+                getFrameManager().refreshInterval(this.$delay());
             }
 
-            return this._speed;
+            this._speed = speed;
+            this._computed_speed = speed * 5;
+            return this.addUpdate(undefined, false, {speed:this._computed_speed});
         };
         proto.$speed.minArgs = 0;
         proto.$speed.co_varnames = ["speed"];
