@@ -573,7 +573,7 @@ function generateTurtleModule(_target) {
             this._filling    = false;
             this._undoBuffer = [];
             this._speed      = 3;
-            this._computed_speed = 15;
+            this._computed_speed = 6;
             this._colorMode  = 1.0;
             this._state      = undefined;
 
@@ -868,16 +868,8 @@ function generateTurtleModule(_target) {
             } else {
                 speed = 0;
             }
-            if (speed === 0) {
-                _config.animate = false;
-                getFrameManager().refreshInterval(0);
-            } else {
-                _config.animate = true;
-                getFrameManager().refreshInterval(this.$delay());
-            }
-
             this._speed = speed;
-            this._computed_speed = speed * 5;
+            this._computed_speed = speed * 2;
             return this.addUpdate(undefined, false, {speed:this._computed_speed});
         };
         proto.$speed.minArgs = 0;
