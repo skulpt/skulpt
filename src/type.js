@@ -498,10 +498,13 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
         throw new Sk.builtin.TypeError("can't set attributes of built-in/extension type '" + this.prototype.tp$name + "'");
     }
     var jsName = Sk.fixReserved(pyName.$jsstr());
-    this[jsName] = value;
-    this.prototype[jsName] = value;
-    if (jsName in Sk.dunderToSkulpt) {
-        Sk.builtin.type.$allocateSlot(this, jsName);
+
+    if (value !== null) {
+        this[jsName] = value;
+        this.prototype[jsName] = value;
+        if (jsName in Sk.dunderToSkulpt) {
+            Sk.builtin.type.$allocateSlot(this, jsName);
+        }
     }
 };
 
