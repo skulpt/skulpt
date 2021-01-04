@@ -721,3 +721,8 @@ Sk.builtin.type.$allocateSlot = function (klass, dunder) {
         };
     }
 };
+
+Sk.builtin.type.$deallocateSlot = function (klass, dunder) {
+    let skulpt_name = Sk.dunderToSkulpt[dunder];
+    delete klass.prototype[skulpt_name];
+};
