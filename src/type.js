@@ -273,11 +273,13 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         klass.prototype.tp$setattr = function(pyName, data, canSuspend) {
-            var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$setattr);
-            if (setf !== undefined) {
-                var f = /** @type {?} */ (setf);
-                r = Sk.misceval.callsimOrSuspendArray(f, [pyName, data]);
-                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+            if (data !== null) {
+                var r, setf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$setattr);
+                if (setf !== undefined) {
+                    var f = /** @type {?} */ (setf);
+                    r = Sk.misceval.callsimOrSuspendArray(f, [pyName, data]);
+                    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                }
             }
 
             return Sk.builtin.object.prototype.GenericSetAttr.call(this, pyName, data, canSuspend);
