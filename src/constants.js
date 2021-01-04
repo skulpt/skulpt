@@ -35,6 +35,7 @@ Sk.builtin.str.$cmp = new Sk.builtin.str("__cmp__");
 Sk.builtin.str.$complex = new Sk.builtin.str("__complex__");
 Sk.builtin.str.$contains = new Sk.builtin.str("__contains__");
 Sk.builtin.str.$copy = new Sk.builtin.str("__copy__");
+Sk.builtin.str.$delattr = new Sk.builtin.str("__delattr__");
 Sk.builtin.str.$dict = new Sk.builtin.str("__dict__");
 Sk.builtin.str.$dir = new Sk.builtin.str("__dir__");
 Sk.builtin.str.$enter = new Sk.builtin.str("__enter__");
