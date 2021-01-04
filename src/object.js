@@ -218,6 +218,30 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
             const mangled = pyName.$mangled;
             dict[mangled] = value;
         }
+    } else {
+        // value === null: delete attribute
+
+        if (dict.mp$del_subscript) {
+            if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass)) {
+                // Cannot delete attributes from a builtin object
+                throw new Sk.builtin.AttributeError("cannot delete attributes of builtin type '" + objname + "'");
+            }
+            try {
+                dict.mp$del_subscript(pyName);
+            } catch (e) {
+                if (e instanceof Sk.builtin.KeyError) {
+                    throw new Sk.builtin.AttributeError(pyName);
+                } else {
+                    throw e;
+                }
+            }
+        } else if (typeof dict === "object") {
+            const mangled = pyName.$mangled;
+            if (!dict.hasOwnProperty(mangled)) {
+                throw new Sk.builtin.AttributeError(pyName);
+            }
+            delete dict[mangled];
+        }
     }
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
