@@ -281,6 +281,14 @@ Sk.builtin.type = function (name, bases, dict) {
                     r = Sk.misceval.callsimOrSuspendArray(f, [pyName, data]);
                     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
                 }
+            } else {
+                // data === null: delete attribute
+                var r, delf = Sk.builtin.object.prototype.GenericGetAttr.call(this, Sk.builtin.str.$delattr);
+                if (delf !== undefined) {
+                    var f = /** @type {?} */ (delf);
+                    r = Sk.misceval.callsimOrSuspendArray(f, [pyName]);
+                    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+                }
             }
 
             return Sk.builtin.object.prototype.GenericSetAttr.call(this, pyName, data, canSuspend);
