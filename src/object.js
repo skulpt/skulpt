@@ -203,6 +203,12 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
             if (f) {
                 return f.call(descr, this, value, canSuspend);
             }
+        } else {
+            // value === null: delete attribute
+            f = descr.tp$descr_del;
+            if (f) {
+                return f.call(descr, this, canSuspend);
+            }
         }
     }
 
