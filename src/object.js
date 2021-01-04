@@ -197,10 +197,12 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
 
     // otherwise, look in the type for a descr
     if (descr !== undefined && descr !== null) {
-        f = descr.tp$descr_set;
-        // todo; is this the right lookup priority for data descriptors?
-        if (f) {
-            return f.call(descr, this, value, canSuspend);
+        if (value !== null) {
+            f = descr.tp$descr_set;
+            // todo; is this the right lookup priority for data descriptors?
+            if (f) {
+                return f.call(descr, this, value, canSuspend);
+            }
         }
     }
 
