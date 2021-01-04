@@ -514,6 +514,17 @@ Sk.builtin.type.prototype.tp$setattr = function (pyName, value) {
         if (jsName in Sk.dunderToSkulpt) {
             Sk.builtin.type.$allocateSlot(this, jsName);
         }
+    } else {
+        // value === null: delete attribute
+        if (!this.hasOwnProperty(jsName)) {
+            throw new Sk.builtin.AttributeError(pyName);
+        }
+
+        delete this[jsName];
+        delete this.prototype[jsName];
+        if (jsName in Sk.dunderToSkulpt) {
+            Sk.builtin.type.$deallocateSlot(this, jsName);
+        }
     }
 };
 
