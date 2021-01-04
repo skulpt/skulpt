@@ -58,7 +58,8 @@ Sk.dunderToSkulpt = {
     "__nonzero__": ["nb$nonzero", 1],
     "__len__": ["sq$length", 1],
     "__get__": ["tp$descr_get", 3],
-    "__set__": ["tp$descr_set", 3]
+    "__set__": ["tp$descr_set", 3],
+    "__delete__": ["tp$descr_del", 2]
 };
 
 Sk.setupDunderMethods = function (py3) {
