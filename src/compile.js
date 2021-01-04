@@ -879,7 +879,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Del:
-                    Sk.asserts.fail("todo Del;");
+                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ", null, true);");
+                    this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Param:
                 default:
