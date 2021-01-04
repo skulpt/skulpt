@@ -204,16 +204,18 @@ Sk.builtin.object.prototype.GenericSetAttr = function (pyName, value, canSuspend
         }
     }
 
-    if (dict.mp$ass_subscript) {
-        if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
-            dict.mp$lookup(pyName) === undefined) {
-            // Cannot add new attributes to a builtin object
-            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
+    if (value !== null) {
+        if (dict.mp$ass_subscript) {
+            if (this instanceof Sk.builtin.object && !(this.ob$type.sk$klass) &&
+                dict.mp$lookup(pyName) === undefined) {
+                // Cannot add new attributes to a builtin object
+                throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
+            }
+            dict.mp$ass_subscript(pyName, value);
+        } else if (typeof dict === "object") {
+            const mangled = pyName.$mangled;
+            dict[mangled] = value;
         }
-        dict.mp$ass_subscript(pyName, value);
-    } else if (typeof dict === "object") {
-        const mangled = pyName.$mangled;
-        dict[mangled] = value;
     }
 };
 Sk.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
