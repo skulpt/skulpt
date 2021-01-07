@@ -29,7 +29,6 @@ module.exports = (env, argv) => {
         minimize: false
     };
     var outfile = 'skulpt.js';
-    var assertfile = './assert-dev.js';
     var mod = {};
 
     if (argv.mode === 'production') {
@@ -48,7 +47,6 @@ module.exports = (env, argv) => {
             ]
         };
         outfile = 'skulpt.min.js';
-        assertfile = './assert-prod.js';
         mod = {
             rules: [
                 {
@@ -77,7 +75,8 @@ module.exports = (env, argv) => {
                 GITVERSION: JSON.stringify(git.version()),
                 GITHASH: JSON.stringify(git.commithash()),
                 GITBRANCH: JSON.stringify(git.branch()),
-                BUILDDATE: JSON.stringify(new Date())
+                BUILDDATE: JSON.stringify(new Date()),
+                ENABLEASSERTS: argv.mode === "production" ? false : true,
             }),
             new CompressionWebpackPlugin({
                 include: /^skulpt\.min\.js$/,
@@ -85,11 +84,6 @@ module.exports = (env, argv) => {
             })
         ],
         optimization: opt,
-        resolve: {
-            alias: {
-                'assert': assertfile
-            }
-        },
         module: mod
     };
 

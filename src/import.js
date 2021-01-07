@@ -120,7 +120,7 @@ Sk.doOneTimeInitialization = function (canSuspend) {
         var fileWithoutExtension = file.split(".")[0].split("/")[1];
         var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
         mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
+        Sk.asserts.assert(() => mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
         Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
         delete Sk.builtins[fileWithoutExtension].__module__;
         delete Sk.globals[fileWithoutExtension];
@@ -553,7 +553,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             return Sk.misceval.chain(importChain, function() {
                 // if there's a fromlist we want to return the leaf module
                 // (ret), not the toplevel namespace
-                Sk.asserts.assert(leafModule);
+                Sk.asserts.assert(() => leafModule);
                 return leafModule;
             });
         }

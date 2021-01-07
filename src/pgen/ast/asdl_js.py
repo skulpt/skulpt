@@ -237,7 +237,7 @@ class FunctionVisitor(PrototypeVisitor):
         emit("{")
         for argtype, argname, opt in attrs:
             if not opt:
-                emit("Sk.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
+                emit("Sk.asserts.assert(() => %s !== null && %s !== undefined);" % (argname, argname), 1)
 
         if union:
             self.emit_body_union(name, args, attrs)

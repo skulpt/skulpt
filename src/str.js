@@ -1170,7 +1170,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                 neg = n.nb$isnegative();
             }
 
-            Sk.asserts.assert(r !== undefined, "unhandled number format");
+            Sk.asserts.assert(() => r !== undefined, "unhandled number format");
 
             precZeroPadded = false;
 
