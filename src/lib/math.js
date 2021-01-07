@@ -317,7 +317,11 @@ var $builtinmodule = function (name) {
     });
 
     mod.isqrt = new Sk.builtin.func(function issqrt(x) {
-        throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
+        Sk.builtin.pyCheckArgsLen("isqrt", arguments.length, 1, 1);
+        Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
+
+        const _sq = Math.sqrt(Sk.builtin.asnum$(x));
+        return new Sk.builtin.int_(Math.floor(_sq));
     });
 
     mod.ldexp = new Sk.builtin.func(function ldexp(x, i) {

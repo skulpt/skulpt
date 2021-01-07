@@ -1076,6 +1076,15 @@ class MathTests(unittest.TestCase):
         self.ftest('radians(0)', math.radians(0), 0)
         self.assertEqual("%10.5f" % math.radians(180), "   3.14159")
         self.assertEqual("%10.5f" % math.degrees(math.radians(180)), " 180.00000")
+    
+    def testIsqrt(self):
+        self.assertRaises(TypeError, math.isqrt)
+        self.ftest('isqrt(0)', math.isqrt(0), 0)
+        self.ftest('isqrt(1)', math.isqrt(1), 1)
+        self.ftest('isqrt(10)', math.isqrt(10), 3)
+        self.ftest('isqrt(35)', math.isqrt(35), 5)
+        self.ftest('isqrt(35)', math.isqrt(68), 8)
+        
 
     def testRemainder(self):
         # from fractions import Fraction
