@@ -64,4 +64,4 @@ Sk.builtin.filter_.prototype["$r"] = function () {
     return new Sk.builtin.str("<filter object>");
 };
 
-Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
+

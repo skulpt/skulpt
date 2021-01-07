@@ -121,7 +121,7 @@ Sk.builtin.asnum$ = function (a) {
     return a;
 };
 
-Sk.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
+
 
 /**
  * Return a Python number (either float or int) from a Javascript number.
@@ -138,7 +138,7 @@ Sk.builtin.assk$ = function (a) {
         return new Sk.builtin.float_(a);
     }
 };
-Sk.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
+
 
 Sk.builtin.asnum$nofloat = function (a) {
     var decimal;
@@ -237,7 +237,7 @@ Sk.builtin.asnum$nofloat = function (a) {
 
     return mantissa;
 };
-Sk.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
+
 
 Sk.builtin.round = function round (number, ndigits) {
     var special;

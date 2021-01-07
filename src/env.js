@@ -97,7 +97,7 @@ Sk.configure = function (options) {
 
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
     Sk.asserts.assert(typeof Sk.timeoutMsg === "function");
-    Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+    
 
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     Sk.asserts.assert(Sk.isArrayLike(Sk.sysargv));
@@ -216,7 +216,7 @@ Sk.configure = function (options) {
     Sk.token.setupTokens(Sk.__future__.python3);
 };
 
-Sk.exportSymbol("Sk.configure", Sk.configure);
+
 
 /*
 * Replaceable handler for uncaught exceptions
@@ -231,7 +231,7 @@ Sk.uncaughtException = function(err) {
 Sk.uncaughtException = function(err) {
     throw err;
 };
-Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
+
 
 /*
  *      Replaceable message for message timeouts
@@ -239,7 +239,7 @@ Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
-Sk.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+
 
 /*
  *  Hard execution timeout, throws an error. Set to null to disable
@@ -279,7 +279,7 @@ Sk.sysargv = [];
 Sk.getSysArgv = function () {
     return Sk.sysargv;
 };
-Sk.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
+
 
 
 /**
@@ -402,8 +402,8 @@ Sk.switch_version = function (method_to_map, python3) {
     }
 };
 
-Sk.exportSymbol("Sk.__future__", Sk.__future__);
-Sk.exportSymbol("Sk.inputfun", Sk.inputfun);
+
+
 
 function setupDictIterators (python3) {
     if (python3) {

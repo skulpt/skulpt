@@ -47,7 +47,7 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
     this.func_closure = closure;
     return this;
 };
-Sk.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
+
 
 Sk.abstr.setUpInheritance("generator", Sk.builtin.generator, Sk.builtin.object);
 
@@ -127,4 +127,4 @@ Sk.builtin.makeGenerator = function (next, data) {
 
     return gen;
 };
-Sk.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
+

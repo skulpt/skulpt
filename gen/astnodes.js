@@ -1504,4 +1504,4 @@ Sk.astnodes.withitem.prototype._fields = [
     "optional_vars", function(n) { return n.optional_vars; }
 ];
 
-Sk.exportSymbol("Sk.astnodes", Sk.astnodes);
+

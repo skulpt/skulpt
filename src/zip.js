@@ -60,4 +60,3 @@ Sk.builtin.zip_.prototype["$r"] = function () {
     return new Sk.builtin.str("<zip object>");
 };
 
-Sk.exportSymbol("Sk.builtin.zip_", Sk.builtin.zip_);

@@ -1744,4 +1744,4 @@ Sk.builtin.bytes_iter_.prototype.next$ = function (self) {
     return ret;
 };
 
-Sk.exportSymbol("Sk.builtin.bytes", Sk.builtin.bytes);
+

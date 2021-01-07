@@ -587,8 +587,8 @@ Sk.importStar = function (module, loc, global) {
     }
 };
 
-Sk.exportSymbol("Sk.importMain", Sk.importMain);
-Sk.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
-Sk.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
-Sk.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
-Sk.exportSymbol("Sk.importStar", Sk.importStar);
+
+
+
+
+

@@ -82,4 +82,3 @@ Sk.builtin.map_.prototype["$r"] = function () {
     return new Sk.builtin.str("<map object>");
 };
 
-Sk.exportSymbol("Sk.builtin.map_", Sk.builtin.map_);

@@ -66,7 +66,7 @@ Sk.ffi.remapToPy = function (obj) {
 
     Sk.asserts.fail("unhandled remap type " + typeof(obj));
 };
-Sk.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
+
 
 /**
  * Maps from Python dict/list/str/number to Javascript Object/Array/string/number.
@@ -118,7 +118,7 @@ Sk.ffi.remapToJs = function (obj) {
         return obj.v;
     }
 };
-Sk.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
+
 
 Sk.ffi.callback = function (fn) {
     if (fn === undefined) {
@@ -128,14 +128,14 @@ Sk.ffi.callback = function (fn) {
         return Sk.misceval.apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
     };
 };
-Sk.exportSymbol("Sk.ffi.callback", Sk.ffi.callback);
+
 
 Sk.ffi.stdwrap = function (type, towrap) {
     var inst = new type();
     inst["v"] = towrap;
     return inst;
 };
-Sk.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
+
 
 /**
  * for when the return type might be one of a variety of basic types.
@@ -159,7 +159,7 @@ Sk.ffi.basicwrap = function (obj) {
     }
     Sk.asserts.fail("unexpected type for basicwrap");
 };
-Sk.exportSymbol("Sk.ffi.basicwrap", Sk.ffi.basicwrap);
+
 
 Sk.ffi.unwrapo = function (obj) {
     if (obj === undefined) {
@@ -167,7 +167,7 @@ Sk.ffi.unwrapo = function (obj) {
     }
     return obj["v"];
 };
-Sk.exportSymbol("Sk.ffi.unwrapo", Sk.ffi.unwrapo);
+
 
 Sk.ffi.unwrapn = function (obj) {
     if (obj === null) {
@@ -175,4 +175,4 @@ Sk.ffi.unwrapn = function (obj) {
     }
     return obj["v"];
 };
-Sk.exportSymbol("Sk.ffi.unwrapn", Sk.ffi.unwrapn);
+

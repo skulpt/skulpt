@@ -1121,7 +1121,7 @@ Sk.builtin.complex.prototype.nb$nonzero = function () {
 
 
 // ToDo: think about inplace methods too
-Sk.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
+
 
 
 /**

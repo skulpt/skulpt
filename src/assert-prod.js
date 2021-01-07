@@ -9,7 +9,7 @@ Sk.asserts = {};
 Sk.asserts.assert = function (condition, message) {
     return condition;
 };
-Sk.exportSymbol("Sk.asserts.assert", Sk.asserts.assert);
+
 
 /**
  * Cause assertion failure.
@@ -18,4 +18,4 @@ Sk.exportSymbol("Sk.asserts.assert", Sk.asserts.assert);
  */
 Sk.asserts.fail = function (message) {
 };
-Sk.exportSymbol("Sk.asserts.fail", Sk.asserts.fail);
+

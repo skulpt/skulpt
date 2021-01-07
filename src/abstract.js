@@ -263,12 +263,12 @@ Sk.abstr.unary_op_ = function (v, opname) {
 Sk.abstr.numberBinOp = function (v, w, op) {
     return Sk.abstr.binary_op_(v, w, op);
 };
-Sk.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
+
 
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
     return Sk.abstr.binary_iop_(v, w, op);
 };
-Sk.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
+
 
 Sk.abstr.numberUnaryOp = function (v, op) {
     if (op === "Not") {
@@ -276,7 +276,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     }
     return Sk.abstr.unary_op_(v, op);
 };
-Sk.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
+
 
 //
 // Sequence
@@ -636,7 +636,7 @@ Sk.abstr.objectDelItem = function (o, key) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
 };
-Sk.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
+
 
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
@@ -653,7 +653,7 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
 };
-Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
+
 
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
@@ -670,7 +670,7 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
-Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
+
 
 
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
@@ -700,7 +700,7 @@ Sk.abstr.gattr = function (obj, pyName, canSuspend) {
         return ret;
     }
 };
-Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
+
 
 
 Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
@@ -716,13 +716,13 @@ Sk.abstr.sattr = function (obj, pyName, data, canSuspend) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + pyName.$jsstr() + "'");
     }
 };
-Sk.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
+
 
 
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
-Sk.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+
 
 
 /**
@@ -783,7 +783,7 @@ Sk.abstr.iter = function(obj) {
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
-Sk.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
+
 
 /**
  * Special method look up. First try getting the method via
@@ -803,7 +803,7 @@ Sk.abstr.lookupSpecial = function(op, pyName) {
 
     return Sk.builtin.type.typeLookup(obtp, pyName);
 };
-Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
+
 
 /**
  * Mark a class as unhashable and prevent its `__hash__` function from being called.

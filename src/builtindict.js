@@ -143,5 +143,5 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["ascii"];
     }
 };
-Sk.exportSymbol("Sk.setupObjects", Sk.setupObjects);
-Sk.exportSymbol("Sk.builtins", Sk.builtins);
+
+
