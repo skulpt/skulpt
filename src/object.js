@@ -93,12 +93,13 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
                 const oldto = this.ob$type;
                 const newto = value;
 
-                if (
-                    !(oldto.$isSubType(Sk.builtin.module) && newto.$isSubType(Sk.builtin.module)) &&
-                    (oldto.sk$klass === undefined || newto.sk$klass === undefined)
-                ) {
+                if (!(oldto.$isSubType(Sk.builtin.module) && newto.$isSubType(Sk.builtin.module)) && (oldto.sk$klass === undefined || newto.sk$klass === undefined)) {
                     throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
-                } else if (value.prototype.sk$builtinBase !== this.sk$builtinBase) {
+                } else if (
+                    value.prototype.sk$builtinBase !== this.sk$builtinBase ||
+                    value.prototype.sk$slotsBase !== this.sk$slotsBase ||
+                    value.prototype.sk$hasDict !== this.sk$hasDict
+                ) {
                     throw new Sk.builtin.TypeError(
                         "__class__ assignment: '" + Sk.abstr.typeName(this) + "' object layout differs from '" + value.prototype.tp$name + "'"
                     );

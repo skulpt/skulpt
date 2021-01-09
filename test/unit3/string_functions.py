@@ -638,6 +638,21 @@ class string_functions(unittest.TestCase):
         self.assertFalse('1 2 3'.isnumeric())
         self.assertFalse('123.4'.isnumeric())
         self.assertFalse(''.isnumeric())
+
+    def test_isidentifier(self):
+        self.assertTrue("a".isidentifier())
+        self.assertTrue("Z".isidentifier())
+        self.assertTrue("_".isidentifier())
+        self.assertTrue("b0".isidentifier())
+        self.assertTrue("bc".isidentifier())
+        self.assertTrue("b_".isidentifier())
+        # self.assertTrue("µ".isidentifier())
+        self.assertTrue("𝔘𝔫𝔦𝔠𝔬𝔡𝔢".isidentifier())
+
+        self.assertFalse(" ".isidentifier())
+        self.assertFalse("[".isidentifier())
+        self.assertFalse("©".isidentifier())
+        self.assertFalse("0".isidentifier())
         
     def test___contains__(self):
         self.assertTrue(''.__contains__(''))
