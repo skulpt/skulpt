@@ -61,6 +61,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             }
         },
         tp$getattr: Sk.generic.getAttr,
+        tp$richcompare: true,
         ob$eq: compareSlot((v, w) => v == w, JSBI.equal),
         ob$ne: compareSlot((v, w) => v != w, JSBI.notEqual),
         ob$gt: compareSlot((v, w) => v > w, JSBI.greaterThan),

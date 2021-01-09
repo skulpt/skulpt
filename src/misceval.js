@@ -451,7 +451,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     // similar rules apply as with binops - prioritize the reflected ops of subtypes
     if (w_is_subclass) {
         swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-        if (w[swapped_shortcut] !== v[swapped_shortcut] && (ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        if (w.tp$richcompare !== v.tp$richcompare && (ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }

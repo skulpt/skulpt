@@ -500,7 +500,7 @@ function $allocateSlot(dunder, dunderFunc) {
     if (proto.hasOwnProperty(slot_name)) {
         delete proto[slot_name]; // required in order to override the multiple inheritance getter slots
     }
-    proto[slot_name] = slot_def.$slot_func(dunderFunc);
+    proto[slot_name] = slot_def.$slot_func(dunderFunc, proto);
 }
 
 function $allocateGetterSlot(dunder) {

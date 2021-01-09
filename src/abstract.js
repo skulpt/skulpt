@@ -1012,11 +1012,21 @@ const op2shortcut = Object.entries({
 });
 
 function _set_up_richcompare_wrappers(slots) {
-    op2shortcut.forEach(([op, shortcut]) => {
-        slots[shortcut] = function (other) {
-            return this.tp$richcompare(other, op);
-        };
-    });
+    const richcompare = slots.tp$richcompare; 
+    if (richcompare === true) {
+        // then we've defined our own ob$slots so create a generic wrapper - see int and float
+        slots.tp$richcompare = function call_richcompare_slot(other, op) {
+            return this[op2shortcut[op]](other);
+        }
+        ;
+    } else {
+        op2shortcut.forEach(([op, shortcut]) => {
+            slots[shortcut] = function (other) {
+                // avoid recursive calls call this specific slot
+                return richcompare.call(this, other, op);
+            };
+        });
+    }
 }
 
 function _set_up_reflected_number_slots(slots) {

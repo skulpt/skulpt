@@ -157,6 +157,27 @@ function slotFuncOneArg(dunderFunc) {
     };
 }
 
+const op2shortcut = {
+    Eq: "ob$eq",
+    NotEq: "ob$ne",
+    Gt: "ob$gt",
+    GtE: "ob$ge",
+    Lt: "ob$lt",
+    LtE: "ob$le",
+};
+
+function richCompareSlot(dunderFunc, proto) {
+    if (!proto.hasOwnProperty("tp$richcompare")) {
+        Object.defineProperty(proto, "tp$richcompare", {
+            value: function call_richcompare_slot(other, op) {
+                return this[op2shortcut[op]](other);
+            },
+            writable: true,
+        });
+    }
+    return slotFuncOneArg(dunderFunc);
+}
+
 function slotFuncGetAttribute(pyName, canSuspend) {
     let getattributeFn = this.ob$type.$typeLookup(Sk.builtin.str.$getattribute);
     if (getattributeFn instanceof Sk.builtin.wrapper_descriptor) {
@@ -641,7 +662,7 @@ slots.__delete__ = {
 slots.__eq__ = {
     $name: "__eq__",
     $slot_name: "ob$eq",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
@@ -658,7 +679,7 @@ slots.__eq__ = {
 slots.__ge__ = {
     $name: "__ge__",
     $slot_name: "ob$ge",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
@@ -674,7 +695,7 @@ slots.__ge__ = {
 slots.__gt__ = {
     $name: "__gt__",
     $slot_name: "ob$gt",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
@@ -690,7 +711,7 @@ slots.__gt__ = {
 slots.__le__ = {
     $name: "__le__",
     $slot_name: "ob$le",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
@@ -706,7 +727,7 @@ slots.__le__ = {
 slots.__lt__ = {
     $name: "__lt__",
     $slot_name: "ob$lt",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },
@@ -722,7 +743,7 @@ slots.__lt__ = {
 slots.__ne__ = {
     $name: "__ne__",
     $slot_name: "ob$ne",
-    $slot_func: slotFuncOneArg,
+    $slot_func: richCompareSlot,
     $wrapper: wrapperRichCompare,
     $textsig: "($self, value, /)",
     $flags: { OneArg: true },

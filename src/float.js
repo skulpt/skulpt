@@ -139,6 +139,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         nb$ispositive() {
             return this.v >= 0;
         },
+        tp$richcompare: true,
         ob$eq: numberSlot((v, w) => v == w),
         ob$ne: numberSlot((v, w) => v != w),
         ob$gt: numberSlot((v, w) => v > w),
