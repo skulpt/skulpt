@@ -10,7 +10,6 @@ __all__ = ("date", "datetime", "time", "timedelta", "timezone", "tzinfo",
 
 import time as _time
 import math as _math
-import sys
 from operator import index as _index
 
 try:
