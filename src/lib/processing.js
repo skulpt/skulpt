@@ -1355,7 +1355,7 @@ var $builtinmodule = function (name) {
         mod.renderMode = mode;
     });
 
-    mod.exitp = new Sk.builtin.func(function (h, w) {
+    mod.exitp = new Sk.builtin.func(function () {
         mod.processing.exit();
     });
 
@@ -1854,7 +1854,7 @@ var $builtinmodule = function (name) {
 	$loc.div = new Sk.builtin.func(function (self, vec) {
 	    // div()	Divides the vector by a scalar
             var new_vec = Sk.misceval.callsimArray(mod.PVector);
-	    new_vec.v = self.v.dic(vec.v);
+	    new_vec.v = self.v.div(vec.v);
 	    return new_vec;
 	});
 

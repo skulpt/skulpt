@@ -1,6 +1,7 @@
 __author__ = 'Jacco Kulman'
 
 import unittest
+import re
 import time
 
 class TimeTestCase(unittest.TestCase):
@@ -99,7 +100,29 @@ class TimeTestCase(unittest.TestCase):
         self.assertEqual([x*2 for x in gen.sleeping_generator()], [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
 
     def test_strftime(self):
-        self.assertEqual(time.strftime("%b %d %Y %H:%M:%S", time.localtime(3661 + time.timezone)), "Jan 01 1970 01:01:01");
+        # Skulpt computes the timezone offset in 2002, so use a date
+        # in that year.  The following number was computed by running
+        #
+        #     import datetime
+        #     print((datetime.date(2002, 2, 3) - datetime.date(1970, 1, 1)).days)
+        #
+        # in CPython.
+        #
+        days_to_20020203 = 11721
+        seconds_within_day = 3661  # One hour + one minute + one second
+        timestamp_to_test = (
+            days_to_20020203 * 24 * 60 * 60  # Unix timestamps ignore leap seconds
+            + seconds_within_day
+            + time.timezone
+        )
+        self.assertEqual(
+            time.strftime("%b %d %Y %H:%M:%S", time.localtime(timestamp_to_test)),
+            "Feb 03 2002 01:01:01"
+        );
+
+    def test_strftime_format_arg_only(self):
+        year_str = time.strftime("%Y")
+        self.assertEqual(year_str[:2], "20")
 
     def _test_dir(self):
         # this test fails because the compare 
@@ -124,6 +147,74 @@ class TimeTestCase(unittest.TestCase):
             'timezone', 
             'tzname', 
             'tzset']);
+
+
+class BadTimeFunctionArgsLength(unittest.TestCase):
+    def setUp(self):
+        self.t = 1606419201
+        self.t_struct = time.gmtime(self.t)
+
+    def assertFailsArgsLengthCheck(self, regex, fun, *args):
+        # TODO: assertRaisesRegex() would be useful here.
+        with self.assertRaises(TypeError) as raise_context:
+            fun(*args)
+        if raise_context.exception is not None:
+            exception_msg = str(raise_context.exception)
+            if not re.search(regex, exception_msg):
+                self.fail(f"exception matching '{regex}' not raised:"
+                          f" '{exception_msg}'")
+
+    def test_asctime(self):
+        # asctime([t])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.asctime, self.t_struct, "arg 2")
+
+    def test_ctime(self):
+        # ctime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.ctime, self.t, "arg 2")
+
+    def test_gmtime(self):
+        # gmtime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.gmtime, self.t, "arg 2")
+
+    def test_localtime(self):
+        # localtime([secs])
+        self.assertFailsArgsLengthCheck(
+            "at most 1 argument",
+            time.localtime, self.t, "arg 2")
+
+    def test_mktime(self):
+        # mktime(t)
+        self.assertFailsArgsLengthCheck(
+            "exactly 1 argument",
+            time.mktime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "exactly 1 argument",
+            time.mktime, self.t_struct, "arg 2")
+
+    def test_strftime(self):
+        # strftime(format[, t])
+        self.assertFailsArgsLengthCheck(
+            "at least 1 argument",
+            time.strftime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "at most 2 arguments",
+            time.strftime, "%Y%m%d", self.t_struct, "arg 3")
+
+    def test_strptime(self):
+        # strptime(string[, format])
+        self.assertFailsArgsLengthCheck(
+            "at least 1 argument",
+            time.strptime)  # no args
+        self.assertFailsArgsLengthCheck(
+            "at most 2 arguments",
+            time.strptime, "2020-11-26", "%Y-%m-%d", "arg 3")
+
 
 if __name__ == '__main__':
     unittest.main()
