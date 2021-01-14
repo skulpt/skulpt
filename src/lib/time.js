@@ -26,9 +26,19 @@ var $builtinmodule = function (name) {
     };
     
     var extra_fields = {
-        "tm_zone": {$get() {return this.tm$zone}, $doc: "abbreviation of timezone name"},
-        "tm_gmtoff": {$get() {return this.tm$gmtoff}, $doc: "offset from UTC in seconds"},
-    }
+        tm_zone: {
+            $get() {
+                return this.tm$zone || Sk.builtin.none.none$;
+            },
+            $doc: "abbreviation of timezone name",
+        },
+        tm_gmtoff: {
+            $get() {
+                return this.tm$gmtoff || Sk.builtin.none.none;
+            },
+            $doc: "offset from UTC in seconds",
+        },
+    };
 
     var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields, extra_fields);
 
