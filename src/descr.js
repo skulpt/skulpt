@@ -151,7 +151,7 @@ Sk.builtin.method_descriptor = buildDescriptor("method_descriptor", "method", {
             this.tp$call = this.$methodCallMinArgs;
         } else {
             // for legacy methods that haven't defined flags yet
-            Sk.asserts.fail('no flags provided for ' + this.$name);
+            Sk.asserts.fail("no flags provided for " + this.$name);
             this.func_code = method_def.$meth;
             this.tp$call = this.$defaultCall;
             this.$memoiseFlags = Sk.builtin.func.prototype.$memoiseFlags;

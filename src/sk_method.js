@@ -61,7 +61,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
         } else if (flags.MinArgs !== undefined) {
             this.tp$call = this.$callMinArgs;
         } else {
-            Sk.asserts.fail('no flags provided for ' + this.$name);
+            Sk.asserts.fail("no flags provided for " + this.$name);
             this.func_code = this.$meth;
             this.tp$call = this.$defaultCallMethod;
         }
