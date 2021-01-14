@@ -15,16 +15,12 @@ from operator import index as _index
 try:
     bytes
 except NameError:
-    class bytes:
-        def __new__(self, iterable):
-            s = ""
-            if isinstance(iterable, list):
-                for it in iterable:
-                    s += chr(it)
-                return s
-            elif isinstance(iterable, str):
-                return iterable
-            raise TypeError("python 2.7 does not support this argument")
+    # only used in get state - we just need to create a bytes like str
+    def bytes(iterable):
+        s = ""
+        for it in iterable:
+            s += chr(it)
+        return s
 
 def _cmp(x, y):
     return 0 if x == y else 1 if x > y else -1
@@ -812,23 +808,6 @@ class date:
 
         year, month, day (required, base 1)
         """
-        if (month is None and
-            isinstance(year, (bytes, str)) and len(year) == 4 and
-            1 <= ord(year[2:3]) <= 12):
-            # Pickle support
-            if isinstance(year, str):
-                try:
-                    year = year.encode('latin1')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a date object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(year)
-            self._hashcode = -1
-            return self
         year, month, day = _check_date_fields(year, month, day)
         self = object.__new__(cls)
         self._year = year
@@ -1262,22 +1241,6 @@ class time:
         tzinfo (default to None)
         fold (keyword only, default to zero)
         """
-        if (isinstance(hour, (bytes, str)) and len(hour) == 6 and
-            ord(hour[0:1])&0x7F < 24):
-            # Pickle support
-            if isinstance(hour, str):
-                try:
-                    hour = hour.encode('latin1')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a time object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(hour, minute or None)
-            self._hashcode = -1
-            return self
         hour, minute, second, microsecond, fold = _check_time_fields(
             hour, minute, second, microsecond, fold)
         _check_tzinfo_arg(tzinfo)
@@ -1586,22 +1549,6 @@ class datetime(date):
 
     def __new__(cls, year, month=None, day=None, hour=0, minute=0, second=0,
                 microsecond=0, tzinfo=None, fold=0):
-        if (isinstance(year, (bytes, str)) and len(year) == 10 and
-            1 <= ord(year[2:3])&0x7F <= 12):
-            # Pickle support
-            if isinstance(year, str):
-                try:
-                    year = bytes(year, 'ascii')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a datetime object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(year, month)
-            self._hashcode = -1
-            return self
         year, month, day = _check_date_fields(year, month, day)
         hour, minute, second, microsecond, fold = _check_time_fields(
             hour, minute, second, microsecond, fold)
