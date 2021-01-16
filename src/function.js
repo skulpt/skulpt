@@ -257,7 +257,14 @@ function $resolveArgs(posargs, kw) {
             }
         }
         if (missing.length != 0 && (this.co_argcount || this.co_varnames)) {
-            throw new Sk.builtin.TypeError(this.$name + "() missing " + missing.length + " required argument" + (missing.length==1?"":"s") + (missingUnnamed ? "" : (": " + missing.join(", "))));
+            throw new Sk.builtin.TypeError(
+                this.$name +
+                    "() missing " +
+                    missing.length +
+                    " required argument" +
+                    (missing.length == 1 ? "" : "s") +
+                    (missingUnnamed ? "" : ": " + missing.map((x) => "'" + x + "'").join(", "))
+            );
         }
         for (; i < co_argcount; i++) {
             if (args[i] === undefined) {

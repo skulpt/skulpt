@@ -108,19 +108,20 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
             $meth() {
                 return new Sk.builtin.tuple([this.$origin]);
             },
+            $flags: { NoArgs: true },
         },
         __instancecheck__: {
             $meth(_) {
                 throw new Sk.builtin.TypeError("isinstance() argument 2 cannot be a parameterized generic");
             },
-            $flags: {OneArg: true},
+            $flags: { OneArg: true },
         },
         __subclasscheck__: {
             $meth(_) {
                 throw new Sk.builtin.TypeError("issubclass() argument 2 cannot be a parameterized generic");
             },
-            $flags: {OneArg: true},
-        }
+            $flags: { OneArg: true },
+        },
     },
     getsets: {
         __parameters__: {

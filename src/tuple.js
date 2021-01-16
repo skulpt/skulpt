@@ -141,6 +141,9 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         sk$asarray() {
             return this.v.slice(0);
         },
+        forEach(...args) {
+            return this.v.forEach(...args);
+        }
     },
     methods: /**@lends {Sk.builtin.tuple.prototype}*/ {
         __getnewargs__: {
@@ -187,6 +190,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             $doc: "Return number of occurrences of value.",
         },
     },
+    classmethods: Sk.generic.classGetItem,
 });
 
 Sk.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);

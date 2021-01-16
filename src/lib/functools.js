@@ -502,6 +502,7 @@ cache_info_type:    namedtuple class with the fields:\n\
             // __reduce__: {},
             // __setstate__: {}
         },
+        classmethods: Sk.generic.classGetItem,
         proto: {
             adj$args_kws: partial_adjust_args_kwargs,
             check$func(func) {
@@ -555,6 +556,7 @@ cache_info_type:    namedtuple class with the fields:\n\
                 $flags: { NoArgs: true },
             },
         },
+        classmethods: Sk.generic.classGetItem,
         getsets: {
             func: {
                 $get() {
