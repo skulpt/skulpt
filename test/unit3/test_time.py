@@ -120,6 +120,10 @@ class TimeTestCase(unittest.TestCase):
             "Feb 03 2002 01:01:01"
         );
 
+    def test_strftime_format_arg_only(self):
+        year_str = time.strftime("%Y")
+        self.assertEqual(year_str[:2], "20")
+
     def _test_dir(self):
         # this test fails because the compare 
         self.assertEqual(dir(time), [
