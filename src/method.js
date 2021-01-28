@@ -24,7 +24,9 @@ Sk.builtin.method = function (func, self, klass, builtin) {
     this.im_self = self || Sk.builtin.none.none$;
     this.im_class = klass || Sk.builtin.none.none$;
     this.im_builtin = builtin;
+
     this["$d"] = {
+        __doc__: func.$d["__doc__"],
         im_func: func,
         im_self: self,
         im_class: klass
