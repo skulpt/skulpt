@@ -9,4 +9,5 @@ class classmethod(object):
             klass = type(obj)
         def newfunc(*args, **kwargs):
             return self.f(klass, *args, **kwargs)
+        newfunc.__doc__ = self.f.__doc__
         return newfunc
