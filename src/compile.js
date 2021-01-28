@@ -2716,8 +2716,19 @@ Compiler.prototype.exitScope = function () {
  * @param {Sk.builtin.str=} class_for_super
  */
 Compiler.prototype.cbody = function (stmts, class_for_super) {
-    var i;
-    for (i = 0; i < stmts.length; ++i) {
+    var i = 0;
+
+    // If we have a docstring, then assign it to __doc__, and skip over
+    // the expression when properly compiling the rest of the body.  This
+    // happens for class and module bodies.
+    //
+    const maybeDocstring = this.maybeCDocstringOfBody(stmts);
+    if (maybeDocstring !== null) {
+        out("$loc.__doc__ = ", maybeDocstring, ";");
+        i = 1;
+    }
+
+    for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
 };
