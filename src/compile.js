@@ -2138,7 +2138,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
     }
     else {
-        var res;
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
             for (let decorator of decos.reverse()) {
