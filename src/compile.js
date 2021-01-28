@@ -2129,6 +2129,24 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
 };
 
+/** JavaScript for the docstring of the given body, or null if the
+ * body has no docstring.
+ */
+Compiler.prototype.maybeCDocstringOfBody = function(body) {
+    if (body.length === 0)  // Don't think this can happen?
+        return null;
+
+    const stmt_0 = body[0];
+    if (stmt_0.constructor !== Sk.astnodes.Expr)
+        return null;
+
+    const expr = stmt_0.value;
+    if (expr.constructor !== Sk.astnodes.Str)
+        return null;
+
+    return this.vexpr(expr);
+};
+
 Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
     Sk.asserts.assert(s instanceof Sk.astnodes.FunctionDef);
