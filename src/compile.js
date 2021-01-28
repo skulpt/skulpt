@@ -2163,6 +2163,29 @@ Compiler.prototype.maybeCDocstringOfBody = function(body) {
     return this.vexpr(expr);
 };
 
+/** JavaScript for the docstring of the given node.  Only called from
+ * buildcodeobj(), and expects a FunctionDef, Lambda, or GeneratorExp
+ * node.  We give a "None" docstring to a GeneratorExp node, although
+ * it is not carried over to the final generator; this is harmless.
+ */
+Compiler.prototype.cDocstringOfCode = function(node) {
+    switch (node.constructor) {
+    case Sk.astnodes.AsyncFunctionDef:  // For when it's supported
+    case Sk.astnodes.FunctionDef:
+        return (
+            this.maybeCDocstringOfBody(node.body)
+            || "Sk.builtin.none.none$"
+        );
+
+    case Sk.astnodes.Lambda:
+    case Sk.astnodes.GeneratorExp:
+        return "Sk.builtin.none.none$";
+
+    default:
+        Sk.asserts.fail(`unexpected node kind ${node.constructor.name}`);
+    }
+}
+
 Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
     Sk.asserts.assert(s instanceof Sk.astnodes.FunctionDef);
