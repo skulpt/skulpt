@@ -2080,6 +2080,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
 
     //
+    // Skulpt doesn't have "co_consts", but we keep the docstring (or None)
+    // with the code object for possible future use with a descriptor.  This
+    // happens for named functions, lambdas, and generator-expressions.
+    //
+    out(scopename, ".co_docstring=", this.cDocstringOfCode(n), ";");
+
+    //
     // attach flags
     //
     if (kwarg) {
