@@ -88,6 +88,11 @@ class TestDocstrings(unittest.TestCase):
         f = lambda x: 42
         self.assertEqual(f.__doc__, None)
 
+    def test_internal_no_docstring(self):
+        # This test will need updating if/when divmod is given
+        # a docstring.
+        self.assertEqual(divmod.__doc__, None)
+
 
 if __name__ == '__main__':
     unittest.main()
