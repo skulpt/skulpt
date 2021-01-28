@@ -2067,6 +2067,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
 
     //
+    // Skulpt doesn't have "co_consts", so record the docstring (or
+    // None) in the "co_docstring" property of the code object, ready
+    // for use by the Sk.builtin.func constructor.
+    //
+    out(scopename, ".co_docstring=", this.cDocstringOfCode(n), ";");
+
+    //
     // attach flags
     //
     if (kwarg) {
