@@ -125,6 +125,7 @@ Sk.setupObjects = function (py3) {
         delete Sk.builtins["unicode"];
         delete Sk.builtins["basestring"];
         delete Sk.builtins["raw_input"];
+        delete Sk.builtins["unichr"];
         delete Sk.builtin.str.prototype.decode;
         Sk.builtins["bytes"] = Sk.builtin.bytes;
         Sk.builtins["ascii"] = new Sk.builtin.func(Sk.builtin.ascii);
@@ -134,6 +135,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["zip"] = new Sk.builtin.func(Sk.builtin.zip);
         Sk.builtins["range"] = new Sk.builtin.func(Sk.builtin.range);
         Sk.builtins["xrange"] = new Sk.builtin.func(Sk.builtin.xrange);
+        Sk.builtins["unichr"] = new Sk.builtin.func(Sk.builtin.unichr);
         Sk.builtins["StandardError"] = Sk.builtin.Exception;
         Sk.builtins["unicode"] = Sk.builtin.str;
         Sk.builtins["basestring"] = Sk.builtin.str;
