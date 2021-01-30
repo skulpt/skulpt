@@ -45,6 +45,11 @@ class Strawberry:
         return None
 
 
+class Tangerine:
+    def peel():
+        pass
+
+
 class TestDocstrings(unittest.TestCase):
     def test_function(self):
         self.assertEqual(banana.__doc__, "Yellow")
@@ -63,6 +68,11 @@ class TestDocstrings(unittest.TestCase):
     def test_class(self):
         self.assertEqual(Strawberry.__doc__, "Delicious")
         self.assertEqual(Strawberry.doc, "Delicious")
+
+    def test_class_no_docstring(self):
+        self.assertEqual(Tangerine.__doc__, None)
+        self.assertEqual(Tangerine.peel.__doc__, None)
+        self.assertEqual(Tangerine().peel.__doc__, None)
 
     def test_method(self):
         self.assertEqual(Strawberry.weight.__doc__, "Heavy")
