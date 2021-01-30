@@ -240,6 +240,11 @@ Sk.builtin.type = function (name, bases, dict) {
             dict.mp$ass_subscript(Sk.builtin.str.$module, Sk.globals["__name__"]);
         }
 
+        // set __doc__ if not present
+        if(dict.mp$lookup(Sk.builtin.str.$doc) === undefined) {
+            dict.mp$ass_subscript(Sk.builtin.str.$doc, Sk.builtin.none.none$);
+        }
+
         // copy properties into our klass object
         // uses python iter methods
         var k;
