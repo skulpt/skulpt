@@ -37,6 +37,7 @@ Sk.builtin.str.$contains = new Sk.builtin.str("__contains__");
 Sk.builtin.str.$copy = new Sk.builtin.str("__copy__");
 Sk.builtin.str.$dict = new Sk.builtin.str("__dict__");
 Sk.builtin.str.$dir = new Sk.builtin.str("__dir__");
+Sk.builtin.str.$doc = new Sk.builtin.str("__doc__");
 Sk.builtin.str.$enter = new Sk.builtin.str("__enter__");
 Sk.builtin.str.$eq = new Sk.builtin.str("__eq__");
 Sk.builtin.str.$exit = new Sk.builtin.str("__exit__");
