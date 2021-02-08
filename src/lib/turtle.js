@@ -2256,7 +2256,7 @@ function generateTurtleModule(_target) {
                     })
                 };
 
-                return susp;
+                susp.suspend();
             }
             else {
                 if (result === undefined) return Sk.builtin.none.none$;

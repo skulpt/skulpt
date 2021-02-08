@@ -77,7 +77,7 @@ var $builtinmodule = function (name) {
                 }
             })
         };
-        return susp;
+        susp.suspend();
     });
 
     mod.signal = new Sk.builtin.func(function () {

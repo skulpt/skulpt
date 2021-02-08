@@ -181,7 +181,7 @@ Sk.builtin.file.$readline = function (self, size, prompt) {
                 promise: x
             };
 
-            return susp;
+            susp.suspend();
         } else {
             return new Sk.builtin.str(x);
         }

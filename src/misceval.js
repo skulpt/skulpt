@@ -29,40 +29,71 @@ Sk.misceval = {};
  * @param {Object=} child A child suspension. 'optional' will be copied from here if supplied.
  * @param {Object=} data Data attached to this suspension. Will be copied from child if not supplied.
  */
-Sk.misceval.Suspension = function Suspension(resume, child, data) {
+Sk.misceval.Suspension = function Suspension(resume, child=null, data) {
     this.$isSuspension = true;
-    if (resume !== undefined && child !== undefined) {
-        this.resume = function () {
-            return resume(child.resume());
-        };
-    }
+    this.resume = resume || (() => {});
     this.child = child;
-    this.optional = child !== undefined && child.optional;
-    if (data === undefined && child !== undefined) {
+    this.optional = child != null && child.optional;
+    if (data === undefined && child != null) {
         this.data = child.data;
     } else {
-        this.data = data;
+        this.data = data || {};
     }
 };
+
+Sk.misceval.Suspension.prototype.suspend = function () {
+    throw this;
+};
+
 Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
 /**
  * @description
  * Well this seems pretty obvious by the name what it should do..
  *
- * @param {Sk.misceval.Suspension} susp
- * @param {string=} message
+ * @param {() => any} suspendablefn a callable that may throw a suspension
+ * @param {string=} message defaults to "Cannot call a function that blocks or suspends here"
  */
-Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
-    while (susp instanceof Sk.misceval.Suspension) {
-        if (!susp.optional) {
-            throw new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
-        }
-        susp = susp.resume();
+Sk.misceval.retryOptionalSuspensionOrThrow = function retryOptionalSuspensionOrThrow(suspendablefn, message) {
+    try {
+        return suspendablefn();
+    } catch (maybeSusp) {
+        return handleSuspensionOrReject(maybeSusp, (susp) => {
+            if (!susp.optional) {
+                throw new Sk.builtin.SuspensionError(
+                    message || "Cannot call a function that blocks or suspends here"
+                );
+            }
+            return Sk.misceval.retryOptionalSuspensionOrThrow(() => susp.resume(), message);
+        });
     }
-    return susp;
 };
 Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
+
+/**
+ * 
+ * @param {*} maybeSuspension An error that was thrown when handling a suspension
+ * @param {() => any} suspensionHandler A callable to handle the suspension.
+ * The suspensionHandler will likely create a new Suspension and throw it or call it's suspend method.
+ * @param {(err: any) => any} errorHandler A callable to handler an error. Default behaviour will throw the error
+ * 
+ * @returns {any} the return value from the suspensionHandler or the errorHandler
+ */
+function handleSuspensionOrReject(
+    maybeSuspension,
+    suspensionHandler,
+    errorHandler = (err) => {
+        throw err;
+    }
+) {
+    if (maybeSuspension instanceof Sk.misceval.Suspension) {
+        return suspensionHandler(maybeSuspension);
+    } else {
+        return errorHandler(maybeSuspension);
+    }
+}
+
+Sk.misceval.handleSuspensionOrReject = handleSuspensionOrReject;
 
 /**
  * @description
@@ -921,79 +952,58 @@ Sk.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  * @param{function()} suspendablefn returns either a result or a Suspension
  * @param{Object=} suspHandlers an object map of suspension handlers
  */
-Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
-    return new Promise(function (resolve, reject) {
-        try {
-            var r = suspendablefn();
-
-            (function handleResponse(r) {
-                try {
-                    // jsh*nt insists these be defined outside the loop
-                    var resume = function () {
-                        try {
-                            handleResponse(r.resume());
-                        } catch (e) {
-                            reject(e);
-                        }
-                    };
-                    var resumeWithData = function resolved(x) {
-                        try {
-                            r.data["result"] = x;
-                            resume();
-                        } catch (e) {
-                            reject(e);
-                        }
-                    };
-                    var resumeWithError = function rejected(e) {
-                        try {
-                            r.data["error"] = e;
-                            resume();
-                        } catch (ex) {
-                            reject(ex);
-                        }
-                    };
-
-                    while (r instanceof Sk.misceval.Suspension) {
-                        var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
-
-                        if (handler) {
-                            var handlerPromise = handler(r);
-                            if (handlerPromise) {
-                                handlerPromise.then(handleResponse, reject);
-                                return;
-                            }
-                        }
-
-                        if (r.data["type"] == "Sk.promise") {
-                            r.data["promise"].then(resumeWithData, resumeWithError);
-                            return;
-                        } else if (r.data["type"] == "Sk.yield") {
-                            // Assumes all yields are optional, as Sk.setTimeout might
-                            // not be able to yield.
-                            //Sk.setTimeout(resume, 0);
-                            Sk.global["setImmediate"](resume);
-                            return;
-                        } else if (r.data["type"] == "Sk.delay") {
-                            //Sk.setTimeout(resume, 1);
-                            Sk.global["setImmediate"](resume);
-                            return;
-                        } else if (r.optional) {
-                            // Unhandled optional suspensions just get
-                            // resumed immediately, and we go around the loop again.
-                            r = r.resume();
-                        } else {
-                            // Unhandled, non-optional suspension.
-                            throw new Sk.builtin.SuspensionError("Unhandled non-optional suspension of type '" + r.data["type"] + "'");
-                        }
-                    }
-
-                    resolve(r);
-                } catch (e) {
-                    reject(e);
+Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers = {}) {
+    return new Promise((resolve, reject) => {
+        function handleSuspension(susp) {
+            const data = susp.data;
+            const type = data.type;
+            const handler = suspHandlers[type] || suspHandlers["*"];
+            if (handler) {
+                const handlerPromise = handler(susp);
+                if (handlerPromise) {
+                    handlerPromise.then(resolve, (err) => handleSuspensionOrReject(err, handleSuspension, reject));
+                    return;
                 }
-            })(r);
-        } catch (e) {
-            reject(e);
+            }
+
+            const resumeAsync = () => {
+                try {
+                    resolve(susp.resume());
+                } catch (maybeSuspension) {
+                    handleSuspensionOrReject(maybeSuspension, handleSuspension, reject);
+                }
+            };
+
+            switch (type) {
+                case "Sk.promise":
+                    data.promise.then(
+                        (res) => {
+                            data.result = res;
+                            resumeAsync();
+                        },
+                        (err) => {
+                            data.error = err;
+                            resumeAsync();
+                        }
+                    );
+                    return;
+                case "Sk.delay":
+                case "Sk.yield":
+                    Sk.global["setImmediate"](resumeAsync);
+                    return;
+                default:
+                    if (susp.optional) {
+                        resumeAsync();
+                    } else {
+                        reject(new Sk.builtin.SuspensionError(`Unhandled non-optional suspension of type '${type}'`));
+                    }
+            }
+        }
+
+        try {
+            resolve(suspendablefn());
+        } catch (maybeSuspension) {
+            handleSuspensionOrReject(maybeSuspension, handleSuspension, reject);
         }
     });
 };
@@ -1022,54 +1032,23 @@ Sk.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
  *    return value, and then we will return f(<resumed-value).
  * This can be expanded to an arbitrary number of functions
  * (eg Sk.misceval.chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
- * @template T
- * @param {T}              initialValue
- * @param {...function(T)} chainedFns
+ * @param {...((prevRet?: any) => any)} chainedFns
  */
 
-Sk.misceval.chain = function (initialValue, chainedFns) {
-    // We try to minimse overhead when nothing suspends (the common case)
-    var i = 1,
-        value = initialValue,
-        j,
-        fs;
-
-    while (true) {
-        if (i == arguments.length) {
-            return value;
+Sk.misceval.chain = function chain(...chainedFns) {
+    let i = 0;
+    const numChained = chainedFns.length;
+    let value;
+    try {
+        while (i < numChained) {
+            value = chainedFns[i++](value);
         }
-        if (value && value.$isSuspension) {
-            break;
-        } // oops, slow case
-        value = arguments[i](value);
-        i++;
+        return value;
+    } catch (err) {
+        handleSuspensionOrReject(err, (child) => {
+            throw new Sk.misceval.Suspension(() => Sk.misceval.chain(() => child.resume(), ...chainedFns.slice(i)), child);
+        });
     }
-
-    // Okay, we've suspended at least once, so we're taking the slow(er) path.
-
-    // Copy our remaining arguments into an array (inline, because passing
-    // "arguments" out of a function kills the V8 optimiser).
-    // (discussion: https://github.com/skulpt/skulpt/pull/552)
-    fs = new Array(arguments.length - i);
-
-    for (j = 0; j < arguments.length - i; j++) {
-        fs[j] = arguments[i + j];
-    }
-
-    j = 0;
-
-    return (function nextStep(r) {
-        while (j < fs.length) {
-            if (r instanceof Sk.misceval.Suspension) {
-                return new Sk.misceval.Suspension(nextStep, r);
-            }
-
-            r = fs[j](r);
-            j++;
-        }
-
-        return r;
-    })(value);
 };
 Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
@@ -1077,39 +1056,50 @@ Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
  * Catch any exceptions thrown by a function, or by resuming any suspension it
  * returns.
  *
- *     var result = Sk.misceval.tryCatch(asyncFunc, function(err) {
- *       console.log(err);
- *     });
+ * @example
+ * ```javascript
+ *     var result = Sk.misceval.tryCatch(asyncFunc, (err) => console.log(err));
+ * ```
  *
- * Because exceptions are returned asynchronously aswell you can't catch them
- * with a try/catch. That's what this function is for.
+ * A function written with suspensions might throw a Suspension before
+ * returning a value or raising an excption. 
+ * You can't just wrap a function that suspends in a try/catch block
+ * without handling a thrown suspension. That's what this function is for.
+ * 
+ * @param {() => any} tryFn A callable that might Suspend
+ * @param {(err: any) => any} catchFn A callable to handle any exceptions thrown
+ * 
+ * @returns the return values from either the tryFn or catchFn
  */
-Sk.misceval.tryCatch = function (tryFn, catchFn) {
-    var r;
-
+Sk.misceval.tryCatch = function tryCatch(tryFn, catchFn) {
     try {
-        r = tryFn();
-    } catch (e) {
-        return catchFn(e);
-    }
-
-    if (r instanceof Sk.misceval.Suspension) {
-        var susp = new Sk.misceval.Suspension(undefined, r);
-        susp.resume = function () {
-            return Sk.misceval.tryCatch(r.resume, catchFn);
-        };
-        return susp;
-    } else {
-        return r;
+        return tryFn();
+    } catch (err) {
+        return handleSuspensionOrReject(
+            err,
+            (child) => {
+                throw new Sk.misceval.Suspension(() => Sk.misceval.tryCatch(() => child.resume(), catchFn), child);
+            },
+            catchFn
+        );
     }
 };
 Sk.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
+
+
+const tempIterator = (iterResult, iter) => ({
+    tp$iternext(canSuspend) {
+        this.tp$iternext = iter.tp$iternext.bind(iter);
+        return iterResult;
+    },
+});
 
 /**
  * @function
  * @description
  * Perform a suspension-aware for-each on an iterator, without
  * blowing up the stack.
+ * 
  * forFn() is called for each element in the iterator, with two
  * arguments: the current element and the previous return value
  * of forFn() (or initialValue on the first call). In this way,
@@ -1124,33 +1114,53 @@ Sk.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
  * the Sk.misceval.Break() constructor, that value will be
  * returned from iterFor(). It is therefore possible to use
  * iterFor() on infinite iterators.
- *
- * @param {*} iter
- * @param {function(pyObject,*=)} forFn
- * @param {*=} initialValue
+ * 
+ * @template T
+ * @param {*} iter A python iterable
+ * @param {(nextValue: pyObject, prevRet: T) => T} forFn The first argument is the next value
+ * @param {T} initialValue Provide an initial value. Allows iterFor to be used as a reducer
+ * 
+ * @returns {T} If a Break is thrown the function will return it's Break value.
  */
-Sk.misceval.iterFor = function (iter, forFn, initialValue) {
-    var prevValue = initialValue;
-
-    var breakOrIterNext = function (r) {
-        prevValue = r;
-        return r instanceof Sk.misceval.Break ? r : iter.tp$iternext(true);
-    };
-
-    return (function nextStep(i) {
-        while (i !== undefined) {
-            if (i instanceof Sk.misceval.Suspension) {
-                return new Sk.misceval.Suspension(nextStep, i);
-            }
-
-            if (i === Sk.misceval.Break || i instanceof Sk.misceval.Break) {
-                return i.brValue;
-            }
-
-            i = Sk.misceval.chain(forFn(i, prevValue), breakOrIterNext);
+Sk.misceval.iterFor = function iterFor(iter, forFn, initialValue) {
+    let iterSuspended = true;
+    let prevRet = initialValue;
+    try {
+        // we can't use for let (value of iterator) since we don't definitely know that iterator has a Symbol.iterator
+        for (let it = iter.tp$iternext(true); it !== undefined; it = iter.tp$iternext(true)) {
+            iterSuspended = false;
+            prevRet = forFn(it, prevRet);
+            iterSuspended = true;
         }
-        return prevValue;
-    })(iter.tp$iternext(true));
+        return prevRet;
+    } catch (err) {
+        return handleSuspensionOrReject(
+            err,
+            (child) => {
+                let resume;
+                if (iterSuspended) {
+                    resume = () =>
+                        Sk.misceval.chain(
+                            () => child.resume(),
+                            (iterResult) => Sk.misceval.iterFor(tempIterator(iterResult, iter), forFn, prevRet)
+                        );
+                } else {
+                    resume = () =>
+                        Sk.misceval.chain(
+                            () => child.resume(),
+                            (prevRet) => Sk.misceval.iterFor(iter, forFn, prevRet)
+                        );
+                }
+                throw new Sk.misceval.Suspension(resume, child);
+            },
+            (err) => {
+                if (err === Sk.misceval.Break || err instanceof Sk.misceval.Break) {
+                    return err.brValue;
+                }
+                throw err;
+            }
+        );
+    }
 };
 Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
 
@@ -1166,7 +1176,7 @@ Sk.exportSymbol("Sk.misceval.iterFor", Sk.misceval.iterFor);
  * @param {function(pyObject,*=)} forFn
  * @param {*=} initialValue
  */
-Sk.misceval.iterArray = function (args, forFn, initialValue) {
+Sk.misceval.iterArray = function iterArray(args, forFn, initialValue) {
     Sk.asserts.assert(Array.isArray(args), "iterArgs requires an array");
     let i = 0;
     return Sk.misceval.iterFor({tp$iternext: () => args[i++]}, forFn, initialValue);
@@ -1271,25 +1281,25 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 Sk.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
 
 /**
- * Do the boilerplate suspension stuff.
+ * The equiavlent of `new Sk.misceval.Suspension(promise).suspend();`
+ * or `throw new Sk.misceval.Suspension(promise);`
  */
 Sk.misceval.promiseToSuspension = function (promise) {
-    var suspension = new Sk.misceval.Suspension();
+    const suspension = new Sk.misceval.Suspension(
+        () => {
+            if (suspension.data["error"]) {
+                throw suspension.data["error"];
+            }
 
-    suspension.resume = function () {
-        if (suspension.data["error"]) {
-            throw suspension.data["error"];
+            return suspension.data["result"];
+        },
+        null,
+        {
+            type: "Sk.promise",
+            promise: promise,
         }
-
-        return suspension.data["result"];
-    };
-
-    suspension.data = {
-        type: "Sk.promise",
-        promise: promise,
-    };
-
-    return suspension;
+    );
+    suspension.suspend();
 };
 Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
 

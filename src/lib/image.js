@@ -220,7 +220,7 @@ $builtinmodule = function (name) {
                     }
                 })
             };
-            return susp;
+            susp.suspend();
         };
 
         var setpixel = function (self, x, y, pix) {
@@ -361,7 +361,7 @@ $builtinmodule = function (name) {
                     }
                 })
             };
-            return susp;
+            susp.suspend();
 
         });
 
