@@ -266,15 +266,15 @@ Compiler.prototype._jump = function (block) {
  * @param {Object=} e Object with keys 'lineno' and 'col_offset'
  */
 Compiler.prototype._handleSuspension = function(...statements) {
-    const retblk = this.newBlock("function return or resume suspension");
     if (this.u.blocks[this.u.curblock]._next === null) {
+        const retblk = this.newBlock("function return or resume suspension");
         out("$blk=", retblk, ";");
         out(...statements);
+        this.u.blocks[this.u.curblock]._next = retblk;
+        this.setBlock(retblk);
+        this.u.doesSuspend = true;
+        this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
     }
-    this.u.blocks[this.u.curblock]._next = retblk;
-    this.setBlock(retblk);
-    this.u.doesSuspend = true;
-    this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
 };
 Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
     if (!elts || elts.length == 0) {
@@ -1364,17 +1364,15 @@ Compiler.prototype.craise = function (s) {
         //this._jumpfalse(instantiatedException, isClass);
 
         // Instantiate exc with inst
-        let tmpout = "";
         if (s.inst) {
             var inst = this._gr("inst", this.vexpr(s.inst));
-            tmpout += "if(!(" + inst + " instanceof Sk.builtin.tuple)) {" +
+            out("if(!(" + inst + " instanceof Sk.builtin.tuple)) {" +
                 inst,"= new Sk.builtin.tuple([" + inst + "]);" +
-                "}";
-            tmpout += "$ret = Sk.misceval.callsimOrSuspendArray(" + exc + "," + inst + ".v);";
+                "}");
+            this._handleSuspension("$ret = Sk.misceval.callsimOrSuspendArray(" + exc + "," + inst + ".v);");
         } else {
-            tmpout += "$ret = Sk.misceval.callsimOrSuspend(" + exc + ");";
+            this._handleSuspension("$ret = Sk.misceval.callsimOrSuspend(" + exc + ");");
         }
-        this._handleSuspension(tmpout);
         out(exc,"=$ret;");
 
         this._jump(instantiatedException);
