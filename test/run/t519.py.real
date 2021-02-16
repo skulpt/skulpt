@@ -6,11 +6,11 @@
 2
 2
 3
-ValueError('list.index(x): x not in list')
-ValueError('list.index(x): x not in list')
-ValueError('list.index(x): x not in list')
-ValueError('list.index(x): x not in list')
-ValueError('list.index(x): x not in list')
-ValueError('list.index(x): x not in list')
-TypeError('slice indices must be integers')
-TypeError('slice indices must be integers')
+ValueError("'l' is not in list")
+ValueError("'l' is not in list")
+ValueError("'l' is not in list")
+ValueError("'l' is not in list")
+ValueError("'l' is not in list")
+ValueError("'l' is not in list")
+TypeError('slice indices must be integers or have an __index__ method')
+TypeError('slice indices must be integers or have an __index__ method')

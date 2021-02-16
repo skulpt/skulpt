@@ -31,19 +31,29 @@ module.exports = (env, argv) => {
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
     var mod = {};
+    var languageOut = (env && env.languageOut) || '';
 
     if (argv.mode === 'production') {
         opt = {
             noEmitOnErrors: true,
             minimizer: [
                 new ClosureWebpackPlugin({mode: 'STANDARD'}, {
-                    jscomp_error: ['accessControls', 'checkRegExp', 'checkTypes', 'checkVars',
+                    jscomp_error: ['accessControls', 'checkRegExp', 'checkVars', /*'checkTypes',*/
                                    'invalidCasts', 'missingProperties',
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
-                    jscomp_off: ['fileoverviewTags', 'deprecated'],
-                    languageOut: (env && env.languageOut) ? env.languageOut : 'ECMASCRIPT_2015',
-                    externs: 'support/externs/sk.js'
+                    jscomp_off: ['fileoverviewTags', 'deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
+                    languageOut: languageOut || 'ECMASCRIPT_2015',
+                    externs: 'support/externs/sk.js',
+                    rewritePolyfills: true,
+                    // compiler flags here
+                    //
+                    // for debugging help, try these:
+                    //
+                    // warningLevel: "QUIET",
+                    // formatting: 'PRETTY_PRINT',
+                    // debug: true,
+                    // renaming: false
                 })
             ]
         };
@@ -87,10 +97,15 @@ module.exports = (env, argv) => {
         optimization: opt,
         resolve: {
             alias: {
-                'assert': assertfile
+                'assert': assertfile,
             }
         },
-        module: mod
+
+        module: mod,
+        // uncomment this while working on closure compiler errors
+        // externals: {
+        //     jsbi: "JSBI",
+        // }
     };
 
     return config;

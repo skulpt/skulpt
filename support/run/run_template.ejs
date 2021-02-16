@@ -92,7 +92,7 @@ function runit(myDiv, pyver) {
             outf(err.nativeError.stack);
         } else {
             outf(err.toString());
-            outf(err.stack)
+            outf(err.stack || "")
         }
     });
 }

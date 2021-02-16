@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: unsupported operand type(s) for Add: 'NoneType' and 'int' on line 4
+EXCEPTION: TypeError: unsupported operand type(s) for +: 'NoneType' and 'int' on line 4

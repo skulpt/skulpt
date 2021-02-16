@@ -10,7 +10,6 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    mod.__file__ = "/src/lib/time/__init__.js";
 
     mod.__package__ = new Sk.builtin.str("");
 

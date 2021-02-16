@@ -83,23 +83,23 @@ class IterInheritsTestCase(unittest.TestCase):
         self.assertEqual(a, [])
 
         # todo: why __delitem__ not found?
-        # a = self.type2test([0, 1])
-        # self.assertRaises(IndexError, a.__delitem__, -3)
-        # self.assertRaises(IndexError, a.__delitem__, 2)
-        #
-        # a = self.type2test([])
-        # self.assertRaises(IndexError, a.__delitem__, 0)
-        #
-        # self.assertRaises(TypeError, a.__delitem__)
+        a = self.type2test([0, 1])
+        self.assertRaises(IndexError, a.__delitem__, -3)
+        self.assertRaises(IndexError, a.__delitem__, 2)
+        
+        a = self.type2test([])
+        self.assertRaises(IndexError, a.__delitem__, 0)
+        
+        self.assertRaises(TypeError, a.__delitem__)
 
     def test_set_subscript(self):
         self.type2test = list
         a = self.type2test(range(20))
         # todo: again __setitem__ not found
-        # self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 0), [1,2,3])
-        # self.assertRaises(TypeError, a.__setitem__, slice(0, 10), 1)
-        # self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 2), [1,2])
-        # self.assertRaises(TypeError, a.__getitem__, 'x', 1)
+        self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 0), [1,2,3])
+        self.assertRaises(TypeError, a.__setitem__, slice(0, 10), 1)
+        self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 2), [1,2])
+        self.assertRaises(TypeError, a.__getitem__, 'x', 1)
         a[slice(2,10,3)] = [1,2,3]
         self.assertEqual(a, self.type2test([0, 1, 1, 3, 4, 2, 6, 7, 3,
                                             9, 10, 11, 12, 13, 14, 15,
@@ -184,16 +184,16 @@ class IterInheritsTestCase(unittest.TestCase):
 
         self.assertRaises(TypeError, a.count)
 
-        # class BadExc(Exception):
-        #     pass
-        #
-        # class BadCmp:
-        #     def __eq__(self, other):
-        #         if other == 2:
-        #             raise BadExc()
-        #         return False
-        #
-        # self.assertRaises(BadExc, a.count, BadCmp())
+        class BadExc(Exception):
+            pass
+        
+        class BadCmp:
+            def __eq__(self, other):
+                if other == 2:
+                    raise BadExc()
+                return False
+        
+        self.assertRaises(BadExc, a.count, BadCmp())
 
     def test_index(self):
         u = self.type2test([0, 1])
@@ -212,17 +212,17 @@ class IterInheritsTestCase(unittest.TestCase):
 
         self.assertRaises(TypeError, u.index)
 
-        # class BadExc(Exception):
-        #     pass
-        #
-        # class BadCmp:
-        #     def __eq__(self, other):
-        #         if other == 2:
-        #             raise BadExc()
-        #         return False
-        #
-        # a = self.type2test([0, 1, 2, 3])
-        # self.assertRaises(BadExc, a.index, BadCmp())
+        class BadExc(Exception):
+            pass
+        
+        class BadCmp:
+            def __eq__(self, other):
+                if other == 2:
+                    raise BadExc()
+                return False
+        
+        a = self.type2test([0, 1, 2, 3])
+        self.assertRaises(BadExc, a.index, BadCmp())
 
     def test_slice(self):
         u = self.type2test("spam")
@@ -288,4 +288,4 @@ class IterInheritsTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    unittest.main()

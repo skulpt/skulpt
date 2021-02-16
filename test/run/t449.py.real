@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: start must be a integer on line 1
+EXCEPTION: TypeError: 'str' object cannot be interpreted as an integer on line 1

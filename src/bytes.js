@@ -2,14 +2,16 @@ require("fastestsmallesttextencoderdecoder");
 
 // Mapping from supported valid encodings to normalized encoding name
 const supportedEncodings = {
-    "utf": "utf-8",
-    "utf8": "utf-8",
-    "utf-8": "utf-8",
-    "ascii": "ascii"
+    utf: "utf-8",
+    utf8: "utf-8",
+    utf_8: "utf-8",
+    ascii: "ascii",
 };
 
+var space_reg = /\s+/g;
+var underscore_hyphen_reg = /[_-]+/g;
 function normalizeEncoding(encoding) {
-    const normalized = encoding.replace(/\s+/g, "").toLowerCase();
+    const normalized = encoding.replace(space_reg, "").replace(underscore_hyphen_reg, "_").toLowerCase();
     const supported = supportedEncodings[normalized];
     if (supported === undefined) {
         return encoding;
@@ -20,75 +22,945 @@ function normalizeEncoding(encoding) {
 const Encoder = new TextEncoder();
 const Decoder = new TextDecoder();
 
-// Stop gap until Uint8Array.from (or new Uint8Array(iterable)) gets wider support
-// This only handles the simple case used in this file
-function Uint8ArrayFromArray(source) {
-    if (Uint8Array.from) {
-        return Uint8Array.from(source);
-    }
-
-    const uarr = new Uint8Array(source.length);
-
-    for (let idx = 0; idx < source.length; idx++) {
-        uarr[idx] = source[idx];
-    }
-
-    return uarr;
-}
-
 /**
  * @constructor
- * @param {*} source Using constructor with new should be a js object
- * @param {Sk.builtin.str=} encoding Only called from python
- * @param {Sk.builtin.str=} errors Only called from python
+ * @param {undefined|Uint8Array|Array|number|string} source Using constructor with new should be a js object
  * @return {Sk.builtin.bytes}
  * @extends {Sk.builtin.object}
  */
-Sk.builtin.bytes = function (source, encoding, errors) {
-    if (!(this instanceof Sk.builtin.bytes)) {
-        // called from python
-        return newBytesFromPy(...arguments);
-    }
-
-    // deal with internal calls
-    if (source === undefined) {
-        this.v = new Uint8Array();
-    } else if (source instanceof Uint8Array) {
-        this.v = source;
-    } else if (Array.isArray(source)) {
-        Sk.asserts.assert(source.every((x) => x >= 0 && x < 256), "bad internal call to bytes with array");
-        this.v = Uint8ArrayFromArray(source);
-    } else if (typeof source === "string") {
-        // fast path must be binary string https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
-        // i.e. the reverse of this.$jsstr();
-        let cc;
-        const arr = [];
-        for (let i in source) {
-            cc = source.charCodeAt(i);
-            if (cc > 0xff) {
-                throw new Sk.builtin.UnicodeDecodeError("invalid string (possibly contains a unicode character)");
-            }
-            arr.push(cc);
+Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
+    constructor: function bytes(source) {
+        if (!(this instanceof Sk.builtin.bytes)) {
+            throw new TypeError("bytes is a constructor use 'new'");
         }
-        this.v = Uint8ArrayFromArray(arr);
-    } else if (typeof source === "number") {
-        this.v = new Uint8Array(source);
+        // deal with internal calls
+        if (source === undefined) {
+            this.v = new Uint8Array();
+        } else if (source instanceof Uint8Array) {
+            this.v = source;
+        } else if (Array.isArray(source)) {
+            Sk.asserts.assert(
+                source.every((x) => x >= 0 && x <= 0xff),
+                "bad internal call to bytes with array"
+            );
+            this.v = new Uint8Array(source);
+        } else if (typeof source === "string") {
+            // fast path must be binary string https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
+            // i.e. the reverse of this.$jsstr();
+            let cc;
+            const uint8 = new Uint8Array(source.length);
+            const len = source.length;
+            for (let i = 0; i < len; i++) {
+                cc = source.charCodeAt(i);
+                if (cc > 0xff) {
+                    throw new Sk.builtin.UnicodeDecodeError("invalid string at index " + i + " (possibly contains a unicode character)");
+                }
+                uint8[i] = cc;
+            }
+            this.v = uint8;
+        } else if (typeof source === "number") {
+            this.v = new Uint8Array(source);
+        } else {
+            throw new Sk.builtin.TypeError("bad argument to bytes constructor");
+        }
+    },
+    slots: /**@lends {Sk.builtin.bytes.prototype} */ {
+        tp$getattr: Sk.generic.getAttr,
+        tp$doc:
+            "bytes(iterable_of_ints) -> bytes\nbytes(string, encoding[, errors]) -> bytes\nbytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer\nbytes(int) -> bytes object of size given by the parameter initialized with null bytes\nbytes() -> empty bytes object\n\nConstruct an immutable array of bytes from:\n  - an iterable yielding integers in range(256)\n  - a text string encoded using the specified encoding\n  - any object implementing the buffer API.\n  - an integer",
+        tp$new(args, kwargs) {
+            if (this !== Sk.builtin.bytes.prototype) {
+                return this.$subtype_new(args, kwargs);
+            }
+            kwargs = kwargs || [];
+            let source, pySource, dunderBytes, encoding, errors;
+            if (args.length <= 1 && +kwargs.length === 0) {
+                pySource = args[0];
+            } else {
+                [pySource, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("bytes", [null, "pySource", "errors"], args, kwargs);
+                ({ encoding, errors } = checkGetEncodingErrors("bytes", encoding, errors));
+                if (!Sk.builtin.checkString(pySource)) {
+                    throw new Sk.builtin.TypeError("encoding or errors without a string argument");
+                }
+                return strEncode(pySource, encoding, errors);
+            }
+
+            if (pySource === undefined) {
+                return new Sk.builtin.bytes();
+            } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
+                const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, []);
+                return Sk.misceval.chain(ret, (bytesSource) => {
+                    if (!Sk.builtin.checkBytes(bytesSource)) {
+                        throw new Sk.builtin.TypeError("__bytes__ returned non-bytes (type " + Sk.abstr.typeName(bytesSource) + ")");
+                    }
+                    return bytesSource;
+                });
+            } else if (Sk.misceval.isIndex(pySource)) {
+                source = Sk.misceval.asIndexSized(pySource, Sk.builtin.OverflowError);
+                if (source < 0) {
+                    throw new Sk.builtin.ValueError("negative count");
+                }
+                return new Sk.builtin.bytes(source);
+            } else if (Sk.builtin.checkBytes(pySource)) {
+                return new Sk.builtin.bytes(pySource.v);
+            } else if (Sk.builtin.checkString(pySource)) {
+                throw new Sk.builtin.TypeError("string argument without an encoding");
+            } else if (Sk.builtin.checkIterable(pySource)) {
+                let source = [];
+                let r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
+                    const n = Sk.misceval.asIndexSized(byte);
+                    if (n < 0 || n > 255) {
+                        throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+                    }
+                    source.push(n);
+                });
+                return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
+            }
+            throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
+        },
+        $r() {
+            let num;
+            let quote = "'";
+            const hasdbl = this.v.indexOf(34) !== -1;
+            let ret = "";
+
+            for (let i = 0; i < this.v.length; i++) {
+                num = this.v[i];
+                if (num < 9 || (num > 10 && num < 13) || (num > 13 && num < 32) || num > 126) {
+                    ret += makehexform(num);
+                } else if (num === 9 || num === 10 || num === 13 || num === 39 || num === 92) {
+                    switch (num) {
+                        case 9:
+                            ret += "\\t";
+                            break;
+                        case 10:
+                            ret += "\\n";
+                            break;
+                        case 13:
+                            ret += "\\r";
+                            break;
+                        case 39:
+                            if (hasdbl) {
+                                ret += "\\'";
+                            } else {
+                                ret += "'";
+                                quote = '"';
+                            }
+                            break;
+                        case 92:
+                            ret += "\\\\";
+                            break;
+                    }
+                } else {
+                    ret += String.fromCharCode(num);
+                }
+            }
+            ret = "b" + quote + ret + quote;
+            return new Sk.builtin.str(ret);
+        },
+        tp$str() {
+            return this.$r();
+        },
+        tp$iter() {
+            return new bytes_iter_(this);
+        },
+        tp$richcompare(other, op) {
+            if (this === other && Sk.misceval.opAllowsEquality(op)) {
+                return true;
+            } else if (!(other instanceof Sk.builtin.bytes)) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            const v = this.v;
+            const w = other.v;
+            if (v.length !== w.length && (op === "Eq" || op === "NotEq")) {
+                /* Shortcut: if the lengths differ, the bytes differ */
+                return op === "Eq" ? false : true;
+            }
+            let i;
+            const min_len = Math.min(v.length, w.length);
+            for (i = 0; i < min_len; i++) {
+                if (v[i] !== w[i]) {
+                    break; // we've found a different element
+                }
+            }
+            switch (op) {
+                case "Lt":
+                    return (i === min_len && v.length < w.length) || v[i] < w[i];
+                case "LtE":
+                    return (i === min_len && v.length <= w.length) || v[i] <= w[i];
+                case "Eq":
+                    return i === min_len;
+                case "NotEq":
+                    return i < min_len;
+                case "Gt":
+                    return (i === min_len && v.length > w.length) || v[i] > w[i];
+                case "GtE":
+                    return (i === min_len && v.length >= w.length) || v[i] >= w[i];
+            }
+        },
+        tp$hash() {
+            return new Sk.builtin.str(this.$jsstr()).tp$hash();
+        },
+        tp$as_sequence_or_mapping: true,
+        mp$subscript(index) {
+            if (Sk.misceval.isIndex(index)) {
+                let i = Sk.misceval.asIndexSized(index, Sk.builtin.IndexError);
+                if (i !== undefined) {
+                    if (i < 0) {
+                        i = this.v.length + i;
+                    }
+                    if (i < 0 || i >= this.v.length) {
+                        throw new Sk.builtin.IndexError("index out of range");
+                    }
+                    return new Sk.builtin.int_(this.v[i]);
+                }
+            } else if (index instanceof Sk.builtin.slice) {
+                const ret = [];
+                index.sssiter$(this.v.length, (i) => {
+                    ret.push(this.v[i]);
+                });
+                return new Sk.builtin.bytes(new Uint8Array(ret));
+            }
+            throw new Sk.builtin.TypeError("byte indices must be integers or slices, not " + Sk.abstr.typeName(index));
+        },
+        sq$length() {
+            return this.v.length;
+        },
+        sq$concat(other) {
+            if (!(other instanceof Sk.builtin.bytes)) {
+                throw new Sk.builtin.TypeError("can't concat " + Sk.abstr.typeName(other) + " to bytes");
+            }
+            const ret = new Uint8Array(this.v.length + other.v.length);
+            let i;
+            for (i = 0; i < this.v.length; i++) {
+                ret[i] = this.v[i];
+            }
+            for (let j = 0; j < other.v.length; j++, i++) {
+                ret[i] = other.v[j];
+            }
+            return new Sk.builtin.bytes(ret);
+        },
+        sq$repeat(n) {
+            if (!Sk.misceval.isIndex(n)) {
+                throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+            }
+            n = Sk.misceval.asIndexSized(n, Sk.builtin.OverflowError);
+            const len = n * this.v.length;
+            if (len > Number.MAX_SAFE_INTEGER) {
+                throw new Sk.builtin.OverflowError();
+            } else if (n <= 0) {
+                return new Sk.builtin.bytes();
+            }
+            const ret = new Uint8Array(len);
+            let j = 0;
+            while (j < len) {
+                for (let i = 0; i < this.v.length; i++) {
+                    ret[j++] = this.v[i];
+                }
+            }
+            return new Sk.builtin.bytes(ret);
+        },
+        sq$contains(tgt) {
+            return this.find$left(tgt) !== -1;
+        },
+        tp$as_number: true,
+        nb$remainder: Sk.builtin.str.prototype.nb$remainder,
+    },
+    proto: {
+        $jsstr() {
+            // returns binary string - not bidirectional for non ascii characters - use with caution
+            // i.e. new Sk.builtin.bytes(x.$jsstr()).v  may be different to x.v;
+            let ret = "";
+            for (let i = 0; i < this.v.length; i++) {
+                ret += String.fromCharCode(this.v[i]);
+            }
+            return ret;
+        },
+        get$tgt(tgt) {
+            if (tgt instanceof Sk.builtin.bytes) {
+                return tgt.v;
+            }
+            tgt = Sk.misceval.asIndexOrThrow(tgt, "argument should be integer or bytes-like object, not {tp$name}");
+            if (tgt < 0 || tgt > 0xff) {
+                throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
+            }
+            return tgt;
+        },
+        get$raw(tgt) {
+            if (tgt instanceof Sk.builtin.bytes) {
+                return tgt.v;
+            }
+            throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(tgt) + "'");
+        },
+        get$splitArgs: checkSepMaxSplit,
+        find$left: mkFind(false),
+        find$right: mkFind(true),
+        find$subleft: function findSubLeft(uint8, start, end) {
+            end = end - uint8.length + 1;
+            let i = start;
+            while (i < end) {
+                if (uint8.every((val, j) => val === this.v[i + j])) {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        },
+        find$subright(uint8, start, end) {
+            let i = end - uint8.length;
+            while (i >= start) {
+                if (uint8.every((val, j) => val === this.v[i + j])) {
+                    return i;
+                }
+                i--;
+            }
+            return -1;
+        },
+        $subtype_new(args, kwargs) {
+            const instance = new this.constructor();
+            // we call bytes new method with all the args and kwargs
+            const bytes_instance = Sk.builtin.bytes.prototype.tp$new(args, kwargs);
+            instance.v = bytes_instance.v;
+            return instance;
+        },
+        sk$asarray() {
+            const ret = [];
+            this.v.forEach((x) => {ret.push(new Sk.builtin.int_(x));});
+            return ret;
+        }
+    },
+    flags: {
+        str$encode: strEncode,
+        $decode: bytesDecode,
+        check$encodeArgs: checkGetEncodingErrors,
+    },
+    methods: {
+        __getnewargs__: {
+            $meth() {
+                return new Sk.builtin.tuple(new Sk.builtin.bytes(this.v));
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: null,
+        },
+        capitalize: {
+            $meth() {
+                const len = this.v.length;
+                if (len === 0) {
+                    return new Sk.builtin.bytes(this.v);
+                }
+                const final = new Uint8Array(len);
+                let val = this.v[0];
+                final[0] = islower(val) ? val - 32 : val;
+                for (let i = 1; i < len; i++) {
+                    val = this.v[i];
+                    final[i] = isupper(val) ? val + 32 : val;
+                }
+                return new Sk.builtin.bytes(final);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.capitalize() -> copy of B\n\nReturn a copy of B with only its first character capitalized (ASCII)\nand the rest lower-cased.",
+        },
+        center: {
+            $meth: mkJust("center", false, true),
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: null,
+            $doc:
+                "B.center(width[, fillchar]) -> copy of B\n\nReturn B centered in a string of length width.  Padding is\ndone using the specified fill character (default is a space).",
+        },
+        count: {
+            $meth(tgt, start, end) {
+                tgt = this.get$tgt(tgt);
+                ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
+                let count = 0;
+                if (typeof tgt === "number") {
+                    for (let i = start; i < end; i++) {
+                        if (this.v[i] === tgt) {
+                            count++;
+                        }
+                    }
+                } else {
+                    const upto = end - tgt.length + 1;
+                    for (let i = start; i < upto; i++) {
+                        if (tgt.every((val, j) => val === this.v[i + j])) {
+                            count++;
+                            i += tgt.length - 1;
+                        }
+                    }
+                }
+                return new Sk.builtin.int_(count);
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.count(sub[, start[, end]]) -> int\n\nReturn the number of non-overlapping occurrences of subsection sub in\nbytes B[start:end].  Optional arguments start and end are interpreted\nas in slice notation.",
+        },
+        decode: {
+            $meth: bytesDecode,
+            $flags: { NamedArgs: ["encoding", "errors"] },
+            $textsig: "($self, /, encoding='utf-8', errors='strict')",
+            $doc:
+                "Decode the bytes using the codec registered for encoding.\n\n  encoding\n    The encoding with which to decode the bytes.\n  errors\n    The error handling scheme to use for the handling of decoding errors.\n    The default is 'strict' meaning that decoding errors raise a\n    UnicodeDecodeError. Other possible values are 'ignore' and 'replace'\n    as well as any other name registered with codecs.register_error that\n    can handle UnicodeDecodeErrors.",
+        },
+        endswith: {
+            $meth: mkStartsEndsWith("endswith", (subarray, tgt) => {
+                const start = subarray.length - tgt.length;
+                return start >= 0 && tgt.every((val, i) => val === subarray[start + i]);
+            }),
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.endswith(suffix[, start[, end]]) -> bool\n\nReturn True if B ends with the specified suffix, False otherwise.\nWith optional start, test B beginning at that position.\nWith optional end, stop comparing B at that position.\nsuffix can also be a tuple of bytes to try.",
+        },
+        expandtabs: {
+            $meth(tabsize) {
+                tabsize = Sk.misceval.asIndexSized(tabsize, Sk.builtin.OverflowError, "an integer is required (got type {tp$nam})");
+                const final = [];
+                let linepos = 0;
+                for (let i = 0; i < this.v.length; i++) {
+                    const val = this.v[i];
+                    if (val === 9) {
+                        const inc = tabsize - (linepos % tabsize);
+                        final.push(...new Array(inc).fill(32));
+                        linepos += inc;
+                    } else if (val === 10 || val === 13) {
+                        final.push(val);
+                        linepos = 0;
+                    } else {
+                        final.push(val);
+                        linepos++;
+                    }
+                }
+                return new Sk.builtin.bytes(new Uint8Array(final));
+            },
+            $flags: { NamedArgs: ["tabsize"], Defaults: [8] },
+            $textsig: null,
+            $doc:
+                "B.expandtabs(tabsize=8) -> copy of B\n\nReturn a copy of B where all tab characters are expanded using spaces.\nIf tabsize is not given, a tab size of 8 characters is assumed.",
+        },
+        find: {
+            $meth: function find(tgt, start, end) {
+                return new Sk.builtin.int_(this.find$left(tgt, start, end));
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.find(sub[, start[, end]]) -> int\n\nReturn the lowest index in B where subsection sub is found,\nsuch that sub is contained within B[start,end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure.",
+        },
+        hex: {
+            $meth() {
+                let final = "";
+                for (let i = 0; i < this.v.length; i++) {
+                    final += this.v[i].toString(16).padStart(2, "0");
+                }
+                return new Sk.builtin.str(final);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.hex() -> string\n\nCreate a string of hexadecimal numbers from a bytes object.\nExample: b'\\xb9\\x01\\xef'.hex() -> 'b901ef'.",
+        },
+        index: {
+            $meth: function index(tgt, start, end) {
+                const val = this.find$left(tgt, start, end);
+                if (val === -1) {
+                    throw new Sk.builtin.ValueError("subsection not found");
+                } else {
+                    return new Sk.builtin.int_(val);
+                }
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.index(sub[, start[, end]]) -> int\n\nReturn the lowest index in B where subsection sub is found,\nsuch that sub is contained within B[start,end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaises ValueError when the subsection is not found.",
+        },
+        isalnum: {
+            $meth: mkIsAll((val) => isdigit(val) || islower(val) || isupper(val)),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.isalnum() -> bool\n\nReturn True if all characters in B are alphanumeric\nand there is at least one character in B, False otherwise.",
+        },
+        isalpha: {
+            $meth: mkIsAll((val) => (val >= 65 && val <= 90) || (val >= 97 && val <= 122)),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.isalpha() -> bool\n\nReturn True if all characters in B are alphabetic\nand there is at least one character in B, False otherwise.",
+        },
+        isascii: {
+            $meth: mkIsAll((val) => val >= 0 && val <= 0x7f, true),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.isascii() -> bool\n\nReturn True if B is empty or all characters in B are ASCII,\nFalse otherwise.",
+        },
+        isdigit: {
+            $meth: mkIsAll(isdigit),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.isdigit() -> bool\n\nReturn True if all characters in B are digits\nand there is at least one character in B, False otherwise.",
+        },
+        islower: {
+            $meth: makeIsUpperLower(islower, isupper),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.islower() -> bool\n\nReturn True if all cased characters in B are lowercase and there is\nat least one cased character in B, False otherwise.",
+        },
+        isspace: {
+            $meth: mkIsAll(isspace),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.isspace() -> bool\n\nReturn True if all characters in B are whitespace\nand there is at least one character in B, False otherwise.",
+        },
+        istitle: {
+            $meth: function istitle() {
+                let inword = false;
+                let cased = false;
+                for (let i = 0; i < this.v.length; i++) {
+                    const val = this.v[i];
+                    if (isupper(val)) {
+                        if (inword) {
+                            return Sk.builtin.bool.false$;
+                        }
+                        inword = true;
+                        cased = true;
+                    } else if (islower(val)) {
+                        if (!inword) {
+                            return Sk.builtin.bool.false$;
+                        }
+                        cased = true;
+                    } else {
+                        inword = false;
+                    }
+                }
+                return cased ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.istitle() -> bool\n\nReturn True if B is a titlecased string and there is at least one\ncharacter in B, i.e. uppercase characters may only follow uncased\ncharacters and lowercase characters only cased ones. Return False\notherwise.",
+        },
+        isupper: {
+            $meth: makeIsUpperLower(isupper, islower),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.isupper() -> bool\n\nReturn True if all cased characters in B are uppercase and there is\nat least one cased character in B, False otherwise.",
+        },
+        join: {
+            $meth(iterable) {
+                const final = [];
+                let i = 0;
+                return Sk.misceval.chain(
+                    Sk.misceval.iterFor(Sk.abstr.iter(iterable), (item) => {
+                        if (!(item instanceof Sk.builtin.bytes)) {
+                            throw new Sk.builtin.TypeError(
+                                "sequence item " + i + ": expected a bytes-like object, " + Sk.abstr.typeName(item) + " found"
+                            );
+                        }
+                        i++;
+                        if (final.length) {
+                            final.push(...this.v);
+                        }
+                        final.push(...item.v);
+                    }),
+                    () => new Sk.builtin.bytes(new Uint8Array(final))
+                );
+            },
+            $flags: { OneArg: true },
+            $textsig: "($self, iterable_of_bytes, /)",
+            $doc:
+                "Concatenate any number of bytes objects.\n\nThe bytes whose method is called is inserted in between each pair.\n\nThe result is returned as a new bytes object.\n\nExample: b'.'.join([b'ab', b'pq', b'rs']) -> b'ab.pq.rs'.",
+        },
+        ljust: {
+            $meth: mkJust("ljust", false, false),
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: null,
+            $doc:
+                "B.ljust(width[, fillchar]) -> copy of B\n\nReturn B left justified in a string of length width. Padding is\ndone using the specified fill character (default is a space).",
+        },
+        lower: {
+            $meth: mkCaseSwitch((val) => (isupper(val) ? val + 32 : val)),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.lower() -> copy of B\n\nReturn a copy of B with all ASCII characters converted to lowercase.",
+        },
+        lstrip: {
+            $meth: mkStrip(true, false),
+            $flags: { MinArgs: 0, MaxArgs: 1 },
+            $textsig: "($self, bytes=None, /)",
+            $doc: "Strip leading bytes contained in the argument.\n\nIf the argument is omitted or None, strip leading  ASCII whitespace.",
+        },
+        partition: {
+            $meth: mkPartition(false),
+            $flags: { OneArg: true },
+            $textsig: "($self, sep, /)",
+            $doc:
+                "Partition the bytes into three parts using the given separator.\n\nThis will search for the separator sep in the bytes. If the separator is found,\nreturns a 3-tuple containing the part before the separator, the separator\nitself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing the original bytes\nobject and two empty bytes objects.",
+        },
+        replace: {
+            $meth(oldB, newB, count) {
+                oldB = this.get$raw(oldB);
+                newB = this.get$raw(newB);
+                count = count === undefined ? -1 : Sk.misceval.asIndexSized(count, Sk.builtin.OverflowError);
+                count = count < 0 ? Infinity : count;
+                const final = [];
+                let found = 0,
+                    i = 0;
+                while (i < this.v.length && found < count) {
+                    const next = this.find$subleft(oldB, i, this.v.length);
+                    if (next === -1) {
+                        break;
+                    }
+                    for (let j = i; j < next; j++) {
+                        final.push(this.v[j]);
+                    }
+                    final.push(...newB);
+                    i = next + oldB.length;
+                    found++;
+                }
+                for (i; i < this.v.length; i++) {
+                    final.push(this.v[i]);
+                }
+                return new Sk.builtin.bytes(new Uint8Array(final));
+            },
+            $flags: { MinArgs: 2, MaxArgs: 3 },
+            $textsig: "($self, old, new, count=-1, /)",
+            $doc:
+                "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.",
+        },
+        rfind: {
+            $meth(tgt, start, end) {
+                return new Sk.builtin.int_(this.find$right(tgt, start, end));
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.rfind(sub[, start[, end]]) -> int\n\nReturn the highest index in B where subsection sub is found,\nsuch that sub is contained within B[start,end].  Optional\narguments start and end are interpreted as in slice notation.\n\nReturn -1 on failure.",
+        },
+        rindex: {
+            $meth: function rindex(tgt, start, end) {
+                const val = this.find$right(tgt, start, end);
+                if (val === -1) {
+                    throw new Sk.builtin.ValueError("subsection not found");
+                } else {
+                    return new Sk.builtin.int_(val);
+                }
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.rindex(sub[, start[, end]]) -> int\n\nReturn the highest index in B where subsection sub is found,\nsuch that sub is contained within B[start,end].  Optional\narguments start and end are interpreted as in slice notation.\n\nRaise ValueError when the subsection is not found.",
+        },
+        rjust: {
+            $meth: mkJust("rjust", true, false),
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: null,
+            $doc:
+                "B.rjust(width[, fillchar]) -> copy of B\n\nReturn B right justified in a string of length width. Padding is\ndone using the specified fill character (default is a space)",
+        },
+        rpartition: {
+            $meth: mkPartition(true),
+            $flags: { OneArg: true },
+            $textsig: "($self, sep, /)",
+            $doc:
+                "Partition the bytes into three parts using the given separator.\n\nThis will search for the separator sep in the bytes, starting at the end. If\nthe separator is found, returns a 3-tuple containing the part before the\nseparator, the separator itself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing two empty bytes\nobjects and the original bytes object.",
+        },
+        rsplit: {
+            $meth: function rSplit(sep, maxsplit) {
+                ({ sep, maxsplit } = this.get$splitArgs(sep, maxsplit));
+
+                const result = [];
+                let splits = 0,
+                    i = this.v.length;
+
+                if (sep !== null) {
+                    while (i >= 0 && splits < maxsplit) {
+                        const next = this.find$subright(sep, 0, i);
+                        if (next === -1) {
+                            break;
+                        }
+                        result.push(new Sk.builtin.bytes(this.v.subarray(next + sep.length, i)));
+                        i = next;
+                        splits++;
+                    }
+                    result.push(new Sk.builtin.bytes(this.v.subarray(0, i)));
+                } else {
+                    i--;
+                    while (splits < maxsplit) {
+                        while (isspace(this.v[i])) {
+                            i--;
+                        }
+                        if (i < 0) {
+                            break;
+                        }
+                        const index = i + 1;
+                        i--;
+                        while (i >= 0 && !isspace(this.v[i])) {
+                            i--;
+                        }
+                        result.push(new Sk.builtin.bytes(this.v.subarray(i + 1, index)));
+                        splits++;
+                    }
+                    if (i >= 0) {
+                        while (isspace(this.v[i])) {
+                            i--;
+                        }
+                        if (i >= 0) {
+                            result.push(new Sk.builtin.bytes(this.v.subarray(0, i + 1)));
+                        }
+                    }
+                }
+                return new Sk.builtin.list(result.reverse());
+            },
+            $flags: { NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, -1] },
+            $textsig: "($self, /, sep=None, maxsplit=-1)",
+            $doc:
+                "Return a list of the sections in the bytes, using sep as the delimiter.\n\n  sep\n    The delimiter according which to split the bytes.\n    None (the default value) means split on ASCII whitespace characters\n    (space, tab, return, newline, formfeed, vertical tab).\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.\n\nSplitting is done starting at the end of the bytes and working to the front.",
+        },
+        rstrip: {
+            $meth: mkStrip(false, true),
+            $flags: { MinArgs: 0, MaxArgs: 1 },
+            $textsig: "($self, bytes=None, /)",
+            $doc: "Strip trailing bytes contained in the argument.\n\nIf the argument is omitted or None, strip trailing ASCII whitespace.",
+        },
+        split: {
+            $meth: function Split(sep, maxsplit) {
+                ({ sep, maxsplit } = this.get$splitArgs(sep, maxsplit));
+
+                const result = [];
+                const mylen = this.v.length;
+                let splits = 0,
+                    i = 0;
+
+                if (sep !== null) {
+                    while (i < mylen && splits < maxsplit) {
+                        const next = this.find$subleft(sep, i, mylen);
+                        if (next === -1) {
+                            break;
+                        }
+                        result.push(new Sk.builtin.bytes(this.v.subarray(i, next)));
+                        i = next + sep.length;
+                        splits++;
+                    }
+                    result.push(new Sk.builtin.bytes(this.v.subarray(i, mylen)));
+                } else {
+                    while (splits < maxsplit) {
+                        while (isspace(this.v[i])) {
+                            i++;
+                        }
+                        if (i === mylen) {
+                            break;
+                        }
+                        const index = i;
+                        i++;
+                        while (i < mylen && !isspace(this.v[i])) {
+                            i++;
+                        }
+                        result.push(new Sk.builtin.bytes(this.v.subarray(index, i)));
+                        splits++;
+                    }
+                    if (i < mylen) {
+                        while (isspace(this.v[i])) {
+                            i++;
+                        }
+                        if (i < mylen) {
+                            result.push(new Sk.builtin.bytes(this.v.subarray(i, mylen)));
+                        }
+                    }
+                }
+                return new Sk.builtin.list(result);
+            },
+            $flags: { NamedArgs: ["sep", "maxsplit"], Defaults: [Sk.builtin.none.none$, -1] },
+            $textsig: "($self, /, sep=None, maxsplit=-1)",
+            $doc:
+                "Return a list of the sections in the bytes, using sep as the delimiter.\n\n  sep\n    The delimiter according which to split the bytes.\n    None (the default value) means split on ASCII whitespace characters\n    (space, tab, return, newline, formfeed, vertical tab).\n  maxsplit\n    Maximum number of splits to do.\n    -1 (the default value) means no limit.",
+        },
+        splitlines: {
+            $meth(keepends) {
+                keepends = Sk.misceval.isTrue(keepends);
+                const final = [];
+                let sol = 0;
+                let eol;
+                let i = 0;
+                const len = this.v.length;
+                while (i < len) {
+                    const val = this.v[i];
+                    if (val === 13) {
+                        // \r
+                        const rn = this.v[i + 1] === 10; // \r\n
+                        if (keepends) {
+                            eol = rn ? i + 2 : i + 1;
+                        } else {
+                            eol = i;
+                        }
+                        final.push(new Sk.builtin.bytes(this.v.subarray(sol, eol)));
+                        i = sol = rn ? i + 2 : i + 1;
+                    } else if (val === 10) {
+                        // \n
+                        eol = keepends ? i + 1 : i;
+                        final.push(new Sk.builtin.bytes(this.v.subarray(sol, eol)));
+                        i = sol = i + 1;
+                    } else {
+                        i++;
+                    }
+                }
+                if (sol < len) {
+                    final.push(new Sk.builtin.bytes(this.v.subarray(sol, len)));
+                }
+                return new Sk.builtin.list(final);
+            },
+            $flags: { NamedArgs: ["keepends"], Defaults: [false] },
+            $textsig: "($self, /, keepends=False)",
+            $doc:
+                "Return a list of the lines in the bytes, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends is given and\ntrue.",
+        },
+        startswith: {
+            $meth: mkStartsEndsWith("startswith", (subarray, tgt) => tgt.length <= subarray.length && tgt.every((val, i) => val === subarray[i])),
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $textsig: null,
+            $doc:
+                "B.startswith(prefix[, start[, end]]) -> bool\n\nReturn True if B starts with the specified prefix, False otherwise.\nWith optional start, test B beginning at that position.\nWith optional end, stop comparing B at that position.\nprefix can also be a tuple of bytes to try.",
+        },
+        strip: {
+            $meth: mkStrip(true, true),
+            $flags: { MinArgs: 0, MaxArgs: 1 },
+            $textsig: "($self, bytes=None, /)",
+            $doc:
+                "Strip leading and trailing bytes contained in the argument.\n\nIf the argument is omitted or None, strip leading and trailing ASCII whitespace.",
+        },
+        swapcase: {
+            $meth: mkCaseSwitch((val) => (isupper(val) ? val + 32 : islower(val) ? val - 32 : val)),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.swapcase() -> copy of B\n\nReturn a copy of B with uppercase ASCII characters converted\nto lowercase ASCII and vice versa.",
+        },
+        title: {
+            $meth() {
+                const len = this.v.length;
+                const final = new Uint8Array(len);
+                let inword = false;
+                for (let i = 0; i < len; i++) {
+                    const val = this.v[i];
+                    if (isupper(val)) {
+                        final[i] = inword ? val + 32 : val;
+                        inword = true;
+                    } else if (islower(val)) {
+                        final[i] = inword ? val : val - 32;
+                        inword = true;
+                    } else {
+                        final[i] = val;
+                        inword = false;
+                    }
+                }
+                return new Sk.builtin.bytes(final);
+            },
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc:
+                "B.title() -> copy of B\n\nReturn a titlecased version of B, i.e. ASCII words start with uppercase\ncharacters, all remaining cased characters have lowercase.",
+        },
+        // translate: {
+        //     $meth() {
+        //         throw new Sk.builtin.NotImplementedError("translate() bytes method not implemented in Skulpt");
+        //     },
+        //     $flags: { NoArgs: true },
+        //     $textsig: "($self, table, /, delete=b'')",
+        //     $doc:
+        //         "Return a copy with each character mapped by the given translation table.\n\n  table\n    Translation table, which must be a bytes object of length 256.\n\nAll characters occurring in the optional argument delete are removed.\nThe remaining characters are mapped through the given translation table.",
+        // },
+        upper: {
+            $meth: mkCaseSwitch((val) => (islower(val) ? val - 32 : val)),
+            $flags: { NoArgs: true },
+            $textsig: null,
+            $doc: "B.upper() -> copy of B\n\nReturn a copy of B with all ASCII characters converted to uppercase.",
+        },
+        zfill: {
+            $meth(width) {
+                width = Sk.misceval.asIndexSized(width, Sk.builtin.IndexError);
+                const fill_len = width - this.v.length;
+                if (fill_len <= 0) {
+                    return new Sk.builtin.bytes(this.v);
+                }
+                const final = new Uint8Array(width);
+                let i = 0,
+                    j;
+                if (this.v[0] === 43 || this.v[0] === 45) {
+                    final[0] = this.v[0];
+                    i++;
+                }
+                final.fill(48, i, i + fill_len);
+                for (j = i, i = i + fill_len; i < width; i++, j++) {
+                    final[i] = this.v[j];
+                }
+                return new Sk.builtin.bytes(final);
+            },
+            $flags: { OneArg: true },
+            $textsig: null,
+            $doc:
+                "B.zfill(width) -> copy of B\n\nPad a numeric string B with zeros on the left, to fill a field\nof the specified width.  B is never truncated.",
+        },
+    },
+    classmethods: {
+        fromhex: {
+            $meth: function fromhex(string) {
+                if (!Sk.builtin.checkString(string)) {
+                    throw new Sk.builtin.TypeError("fromhex() argument must be str, not " + Sk.abstr.typeName(string));
+                }
+                string = string.$jsstr();
+                const spaces = /\s+/g;
+                const ishex = /^[abcdefABCDEF0123456789]{2}$/;
+                const final = [];
+                let index = 0;
+                function pushOrThrow(upto) {
+                    for (let i = index; i < upto; i += 2) {
+                        let s = string.substr(i, 2);
+                        if (!ishex.test(s)) {
+                            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i + 1));
+                        }
+                        final.push(parseInt(s, 16));
+                    }
+                }
+                let match;
+                while ((match = spaces.exec(string)) !== null) {
+                    pushOrThrow(match.index);
+                    index = spaces.lastIndex;
+                }
+                pushOrThrow(string.length);
+                return new this(final);
+            },
+            $flags: { OneArg: true },
+            $textsig: "($type, string, /)",
+            $doc:
+                "Create a bytes object from a string of hexadecimal numbers.\n\nSpaces between two numbers are accepted.\nExample: bytes.fromhex('B9 01EF') -> b'\\\\xb9\\\\x01\\\\xef'.",
+        },
+    },
+});
+
+function checkGetEncodingErrors(funcname, encoding, errors) {
+    // check the types of encoding and errors
+    if (encoding === undefined) {
+        encoding = "utf-8";
+    } else if (!Sk.builtin.checkString(encoding)) {
+        throw new Sk.builtin.TypeError(
+            funcname + "() argument " + ("bytesstr".includes(funcname) ? 2 : 1) + " must be str not " + Sk.abstr.typeName(encoding)
+        );
     } else {
-        // fall through case for subclassing called by Sk.abstr.superConstructor
-        const ret = Sk.misceval.chain(newBytesFromPy(...arguments), (pyBytes) => {
-            this.v = pyBytes.v;
-            return this;
-        });
-        // Sk.abstr.superConstructor is not suspension aware
-        return Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        encoding = encoding.$jsstr();
     }
-};
-
-Sk.abstr.setUpInheritance("bytes", Sk.builtin.bytes, Sk.builtin.seqtype);
-
-Sk.builtin.bytes.prototype.__class__ = Sk.builtin.bytes;
-
-Sk.builtin.bytes.prototype.sk$builtinBase = Sk.builtin.bytes;
+    if (errors === undefined) {
+        errors = "strict";
+    } else if (!Sk.builtin.checkString(errors)) {
+        throw new Sk.builtin.TypeError(
+            funcname + "() argument " + ("bytesstr".includes(funcname) ? 3 : 2) + " must be str not " + Sk.abstr.typeName(errors)
+        );
+    } else {
+        errors = errors.$jsstr();
+    }
+    return { encoding: encoding, errors: errors };
+}
 
 function strEncode(pyStr, encoding, errors) {
     const source = pyStr.$jsstr();
@@ -107,16 +979,16 @@ function strEncode(pyStr, encoding, errors) {
     return new Sk.builtin.bytes(uint8);
 }
 
-Sk.builtin.bytes.$strEncode = strEncode;
-
 function encodeAscii(source, errors) {
     const data = [];
     for (let i in source) {
         const val = source.charCodeAt(i);
-        if (val < 0 || val > 127) {
+        if (val > 0x7f) {
             if (errors === "strict") {
                 const hexval = makehexform(val);
-                throw new Sk.builtin.UnicodeEncodeError("'ascii' codec can't encode character '" + hexval + "' in position " + i + ": ordinal not in range(128)");
+                throw new Sk.builtin.UnicodeEncodeError(
+                    "'ascii' codec can't encode character '" + hexval + "' in position " + i + ": ordinal not in range(128)"
+                );
             } else if (errors === "replace") {
                 data.push(63); // "?"
             }
@@ -124,75 +996,7 @@ function encodeAscii(source, errors) {
             data.push(val);
         }
     }
-    return Uint8ArrayFromArray(data);
-}
-
-function newBytesFromPy(pySource, encoding, errors) {
-    Sk.builtin.pyCheckArgsLen("bytes", arguments.length, 0, 3);
-    let source;
-    let dunderBytes;
-    if (arguments.length > 1) {
-        // either encoding is a py object or errors is a py object - currently kwargs not supported
-        // will fail if encoding is not a string || errors is not a string || pySource is not a string
-        // check the types of encoding and errors
-        if (!Sk.builtin.checkString(encoding)) {
-            throw new Sk.builtin.TypeError("bytes() argument 2 must be str not " + Sk.abstr.typeName(encoding));
-        }
-        if (errors !== undefined && !Sk.builtin.checkString(errors)) {
-            throw new Sk.builtin.TypeError("bytes() argument 3 must be str not " + Sk.abstr.typeName(encoding));
-        }
-        if (!Sk.builtin.checkString(pySource)) {
-            // think ahead for kwarg support
-            throw new Sk.builtin.TypeError((encoding !== undefined ? "encoding" : "errors") + " without a string argument");
-        }
-    }
-
-    if (pySource === undefined) {
-        return new Sk.builtin.bytes();
-    } else if (Sk.builtin.checkString(pySource)) {
-        if (encoding === undefined) {
-            throw new Sk.builtin.TypeError("string argument without an encoding");
-        }
-        errors = errors === undefined ? "strict" : errors.$jsstr();
-        encoding = encoding.$jsstr();
-        return strEncode(pySource, encoding, errors);
-    } else if (Sk.builtin.checkInt(pySource)) {
-        source = Sk.builtin.asnum$(pySource);
-        if (source < 0) {
-            throw new Sk.builtin.ValueError("negative count");
-        } else if (source > Number.MAX_SAFE_INTEGER) {
-            throw new Sk.builtin.OverflowError("cannot fit 'int' into an index-sized integer");
-        } 
-        return new Sk.builtin.bytes(source);
-    } else if (Sk.builtin.checkBytes(pySource)) {
-        return new Sk.builtin.bytes(pySource.v);
-    } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) != null) {
-        const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, [pySource]);
-        return Sk.misceval.chain(ret, (bytesSource) => {
-            if (!Sk.builtin.checkBytes(bytesSource)) {
-                throw new Sk.builtin.TypeError("__bytes__ returned non-bytes (type " + Sk.abstr.typeName(bytesSource) + ")");
-            }
-            return bytesSource;
-        });
-    } else if (Sk.builtin.checkIterable(pySource)) {
-        source = [];
-        const r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
-            if (!Sk.misceval.isIndex(byte)) {
-                throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(byte) + "' object cannot be interpreted as an integer");
-            };
-            const n = Sk.misceval.asIndex(byte);
-            if (n < 0 || n > 255) {
-                throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
-            }
-            source.push(n);
-        });
-        return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
-    }
-    let msg = "";
-    if (pySource.sk$object === undefined) {
-        msg += ", if calling constructor with a javascript object use 'new'";
-    }
-    throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(pySource) + "' object into bytes" + msg);
+    return new Uint8Array(data);
 }
 
 function makehexform(num) {
@@ -212,1536 +1016,272 @@ function makehexform(num) {
         num = leading + num;
     }
     return num;
-};
+}
 
-Sk.builtin.bytes.prototype.$jsstr = function () {
-    // returns binary string - https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
-    let ret = "";
-    for (let i = 0; i < this.v.byteLength; i++) {
-        ret += String.fromCharCode(this.v[i]);
-    }
-    return ret;
-};
-
-Sk.builtin.bytes.prototype.tp$hash = function () {
-    return Sk.builtin.hash(new Sk.builtin.str(this.$jsstr()));
-};
-
-Sk.builtin.bytes.prototype["$r"] = function () {
-    let num;
-    let quote = "'";
-    const hasdbl = this.v.indexOf(34) !== -1;
-    let ret = "";
-
-    for (let i = 0; i < this.v.byteLength; i++) {
-        num = this.v[i];
-        if ((num < 9) || (num > 10 && num < 13) || (num > 13 && num < 32) || (num > 126)) {
-            ret += makehexform(num);
-        } else if (num === 9 || num === 10 || num === 13 || num === 39 || num === 92) {
-            switch (num) {
-                case 9:
-                    ret += "\\t";
-                    break;
-                case 10:
-                    ret += "\\n";
-                    break;
-                case 13:
-                    ret += "\\r";
-                    break;
-                case 39:
-                    if (hasdbl) {
-                        ret += "\\'";
-                    } else {
-                        ret += "'";
-                        quote = '"';
-                    }
-                    break;
-                case 92:
-                    ret += "\\\\";
-                    break;
+function decodeAscii(source, errors) {
+    let final = "";
+    for (let i = 0; i < source.length; i++) {
+        const val = source[i];
+        if (val > 0x7f) {
+            if (errors === "strict") {
+                throw new Sk.builtin.UnicodeDecodeError(
+                    "'ascii' codec can't decode byte 0x" + val.toString(16) + " in position " + i + ": ordinal not in range(128)"
+                );
+            } else if (errors === "replace") {
+                final += String.fromCharCode(65533);
             }
         } else {
-            ret += String.fromCharCode(num);
+            final += String.fromCharCode(val);
         }
     }
-    ret = "b" + quote + ret + quote;
-    return new Sk.builtin.str(ret);
-};
-
-Sk.builtin.bytes.prototype.mp$subscript = function (index) {
-    var ret;
-    var i;
-    if (Sk.misceval.isIndex(index)) {
-        i = Sk.misceval.asIndex(index);
-        if (i !== undefined) {
-            if (i < 0) {
-                i = this.v.byteLength + i;
-            }
-            if (i < 0 || i >= this.v.byteLength) {
-                throw new Sk.builtin.IndexError("index out of range");
-            }
-            return new Sk.builtin.int_(this.v[i]);
-        }
-    } else if (index instanceof Sk.builtin.slice) {
-        ret = [];
-        index.sssiter$(this.v.byteLength, (i) => {
-            ret.push(this.v[i]);
-        });
-        return new Sk.builtin.bytes(ret);
-    }
-
-    throw new Sk.builtin.TypeError("byte indices must be integers, not " + Sk.abstr.typeName(index));
-};
-
-Sk.builtin.bytes.prototype.ob$eq = function (other) {
-    if (this === other) {
-        return Sk.builtin.bool.true$;
-    } else if (!(other instanceof Sk.builtin.bytes)) {
-        return Sk.builtin.NotImplemented.NotImplemented$;
-    } else if (this.v.byteLength != other.v.byteLength) {
-        return Sk.builtin.bool.false$;
-    }
-
-    for (let i = 0; i < this.v.byteLength; i++) {
-        if (this.v[i] != other.v[i]) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    return Sk.builtin.bool.true$;
-};
-
-Sk.builtin.bytes.prototype.ob$ne = function (other) {
-    const ret = this.ob$eq(other);
-    if (ret === Sk.builtin.NotImplemented.NotImplemented$) {
-        return ret;
-    }
-    return Sk.misceval.isTrue(ret) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-};
-
-function slotCompareUint8(f) {
-    return function (other) {
-        if (!(other instanceof Sk.builtin.bytes)) {
-            return Sk.builtin.NotImplemented.NotImplemented$;
-        }
-        return f(this.$jsstr(), other.$jsstr());
-    };
+    return final;
 }
-Sk.builtin.bytes.prototype.ob$lt = slotCompareUint8((v, w) => new Sk.builtin.bool(v < w));
-Sk.builtin.bytes.prototype.ob$le = slotCompareUint8((v, w) => new Sk.builtin.bool(v <= w));
-Sk.builtin.bytes.prototype.ob$gt = slotCompareUint8((v, w) => new Sk.builtin.bool(v > w));
-Sk.builtin.bytes.prototype.ob$ge = slotCompareUint8((v, w) => new Sk.builtin.bool(v >= w));
 
-Sk.builtin.bytes.prototype.sq$length = function () {
-    return this.v.byteLength;
-};
-
-Sk.builtin.bytes.prototype.sq$concat = function (other) {
-    var i;
-    var lis;
-    if (!(other instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("can't concat " + Sk.abstr.typeName(other) + " to bytes");
-    }
-    lis = [];
-    for (i = 0; i < this.v.byteLength; i++) {
-        lis.push(this.v[i]);
-    }
-    for (i = 0; i < other.v.byteLength; i++) {
-        lis.push(other.v[i]);
-    }
-    return new Sk.builtin.bytes(lis);
-};
-Sk.builtin.bytes.prototype.nb$add = Sk.builtin.bytes.prototype.sq$concat;
-Sk.builtin.bytes.prototype.nb$inplace_add = Sk.builtin.bytes.prototype.sq$concat;
-
-Sk.builtin.bytes.prototype.sq$repeat = function (n) {
-    var i;
-    var j;
-    var ret;
-    if (!(n instanceof Sk.builtin.int_)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
-    }
-    ret = [];
-    for (j = 0; j < n.v; j++) {
-        for (i = 0; i < this.v.byteLength; i++) {
-            ret.push(this.v[i]);
+function decodeUtf(source, errors) {
+    const string = Decoder.decode(source);
+    if (errors === "replace") {
+        return string;
+    } else if (errors === "strict") {
+        const i = string.indexOf("�");
+        if (i === -1) {
+            return string;
         }
+        throw new Sk.builtin.UnicodeDecodeError(
+            "'utf-8' codec can't decode byte 0x" + source[i].toString(16) + " in position " + i + ": invalid start byte"
+        );
     }
-    return new Sk.builtin.bytes(ret);
-};
-Sk.builtin.bytes.prototype.nb$multiply = Sk.builtin.bytes.prototype.sq$repeat;
-Sk.builtin.bytes.prototype.nb$inplace_multiply = Sk.builtin.bytes.prototype.sq$repeat;
+    return string.replace(/�/g, "");
+}
 
-Sk.builtin.bytes.prototype.sq$contains = function (item) {
-    if (Sk.builtin.checkInt(item)) {
-        const val = Sk.builtin.asnum$(item);
-        if (val < 0 || val > 255) {
-            throw new Sk.builtin.ValueError("byte must be in range(0, 256)");
-        }
-
-        return this.v.indexOf(val) !== -1;
-    } else if (!(item instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not " + Sk.abstr.typeName(item));
-    }
-
-    if (item.v.byteLength === 0) {
-        return true;
-    } else if (item.v.byteLength === 1) {
-        return this.v.indexOf(item.v[0]) !== -1;
-    } else {
-        // Currently can't test for array/subarray equality with typed arrays
-        let start = 0;
-        while (start < this.v.byteLength) {
-            const idx = this.v.indexOf(item.v[0], start);
-            if (idx === -1) {
-                break;
-            }
-
-            let match = true;
-            for (let j = 0; j < item.v.byteLength; j++) {
-                if (this.v[idx + j] !== item.v[j]) {
-                    match = false;
-                    break;
-                }
-            }
-
-            if (match) {
-                return true;
-            }
-            start = idx + 1;
-        }
-    }
-
-    return false;
-};
-
-Sk.builtin.bytes.prototype.nb$remainder = Sk.builtin.str.prototype.nb$remainder;
-
-Sk.builtin.bytes.$decode = function (self, encoding, errors) {
-    var i;
-    var val;
-    var final;
-    Sk.builtin.pyCheckArgsLen("decode", arguments.length - 1, 0, 2);
-
-    if (encoding === undefined) {
-        encoding = "utf-8";
-    } else if (!(encoding instanceof Sk.builtin.str)) {
-        throw new Sk.builtin.TypeError("decode() argument 1 must be str, not " + Sk.abstr.typeName(encoding));
-    } else {
-        encoding = encoding.v;
-    }
+function bytesDecode(encoding, errors) {
+    ({ encoding, errors } = checkGetEncodingErrors("decode", encoding, errors));
     encoding = normalizeEncoding(encoding);
-
-    if (errors === undefined) {
-        errors = "strict";
-    } else if (!(errors instanceof Sk.builtin.str)) {
-        throw new Sk.builtin.TypeError("decode() argument 2 must be str, not " + Sk.abstr.typeName(errors));
-    } else {
-        errors = errors.v;
-    }
 
     if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
         throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
     }
 
-    if (!(encoding === "ascii" || encoding === "utf-8")) {
-        throw new Sk.builtin.LookupError("unknown encoding: " + encoding.v);
-    }
-
+    let jsstr;
     if (encoding === "ascii") {
-        final = "";
-        for (i = 0; i < self.v.byteLength; i++) {
-            val = self.v[i];
-            if (val > 127) {
-                if (errors === "strict") {
-                    val = val.toString(16);
-                    throw new Sk.builtin.UnicodeDecodeError("'ascii' codec can't decode byte 0x" + val + " in position " + i.toString() + ": ordinal not in range(128)");
-                } else if (errors === "replace") {
-                    final += String.fromCharCode(65533);
-                }
-            } else {
-                final += String.fromCharCode(val);
-            }
-        }
+        jsstr = decodeAscii(this.v, errors);
+    } else if (encoding === "utf-8") {
+        jsstr = decodeUtf(this.v, errors);
     } else {
-        const string = Decoder.decode(self.v);
-        if (errors === "replace") {
-            return new Sk.builtin.str(string);
+        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+    }
+    return new Sk.builtin.str(jsstr);
+}
+
+function mkStartsEndsWith(funcname, is_match) {
+    return function (prefix, start, end) {
+        if (!(prefix instanceof Sk.builtin.bytes || prefix instanceof Sk.builtin.tuple)) {
+            throw new Sk.builtin.TypeError(funcname + " first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(prefix));
         }
-        final = "";
-        for (i in string) {
-            if (string[i].charCodeAt(0) === 65533) {
-                if (errors === "strict") {
-                    val = self.v[i];
-                    val = val.toString(16);
-                    throw new Sk.builtin.UnicodeDecodeError("'utf-8' codec can't decode byte 0x" + val + " in position " + i.toString() + ": invalid start byte");
+        ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
+        if (end < start) {
+            return Sk.builtin.bool.false$;
+        }
+        const slice = this.v.subarray(start, end);
+
+        if (prefix instanceof Sk.builtin.tuple) {
+            for (let iter = Sk.abstr.iter(prefix), item = iter.tp$iternext(); item !== undefined; item = iter.tp$iternext()) {
+                item = this.get$raw(item);
+                if (is_match(slice, item)) {
+                    return Sk.builtin.bool.true$;
                 }
-            } else {
-                final += string[i];
             }
-        }
-    }
-    return new Sk.builtin.str(final);
-};
-
-Sk.builtin.bytes.prototype["decode"] = new Sk.builtin.func(Sk.builtin.bytes.$decode);
-
-Sk.builtin.bytes.prototype["fromhex"] = new Sk.builtin.func(function (string) {
-    var final;
-    var checkhex;
-    var val1;
-    var i;
-    var char;
-    var checkspace;
-    Sk.builtin.pyCheckArgsLen("fromhex", arguments.length, 1, 1);
-
-    if (!(string instanceof Sk.builtin.str)) {
-        throw new Sk.builtin.TypeError("fromhex() argument must be str, not " + Sk.abstr.typeName(string));
-    }
-
-    final = [];
-    checkhex = function (val) {
-        if ("0123456789abcdefABCDEF".includes(val)) {
-            return true;
-        }
-        return false;
-    };
-
-    checkspace = function (val) {
-        var code;
-        code = val.charCodeAt(0);
-        if (code === 9 || code === 10 || code === 11 || code === 12 || code === 13 || code === 32 || code === 133) {
-            return true;
+            return Sk.builtin.bool.false$;
         } else {
-            return false;
+            return is_match(slice, prefix.v) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
         }
-    };
-    i = 0;
-    while (i < string.v.length) {
-        char = string.v.charAt(i);
-        if (checkhex(char)) {
-            if (i + 1 < string.v.length) {
-                if (checkhex(string.v.charAt(i+1))) {
-                    val1 = string.v.slice(i, i + 2);
-                    val1 = parseInt(val1, 16);
-                    final.push(val1);
-                    i += 2;
-                } else {
-                    throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i+1).toString());
-                }
-            } else {
-                throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
-            }
-        } else if (checkspace(char)) {
-            i++;
-        } else {
-            throw new Sk.builtin.ValueError("non-hexadecimal number found in fromhex() arg at position " + (i).toString());
-        }
-    }
-
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["hex"] = new Sk.builtin.func(function (self) {
-    var final;
-    var val;
-    var i;
-    Sk.builtin.pyCheckArgsLen("hex", arguments.length - 1, 0, 0);
-    final = "";
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        val = val.toString(16);
-        if (val.length === 1) {
-            val = "0" + val;
-        }
-        final += val;
-    }
-    return new Sk.builtin.str(final);
-});
-
-function indices(self, start, end) {
-    const len = self.v.byteLength;
-    if (start === undefined || start === Sk.builtin.none.none$) {
-        start = 0;
-    } else if (!Sk.misceval.isIndex(start)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    } else {
-        start = Sk.misceval.asIndex(start);
-        start = start >= 0 ? start : len + start;
-        if (start < 0) {
-            start = 0;
-        }
-    }
-    if (end === undefined || Sk.builtin.checkNone(end)) {
-        end = len;
-    } else if (!Sk.misceval.isIndex(end)) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
-    } else {
-        end = Sk.misceval.asIndex(end);
-        end = end >= 0 ? end : len + end;
-        if (end < 0) {
-            end = 0;
-        } else if (end > len) {
-            end = len;
-        }
-    }
-    return {
-        start: start,
-        end: end
     };
 }
 
-Sk.builtin.bytes.prototype["count"] = new Sk.builtin.func(function (self, sub, start, end) {
-    var count;
-    var i;
-    var len;
-    Sk.builtin.pyCheckArgsLen("count", arguments.length - 1, 1, 3);
-
-    ({ start, end } = indices(self, start, end));
-
-    count = 0;
-    if (sub instanceof Sk.builtin.int_) {
-        for (i = start; i < end; i++) {
-            if (self.v[i] === sub.v) {
-                count++;
-            }
+function mkFind(isReversed) {
+    return function find(tgt, start, end) {
+        tgt = this.get$tgt(tgt);
+        ({ start, end } = Sk.builtin.slice.startEnd$wrt(this, start, end));
+        if (end < start) {
+            return -1;
         }
-    } else if (sub instanceof Sk.builtin.bytes) {
-        len = sub.v.byteLength;
-        while (start < end) {
-            const next = self.find$left(sub, start, end);
-            if (next === -1) {
-                break;
-            }
-            count++;
-            start = next + len;
+        let idx;
+        if (typeof tgt === "number") {
+            idx = isReversed ? this.v.lastIndexOf(tgt, end - 1) : this.v.indexOf(tgt, start);
+            return idx >= start && idx < end ? idx : -1;
         }
-    } else {
-        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
-    }
-    return new Sk.builtin.int_(count);
-});
-
-Sk.builtin.bytes.prototype["endswith"] = new Sk.builtin.func(function (self, suffix, start, end) {
-    Sk.builtin.pyCheckArgsLen("endswith", arguments.length - 1, 1, 3);
-    if (!(suffix instanceof Sk.builtin.bytes || suffix instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("endswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(suffix));
-    }
-
-    ({ start, end } = indices(self, start, end));
-
-    if (end < start) {
-        return Sk.builtin.bool.false$;
-    }
-
-    function is_match(item) {
-        const len = item.v.byteLength;
-        if (end - start >= len) {
-            for (let j = end - len, k = 0; j < end; j++, k++) {
-                if (self.v[j] !== item.v[k]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    if (suffix instanceof Sk.builtin.tuple) {
-        for (let iter = Sk.abstr.iter(suffix), item = iter.tp$iternext(); item !== undefined; item = iter.tp$iternext()) {
-            if (!(item instanceof Sk.builtin.bytes)) {
-                throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
-            }
-            if (is_match(item)) {
-                return Sk.builtin.bool.true$;
-            }
-        }
-        return Sk.builtin.bool.false$;
-    } 
-    if (is_match(suffix)) {
-        return Sk.builtin.bool.true$;
-    }
-    return Sk.builtin.bool.false$;
-});
-
-
-Sk.builtin.bytes.prototype.find$left = function (sub, start, end) {
-    let final = -1;
-    ({ start, end } = indices(this, start, end));
-
-    if (sub instanceof Sk.builtin.int_) {
-        for (let i = start; i < end; i++) {
-            if (this.v[i] === sub.v) {
-                final = i;
-                break;
-            }
-        }
-    } else if (sub instanceof Sk.builtin.bytes) {
-        let len = sub.v.byteLength;
-        for (let i = start; i < end - len + 1; i++) {
-            let match = true;
-            for (let j = i, k = 0; k < len; j++, k++) {
-                if (this.v[j] !== sub.v[k]) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                final = i;
-                break;
-            }
-        }
-    } else {
-        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
-    }
-
-    return final;
-};
-
-Sk.builtin.bytes.prototype.find$right = function (sub, start, end) {
-    let final = -1;
-    ({ start, end } = indices(this, start, end));
-
-    if (sub instanceof Sk.builtin.int_) {
-        for (let i = end - 1; i >= start; i--) {
-            if (this.v[i] === sub.v) {
-                final = i;
-                break;
-            }
-        }
-    } else if (sub instanceof Sk.builtin.bytes) {
-        let len = sub.v.byteLength;
-        for (let i = end - len; i >= start; i--) {
-            let match = true;
-            for (let j = i, k = 0; k < len; j++, k++) {
-                if (this.v[j] !== sub.v[k]) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                final = i;
-                break;
-            }
-        }
-
-    } else {
-        throw new Sk.builtin.TypeError("argument should be integer or bytes-like object, not '" + Sk.abstr.typeName(sub) + "'");
-    }
-
-    return final;
-};
-
-
-Sk.builtin.bytes.prototype["find"] = new Sk.builtin.func(function (self, sub, start, end) {
-    Sk.builtin.pyCheckArgsLen("find", arguments.length - 1, 1, 3);
-
-    return Sk.builtin.int_(self.find$left(sub, start, end));
-});
-
-Sk.builtin.bytes.prototype["index"] = new Sk.builtin.func(function (self, sub, start, end) {
-    var val;
-    Sk.builtin.pyCheckArgsLen("index", arguments.length - 1, 1, 3);
-
-    val = self.find$left(sub, start, end);
-
-    if (val === -1) {
-        throw new Sk.builtin.ValueError("subsection not found");
-    }
-    return Sk.builtin.int_(val);
-});
-
-Sk.builtin.bytes.prototype["join"] = new Sk.builtin.func(function (self, iterable) {
-    var final;
-    var i;
-    var sep;
-    var iter;
-    var item;
-    Sk.builtin.pyCheckArgsLen("join", arguments.length - 1, 1, 1);
-    if (!(Sk.builtin.checkIterable(iterable))) {
-        throw Sk.builtin.TypeError("can only join an iterable");
-    }
-    final = [];
-    sep = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        sep.push(self.v[i]);
-    }
-    i = 0;
-    for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
-        item !== undefined;
-        item = iter.tp$iternext()) {
-        if (!(item instanceof Sk.builtin.bytes)) {
-            throw new Sk.builtin.TypeError("sequence item " + i.toString() + ": expected a bytes-like object, " + Sk.abstr.typeName(item) + " found");
-        }
-        if (final.length > 0) {
-            final = final.concat(sep);
-        }
-        for (i = 0; i < item.v.byteLength; i++) {
-            final.push(item.v[i]);
-        }
-        i++;
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["maketrans"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("maketrans() bytes method not implemented in Skulpt");
-});
-
-Sk.builtin.bytes.prototype["partition"] = new Sk.builtin.func(function (self, sep) {
-    var final1;
-    var final2;
-    var final3;
-    var val;
-    Sk.builtin.pyCheckArgsLen("partition", arguments.length - 1, 1, 1);
-    if (!(sep instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
-    }
-
-    val = self.find$left(sep);
-    if (val === -1) {
-        final1 = self;
-        final2 = new Sk.builtin.bytes(0);
-        final3 = new Sk.builtin.bytes(0);
-    } else {
-        final1 = new Sk.builtin.bytes(self.v.subarray(0, val));
-        final2 = new Sk.builtin.bytes(self.v.subarray(val, val + sep.v.byteLength));
-        final3 = new Sk.builtin.bytes(self.v.subarray(val + sep.v.byteLength, self.v.byteLength));
-    }
-
-    return new Sk.builtin.tuple([final1, final2, final3]);
-});
-
-Sk.builtin.bytes.prototype["replace"] = new Sk.builtin.func(function (self, old, repl, count) {
-    var final;
-    var len;
-    var i;
-    var sep;
-    var tot;
-    Sk.builtin.pyCheckArgsLen("replace", arguments.length - 1, 2, 3);
-    if (!(old instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(old) + "'");
-    }
-    if (!(repl instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(repl) + "'");
-    }
-    if (count === undefined) {
-        count = -1;
-    } else if (!(count instanceof Sk.builtin.int_)) {
-        throw new  Sk.builtin.TypeError("'" + Sk.abstr.typeName(count) + "' " + "object cannot be interpreted as an integer");
-    } else {
-        count = count.v;
-    }
-
-    final = [];
-    sep = [];
-    for (i = 0; i < repl.v.byteLength; i++) {
-        sep.push(repl.v[i]);
-    }
-    len = old.v.byteLength;
-    i = 0;
-    tot = 0;
-    while (i < self.v.byteLength && (count === -1 || tot < count)) {
-        const next = self.find$left(old, i, self.v.byteLength);
-        if (next === -1) {
-            break;
-        }
-        for (let j = i; j < next; j++) {
-            final.push(self.v[j]);
-        }
-        final = final.concat(sep);
-        i = next + len;
-        tot++;
-    }
-
-    for (let j = i; j < self.v.byteLength; j++) {
-        final.push(self.v[j]);
-    }
-
-    return new Sk.builtin.bytes(final);
-
-});
-
-Sk.builtin.bytes.prototype["rfind"] = new Sk.builtin.func(function (self, sub, start, end) {
-    Sk.builtin.pyCheckArgsLen("rfind", arguments.length - 1, 1, 3);
-
-    return Sk.builtin.int_(self.find$right(sub, start, end));
-});
-
-Sk.builtin.bytes.prototype["rindex"] = new Sk.builtin.func(function (self, sub, start, end) {
-    var val;
-    Sk.builtin.pyCheckArgsLen("rindex", arguments.length - 1, 1, 3);
-
-    val = self.find$right(sub, start, end);
-    if (val === -1) {
-        throw new Sk.builtin.ValueError("subsection not found");
-    } else {
-        return Sk.builtin.int_(val);
-    }
-});
-
-Sk.builtin.bytes.prototype["rpartition"] = new Sk.builtin.func(function (self, sep) {
-    var val;
-    var final1;
-    var final2;
-    var final3;
-    Sk.builtin.pyCheckArgsLen("rpartition", arguments.length - 1, 1, 1);
-
-    if (!(sep instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" +  Sk.abstr.typeName(sep) + "'");
-    }
-    val = self.find$right(sep);
-
-    if (val === -1) {
-        final1 = new Sk.builtin.bytes(0);
-        final2 = new Sk.builtin.bytes(0);
-        final3 = self;
-        return new Sk.builtin.tuple([final1, final2, final3]);
-
-    }
-    final1 = new Sk.builtin.bytes(self.v.subarray(0, val));
-    final2 = new Sk.builtin.bytes(self.v.subarray(val, val + sep.v.byteLength));
-    final3 = new Sk.builtin.bytes(self.v.subarray(val + sep.v.byteLength, self.v.byteLength));
-
-    return new Sk.builtin.tuple([final1, final2, final3]);
-});
-
-Sk.builtin.bytes.prototype["startswith"] = new Sk.builtin.func(function (self, prefix, start, end) {
-    Sk.builtin.pyCheckArgsLen("startswith", arguments.length - 1, 1, 3);
-    if (!(prefix instanceof Sk.builtin.bytes || prefix instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("startswith first arg must be bytes or a tuple of bytes, not " + Sk.abstr.typeName(prefix));
-    }
-
-    ({ start, end } = indices(self, start, end));
-    
-    if (end < start) {
-        return Sk.builtin.bool.false$;
-    }
-
-    function is_match(item) {
-        const len = item.v.byteLength;
-        if (start + len <= end) {
-            for (let j = start, k = 0; k < len; j++, k++) {
-                if (self.v[j] !== item.v[k]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    if (prefix instanceof Sk.builtin.tuple) {
-        for (let iter = Sk.abstr.iter(prefix), item = iter.tp$iternext(); item !== undefined; item = iter.tp$iternext()) {
-            if (!(item instanceof Sk.builtin.bytes)) {
-                throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(item) + "'");
-            }
-            if (is_match(item)) {
-                return Sk.builtin.bool.true$;
-            }
-        }
-        return Sk.builtin.bool.false$;
-    } else {
-        if (is_match(prefix)) {
-            return Sk.builtin.bool.true$;
-        }
-        return Sk.builtin.bool.false$;
-    }
-});
-
-Sk.builtin.bytes.prototype["translate"] = new Sk.builtin.func(function () {
-    throw new Sk.builtin.NotImplementedError("translate() bytes method not implemented in Skulpt");
-});
-
-Sk.builtin.bytes.prototype["center"] = new Sk.builtin.func(function (self, width, fillbyte) {
-    var final;
-    var i;
-    var fill;
-    var fill1;
-    var fill2;
-    Sk.builtin.pyCheckArgsLen("center", arguments.length - 1, 1, 2);
-
-    if (fillbyte === undefined) {
-        fillbyte = 32;
-    } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
-        throw new Sk.builtin.TypeError("center() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
-    } else {
-        fillbyte = fillbyte.v[0];
-    }
-    if (!(width instanceof Sk.builtin.int_)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
-    } else {
-        width = width.v;
-    }
-    if (width <= self.v.byteLength) {
-        return self;
-    }
-    final = [];
-    fill = width - self.v.byteLength;
-    if (fill % 2) {
-        fill1 = (fill/2) - .5;
-        fill2 = (fill/2) + .5;
-    } else {
-        fill1 = fill/2;
-        fill2 = fill1;
-    }
-    for (i = 0; i < fill1; i++) {
-        final.push(fillbyte);
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v[i]);
-    }
-    for (i = 0; i < fill2; i++) {
-        final.push(fillbyte);
-    }
-
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["ljust"] = new Sk.builtin.func(function (self, width, fillbyte) {
-    var final;
-    var i;
-    Sk.builtin.pyCheckArgsLen("ljust", arguments.length - 1, 1, 2);
-
-    if (fillbyte === undefined) {
-        fillbyte = 32;
-    } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
-        throw new Sk.builtin.TypeError("ljust() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
-    } else {
-        fillbyte = fillbyte.v[0];
-    }
-    if (!(width instanceof Sk.builtin.int_)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
-    } else {
-        width = width.v;
-    }
-    if (width <= self.v.byteLength) {
-        return self;
-    }
-    final = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v[i]);
-    }
-    for (i = 0; i < width - self.v.byteLength; i++) {
-        final.push(fillbyte);
-    }
-
-    return new Sk.builtin.bytes(final);
-
-});
-
-Sk.builtin.bytes.prototype.left$strip = function (chars) {
-    var leading;
-    var i;
-    var j;
-    var final;
-
-    if (chars === undefined || chars === Sk.builtin.none.none$) {
-        // default is to remove ASCII whitespace
-        leading = [9, 10, 11, 12, 13, 32, 133];
-    } else if (!(chars instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");
-    } else {
-        leading = [];
-        for (i = 0; i < chars.v.byteLength; i++) {
-            leading.push(chars.v[i]);
-        }
-    }
-    final = [];
-    i = 0;
-    while (i < this.v.byteLength) {
-        if (!(leading.includes(this.v[i]))) {
-            break;
+        if (isReversed) {
+            return this.find$subright(tgt, start, end);
         } else {
-            i++;
+            return this.find$subleft(tgt, start, end);
         }
-    }
-    for (j = i; j < this.v.byteLength; j++) {
-        final.push(this.v[j]);
-    }
+    };
+}
 
-    return new Sk.builtin.bytes(final);
-};
-
-Sk.builtin.bytes.prototype["lstrip"] = new Sk.builtin.func(function (self, chars) {
-    Sk.builtin.pyCheckArgsLen("lstrip", arguments.length - 1, 0, 1);
-
-    return self.left$strip(chars);
-});
-
-Sk.builtin.bytes.prototype["rjust"] = new Sk.builtin.func(function (self, width, fillbyte) {
-    var final;
-    var i;
-    Sk.builtin.pyCheckArgsLen("rjust", arguments.length - 1, 1, 2);
-
-    if (fillbyte === undefined) {
-        fillbyte = 32;
-    } else if ((!(fillbyte instanceof Sk.builtin.bytes)) || (fillbyte.v.byteLength != 1)) {
-        throw new Sk.builtin.TypeError("rjust() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
-    } else {
-        fillbyte = fillbyte.v[0];
-    }
-    if (!(width instanceof Sk.builtin.int_)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
-    } else {
-        width = width.v;
-    }
-    if (width <= self.v.byteLength) {
-        return self;
-    }
-    final = [];
-    for (i = 0; i < width - self.v.byteLength; i++) {
-        final.push(fillbyte);
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        final.push(self.v[i]);
-    }
-
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["rsplit"] = new Sk.builtin.func(function (self, sep, maxsplits) {
-    Sk.builtin.pyCheckArgsLen("rsplit", arguments.length, 1, 3);
-    if ((sep === undefined) || (sep === Sk.builtin.none.none$)) {
-        sep = null;
-    }
-    if ((sep !== null) && !(sep instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("expected bytes");
-    }
-    if ((sep !== null) && sep.v.byteLength == 0) {
-        throw new Sk.builtin.ValueError("empty separator");
-    }
-    if ((maxsplits !== undefined) && !Sk.builtin.checkInt(maxsplits)) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
-
-    if (maxsplits === undefined) {
-        maxsplits = -1;
-    } else {
-        maxsplits = Sk.builtin.asnum$(maxsplits);
-    }
-
-    let result = [];
-    let splits = 0;
-
-    if (sep) {
-        let index = self.v.byteLength;
-        while (index >= 0) {
-            let next = self.find$right(sep, 0, index);
-            if (next === -1) {
-                break;
+function mkPartition(isReversed) {
+    return function partition(sep) {
+        sep = this.get$raw(sep);
+        let pos;
+        if (isReversed) {
+            pos = this.find$subright(sep, 0, this.v.length);
+            if (pos < 0) {
+                return new Sk.builtin.tuple([new Sk.builtin.bytes(), new Sk.builtin.bytes(), this]);
             }
-            result.push(new Sk.builtin.bytes(self.v.subarray(next + sep.v.byteLength, index)));
-            index = next;
-            splits++;
-            if (maxsplits > -1 && splits >= maxsplits) {
-                break;
-            }
-        }
-        result.push(new Sk.builtin.bytes(self.v.subarray(0, index)));
-    } else {
-        let i = self.v.byteLength - 1;
-        let index;
-        while (maxsplits === -1 || splits < maxsplits) {
-            while (i >= 0 && isspace(self.v[i])) {
-                i--;
-            }
-            if (i < 0) {
-                break;
-            }
-            index = i + 1;
-            i--;
-            while (i >= 0 && !isspace(self.v[i])) {
-                i--;
-            }
-            result.push(new Sk.builtin.bytes(self.v.subarray(i + 1, index)));
-            splits++;
-        }
-
-        if (i >= 0) {
-            while (i >= 0 && isspace(self.v[i])) {
-                i--;
-            }
-            if (i >= 0) {
-                result.push(new Sk.builtin.bytes(self.v.subarray(0, i + 1)));
-            }
-        }
-    }
-
-    return new Sk.builtin.list(result.reverse());
-});
-
-Sk.builtin.bytes.prototype.right$strip = function (chars) {
-    var ending;
-    var i;
-    var j;
-    var final;
-
-    if (chars === undefined || chars === Sk.builtin.none.none$) {
-        // default is to remove ASCII whitespace
-        ending = [9, 10, 11, 12, 13, 32, 133];
-    } else if (!(chars instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("a bytes-like object is required, not '" + Sk.abstr.typeName(chars) + "'");
-    } else {
-        ending = [];
-        for (i = 0; i < chars.v.byteLength; i++) {
-            ending.push(chars.v[i]);
-        }
-    }
-    final = [];
-    i = this.v.byteLength - 1;
-    while (i > -1) {
-        if (!(ending.includes(this.v[i]))) {
-            break;
         } else {
-            i--;
+            pos = this.find$subleft(sep, 0, this.v.length);
+            if (pos < 0) {
+                return new Sk.builtin.tuple([this, new Sk.builtin.bytes(), new Sk.builtin.bytes()]);
+            }
         }
-    }
-    for (j = 0; j <= i; j++) {
-        final.push(this.v[j]);
-    }
+        return new Sk.builtin.tuple([
+            new Sk.builtin.bytes(this.v.subarray(0, pos)),
+            new Sk.builtin.bytes(sep),
+            new Sk.builtin.bytes(this.v.subarray(pos + sep.length)),
+        ]);
+    };
+}
 
-    return new Sk.builtin.bytes(final);
-};
+function mkStrip(isLeft, isRight) {
+    return function stripBytes(chars) {
+        let strip_chrs;
+        if (chars === undefined || chars === Sk.builtin.none.none$) {
+            // default is to remove ASCII whitespace
+            strip_chrs = new Uint8Array([9, 10, 11, 12, 13, 32, 133]);
+        } else {
+            strip_chrs = this.get$raw(chars);
+        }
+        let start = 0,
+            end = this.v.length;
+        if (isLeft) {
+            while (start < end && strip_chrs.includes(this.v[start])) {
+                start++;
+            }
+        }
+        if (isRight) {
+            while (end > start && strip_chrs.includes(this.v[end - 1])) {
+                end--;
+            }
+        }
+        const final = new Uint8Array(end - start);
+        for (let i = 0; i < final.length; i++) {
+            final[i] = this.v[i + start];
+        }
+        return new Sk.builtin.bytes(final);
+    };
+}
 
-Sk.builtin.bytes.prototype["rstrip"] = new Sk.builtin.func(function (self, chars) {
-    Sk.builtin.pyCheckArgsLen("rstrip", arguments.length - 1, 0, 1);
-
-    return self.right$strip(chars);
-});
+function mkJust(funcname, isRight, isCenter) {
+    return function justify(width, fillbyte) {
+        if (fillbyte === undefined) {
+            fillbyte = 32;
+        } else if (!(fillbyte instanceof Sk.builtin.bytes) || fillbyte.v.length != 1) {
+            throw new Sk.builtin.TypeError(funcname + "() argument 2 must be a byte string of length 1, not " + Sk.abstr.typeName(fillbyte));
+        } else {
+            fillbyte = fillbyte.v[0];
+        }
+        const mylen = this.v.length;
+        width = Sk.misceval.asIndexSized(width, Sk.builtin.OverflowError);
+        if (width <= mylen) {
+            return new Sk.builtin.bytes(this.v);
+        }
+        const final = new Uint8Array(width);
+        let fill1, fill2;
+        if (isCenter) {
+            fill1 = Math.floor((width - mylen) / 2);
+            fill2 = (width - mylen) % 2 ? fill1 + 1 : fill1;
+        } else if (isRight) {
+            fill1 = width - mylen;
+            fill2 = 0;
+        } else {
+            fill1 = 0;
+            fill2 = width - mylen;
+        }
+        final.fill(fillbyte, 0, fill1);
+        for (let i = 0; i < mylen; i++) {
+            final[i + fill1] = this.v[i];
+        }
+        final.fill(fillbyte, width - fill2);
+        return new Sk.builtin.bytes(final);
+    };
+}
 
 function isspace(val) {
-    return ((val >= 9 && val <= 13) || val === 32);
-};
+    return (val >= 9 && val <= 13) || val === 32;
+}
+function islower(val) {
+    return val >= 97 && val <= 122;
+}
+function isupper(val) {
+    return val >= 65 && val <= 90;
+}
+function isdigit(val) {
+    return val >= 48 && val <= 57;
+}
 
-Sk.builtin.bytes.prototype["split"] = new Sk.builtin.func(function (self, sep, maxsplits) {
-    Sk.builtin.pyCheckArgsLen("split", arguments.length, 1, 3);
-    if ((sep === undefined) || (sep === Sk.builtin.none.none$)) {
-        sep = null;
-    }
-    if ((sep !== null) && !(sep instanceof Sk.builtin.bytes)) {
-        throw new Sk.builtin.TypeError("expected bytes");
-    }
-    if ((sep !== null) && sep.v.byteLength == 0) {
+function checkSepMaxSplit(sep, maxsplit) {
+    maxsplit = Sk.misceval.asIndexSized(maxsplit, Sk.builtin.OverflowError);
+    maxsplit = maxsplit < 0 ? Infinity : maxsplit;
+
+    sep = Sk.builtin.checkNone(sep) ? null : this.get$raw(sep);
+    if (sep !== null && !sep.length) {
         throw new Sk.builtin.ValueError("empty separator");
     }
-    if ((maxsplits !== undefined) && !Sk.builtin.checkInt(maxsplits)) {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
+    return { sep: sep, maxsplit: maxsplit };
+}
 
-    if (maxsplits === undefined) {
-        maxsplits = -1;
-    } else {
-        maxsplits = Sk.builtin.asnum$(maxsplits);
-    }
-
-    let result = [];
-    let splits = 0;
-    let index = 0;
-
-    if (sep) {
-        while (index < self.v.byteLength) {
-            let next = self.find$left(sep, index);
-            if (next === -1) {
-                break;
-            }
-            result.push(new Sk.builtin.bytes(self.v.subarray(index, next)));
-            index = next + sep.v.byteLength;
-            splits++;
-            if (maxsplits > -1 && splits >= maxsplits) {
-                break;
-            }
+function mkIsAll(passTest, passesZero) {
+    return function isAll() {
+        if (this.v.length === 0) {
+            return passesZero ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
         }
-        result.push(new Sk.builtin.bytes(self.v.subarray(index, self.v.byteLength)));
-    } else {
-        let i = 0;
-        let len = self.v.byteLength;
-        while (maxsplits === -1 || splits < maxsplits) {
-            while (i < len && isspace(self.v[i])) {
-                i++;
-            }
-            if (i == len) {
-                break;
-            }
-            index = i;
-            i++;
-            while (i < len && !isspace(self.v[i])) {
-                i++;
-            }
-            result.push(new Sk.builtin.bytes(self.v.subarray(index, i)));
-            splits++;
-        }
+        return this.v.every((val) => passTest(val)) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    };
+}
 
-        if (i < len) {
-            while (i < len && isspace(self.v[i])) {
-                i++;
-            }
-            if (i < len) {
-                result.push(new Sk.builtin.bytes(self.v.subarray(i, len)));
-            }
-        }
-    }
-
-    return new Sk.builtin.list(result);
-});
-
-Sk.builtin.bytes.prototype["strip"] = new Sk.builtin.func(function (self, chars) {
-    var lstripped;
-    //double check the description
-    Sk.builtin.pyCheckArgsLen("strip", arguments.length - 1, 0, 1);
-    lstripped  = self.left$strip(chars);
-
-    return lstripped.right$strip(chars);
-});
-
-Sk.builtin.bytes.prototype["capitalize"] = new Sk.builtin.func(function (self) {
-    var final;
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("capitalize", arguments.length - 1, 0, 0);
-
-    if (self.v.byteLength === 0) {
-        return new Sk.builtin.bytes(0);
-    }
-    final = [];
-    if (self.v[0] >= 97 && self.v[0] <= 122) {
-        val = self.v[0] - 32;
-    } else {
-        val = self.v[0];
-    }
-    final.push(val);
-    for (i = 1; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            val += 32;
-            final.push(val);
-        } else {
-            final.push(val);
-        }
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
-    Sk.builtin.pyCheckArgsLen("expandtabs", arguments.length, 1, 2);
-
-    if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
-        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
-    }
-    if (tabsize === undefined) {
-        tabsize = 8;
-    } else {
-        tabsize = Sk.builtin.asnum$(tabsize);
-    }
-
-    let final = [];
-    let linepos = 0;
-
-    for (let i = 0; i < self.v.byteLength; i++) {
-        if (self.v[i] === 9) {
-            let inc = tabsize - (linepos % tabsize);
-            final = final.concat(Array(inc).fill(32));
-            linepos += inc;
-        } else if (self.v[i] === 10 || self.v[i] === 13) {
-            final.push(self.v[i]);
-            linepos = 0;
-        } else {
-            final.push(self.v[i]);
-            linepos++;
-        }
-    }
-
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["isalnum"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("isalnum", arguments.length - 1, 0, 0);
-    if (self.v.byteLength === 0) {
-        return Sk.builtin.bool.false$;
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!((val >= 48 && val <= 57) || (val >= 65 && val <= 90) || (val >= 97 && val <= 122))) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-
-});
-
-Sk.builtin.bytes.prototype["isalpha"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("isalpha", arguments.length - 1, 0, 0);
-    if (self.v.byteLength === 0) {
-        return Sk.builtin.bool.false$;
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!((val >= 65 && val <= 90) || (val >= 97&& val <= 122))) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-
-});
-
-Sk.builtin.bytes.prototype["isascii"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("isascii", arguments.length - 1, 0, 0);
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!(val >= 0 && val < 128)) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-
-});
-
-Sk.builtin.bytes.prototype["isdigit"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("isdigit", arguments.length - 1, 0, 0);
-    if (self.v.byteLength === 0) {
-        return Sk.builtin.bool.false$;
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!(val >= 48 && val < 58)) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-
-});
-
-Sk.builtin.bytes.prototype["islower"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    var flag;
-    Sk.builtin.pyCheckArgsLen("islower", arguments.length - 1, 0, 0);
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            return Sk.builtin.bool.false$;
-        }
-        if (!(flag) && (val >= 97 && val <= 122)) {
-            flag = true;
-        }
-    }
-    if (flag) {
-        return Sk.builtin.bool.true$;
-    }
-    return Sk.builtin.bool.false$;
-
-});
-
-Sk.builtin.bytes.prototype["isspace"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("isspace", arguments.length - 1, 0, 0);
-    if (self.v.byteLength === 0) {
-        return Sk.builtin.bool.false$;
-    }
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!(val === 32 || val === 9 || val === 10 || val === 13 || val === 11 || val === 12)) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    return Sk.builtin.bool.true$;
-
-});
-
-Sk.builtin.bytes.prototype["istitle"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("istitle", arguments.length - 1, 0, 0);
-
-    if (self.v.byteLength === 0) {
-        return Sk.builtin.bool.false$;
-    }
-
-    let inword = false;
-    let cased = false;
-
-    for (let i = 0; i < self.v.byteLength; i++) {
-        const val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            if (inword) {
-                return Sk.builtin.bool.false$;
-            } else {
-                inword = true;
-            }
-            cased = true;
-        } else if (val >= 97 && val <= 122) {
-            if (!inword) {
+function makeIsUpperLower(passTest, failTest) {
+    return function () {
+        let flag = false;
+        for (let i = 0; i < this.v.length; i++) {
+            if (failTest(this.v[i])) {
                 return Sk.builtin.bool.false$;
             }
-            cased = true;
-        } else {
-            inword = false;
-        }
-    }
-
-    return cased ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
-});
-
-Sk.builtin.bytes.prototype["isupper"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    var flag;
-    Sk.builtin.pyCheckArgsLen("isupper", arguments.length - 1, 0, 0);
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (!(flag) && (val >= 65 && val <= 90)) {
-            flag = true;
-        }
-        if (val >= 97 && val <= 122) {
-            return Sk.builtin.bool.false$;
-        }
-    }
-    if (flag) {
-        return Sk.builtin.bool.true$;
-    }
-
-    return Sk.builtin.bool.false$;
-});
-
-Sk.builtin.bytes.prototype["lower"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    var final;
-    Sk.builtin.pyCheckArgsLen("lower", arguments.length - 1, 0, 0);
-    final = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            val += 32;
-            final.push(val);
-        } else {
-            final.push(val);
-        }
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
-    Sk.builtin.pyCheckArgsLen("splitlines", arguments.length, 1, 2);
-
-    if ((keepends !== undefined) && !Sk.builtin.checkBool(keepends)) {
-        throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
-    }
-    if (keepends === undefined) {
-        keepends = false;
-    } else {
-        keepends = keepends.v;
-    }
-
-    let final = [];
-    let sol = 0;
-    let eol;
-    let i = 0;
-
-    while (i < self.v.byteLength) {
-        const val = self.v[i];
-
-        if (val === 13) {  // \r
-            let rn = false;
-            if ((i < self.v.byteLength - 1) && (self.v[i + 1] === 10)) {
-                rn = true;
+            if (!flag && passTest(this.v[i])) {
+                flag = true;
             }
-
-            if (keepends) {
-                eol = rn ? i + 2 : i + 1;
-            } else {
-                eol = i;
-            }
-
-            final.push(new Sk.builtin.bytes(self.v.subarray(sol, eol)));
-
-            sol = rn ? i + 2 : i + 1;
-            i = sol;
-        } else if (val === 10) {  // \n
-            if (keepends) {
-                eol = i + 1;
-            } else {
-                eol = i;
-            }
-
-            final.push(new Sk.builtin.bytes(self.v.subarray(sol, eol)));
-
-            sol = i + 1;
-            i = sol;
-        } else {
-            i++;
         }
-    }
+        return flag ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+    };
+}
 
-    if (sol < self.v.byteLength) {
-        final.push(new Sk.builtin.bytes(self.v.subarray(sol, self.v.byteLength)));
-    }
-
-    return new Sk.builtin.list(final);
-});
-
-Sk.builtin.bytes.prototype["swapcase"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    var final;
-    Sk.builtin.pyCheckArgsLen("swapcase", arguments.length - 1, 0, 0);
-    final = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            val += 32;
-            final.push(val);
-        } else if (val >= 97 && val <= 122) {
-            val -= 32;
-            final.push(val);
-        } else {
-            final.push(val);
+function mkCaseSwitch(switchCase) {
+    return function lowerUpperSwapCase() {
+        const final = new Uint8Array(this.v.length);
+        for (let i = 0; i < this.v.length; i++) {
+            final[i] = switchCase(this.v[i]);
         }
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["title"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("title", arguments.length - 1, 0, 0);
-
-    if (self.v.byteLength === 0) {
-        return new Sk.builtin.bytes(0);
-    }
-    let final = [];
-    let inword = false;
-
-    for (let i = 0; i < self.v.byteLength; i++) {
-        const val = self.v[i];
-        if (val >= 65 && val <= 90) {
-            if (inword) {
-                final.push(val + 32);
-            } else {
-                inword = true;
-                final.push(val);
-            }
-        } else if (val >= 97 && val <= 122) {
-            if (inword) {
-                final.push(val);
-            } else {
-                inword = true;
-                final.push(val - 32);
-            }
-        } else {
-            inword = false;
-            final.push(val);
-        }
-    }
-
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["upper"] = new Sk.builtin.func(function (self) {
-    var i;
-    var val;
-    var final;
-    Sk.builtin.pyCheckArgsLen("upper", arguments.length - 1, 0, 0);
-    final = [];
-    for (i = 0; i < self.v.byteLength; i++) {
-        val = self.v[i];
-        if (val >= 97 && val <= 122) {
-            val -= 32;
-            final.push(val);
-        } else {
-            final.push(val);
-        }
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["zfill"] = new Sk.builtin.func(function (self, width) {
-    var fill;
-    var final;
-    var i;
-    var val;
-    Sk.builtin.pyCheckArgsLen("zfill", arguments.length - 1, 1, 1);
-    if (!(width instanceof Sk.builtin.int_)) {
-        throw new Sk.builtin.TypeError( "'" + Sk.abstr.typeName(width) + "' object cannot be interpreted as an integer");
-    }
-    if (width.v <= self.v.byteLength) {
-        return self;
-    }
-    final = [];
-    fill = width.v - self.v.byteLength;
-    if (self.v[0] === 43 || self.v[0] === 45) {
-        val = self.v[0];
-        final.push(val);
-        for (i = 0; i < fill; i++) {
-            final.push(48);
-        }
-        for (i = 1; i < self.v.byteLength; i++) {
-            val = self.v[i];
-            final.push(val);
-        }
-    } else {
-        for (i = 0; i < fill; i++) {
-            final.push(48);
-        }
-        for (i = 0; i < self.v.byteLength; i++) {
-            val = self.v[i];
-            final.push(val);
-        }
-    }
-    return new Sk.builtin.bytes(final);
-});
-
-Sk.builtin.bytes.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgsLen("__iter__", arguments.length, 0, 0, true, false);
-    return new Sk.builtin.bytes_iter_(self);
-});
-
-Sk.builtin.bytes.prototype.tp$iter = function () {
-    return new Sk.builtin.bytes_iter_(this);
-};
+        return new Sk.builtin.bytes(final);
+    };
+}
 
 /**
  * @constructor
- * @param {Object} bts
+ * @param {Sk.builtin.bytes} bytes
  */
-Sk.builtin.bytes_iter_ = function (bts) {
-    if (!(this instanceof Sk.builtin.bytes_iter_)) {
-        return new Sk.builtin.bytes_iter_(bts);
-    }
-    this.$index = 0;
-    this.sq$length = bts.v.byteLength;
-    this.tp$iter = () => this;
-    this.tp$iternext = function () {
-        if (this.$index >= this.sq$length) {
+var bytes_iter_ = Sk.abstr.buildIteratorClass("bytes_iterator", {
+    constructor: function bytes_iter_(bytes) {
+        this.$index = 0;
+        this.$seq = bytes.v;
+    },
+    iternext() {
+        const next = this.$seq[this.$index++];
+        if (next === undefined) {
             return undefined;
         }
-        return new Sk.builtin.int_(bts.v[this.$index++]);
-    };
-    this.$r = function () {
-        return new Sk.builtin.str("bytesiterator");
-    };
-    return this;
-};
-
-Sk.abstr.setUpInheritance("bytesiterator", Sk.builtin.bytes_iter_, Sk.builtin.object);
-
-Sk.builtin.bytes_iter_.prototype.__class__ = Sk.builtin.bytes_iter_;
-
-Sk.builtin.bytes_iter_.prototype.__iter__ = new Sk.builtin.func(function (self) {
-    return self;
+        return new Sk.builtin.int_(next);
+    },
+    methods: {
+        __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
+    },
+    flags: { sk$acceptable_as_base_class: false },
 });
-
-Sk.builtin.bytes_iter_.prototype.next$ = function (self) {
-    var ret = self.tp$iternext();
-    if (ret === undefined) {
-        throw new Sk.builtin.StopIteration();
-    }
-    return ret;
-};
 
 Sk.exportSymbol("Sk.builtin.bytes", Sk.builtin.bytes);

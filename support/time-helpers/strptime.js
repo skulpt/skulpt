@@ -10,8 +10,8 @@
  */
 
 /**
- * @param {String} str
- * @param {String} format
+ * @param {string} str
+ * @param {string} format
  * @param {Boolean} [local]
  * @returns {Date|Null}
  */
@@ -458,9 +458,9 @@ var strptime = function(str, format, local) {
     }
 
     /**
-     * @param {String} str
-     * @param {String} [mode]
-     * @returns {String}
+     * @param {string} str
+     * @param {string} [mode]
+     * @returns {string}
      */
     function toLetterCaseReverse(str, mode) {
         str = String(str);

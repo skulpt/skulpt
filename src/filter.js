@@ -1,67 +1,50 @@
 /**
  * @constructor
- * @param {Object} iterable
+ * @param {pyObject} func
+ * @param {pyObject} iterable
  * @extends Sk.builtin.object
  */
-
-Sk.builtin.filter_ = function filter_ (fun, iterable) {
-    var it;
-    var getitem;
-    var result;
-    var item;
-    Sk.builtin.pyCheckArgsLen("filter_", arguments.length, 2, 2);
-
-    if (!(this instanceof Sk.builtin.filter_)) {
-        return new Sk.builtin.filter_(fun, iterable);
-    }
-    //don't need to check if iterable is an iterable because Sk.abstr.iter will throw the right error msg
-    it = Sk.abstr.iter(iterable);
-    getitem = function (item) {
-        if (fun === Sk.builtin.none.none$) {
-            result = item;
-        } else {
-            result = Sk.misceval.callsimArray(fun, [item]);
-        }
-
-        if (Sk.misceval.isTrue(result)) {
-            return result;
-        }
-        return undefined;
-    };
-    this.tp$iter = function () {
-        return this;
-    };
-    this.tp$iternext = function () {
-        item = it.tp$iternext();
-        if (item === undefined) {
-            return undefined;
-        }
-        result = getitem(item);
-        while (result === undefined) {
-            item = it.tp$iternext();
-            if (item === undefined) {
-                return undefined;
+Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
+    constructor: function filter_(func, iterable) {
+        this.$func = func;
+        this.$iterable = iterable;
+    },
+    iternext(canSuspend) {
+        // iterate over iterable until we pass the predicate
+        // this.chcek$filter either returns the item or undefined
+        const ret = Sk.misceval.iterFor(this.$iterable, (i) =>
+            Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined))
+        );
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    },
+    slots: {
+        tp$doc:
+            "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true.",
+        tp$new(args, kwargs) {
+            let [func, iterable] = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs, []);
+            func = Sk.builtin.checkNone(func) ? null : func;
+            iterable = Sk.abstr.iter(iterable);
+            // in theory you could subclass
+            if (this === Sk.builtin.filter_.prototype) {
+                return new Sk.builtin.filter_(func, iterable);
+            } else {
+                const instance = new this.constructor();
+                Sk.builtin.filter_.call(instance, func, iterable);
+                return instance;
             }
-            result = getitem(item);
-        }
-        return item;
-    };
-    this.__class__ = Sk.builtin.filter_;
-    return this;
-};
-
-Sk.abstr.setUpInheritance("filter", Sk.builtin.filter_, Sk.builtin.object);
-
-Sk.builtin.filter_.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    return self.tp$iter();
+        },
+    },
+    proto: {
+        check$filter(item) {
+            let res;
+            if (this.$func === null) {
+                res = item;
+            } else {
+                res = Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
+            }
+            return Sk.misceval.chain(res, (ret) => (Sk.misceval.isTrue(ret) ? item : undefined));
+        },
+    },
 });
-
-Sk.builtin.filter_.prototype.next$ = function (self) {
-    return self.tp$iternext();
-};
-
-Sk.builtin.filter_.prototype["$r"] = function () {
-    return new Sk.builtin.str("<filter object>");
-};
 
 Sk.exportSymbol("Sk.builtin.filter_", Sk.builtin.filter_);
