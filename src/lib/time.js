@@ -284,7 +284,7 @@ var $builtinmodule = function (name) {
         }
         if (!t)
         {
-            t = localtime_f();
+            t = from_seconds();
         } else if (!(t instanceof struct_time_f)) {
             t = new struct_time_f(t);
         }
