@@ -672,7 +672,11 @@ const subtype_dict_getset_description = {
         if (dict_descr !== undefined) {
             return dict_descr.tp$descr_set(this, value);
         }
-        return Sk.generic.getSetDict.$set.call(this, value);
+        if (value === undefined) {
+            this.$d = new Sk.builtin.dict([]);
+        } else {
+            return Sk.generic.getSetDict.$set.call(this, value);
+        }
     },
     $doc: "dictionary for instance variables (if defined)",
     $name: "__dict__",

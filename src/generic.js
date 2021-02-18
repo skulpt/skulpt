@@ -274,7 +274,7 @@ Sk.generic.getSetDict = {
     },
     $set(value) {
         if (value === undefined) {
-            this.$d = new Sk.builtin.dict();
+            throw new Sk.builtin.TypeError("cannot delete __dict__");
         } else if (value instanceof Sk.builtin.dict) {
             this.$d = value;
         } else {
