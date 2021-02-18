@@ -119,6 +119,44 @@ class TestDocstrings(unittest.TestCase):
         f = lambda x: 42
         self.assertEqual(f.__doc__, None)
 
+    def test_setting_on_function(self):
+        def f():
+            "hello"
+            return 42
+
+        self.assertEqual(f.__doc__, "hello")
+
+        f.__doc__ = "world"
+        self.assertEqual(f.__doc__, "world")
+
+        # Setting to a non-string is odd but allowed:
+        f.__doc__ = 42
+        self.assertEqual(f.__doc__, 42)
+
+        # Attemping to delete __doc__ instead sets it to None:
+        del f.__doc__
+        self.assertEqual(f.__doc__, None)
+
+    def test_setting_on_method(self):
+        class Banana:
+            def peel(self):
+                "Remove peel"
+                pass
+
+        self.assertEqual(Banana.peel.__doc__, "Remove peel")
+
+        # We can set the doc when accessed on the class:
+        Banana.peel.__doc__ = "Take out of peel"
+        self.assertEqual(Banana.peel.__doc__, "Take out of peel")
+
+        # But not when accessed via an instance:
+
+        def set_on_method_of_instance():
+            banana = Banana()
+            banana.peel.__doc__ = "this will not work"
+
+        self.assertRaises(AttributeError, set_on_method_of_instance)
+
 
 if __name__ == '__main__':
     unittest.main()
