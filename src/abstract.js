@@ -207,7 +207,7 @@ function binary_op_(v, w, opname) {
     // subclass of v's type
     const w_type = w.constructor;
     const v_type = v.constructor;
-    const w_is_subclass = w_type !== v_type && w_type.sk$baseClass === undefined && w instanceof v_type;
+    let w_is_subclass = w_type !== v_type && w_type.sk$baseClass === undefined && w instanceof v_type;
 
     // From the Python 2.7 docs:
     //
@@ -222,8 +222,10 @@ function binary_op_(v, w, opname) {
     let ret;
     if (w_is_subclass) {
         wop = boNameToSlotFuncRhs_(w, opname);
-        // only use the reflected slot if it has actually be overridden
-        if (wop !== undefined && wop !== boNameToSlotFuncRhs_(v, opname)) {
+        if (wop === boNameToSlotFuncRhs_(v, opname) && wop !== undefined) {
+            w_is_subclass = false;
+            // only use the reflected slot early if it has actually been overridden
+        } else if (wop !== undefined) {
             ret = wop.call(w, v);
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
                 return ret;
@@ -240,7 +242,7 @@ function binary_op_(v, w, opname) {
     }
     // Don't retry RHS if failed above
     if (!w_is_subclass) {
-        wop = boNameToSlotFuncRhs_(w, opname);
+        wop = wop || boNameToSlotFuncRhs_(w, opname);
         if (wop !== undefined) {
             ret = wop.call(w, v);
             if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
