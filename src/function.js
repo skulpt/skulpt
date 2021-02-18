@@ -127,7 +127,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         },
         __doc__: {
             $get() {
-                return new Sk.builtin.str(this.$doc);
+                return this.$doc;
             },
         },
     },
