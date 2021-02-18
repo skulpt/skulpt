@@ -34,7 +34,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
 
         this.$name = (code.co_name && code.co_name.v) || code.name || "<native JS>";
         this.$d = Sk.builtin.dict ? new Sk.builtin.dict() : undefined;
-        this.$doc = code.$doc;
+        this.$doc = code.co_docstring || Sk.builtin.none.none$;
         this.$module = (Sk.globals && Sk.globals["__name__"]) || Sk.builtin.none.none$;
         this.$qualname = (code.co_qualname && code.co_qualname.v) || this.$name;
 
@@ -127,7 +127,13 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         },
         __doc__: {
             $get() {
-                return new Sk.builtin.str(this.$doc);
+                return this.$doc;
+            },
+            $set(v) {
+                // The value the user is setting __doc__ to can be any Python
+                // object.  If we receive 'undefined' then the user is deleting
+                // __doc__, which is allowed and results in __doc__ being None.
+                this.$doc = v || Sk.builtin.none.none$;
             },
         },
     },
