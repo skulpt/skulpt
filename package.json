@@ -5,6 +5,7 @@
   "keywords": [
     "skulpt"
   ],
+  "main": "./main.js",
   "scripts": {
     "help": "node support/build/help.js",
     "regenparser": "node support/build/regenparser.js",
