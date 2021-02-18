@@ -76,7 +76,7 @@ function buildJsonFile(name, dirs, exts, outfile, options) {
 }
 
 if (process.argv.includes("internal")) {
-    buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
+    // buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
 } else if (process.argv.includes("builtin")) {
     let excludes = [];
     if (fs.existsSync(excludeFileName)) {

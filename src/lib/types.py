@@ -12,12 +12,19 @@ import sys
 # and changing number of builtin types implement *some* flavor of
 # iterator.  Don't check the type!  Use hasattr to check for both
 # "__iter__" and "next" attributes instead.
+MappingProxyType = type(type.__dict__)
+WrapperDescriptorType = type(object.__init__)
+MethodWrapperType = type(object().__str__)
+MethodDescriptorType = type(str.join)
+ClassMethodDescriptorType = type(dict.__dict__['fromkeys'])
 
 NoneType = type(None)
 TypeType = type
 ObjectType = object
 IntType = int
-LongType = long
+try:
+    LongType = long
+except: pass
 FloatType = float
 BooleanType = bool
 try:

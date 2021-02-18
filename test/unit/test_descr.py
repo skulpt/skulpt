@@ -13,10 +13,7 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual({}.fromkeys(arg), res)
 
         # Now get the descriptor
-        # descr = dict.__dict__["fromkeys"]
-        # skulpt doesn't currently support __dict__ and
-        # builtin functions on objects do have a __get__
-        descr = dict.fromkeys
+        descr = dict.__dict__["fromkeys"]
 
         # More baseline using the descriptor directly
         self.assertEqual(descr.__get__(None, dict)(arg), res)
@@ -37,20 +34,20 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         # to get the unbound method. After this we can not treat these differently to normal
         # methods. We should remove the __get__ function from the prototype if it's an internal 
         # method. Maybe it should even be it's own class.
-        # else:
-        #     self.fail("shouldn't have allowed descr.__get__(42)")
+        else:
+            self.fail("shouldn't have allowed descr.__get__(42)")
         try:
             descr.__get__(None, 42)
         except TypeError:
             pass
-        # else:
-        #     self.fail("shouldn't have allowed descr.__get__(None, 42)")
+        else:
+            self.fail("shouldn't have allowed descr.__get__(None, 42)")
         try:
             descr.__get__(None, int)
         except TypeError:
             pass
-        # else:
-        #    self.fail("shouldn't have allowed descr.__get__(None, int)")
+        else:
+           self.fail("shouldn't have allowed descr.__get__(None, int)")
 
     def assertHasAttr(self, obj, name):
         self.assertTrue(hasattr(obj, name),
@@ -183,7 +180,6 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_supers(self):
         # Testing super...
-
         class A(object):
             def meth(self, a):
                 return "A(%r)" % a
@@ -192,27 +188,24 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
         class B(A):
             def __init__(self):
-                self._super = super(B, self)
+                self.__super = super(B, self)
             def meth(self, a):
-                return "B(%r)" % a + self._super.meth(a)
+                return "B(%r)" % a + self.__super.meth(a)
 
         self.assertEqual(B().meth(2), "B(2)A(2)")
 
         class C(A):
             def meth(self, a):
-                return "C(%r)" % a + self._super.meth(a)
-        # because unbound super doesn't work
-        # C._super = super(C)
+                return "C(%r)" % a + self.__super.meth(a)
+        C._C__super = super(C)
 
-        # this won't work be cause the unbound super doesn't work
-        # self.assertEqual(C().meth(3), "C(3)A(3)")
+        self.assertEqual(C().meth(3), "C(3)A(3)")
 
         class D(C, B):
             def meth(self, a):
                 return "D(%r)" % a + super(D, self).meth(a)
 
-        # because I don't walk the MRO correctly
-        # self.assertEqual(D().meth(4), "D(4)C(4)B(4)A(4)")
+        self.assertEqual(D().meth(4), "D(4)C(4)B(4)A(4)")
 
         # Test for subclassing super
 
@@ -224,16 +217,15 @@ class ClassPropertiesAndMethods(unittest.TestCase):
             def meth(self, a):
                 return "E(%r)" % a + mysuper(E, self).meth(a)
 
-        # because tp$getattr doesn't get inherited.
-        # self.assertEqual(E().meth(5), "E(5)D(5)C(5)B(5)A(5)")
+        self.assertEqual(E().meth(5), "E(5)D(5)C(5)B(5)A(5)")
 
-        # class F(E):
-        #     def meth(self, a):
-        #         s = self.__super # == mysuper(F, self)
-        #         return "F(%r)[%s]" % (a, s.__class__.__name__) + s.meth(a)
-        # F._F__super = mysuper(F)
+        class F(E):
+            def meth(self, a):
+                s = self.__super # == mysuper(F, self)
+                return "F(%r)[%s]" % (a, s.__class__.__name__) + s.meth(a)
+        F._F__super = mysuper(F)
 
-        #self.assertEqual(F().meth(6), "F(6)[mysuper]E(6)D(6)C(6)B(6)A(6)")
+        self.assertEqual(F().meth(6), "F(6)[mysuper]E(6)D(6)C(6)B(6)A(6)")
 
         # Make sure certain errors are raised
 
@@ -251,19 +243,19 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         else:
             self.fail("shouldn't allow super(D, C())")
 
-        # try:
-        #     super(D).__get__(12)
-        # except TypeError:
-        #     pass
-        # else:
-        #     self.fail("shouldn't allow super(D).__get__(12)")
+        try:
+            super(D).__get__(12)
+        except TypeError:
+            pass
+        else:
+            self.fail("shouldn't allow super(D).__get__(12)")
 
-        # try:
-        #     super(D).__get__(C())
-        # except TypeError:
-        #     pass
-        # else:
-        #     self.fail("shouldn't allow super(D).__get__(C())")
+        try:
+            super(D).__get__(C())
+        except TypeError:
+            pass
+        else:
+            self.fail("shouldn't allow super(D).__get__(C())")
 
         # Make sure data descriptors can be overridden and accessed via super
         # (new feature in Python 2.3)
@@ -289,11 +281,9 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         class Sub(Base):
             @classmethod
             def test(klass):
-                pass
-                #return super(Sub,klass).aProp
+                return super(Sub,klass).aProp
 
-        # because calling super with a class as a second variable doesn't work yet
-        # self.assertEqual(Sub.test(), Base.aProp)
+        self.assertEqual(Sub.test(), Base.aProp)
 
         # Verify that super() doesn't allow keyword args
         try:

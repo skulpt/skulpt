@@ -366,8 +366,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
                 throw new Sk.builtin.SyntaxError("List packing with stars is not supported in Python 2");
             }
             return this._gr("load" + tuporlist, "new Sk.builtins['", tuporlist, "'](", this.cunpackstarstoarray(e.elts), ")");
-        }
-        else if (tuporlist === "tuple") {
+        } else if (tuporlist === "tuple") {
             allconsts = true;
             items = [];
             for (i = 0; i < e.elts.length; ++i) {
@@ -378,7 +377,7 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
                 // this requires seeing if "$const" is contained
                 // within it.  A better solution would require a
                 // change to vexpr, which would be more invasive.
-                if (allconsts && (item.indexOf('$const') == -1)) {
+                if (allconsts && (item.indexOf("$const") == -1)) {
                     allconsts = false;
                 }
                 items.push(item);
@@ -479,11 +478,9 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
         if (type === "dict") {
             lkey = this.vexpr(key);
             out(tmpname, ".mp$ass_subscript(", lkey, ",", lvalue, ");");
-        }
-        else if (type === "list") {
+        } else if (type === "list") {
             out(tmpname, ".v.push(", lvalue, ");"); // todo;
-        }
-        else if (type === "set") {
+        } else if (type === "set") {
             out(tmpname, ".v.mp$ass_subscript(", lvalue, ", true);");
         }
         this._jump(skip);
@@ -497,8 +494,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     return tmpname;
 };
 
-Compiler.prototype.cyield = function(e)
-{
+Compiler.prototype.cyield = function(e) {
     if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
     }
@@ -584,7 +580,7 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };")
+        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
         positionalArgs = "[$gbl.__class__,self]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
@@ -656,15 +652,12 @@ Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
         out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
         this._checkSuspension();
         return this._gr("lsubscr", "$ret");
-    }
-    else if (ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore) {
+    } else if (ctx === Sk.astnodes.Store || ctx === Sk.astnodes.AugStore) {
         out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
         this._checkSuspension();
-    }
-    else if (ctx === Sk.astnodes.Del) {
+    } else if (ctx === Sk.astnodes.Del) {
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
-    }
-    else {
+    } else {
         Sk.asserts.fail("handlesubscr fail");
     }
 };
@@ -681,8 +674,7 @@ Compiler.prototype.cboolop = function (e) {
     Sk.asserts.assert(e instanceof Sk.astnodes.BoolOp);
     if (e.op === Sk.astnodes.And) {
         jtype = this._jumpfalse;
-    }
-    else {
+    } else {
         jtype = this._jumptrue;
     }
     end = this.newBlock("end of boolop");
@@ -716,7 +708,7 @@ Compiler.prototype.cjoinedstr = function (e) {
     }
 
     if (!ret) {
-        ret = 'Sk.builtin.str.$emptystr';
+        ret = "Sk.builtin.str.$emptystr";
     }
 
     return ret;
@@ -725,13 +717,13 @@ Compiler.prototype.cjoinedstr = function (e) {
 Compiler.prototype.cformattedvalue = function(e) {
     let value = this.vexpr(e.value);
     switch (e.conversion) {
-        case 's':
+        case "s":
             value = this._gr("value", "new Sk.builtin.str(",value,")");
             break;
-        case 'a':
+        case "a":
             value = this._gr("value", "Sk.builtin.ascii(",value,")");
             break;
-        case 'r':
+        case "r":
             value = this._gr("value", "Sk.builtin.repr(",value,")");
             break;
     }
@@ -816,19 +808,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Num:
             if (typeof e.n === "number") {
                 return e.n;
-            }
-            else if (e.n instanceof Sk.builtin.int_) {
-                return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
+            } else if (e.n instanceof Sk.builtin.lng) {
+                return this.makeConstant("new Sk.builtin.lng('" + e.n.v.toString() + "')"); 
+            } else if (e.n instanceof Sk.builtin.int_) {
+                if (typeof e.n.v === "number") {
+                    return this.makeConstant("new Sk.builtin.int_(" + e.n.v + ")");
+                }
+                return this.makeConstant("new Sk.builtin.int_('" + e.n.v.toString() + "')"); 
             } else if (e.n instanceof Sk.builtin.float_) {
                 // Preserve sign of zero for floats
                 nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
                 return this.makeConstant("new Sk.builtin.float_(" + nStr + ")");
-            }
-            else if (e.n instanceof Sk.builtin.lng) {
-                // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
-                return this.makeConstant("Sk.longFromStr('" + e.n.tp$str().v + "')");
-            }
-            else if (e.n instanceof Sk.builtin.complex) {
+            } else if (e.n instanceof Sk.builtin.complex) {
                 // preserve sign of zero here too
                 var real_val = e.n.real === 0 && 1/e.n.real === -Infinity ? "-0" : e.n.real;
                 var imag_val = e.n.imag === 0 && 1/e.n.imag === -Infinity ? "-0" : e.n.imag;
@@ -857,12 +848,18 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mname = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
             switch (e.ctx) {
                 case Sk.astnodes.AugLoad:
-                    out("$ret = Sk.abstr.gattr(", augvar, ",", mname, ", true);");
+                    out("$ret = ", augvar, ".tp$getattr(", mname, ", true);");
                     this._checkSuspension(e);
+                    out("\nif ($ret === undefined) {");
+                    out("\nthrow new Sk.builtin.AttributeError(", augvar, ".sk$attrError() + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\n};");
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.Load:
-                    out("$ret = Sk.abstr.gattr(", val, ",", mname, ", true);");
+                    out("$ret = ", val, ".tp$getattr(", mname, ", true);");
                     this._checkSuspension(e);
+                    out("\nif ($ret === undefined) {");
+                    out("\nthrow new Sk.builtin.AttributeError(", val, ".sk$attrError() + \" has no attribute '\" + ", mname,".$jsstr() + \"'\");");
+                    out("\n};");
                     return this._gr("lattr", "$ret");
                 case Sk.astnodes.AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
@@ -870,16 +867,17 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
                     out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("$ret = Sk.abstr.sattr(", augvar, ",", mname, ",", data, ", true);");
+                    out("$ret = ",augvar, ".tp$setattr(", mname, ",", data, ", true);");
                     out("}");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Store:
-                    out("$ret = Sk.abstr.sattr(", val, ",", mname, ",", data, ", true);");
+                    out("$ret = ", val, ".tp$setattr(", mname, ",", data, ", true);");
                     this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Del:
-                    Sk.asserts.fail("todo Del;");
+                    out("$ret = ", val, ".tp$setattr(", mname, ", undefined, true);");
+                    this._checkSuspension(e);
                     break;
                 case Sk.astnodes.Param:
                 default:
@@ -927,15 +925,15 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 case Sk.builtin.bool.false$:
                     return "Sk.builtin.bool.false$";
                 default:
-                    Sk.asserts.fail("invalid named constant")
+                    Sk.asserts.fail("invalid named constant");
             }
             break;
         case Sk.astnodes.List:
-            return this.ctuplelistorset(e, data, 'list');
+            return this.ctuplelistorset(e, data, "list");
         case Sk.astnodes.Tuple:
-            return this.ctuplelistorset(e, data, 'tuple');
+            return this.ctuplelistorset(e, data, "tuple");
         case Sk.astnodes.Set:
-            return this.ctuplelistorset(e, data, 'set');
+            return this.ctuplelistorset(e, data, "set");
         case Sk.astnodes.Starred:
             switch (e.ctx) {
                 case Sk.astnodes.Store:
@@ -1155,7 +1153,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
               "};";
 
     return output;
-}
+};
 
 Compiler.prototype.outputAllUnits = function () {
     var i;
@@ -1178,8 +1176,7 @@ Compiler.prototype.outputAllUnits = function () {
         generatedBlocks = Object.create(null);
         for (i = 0; i < blocks.length; ++i) {
             block = i;
-            if (block in generatedBlocks)
-                continue;
+            if (block in generatedBlocks) {continue;}
             while (true) {
                 generatedBlocks[block] = true;
 
@@ -1190,13 +1187,11 @@ Compiler.prototype.outputAllUnits = function () {
                     if (!(blocks[block]._next in generatedBlocks)) {
                         ret += "/* allowing case fallthrough */";
                         block = blocks[block]._next;
-                    }
-                    else {
+                    } else {
                         ret += "/* jump */ continue;";
                         break;
                     }
-                }
-                else {
+                } else {
                     ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
                     break;
                 }
@@ -1218,11 +1213,9 @@ Compiler.prototype.cif = function (s) {
         if (s.orelse && s.orelse.length > 0) {
             this.vseqstmt(s.orelse);
         }
-    }
-    else if (constant === 1) {
+    } else if (constant === 1) {
         this.vseqstmt(s.body);
-    }
-    else {
+    } else {
         end = this.newBlock("end of if");
         if (s.orelse && s.orelse.length > 0) {
             next = this.newBlock("next branch of if");
@@ -1237,8 +1230,7 @@ Compiler.prototype.cif = function (s) {
 
             this.setBlock(next);
             this.vseqstmt(s.orelse);
-        }
-        else {
+        } else {
             this._jumpfalse(test, end);
             this.vseqstmt(s.body);
         }
@@ -1258,8 +1250,7 @@ Compiler.prototype.cwhile = function (s) {
         if (s.orelse) {
             this.vseqstmt(s.orelse);
         }
-    }
-    else {
+    } else {
         top = this.newBlock("while test");
         this._jump(top);
         this.setBlock(top);
@@ -1278,7 +1269,7 @@ Compiler.prototype.cwhile = function (s) {
         this.setBlock(body);
 
         if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
-            var suspType = 'Sk.delay';
+            var suspType = "Sk.delay";
             var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
             out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
                 "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
@@ -1327,8 +1318,7 @@ Compiler.prototype.cfor = function (s) {
         // so it's preserved (as we cross blocks here and assume it survives)
         iter = "$loc." + this.gensym("iter");
         out(iter, "=Sk.abstr.iter(", toiter, ");");
-    }
-    else {
+    } else {
         iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
         this.u.tempsToSave.push(iter); // Save it across suspensions
     }
@@ -1347,7 +1337,7 @@ Compiler.prototype.cfor = function (s) {
     target = this.vexpr(s.target, nexti);
 
     if ((Sk.debugging || Sk.killableFor) && this.u.canSuspend) {
-        var suspType = 'Sk.delay';
+        var suspType = "Sk.delay";
         var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
         out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
             "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
@@ -1411,8 +1401,7 @@ Compiler.prototype.craise = function (s) {
         // (and perhaps traceback for py2 if we care before it gets fully deprecated)
 
         out("if (", exc, " instanceof Sk.builtin.BaseException) {throw ",exc,";} else {throw new Sk.builtin.TypeError('exceptions must derive from BaseException');};");
-    }
-    else {
+    } else {
         // re-raise
         out("throw $err;");
     }
@@ -1453,13 +1442,13 @@ Compiler.prototype.outputFinallyCascade = function (thisFinally) {
         nextFinally = this.peekFinallyBlock();
 
         out("if($postfinally!==undefined) {",
-                "if ($postfinally.returning",
-                    (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
+            "if ($postfinally.returning",
+            (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
 
-                        "$blk=",nextFinally.blk,";continue;",
-                "} else {",
-                    "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
-                "}",
+            "$blk=",nextFinally.blk,";continue;",
+            "} else {",
+            "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
+            "}",
             "}");
     }
 };
@@ -1480,7 +1469,7 @@ Compiler.prototype.ctry = function (s) {
 
     if (s.finalbody) {
         finalBody = this.newBlock("finalbody");
-        finalExceptionHandler = this.newBlock("finalexh")
+        finalExceptionHandler = this.newBlock("finalexh");
         finalExceptionToReRaise = this._gr("finally_reraise", "undefined");
 
         this.u.tempsToSave.push(finalExceptionToReRaise);
@@ -1582,13 +1571,13 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$exit, true);");
+    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
     this._checkSuspension(s);
     exit = this._gr("exit", "$ret");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
-    out("$ret = Sk.abstr.gattr(",mgr,",Sk.builtin.str.$enter, true);");
+    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
     this._checkSuspension(s);
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
@@ -1700,8 +1689,7 @@ Compiler.prototype.cimport = function (s) {
 
         if (alias.asname) {
             this.cimportas(alias.name, alias.asname, mod);
-        }
-        else {
+        } else {
             tmp = alias.name;
             lastDot = tmp.v.indexOf(".");
             if (lastDot !== -1) {
@@ -1745,7 +1733,7 @@ Compiler.prototype.cfromimport = function (s) {
         }
 
         //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "))");
+        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined)");
         //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
@@ -1814,7 +1802,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         defaults = this.vseqexpr(args.defaults);
     }
     if (args && args.kw_defaults) {
-        kw_defaults = args.kw_defaults.map(e => e ? this.vexpr(e) : 'undefined');
+        kw_defaults = args.kw_defaults.map(e => e ? this.vexpr(e) : "undefined");
     }
     if (args && args.vararg) {
         vararg = args.vararg;
@@ -1847,15 +1835,14 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         // TODO make generators deal with arguments properly
         if (kwarg) {
             throw new Sk.builtin.SyntaxError(coname.v + "(): keyword arguments in generators not supported",
-                                            this.filename, n.lineno);
+                                             this.filename, n.lineno);
         }
         if (vararg) {
             throw new Sk.builtin.SyntaxError(coname.v + "(): variable number of arguments in generators not supported",
-                                            this.filename, n.lineno);
+                                             this.filename, n.lineno);
         }
         funcArgs.push("$gen");
-    }
-    else {
+    } else {
         if (kwarg) {
             funcArgs.push("$kwa");
             this.u.tempsToSave.push("$kwa");
@@ -2023,7 +2010,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // this.u.suffixCode = "}break;}});";
 
     // New switch code to catch exceptions
-    this.u.switchCode = "while(true){try{"
+    this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
@@ -2080,6 +2067,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     }
 
     //
+    // Skulpt doesn't have "co_consts", so record the docstring (or
+    // None) in the "co_docstring" property of the code object, ready
+    // for use by the Sk.builtin.func constructor.
+    //
+    out(scopename, ".co_docstring=", this.cDocstringOfCode(n), ";");
+
+    //
     // attach flags
     //
     if (kwarg) {
@@ -2116,22 +2110,18 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             frees += ",$free";
         }
     }
-    if (isGenerator)
+    if (isGenerator) {
     // Keyword and variable arguments are not currently supported in generators.
     // The call to pyCheckArgs assumes they can't be true.
-    {
         if (args && args.args.length > 0) {
             return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
-                coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
-                ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
-        }
-        else {
+                            coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
+                            ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
+        } else {
             return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
-                "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
+                            "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
         }
-    }
-    else {
-        var res;
+    } else {
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
             for (let decorator of decos.reverse()) {
@@ -2144,6 +2134,47 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
     }
 };
+
+/** JavaScript for the docstring of the given body, or null if the
+ * body has no docstring.
+ */
+Compiler.prototype.maybeCDocstringOfBody = function(body) {
+    if (body.length === 0)  // Don't think this can happen?
+        return null;
+
+    const stmt_0 = body[0];
+    if (stmt_0.constructor !== Sk.astnodes.Expr)
+        return null;
+
+    const expr = stmt_0.value;
+    if (expr.constructor !== Sk.astnodes.Str)
+        return null;
+
+    return this.vexpr(expr);
+};
+
+/** JavaScript for the docstring of the given node.  Only called from
+ * buildcodeobj(), and expects a FunctionDef, Lambda, or GeneratorExp
+ * node.  We give a "None" docstring to a GeneratorExp node, although
+ * it is not carried over to the final generator; this is harmless.
+ */
+Compiler.prototype.cDocstringOfCode = function(node) {
+    switch (node.constructor) {
+    case Sk.astnodes.AsyncFunctionDef:  // For when it's supported
+    case Sk.astnodes.FunctionDef:
+        return (
+            this.maybeCDocstringOfBody(node.body)
+            || "Sk.builtin.none.none$"
+        );
+
+    case Sk.astnodes.Lambda:
+    case Sk.astnodes.GeneratorExp:
+        return "Sk.builtin.none.none$";
+
+    default:
+        Sk.asserts.fail(`unexpected node kind ${node.constructor.name}`);
+    }
+}
 
 Compiler.prototype.cfunction = function (s, class_for_super) {
     var funcorgen;
@@ -2205,8 +2236,7 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
         // have to evaluate it outside and store it into the generator as a
         // local, which we retrieve here.
         iter = "$loc.$iter0";
-    }
-    else {
+    } else {
         toiter = this.vexpr(ge.iter);
         iter = "$loc." + this.gensym("iter");
         out(iter, "=", "Sk.abstr.iter(", toiter, ");");
@@ -2288,7 +2318,7 @@ Compiler.prototype.cclass = function (s) {
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;$free=$globals;";
     this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;"
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
@@ -2300,7 +2330,7 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}"
+    this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}";
     this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
@@ -2313,7 +2343,7 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);")
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);");
 
     // apply decorators
 
@@ -2550,8 +2580,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     mangledNoPre = mangled;
     if (this.u.ste.generator || this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         mangled = "$loc." + mangled;
-    }
-    else if (optype === OP_FAST || optype === OP_NAME) {
+    } else if (optype === OP_FAST || optype === OP_NAME) {
         this.u.localnames.push(mangled);
     }
 
@@ -2670,6 +2699,10 @@ Compiler.prototype.exitScope = function () {
         mangled = prev.name["$r"]().v;
         mangled = mangled.substring(1, mangled.length - 1);
         out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+        if (this.stack.length && this.u.ste.blockType == "class") {
+            const classname = this.u.name.v;
+            out(prev.scopename, ".co_qualname=new Sk.builtins['str']('"+classname+ "." + mangled + "');");
+        }
     }
     for (var constant in prev.consts) {
         if (prev.consts.hasOwnProperty(constant)) {
@@ -2683,8 +2716,19 @@ Compiler.prototype.exitScope = function () {
  * @param {Sk.builtin.str=} class_for_super
  */
 Compiler.prototype.cbody = function (stmts, class_for_super) {
-    var i;
-    for (i = 0; i < stmts.length; ++i) {
+    var i = 0;
+
+    // If we have a docstring, then assign it to __doc__, and skip over
+    // the expression when properly compiling the rest of the body.  This
+    // happens for class and module bodies.
+    //
+    const maybeDocstring = this.maybeCDocstringOfBody(stmts);
+    if (maybeDocstring !== null) {
+        out("$loc.__doc__ = ", maybeDocstring, ";");
+        i = 1;
+    }
+
+    for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
 };
@@ -2752,7 +2796,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "}"
+    this.u.suffixCode = "}";
     this.u.suffixCode += "}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } });";
 
     // Note - this change may need to be adjusted for all the other instances of
@@ -2834,3 +2878,6 @@ Sk.exportSymbol("Sk.unfixReserved", Sk.unfixReserved);
 
 Sk.mangleName = mangleName;
 Sk.exportSymbol("Sk.mangleName", Sk.mangleName);
+
+Sk.reservedWords_ = reservedWords_;
+Sk.exportSymbol("Sk.reservedWords_", Sk.reservedWords_);

@@ -1,7 +1,7 @@
 TypeError('first argument must be callable')
 TypeError('first argument must be callable')
-TypeError('object is not iterable')
+TypeError("'int' object is not iterable")
 KeyError('5')
 None
-TypeError('__missing__() takes at most 1 arguments (2 given)')
+TypeError('__missing__() takes exactly one argument (2 given)')
 KeyError('{1: 2}')
