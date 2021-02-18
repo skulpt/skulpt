@@ -23,8 +23,17 @@ Sk.abstr = {};
  */
 Sk.abstr.typeName = function (obj) {
     if (obj != null && obj.tp$name !== undefined) {
-        return obj.tp$name;
+        let name = obj.hp$name;
+        if (name !== undefined) {
+            return name;
+        }
+        name = obj.tp$name;
+        if (name.includes(".")) {
+            name = name.slice(name.lastIndexOf(".") + 1);
+        }
+        return name;
     } else {
+        Sk.asserts.fail(obj + " passed to typeName");
         return "<invalid type>";
     }
 };
@@ -1195,13 +1204,6 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     /**@type {FunctionConstructor} */
     let typeobject = options.constructor;
 
-    let mod;
-    if (typename.includes(".")) {
-        // you should define the module like "collections.defaultdict" for static classes
-        const mod_typename = typename.split(".");
-        typename = mod_typename.pop();
-        mod = mod_typename.join(".");
-    }
     // set the prototypical chains for inheritance
     Sk.abstr.setUpInheritance(typename, typeobject, options.base, options.meta);
 
@@ -1223,9 +1225,6 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     Sk.abstr.setUpGetSets(typeobject, options.getsets);
     Sk.abstr.setUpClassMethods(typeobject, options.classmethods);
 
-    if (mod !== undefined) {
-        type_proto.__module__ = new Sk.builtin.str(mod);
-    }
     
     const proto = options.proto || {};
     Object.entries(proto).forEach(([p, val]) => {

@@ -326,6 +326,7 @@ function setUpKlass($name, klass, bases, meta) {
         tp$bases: { value: bases, writable: true },
         tp$mro: { value: null, writable: true },
         hp$type: { value: true, writable: true },
+        hp$name: { value: $name, writable: true}
     });
     klass_proto.tp$mro = klass.$buildMRO();
 
@@ -574,7 +575,15 @@ Sk.builtin.type.prototype.tp$getsets = {
     },
     __name__: {
         $get() {
-            return new Sk.builtin.str(this.prototype.tp$name);
+            let name = this.prototype.hp$name;
+            if (name !== undefined) {
+                return new Sk.builtin.str(name);
+            }
+            name = this.prototype.tp$name;
+            if (name.includes(".")) {
+                name = name.slice(name.lastIndexOf(".") + 1);
+            }
+            return new Sk.builtin.str(name);
         },
         $set(value) {
             check_special_type_attr(this, value, Sk.builtin.str.$name);
@@ -583,7 +592,7 @@ Sk.builtin.type.prototype.tp$getsets = {
                     "can only assign string to " + this.prototype.tp$name + ".__name__, not '" + Sk.abstr.typeName(value) + "'"
                 );
             }
-            this.prototype.tp$name = value.$jsstr();
+            this.prototype.hp$name = this.prototype.tp$name = value.$jsstr();
         },
     },
     __module__: {
@@ -591,6 +600,9 @@ Sk.builtin.type.prototype.tp$getsets = {
             let mod = this.prototype.__module__;
             if (mod && !(mod.ob$type === Sk.builtin.getset_descriptor)) {
                 return mod;
+            }
+            if (this.tp$name.includes(".")) {
+                return new Sk.builtin.str(this.tp$name.slice(0, this.tp$name.lastIndexOf(".")));
             }
             return new Sk.builtin.str("builtins");
         },
