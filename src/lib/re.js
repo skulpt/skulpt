@@ -325,7 +325,7 @@ var $builtinmodule = function (name) {
         });
 
         _repr = new Sk.builtin.func( function (self) {
-            var ret = "re.compile('" + Sk.ffi.remapToPy(self.re) + "')";
+            var ret = "re.compile('" + Sk.ffi.remapToJs(self.re) + "')";
             return Sk.ffi.remapToPy(ret.substring(0,212));
         });
 

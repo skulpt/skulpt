@@ -1,1 +1,2 @@
-EXCEPTION: TypeError: step must be a integer on line 1
+EXCEPTION: TypeError: 'float' object cannot be interpreted as an integer on line 1
+

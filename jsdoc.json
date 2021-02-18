@@ -1,19 +1,47 @@
 {
     "tags": {
         "allowUnknownTags": true,
-        "dictionaries": ["jsdoc","closure"]
+        "dictionaries": ["jsdoc", "closure"]
     },
     "source": {
-       "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js", "src/import.js",
-       "src/int.js", "src/float.js", "src/bool.js", "src/constants.js", "src/object.js", "src/seqtype.js", "src/numtype.js"]
+        "include": [
+            "src/generic.js",
+            "src/misceval.js",
+            "src/abstract.js",
+            "src/ffi.js",
+            "src/slotdefs.js",
+            "src/import.js",
+            "src/function.js",
+            "src/complex.js",
+            "src/check.js",
+            "src/type.js",
+            "src/int.js",
+            "src/set.js",
+            "src/str.js",
+            "src/dict.js",
+            "src/tuple.js",
+            "src/simple_iterators.js",
+            "src/slice.js",
+            "src/float.js",
+            "src/range.js",
+            "src/bool.js",
+            "src/constants.js",
+            "src/object.js"
+        ]
     },
     "plugins": ["plugins/markdown"],
+    "markdown": {
+        "hardwrap": true
+    },
     "templates": {
         "cleverLinks": false,
-        "monospaceLinks": false
+        "monospaceLinks": false,
+        "default": {
+            "useLongnameInNav": true
+        }
     },
     "opts": {
-    "encoding": "utf8",               // same as -e utf8
-    "destination": "./doc/ProgMan"          // same as -d ./out/
+        "encoding": "utf8", // same as -e utf8
+        "destination": "./doc/ProgMan" // same as -d ./out/
     }
 }

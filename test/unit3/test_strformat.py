@@ -108,5 +108,11 @@ class string_format(unittest.TestCase):
         self.assertEqual('hello world!', f'hello {x:world}!')
         self.assertEqual('hello world!!', f'{x:hello {x:world}!}!')
 
+    def test_scientific_notation(self):
+        self.assertEqual('1.234568e+08', "{:e}".format(123456789))
+        self.assertEqual('1.234568E+08', "{:E}".format(123456789))
+        self.assertEqual('1.234568e+16', "{:e}".format(12345678987654321))
+        self.assertEqual('1e+08', "{:.0e}".format(123456789))
+
 if __name__ == '__main__':
     unittest.main()

@@ -58,7 +58,7 @@ var $builtinmodule = function (name) {
 
     elementClass = function ($gbl, $loc) {
         /*
-         Notes:  self['$d'] is the dictionary used by the GenericGetAttr mechanism for an object.
+         Notes:  self['$d'] is the dictionary used by the generic.getAttr mechanism for an object.
          for various reasons  if you create a class in Javascript and have self.xxxx instance
          variables, you cannot say instance.xxx and get the value of the instance variable unless
          it is stored in the self['$d'] object.  This seems like a duplication of storage to me
@@ -86,7 +86,7 @@ var $builtinmodule = function (name) {
 
         })
 
-        $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+        $loc.tp$getattr = Sk.generic.getAttr;
 
         $loc.__setattr__ = new Sk.builtin.func(function (self, key, value) {
             key = Sk.ffi.remapToJs(key);

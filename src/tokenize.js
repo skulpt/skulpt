@@ -56,7 +56,7 @@ function regexEscape(string) {
 /**
  * Iterable contains
  * @template T
- * @param {Iterable<T>} a
+ * @param {T} a
  * @param {T} obj
  */
 function contains (a, obj) {
@@ -169,9 +169,32 @@ var String_ = group(StringPrefix + "'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*'",
 // Sorting in reverse order puts the long operators before their prefixes.
 // Otherwise if = came before ==, == would get recognized as two instances
 // of =.
-var EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
-var Special = group.apply(this, EXACT_TOKENS_SORTED.reverse().map(function (t) { return regexEscape(t); }));
-var Funny = group('\\r?\\n', Special);
+var EXACT_TOKENS_SORTED;
+var Special;
+var Funny;
+
+function setupTokens(py3) {
+    // recompute the above two lines
+    // <> should be included in py2 mode
+    if (py3) {
+        delete Sk.token.EXACT_TOKEN_TYPES["<>"];
+    } else {
+        Sk.token.EXACT_TOKEN_TYPES["<>"] = Sk.token.tokens.T_NOTEQUAL;
+    }
+    EXACT_TOKENS_SORTED = Object.keys(Sk.token.EXACT_TOKEN_TYPES).sort();
+    Special = group.apply(
+        this,
+        EXACT_TOKENS_SORTED.reverse().map(function (t) {
+            return regexEscape(t);
+        })
+    );
+    Funny = group("\\r?\\n", Special);
+}
+setupTokens(true);
+
+Sk.token.setupTokens = setupTokens;
+
+
 
 // these aren't actually used
 // var PlainToken = group(Number_, Funny, String_, Name);

@@ -10,7 +10,6 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    mod.__file__ = "/src/lib/time/__init__.js";
 
     mod.__package__ = new Sk.builtin.str("");
 
@@ -164,37 +163,35 @@ var $builtinmodule = function (name) {
         );
     }
 
-    function localtime_f(secs) {
-        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
+    function from_seconds(secs, asUtc) {
         var d = new Date();
         if (secs) {
             Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
             var seconds = Sk.builtin.asnum$(secs);
             d.setTime(seconds * 1000);
         }
-        return date_to_struct_time(d);
+        return date_to_struct_time(d, asUtc);
     }
 
-    mod.localtime = new Sk.builtin.func(localtime_f);
+    mod.localtime = new Sk.builtin.func(function(secs) {
+        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
+        return from_seconds(secs, false);
+    });
 
     mod.gmtime = new Sk.builtin.func(function(secs) {
-        Sk.builtin.pyCheckArgsLen("localtime", arguments.length, 0, 1);
-        var d = new Date();
-        if (secs) {
-            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
-            var seconds = Sk.builtin.asnum$(secs);
-            d.setTime(seconds * 1000);
-        }
-        return date_to_struct_time(d, true);
+        Sk.builtin.pyCheckArgsLen("gmtime", arguments.length, 0, 1);
+        return from_seconds(secs, true);
     });
 
     var monthnames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var daynames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     function asctime_f(time) {
+        Sk.builtin.pyCheckArgsLen("asctime", arguments.length, 0, 1);
+
         if (!time || Sk.builtin.checkNone(time))
         {
-            time = localtime_f();
+            time = from_seconds();
         } else if (!(time instanceof struct_time_f)) {
             time = new struct_time_f(time);
         }
@@ -219,10 +216,13 @@ var $builtinmodule = function (name) {
     mod.asctime = new Sk.builtin.func(asctime_f);
 
     mod.ctime = new Sk.builtin.func(function(secs) {
-        return asctime_f(localtime_f(secs));
+        Sk.builtin.pyCheckArgsLen("ctime", arguments.length, 0, 1);
+        return asctime_f(from_seconds(secs));
     });
 
     function mktime_f(time) {
+        Sk.builtin.pyCheckArgsLen("mktime", arguments.length, 1, 1);
+
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
             var d = new Date(Sk.builtin.asnum$(time.v[0]),
@@ -284,7 +284,7 @@ var $builtinmodule = function (name) {
         }
         if (!t)
         {
-            t = localtime_f();
+            t = from_seconds();
         } else if (!(t instanceof struct_time_f)) {
             t = new struct_time_f(t);
         }
