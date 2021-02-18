@@ -24,7 +24,6 @@ Sk.builtins = {
     "hasattr"   : null,
     "id"        : null,
     
-    "reduce"    : new Sk.builtin.func(Sk.builtin.reduce),
     "sorted"    : null,
     "any"       : null,
     "all"       : null,
@@ -477,6 +476,7 @@ Sk.setupObjects = function (py3) {
         Sk.builtins["map"] = Sk.builtin.map_;
         Sk.builtins["zip"] = Sk.builtin.zip_;
         Sk.builtins["range"] = Sk.builtin.range_;
+        delete Sk.builtins["reduce"];
         delete Sk.builtins["xrange"];
         delete Sk.builtins["StandardError"];
         delete Sk.builtins["unicode"];
@@ -516,6 +516,15 @@ Sk.setupObjects = function (py3) {
                 $meth: Sk.builtin.xrange,
                 $name: "xrange",
                 $flags: { MinArgs: 1, MaxArgs: 3 },
+            },
+            null,
+            "builtins"
+        );
+        Sk.builtins["reduce"] = new Sk.builtin.sk_method(
+            {
+                $meth: Sk.builtin.reduce,
+                $name: "reduce",
+                $flags: { MinArgs: 2, MaxArgs: 3 },
             },
             null,
             "builtins"
