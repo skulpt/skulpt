@@ -1414,11 +1414,12 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
 
 Sk.abstr.built$iterators = [];
 
-Sk.abstr.setUpModuleMethods = function (module_name, module, method_defs) {
+Sk.abstr.setUpModuleMethods = function (module_name, mod, method_defs) {
     Object.entries(method_defs).forEach(([method_name, method_def]) => {
         method_def.$name = method_def.$name || method_name; // operator e.g. some methods share method_defs
-        module[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
+        mod[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
     });
+    return mod;
 };
 
 /**
