@@ -1532,6 +1532,15 @@ function generateTurtleModule(_target) {
 
             getTarget().addEventListener("keyup", this._keyUpListener);
         };
+        
+        proto.$title = function(title){
+            // output in the console
+            // console.log(title);
+            // OR change the page title
+            document.title = title;
+        }
+        proto.$title.minArgs = 1;
+        proto.$title.co_varnames = ['title'];
 
         proto.$listen = function() {
             this._createKeyUpListener();
@@ -2310,7 +2319,8 @@ function generateTurtleModule(_target) {
     addModuleMethod(Screen, _module, "$update", getScreen);
     addModuleMethod(Screen, _module, "$delay", getScreen);
     addModuleMethod(Screen, _module, "$window_width", getScreen);
-    addModuleMethod(Screen, _module, "$window_height", getScreen);
+    addModuleMethod(Screen, _module, "$window_height", getScreen);    
+    addModuleMethod(Screen, _module, "$title", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
