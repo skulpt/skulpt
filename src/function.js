@@ -34,7 +34,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
 
         this.$name = (code.co_name && code.co_name.v) || code.name || "<native JS>";
         this.$d = Sk.builtin.dict ? new Sk.builtin.dict() : undefined;
-        this.$doc = code.$doc;
+        this.$doc = code.co_docstring || Sk.builtin.none.none$;
         this.$module = (Sk.globals && Sk.globals["__name__"]) || Sk.builtin.none.none$;
         this.$qualname = (code.co_qualname && code.co_qualname.v) || this.$name;
 
