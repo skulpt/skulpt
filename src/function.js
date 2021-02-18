@@ -129,6 +129,12 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             $get() {
                 return this.$doc;
             },
+            $set(v) {
+                // The value the user is setting __doc__ to can be any Python
+                // object.  If we receive 'undefined' then the user is deleting
+                // __doc__, which is allowed and results in __doc__ being None.
+                this.$doc = v || Sk.builtin.none.none$;
+            },
         },
     },
     proto: {
