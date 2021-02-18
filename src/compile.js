@@ -555,6 +555,37 @@ Compiler.prototype.cyield = function(e) {
     return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
 };
 
+Compiler.prototype.cyieldfrom = function (e) {
+    if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
+        throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
+    }
+    var iterable = this.vexpr(e.value);
+    iterable = this._gr("iter", "Sk.abstr.iter(", iterable, ")");
+    out("$gen." + iterable + "=", iterable, ";");
+    var afterIter = this.newBlock("after iter");
+    var afterBlock = this.newBlock("after yield from");
+    this._jump(afterIter);
+    this.setBlock(afterIter);
+    var retval = this.gensym("retval");
+    out(iterable, "=$gen.", iterable, ";");
+    out("var ", retval, ";");
+    out("if ($gen.gi$sentvalue === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
+    out("$ret=", iterable, ".tp$iternext(true, $gen.gi$sentvalue);");
+    out("} else {");
+    var send = this.makeConstant("new Sk.builtin.str('send');");
+    out("$ret=Sk.misceval.tryCatch(function(){return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.gi$sentvalue]);},");
+    out("function (e) { if (e instanceof Sk.builtin.StopIteration) { " + iterable + ".$value = e.$value; return undefined; } else { throw e; } }");
+    out(");");
+    out("}");
+    this._checkSuspension(e);
+    out(retval, "=$ret;");
+    out("if(", retval, "===undefined){$gen.gi$sentvalue=$gen." + iterable + ".$value || Sk.builtin.none.none$;$blk=", afterBlock, ";continue;}");
+    out("return [/*resume*/", afterIter, ",/*ret*/", retval, "];");
+    this.setBlock(afterBlock);
+    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
+};
+
+
 Compiler.prototype.ccompare = function (e) {
     var res;
     var rhs;
@@ -843,6 +874,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.cgenexp(e);
         case Sk.astnodes.Yield:
             return this.cyield(e);
+        case Sk.astnodes.YieldFrom:
+            return this.cyieldfrom(e);
         case Sk.astnodes.Compare:
             return this.ccompare(e);
         case Sk.astnodes.Call:

@@ -1150,7 +1150,12 @@ Sk.builtin.next_ = function next_(iter, default_) {
             if (default_) {
                 return default_;
             }
-            throw new Sk.builtin.StopIteration();
+            const v = iter.$value;
+            if (v !== undefined && v !== Sk.builtin.none.none$) {
+                throw new Sk.builtin.StopIteration(v);
+            } else {
+                throw new Sk.builtin.StopIteration();
+            }
         }
         return nxt;
     });

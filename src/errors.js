@@ -474,9 +474,26 @@ Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
  */
 Sk.builtin.StopIteration = Sk.abstr.buildNativeClass("StopIteration", {
     constructor: function StopIteration(...args) {
+        this.$value = args[0] || Sk.builtin.none.none$;
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
+    slots: {
+        tp$init(args, kwargs) {
+            Sk.abstr.checkNoKwargs("StopIteration", kwargs);
+            this.$value = args[0] || Sk.builtin.none.none$;
+        }
+    },
+    getsets: {
+        value: {
+            $get() {
+                return this.$value || Sk.builtin.none.none$;
+            },
+            $set(v) {
+                this.$value = v;
+            }
+        }
+    }
 });
 Sk.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 
