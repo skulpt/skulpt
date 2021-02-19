@@ -24,8 +24,13 @@ var $builtinmodule = function (name) {
         "tm_yday": "day of year, range [1, 366]",
         "tm_isdst": "1 if summer time is in effect, 0 if not, and -1 if unknown"
     };
+    
+    var extra_fields = {
+        "tm_zone": {$get() {return this.tm$zone}, $doc: "abbreviation of timezone name"},
+        "tm_gmtoff": {$get() {return this.tm$gmtoff}, $doc: "offset from UTC in seconds"},
+    }
 
-    var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields);
+    var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields, extra_fields);
 
     mod.struct_time = struct_time_f;
 
@@ -148,7 +153,7 @@ var $builtinmodule = function (name) {
     function date_to_struct_time(date, utc) {
         utc = utc || false;
         // y, m, d, hh, mm, ss, weekday, jday, dst
-        return new struct_time_f(
+        var struct_time = new struct_time_f(
             [
                 Sk.builtin.assk$(utc ? date.getUTCFullYear() : date.getFullYear()),
                 Sk.builtin.assk$((utc ? date.getUTCMonth() : date.getMonth()) + 1), // want January == 1
@@ -161,6 +166,17 @@ var $builtinmodule = function (name) {
                 Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
             ]
         );
+        if (utc) {
+            struct_time.tm$zone = new Sk.builtin.str("UTC");
+            struct_time.tm$gmtoff = new Sk.builtin.int_(0);
+        } else {
+            var offset = -(stdTimezoneOffset())/60;
+            var pad = offset < 0 ? "-" : "+";
+            var tm_zone = pad + ("" + Math.abs(offset)).padStart(2, "0");
+            struct_time.tm$zone = new Sk.builtin.str(tm_zone);
+            struct_time.tm$gmtoff = new Sk.builtin.int_(offset * 3600);
+        }
+        return struct_time;
     }
 
     function from_seconds(secs, asUtc) {
