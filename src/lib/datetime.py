@@ -10,8 +10,17 @@ __all__ = ("date", "datetime", "time", "timedelta", "timezone", "tzinfo",
 
 import time as _time
 import math as _math
-import sys
 from operator import index as _index
+
+try:
+    bytes
+except NameError:
+    # only used in get state - we just need to create a bytes like str
+    def bytes(iterable):
+        s = ""
+        for it in iterable:
+            s += chr(it)
+        return s
 
 def _cmp(x, y):
     return 0 if x == y else 1 if x > y else -1
@@ -535,7 +544,9 @@ class timedelta:
             s += seconds
             microseconds = round(microseconds + usdouble)
         assert isinstance(s, int)
-        assert isinstance(microseconds, int)
+        if not isinstance(microseconds, int):
+            microseconds = int(microseconds) 
+        # assert isinstance(microseconds, int)
         assert abs(s) <= 3 * 24 * 3600
         assert abs(microseconds) < 3.1e6
 
@@ -570,7 +581,7 @@ class timedelta:
         if not args:
             args.append('0')
         return "%s.%s(%s)" % (self.__class__.__module__,
-                              self.__class__.__qualname__,
+                              self.__class__.__name__,
                               ', '.join(args))
 
     def __str__(self):
@@ -746,6 +757,7 @@ class timedelta:
                 self._seconds != 0 or
                 self._microseconds != 0)
 
+    __nonzero__ = __bool__
     # Pickle support.
 
     def _getstate(self):
@@ -796,23 +808,6 @@ class date:
 
         year, month, day (required, base 1)
         """
-        if (month is None and
-            isinstance(year, (bytes, str)) and len(year) == 4 and
-            1 <= ord(year[2:3]) <= 12):
-            # Pickle support
-            if isinstance(year, str):
-                try:
-                    year = year.encode('latin1')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a date object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(year)
-            self._hashcode = -1
-            return self
         year, month, day = _check_date_fields(year, month, day)
         self = object.__new__(cls)
         self._year = year
@@ -855,7 +850,7 @@ class date:
             assert len(date_string) == 10
             return cls(*_parse_isoformat_date(date_string))
         except Exception:
-            raise ValueError(f'Invalid isoformat string: {date_string!r}')
+            raise ValueError('Invalid isoformat string: {!r}'.format(date_string))
 
     @classmethod
     def fromisocalendar(cls, year, week, day):
@@ -864,7 +859,7 @@ class date:
         This is the inverse of the date.isocalendar() function"""
         # Year is bounded this way because 9999-12-31 is (9999, 52, 5)
         if not MINYEAR <= year <= MAXYEAR:
-            raise ValueError(f"Year is out of range: {year}")
+            raise ValueError("Year is out of range: {}".format(year))
 
         if not 0 < week < 53:
             out_of_range = True
@@ -878,10 +873,10 @@ class date:
                     out_of_range = False
 
             if out_of_range:
-                raise ValueError(f"Invalid week: {week}")
+                raise ValueError("Invalid week: {}".format(week))
 
         if not 0 < day < 8:
-            raise ValueError(f"Invalid weekday: {day} (range is [1, 7])")
+            raise ValueError("Invalid weekday: {} (range is [1, 7])".format(day))
 
         # Now compute the offset from (Y, 1, 1) in days:
         day_offset = (week - 1) * 7 + (day - 1)
@@ -906,7 +901,7 @@ class date:
         'datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)'
         """
         return "%s.%s(%d, %d, %d)" % (self.__class__.__module__,
-                                      self.__class__.__qualname__,
+                                      self.__class__.__name__,
                                       self._year,
                                       self._month,
                                       self._day)
@@ -1182,8 +1177,8 @@ class tzinfo:
 
 class IsoCalendarDate(tuple):
 
-    def __new__(cls, year, week, weekday, /):
-        return super().__new__(cls, (year, week, weekday))
+    def __new__(cls, year, week, weekday):
+        return super(_IsoCalendarDate, cls).__new__(cls, (year, week, weekday))
 
     @property
     def year(self):
@@ -1203,8 +1198,8 @@ class IsoCalendarDate(tuple):
         return (tuple, (tuple(self),))
 
     def __repr__(self):
-        return (f'{self.__class__.__name__}'
-                f'(year={self[0]}, week={self[1]}, weekday={self[2]})')
+        return ('{}'
+                '(year={}, week={}, weekday={})'.format(self.__class__.__name__, self[0], self[1], self[2]))
 
 
 _IsoCalendarDate = IsoCalendarDate
@@ -1236,7 +1231,7 @@ class time:
     """
     __slots__ = '_hour', '_minute', '_second', '_microsecond', '_tzinfo', '_hashcode', '_fold'
 
-    def __new__(cls, hour=0, minute=0, second=0, microsecond=0, tzinfo=None, *, fold=0):
+    def __new__(cls, hour=0, minute=0, second=0, microsecond=0, tzinfo=None, fold=0):
         """Constructor.
 
         Arguments:
@@ -1246,22 +1241,6 @@ class time:
         tzinfo (default to None)
         fold (keyword only, default to zero)
         """
-        if (isinstance(hour, (bytes, str)) and len(hour) == 6 and
-            ord(hour[0:1])&0x7F < 24):
-            # Pickle support
-            if isinstance(hour, str):
-                try:
-                    hour = hour.encode('latin1')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a time object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(hour, minute or None)
-            self._hashcode = -1
-            return self
         hour, minute, second, microsecond, fold = _check_time_fields(
             hour, minute, second, microsecond, fold)
         _check_tzinfo_arg(tzinfo)
@@ -1404,7 +1383,7 @@ class time:
         else:
             s = ""
         s= "%s.%s(%d, %d%s)" % (self.__class__.__module__,
-                                self.__class__.__qualname__,
+                                self.__class__.__name__,
                                 self._hour, self._minute, s)
         if self._tzinfo is not None:
             assert s[-1:] == ")"
@@ -1442,7 +1421,7 @@ class time:
         try:
             return cls(*_parse_isoformat_time(time_string))
         except Exception:
-            raise ValueError(f'Invalid isoformat string: {time_string!r}')
+            raise ValueError('Invalid isoformat string: {!r}'.format(time_string))
 
 
     def strftime(self, fmt):
@@ -1503,7 +1482,7 @@ class time:
         return offset
 
     def replace(self, hour=None, minute=None, second=None, microsecond=None,
-                tzinfo=True, *, fold=None):
+                tzinfo=True, fold=None):
         """Return a new time with new values for the specified fields."""
         if hour is None:
             hour = self.hour
@@ -1569,23 +1548,7 @@ class datetime(date):
     __slots__ = date.__slots__ + time.__slots__
 
     def __new__(cls, year, month=None, day=None, hour=0, minute=0, second=0,
-                microsecond=0, tzinfo=None, *, fold=0):
-        if (isinstance(year, (bytes, str)) and len(year) == 10 and
-            1 <= ord(year[2:3])&0x7F <= 12):
-            # Pickle support
-            if isinstance(year, str):
-                try:
-                    year = bytes(year, 'latin1')
-                except UnicodeEncodeError:
-                    # More informative error message.
-                    raise ValueError(
-                        "Failed to encode latin1 string when unpickling "
-                        "a datetime object. "
-                        "pickle.load(data, encoding='latin1') is assumed.")
-            self = object.__new__(cls)
-            self.__setstate(year, month)
-            self._hashcode = -1
-            return self
+                microsecond=0, tzinfo=None, fold=0):
         year, month, day = _check_date_fields(year, month, day)
         hour, minute, second, microsecond, fold = _check_time_fields(
             hour, minute, second, microsecond, fold)
@@ -1647,6 +1610,8 @@ class datetime(date):
         elif us < 0:
             t -= 1
             us += 1000000
+        if not isinstance(us, int):
+            us = int(us)
 
         converter = _time.gmtime if utc else _time.localtime
         y, m, d, hh, mm, ss, weekday, jday, dst = converter(t)
@@ -1662,8 +1627,8 @@ class datetime(date):
             # thus we can't perform fold detection for values of time less
             # than the max time fold. See comments in _datetimemodule's
             # version of this method for more details.
-            if t < max_fold_seconds and sys.platform.startswith("win"):
-                return result
+            # if t < max_fold_seconds and sys.platform.startswith("win"):
+                # return result
 
             y, m, d, hh, mm, ss = converter(t - max_fold_seconds)[:6]
             probe1 = cls(y, m, d, hh, mm, ss, us, tz)
@@ -1730,13 +1695,13 @@ class datetime(date):
         try:
             date_components = _parse_isoformat_date(dstr)
         except ValueError:
-            raise ValueError(f'Invalid isoformat string: {date_string!r}')
+            raise ValueError('Invalid isoformat string: {!r}'.format(date_string))
 
         if tstr:
             try:
                 time_components = _parse_isoformat_time(tstr)
             except ValueError:
-                raise ValueError(f'Invalid isoformat string: {date_string!r}')
+                raise ValueError('Invalid isoformat string: {!r}'.format(date_string))
         else:
             time_components = [0, 0, 0, 0, None]
 
@@ -1822,7 +1787,7 @@ class datetime(date):
 
     def replace(self, year=None, month=None, day=None, hour=None,
                 minute=None, second=None, microsecond=None, tzinfo=True,
-                *, fold=None):
+                fold=None):
         """Return a new datetime with new values for the specified fields."""
         if year is None:
             year = self.year
@@ -1930,7 +1895,7 @@ class datetime(date):
         if L[-1] == 0:
             del L[-1]
         s = "%s.%s(%s)" % (self.__class__.__module__,
-                           self.__class__.__qualname__,
+                           self.__class__.__name__,
                            ", ".join(map(str, L)))
         if self._tzinfo is not None:
             assert s[-1:] == ")"
@@ -2237,10 +2202,10 @@ class timezone(tzinfo):
             return 'datetime.timezone.utc'
         if self._name is None:
             return "%s.%s(%r)" % (self.__class__.__module__,
-                                  self.__class__.__qualname__,
+                                  self.__class__.__name__,
                                   self._offset)
         return "%s.%s(%r, %r)" % (self.__class__.__module__,
-                                  self.__class__.__qualname__,
+                                  self.__class__.__name__,
                                   self._offset, self._name)
 
     def __str__(self):
@@ -2292,11 +2257,11 @@ class timezone(tzinfo):
         seconds = rest.seconds
         microseconds = rest.microseconds
         if microseconds:
-            return (f'UTC{sign}{hours:02d}:{minutes:02d}:{seconds:02d}'
-                    f'.{microseconds:06d}')
+            return ('UTC{}{:02d}:{:02d}:{:02d}'
+                    '.{:06d}'.format(sign, hours, minutes, seconds, microseconds))
         if seconds:
-            return f'UTC{sign}{hours:02d}:{minutes:02d}:{seconds:02d}'
-        return f'UTC{sign}{hours:02d}:{minutes:02d}'
+            return 'UTC{}{:02d}:{:02d}:{:02d}'.format(sign, hours, minutes, seconds)
+        return 'UTC{}{:02d}:{:02d}'.format(sign, hours, minutes)
 
 timezone.utc = timezone._create(timedelta(0))
 # bpo-37642: These attributes are rounded to the nearest minute for backwards
@@ -2305,220 +2270,3 @@ timezone.utc = timezone._create(timedelta(0))
 timezone.min = timezone._create(-timedelta(hours=23, minutes=59))
 timezone.max = timezone._create(timedelta(hours=23, minutes=59))
 _EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
-
-# Some time zone algebra.  For a datetime x, let
-#     x.n = x stripped of its timezone -- its naive time.
-#     x.o = x.utcoffset(), and assuming that doesn't raise an exception or
-#           return None
-#     x.d = x.dst(), and assuming that doesn't raise an exception or
-#           return None
-#     x.s = x's standard offset, x.o - x.d
-#
-# Now some derived rules, where k is a duration (timedelta).
-#
-# 1. x.o = x.s + x.d
-#    This follows from the definition of x.s.
-#
-# 2. If x and y have the same tzinfo member, x.s = y.s.
-#    This is actually a requirement, an assumption we need to make about
-#    sane tzinfo classes.
-#
-# 3. The naive UTC time corresponding to x is x.n - x.o.
-#    This is again a requirement for a sane tzinfo class.
-#
-# 4. (x+k).s = x.s
-#    This follows from #2, and that datimetimetz+timedelta preserves tzinfo.
-#
-# 5. (x+k).n = x.n + k
-#    Again follows from how arithmetic is defined.
-#
-# Now we can explain tz.fromutc(x).  Let's assume it's an interesting case
-# (meaning that the various tzinfo methods exist, and don't blow up or return
-# None when called).
-#
-# The function wants to return a datetime y with timezone tz, equivalent to x.
-# x is already in UTC.
-#
-# By #3, we want
-#
-#     y.n - y.o = x.n                             [1]
-#
-# The algorithm starts by attaching tz to x.n, and calling that y.  So
-# x.n = y.n at the start.  Then it wants to add a duration k to y, so that [1]
-# becomes true; in effect, we want to solve [2] for k:
-#
-#    (y+k).n - (y+k).o = x.n                      [2]
-#
-# By #1, this is the same as
-#
-#    (y+k).n - ((y+k).s + (y+k).d) = x.n          [3]
-#
-# By #5, (y+k).n = y.n + k, which equals x.n + k because x.n=y.n at the start.
-# Substituting that into [3],
-#
-#    x.n + k - (y+k).s - (y+k).d = x.n; the x.n terms cancel, leaving
-#    k - (y+k).s - (y+k).d = 0; rearranging,
-#    k = (y+k).s - (y+k).d; by #4, (y+k).s == y.s, so
-#    k = y.s - (y+k).d
-#
-# On the RHS, (y+k).d can't be computed directly, but y.s can be, and we
-# approximate k by ignoring the (y+k).d term at first.  Note that k can't be
-# very large, since all offset-returning methods return a duration of magnitude
-# less than 24 hours.  For that reason, if y is firmly in std time, (y+k).d must
-# be 0, so ignoring it has no consequence then.
-#
-# In any case, the new value is
-#
-#     z = y + y.s                                 [4]
-#
-# It's helpful to step back at look at [4] from a higher level:  it's simply
-# mapping from UTC to tz's standard time.
-#
-# At this point, if
-#
-#     z.n - z.o = x.n                             [5]
-#
-# we have an equivalent time, and are almost done.  The insecurity here is
-# at the start of daylight time.  Picture US Eastern for concreteness.  The wall
-# time jumps from 1:59 to 3:00, and wall hours of the form 2:MM don't make good
-# sense then.  The docs ask that an Eastern tzinfo class consider such a time to
-# be EDT (because it's "after 2"), which is a redundant spelling of 1:MM EST
-# on the day DST starts.  We want to return the 1:MM EST spelling because that's
-# the only spelling that makes sense on the local wall clock.
-#
-# In fact, if [5] holds at this point, we do have the standard-time spelling,
-# but that takes a bit of proof.  We first prove a stronger result.  What's the
-# difference between the LHS and RHS of [5]?  Let
-#
-#     diff = x.n - (z.n - z.o)                    [6]
-#
-# Now
-#     z.n =                       by [4]
-#     (y + y.s).n =               by #5
-#     y.n + y.s =                 since y.n = x.n
-#     x.n + y.s =                 since z and y are have the same tzinfo member,
-#                                     y.s = z.s by #2
-#     x.n + z.s
-#
-# Plugging that back into [6] gives
-#
-#     diff =
-#     x.n - ((x.n + z.s) - z.o) =     expanding
-#     x.n - x.n - z.s + z.o =         cancelling
-#     - z.s + z.o =                   by #2
-#     z.d
-#
-# So diff = z.d.
-#
-# If [5] is true now, diff = 0, so z.d = 0 too, and we have the standard-time
-# spelling we wanted in the endcase described above.  We're done.  Contrarily,
-# if z.d = 0, then we have a UTC equivalent, and are also done.
-#
-# If [5] is not true now, diff = z.d != 0, and z.d is the offset we need to
-# add to z (in effect, z is in tz's standard time, and we need to shift the
-# local clock into tz's daylight time).
-#
-# Let
-#
-#     z' = z + z.d = z + diff                     [7]
-#
-# and we can again ask whether
-#
-#     z'.n - z'.o = x.n                           [8]
-#
-# If so, we're done.  If not, the tzinfo class is insane, according to the
-# assumptions we've made.  This also requires a bit of proof.  As before, let's
-# compute the difference between the LHS and RHS of [8] (and skipping some of
-# the justifications for the kinds of substitutions we've done several times
-# already):
-#
-#     diff' = x.n - (z'.n - z'.o) =           replacing z'.n via [7]
-#             x.n  - (z.n + diff - z'.o) =    replacing diff via [6]
-#             x.n - (z.n + x.n - (z.n - z.o) - z'.o) =
-#             x.n - z.n - x.n + z.n - z.o + z'.o =    cancel x.n
-#             - z.n + z.n - z.o + z'.o =              cancel z.n
-#             - z.o + z'.o =                      #1 twice
-#             -z.s - z.d + z'.s + z'.d =          z and z' have same tzinfo
-#             z'.d - z.d
-#
-# So z' is UTC-equivalent to x iff z'.d = z.d at this point.  If they are equal,
-# we've found the UTC-equivalent so are done.  In fact, we stop with [7] and
-# return z', not bothering to compute z'.d.
-#
-# How could z.d and z'd differ?  z' = z + z.d [7], so merely moving z' by
-# a dst() offset, and starting *from* a time already in DST (we know z.d != 0),
-# would have to change the result dst() returns:  we start in DST, and moving
-# a little further into it takes us out of DST.
-#
-# There isn't a sane case where this can happen.  The closest it gets is at
-# the end of DST, where there's an hour in UTC with no spelling in a hybrid
-# tzinfo class.  In US Eastern, that's 5:MM UTC = 0:MM EST = 1:MM EDT.  During
-# that hour, on an Eastern clock 1:MM is taken as being in standard time (6:MM
-# UTC) because the docs insist on that, but 0:MM is taken as being in daylight
-# time (4:MM UTC).  There is no local time mapping to 5:MM UTC.  The local
-# clock jumps from 1:59 back to 1:00 again, and repeats the 1:MM hour in
-# standard time.  Since that's what the local clock *does*, we want to map both
-# UTC hours 5:MM and 6:MM to 1:MM Eastern.  The result is ambiguous
-# in local time, but so it goes -- it's the way the local clock works.
-#
-# When x = 5:MM UTC is the input to this algorithm, x.o=0, y.o=-5 and y.d=0,
-# so z=0:MM.  z.d=60 (minutes) then, so [5] doesn't hold and we keep going.
-# z' = z + z.d = 1:MM then, and z'.d=0, and z'.d - z.d = -60 != 0 so [8]
-# (correctly) concludes that z' is not UTC-equivalent to x.
-#
-# Because we know z.d said z was in daylight time (else [5] would have held and
-# we would have stopped then), and we know z.d != z'.d (else [8] would have held
-# and we have stopped then), and there are only 2 possible values dst() can
-# return in Eastern, it follows that z'.d must be 0 (which it is in the example,
-# but the reasoning doesn't depend on the example -- it depends on there being
-# two possible dst() outcomes, one zero and the other non-zero).  Therefore
-# z' must be in standard time, and is the spelling we want in this case.
-#
-# Note again that z' is not UTC-equivalent as far as the hybrid tzinfo class is
-# concerned (because it takes z' as being in standard time rather than the
-# daylight time we intend here), but returning it gives the real-life "local
-# clock repeats an hour" behavior when mapping the "unspellable" UTC hour into
-# tz.
-#
-# When the input is 6:MM, z=1:MM and z.d=0, and we stop at once, again with
-# the 1:MM standard time spelling we want.
-#
-# So how can this break?  One of the assumptions must be violated.  Two
-# possibilities:
-#
-# 1) [2] effectively says that y.s is invariant across all y belong to a given
-#    time zone.  This isn't true if, for political reasons or continental drift,
-#    a region decides to change its base offset from UTC.
-#
-# 2) There may be versions of "double daylight" time where the tail end of
-#    the analysis gives up a step too early.  I haven't thought about that
-#    enough to say.
-#
-# In any case, it's clear that the default fromutc() is strong enough to handle
-# "almost all" time zones:  so long as the standard offset is invariant, it
-# doesn't matter if daylight time transition points change from year to year, or
-# if daylight time is skipped in some years; it doesn't matter how large or
-# small dst() may get within its bounds; and it doesn't even matter if some
-# perverse time zone returns a negative dst()).  So a breaking case must be
-# pretty bizarre, and a tzinfo subclass can override fromutc() if it is.
-
-try:
-    from _datetime import *
-except ImportError:
-    pass
-else:
-    # Clean up unused names
-    del (_DAYNAMES, _DAYS_BEFORE_MONTH, _DAYS_IN_MONTH, _DI100Y, _DI400Y,
-         _DI4Y, _EPOCH, _MAXORDINAL, _MONTHNAMES, _build_struct_time,
-         _check_date_fields, _check_time_fields,
-         _check_tzinfo_arg, _check_tzname, _check_utc_offset, _cmp, _cmperror,
-         _date_class, _days_before_month, _days_before_year, _days_in_month,
-         _format_time, _format_offset, _index, _is_leap, _isoweek1monday, _math,
-         _ord2ymd, _time, _time_class, _tzinfo_class, _wrap_strftime, _ymd2ord,
-         _divide_and_round, _parse_isoformat_date, _parse_isoformat_time,
-         _parse_hh_mm_ss_ff, _IsoCalendarDate)
-    # XXX Since import * above excludes names that start with _,
-    # docstring does not get overwritten. In the future, it may be
-    # appropriate to maintain a single module level docstring and
-    # remove the following line.
-    from _datetime import __doc__
