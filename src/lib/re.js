@@ -304,7 +304,6 @@ function $builtinmodule(name) {
         let regex;
         let msg;
         let unicodeEscapedPattern = jsPattern;
-        debugger;
         if (jsFlags.includes("u")) {
             // then we we need to adjust the escapes for \\\t to be \\t etc because javascript reads escapes differently in unicode mode!
             // '\\-' is different - inside a square bracket it gets compiled but outside it doesn't!
@@ -315,7 +314,6 @@ function $builtinmodule(name) {
                     case "\\\t":
                         return "\\t";
                     case "\\\n":
-                        debugger;
                         return "\\n";
                     case "\\\v":
                         return "\\v";
