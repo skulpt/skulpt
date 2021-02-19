@@ -27,7 +27,7 @@ function $builtinmodule() {
         WRAPPER_UPDATES: new Sk.builtin.tuple([new Sk.builtin.str("__dict__")]),
 
         /**@todo */
-        lru_cache: proxyFail("lru_cace"),
+        lru_cache: proxyFail("lru_cache"),
         TopologicalSorter: proxyFail("TopologicalSorter"),
         CycleError: proxyFail("CycleError"),
         singledispatch: proxyFail("singledispatch"),
