@@ -597,12 +597,13 @@ Sk.builtin.type.prototype.tp$getsets = {
     },
     __module__: {
         $get() {
-            let mod = this.prototype.__module__;
+            const typeproto = this.prototype;
+            const mod = typeproto.__module__;
             if (mod && !(mod.ob$type === Sk.builtin.getset_descriptor)) {
                 return mod;
             }
-            if (this.tp$name.includes(".")) {
-                return new Sk.builtin.str(this.tp$name.slice(0, this.tp$name.lastIndexOf(".")));
+            if (typeproto.tp$name.includes(".")) {
+                return new Sk.builtin.str(typeproto.tp$name.slice(0, typeproto.tp$name.lastIndexOf(".")));
             }
             return new Sk.builtin.str("builtins");
         },
