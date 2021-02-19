@@ -181,13 +181,34 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $textsig: "($self, ndigits=None, /)",
             $doc: "Return the Integral closest to x, rounding half toward even.\n\nWhen an argument is passed, work like built-in round(x, ndigits).",
         },
-        // as_integer_ratio: {
-        //     $meth: methods.as_integer_ratio,
-        //     $flags: { NoArgs: true },
-        //     $textsig: "($self, /)",
-        //     $doc:
-        //         "Return integer ratio.\n\nReturn a pair of integers, whose ratio is exactly equal to the original float\nand with a positive denominator.\n\nRaise OverflowError on infinities and a ValueError on NaNs.\n\n>>> (10.0).as_integer_ratio()\n(10, 1)\n>>> (0.0).as_integer_ratio()\n(0, 1)\n>>> (-.25).as_integer_ratio()\n(-1, 4)",
-        // },
+        as_integer_ratio: {
+            $meth() {
+                if (!Number.isFinite(this.v)) {
+                    if (Number.isNaN(this.v)) {
+                        throw new Sk.builtin.ValueError("cannot convert NaN to integer ratio");
+                    }
+                    throw new Sk.builtin.OverflowError("cannot convert Infinity to integer ratio");
+                }
+                let [float_part, exponent] = frexp(this.v);
+                for (let i=0; i<300 && float_part != Math.floor(float_part) ; i++) {
+                    float_part *= 2.0;
+                    exponent--;
+                }
+                const py_exp = new Sk.builtin.int_(Math.abs(exponent));
+                let numerator = new Sk.builtin.int_(float_part);
+                let denominator = new Sk.builtin.int_(1);
+                if (exponent > 0) {
+                    numerator = numerator.nb$lshift(py_exp);
+                } else {
+                    denominator = denominator.nb$lshift(py_exp);
+                }
+                return new Sk.builtin.tuple([numerator, denominator]);
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc:
+                "Return integer ratio.\n\nReturn a pair of integers, whose ratio is exactly equal to the original float\nand with a positive denominator.\n\nRaise OverflowError on infinities and a ValueError on NaNs.\n\n>>> (10.0).as_integer_ratio()\n(10, 1)\n>>> (0.0).as_integer_ratio()\n(0, 1)\n>>> (-.25).as_integer_ratio()\n(-1, 4)",
+        },
         // hex: {
         //     $meth: methods.hex,
         //     $flags: { NoArgs: true },
@@ -220,6 +241,31 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
     },
 });
 
+function frexp(arg) {
+    const res = [arg, 0];
+    if (arg === 0.0) {
+        return res;
+    }
+    const absArg = Math.abs(arg);
+    let exp = Math.max(-1023, Math.floor(Math.log2(absArg)) + 1);
+    let m = absArg * Math.pow(2, -exp);
+    // These while loops compensate for rounding errors that sometimes occur because of ECMAScript's Math.log2's undefined precision
+    // and also works around the issue of Math.pow(2, -exp) === Infinity when exp <= -1024
+    while (m < 0.5) {
+        m *= 2;
+        exp--;
+    }
+    while (m >= 1) {
+        m *= 0.5;
+        exp++;
+    }
+    if (arg < 0) {
+        m = -m;
+    }
+    res[0] = m;
+    res[1] = exp;
+    return res;
+}
 const invalidUnderscores = /_[eE]|[eE]_|\._|_\.|[+-]_|__/;
 const validUnderscores = /_(?=[^_])/g;
 function _str_to_float(str) {
