@@ -18,107 +18,6 @@ from copy import deepcopy
 # except ImportError:
 #     _testcapi = None
 
-# moved to global scope when #1178 is fixed this can be moved back into test_doc_descriptor
-class DocDescr(object):
-    def __get__(self, object, otype):
-        if object:
-            object = object.__class__.__name__ + ' instance'
-        if otype:
-            otype = otype.__name__
-        return 'object=%s; type=%s' % (object, otype)
-
-class Descr(object):
-
-    def __init__(self, name):
-        self.name = name
-
-    def __set__(self, obj, value):
-        obj.__dict__[self.name] = value
-descr = Descr("a")
-
-
-class GetattrDescriptor(object):
-    counter = 0
-    def __get__(self, obj, objtype=None):
-        def getter(name):
-            self.counter += 1
-            raise AttributeError(name)
-        return getter
-
-getattr_descr = GetattrDescriptor()
-
-class C_methods(object):
-    def __init__(self, x):
-        self.x = x
-    def foo(self):
-        return self.x
-c1_methods = C_methods(1)
-
-
-_ok = None
-class Checker(object):
-    def __init__(self, test, ok=set()):
-      self.test = test
-      global _ok
-      _ok = ok
-    def __getattr__(self, attr):
-        self.test.fail("__getattr__ called with {0}".format(attr))
-    def __getattribute__(self, attr):
-        if attr not in _ok:
-            self.test.fail("__getattribute__ called with {0}".format(attr))
-        return object.__getattribute__(self, attr)
-
-class SpecialDescr(object):
-    def __init__(self, impl, record):
-        self.impl = impl
-        self.record = record
-    def __get__(self, obj, owner):
-        self.record.append(1)
-        return self.impl.__get__(obj, owner)
-class MyException(Exception):
-    pass
-class ErrDescr(object):
-    def __get__(self, obj, owner):
-        raise MyException
-
-
-#1178 from property plus
-class C(object):
-    foo = property(doc="hello")
-    @foo.getter
-    def foo(self):
-        return self._foo
-    @foo.setter
-    def foo(self, value):
-        self._foo = abs(value)
-    @foo.deleter
-    def foo(self):
-        del self._foo
-
-
-class E(object):
-    @property
-    def foo(self):
-        return self._foo
-    @foo.setter
-    def foo(self, value):
-        raise RuntimeError
-    @foo.setter
-    def foo(self, value):
-        self._foo = abs(value)
-    @foo.deleter
-    def foo(self, value=None):
-        del self._foo
-
-
-class C_Multi(object):
-    def __init__(self):
-        self.__state = 0
-    def getstate(self):
-        return self.__state
-    def setstate(self, state):
-        self.__state = state
-
 class OperatorsTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -577,347 +476,349 @@ class ClassPropertiesAndMethods(unittest.TestCase):
         self.assertEqual(a[2], 102)
         self.assertEqual(a[100:200], (100,200))
 
-    # def test_metaclass(self):
-    #     # Testing metaclasses...
-    #     class C(metaclass=type):
-    #         def __init__(self):
-    #             self.__state = 0
-    #         def getstate(self):
-    #             return self.__state
-    #         def setstate(self, state):
-    #             self.__state = state
-    #     a = C()
-    #     self.assertEqual(a.getstate(), 0)
-    #     a.setstate(10)
-    #     self.assertEqual(a.getstate(), 10)
-    #     class _metaclass(type):
-    #         def myself(cls): return cls
-    #     class D(metaclass=_metaclass):
-    #         pass
-    #     self.assertEqual(D.myself(), D)
-    #     d = D()
-    #     self.assertEqual(d.__class__, D)
-    #     class M1(type):
-    #         def __new__(cls, name, bases, dict):
-    #             dict['__spam__'] = 1
-    #             return type.__new__(cls, name, bases, dict)
-    #     class C(metaclass=M1):
-    #         pass
-    #     self.assertEqual(C.__spam__, 1)
-    #     c = C()
-    #     self.assertEqual(c.__spam__, 1)
+    def test_metaclass(self):
+        # Testing metaclasses...
+        global A, B, C, D, E, M1, M2, T, autosuper, autoproperty, multimetaclass, _instance, AMeta, BMeta, C2 #1178
+        global ANotMeta, BNotMeta, func
+        class C(metaclass=type):
+            def __init__(self):
+                self.__state = 0
+            def getstate(self):
+                return self.__state
+            def setstate(self, state):
+                self.__state = state
+        a = C()
+        self.assertEqual(a.getstate(), 0)
+        a.setstate(10)
+        self.assertEqual(a.getstate(), 10)
+        class _metaclass(type):
+            def myself(cls): return cls
+        class D(metaclass=_metaclass):
+            pass
+        self.assertEqual(D.myself(), D)
+        d = D()
+        self.assertEqual(d.__class__, D)
+        class M1(type):
+            def __new__(cls, name, bases, dict):
+                dict['__spam__'] = 1
+                return type.__new__(cls, name, bases, dict)
+        class C(metaclass=M1):
+            pass
+        self.assertEqual(C.__spam__, 1)
+        c = C()
+        self.assertEqual(c.__spam__, 1)
 
-    #     class _instance(object):
-    #         pass
-    #     class M2(object):
-    #         @staticmethod
-    #         def __new__(cls, name, bases, dict):
-    #             self = object.__new__(cls)
-    #             self.name = name
-    #             self.bases = bases
-    #             self.dict = dict
-    #             return self
-    #         def __call__(self):
-    #             it = _instance()
-    #             # Early binding of methods
-    #             for key in self.dict:
-    #                 if key.startswith("__"):
-    #                     continue
-    #                 setattr(it, key, self.dict[key].__get__(it, self))
-    #             return it
-    #     class C(metaclass=M2):
-    #         def spam(self):
-    #             return 42
-    #     self.assertEqual(C.name, 'C')
-    #     self.assertEqual(C.bases, ())
-    #     self.assertIn('spam', C.dict)
-    #     c = C()
-    #     self.assertEqual(c.spam(), 42)
+        class _instance(object):
+            pass
+        class M2(object):
+            @staticmethod
+            def __new__(cls, name, bases, dict):
+                self = object.__new__(cls)
+                self.name = name
+                self.bases = bases
+                self.dict = dict
+                return self
+            def __call__(self):
+                it = _instance()
+                # Early binding of methods
+                for key in self.dict:
+                    if key.startswith("__"):
+                        continue
+                    setattr(it, key, self.dict[key].__get__(it, self))
+                return it
+        class C(metaclass=M2):
+            def spam(self):
+                return 42
+        self.assertEqual(C.name, 'C')
+        self.assertEqual(C.bases, ())
+        self.assertIn('spam', C.dict)
+        c = C()
+        self.assertEqual(c.spam(), 42)
 
-    #     # More metaclass examples
+        # More metaclass examples
 
-    #     class autosuper(type):
-    #         # Automatically add __super to the class
-    #         # This trick only works for dynamic classes
-    #         def __new__(metaclass, name, bases, dict):
-    #             cls = super(autosuper, metaclass).__new__(metaclass,
-    #                                                       name, bases, dict)
-    #             # Name mangling for __super removes leading underscores
-    #             while name[:1] == "_":
-    #                 name = name[1:]
-    #             if name:
-    #                 name = "_%s__super" % name
-    #             else:
-    #                 name = "__super"
-    #             setattr(cls, name, super(cls))
-    #             return cls
-    #     class A(metaclass=autosuper):
-    #         def meth(self):
-    #             return "A"
-    #     class B(A):
-    #         def meth(self):
-    #             return "B" + self.__super.meth()
-    #     class C(A):
-    #         def meth(self):
-    #             return "C" + self.__super.meth()
-    #     class D(C, B):
-    #         def meth(self):
-    #             return "D" + self.__super.meth()
-    #     self.assertEqual(D().meth(), "DCBA")
-    #     class E(B, C):
-    #         def meth(self):
-    #             return "E" + self.__super.meth()
-    #     self.assertEqual(E().meth(), "EBCA")
+        class autosuper(type):
+            # Automatically add __super to the class
+            # This trick only works for dynamic classes
+            def __new__(metaclass, name, bases, dict):
+                cls = super(autosuper, metaclass).__new__(metaclass,
+                                                          name, bases, dict)
+                # Name mangling for __super removes leading underscores
+                while name[:1] == "_":
+                    name = name[1:]
+                if name:
+                    name = "_%s__super" % name
+                else:
+                    name = "__super"
+                setattr(cls, name, super(cls))
+                return cls
+        class A(metaclass=autosuper):
+            def meth(self):
+                return "A"
+        class B(A):
+            def meth(self):
+                return "B" + self.__super.meth()
+        class C(A):
+            def meth(self):
+                return "C" + self.__super.meth()
+        class D(C, B):
+            def meth(self):
+                return "D" + self.__super.meth()
+        self.assertEqual(D().meth(), "DCBA")
+        class E(B, C):
+            def meth(self):
+                return "E" + self.__super.meth()
+        self.assertEqual(E().meth(), "EBCA")
 
-    #     class autoproperty(type):
-    #         # Automatically create property attributes when methods
-    #         # named _get_x and/or _set_x are found
-    #         def __new__(metaclass, name, bases, dict):
-    #             hits = {}
-    #             for key, val in dict.items():
-    #                 if key.startswith("_get_"):
-    #                     key = key[5:]
-    #                     get, set = hits.get(key, (None, None))
-    #                     get = val
-    #                     hits[key] = get, set
-    #                 elif key.startswith("_set_"):
-    #                     key = key[5:]
-    #                     get, set = hits.get(key, (None, None))
-    #                     set = val
-    #                     hits[key] = get, set
-    #             for key, (get, set) in hits.items():
-    #                 dict[key] = property(get, set)
-    #             return super(autoproperty, metaclass).__new__(metaclass,
-    #                                                         name, bases, dict)
-    #     class A(metaclass=autoproperty):
-    #         def _get_x(self):
-    #             return -self.__x
-    #         def _set_x(self, x):
-    #             self.__x = -x
-    #     a = A()
-    #     self.assertNotHasAttr(a, "x")
-    #     a.x = 12
-    #     self.assertEqual(a.x, 12)
-    #     self.assertEqual(a._A__x, -12)
+        class autoproperty(type):
+            # Automatically create property attributes when methods
+            # named _get_x and/or _set_x are found
+            def __new__(metaclass, name, bases, dict):
+                hits = {}
+                for key, val in dict.items():
+                    if key.startswith("_get_"):
+                        key = key[5:]
+                        get, set = hits.get(key, (None, None))
+                        get = val
+                        hits[key] = get, set
+                    elif key.startswith("_set_"):
+                        key = key[5:]
+                        get, set = hits.get(key, (None, None))
+                        set = val
+                        hits[key] = get, set
+                for key, (get, set) in hits.items():
+                    dict[key] = property(get, set)
+                return super(autoproperty, metaclass).__new__(metaclass,
+                                                            name, bases, dict)
+        class A(metaclass=autoproperty):
+            def _get_x(self):
+                return -self.__x
+            def _set_x(self, x):
+                self.__x = -x
+        a = A()
+        self.assertNotHasAttr(a, "x")
+        a.x = 12
+        self.assertEqual(a.x, 12)
+        self.assertEqual(a._A__x, -12)
 
-    #     class multimetaclass(autoproperty, autosuper):
-    #         # Merge of multiple cooperating metaclasses
-    #         pass
-    #     class A(metaclass=multimetaclass):
-    #         def _get_x(self):
-    #             return "A"
-    #     class B(A):
-    #         def _get_x(self):
-    #             return "B" + self.__super._get_x()
-    #     class C(A):
-    #         def _get_x(self):
-    #             return "C" + self.__super._get_x()
-    #     class D(C, B):
-    #         def _get_x(self):
-    #             return "D" + self.__super._get_x()
-    #     self.assertEqual(D().x, "DCBA")
+        class multimetaclass(autoproperty, autosuper):
+            # Merge of multiple cooperating metaclasses
+            pass
+        class A(metaclass=multimetaclass):
+            def _get_x(self):
+                return "A"
+        class B(A):
+            def _get_x(self):
+                return "B" + self.__super._get_x()
+        class C(A):
+            def _get_x(self):
+                return "C" + self.__super._get_x()
+        class D(C, B):
+            def _get_x(self):
+                return "D" + self.__super._get_x()
+        self.assertEqual(D().x, "DCBA")
 
-    #     # Make sure type(x) doesn't call x.__class__.__init__
-    #     class T(type):
-    #         counter = 0
-    #         def __init__(self, *args):
-    #             T.counter += 1
-    #     class C(metaclass=T):
-    #         pass
-    #     self.assertEqual(T.counter, 1)
-    #     a = C()
-    #     self.assertEqual(type(a), C)
-    #     self.assertEqual(T.counter, 1)
+        # Make sure type(x) doesn't call x.__class__.__init__
+        class T(type):
+            counter = 0
+            def __init__(self, *args):
+                T.counter += 1
+        class C(metaclass=T):
+            pass
+        self.assertEqual(T.counter, 1)
+        a = C()
+        self.assertEqual(type(a), C)
+        self.assertEqual(T.counter, 1)
 
-    #     class C(object): pass
-    #     c = C()
-    #     try: c()
-    #     except TypeError: pass
-    #     else: self.fail("calling object w/o call method should raise "
-    #                     "TypeError")
+        class C(object): pass
+        c = C()
+        try: c()
+        except TypeError: pass
+        else: self.fail("calling object w/o call method should raise "
+                        "TypeError")
 
-    #     # Testing code to find most derived baseclass
-    #     class A(type):
-    #         def __new__(*args, **kwargs):
-    #             return type.__new__(*args, **kwargs)
+        # Testing code to find most derived baseclass
+        class A(type):
+            def __new__(*args, **kwargs):
+                return type.__new__(*args, **kwargs)
 
-    #     class B(object):
-    #         pass
+        class B(object):
+            pass
 
-    #     class C(object, metaclass=A):
-    #         pass
+        class C(object, metaclass=A):
+            pass
 
-    #     # The most derived metaclass of D is A rather than type.
-    #     class D(B, C):
-    #         pass
-    #     self.assertIs(A, type(D))
+        # The most derived metaclass of D is A rather than type.
+        class D(B, C):
+            pass
+        self.assertIs(A, type(D))
 
-    #     # issue1294232: correct metaclass calculation
-    #     new_calls = []  # to check the order of __new__ calls
-    #     class AMeta(type):
-    #         @staticmethod
-    #         def __new__(mcls, name, bases, ns):
-    #             new_calls.append('AMeta')
-    #             return super().__new__(mcls, name, bases, ns)
-    #         @classmethod
-    #         def __prepare__(mcls, name, bases):
-    #             return {}
+        # issue1294232: correct metaclass calculation
+        new_calls = []  # to check the order of __new__ calls
+        class AMeta(type):
+            @staticmethod
+            def __new__(mcls, name, bases, ns):
+                new_calls.append('AMeta')
+                return super().__new__(mcls, name, bases, ns)
+            @classmethod
+            def __prepare__(mcls, name, bases):
+                return {}
 
-    #     class BMeta(AMeta):
-    #         @staticmethod
-    #         def __new__(mcls, name, bases, ns):
-    #             new_calls.append('BMeta')
-    #             return super().__new__(mcls, name, bases, ns)
-    #         @classmethod
-    #         def __prepare__(mcls, name, bases):
-    #             ns = super().__prepare__(name, bases)
-    #             ns['BMeta_was_here'] = True
-    #             return ns
+        class BMeta(AMeta):
+            @staticmethod
+            def __new__(mcls, name, bases, ns):
+                new_calls.append('BMeta')
+                return super().__new__(mcls, name, bases, ns)
+            @classmethod
+            def __prepare__(mcls, name, bases):
+                ns = super().__prepare__(name, bases)
+                ns['BMeta_was_here'] = True
+                return ns
 
-    #     class A(metaclass=AMeta):
-    #         pass
-    #     self.assertEqual(['AMeta'], new_calls)
-    #     new_calls.clear()
+        class A(metaclass=AMeta):
+            pass
+        self.assertEqual(['AMeta'], new_calls)
+        new_calls.clear()
 
-    #     class B(metaclass=BMeta):
-    #         pass
-    #     # BMeta.__new__ calls AMeta.__new__ with super:
-    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
-    #     new_calls.clear()
+        class B(metaclass=BMeta):
+            pass
+        # BMeta.__new__ calls AMeta.__new__ with super:
+        self.assertEqual(['BMeta', 'AMeta'], new_calls)
+        new_calls.clear()
 
-    #     class C(A, B):
-    #         pass
-    #     # The most derived metaclass is BMeta:
-    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
-    #     new_calls.clear()
-    #     # BMeta.__prepare__ should've been called:
-    #     self.assertIn('BMeta_was_here', C.__dict__)
+        class C(A, B):
+            pass
+        # The most derived metaclass is BMeta:
+        self.assertEqual(['BMeta', 'AMeta'], new_calls)
+        new_calls.clear()
+        # BMeta.__prepare__ should've been called:
+        self.assertIn('BMeta_was_here', C.__dict__)
 
-    #     # The order of the bases shouldn't matter:
-    #     class C2(B, A):
-    #         pass
-    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertIn('BMeta_was_here', C2.__dict__)
+        # The order of the bases shouldn't matter:
+        class C2(B, A):
+            pass
+        self.assertEqual(['BMeta', 'AMeta'], new_calls)
+        new_calls.clear()
+        self.assertIn('BMeta_was_here', C2.__dict__)
 
-    #     # Check correct metaclass calculation when a metaclass is declared:
-    #     class D(C, metaclass=type):
-    #         pass
-    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertIn('BMeta_was_here', D.__dict__)
+        # Check correct metaclass calculation when a metaclass is declared:
+        class D(C, metaclass=type):
+            pass
+        self.assertEqual(['BMeta', 'AMeta'], new_calls)
+        new_calls.clear()
+        self.assertIn('BMeta_was_here', D.__dict__)
 
-    #     class E(C, metaclass=AMeta):
-    #         pass
-    #     self.assertEqual(['BMeta', 'AMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertIn('BMeta_was_here', E.__dict__)
+        class E(C, metaclass=AMeta):
+            pass
+        self.assertEqual(['BMeta', 'AMeta'], new_calls)
+        new_calls.clear()
+        self.assertIn('BMeta_was_here', E.__dict__)
 
-    #     # Special case: the given metaclass isn't a class,
-    #     # so there is no metaclass calculation.
-    #     marker = object()
-    #     def func(*args, **kwargs):
-    #         return marker
-    #     class X(metaclass=func):
-    #         pass
-    #     class Y(object, metaclass=func):
-    #         pass
-    #     class Z(D, metaclass=func):
-    #         pass
-    #     self.assertIs(marker, X)
-    #     self.assertIs(marker, Y)
-    #     self.assertIs(marker, Z)
+        # Special case: the given metaclass isn't a class,
+        # so there is no metaclass calculation.
+        marker = object()
+        def func(*args, **kwargs):
+            return marker
+        class X(metaclass=func):
+            pass
+        class Y(object, metaclass=func):
+            pass
+        class Z(D, metaclass=func):
+            pass
+        self.assertIs(marker, X)
+        self.assertIs(marker, Y)
+        self.assertIs(marker, Z)
 
-    #     # The given metaclass is a class,
-    #     # but not a descendant of type.
-    #     prepare_calls = []  # to track __prepare__ calls
-    #     class ANotMeta:
-    #         def __new__(mcls, *args, **kwargs):
-    #             new_calls.append('ANotMeta')
-    #             return super().__new__(mcls)
-    #         @classmethod
-    #         def __prepare__(mcls, name, bases):
-    #             prepare_calls.append('ANotMeta')
-    #             return {}
-    #     class BNotMeta(ANotMeta):
-    #         def __new__(mcls, *args, **kwargs):
-    #             new_calls.append('BNotMeta')
-    #             return super().__new__(mcls)
-    #         @classmethod
-    #         def __prepare__(mcls, name, bases):
-    #             prepare_calls.append('BNotMeta')
-    #             return super().__prepare__(name, bases)
+        # The given metaclass is a class,
+        # but not a descendant of type.
+        prepare_calls = []  # to track __prepare__ calls
+        class ANotMeta:
+            def __new__(mcls, *args, **kwargs):
+                new_calls.append('ANotMeta')
+                return super().__new__(mcls)
+            @classmethod
+            def __prepare__(mcls, name, bases):
+                prepare_calls.append('ANotMeta')
+                return {}
+        class BNotMeta(ANotMeta):
+            def __new__(mcls, *args, **kwargs):
+                new_calls.append('BNotMeta')
+                return super().__new__(mcls)
+            @classmethod
+            def __prepare__(mcls, name, bases):
+                prepare_calls.append('BNotMeta')
+                return super().__prepare__(name, bases)
 
-    #     class A(metaclass=ANotMeta):
-    #         pass
-    #     self.assertIs(ANotMeta, type(A))
-    #     self.assertEqual(['ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
-    #     self.assertEqual(['ANotMeta'], new_calls)
-    #     new_calls.clear()
+        class A(metaclass=ANotMeta):
+            pass
+        self.assertIs(ANotMeta, type(A))
+        self.assertEqual(['ANotMeta'], prepare_calls)
+        prepare_calls.clear()
+        self.assertEqual(['ANotMeta'], new_calls)
+        new_calls.clear()
 
-    #     class B(metaclass=BNotMeta):
-    #         pass
-    #     self.assertIs(BNotMeta, type(B))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
+        class B(metaclass=BNotMeta):
+            pass
+        self.assertIs(BNotMeta, type(B))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
 
-    #     class C(A, B):
-    #         pass
-    #     self.assertIs(BNotMeta, type(C))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
+        class C(A, B):
+            pass
+        self.assertIs(BNotMeta, type(C))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
 
-    #     class C2(B, A):
-    #         pass
-    #     self.assertIs(BNotMeta, type(C2))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
+        class C2(B, A):
+            pass
+        self.assertIs(BNotMeta, type(C2))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
 
-    #     # This is a TypeError, because of a metaclass conflict:
-    #     # BNotMeta is neither a subclass, nor a superclass of type
-    #     with self.assertRaises(TypeError):
-    #         class D(C, metaclass=type):
-    #             pass
+        # This is a TypeError, because of a metaclass conflict:
+        # BNotMeta is neither a subclass, nor a superclass of type
+        with self.assertRaises(TypeError):
+            class D(C, metaclass=type):
+                pass
 
-    #     class E(C, metaclass=ANotMeta):
-    #         pass
-    #     self.assertIs(BNotMeta, type(E))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
+        class E(C, metaclass=ANotMeta):
+            pass
+        self.assertIs(BNotMeta, type(E))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
 
-    #     class F(object(), C):
-    #         pass
-    #     self.assertIs(BNotMeta, type(F))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
+        class F(object(), C):
+            pass
+        self.assertIs(BNotMeta, type(F))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
 
-    #     class F2(C, object()):
-    #         pass
-    #     self.assertIs(BNotMeta, type(F2))
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
-    #     new_calls.clear()
-    #     self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
-    #     prepare_calls.clear()
+        class F2(C, object()):
+            pass
+        self.assertIs(BNotMeta, type(F2))
+        self.assertEqual(['BNotMeta', 'ANotMeta'], new_calls)
+        new_calls.clear()
+        self.assertEqual(['BNotMeta', 'ANotMeta'], prepare_calls)
+        prepare_calls.clear()
 
-    #     # TypeError: BNotMeta is neither a
-    #     # subclass, nor a superclass of int
-    #     with self.assertRaises(TypeError):
-    #         class X(C, int()):
-    #             pass
-    #     with self.assertRaises(TypeError):
-    #         class X(int(), C):
-    #             pass
+        # TypeError: BNotMeta is neither a
+        # subclass, nor a superclass of int
+        with self.assertRaises(TypeError):
+            class X(C, int()):
+                pass
+        with self.assertRaises(TypeError):
+            class X(int(), C):
+                pass
 
     def test_module_subclasses(self):
         # Testing Python subclass of module...
@@ -955,14 +856,14 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_multiple_inheritance(self):
         # Testing multiple inheritance...
-        # moved to global scope #1178
-        # class C_Multi(object):
-        #     def __init__(self):
-        #         self.__state = 0
-        #     def getstate(self):
-        #         return self.__state
-        #     def setstate(self, state):
-        #         self.__state = state
+        global C_Multi #1178
+        class C_Multi(object):
+            def __init__(self):
+                self.__state = 0
+            def getstate(self):
+                return self.__state
+            def setstate(self, state):
+                self.__state = state
         a = C_Multi()
         self.assertEqual(a.getstate(), 0)
         a.setstate(10)
@@ -1203,6 +1104,7 @@ order (MRO) for bases """
 
     def test_slots(self):
         # Testing __slots__...
+        global C, slots #1178
         class C0(object):
             __slots__ = []
         x = C0()
@@ -1405,6 +1307,7 @@ order (MRO) for bases """
 
     def test_slots_special(self):
         # Testing __dict__ and __weakref__ in __slots__...
+        global D, C, C2
         class D(object):
             __slots__ = ["__dict__"]
         a = D()
@@ -1562,11 +1465,12 @@ order (MRO) for bases """
         self.assertEqual(I(3)*I(2), 6)
 
         # Test comparison of classes with dynamic metaclasses
-        # class dynamicmetaclass(type):
-        #     pass
-        # class someclass(metaclass=dynamicmetaclass):
-        #     pass
-        # self.assertNotEqual(someclass, object)
+        global dynamicmetaclass #1178
+        class dynamicmetaclass(type):
+            pass
+        class someclass(metaclass=dynamicmetaclass):
+            pass
+        self.assertNotEqual(someclass, object)
 
     def test_errors(self):
         # Testing errors...
@@ -1612,21 +1516,22 @@ order (MRO) for bases """
         else:
             self.fail("__slots__ = [1] should be illegal")
 
-        # class M1(type):
-        #     pass
-        # class M2(type):
-        #     pass
-        # class A1(object, metaclass=M1):
-        #     pass
-        # class A2(object, metaclass=M2):
-        #     pass
-        # try:
-        #     class B(A1, A2):
-        #         pass
-        # except TypeError:
-        #     pass
-        # else:
-        #     self.fail("finding the most derived metaclass should have failed")
+        global M1, M2, A1, A2, B #1178
+        class M1(type):
+            pass
+        class M2(type):
+            pass
+        class A1(object, metaclass=M1):
+            pass
+        class A2(object, metaclass=M2):
+            pass
+        try:
+            class B(A1, A2):
+                pass
+        except TypeError:
+            pass
+        else:
+            self.fail("finding the most derived metaclass should have failed")
 
     def test_classmethods(self):
         # Testing class methods...
@@ -2003,6 +1908,7 @@ order (MRO) for bases """
 
     def test_overloading(self):
         # Testing operator overloading...
+        global B, C
 
         class B(object):
             "Intermediate class because object doesn't have a __setattr__"
@@ -2052,13 +1958,13 @@ order (MRO) for bases """
 
     def test_methods(self):
         # Testing methods...
-        # Skulpt #1178 moving this to global scope
-        # class C_methods(object):
-        #     def __init__(self, x):
-        #         self.x = x
-        #     def foo(self):
-        #         return self.x
-        # c1_methods = C_methods(1)
+        global C_methods, c1_methods #1178 moving this to global scope
+        class C_methods(object):
+            def __init__(self, x):
+                self.x = x
+            def foo(self):
+                return self.x
+        c1_methods = C_methods(1)
         self.assertEqual(c1_methods.foo(), 1)
         class D(C_methods):
             boo = C_methods.foo
@@ -2159,24 +2065,32 @@ order (MRO) for bases """
             ]
 
         # Skulpt #1178 moved to global scope
-        # class Checker(object):
-        #     def __getattr__(self, attr, test=self):
-        #         test.fail("__getattr__ called with {0}".format(attr))
-        #     def __getattribute__(self, attr, test=self):
-        #         if attr not in ok:
-        #             test.fail("__getattribute__ called with {0}".format(attr))
-        #         return object.__getattribute__(self, attr)
-        # class SpecialDescr(object):
-        #     def __init__(self, impl):
-        #         self.impl = impl
-        #     def __get__(self, obj, owner):
-        #         record.append(1)
-        #         return self.impl.__get__(obj, owner)
-        # class MyException(Exception):
-        #     pass
-        # class ErrDescr(object):
-        #     def __get__(self, obj, owner):
-        #         raise MyException
+        global Checker, SpecialDescr, MyException, ErrDescr, X
+        global _self
+        _self = self
+        class Checker(object):
+            def __init__(self, test, ok=set()):
+                self.test = test
+                global _ok
+                _ok = ok
+            def __getattr__(self, attr, test=_self):
+                test.fail("__getattr__ called with {0}".format(attr))
+            def __getattribute__(self, attr, test=_self):
+                if attr not in ok:
+                    test.fail("__getattribute__ called with {0}".format(attr))
+                return object.__getattribute__(self, attr)
+        class SpecialDescr(object):
+            def __init__(self, impl, record):
+                self.impl = impl
+            def __get__(self, obj, owner):
+                record.append(1)
+                return self.impl.__get__(obj, owner)
+        class MyException(Exception):
+            pass
+        class ErrDescr(object):
+            def __get__(self, obj, owner):
+
+                raise MyException
 
         for name, runner, meth_impl, ok, env in specials:
             class X(Checker):
@@ -2421,6 +2335,7 @@ order (MRO) for bases """
     #             p = property(_testcapi.test_with_docstring)
 
     def test_properties_plus(self):
+        global C, D, E, F
         class C(object):
             foo = property(doc="hello")
             @foo.getter
@@ -2669,6 +2584,7 @@ order (MRO) for bases """
 
     def test_supers(self):
         # Testing super...
+        global A, B, C, D, E, F # 1178
 
         class A(object):
             def meth(self, a):
@@ -3333,13 +3249,14 @@ order (MRO) for bases """
         # Testing __doc__ descriptor...
         # SF bug 542984
         # Skulpt BUG #1178 move this to global scope
-        # class DocDescr(object):
-        #     def __get__(self, object, otype):
-        #         if object:
-        #             object = object.__class__.__name__ + ' instance'
-        #         if otype:
-        #             otype = otype.__name__
-        #         return 'object=%s; type=%s' % (object, otype)
+        global DocDescr
+        class DocDescr(object):
+            def __get__(self, object, otype):
+                if object:
+                    object = object.__class__.__name__ + ' instance'
+                if otype:
+                    otype = otype.__name__
+                return 'object=%s; type=%s' % (object, otype)
         class OldClass:
             __doc__ = DocDescr()
         class NewClass(object):
@@ -3446,6 +3363,7 @@ order (MRO) for bases """
 
     def test_set_dict(self):
         # Testing __dict__ assignment...
+        global Base, Meta1, Meta2, D, E, C, Module1, Module2, Exception1, Exception2 #1178
         class C(object): pass
         a = C()
         a.__dict__ = {'b': 1}
@@ -3464,6 +3382,7 @@ order (MRO) for bases """
 
         class Base(object):
             pass
+
         def verify_dict_readonly(x):
             """
             x has to be an instance of a class inheriting from Base.
@@ -3483,24 +3402,25 @@ order (MRO) for bases """
             else:
                 self.fail("dict_descr allowed access to %r's dict" % x)
 
-        # # Classes don't allow __dict__ assignment and have readonly dicts
-        # class Meta1(type, Base):
-        #     pass
-        # class Meta2(Base, type):
-        #     pass
-        # class D(object, metaclass=Meta1):
-        #     pass
-        # class E(object, metaclass=Meta2):
-        #     pass
-        # for cls in C, D, E:
-        #     verify_dict_readonly(cls)
-        #     class_dict = cls.__dict__
-        #     try:
-        #         class_dict["spam"] = "eggs"
-        #     except TypeError:
-        #         pass
-        #     else:
-        #         self.fail("%r's __dict__ can be modified" % cls)
+        # Classes don't allow __dict__ assignment and have readonly dicts
+
+        class Meta1(type, Base):
+            pass
+        class Meta2(Base, type):
+            pass
+        class D(object, metaclass=Meta1):
+            pass
+        class E(object, metaclass=Meta2):
+            pass
+        for cls in C, D, E:
+            verify_dict_readonly(cls)
+            class_dict = cls.__dict__
+            try:
+                class_dict["spam"] = "eggs"
+            except TypeError:
+                pass
+            else:
+                self.fail("%r's __dict__ can be modified" % cls)
 
         # Modules also disallow __dict__ assignment
         class Module1(types.ModuleType, Base):
@@ -4710,15 +4630,16 @@ order (MRO) for bases """
     def test_set_and_no_get(self):
         # See
         # http://mail.python.org/pipermail/python-dev/2010-January/095637.html
+        global Descr, X, Meta, descr
         #moved to global scope see skulpt #1178
-        # class Descr(object):
+        class Descr(object):
 
-        #     def __init__(self, name):
-        #         self.name = name
+            def __init__(self, name):
+                self.name = name
 
-        #     def __set__(self, obj, value):
-        #         obj.__dict__[self.name] = value
-        # descr = Descr("a")
+            def __set__(self, obj, value):
+                obj.__dict__[self.name] = value
+        descr = Descr("a")
 
         class X(object):
             a = descr
@@ -4729,27 +4650,28 @@ order (MRO) for bases """
         self.assertEqual(x.a, 42)
 
         # Also check type_getattro for correctness.
-        # class Meta(type):
-        #     pass
-        # class X(metaclass=Meta):
-        #     pass
-        # X.a = 42
-        # Meta.a = Descr("a")
-        # self.assertEqual(X.a, 42)
+        class Meta(type):
+            pass
+        class X(metaclass=Meta):
+            pass
+        X.a = 42
+        Meta.a = Descr("a")
+        self.assertEqual(X.a, 42)
 
     def test_getattr_hooks(self):
         # issue 4230
 
         # moved to global scope # skulpt #1178
-        # class GetattrDescriptor(object):
-        #     counter = 0
-        #     def __get__(self, obj, objtype=None):
-        #         def getter(name):
-        #             self.counter += 1
-        #             raise AttributeError(name)
-        #         return getter
+        global getattr_descr, GetattrDescriptor
+        class GetattrDescriptor(object):
+            counter = 0
+            def __get__(self, obj, objtype=None):
+                def getter(name):
+                    self.counter += 1
+                    raise AttributeError(name)
+                return getter
 
-        # getattr_descr = GetattrDescriptor()
+        getattr_descr = GetattrDescriptor()
         class A(object):
             __getattribute__ = getattr_descr
         class B(object):
@@ -5056,16 +4978,17 @@ class DictProxyTests(unittest.TestCase):
     #     self.assertEqual(keys, ['__dict__', '__doc__', '__module__',
     #                             '__weakref__', 'meth'])
 
-    # def test_dict_type_with_metaclass(self):
-    #     # Testing type of __dict__ when metaclass set...
-    #     class B(object):
-    #         pass
-    #     class M(type):
-    #         pass
-    #     class C(metaclass=M):
-    #         # In 2.3a1, C.__dict__ was a real dict rather than a dict proxy
-    #         pass
-    #     self.assertEqual(type(C.__dict__), type(B.__dict__))
+    def test_dict_type_with_metaclass(self):
+        # Testing type of __dict__ when metaclass set...
+        global M
+        class B(object):
+            pass
+        class M(type):
+            pass
+        class C(metaclass=M):
+            # In 2.3a1, C.__dict__ was a real dict rather than a dict proxy
+            pass
+        self.assertEqual(type(C.__dict__), type(B.__dict__))
 
     def test_repr(self):
         # Testing mappingproxy.__repr__.

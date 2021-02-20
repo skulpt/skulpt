@@ -708,8 +708,9 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self === Sk.global) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
-        positionalArgs = "[$gbl.__class__,self]";
+        this.u.tempsToSave.push("$sup");
+        out("if (typeof $sup === \"undefined\") { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        positionalArgs = "[$gbl.__class__,$sup]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
@@ -2090,8 +2091,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         } else {
             this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
         }
+        const sup_i = kwarg ? 1 : 0;
         for (let i=0; i < funcArgs.length; i++) {
-            this.u.varDeclsCode += ","+funcArgs[i]+"=$args["+i+"]";
+            const sup = i === sup_i ? "$sup = " : ""
+            this.u.varDeclsCode += ","+sup+funcArgs[i]+"=$args["+i+"]";
         }
         this.u.varDeclsCode += ";\n";
     }

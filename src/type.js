@@ -34,6 +34,7 @@ Object.defineProperties(
                 tp$doc: "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type",
                 tp$call,
                 tp$new,
+                tp$init,
                 tp$getattr,
                 tp$setattr,
                 $r,
@@ -41,6 +42,7 @@ Object.defineProperties(
             writable: true,
         },
         tp$methods: { value: null, writable: true }, // define these later
+        tp$classmethods: { value: null, writable: true }, // define these later
         tp$getsets: { value: null, writable: true },
         sk$type: { value: true },
         $isSubType: { value: $isSubType },
@@ -211,6 +213,14 @@ function tp$new(args, kwargs) {
         klassProto.ht$qualname = qualname;
     }
 
+    // make __init_subclass__ a classmethod
+    if (klass.prototype.hasOwnProperty("__init_subclass__")) {
+        const initsubclass = klass.prototype.__init_subclass__;
+        if (initsubclass instanceof Sk.builtin.func) {
+            // initsubclass is an implied classmethod
+            klass.prototype.__init_subclass__ = new Sk.builtin.classmethod(initsubclass);
+        }
+    }
     // make __new__ a static method
     if (klassProto.hasOwnProperty("__new__")) {
         const newf = klassProto.__new__;
@@ -220,6 +230,9 @@ function tp$new(args, kwargs) {
         }
     }
     klass.$allocateSlots();
+
+    set_names(klass);
+    init_subclass(klass, kwargs);
 
     return klass;
 }
@@ -587,7 +600,11 @@ function $allocateSlot(dunder, dunderFunc) {
     if (proto.hasOwnProperty(slot_name)) {
         delete proto[slot_name]; // required in order to override the multiple inheritance getter slots
     }
-    proto[slot_name] = slot_def.$slot_func(dunderFunc);
+    Object.defineProperty(proto, slot_name, {
+        value: slot_def.$slot_func(dunderFunc),
+        writable: true,
+        configurable: true,
+    });
 }
 
 function $allocateGetterSlot(dunder) {
@@ -761,6 +778,15 @@ Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     },
 };
 
+Sk.builtin.type.tp$classmethods = {
+    __prepare__: {
+        $meth() {
+            return new Sk.builtin.dict([]);
+        },
+        $flags: { FastCall: true },
+    },
+};
+
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
     $get() {
@@ -804,4 +830,28 @@ function check_special_type_attr(type, value, pyName) {
     if (value === undefined) {
         throw new Sk.builtin.TypeError("can't delete " + type.prototype.tp$name + "." + pyName.$jsstr());
     }
+}
+
+function init_subclass(type, kws) {
+    const super_ = new Sk.builtin.super_(type, type);
+    const func = super_.tp$getattr(Sk.builtin.str.$initsubclass);
+    Sk.misceval.callsimArray(func, [], kws);
+}
+
+function set_names(type) {
+    const proto = type.prototype;
+    Object.keys(proto).forEach((key) => {
+        const set_func = Sk.abstr.lookupSpecial(proto[key], Sk.builtin.str.$setname);
+        if (set_func !== undefined) {
+            try {
+                Sk.misceval.callsimArray(set_func, [type, new Sk.builtin.str(key)]);
+            } catch (e) {
+                const runtime_err = new Sk.builtin.RuntimeError(
+                    "Error calling __set_name__ on '" + Sk.abstr.typeName(proto[key]) + "' instance '" + key + "' in '" + type.prototype.tp$name + "'"
+                );
+                runtime_err.$cause = e;
+                throw runtime_err;
+            }
+        }
+    });
 }

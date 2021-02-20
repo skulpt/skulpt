@@ -141,6 +141,14 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             $doc: "Default object formatter.",
         },
     },
+    classmethods: {
+        __init_subclass__: {
+            $meth(args) {
+                return Sk.builtin.none.none$;
+            },
+            $flags: { FastCall: true, NoKwargs: true },
+        },
+    },
     proto: /**@lends {Sk.builtin.object.prototype}*/ {
         valueOf: Object.prototype.valueOf,
         toString() {
