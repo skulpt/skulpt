@@ -1323,10 +1323,18 @@ Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspensi
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
+Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     // todo; metaclass
     var klass;
-    var meta = Sk.builtin.type;
+    kws = kws || [];
+    let meta_idx = kws.indexOf("metaclass");
+    let meta;
+    if (meta_idx > -1) {
+        meta = kws[meta_idx + 1];
+        kws.splice(meta_idx, 2);
+    } else {
+        meta = Sk.builtin.type;
+    }
 
     var l_cell = cell === undefined ? {} : cell;
     var locals = {};
@@ -1358,7 +1366,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
     }
     _locals = new Sk.builtin.dict(_locals);
 
-    klass = Sk.misceval.callsimArray(meta, [_name, _bases, _locals]);
+    klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, _locals], kws);
 
     return klass;
 };

@@ -318,6 +318,38 @@ Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
     }
 };
 
+Compiler.prototype.cunpackkwstoarray = function (keywords, codeobj) {
+        
+    let keywordArgs = "undefined";
+
+    if (keywords && keywords.length > 0) {
+        let hasStars = false;
+        const kwarray = [];
+        for (let kw of keywords) {
+            if (hasStars && !Sk.__future__.python3) {
+                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+            }
+            if (kw.arg) {
+                kwarray.push("'" + kw.arg.v + "'");
+                kwarray.push(this.vexpr(kw.value));
+            } else {
+                hasStars = true;
+            }
+        }
+        keywordArgs = "[" + kwarray.join(",") + "]";
+        if (hasStars) {
+            keywordArgs = this._gr("keywordArgs", keywordArgs);
+            for (let kw of keywords) {
+                if (!kw.arg) {
+                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",codeobj,");");
+                    this._checkSuspension();
+                }
+            }
+        }
+    }
+    return keywordArgs;
+};
+
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
@@ -636,7 +668,6 @@ Compiler.prototype.ccompare = function (e) {
 
 Compiler.prototype.ccall = function (e) {
     var func = this.vexpr(e.func);
-    var kwarray = null;
     // Okay, here's the deal. We have some set of positional args
     // and we need to unpack them. We have some set of keyword args
     // and we need to unpack those too. Then we make a call.
@@ -644,7 +675,7 @@ Compiler.prototype.ccall = function (e) {
     // help us here; we do it by hand.
 
     let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
-    let keywordArgs = "undefined";
+    let keywordArgs = this.cunpackkwstoarray(e.keywords, func);
 
     if (e.keywords && e.keywords.length > 0) {
         let hasStars = false;
@@ -2492,6 +2523,7 @@ Compiler.prototype.cclass = function (s) {
 
     bases = this.vseqexpr(s.bases);
 
+    let keywordArgs = this.cunpackkwstoarray(s.keywords);
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
@@ -2522,7 +2554,8 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);");
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, ");");
+    this._checkSuspension();
 
     // apply decorators
 
