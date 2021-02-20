@@ -1306,6 +1306,12 @@ Sk.misceval.promiseToSuspension = function (promise) {
 };
 Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
 
+
+function _isIE() {
+    const navigator = Sk.global.navigator || {};
+    const ua = navigator.userAgent || "";
+    return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
+}
 /**
  * @function
  * @description
@@ -1333,7 +1339,13 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     const meta_idx = kws.indexOf("metaclass");
     if (meta_idx > -1) {
         meta = kws[meta_idx + 1];
-        kws.splice(meta_idx, 2);
+        // https://twitter.com/Rich_Harris/status/1125850391155965952
+        // the order of key value pairs doesn't matter for kws
+        // and this is orders of magnitured faster than splice
+        kws[meta_idx] = kws[kws.length - 2];
+        kws[meta_idx + 1] = kws[kws.length - 1];
+        kws.pop();
+        kws.pop();
         is_class = Sk.builtin.checkClass(meta);
     } else {
         if (!bases.length) {
@@ -1350,56 +1362,56 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     }
     /* else: meta is not a class, so we cannot do the metaclass
        calculation, so we will use the explicitly given object as it is */
-    
-    let ns;
-    if (meta === Sk.builtin.type) {
-        ns = null; // fast path
-    } else {
-        const prep = meta.tp$getattr(Sk.builtin.str.$prepare);
-        if (prep === undefined) {
-            ns = null;
-        } else {
-            ns = Sk.misceval.callsimArray(prep, [_name, _bases], kws);
-            if (!Sk.builtin.checkMapping(ns)) {
-                // in python this can be any mapping
-                throw new Sk.builtin.TypeError(is_class ? meta.prototype.tp$name : "<metaclass>" + ".__prepare__() must be a mapping not '" + Sk.abstr.typeName(ns) + "'");
-            }
-        }
+
+    let ns = null; // namespace
+    let handler; // used as the proxy object handler
+    if (meta !== Sk.builtin.type) {
+        // slow path we have a metaclass use the __prepare__ mechanism
+        [ns, handler] = do_prepare(meta, _name, _bases, kws, is_class);
     }
 
-
-    const l_cell = cell === undefined ? {} : cell;
-    const locals = {};
+    let localsIsProxy = false;
+    let locals = {};
     if (ns === null) {
+        // fast path no metaclass
         ns = new Sk.builtin.dict([]);
-    } else {
-        // metaclass is not type and __prepare__ could have returned any mapping
+    } else if (ns.constructor === Sk.builtin.dict || _isIE()) {
+        // we move the namespace returned from prepare to locals
+        // can't use Proxy in IE since the polyfill doesn't support set
         const keys = Sk.abstr.iter(Sk.misceval.callsimArray(ns.tp$getattr(Sk.builtin.str.$keys)));
         for (let key = keys.tp$iternext(); key !== undefined; key = keys.tp$iternext()) {
             if (Sk.builtin.checkString(key)) {
                 locals[key.toString()] = ns.mp$subscript(key); // ignore non strings
             }
         }
+    } else {
+        locals = new Proxy(ns, handler);
+        localsIsProxy = true;
     }
-    // init the dict for the class
-    func(globals, locals, l_cell);
 
     // file's __name__ is class's __module__
     if (globals["__name__"]) {
         // some js modules haven't set their module name and we shouldn't set a dictionary value to be undefined that should be equivalent to deleting a value;
         locals.__module__ = globals["__name__"];
     }
+    // @todo add qualname here to pass to the code object
 
-    Object.keys(locals).forEach((key) => {
-        ns.mp$ass_subscript(new Sk.builtin.str(key), locals[key]);
-    });
+    const l_cell = cell === undefined ? {} : cell;
+    // pass the locals to the code object which populates the namespace of the class
+    func(globals, locals, l_cell);
+
+    if (!localsIsProxy) {
+        // put locals object inside the ns dict
+        Object.keys(locals).forEach((key) => {
+            Sk.abstr.objectSetItem(ns, new Sk.builtin.str(key), locals[key]);
+        });
+    }
 
     const klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, ns], kws);
 
     return klass;
 };
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
-
 
 function update_bases(bases) {
     // todo
@@ -1408,7 +1420,7 @@ function update_bases(bases) {
 
 function calculate_meta(meta, bases) {
     let winner = meta;
-    bases.forEach(base => {
+    bases.forEach((base) => {
         let tmptype = base.ob$type;
         if (winner.$isSubType(tmptype)) {
             // continue
@@ -1419,4 +1431,36 @@ function calculate_meta(meta, bases) {
         }
     });
     return winner;
+}
+
+function do_prepare(meta, _name, _bases, kws, is_class) {
+    // we have a metaclass
+    const prep = meta.tp$getattr(Sk.builtin.str.$prepare);
+    let handler;
+    let ns = null;
+    if (prep === undefined) {
+        // unusual case - the metaclass is not a typeobject
+        return [ns, handler];
+    }
+    ns = Sk.misceval.callsimArray(prep, [_name, _bases], kws);
+    if (!Sk.builtin.checkMapping(ns)) {
+        throw new Sk.builtin.TypeError(is_class ? meta.prototype.tp$name : "<metaclass>" + ".__prepare__() must be a mapping not '" + Sk.abstr.typeName(ns) + "'");
+    }
+    handler = {
+        get(target, prop) {
+            try {
+                return Sk.abstr.objectGetItem(target, new Sk.builtin.str(Sk.unfixReserved(prop)));
+            } catch (e) {
+                if (e instanceof Sk.builtin.KeyError) {
+                    return;
+                }
+                throw e;
+            }
+        },
+        set(target, prop, value) {
+            Sk.abstr.objectSetItem(target, new Sk.builtin.str(Sk.unfixReserved(prop)), value);
+            return true; // Proxy protocol must return true on success
+        },
+    };
+    return [ns, handler];
 }
