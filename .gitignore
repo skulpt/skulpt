@@ -20,5 +20,4 @@ v8.log
 src/internalpython.js
 /tmp.js
 Pipfile
-package-lock.json
 *~
