@@ -235,7 +235,7 @@ const $builtinmodule = function (name) {
 
     function isclose(args, kwargs) {
         Sk.abstr.checkArgsLen("isclose", args, 2, 2);
-        rel_abs_vals = Sk.abstr.copyKeywordsToNamedArgs("isclose", ["rel_tol", "abs_tol"], [], kwargs, [
+        const rel_abs_vals = Sk.abstr.copyKeywordsToNamedArgs("isclose", ["rel_tol", "abs_tol"], [], kwargs, [
             new Sk.builtin.float_(1e-9),
             new Sk.builtin.float_(0.0),
         ]);
