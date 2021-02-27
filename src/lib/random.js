@@ -90,7 +90,7 @@ var MersenneTwister = function (seed) {
 MersenneTwister.prototype.init_genrand = function (s) {
     this.mt[0] = s >>> 0;
     for (this.mti = 1; this.mti < this.N; this.mti++) {
-        var s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
+        s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
         this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) + (s & 0x0000ffff) * 1812433253)
             + this.mti;
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
@@ -335,7 +335,7 @@ var $builtinmodule = function (name) {
         a = Sk.builtin.asnum$(a);
         b = Sk.builtin.asnum$(b);
         var rnd = myGenerator.genrand_res53();
-        c = a + rnd * (b - a);
+        const c = a + rnd * (b - a);
         return new Sk.builtin.float_(c);
     });
 
