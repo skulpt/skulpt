@@ -8,12 +8,24 @@
   let environmentClass;
   let keyboardClass;
   let mouseClass;
-  let vectorClass
+  let vectorClass;
 
   const mod = {__name__: new Sk.builtin.str("p5")};
 
+  // Helper function for extracting values from arguments
+  const processArgs = function processArgumentValues(arguments_) {
+    const argVals = [];
+    for (a of arguments_) {
+      if (typeof(a) !== 'undefined') {
+        argVals.push(a.v);
+      }
+    }
+    
+    return argVals;
+  };
+
   // We need this to store a reference to the actual p5 object which is not created
-  // until the run function is called.  Even then the p5 object is passed by the
+  // until the run function is called. Even then the p5 object is passed by the
   // p5.js sytem as a parameter to the sketchProc function.
 
   mod.pInst = null;
@@ -190,7 +202,6 @@
   });
 
   mod.rect = new Sk.builtin.func(function (x, y, width, height, radius) {
-    let rad;
     if (typeof(radius) === "undefined") {
         mod.pInst.rect(x.v, y.v, width.v, height.v);
     } else {
@@ -262,11 +273,9 @@
     mod.pInst.beginCamera();
   });
 
-  mod.beginShape = new Sk.builtin.func(function (mode) {
-    if (typeof(mode) === "undefined") {
-      mode = mod.POLYGON;
-    }
-    mod.pInst.beginShape(mode.v);
+  mod.beginShape = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.beginShape(...argVals);
   });
 
   mod.bezierDetail = new Sk.builtin.func(function (resolution) {
@@ -275,9 +284,9 @@
     // P3D or OPENGL renderer as the default (JAVA2D) renderer
     // does not use this information.
     if (typeof(resolution) !== "undefined") {
-        resolution = resolution.v;
+      resolution = resolution.v;
     } else {
-        resolution = 20;
+      resolution = 20;
     }
     mod.pInst.bezierDetail(resolution);
   });
@@ -521,14 +530,9 @@
     mod.pInst.endCamera();
   });
 
-  mod.endShape = new Sk.builtin.func(function (mode) {
-    // endShape()
-    // endShape(MODE)
-    if (typeof(mode) === "undefined") {
-	    mod.pInst.endShape();
-    } else {
-	    mod.pInst.endShape(mode.v);
-    }
+  mod.endShape = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.endShape(...argVals);
   });
 
   mod.filter = new Sk.builtin.func(function (mode, srcImg) {
@@ -1047,33 +1051,18 @@
 
   // Color
   mod.background = new Sk.builtin.func(function () {
-    const args_ = [];
-    for (a of arguments) {
-      if (typeof(a) !== 'undefined') {
-        args_.push(a.v);
-      }
-    }
-    mod.pInst.background(...args_);
+    const argVals = processArgs(arguments);
+    mod.pInst.background(...argVals);
   });
 
   mod.fill = new Sk.builtin.func(function () {
-    const args_ = [];
-    for (a of arguments) {
-      if (typeof(a) !== 'undefined') {
-        args_.push(a.v);
-      }
-    }
-    mod.pInst.fill(...args_);
+    const argVals = processArgs(arguments);
+    mod.pInst.fill(...argVals);
   });
 
   mod.stroke = new Sk.builtin.func(function () {
-    const args_ = [];
-    for (a of arguments) {
-      if (typeof(a) !== 'undefined') {
-        args_.push(a.v);
-      }
-    }
-    mod.pInst.stroke(...args_);
+    const argVals = processArgs(arguments);
+    mod.pInst.stroke(...argVals);
   });
 
   mod.noStroke = new Sk.builtin.func(function () {
@@ -1082,13 +1071,8 @@
 
 
   mod.colorMode = new Sk.builtin.func(function () {
-    const args_ = [];
-    for (a of arguments) {
-      if (typeof(a) !== 'undefined') {
-        args_.push(a.v);
-      }
-    }
-    mod.pInst.colorMode(...args_);
+    const argVals = processArgs(arguments);
+    mod.pInst.colorMode(...argVals);
   });
 
   mod.noFill = new Sk.builtin.func(function () {
@@ -1435,13 +1419,8 @@
 
   colorClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function () {
-      const args_ = [];
-      for (a of arguments) {
-        if (typeof(a) !== 'undefined') {
-          args_.push(a.v);
-        }
-      }
-      self.v = mod.pInst.color(...args_);
+      const argVals = processArgs(arguments);
+      self.v = mod.pInst.color(...argVals);
     });
   };
 

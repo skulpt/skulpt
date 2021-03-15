@@ -22,7 +22,6 @@ function builtinRead(x) {
 function uncaught(err) {
     const lineno = err.traceback[0].lineno;
     const msg = err.args.v[0].v;
-    console.log(err);
     throw new Error(`${msg} on line ${lineno}`);
 }
 
