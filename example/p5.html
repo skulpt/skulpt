@@ -74,9 +74,9 @@ def draw():
   pos.add(vel)
 
   if pos.x < r or pos.x > 400 - r:
-    vel.set(-vel.x, vel.y)
+    vel.x *= -1
   if pos.y < r or pos.y > 400 - r:
-    vel.set(vel.x, -vel.y)
+    vel.y *= -1
   
   circle(pos.x, pos.y, 2 * r)
 

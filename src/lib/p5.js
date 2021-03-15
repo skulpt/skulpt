@@ -1232,27 +1232,14 @@
   });
 
 
-  mod.colorMode = new Sk.builtin.func(function (mode, maxV, maxG, maxB, maxAlpha) {
-    // mode is one of RGB or HSB
-    // maxV is either the max value for all color elements
-    // or the range for Red/Hue (depending on mode) if maxG and maxB are defined
-    if (typeof(maxV) === "undefined") {
-        maxV = 255;
+  mod.colorMode = new Sk.builtin.func(function () {
+    const args_ = [];
+    for (a of arguments) {
+      if (typeof(a) !== 'undefined') {
+        args_.push(a.v);
+      }
     }
-    else {
-        maxV = maxV.v;
-    }
-    if (typeof(maxG) !== "undefined") {
-        maxG = maxG.v;
-    }
-    if (typeof(maxB) !== "undefined") {
-        maxB = maxB.v;
-    }
-    if (typeof(maxAlpha) !== "undefined") {
-        maxAlpha = maxAlpha.v;
-    }
-
-    mod.pInst.colorMode(mode.v, maxV, maxG, maxB, maxAlpha);
+    mod.pInst.colorMode(...args_);
   });
 
   mod.noFill = new Sk.builtin.func(function () {
@@ -1309,7 +1296,7 @@
 
   mod.createCanvas = new Sk.builtin.func(function (w, h, mode) {
     if (typeof(mode) === "undefined") {
-        mode = mod.P2D;
+      mode = mod.P2D;
     }
     mod.pInst.createCanvas(w.v, h.v, mode.v);
     mod.width = new Sk.builtin.int_(mod.pInst.width);
@@ -1355,23 +1342,23 @@
   });
 
   mod.smooth = new Sk.builtin.func(function () {
-      mod.pInst.smooth();
+    mod.pInst.smooth();
   });
 
   mod.noSmooth = new Sk.builtin.func(function () {
-      mod.pInst.noSmooth();
+    mod.pInst.noSmooth();
   });
 
   mod.ellipseMode = new Sk.builtin.func(function (mode) {
-      mod.pInst.ellipseMode(mode.v);
+    mod.pInst.ellipseMode(mode.v);
   });
 
   mod.strokeCap = new Sk.builtin.func(function (mode) {
-      mod.pInst.strokeCap(mode.v);
+    mod.pInst.strokeCap(mode.v);
   });
 
   mod.strokeJoin = new Sk.builtin.func(function (mode) {
-      mod.pInst.strokeJoin(mode.v);
+    mod.pInst.strokeJoin(mode.v);
   });
 
 
@@ -1395,38 +1382,38 @@
 
   mod.scale = new Sk.builtin.func(function (sx, sy, sz) {
     if (typeof(sy) === "undefined") {
-        sy = 1.0;
+      sy = 1.0;
     } else {
-        sy = sy.v;
+      sy = sy.v;
     }
     if (typeof(sz) === "undefined") {
-        sz = 1.0;
+      sz = 1.0;
     } else {
-        sz = sz.v;
+      sz = sz.v;
     }
     mod.pInst.scale(sx.v, sy, sz);
   });
 
   mod.translate = new Sk.builtin.func(function (sx, sy, sz) {
     if (typeof(sy) === "undefined") {
-        sy = 1.0;
+      sy = 1.0;
     } else {
-        sy = sy.v;
+      sy = sy.v;
     }
     if (typeof(sz) === "undefined") {
-        sz = 1.0;
+      sz = 1.0;
     } else {
-        sz = sz.v;
+      sz = sz.v;
     }
     mod.pInst.translate(sx.v, sy, sz);
   });
 
-  mod.popMatrix = new Sk.builtin.func(function() {
-    mod.pInst.popMatrix();
+  mod.pop = new Sk.builtin.func(function() {
+    mod.pInst.pop();
   });
 
-  mod.pushMatrix = new Sk.builtin.func(function() {
-    mod.pInst.pushMatrix();
+  mod.push = new Sk.builtin.func(function() {
+    mod.pInst.push();
   });
 
   mod.applyMatrix = new Sk.builtin.func(function() {
@@ -1598,18 +1585,14 @@
 
 
   colorClass = function ($gbl, $loc) {
-    /* images are loaded async.. so its best to preload them */
-    $loc.__init__ = new Sk.builtin.func(function (self, val1, val2, val3, alpha) {
-      if (typeof(val2) !== "undefined") {
-        val2 = val2.v;
+    $loc.__init__ = new Sk.builtin.func(function () {
+      const args_ = [];
+      for (a of arguments) {
+        if (typeof(a) !== 'undefined') {
+          args_.push(a.v);
+        }
       }
-      if (typeof(val3) !== "undefined") {
-        val3 = val3.v;
-      }
-      if (typeof(alpha) !== "undefined") {
-        alpha = alpha.v;
-      }
-      self.v = mod.pInst.color(val1.v, val2, val3, alpha);
+      self.v = mod.pInst.color(...args_);
     });
   };
 
@@ -1657,6 +1640,17 @@
       const new_vec = Sk.misceval.callsimArray(mod.PVector);
 	    new_vec.v = self.v.get();
 	    return new_vec;
+    });
+
+    $loc.__setattr__ = new Sk.builtin.func(function (self, key, value) {
+	    key = Sk.ffi.remapToJs(key);
+      if (key === "x") {
+        self.v.x = value.v;
+      } else if (key === "y") {
+        self.v.y = value.v;
+      } else if (key === "z") {
+        self.v.z = value.v;
+      }
     });
 	
     $loc.set = new Sk.builtin.func(function (self, x, y, z) {
