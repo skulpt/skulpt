@@ -3,7 +3,6 @@
  */
 
  const $builtinmodule = function (name) {
-  let imageClass;
   let colorClass;
   let screenClass;
   let environmentClass;
@@ -12,9 +11,6 @@
   let vectorClass
 
   const mod = {__name__: new Sk.builtin.str("p5")};
-  let imList = [];
-  let looping = true;
-  let instance = null;
 
   // We need this to store a reference to the actual p5 object which is not created
   // until the run function is called.  Even then the p5 object is passed by the
@@ -23,293 +19,146 @@
   mod.pInst = null;
   mod.p = null;
 
-  mod.X = new Sk.builtin.int_(0);
-  mod.Y = new Sk.builtin.int_(1);
-  mod.Z = new Sk.builtin.int_(2);
+  // Constants
 
-  mod.R = new Sk.builtin.int_( 3);
-  mod.G = new Sk.builtin.int_( 4);
-  mod.B = new Sk.builtin.int_( 5);
-  mod.A = new Sk.builtin.int_( 6);
-  
-  mod.U = new Sk.builtin.int_( 7);
-  mod.V = new Sk.builtin.int_( 8);
-  
-  mod.NX = new Sk.builtin.int_( 9);
-  mod.NY = new Sk.builtin.int_( 10);
-  mod.NZ = new Sk.builtin.int_( 11);
-  
-  mod.EDGE = new Sk.builtin.int_( 12);
-  
-  // Stroke
-  mod.SR = new Sk.builtin.int_( 13);
-  mod.SG = new Sk.builtin.int_( 14);
-  mod.SB = new Sk.builtin.int_( 15);
-  mod.SA = new Sk.builtin.int_( 16);
-  
-  mod.SW = new Sk.builtin.int_( 17);
-  
-  // Transformations (2D and 3D)
-  mod.TX = new Sk.builtin.int_( 18);
-  mod.TY = new Sk.builtin.int_( 19);
-  mod.TZ = new Sk.builtin.int_( 20);
-  
-  mod.VX = new Sk.builtin.int_( 21);
-  mod.VY = new Sk.builtin.int_( 22);
-  mod.VZ = new Sk.builtin.int_( 23);
-  mod.VW = new Sk.builtin.int_( 24);
-  
-  // Material properties
-  mod.AR = new Sk.builtin.int_( 25);
-  mod.AG = new Sk.builtin.int_( 26);
-  mod.AB = new Sk.builtin.int_( 27);
-  
-  mod.DR = new Sk.builtin.int_( 3);
-  mod.DG = new Sk.builtin.int_( 4);
-  mod.DB = new Sk.builtin.int_( 5);
-  mod.DA = new Sk.builtin.int_( 6);
-  
-  mod.SPR = new Sk.builtin.int_( 28);
-  mod.SPG = new Sk.builtin.int_( 29);
-  mod.SPB = new Sk.builtin.int_( 30);
-  
-  mod.SHINE = new Sk.builtin.int_( 31);
-  
-  mod.ER = new Sk.builtin.int_( 32);
-  mod.EG = new Sk.builtin.int_( 33);
-  mod.EB = new Sk.builtin.int_( 34);
-  
-  mod.BEEN_LIT = new Sk.builtin.int_( 35);
-  
-  mod.VERTEX_FIELD_COUNT = new Sk.builtin.int_( 36);
-  
-  // Shape drawing modes
-  mod.CENTER = new Sk.builtin.int_(3);
-  mod.RADIUS = new Sk.builtin.int_(2);
-  mod.CORNERS = new Sk.builtin.int_(1);
-  mod.CORNER = new Sk.builtin.int_(0);
-  mod.DIAMETER = new Sk.builtin.int_(3);
-  
-  // Text vertical alignment modes
-  // Default vertical alignment for text placement
-  mod.BASELINE = new Sk.builtin.int_( 0);
-  // Align text to the top
-  mod.TOP = new Sk.builtin.int_(      101);
-  // Align text from the bottom, using the baseline
-  mod.BOTTOM = new Sk.builtin.int_(   102);
-  
-  // UV Texture coordinate modes
-  mod.NORMAL = new Sk.builtin.int_(     1);
-  mod.NORMALIZED = new Sk.builtin.int_( 1);
-  mod.IMAGE = new Sk.builtin.int_(      2);
-  
-  // Text placement modes
-  mod.MODEL = new Sk.builtin.int_( 4);
-  mod.SHAPE = new Sk.builtin.int_( 5);
-  
-  // Lighting modes
-  mod.AMBIENT = new Sk.builtin.int_(     0);
-  mod.DIRECTIONAL = new Sk.builtin.int_( 1);
-  //POINT:     2, Shared with Shape constant
-  mod.SPOT = new Sk.builtin.int_(        3);
-
-  // Color modes
-  mod.RGB = new Sk.builtin.int_(1);
-  mod.ARGB = new Sk.builtin.int_(2);
-  mod.HSB = new Sk.builtin.int_(3);
-  mod.ALPHA = new Sk.builtin.int_(4);
-  mod.CMYK = new Sk.builtin.int_(5);
-  
-  // Image file types
-  mod.TIFF = new Sk.builtin.int_(0);
-  mod.TARGA = new Sk.builtin.int_(1);
-  mod.JPEG = new Sk.builtin.int_(2);
-  mod.GIF = new Sk.builtin.int_(3);
-
-  // Stroke modes
-  mod.MITER = new Sk.builtin.str("miter");
-  mod.BEVEL = new Sk.builtin.str("bevel");
-  mod.ROUND = new Sk.builtin.str("round");
-  mod.SQUARE = new Sk.builtin.str("butt");
-  mod.PROJECT = new Sk.builtin.str("square");
-
-  // Renderer modes
+  // Graphics Renderer
   mod.P2D = new Sk.builtin.str("p2d");
   mod.WEBGL = Sk.builtin.str("webgl");
 
-  // Platform IDs
-  mod.OTHER = new Sk.builtin.int_(   0);
-  mod.WINDOWS = new Sk.builtin.int_( 1);
-  mod.MAXOSX = new Sk.builtin.int_(  2);
-  mod.LINUX = new Sk.builtin.int_(   3);
-  
-  mod.EPSILON = new Sk.builtin.float_( 0.0001);
-
-  mod.MAX_FLOAT = new Sk.builtin.float_(  3.4028235e+38);
-  mod.MIN_FLOAT = new Sk.builtin.float_( -3.4028235e+38);
-  mod.MAX_INT = new Sk.builtin.int_(    2147483647);
-  mod.MIN_INT = new Sk.builtin.int_(   -2147483648);
-  
-  // Constants
-  mod.HALF_PI = new Sk.builtin.float_(Math.PI / 2.0);
-  mod.THIRD_PI = new Sk.builtin.float_(Math.PI / 3.0);
-  mod.PI = new Sk.builtin.float_(Math.PI);
-  mod.TWO_PI = new Sk.builtin.float_(Math.PI * 2.0);
-  mod.TAU = new Sk.builtin.float_(Math.PI * 2.0);
-  mod.QUARTER_PI = new Sk.builtin.float_(Math.PI / 4.0);
-
-  mod.DEG_TO_RAD = new Sk.builtin.float_( Math.PI / 180);
-  mod.RAD_TO_DEG = new Sk.builtin.float_( 180 / Math.PI);
-
-  mod.WHITESPACE = new Sk.builtin.str(" \t\n\r\f\u00A0");
-  // Shape modes
-  mod.POINT = new Sk.builtin.int_(2);
-  mod.POINTS = new Sk.builtin.int_(2);
-  mod.LINE = new Sk.builtin.int_(4);
-  mod.LINES = new Sk.builtin.int_(4);
-  mod.TRIANGLE = new Sk.builtin.int_(8);
-  mod.TRIANGLES = new Sk.builtin.int_(9);
-  mod.TRIANGLE_FAN = new Sk.builtin.int_(11);
-  mod.TRIANGLE_STRIP = new Sk.builtin.int_(10);
-  mod.QUAD = new Sk.builtin.int_(16);
-  mod.QUADS = new Sk.builtin.int_(16);
-  mod.QUAD_STRIP = new Sk.builtin.int_(17);
-  mod.POLYGON = new Sk.builtin.int_(20);
-
-  mod.PATH = new Sk.builtin.int_(21);
-  mod.RECT = new Sk.builtin.int_(30);
-  mod.ELLIPSE = new Sk.builtin.int_(31);
-  mod.ARC = new Sk.builtin.int_(32);
-  mod.SPHERE = new Sk.builtin.int_(40);
-  mod.BOX = new Sk.builtin.int_(41);
-
-  mod.GROUP = new Sk.builtin.int_(          0);
-  mod.PRIMITIVE = new Sk.builtin.int_(      1);
-  //PATH:         21, // shared with Shape PATH
-  mod.GEOMETRY = new Sk.builtin.int_(       3);
-  
-  // Shape Vertex
-  mod.VERTEX = new Sk.builtin.int_(        0);
-  mod.BEZIER_VERTEX = new Sk.builtin.int_( 1);
-  mod.CURVE_VERTEX = new Sk.builtin.int_(  2);
-  mod.BREAK = new Sk.builtin.int_(         3);
-  mod.CLOSESHAPE = new Sk.builtin.int_(    4);
-  
-  // Blend modes
-  mod.REPLACE    = new Sk.builtin.int_(0);
-  mod.BLEND      = new Sk.builtin.int_(1 << 0);
-  mod.ADD        = new Sk.builtin.int_(1 << 1);
-  mod.SUBTRACT   = new Sk.builtin.int_(1 << 2);
-  mod.LIGHTEST   = new Sk.builtin.int_(1 << 3);
-  mod.DARKEST    = new Sk.builtin.int_(1 << 4);
-  mod.DIFFERENCE = new Sk.builtin.int_(1 << 5);
-  mod.EXCLUSION  = new Sk.builtin.int_(1 << 6);
-  mod.MULTIPLY   = new Sk.builtin.int_(1 << 7);
-  mod.SCREEN     = new Sk.builtin.int_(1 << 8);
-  mod.OVERLAY    = new Sk.builtin.int_(1 << 9);
-  mod.HARD_LIGHT = new Sk.builtin.int_(1 << 10);
-  mod.SOFT_LIGHT = new Sk.builtin.int_(1 << 11);
-  mod.DODGE      = new Sk.builtin.int_(1 << 12);
-  mod.BURN       = new Sk.builtin.int_(1 << 13);
-
-  // Color component bit masks
-  mod.ALPHA_MASK = new Sk.builtin.int_( 0xff000000);
-  mod.RED_MASK = new Sk.builtin.int_(   0x00ff0000);
-  mod.GREEN_MASK = new Sk.builtin.int_( 0x0000ff00);
-  mod.BLUE_MASK = new Sk.builtin.int_(  0x000000ff);
-  
-  // Projection matrices
-  mod.CUSTOM = new Sk.builtin.int_(       0);
-  mod.ORTHOGRAPHIC = new Sk.builtin.int_( 2);
-  mod.PERSPECTIVE = new Sk.builtin.int_(  3);
-  
-  // Cursors
+  // Environment
   mod.ARROW = new Sk.builtin.str("default");
   mod.CROSS = new Sk.builtin.str("crosshair");
   mod.HAND = new Sk.builtin.str("pointer");
   mod.MOVE = new Sk.builtin.str("move");
   mod.TEXT = new Sk.builtin.str("text");
   mod.WAIT = new Sk.builtin.str("wait");
-  mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto");
 
-  // Hints
-  mod.DISABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(1);
-  mod.ENABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(-1);
-  mod.ENABLE_OPENGL_4X_SMOOTH = new Sk.builtin.int_(2);
-  mod.ENABLE_NATIVE_FONTS = new Sk.builtin.int_(3);
-  mod.DISABLE_DEPTH_TEST = new Sk.builtin.int_(4);
-  mod.ENABLE_DEPTH_TEST = new Sk.builtin.int_(-4);
-  mod.ENABLE_DEPTH_SORT = new Sk.builtin.int_(5);
-  mod.DISABLE_DEPTH_SORT = new Sk.builtin.int_(-5);
-  mod.DISABLE_OPENGL_ERROR_REPORT = new Sk.builtin.int_(6);
-  mod.ENABLE_OPENGL_ERROR_REPORT = new Sk.builtin.int_(-6);
-  mod.ENABLE_ACCURATE_TEXTURES = new Sk.builtin.int_(7);
-  mod.DISABLE_ACCURATE_TEXTURES = new Sk.builtin.int_(-7);
-  mod.HINT_COUNT = new Sk.builtin.int_(10);
+  // Trigonometry
+  mod.HALF_PI = new Sk.builtin.float_(Math.PI / 2.0);
+  mod.PI = new Sk.builtin.float_(Math.PI);
+  mod.QUARTER_PI = new Sk.builtin.float_(Math.PI / 4.0);
+  mod.TAU = new Sk.builtin.float_(Math.PI * 2.0);
+  mod.TWO_PI = new Sk.builtin.float_(Math.PI * 2.0);
 
-  // Shape closing modes
-  mod.OPEN =  new Sk.builtin.int_(1);
-  mod.CLOSE = new Sk.builtin.int_(2);
+  mod.DEGREES = new Sk.builtin.str("degrees");
+  mod.RADIANS = new Sk.builtin.str("radians");
 
-  // Filter/convert types
-  mod.BLUR = new Sk.builtin.int_(11);
-  mod.GRAY = new Sk.builtin.int_(12);
-  mod.INVERT = new Sk.builtin.int_(13);
-  mod.OPAQUE = new Sk.builtin.int_(14);
-  mod.POSTERIZE = new Sk.builtin.int_(15);
-  mod.THRESHOLD = new Sk.builtin.int_(16);
-  mod.ERODE = new Sk.builtin.int_(17);
-  mod.DILATE = new Sk.builtin.int_(18);
+  mod.DEG_TO_RAD = new Sk.builtin.float_( Math.PI / 180.0);
+  mod.RAD_TO_DEG = new Sk.builtin.float_( 180.0 / Math.PI);
 
-  // Both key and keyCode will be equal to these values
-  mod.BACKSPACE = new Sk.builtin.int_( 8);
-  mod.TAB = new Sk.builtin.int_(9);
-  mod.ENTER = new Sk.builtin.int_(10);
-  mod.RETURN = new Sk.builtin.int_(13);
-  mod.ESC = new Sk.builtin.int_(27);
-  mod.DELETE = new Sk.builtin.int_(127);
-  mod.CODED = new Sk.builtin.int_(0xffff);
-
-  // p.key will be CODED and p.keyCode will be this value
-  mod.SHIFT = new Sk.builtin.int_(16);
-  mod.CONTROL = new Sk.builtin.int_(17);
+  // Shape
+  mod.CORNER = new Sk.builtin.str("corner");
+  mod.CORNERS = new Sk.builtin.str("corners");
+  mod.RADIUS = new Sk.builtin.str("radius");
+  mod.RIGHT = new Sk.builtin.str("right");
+  mod.LEFT = new Sk.builtin.str("left");
+  mod.CENTER = new Sk.builtin.str("center");
+  mod.TOP = new Sk.builtin.str("top");
+  mod.BOTTOM = new Sk.builtin.str("bottom");
+  mod.BASELINE = new Sk.builtin.str("alphabetic");
+  
+  mod.POINTS = new Sk.builtin.int_(0x0000);
+  mod.LINES = new Sk.builtin.int_(0x0001);
+  mod.LINE_STRIP = new Sk.builtin.int_(0x0003);
+  mod.LINE_LOOP = new Sk.builtin.int_(0x0002);
+  mod.TRIANGLES = new Sk.builtin.int_(0x0004);
+  mod.TRIANGLE_FAN = new Sk.builtin.int_(0x0006);
+  mod.TRIANGLE_STRIP = new Sk.builtin.int_(0x0005);
+  mod.QUADS = new Sk.builtin.str("quads");
+  mod.QUAD_STRIP = new Sk.builtin.str("quad_strip");
+  mod.TESS = new Sk.builtin.str("tess");
+  mod.CLOSE = new Sk.builtin.str("close");
+  mod.OPEN =  new Sk.builtin.str("open");
+  mod.CHORD =  new Sk.builtin.str("chord");
+  mod.PIE =  new Sk.builtin.str("pie");
+  mod.PROJECT = new Sk.builtin.str("square");
+  mod.SQUARE = new Sk.builtin.str("butt");
+  mod.ROUND = new Sk.builtin.str("round");
+  mod.BEVEL = new Sk.builtin.str("bevel");
+  mod.MITER = new Sk.builtin.str("miter");
+  
+  // Color
+  mod.RGB = new Sk.builtin.str("rgb");
+  mod.HSB = new Sk.builtin.str("hsb");
+  mod.HSL = new Sk.builtin.str("hsl");
+  
+  // DOM Extension
+  mod.AUTO = new Sk.builtin.str("auto");
   mod.ALT = new Sk.builtin.int_(18);
-  mod.CAPSLK = new Sk.builtin.int_(20);
-  mod.PGUP = new Sk.builtin.int_(33);
-  mod.PGDN = new Sk.builtin.int_(34);
-  mod.END = new Sk.builtin.int_(35);
-  mod.HOME = new Sk.builtin.int_(36);
-  mod.LEFT = new Sk.builtin.int_(37);
-  mod.UP = new Sk.builtin.int_(38);
-  mod.RIGHT = new Sk.builtin.int_(39);
-  mod.DOWN = new Sk.builtin.int_(40);
-  mod.F1 = new Sk.builtin.int_(112);
-  mod.F2 = new Sk.builtin.int_(113);
-  mod.F3 = new Sk.builtin.int_(114);
-  mod.F4 = new Sk.builtin.int_(115);
-  mod.F5 = new Sk.builtin.int_(116);
-  mod.F6 = new Sk.builtin.int_(117);
-  mod.F7 = new Sk.builtin.int_(118);
-  mod.F8 = new Sk.builtin.int_(119);
-  mod.F9 = new Sk.builtin.int_(120);
-  mod.F10 = new Sk.builtin.int_(121);
-  mod.F11 = new Sk.builtin.int_(122);
-  mod.F12 = new Sk.builtin.int_(123);
-  mod.NUMLK = new Sk.builtin.int_(144);
-  mod.META = new Sk.builtin.int_(157);
-  mod.INSERT = new Sk.builtin.int_(155);
+  mod.BACKSPACE = new Sk.builtin.int_(8);
+  mod.CONTROL = new Sk.builtin.int_(17);
+  mod.DELETE = new Sk.builtin.int_(46);
+  mod.DOWN_ARROW = new Sk.builtin.int_(40);
+  mod.ENTER = new Sk.builtin.int_(13);
+  mod.ESCAPE = new Sk.builtin.int_(27);
+  mod.LEFT_ARROW = new Sk.builtin.int_(37);
+  mod.OPTION = new Sk.builtin.int_(18);
+  mod.RETURN = new Sk.builtin.int_(13);
+  mod.RIGHT_ARROW = new Sk.builtin.int_(39);
+  mod.SHIFT = new Sk.builtin.int_(16);
+  mod.TAB = new Sk.builtin.int_(9);
+  mod.UP_ARROW = new Sk.builtin.int_(38);
 
-  // PJS defined constants
-  mod.SINCOS_LENGTH = new Sk.builtin.int_(720);
-  mod.PRECISIONB = new Sk.builtin.int_(15);
-  mod.PRECISIONF = new Sk.builtin.int_(1 << 15);
-  mod.PREC_MAXVAL = new Sk.builtin.int_((1 << 15) - 1);
-  mod.PREC_ALPHA_SHIFT = new Sk.builtin.int_(24 - 15);
-  mod.PREC_RED_SHIFT = new Sk.builtin.int_(16 - 15);
-  mod.NORMAL_MODE_AUTO = new Sk.builtin.int_(0);
-  mod.NORMAL_MODE_SHAPE = new Sk.builtin.int_(1);
-  mod.NORMAL_MODE_VERTEX = new Sk.builtin.int_(2);
-  mod.MAX_LIGHTS = new Sk.builtin.int_(8);
+  // Rendering
+  mod.BLEND = new Sk.builtin.str("source-over");
+  mod.REMOVE = new Sk.builtin.str("destination-out");
+  mod.ADD = new Sk.builtin.str("lighter");
+  mod.DARKEST = new Sk.builtin.str("darken");
+  mod.LIGHTEST = new Sk.builtin.str("lighten");
+  mod.DIFFERENCE = new Sk.builtin.str("difference");
+  mod.SUBTRACT = new Sk.builtin.str("subtract");
+  mod.EXCLUSION = new Sk.builtin.str("exclusion");
+  mod.MULTIPLY = new Sk.builtin.str("multiply");
+  mod.SCREEN = new Sk.builtin.str("screen");
+  mod.REPLACE = new Sk.builtin.str("copy");
+  mod.OVERLAY = new Sk.builtin.str("overlay");
+  mod.HARD_LIGHT = new Sk.builtin.str("hard-light");
+  mod.SOFT_LIGHT = new Sk.builtin.str("soft-light");
+  mod.DODGE = new Sk.builtin.str("dodge");
+  mod.BURN = new Sk.builtin.str("color-burn");
+  
+  // Filters
+  mod.THRESHOLD = new Sk.builtin.str("threshold");
+  mod.GRAY = new Sk.builtin.str("gray");
+  mod.OPAQUE = new Sk.builtin.str("opaque");
+  mod.INVERT = new Sk.builtin.str("invert");
+  mod.POSTERIZE = new Sk.builtin.str("posterize");
+  mod.DILATE = new Sk.builtin.str("dilate");
+  mod.ERODE = new Sk.builtin.str("erode");
+  mod.BLUR = new Sk.builtin.str("blur");
+
+  // Typography
+  mod.NORMAL = new Sk.builtin.str("normal");
+  mod.ITALIC = new Sk.builtin.str("italic");
+  mod.BOLD = new Sk.builtin.str("bold");
+  mod.BOLDITALIC = new Sk.builtin.str("bold italic");
+
+  // Vertices
+  mod.LINEAR = new Sk.builtin.str("linear");
+  mod.QUADRATIC = new Sk.builtin.str("quadratic");
+  mod.BEZIER = new Sk.builtin.str("bezier");
+  mod.CURVE = new Sk.builtin.str("curve");
+
+  // WebGL Draw Modes
+  mod.STROKE = new Sk.builtin.str("stroke");
+  mod.FILL = new Sk.builtin.str("fill");
+  mod.TEXTURE = new Sk.builtin.str("texture");
+  mod.IMMEDIATE = new Sk.builtin.str("immediate");
+  mod.IMAGE = new Sk.builtin.str("image");
+  mod.NEAREST = new Sk.builtin.str("nearest");
+  mod.REPEAT = new Sk.builtin.str("repeat");
+  mod.CLAMP = new Sk.builtin.str("clamp");
+  mod.MIRROR = new Sk.builtin.str("mirror");
+  
+  // Device Orientation
+  mod.LANDSCAPE = new Sk.builtin.str("landscape");
+  mod.PORTRAIT = new Sk.builtin.str("portrait");
+
+  // Defaults
+  mod.GRID = new Sk.builtin.str("grid");
+  mod.AXES = new Sk.builtin.str("axes");
+  mod.LABEL = new Sk.builtin.str("label");
+  mod.FALLBACK = new Sk.builtin.str("fallback");
 
   // 2D - Primitives
   mod.line = new Sk.builtin.func(function (x1, y1, x2, y2) {
