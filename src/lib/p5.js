@@ -33,11 +33,13 @@ const $builtinmodule = function (name) {
   mod.pInst = null;
   mod.p = null;
 
+  // =========
   // Constants
+  // =========
 
   // Graphics Renderer
   mod.P2D = new Sk.builtin.str("p2d");
-  mod.WEBGL = Sk.builtin.str("webgl");
+  mod.WEBGL = new Sk.builtin.str("webgl");
 
   // Environment
   mod.ARROW = new Sk.builtin.str("default");
@@ -174,56 +176,244 @@ const $builtinmodule = function (name) {
   mod.LABEL = new Sk.builtin.str("label");
   mod.FALLBACK = new Sk.builtin.str("fallback");
 
-  // 2D - Primitives
-  mod.line = new Sk.builtin.func(function (x1, y1, x2, y2) {
-    mod.pInst.line(x1.v, y1.v, x2.v, y2.v);
+  // =====
+  // Shape
+  // =====
+
+  // 2D Primitives
+  mod.arc = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.arc(...argVals);
   });
 
-  mod.ellipse = new Sk.builtin.func(function (x, y, r1, r2) {
-    mod.pInst.ellipse(x.v, y.v, r1.v, r2.v);
+  mod.ellipse = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.ellipse(...argVals);
   });
 
   mod.circle = new Sk.builtin.func(function (x, y, d) {
     mod.pInst.circle(x.v, y.v, d.v);
   });
 
-  mod.text = new Sk.builtin.func(function (theText, x, y) {
-    mod.pInst.text(theText.v, x.v, y.v);
+  mod.line = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.line(...argVals);
   });
 
-  mod.point = new Sk.builtin.func(function (x1, y1) {
-    mod.pInst.point(x1.v, y1.v);
+  mod.point = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.point(...argVals);
   });
 
-  mod.arc = new Sk.builtin.func(function (x, y, width, height, start, stop) {
-    mod.pInst.arc(x.v, y.v, width.v, height.v, start.v, stop.v);
+  mod.quad = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.quad(...argVals);
   });
 
-  mod.quad = new Sk.builtin.func(function (x1, y1, x2, y2, x3, y3, x4, y4) {
-    mod.pInst.quad(x1.v, y1.v, x2.v, y2.v, x3.v, y3.v, x4.v, y4.v);
+  mod.rect = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.rect(...argVals);
   });
 
-  mod.rect = new Sk.builtin.func(function (x, y, width, height, radius) {
-    if (typeof(radius) === "undefined") {
-        mod.pInst.rect(x.v, y.v, width.v, height.v);
-    } else {
-        mod.pInst.rect(x.v, y.v, width.v, height.v, radius.v);
-    }
+  mod.square = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.square(...argVals);
   });
 
   mod.triangle = new Sk.builtin.func(function (x1, y1, x2, y2, x3, y3) {
     mod.pInst.triangle(x1.v, y1.v, x2.v, y2.v, x3.v, y3.v);
   });
 
-  mod.bezier = new Sk.builtin.func(function (x1, y1, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) {
-    if (typeof(a7) === "undefined") {
-      // bezier(x1, y1, cx1, cy1, cx2, cy2,  x2,  y2);
-      mod.pInst.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v);
+  // Attributes
+  mod.ellipseMode = new Sk.builtin.func(function (mode) {
+    mod.pInst.ellipseMode(mode.v);
+  });
+
+  mod.noSmooth = new Sk.builtin.func(function () {
+    mod.pInst.noSmooth();
+  });
+
+  mod.rectMode = new Sk.builtin.func(function (mode) {
+    mod.pInst.rectMode(mode.v);
+  });
+
+  mod.smooth = new Sk.builtin.func(function () {
+    mod.pInst.smooth();
+  });
+
+  mod.strokeCap = new Sk.builtin.func(function (cap) {
+    mod.pInst.strokeCap(cap.v);
+  });
+
+  mod.strokeJoin = new Sk.builtin.func(function (join) {
+    mod.pInst.strokeJoin(join.v);
+  });
+
+  mod.strokeWeight = new Sk.builtin.func(function (weight) {
+    mod.pInst.strokeWeight(weight.v);
+  });
+
+  // Curves
+  mod.bezier = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.bezier(...argVals);
+  });
+
+  mod.bezierDetail = new Sk.builtin.func(function (detail) {
+    mod.pInst.bezierDetail(detail.v);
+  });
+
+  mod.bezierPoint = new Sk.builtin.func(function (a, b, c, d, t) {
+    mod.pInst.bezierPoint(a.v, b.v, c.v, d.v, t.v);
+  });
+
+  mod.bezierTangent = new Sk.builtin.func(function (a, b, c, d, t) {
+    mod.pInst.bezierTangent(a.v, b.v, c.v, d.v, t.v);
+  });
+
+  mod.curve = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.curve(...argVals);
+  });
+
+  mod.curveDetail = new Sk.builtin.func(function (resolution) {
+    mod.pInst.curveDetail(resolution.v);
+  });
+
+  mod.curveTightness = new Sk.builtin.func(function (amount) {
+    mod.pInst.curveTightness(amount.v);
+  });
+
+  mod.curvePoint = new Sk.builtin.func(function (a, b, c, d, t) {
+    mod.pInst.curvePoint(a.v, b.v, c.v, d.v, t.v);
+  });
+
+  mod.curveTangent = new Sk.builtin.func(function (a, b, c, d, t) {
+    mod.pInst.curveTangent(a.v, b.v, c.v, d.v, t.v);
+  });
+  
+  // Vertex
+  mod.beginContour = new Sk.builtin.func(function () {
+    mod.pInst.beginContour();
+  });
+
+  mod.beginShape = new Sk.builtin.func(function (kind) {
+    if (typeof(kind) === "undefined") {
+      mod.pInst.beginShape();
     } else {
-      // bezier(x1, y1,  z1, cx1, cy1, cz1, cx2, cy2, cz2, x2, y2, z2);
-      mod.pInst.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v, a7.v, a8.v, a9.v, a10.v);
+      mod.pInst.beginShape(kind.v);
     }
   });
+
+  mod.bezierVertex = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.bezierVertex(...argVals);
+  });
+
+  mod.curveVertex = new Sk.builtin.func(function (x, y, z) {
+    // curveVertex(x, y) 
+    // curveVertex(x, y, z)
+    if (typeof(z) === "undefined") {
+	    mod.pInst.curveVertex(x.v, y.v);
+    } else {
+	    mod.pInst.curveVertex(x.v, y.v, z.v);
+    }
+  });
+
+  mod.endContour = new Sk.builtin.func(function () {
+    mod.pInst.endContour();
+  });
+
+  mod.endShape = new Sk.builtin.func(function (mode) {
+    if (typeof(mode) === "undefined") {
+      mod.pInst.endShape();
+    } else {
+      mod.pInst.endShape(mode.v);
+    }
+  });
+
+  mod.quadraticVertex = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.quadraticVertex(...argVals);
+  });
+
+  mod.vertex = new Sk.builtin.func(function (x, y, z, u, v) {
+    // vertex(x, y); 
+    // vertex(x, y, z); 
+    // vertex(x, y, u, v); 
+    // vertex(x, y, z, u, v);
+    if (typeof(z) === "undefined") {
+	    mod.pInst.vertex(x.v, y.v);
+    } else if (typeof(u) === "undefined") {
+	    mod.pInst.vertex(x.v, y.v, z.v);
+    } else if (typeof(v) === "undefined") {
+	    mod.pInst.vertex(x.v, y.v, z.v, u.v);
+    } else {
+	    mod.pInst.vertex(x.v, y.v, z.v, u.v, v.v);
+    }
+  });
+
+  // 3D Primitives
+  mod.plane = new Sk.builtin.func(function () {
+    const argVals = processArgs(arguments);
+    mod.pInst.plane(...argVals);
+  });
+
+  mod.box = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.box(...argVals);
+  });
+
+  mod.sphere = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.sphere(...argVals);
+  });
+
+  mod.cylinder = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.cylinder(...argVals);
+  });
+
+  mod.cone = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.cone(...argVals);
+  });
+
+  mod.ellipsoid = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.ellipsoid(...argVals);
+  });
+
+  mod.torus = new Sk.builtin.func(function() {
+    const argVals = processArgs(arguments);
+    mod.pInst.torus(...argVals);
+  });
+
+  // TODO: 3D Models
+
+  // ==========
+  // Typography
+  // ==========
+
+  // Attributes
+
+  // Loading & Displaying
+
+  mod.text = new Sk.builtin.func(function (theText, x, y) {
+    mod.pInst.text(theText.v, x.v, y.v);
+  });
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
   mod.alpha = new Sk.builtin.func(function (r, g, b) {
     // r will be either:
@@ -275,49 +465,11 @@ const $builtinmodule = function (name) {
     mod.pInst.beginCamera();
   });
 
-  mod.beginShape = new Sk.builtin.func(function () {
-    const argVals = processArgs(arguments);
-    mod.pInst.beginShape(...argVals);
-  });
+  
 
-  mod.bezierDetail = new Sk.builtin.func(function (resolution) {
-    // Sets the resolution at which Beziers display. The default
-    // value is 20. This function is only useful when using the
-    // P3D or OPENGL renderer as the default (JAVA2D) renderer
-    // does not use this information.
-    if (typeof(resolution) !== "undefined") {
-      resolution = resolution.v;
-    } else {
-      resolution = 20;
-    }
-    mod.pInst.bezierDetail(resolution);
-  });
+  
 
-  mod.bezierPoint = new Sk.builtin.func(function (a,b,c,d,t) {
-    mod.pInst.bezierPoint(a.v,b.v,c.v,d.v,t.v);
-  });
-
-  mod.bezierTangent = new Sk.builtin.func(function (a,b,c,d,t) {
-    mod.pInst.bezierTangent(a.v,b.v,c.v,d.v,t.v);
-  });
-
-  mod.bezierVertex = new Sk.builtin.func(function (v1, v2, v3, v4, v5, v6,
-						    v7, v8, v9) {
-    // bezierVertex(cx1, cy1, cx2, cy2,   x,   y)
-    // bezierVertex(cx1, cy1, cz1, cx2, cy2, cz2, x, y, z)
-    if (typeof(v7) === "undefined") {
-	    mod.pInst.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v);
-    } else if (typeof(v8) === "undefined") {
-	    mod.pInst.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
-					v7.v);
-    } else if (typeof(v9) === "undefined") {
-	    mod.pInst.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
-					v7.v, v8.v);
-    } else {
-	    mod.pInst.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
-					v7.v, v8.v, v9.v);
-    }
-  });
+  
 
   mod.blend = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9, v10) {
@@ -398,14 +550,14 @@ const $builtinmodule = function (name) {
     return font;
   });
 
-  mod.createGraphics = new Sk.builtin.func(function (width, height, renderer, filename) {
+  mod.createGraphics = new Sk.builtin.func(function (width, height, renderer) {
+    // createGraphics(width, height)
     // createGraphics(width, height, renderer)
-    // createGraphics(width, height, renderer, filename)
     const graphics = Sk.misceval.callsimArray(mod.PGraphics);
-    if (typeof(filename) === "undefined") {
-      graphics.v = mod.pInst.createGraphics(width.v, height.v, renderer.v);
+    if (typeof(renderer) === "undefined") {
+      graphics.v = mod.pInst.createGraphics(width.v, height.v);
     } else {
-      graphics.v = mod.pInst.createGraphics(width.v, height.v, renderer.v, filename.v);
+      graphics.v = mod.pInst.createGraphics(width.v, height.v, renderer.v);
     }
     return graphics;
   });
@@ -431,62 +583,9 @@ const $builtinmodule = function (name) {
     }
   });
 
-  mod.curve = new Sk.builtin.func(function (v1, v2, v3, v4,
-					      v5, v6, v7, v8,
-					      v9, v10, v11, v12) {
-    // curve(x1, y1, x2, y2, x3, y3, x4, y4);
-    // curve(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
-    if (typeof(v9) === "undefined") {
-	    mod.pInst.curve(v1.v, v2.v, v3.v, v4.v,
-				 v5.v, v6.v, v7.v, v8.v);
-    } else if (typeof(v10) === "undefined") {
-	    mod.pInst.curve(v1.v, v2.v, v3.v, v4.v,
-				 v5.v, v6.v, v7.v, v8.v,
-				 v9.v);
-    } else if (typeof(v11) === "undefined") {
-	    mod.pInst.curve(v1.v, v2.v, v3.v, v4.v,
-				 v5.v, v6.v, v7.v, v8.v,
-				 v9.v, v10.v);
-    } else if (typeof(v12) === "undefined") {
-	    mod.pInst.curve(v1.v, v2.v, v3.v, v4.v,
-				 v5.v, v6.v, v7.v, v8.v,
-				 v9.v, v10.v, v11.v);
-    } else {
-	    mod.pInst.curve(v1.v, v2.v, v3.v, v4.v,
-				 v5.v, v6.v, v7.v, v8.v,
-				 v9.v, v10.v, v11.v, v12.v);
-    }
-  });
+  
 
-  mod.curveDetail = new Sk.builtin.func(function (detail) {
-    // curveDetail(detail)
-    mod.pInst.curveDetail(detail.v);
-  });
-
-  mod.curvePoint = new Sk.builtin.func(function (a,b,c,d,t) {
-    // curvePoint(a,b,c,d,t)
-    mod.pInst.curvePoint(a.v,b.v,c.v,d.v,t.v);
-  });
-
-  mod.curveTangent = new Sk.builtin.func(function (a,b,c,d,t) {
-    // curveTangent(a,b,c,d,t)
-    mod.pInst.curveTangent(a.v,b.v,c.v,d.v,t.v);
-  });
-
-  mod.curveTightness = new Sk.builtin.func(function (squishy) {
-    // curveTightness(squishy)
-    mod.pInst.curveTightness(squishy.v);
-  });
-
-  mod.curveVertex = new Sk.builtin.func(function (x, y, z) {
-    // curveVertex(x, y) 
-    // curveVertex(x, y, z)
-    if (typeof(z) === "undefined") {
-	    mod.pInst.curveVertex(x.v, y.v);
-    } else {
-	    mod.pInst.curveVertex(x.v, y.v, z.v);
-    }
-  });
+  
 
   mod.day = new Sk.builtin.func(function () {
     return new Sk.builtin.int_(mod.pInst.day());
@@ -530,11 +629,6 @@ const $builtinmodule = function (name) {
   mod.endCamera = new Sk.builtin.func(function () {
     // endCamera()
     mod.pInst.endCamera();
-  });
-
-  mod.endShape = new Sk.builtin.func(function () {
-    const argVals = processArgs(arguments);
-    mod.pInst.endShape(...argVals);
   });
 
   mod.filter = new Sk.builtin.func(function (mode, srcImg) {
@@ -1013,43 +1107,12 @@ const $builtinmodule = function (name) {
     mod.pInst.updatePixels();
   });
 
-  mod.vertex = new Sk.builtin.func(function (x, y, z, u, v) {
-    // vertex(x, y); 
-    // vertex(x, y, z); 
-    // vertex(x, y, u, v); 
-    // vertex(x, y, z, u, v);
-    if (typeof(z) === "undefined") {
-	    mod.pInst.vertex(x.v, y.v);
-    } else if (typeof(u) === "undefined") {
-	    mod.pInst.vertex(x.v, y.v, z.v);
-    } else if (typeof(v) === "undefined") {
-	    mod.pInst.vertex(x.v, y.v, z.v, u.v);
-    } else {
-	    mod.pInst.vertex(x.v, y.v, z.v, u.v, v.v);
-    }
-  });
+  
 
   mod.year = new Sk.builtin.func(function () {
     return new Sk.builtin.int_(mod.pInst.year());
   });
 
-  // 3D Primitives
-  mod.box = new Sk.builtin.func(function(size) {
-      mod.pInst.box(size.v);
-  });
-
-  mod.sphere = new Sk.builtin.func(function(radius) {
-      mod.pInst.sphere(radius.v);
-  });
-
-  mod.sphereDetail = new Sk.builtin.func(function(res,vres) {
-    if (typeof(vres) === "undefined") {
-      mod.pInst.sphereDetail(res.v);
-    }
-    else {
-      mod.pInst.sphereDetail(res.v, vres.v);
-    }
-  });
 
   // Color
   mod.background = new Sk.builtin.func(function () {
@@ -1168,33 +1231,19 @@ const $builtinmodule = function (name) {
   });
 
   // Attributes
-  mod.rectMode = new Sk.builtin.func(function (mode) {
-    mod.pInst.rectMode(mode.v);
-  });
+  
 
-  mod.strokeWeight = new Sk.builtin.func(function (wt) {
-    mod.pInst.strokeWeight(wt.v);
-  });
+  
 
-  mod.smooth = new Sk.builtin.func(function () {
-    mod.pInst.smooth();
-  });
+  
 
-  mod.noSmooth = new Sk.builtin.func(function () {
-    mod.pInst.noSmooth();
-  });
+  
 
-  mod.ellipseMode = new Sk.builtin.func(function (mode) {
-    mod.pInst.ellipseMode(mode.v);
-  });
+  
 
-  mod.strokeCap = new Sk.builtin.func(function (mode) {
-    mod.pInst.strokeCap(mode.v);
-  });
+  
 
-  mod.strokeJoin = new Sk.builtin.func(function (mode) {
-    mod.pInst.strokeJoin(mode.v);
-  });
+  
 
 
   // Transforms
@@ -1447,11 +1496,8 @@ const $builtinmodule = function (name) {
   });
 
   // Image class and functions
-  //
   imageClass = function ($gbl, $loc) {
-    /* images are loaded async.. so its best to preload them */
     $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
-      // PImage(width, height)
       self.v = mod.pInst.createImage(width.v, height.v);
     });
 
@@ -1481,6 +1527,7 @@ const $builtinmodule = function (name) {
     mod.pInst.image(...argVals);
   });
 
+  // Vector class and functions
   vectorClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function (self, x, y, z) {
 	    // PVector()
