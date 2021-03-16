@@ -1,0 +1,94 @@
+<html lang="en-us"> 
+<head>
+<meta charset="utf-8">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.3.0/p5.js" integrity="sha512-kA8S+b0k7IrbFuN0au5kH1VGaMrxmxJMX1b2OY+nLkpcosmqiOxHHIasItf/+fYw6THZ6kAVdB8NzFmTee43Cw==" crossorigin="anonymous"></script>
+<script src="../dist/skulpt.min.js" type="text/javascript"></script>
+<script src="../dist/skulpt-stdlib.js" type="text/javascript"></script>
+</head> 
+<body> 
+<script type="text/javascript">
+// output functions are configurable.  This one just appends some text
+// to a pre element.
+function outf(text) { 
+    var mypre = document.getElementById("output"); 
+    mypre.innerHTML = mypre.innerHTML + text; 
+} 
+function builtinRead(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+function uncaught(err) {
+    const lineno = err.traceback[0].lineno;
+    const msg = err.args.v[0].v;
+    throw new Error(`${msg} on line ${lineno}`);
+}
+
+// Here's everything you need to run a python program in skulpt
+// grab the code from your textarea
+// get a reference to your pre element for output
+// configure the output function
+// call Sk.importMainWithBody()
+function runit() { 
+   const prog = document.getElementById("yourcode").value; 
+   const mypre = document.getElementById("output"); 
+   mypre.innerHTML = ''; 
+   Sk.pre = "output";
+   Sk.configure({output:outf, read:builtinRead, uncaughtException:uncaught}); 
+   Sk.p5Sketch = "p5Sketch";
+   const myPromise = Sk.misceval.asyncToPromise(function() {
+      return Sk.importMainWithBody("<stdin>", false, prog, true);
+   });
+   myPromise.then(function(mod) {
+      console.log('success');
+   },
+      function(err) {
+        console.log(err.toString());
+   });
+} 
+</script>
+
+<h3>Hello, p5.Vector</h3>
+<form>
+<textarea id="yourcode" cols="40" rows="35">from p5 import *
+
+pos = None
+vel = None
+r = 20
+
+def setup():
+  createCanvas(400, 400)
+  global pos, vel
+  pos = PVector(200, 200)
+  vel = PVector(1, 0.5)
+  fill('steelblue')
+  stroke('ghostwhite')
+  strokeWeight(3)
+
+
+def draw():
+  background(50, 30)
+
+  pos.add(vel)
+
+  if pos.x < r or pos.x > 400 - r:
+    vel.x *= -1
+  if pos.y < r or pos.y > 400 - r:
+    vel.y *= -1
+  
+  circle(pos.x, pos.y, 2 * r)
+
+
+def mousePressed():
+  background(50)
+
+
+run()
+</textarea><br />
+<button type="button" onclick="runit()">Run</button>
+</form>
+<pre id="output" ></pre>
+<div id="p5Sketch"></id>
+</body> 
+</html>

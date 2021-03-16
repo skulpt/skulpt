@@ -8,6 +8,7 @@
   let environmentClass;
   let keyboardClass;
   let mouseClass;
+  let imageClass;
   let vectorClass;
 
   const mod = {__name__: new Sk.builtin.str("p5")};
@@ -408,9 +409,9 @@
     return graphics;
   });
 
-  mod.createImage = new Sk.builtin.func(function (width, height, format) {
-    const image = Sk.misceval.callsimArray(mod.PImage);
-    image.v = mod.pInst.createImage(width.v, height.v, format.v);
+  mod.createImage = new Sk.builtin.func(function (width, height) {
+    const image = Sk.misceval.callsimArray(mod.PImage, [width, height]);
+    image.v = mod.pInst.createImage(width.v, height.v);
     return image;
   });
 
@@ -1278,6 +1279,12 @@
     const sketchProc = (sketch) => {
       mod.pInst = sketch;
 
+      sketch.preload = function () {
+        if (Sk.globals["preload"]) {
+          Sk.misceval.callsimArray(Sk.globals["preload"]);
+        }
+      };
+
       sketch.setup = function () {
         if (Sk.globals["setup"]) {
           Sk.misceval.callsimArray(Sk.globals["setup"]);
@@ -1438,6 +1445,41 @@
     return new Sk.builtin.int_(mod.pInst.blue(clr.v));
   });
 
+  // Image class and functions
+  //
+  imageClass = function ($gbl, $loc) {
+    /* images are loaded async.. so its best to preload them */
+    $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
+      // PImage(width, height)
+      self.v = mod.pInst.createImage(width.v, height.v);
+    });
+
+    $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+      key = Sk.ffi.remapToJs(key);
+      if (key === "width") {
+        return Sk.builtin.assk$(self.v.width);
+      }
+      if (key === "height") {
+        return Sk.builtin.assk$(self.v.height);
+      }
+    });
+  };
+
+  mod.loadImage = new Sk.builtin.func(function (path) {
+    const i = mod.pInst.loadImage(path.v);
+    const image = Sk.misceval.callsimArray(mod.PImage, [new Sk.builtin.int_(1), new Sk.builtin.int_(1)]);
+    image.v = i;
+    return image;
+  });
+
+  mod.image = new Sk.builtin.func(function () {
+    // image(img, x, y)
+    // image(img, x, y, width, height)
+    // image(img, dx, dy, dWidth, dHeight, sx, sy, [sWidth], [sHeight])
+    const argVals = processArgs(arguments);
+    mod.pInst.image(...argVals);
+  });
+
   vectorClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function (self, x, y, z) {
 	    // PVector()
@@ -1570,6 +1612,7 @@
   };
 
   mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
+  mod.PImage = Sk.misceval.buildClass(mod, imageClass, "PImage", []);
 
   return mod;
 };
