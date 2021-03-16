@@ -49,39 +49,27 @@ function runit() {
 } 
 </script>
 
-<h3>Hello, p5.Vector</h3>
+<h3>Hello, p5.Font</h3>
 <form>
 <textarea id="yourcode" cols="40" rows="35">from p5 import *
 
-pos = None
-vel = None
-r = 20
+source = None
+
+def preload():
+  global source
+  source = loadFont('fonts/SourceSansPro-Regular.otf')
+
 
 def setup():
   createCanvas(400, 400)
-  global pos, vel
-  pos = PVector(200, 200)
-  vel = PVector(1, 0.5)
-  fill('steelblue')
-  stroke('ghostwhite')
-  strokeWeight(3)
+  textFont(source)
+  textAlign(CENTER, CENTER)
+  textSize(20)
 
 
 def draw():
-  background(50, 30)
-
-  pos.add(vel)
-
-  if pos.x < r or pos.x > 400 - r:
-    vel.x *= -1
-  if pos.y < r or pos.y > 400 - r:
-    vel.y *= -1
-  
-  circle(pos.x, pos.y, 2 * r)
-
-
-def mousePressed():
-  background(50)
+  background(220)
+  text('hello, fonts', 200, 200)
 
 
 run()

@@ -2,7 +2,7 @@
  * Skulpt p5.js.
  */
 
- const $builtinmodule = function (name) {
+const $builtinmodule = function (name) {
   let colorClass;
   let screenClass;
   let environmentClass;
@@ -10,6 +10,7 @@
   let mouseClass;
   let imageClass;
   let vectorClass;
+  let fontClass;
 
   const mod = {__name__: new Sk.builtin.str("p5")};
 
@@ -606,11 +607,11 @@
     return new Sk.builtin.list(mod.pInst.loadBytes(filename.v));
   });
 
-  mod.loadFont = new Sk.builtin.func(function (fontname) {
-    // loadFont(fontname)
-    // returns font
+  mod.loadFont = new Sk.builtin.func(function (path) {
+    // loadFont(path)
+    // returns PFont object
     const font = Sk.misceval.callsimArray(mod.PFont);
-    font.v = mod.pInst.loadFont(fontname.v);
+    font.v = mod.pInst.loadFont(path.v);
     return font;
   });
 
@@ -1611,8 +1612,20 @@
     });
   };
 
-  mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
+  fontClass = function ($gbl, $loc) {
+    $loc.__init__ = new Sk.builtin.func(function (self) {
+      // PFont()
+      self.v = new p5.Font(mod.pInst);
+    });
+
+    // TODO
+    // textBounds()
+    // textToPoints()
+  };
+
   mod.PImage = Sk.misceval.buildClass(mod, imageClass, "PImage", []);
+  mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
+  mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
 
   return mod;
 };
