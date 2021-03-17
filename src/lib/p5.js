@@ -57,7 +57,10 @@ function $builtinmodule() {
         const pInstance = p.valueOf();
         pInstance._start = _start;
 
-        ["preload", "setup", "draw"].forEach((methodName) => {
+        ["preload", "setup", "draw", "deviceMoved", "deviceTurned", "deviceShaken",
+        "windowResized", "keyPressed", "keyReleased", "keyTyped", "mousePressed",
+        "mouseReleased", "mouseClicked", "doubleClicked", "mouseMoved", "mouseDragged",
+        "mouseWheel", "touchStarted", "touchMoved", "touchEnded"].forEach((methodName) => {
             const method = main[methodName];
             if (method !== undefined) {
                 pInstance[methodName] = wrapFunc(method);
