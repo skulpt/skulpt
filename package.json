@@ -1,10 +1,11 @@
 {
   "name": "skulpt",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
   "keywords": [
     "skulpt"
   ],
+  "main": "./main.js",
   "scripts": {
     "help": "node support/build/help.js",
     "regenparser": "node support/build/regenparser.js",
