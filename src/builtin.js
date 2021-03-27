@@ -255,7 +255,7 @@ Sk.builtin.max = function max(args, kwargs) {
     if (!nargs) {
         throw new Sk.builtin.TypeError("max expected 1 argument, got 0");
     }
-    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
+    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("max", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
 
     // if args is not a single iterable then default should not be included as a kwarg
     if (nargs > 1 && $default !== null) {
@@ -301,7 +301,7 @@ Sk.builtin.max = function max(args, kwargs) {
         () => {
             if (highest === undefined) {
                 if ($default === null) {
-                    throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+                    throw new Sk.builtin.ValueError("max() arg is an empty sequence");
                 } else {
                     highest = $default;
                 }
