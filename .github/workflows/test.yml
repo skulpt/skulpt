@@ -1,5 +1,6 @@
 name: unit-test
 on:
+  pull_request:
   push:
     branches: "*"
     tags-ignore: "v*"
