@@ -82,6 +82,10 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 
   Run Python <pyfile> in the browser.  This will automatically rebuild the unoptimized Skulpt first.
 
+* `npm run compile <pyfile>`
+
+  Compile a <pyfile> from the std-lib. Useful for fixing compilation issues in a single file.
+
 * `npm run btest`
 
   Run the unit tests in the browser.
