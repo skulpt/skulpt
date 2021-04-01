@@ -47,8 +47,7 @@ var $builtinmodule = function (name) {
     mod.time = new Sk.builtin.func(function () {
         Sk.builtin.pyCheckArgsLen("time", arguments.length, 0, 0);
         var res = Date.now();
-        if (this.performance && this.performance.now)
-        {
+        if (Sk.global.performance && Sk.global.performance.now) {
             res = res + performance.now() % 1;
         }
         return Sk.builtin.assk$(res / 1000, undefined);
@@ -113,8 +112,8 @@ var $builtinmodule = function (name) {
         var result = /\((.*)\)/.exec(date.toString());
         var language;
 
-        if (this.navigator != null) {
-            language = this.navigator.userLanguage || this.navigator.language;
+        if (Sk.global.navigator != null) {
+            language = Sk.global.navigator.userLanguage || Sk.global.navigator.language;
         }
 
         if (result && result.length > 1) {
@@ -266,8 +265,7 @@ var $builtinmodule = function (name) {
 
     mod.clock = new Sk.builtin.func(function() {
         var res = 0.0;
-        if (this.performance && this.performance.now)
-        {
+        if (Sk.global.performance && Sk.global.performance.now) {
             res = performance.now() / 1000;
         } else {
             res = new Date().getTime() / 1000;
