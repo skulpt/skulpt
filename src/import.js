@@ -204,9 +204,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
 
         }, function(co) {
 
-            var finalcode;
-            var withLineNumbers;
-            var modscope;
 
             if (!co) {
                 return undefined;
@@ -216,45 +213,35 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str(modname), module);
 
             module.$js = co.code; // todo; only in DEBUG?
-            finalcode = co.code;
 
             if (filename == null) {
                 filename = co.filename;
             }
 
             if (Sk.dateSet == null || !Sk.dateSet) {
-                finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
+                Sk.execStart = Sk.lastYield = new Date();
                 Sk.dateSet = true;
             }
 
-            // if (!COMPILED)
-            // {
             if (dumpJS) {
-                withLineNumbers = function (code) {
-                    var j;
-                    var pad;
-                    var width;
-                    var i;
-                    var beaut = Sk.js_beautify(code);
-                    var lines = beaut.split("\n");
-                    for (i = 1; i <= lines.length; ++i) {
-                        width = ("" + i).length;
-                        pad = "";
-                        for (j = width; j < 5; ++j) {
+                const withLineNumbers = (code) => {
+                    const beaut = Sk.js_beautify(code);
+                    const lines = beaut.split("\n");
+                    for (let i = 1; i <= lines.length; ++i) {
+                        const width = ("" + i).length;
+                        let pad = "";
+                        for (let j = width; j < 5; ++j) {
                             pad += " ";
                         }
                         lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
                     }
                     return lines.join("\n");
                 };
-                finalcode = withLineNumbers(finalcode);
-                Sk.debugout(finalcode);
+                Sk.debugout(withLineNumbers(co.code));
             }
-            // }
 
-            finalcode += "\n" + co.funcname + ";";
 
-            modscope = Sk.global["eval"](finalcode);
+            const modscope = Sk.compile.eval(co);
 
             module["$d"] = {
                 "__name__": new Sk.builtin.str(modname),
