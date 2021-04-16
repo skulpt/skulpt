@@ -143,8 +143,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$rshift: numberShiftSlot(
             (v, w) => {
                 // Avoid forced signed 32 bit conversion and just divide.
-                const tmp = Math.floor(v / shiftconsts[w+1]);;
-                return tmp;
+                return Math.floor(v / shiftconsts[w+1]);
             },
             (v, w) => JSBI.numberIfSafe(JSBI.signedRightShift(v, w))
         ),
