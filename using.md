@@ -66,7 +66,7 @@ We're working on getting skulpt onto popular CDNs so you can load them straight 
 This new feature lets you create and host your own modules for use in Skulpt.  The
 following gist shows how to include one of them in a page.
 
-{% gist 20bd9105f11f2a164fc0.js %}
+{% gist 20bd9105f11f2a164fc0 %}
 
 <h3>Customizing modules after import</h3>
 <p>If you want to customize how a module behaves you can use the ``onAfterImport`` hook.  Here is a gist of how the trinket guys do it.</p>
