@@ -50,82 +50,7 @@ Sk.importSearchPathForName = function (name, ext, searchPath) {
     });
 };
 
-/**
- * Complete any initialization of Python classes which relies on internal
- * dependencies.
- *
- * This includes making Python classes subclassable and ensuring that the
- * {@link Sk.builtin.object} magic methods are wrapped inside Python functions.
- *
- * @return {undefined}
- */
-Sk.doOneTimeInitialization = function (canSuspend) {
-    // can't fill these out when making the type because tuple/dict aren't
-    // defined yet.
-    Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
-    Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
 
-    // Register a Python class with an internal dictionary, which allows it to
-    // be subclassed
-    var setUpClass = function (child) {
-        const parent = child.prototype.tp$base;
-        const bases = [];
-
-        for (let base = parent; base !== undefined; base = base.prototype.tp$base) {
-            if (!base.sk$abstract && Sk.builtins[base.prototype.tp$name]) {
-                // check the base is not an abstract class and that it is in the builtins dict
-                bases.push(base);
-            }
-        }
-
-        child.tp$mro = new Sk.builtin.tuple([child].concat(bases));
-        if (!child.hasOwnProperty("tp$base")){
-            child.tp$base = bases[0];
-        }
-        child["$d"] = new Sk.builtin.dict([]);
-        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, child.tp$base ? new Sk.builtin.tuple([child.tp$base]) : new Sk.builtin.tuple([]));
-        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, child.tp$mro);
-        child["$d"].mp$ass_subscript(new Sk.builtin.str("__name__"), new Sk.builtin.str(child.prototype.tp$name));
-    };
-
-    for (let x in Sk.builtin) {
-        const type = Sk.builtin[x];
-        if (type instanceof Sk.builtin.type && type.sk$abstract === undefined) {
-            setUpClass(type);
-        }
-    }
-
-    // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
-    // Sk.builtin.func, as that class was undefined when these functions were declared
-    const typesWithFunctionsToWrap = [Sk.builtin.object, Sk.builtin.type, Sk.builtin.func, Sk.builtin.method];
-
-    for (let i = 0; i < typesWithFunctionsToWrap.length; i++) {
-        const builtin_type = typesWithFunctionsToWrap[i];
-        const proto = builtin_type.prototype;
-        for (let j = 0; j < builtin_type.pythonFunctions.length; j++) {
-            const name = builtin_type.pythonFunctions[j];
-
-            if (proto[name] instanceof Sk.builtin.func) {
-                // If functions have already been initialized, do not wrap again.
-                break;
-            }
-
-            proto[name].co_kwargs = null;
-            proto[name] = new Sk.builtin.func(proto[name]);
-        }
-    }
-
-
-    for (var file in Sk.internalPy.files) {
-        var fileWithoutExtension = file.split(".")[0].split("/")[1];
-        var mod = Sk.importBuiltinWithBody(fileWithoutExtension, false, Sk.internalPy.files[file], true);
-        mod = Sk.misceval.retryOptionalSuspensionOrThrow(mod);
-        Sk.asserts.assert(mod["$d"][fileWithoutExtension] !== undefined, "Should have imported name " + fileWithoutExtension);
-        Sk.builtins[fileWithoutExtension] = mod["$d"][fileWithoutExtension];
-        delete Sk.builtins[fileWithoutExtension].__module__;
-        delete Sk.globals[fileWithoutExtension];
-    }
-};
 
 /**
  * currently only pull once from Sk.syspath. User might want to change
@@ -144,8 +69,6 @@ Sk.importSetUpPath = function (canSuspend) {
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
-
-        Sk.doOneTimeInitialization(canSuspend);
     }
 };
 
@@ -203,7 +126,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         topLevelModuleToReturn = topLevelModuleToReturn_;
 
         // if leaf is already in sys.modules, early out
-        prev = Sk.sysmodules.mp$lookup(modname);
+        prev = Sk.sysmodules.quick$lookup(new Sk.builtin.str(modname));
         if (prev !== undefined) {
             // if we're a dotted module, return the top level, otherwise ourselves
             return topLevelModuleToReturn || prev;
@@ -220,7 +143,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 if (!topLevelModuleToReturn) {
                     return undefined;
                 }
-                parentModule = Sk.sysmodules.mp$subscript(absolutePackagePrefix + parentModName);
+                parentModule = Sk.sysmodules.mp$subscript(new Sk.builtin.str(absolutePackagePrefix + parentModName));
                 searchFileName = modNameSplit[modNameSplit.length-1];
                 searchPath = parentModule.tp$getattr(Sk.builtin.str.$path);
             }
@@ -290,7 +213,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             }
 
             // Now we know this module exists, we can add it to the cache
-            Sk.sysmodules.mp$ass_subscript(modname, module);
+            Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str(modname), module);
 
             module.$js = co.code; // todo; only in DEBUG?
             finalcode = co.code;
@@ -489,7 +412,8 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             relativeToPackageNames.length -= level-1;
             relativeToPackageName = relativeToPackageNames.join(".");
         }
-        relativeToPackage = Sk.sysmodules.mp$lookup(relativeToPackageName);
+
+        relativeToPackage = Sk.sysmodules.quick$lookup(new Sk.builtin.str(relativeToPackageName));
     }
 
     if (level > 0 && relativeToPackage === undefined) {
@@ -534,9 +458,9 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             var importChain;
 
             leafModule = Sk.sysmodules.mp$subscript(
-                (relativeToPackageName || "") +
+                new Sk.builtin.str((relativeToPackageName || "") +
                     ((relativeToPackageName && name) ? "." : "") +
-                    name);
+                    name));
 
             for (i = 0; i < fromlist.length; i++) {
                 fromName = fromlist[i];

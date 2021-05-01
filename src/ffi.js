@@ -79,22 +79,14 @@ Sk.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 Sk.ffi.remapToJs = function (obj) {
     var i;
     var kAsJs;
-    var v;
-    var iter, k;
     var ret;
     if (obj instanceof Sk.builtin.dict) {
         ret = {};
-        for (iter = obj.tp$iter(), k = iter.tp$iternext();
-            k !== undefined;
-            k = iter.tp$iternext()) {
-            v = obj.mp$subscript(k);
-            if (v === undefined) {
-                v = null;
-            }
-            kAsJs = Sk.ffi.remapToJs(k);
+        obj.$items().forEach(([key, val]) => {
+            kAsJs = Sk.ffi.remapToJs(key);
             // todo; assert that this is a reasonble lhs?
-            ret[kAsJs] = Sk.ffi.remapToJs(v);
-        }
+            ret[kAsJs] = Sk.ffi.remapToJs(val);
+        });
         return ret;
     } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
         ret = [];

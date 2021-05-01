@@ -1,2 +1,2 @@
-TypeError('__nonzero__ should return an int')
-TypeError('__len__ should return an int')
+TypeError('__nonzero__ should return int (returned str)')
+TypeError("'str' object cannot be interpreted as an integer")

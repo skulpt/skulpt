@@ -45,6 +45,17 @@ class OperatorsTest(unittest.TestCase):
         self.assertEqual(0x5a01 >> 2, 0x1680)
         self.assertEqual(1834 << 2, 7336)
         self.assertEqual(1834 >> 2, 458)
+        self.assertEqual((1834<<30)>>28, 7336)
+        self.assertEqual((1<<33)>>32, 2)
+        over_32bits = 0xa * 2**34
+        self.assertEqual(over_32bits >> 2, over_32bits / 4)
+        self.assertEqual(-0xa >> 2, -3)
+
+    def test_more_shifts(self):
+        for i in range(1, 70):
+            self.assertEqual((1<<i)>>(i-1), 2)
+            self.assertEqual((-1<<i)>>(i-1), -2)
+            self.assertEqual((0xb<<i)>>(i+1), 5)
 
     def test_not(self):
         self.assertEqual(~0b0011, -0b0100)

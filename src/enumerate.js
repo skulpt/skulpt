@@ -1,66 +1,42 @@
 /**
  * @constructor
- * @param {Object} iterable
- * @param {number=} start
+ * @param {pyObject} iterable
+ * @param {number|string=} start
  * @extends Sk.builtin.object
  */
-Sk.builtin.enumerate = function (iterable, start) {
-    var it;
-    if (!(this instanceof Sk.builtin.enumerate)) {
-        return new Sk.builtin.enumerate(iterable, start);
-    }
-
-
-    Sk.builtin.pyCheckArgsLen("enumerate", arguments.length, 1, 2);
-    if (!Sk.builtin.checkIterable(iterable)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
-    }
-    if (start !== undefined) {
-        if (!Sk.misceval.isIndex(start)) {
-            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
-        } else {
-            start = Sk.misceval.asIndex(start);
+Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
+    constructor: function enumerate(iterable, start) {
+        if (!(this instanceof Sk.builtin.enumerate)) {
+            throw TypeError("Failed to construct 'enumerate': Please use the 'new' operator");
         }
-    } else {
-        start = 0;
-    }
-
-    it = iterable.tp$iter();
-
-    this.tp$iter = function () {
+        this.$iterable = iterable;
+        this.$index = start;
         return this;
-    };
-    this.$index = start;
-    this.tp$iternext = function () {
-        // todo; StopIteration
-        var idx;
-        var next = it.tp$iternext();
-        if (next === undefined) {
-            return undefined;
-        }
-        idx = new Sk.builtin.int_(this.$index++);
-        return new Sk.builtin.tuple([idx, next]);
-    };
-
-    this.__class__ = Sk.builtin.enumerate;
-
-    return this;
-};
-
-Sk.abstr.setUpInheritance("enumerate", Sk.builtin.enumerate, Sk.builtin.object);
-
-Sk.builtin.enumerate.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    return self.tp$iter();
+    },
+    iternext(canSuspend) {
+        const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (i) => {
+            if (i === undefined) {
+                return undefined;
+            }
+            return new Sk.builtin.tuple([new Sk.builtin.int_(this.$index++), i]);
+        });
+        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+    },
+    slots: {
+        tp$doc:
+            "Return an enumerate object.\n\n  iterable\n    an object supporting iteration\n\nThe enumerate object yields pairs containing a count (from start, which\ndefaults to zero) and a value yielded by the iterable argument.\n\nenumerate is useful for obtaining an indexed list:\n    (0, seq[0]), (1, seq[1]), (2, seq[2]), ...",
+        tp$new(args, kwargs) {
+            let [iterable, start] = Sk.abstr.copyKeywordsToNamedArgs("enumerate", ["iterable", "start"], args, kwargs, [new Sk.builtin.int_(0)]);
+            iterable = Sk.abstr.iter(iterable);
+            start = Sk.misceval.asIndexOrThrow(start);
+            if (this === Sk.builtin.enumerate.prototype) {
+                return new Sk.builtin.enumerate(iterable, start);
+            } else {
+                const instance = new this.constructor();
+                Sk.builtin.enumerate.call(instance, iterable, start);
+                return instance;
+            }
+        },
+    },
 });
-
-Sk.builtin.enumerate.prototype.next$ = function (self) {
-    return self.tp$iternext();
-};
-Sk.builtin.enumerate.co_varnames = ["iterable", "start"];
-Sk.builtin.enumerate.co_argcount = 2;
-Sk.builtin.enumerate.$defaults = [Sk.builtin.none.none$,0];
-Sk.builtin.enumerate.co_name = new Sk.builtin.str("enumerate");
-
-Sk.builtin.enumerate.prototype["$r"] = function () {
-    return new Sk.builtin.str("<enumerate object>");
-};
+Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);
