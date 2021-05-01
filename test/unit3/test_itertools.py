@@ -8,7 +8,7 @@ import operator
 # import random
 import copy
 # import pickle
-# from functools import reduce
+from functools import reduce
 import sys
 # import struct
 # import threading

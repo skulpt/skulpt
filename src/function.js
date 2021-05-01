@@ -136,6 +136,14 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
                 this.$doc = v || Sk.builtin.none.none$;
             },
         },
+        __module__: {
+            $get() {
+                return this.$module;
+            },
+            $set(v) {
+                this.$module = v || Sk.builtin.none.none$;
+            }
+        }
     },
     proto: {
         $memoiseFlags() {
