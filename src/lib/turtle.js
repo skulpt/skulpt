@@ -573,7 +573,7 @@ function generateTurtleModule(_target) {
             this._filling    = false;
             this._undoBuffer = [];
             this._speed      = 3;
-            this._computed_speed = 5;
+            this._computed_speed = 6;
             this._colorMode  = 1.0;
             this._state      = undefined;
 
@@ -849,13 +849,28 @@ function generateTurtleModule(_target) {
         };
 
         proto.$speed = function(speed) {
-            if (speed !== undefined) {
-                this._speed          = Math.max(0, Math.min(1000, speed));
-                this._computed_speed = Math.max(0, speed * 2 - 1);
-                return this.addUpdate(undefined, false, {speed:this._computed_speed});
+            if (typeof(speed) === "undefined") {
+                return this._speed;
             }
-
-            return this._speed;
+            const speeds = {"fastest":0, "fast":10, "normal":6, "slow":3, "slowest":1};
+            if (speed in speeds) {
+                speed = speeds[speed];
+            }
+            if (typeof(speed) !== "number") {
+                if (typeof(speed) === "string") {
+                    const valid_speeds = Object.keys(speeds).join(", ");
+                    throw new Sk.builtin.TypeError("speed string expected one of " + valid_speeds);
+                }
+                throw new Sk.builtin.TypeError("speed expected a string or number");
+            }
+            if (speed > 0.5 && speed < 10.5) {
+                speed = Sk.builtin.asnum$(Sk.builtin.round(Sk.builtin.assk$(speed)));
+            } else {
+                speed = 0;
+            }
+            this._speed = speed;
+            this._computed_speed = speed * 2;
+            return this.addUpdate(undefined, false, {speed:this._computed_speed});
         };
         proto.$speed.minArgs = 0;
         proto.$speed.co_varnames = ["speed"];
