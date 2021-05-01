@@ -161,17 +161,17 @@ Misc
     Slot("__new__", "tp$new", "new"),
     Slot("__init__", "tp$init", "init"),
     Slot("__str__", "tp$print", "print"),
-    Slot("__repr__", "tp$repr", "repr",
+    Slot("__repr__", "$r", "repr",
          opcode="UNARY_CONVERT"),
 
-    Slot("__hash__", "tp$hash", "hash"),
+    Slot("__hash__", "tp$hash", "hash"), # can be None or a function
     Slot("__call__", "tp$call", "call"),
 
     # Note: In CPython, if tp$getattro exists, tp$getattr is never called.
-    Slot("__getattribute__", "tp$getattro", "getattro"),
-    Slot("__getattr__", "tp$getattro", "getattro"),
-    Slot("__setattr__", "tp$setattro", "setattro"),
-    Slot("__delattr__", "tp$setattro", "setattro"),
+    Slot("__getattribute__", "tp$getattr", "getattr"),
+    Slot("__getattr__", "tp$getattr", "getattr"),
+    Slot("__setattr__", "tp$setattr", "setattr"),
+    Slot("__delattr__", "tp$setattr", "setattr"),
 
     # for Py_TPFLAGS_HAVE_ITER:
     Slot("__iter__", "tp$iter", "unary"),
@@ -182,21 +182,23 @@ Misc
     Slot("__get__", "tp$descr_get", "descr_get"),
     Slot("__set__", "tp$descr_set", "descr_set"),
     Slot("__delete__", "tp$descr_set", "descr_delete"),
+    # Skulpt currently has no support for this slot
     Slot("__del__", "tp$del", "destructor"),
 
     # all typically done by __richcompare__
     Slot("__cmp$_", "tp$compare", "cmp",
          python_version="2"),  # "tp$reserved" in Python 3
-    Slot("__lt__", "tp$richcompare", "richcmpfunc"),
-    Slot("__le__", "tp$richcompare", "richcmpfunc"),
-    Slot("__eq__", "tp$richcompare", "richcmpfunc"),
-    Slot("__ne__", "tp$richcompare", "richcmpfunc"),
-    Slot("__gt__", "tp$richcompare", "richcmpfunc"),
-    Slot("__ge__", "tp$richcompare", "richcmpfunc"),
+    Slot("__lt__", "ob$lt", "richcmpfunc"),
+    Slot("__le__", "ob$le", "richcmpfunc"),
+    Slot("__eq__", "ob$eq", "richcmpfunc"),
+    Slot("__ne__", "ob$ne", "richcmpfunc"),
+    Slot("__gt__", "ob$gt", "richcmpfunc"),
+    Slot("__ge__", "ob$ge", "richcmpfunc"),
 
-    Slot("__richcompare__", "tp$richcompare", "richcmpfunc"),
+    # number 
+    # to indicate a number set tp$as_number = true
+    # methods:
 
-    # number methods:
     Slot("__add__", "nb$add", "binary_nb", index=0,
          opcode="BINARY_ADD"),
     Slot("__radd__", "nb$add", "binary_nb", index=1),
@@ -204,48 +206,50 @@ Misc
          opcode="BINARY_SUBTRACT"),
     Slot("__rsub__", "nb$subtract", "binary_nb", index=1),
     Slot("__mul__", "nb$multiply", "binary_nb", index=0),
-    Slot("__rmul__", "nb$multiply", "binary_nb", index=1),
+    Slot("__rmul__", "nb$reflected_multiply", "binary_nb", index=1),
     Slot("__div__", "nb$divide", "binary_nb", index=0,
          opcode="BINARY_DIVIDE"),
-    Slot("__rdiv__", "nb$divide", "binary_nb", index=1),
+    Slot("__rdiv__", "nb$reflected_divide", "binary_nb", index=1),
     Slot("__mod__", "nb$remainder", "binary_nb", index=0,
          opcode="BINARY_MODULO"),
-    Slot("__rmod__", "nb$remainder", "binary_nb", index=1),
+    Slot("__rmod__", "nb$reflected_remainder", "binary_nb", index=1),
     Slot("__divmod__", "nb$divmod", "binary_nb", index=0),
-    Slot("__rdivmod__", "nb$divmod", "binary_nb", index=1),
+    Slot("__rdivmod__", "nb$reflected_divmod", "binary_nb", index=1),
     Slot("__lshift__", "nb$lshift", "binary_nb", index=0,
          opcode="BINARY_LSHIFT"),
-    Slot("__rlshift__", "nb$lshift", "binary_nb", index=1),
+    Slot("__rlshift__", "nb$reflected_lshift", "binary_nb", index=1),
     Slot("__rshift__", "nb$rshift", "binary_nb", index=0,
          opcode="BINARY_RSHIFT"),
-    Slot("__rrshift__", "nb$rshift", "binary_nb", index=1),
+    Slot("__rrshift__", "nb$reflected_rshift", "binary_nb", index=1),
     Slot("__and__", "nb$and", "binary_nb", index=0,
          opcode="BINARY_AND"),
-    Slot("__rand__", "nb$and", "binary_nb", index=1),
+    Slot("__rand__", "nb$reflected_and", "binary_nb", index=1),
     Slot("__xor__", "nb$xor", "binary_nb", index=0,
          opcode="BINARY_XOR"),
-    Slot("__rxor__", "nb$xor", "binary_nb", index=1),
+    Slot("__rxor__", "nb$reflected_xor", "binary_nb", index=1),
     Slot("__or__", "nb$or", "binary_nb", index=0,
          opcode="BINARY_OR"),
-    Slot("__ror__", "nb$or", "binary_nb", index=1),
+    Slot("__ror__", "nb$reflected_or", "binary_nb", index=1),
     # needs Py_TPFLAGS_HAVE_CLASS:
     Slot("__floordiv__", "nb$floor_divide", "binary_nb", index=0,
          opcode="BINARY_FLOOR_DIVIDE"),
-    Slot("__rfloordiv__", "nb$floor_divide", "binary_nb", index=1),
-    Slot("__truediv__", "nb$true_divide", "binary_nb", index=0,
+    Slot("__rfloordiv__", "nb$reflected_floor_divide", "binary_nb", index=1),
+    # in skulpt we reuse the nb$divide slot - Cpython has an nb$true_divide slot
+    Slot("__truediv__", "nb$divide", "binary_nb", index=0,
          opcode="BINARY_TRUE_DIVIDE"),
-    Slot("__rtruediv__", "nb$true_divide", "binary_nb", index=1),
+    Slot("__rtruediv__", "nb$reflected_divide", "binary_nb", index=1),
 
     Slot("__pow__", "nb$power", "ternary",
          opcode="BINARY_POWER"),
-    Slot("__rpow__", "nb$power", "ternary"),  # needs wrap_tenary_nb
+    Slot("__rpow__", "nb$reflected_power", "ternary"),  # needs wrap_tenary_nb
 
     Slot("__neg__", "nb$negative", "unary",
          opcode="UNARY_NEGATIVE"),
     Slot("__pos__", "nb$positive", "unary",
          opcode="UNARY_POSITIVE"),
-    Slot("__abs__", "nb$absolute", "unary"),
-    Slot("__nonzero__", "nb$nonzero", "inquiry"),  # inverse of UNARY_NOT opcode
+    Slot("__abs__", "nb$abs", "unary"),
+    Slot("__nonzero__", "nb$bool", "inquiry"),  # inverse of UNARY_NOT opcode -  python 2 only
+    Slot("__bool__", "nb$bool", "inquiry"),  # inverse of UNARY_NOT opcode - python 3 only
     Slot("__invert__", "nb$invert", "unary",
          opcode="UNARY_INVERT"),
     Slot("__coerce__", "nb$coerce", "coercion"),  # not needed
@@ -289,15 +293,17 @@ Misc
 
     # mapping
     # __getitem__: Python first tries mp$subscript, then sq$item
-    # __len__: Python first tries sq$length, then mp$length
+    # __len__: Skulpt uses sq$length
     # __delitem__: Reuses __setitem__ slot.
+    # to indicate a mapping set tp$as_sequence_or_mapping = true
     Slot("__getitem__", "mp$subscript", "binary",
          opcode="BINARY_SUBSCR"),
     Slot("__delitem__", "mp$ass_subscript", "objobjargproc", index=0),
     Slot("__setitem__", "mp$ass_subscript", "objobjargproc", index=1),
-    Slot("__len__", "mp$length", "len"),
+    Slot("__len__", "sq$length", "len"),
 
     # sequence
+    # to indicate a sequence set tp$as_sequence_or_mapping = true
     Slot("__contains__", "sq$contains", "objobjproc"),
 
     # These sequence methods are duplicates of number or mapping methods.
@@ -314,12 +320,14 @@ Misc
          opcode="INPLACE_ADD"),
     Slot("__imul__", "sq$inplace_repeat", "indexargfunc",
          opcode="INPLACE_MUL"),
-    Slot("__getitem__", "sq$item", "sq$item",
+    # unlike Cpython Skulpt reuses the mapping slots     
+    Slot("__getitem__", "mp$subscript", "sq$item",
          opcode="BINARY_SUBSCR"),
-    Slot("__setitem__", "sq$ass_slice", "sq$ass_item"),
-    Slot("__delitem__", "sq$ass_item", "sq$delitem"),
+    Slot("__setitem__", "mp$ass_subscript", ""),
+    Slot("__delitem__", "mp$ass_subscript", "sq$delitem"),
 
     # slices are passed as explicit slice objects to mp$subscript.
+    # these are not used in skulpt and are depreciated in python 3
     Slot("__getslice__", "sq$slice", "sq$slice"),
     Slot("__setslice__", "sq$ass_slice", "ssizessizeobjarg"),
     Slot("__delslice__", "sq$ass_slice", "delslice"),

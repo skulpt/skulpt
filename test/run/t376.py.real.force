@@ -1,1 +1,1 @@
-EXCEPTION: AttributeError: NoLen instance has no attribute '__len__' on line 21
+EXCEPTION: TypeError: object of type 'NoLen' has no len() on line 21

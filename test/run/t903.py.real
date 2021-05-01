@@ -1,10 +1,10 @@
 TypeError("'int' object is not iterable")
-TypeError('elements() takes exactly 1 arguments (2 given)')
-TypeError('most_common() takes at most 2 arguments (3 given)')
-TypeError('an integer is required')
+TypeError('elements() takes no arguments (1 given)')
+TypeError('most_common() expected at most 1 arguments (2 given)')
+TypeError("'str' object cannot be interpreted as an integer")
 []
 [('l', 2), ('h', 1), ('e', 1), ('o', 1)]
-TypeError('update() takes at most 2 arguments (3 given)')
+TypeError('update() takes at most 1 arguments (2 given)')
 TypeError("'int' object is not iterable")
-TypeError('subtract() takes at most 2 arguments (3 given)')
+TypeError('subtract() takes at most 1 arguments (2 given)')
 TypeError("'float' object is not iterable")

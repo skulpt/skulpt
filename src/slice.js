@@ -1,187 +1,228 @@
+/** @typedef {Sk.builtin.object} */ var pyObject;
+
 /**
  * @constructor
- * @param {Object} start
- * @param {Object=} stop
- * @param {Object=} step
+ * @extends {Sk.builtin.object}
+ * @param {pyObject} start
+ * @param {pyObject=} stop
+ * @param {pyObject=} step
  */
-Sk.builtin.slice = function slice (start, stop, step) {
-    Sk.builtin.pyCheckArgsLen("slice", arguments.length, 1, 3, false, false);
-
-    if ((step !== undefined) && Sk.misceval.isIndex(step) && (Sk.misceval.asIndex(step) === 0)) {
-        throw new Sk.builtin.ValueError("slice step cannot be zero");
-    }
-
-    if (!(this instanceof Sk.builtin.slice)) {
-        return new Sk.builtin.slice(start, stop, step);
-    }
-
-
-    if (stop === undefined && step === undefined) {
-        stop = start;
-        start = Sk.builtin.none.none$;
-    }
-    if (stop === undefined) {
-        stop = Sk.builtin.none.none$;
-    }
-    if (step === undefined) {
-        step = Sk.builtin.none.none$;
-    }
-    this.start = start;
-    this.stop = stop;
-    this.step = step;
-
-    this.__class__ = Sk.builtin.slice;
-
-    this["$d"] = new Sk.builtin.dict([Sk.builtin.slice$start, this.start,
-                                      Sk.builtin.slice$stop, this.stop,
-                                      Sk.builtin.slice$step, this.step]);
-
-    return this;
-};
-
-Sk.abstr.setUpInheritance("slice", Sk.builtin.slice, Sk.builtin.object);
-
-Sk.builtin.slice.prototype["$r"] = function () {
-    var a = Sk.builtin.repr(this.start).v;
-    var b = Sk.builtin.repr(this.stop).v;
-    var c = Sk.builtin.repr(this.step).v;
-    return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
-};
-
-Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
-    // w not a slice
-    var t1, t2;
-    if (!w.__class__ || w.__class__ != Sk.builtin.slice) {
-        // shortcuts for eq/not
-        if (op === "Eq") {
-            return false;
+Sk.builtin.slice = Sk.abstr.buildNativeClass("slice", {
+    constructor: function slice(start, stop, step) {
+        if (stop === undefined && step === undefined) {
+            stop = start;
+            start = Sk.builtin.none.none$;
         }
-        if (op === "NotEq") {
-            return true;
+        if (stop === undefined) {
+            stop = Sk.builtin.none.none$;
         }
-
-        if (Sk.__future__.python3) {
-            return Sk.builtin.NotImplemented.NotImplemented$;
+        if (step === undefined) {
+            step = Sk.builtin.none.none$;
         }
-        // todo; other types should have an arbitrary order
-        return false;
-    }
+        this.start = start;
+        this.stop = stop;
+        this.step = step;
+    },
+    slots: /**@lends {Sk.builtin.slice.prototype} */ {
+        tp$getattr: Sk.generic.getAttr,
+        tp$doc: "slice(stop)\nslice(start, stop[, step])\n\nCreate a slice object.  This is used for extended slicing (e.g. a[0:10:2]).",
+        tp$hash: Sk.builtin.none.none$,
+        tp$new(args, kwargs) {
+            Sk.abstr.checkNoKwargs("slice", kwargs);
+            Sk.abstr.checkArgsLen("slice", args, 1, 3);
+            return new Sk.builtin.slice(...args);
+        },
+        $r() {
+            const a = Sk.misceval.objectRepr(this.start);
+            const b = Sk.misceval.objectRepr(this.stop);
+            const c = Sk.misceval.objectRepr(this.step);
+            return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
+        },
+        tp$richcompare(w, op) {
+            // w not a slice - it's not subclassable so no need to use instanceof here
+            if (w.ob$type !== Sk.builtin.slice) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            // This is how CPython does it
+            const t1 = new Sk.builtin.tuple([this.start, this.stop, this.step]);
+            const t2 = new Sk.builtin.tuple([w.start, w.stop, w.step]);
+            return t1.tp$richcompare(t2, op);
+        },
+    },
+    getsets: /**@lends {Sk.builtin.slice.prototype} */ {
+        start: {
+            $get() {
+                return this.start;
+            },
+        },
+        step: {
+            $get() {
+                return this.step;
+            },
+        },
+        stop: {
+            $get() {
+                return this.stop;
+            },
+        },
+    },
+    methods: /**@lends {Sk.builtin.slice.prototype} */ {
+        indices: {
+            $meth: function indices(length) {
+                length = Sk.misceval.asIndexSized(length, Sk.builtin.OverflowError); // let's not support lengths larger than this.
+                // don't support large lengths here which seems fair. 
+                if (length < 0) {
+                    throw new Sk.builtin.TypeError("length should not be negative");
+                }
+                const {start, stop, step} = this.slice$indices(length);
+                return new Sk.builtin.tuple([new Sk.builtin.int_(start), new Sk.builtin.int_(stop), new Sk.builtin.int_(step)]);
+            },
+            $doc:
+                "S.indices(len) -> (start, stop, stride)\n\nAssuming a sequence of length len, calculate the start and stop\nindices, and the stride length of the extended slice described by\nS. Out of bounds indices are clipped in a manner consistent with the\nhandling of normal slices.",
+            $textsig: null,
+            $flags: { OneArg: true },
+        },
+    },
+    proto: /**@lends {Sk.builtin.slice.prototype} */ {
+        slice$as_indices (sized) {
+            let start, stop, step;
+            const msg = "slice indices must be integers or None or have an __index__ method";
+            let getIndex;
+            if (sized) {
+                getIndex = (idx) => Sk.misceval.asIndexSized(idx, null, msg);
+            } else {
+                getIndex = (idx) => Sk.misceval.asIndexOrThrow(idx, msg);
+            }
+            if (Sk.builtin.checkNone(this.step)) {
+                step = 1;
+            } else {
+                step = getIndex(this.step);
+                if (step === 0) {
+                    throw new Sk.builtin.ValueError("slice step cannot be zero");
+                }
+            }
+            if (Sk.builtin.checkNone(this.start)) {
+                start = null;
+            } else {
+                start = getIndex(this.start);
+            }
+            if (Sk.builtin.checkNone(this.stop)) {
+                stop = null;
+            } else {
+                stop = getIndex(this.stop);
+            }
+            return {start: start, stop: stop, step: step};
+        },
+        $wrt(length, start, stop, step, sized) {
+            let idxFromNeg;
+            if (sized) {
+                idxFromNeg = (idx) => JSBI.__isBigInt(idx) ? JSBI.add(idx, JSBI.BigInt(length)) : idx + length;
+            } else {
+                idxFromNeg = (idx) => idx + length;
+            }
 
-    // This is how CPython does it
-    t1 = new Sk.builtin.tuple([this.start, this.stop, this.step]);
-    t2 = new Sk.builtin.tuple([w.start, w.stop, w.step]);
+            if (step > 0) {
+                if (start === null) {
+                    start = 0;
+                } else if (start < 0) {
+                    start = idxFromNeg(start);
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (stop === null) {
+                    stop = length;
+                } else if (stop > length) {
+                    stop = length;
+                } else if (stop < 0) {
+                    stop = idxFromNeg(stop);
+                }
+            } else {
+                if (start === null) {
+                    start = length - 1;
+                } else if (start >= length) {
+                    start = length - 1;
+                } else if (start < 0) {
+                    start = idxFromNeg(start);
+                }
+                if (stop === null) {
+                    stop = -1;
+                } else if (stop < 0) {
+                    stop = idxFromNeg(stop);
+                    if (stop < 0) {
+                        stop = -1;
+                    }
+                }
+            }
 
-    return t1.tp$richcompare(t2, op);
-};
+            return {start: start, stop: stop, step: step};
+        },
+        slice$indices(length, sized) {
+            let {start, stop, step} = this.slice$as_indices(true, sized);
+            return this.$wrt(length, start, stop, step, sized);
+        },
+        /**
+         * used by objects like str, list, tuple that can return a slice
+         * @param {number} len
+         * @param {Function} f
+         */
+        sssiter$(len, f) {
+            let {start, stop, step} = this.slice$indices(len, true);
+            if (step > 0) {
+                for (let i = start; i < stop; i += step) {
+                    f(i);
+                }
+            } else {
+                for (let i = start; i > stop; i += step) {
+                    f(i);
+                }
+            }
+        },
+    },
+    flags: {
+        sk$acceptable_as_base_class: false,
+    },
+});
 
-/* Internal indices function */
-Sk.builtin.slice.prototype.slice_indices_ = function (length) {
-    var start, stop, step;
-
-    if (Sk.builtin.checkNone(this.start)) {
-        start = null;
-    } else if (Sk.misceval.isIndex(this.start)) {
-        start = Sk.misceval.asIndex(this.start);
+/**
+ * 
+ * @param {*} pyObj 
+ * @param {*} start 
+ * @param {*} end 
+ * 
+ * @private
+ * 
+ * @description
+ * helper function for methods that adjust their start, end arguments with respect to
+ * a python sequence type object
+ */
+Sk.builtin.slice.startEnd$wrt = function (pyObj, start, end) {
+    const len = pyObj.sq$length();
+    const msg = "slice indices must be integers or have an __index__ method";
+    if (start === undefined || Sk.builtin.checkNone(start)) {
+        start = 0;
     } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
-    }
-
-    if (Sk.builtin.checkNone(this.stop)) {
-        stop = null;
-    } else if (Sk.misceval.isIndex(this.stop)) {
-        stop = Sk.misceval.asIndex(this.stop);
-    } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
-    }
-
-    if (Sk.builtin.checkNone(this.step)) {
-        step = null;
-    } else if (Sk.misceval.isIndex(this.step)) {
-        step = Sk.misceval.asIndex(this.step);
-    } else {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
-    }
-
-    // this seems ugly, better way?
-    if (step === null) {
-        step = 1;
-    }
-    if (step > 0) {
-        if (start === null) {
-            start = 0;
-        }
-        if (stop === null) {
-            stop = length;
-        }
-        if (stop > length) {
-            stop = length;
-        }
+        start = Sk.misceval.asIndexSized(start, null, msg);
         if (start < 0) {
-            start = length + start;
+            start = start + len;
             if (start < 0) {
                 start = 0;
             }
         }
-        if (stop < 0) {
-            stop = length + stop;
-        }
+    }
+
+    if (end === undefined || Sk.builtin.checkNone(end)) {
+        end = len;
     } else {
-        if (start === null) {
-            start = length - 1;
-        }
-        if (start >= length) {
-            start = length - 1;
-        }
-        if (stop === null) {
-            stop = -1;
-        } else if (stop < 0) {
-            stop = length + stop;
-            if (stop < 0) {
-                stop = -1;
+        end = Sk.misceval.asIndexSized(end, null, msg);
+        if (end < 0) {
+            end = end + len;
+            if (end < 0) {
+                end = 0;
             }
-        }
-        if (start < 0) {
-            start = length + start;
-        }
-    }
-
-    return [start, stop, step];
-};
-
-Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, length) {
-    Sk.builtin.pyCheckArgsLen("indices", arguments.length, 2, 2, false, false);
-
-    length = Sk.builtin.asnum$(length);
-    var sss = self.slice_indices_(length);
-
-    return new Sk.builtin.tuple([
-        new Sk.builtin.int_(sss[0]), 
-        new Sk.builtin.int_(sss[1]), 
-        new Sk.builtin.int_(sss[2])
-    ]);
-});
-
-/**
- * used by objects like str, list, tuple that can return a slice
- * @param {number} len
- * @param {Function} f
- */
-Sk.builtin.slice.prototype.sssiter$ = function (len, f) {
-    const sss = this.slice_indices_(len);
-    const start = sss[0];
-    const stop = sss[1];
-    const step = sss[2];
-    if (step > 0) {
-        for (let i = start; i < stop; i += step) {
-            f(i);
-        }
-    } else {
-        for (let i = start; i > stop; i += step) {
-            f(i);
+        } else if (end > len) {
+            end = len;
         }
     }
+    return { start: start, end: end };
 };
-
-Sk.builtin.slice$start = new Sk.builtin.str("start");
-Sk.builtin.slice$stop = new Sk.builtin.str("stop");
-Sk.builtin.slice$step = new Sk.builtin.str("step");
