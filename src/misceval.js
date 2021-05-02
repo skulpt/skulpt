@@ -25,26 +25,24 @@ Sk.misceval = {};
  * Hi kids lets make a suspension...
  * 
  * @constructor
- * @param {function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
+ * @param {function(?)=} resume A function to be called on resume. You should handle resuming the child in this function which may throw a suspension.
  * @param {Object=} child A child suspension. 'optional' will be copied from here if supplied.
- * @param {Object=} data Data attached to this suspension. Will be copied from child if not supplied.
+ * @param {{type: string, optional: boolean, promise?: Promise}=} data Data attached to this suspension. Will be copied from child if not supplied.
+ * @param {Object=} locals Each attribute in locals will be attached to this suspension. Not copied from child.
  */
-Sk.misceval.Suspension = function Suspension(resume, child=null, data) {
-    this.$isSuspension = true;
-    this.resume = resume || (() => {});
-    this.child = child;
-    this.optional = child != null && child.optional;
-    if (data === undefined && child != null) {
-        this.data = child.data;
-    } else {
-        this.data = data || {};
+Sk.misceval.Suspension = class Suspension {
+    constructor(resume, child = null, data, locals) {
+        this.$isSuspension = true;
+        this.resume = resume || (() => { });
+        this.child = child;
+        this.optional = child ? child.optional : data ? data.optional : false;
+        this.data = data || (child && child.data) || {};
+        locals && Object.assign(this, locals);
     }
-};
-
-Sk.misceval.Suspension.prototype.suspend = function () {
-    throw this;
-};
-
+    suspend() {
+        throw this;
+    }
+}
 Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
 /**
@@ -1210,12 +1208,10 @@ Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
  * @constructor
  * @param {*=}  brValue
  */
-Sk.misceval.Break = function (brValue) {
-    if (!(this instanceof Sk.misceval.Break)) {
-        return new Sk.misceval.Break(brValue);
+Sk.misceval.Break = class Break {
+    constructor(brValue) {
+        this.brValue = brValue;
     }
-
-    this.brValue = brValue;
 };
 Sk.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
 
