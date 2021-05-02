@@ -16,7 +16,7 @@ Milestones on the way to shipping this:
 
 ## Requirements
 
-* npm & Gem. `apt-get install` or do what you do to get these fro your system.
+* npm & Gem. `apt-get install` or do what you do to get these for your system.
 * Jekyll.  `gem install github-pages` should get you what you need. Maybe also `gem install bundle`
 * grunt. For SCSS changes only. `npm install -g grunt`.
 

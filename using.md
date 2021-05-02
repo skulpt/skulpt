@@ -8,7 +8,7 @@ title: "Using Skulpt on your site"
 
     <p>Getting Started with Skulpt is easy!</p>
     <ul>
-        <li><a href="#embed">Embed skulpt</a> into your exsiting webpage or blog</li>
+        <li><a href="#embed">Embed skulpt</a> into your existing webpage or blog</li>
         <li><a href="#html">Add skulpt directly to your HTML</a> for a custom integration</li>
         <li> For even more control, teach Skulpt to <a href="#modules">import your own custom modules</a></li>
     </ul>
