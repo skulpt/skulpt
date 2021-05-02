@@ -69,7 +69,8 @@ following gist shows how to include one of them in a page.
 {% gist 20bd9105f11f2a164fc0 %}
 
 <h3>Customizing modules after import</h3>
-<p>If you want to customize how a module behaves you can use the ``onAfterImport`` hook.  Here is a gist of how the trinket guys do it.</p>
+
+If you want to customize how a module behaves you can use the `onAfterImport` hook.  Here is a gist of how the trinket guys do it.
 
 {% gist 8a5a833ee2a6a7d2c7ba %}
 
