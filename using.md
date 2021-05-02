@@ -8,7 +8,7 @@ title: "Using Skulpt on your site"
 
     <p>Getting Started with Skulpt is easy!</p>
     <ul>
-        <li><a href="#embed">Embed skulpt</a> into your exsiting webpage or blog</li>
+        <li><a href="#embed">Embed skulpt</a> into your existing webpage or blog</li>
         <li><a href="#html">Add skulpt directly to your HTML</a> for a custom integration</li>
         <li> For even more control, teach Skulpt to <a href="#modules">import your own custom modules</a></li>
     </ul>
@@ -69,7 +69,8 @@ following gist shows how to include one of them in a page.
 {% gist 20bd9105f11f2a164fc0 %}
 
 <h3>Customizing modules after import</h3>
-<p>If you want to customize how a module behaves you can use the ``onAfterImport`` hook.  Here is a gist of how the trinket guys do it.</p>
+
+If you want to customize how a module behaves you can use the `onAfterImport` hook.  Here is a gist of how the trinket guys do it.
 
 {% gist 8a5a833ee2a6a7d2c7ba %}
 
