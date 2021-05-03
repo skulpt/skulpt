@@ -54,7 +54,7 @@ function functools_mod(functools) {
     /********** lru_cache *************/
     const str_cached_params = new Sk.builtin.str("cache_parameters");
 
-    function _lru_cache(maxsize, typed = Sk.builtin.bool.$false) {
+    function _lru_cache(maxsize, typed = Sk.builtin.bool.false$) {
         if (Sk.builtin.checkInt(maxsize)) {
             maxsize = Sk.builtin.asnum$(maxsize);
             if (maxsize < 0) {
@@ -94,7 +94,7 @@ function functools_mod(functools) {
                 wrapper = infinite_lru_cache_wrapper;
                 /* use this only to initialize lru_cache_object attribute maxsize */
                 maxsize = -1;
-            } else if (Sk.misceval.checkIndex(maxsize)) {
+            } else if (Sk.misceval.isIndex(maxsize)) {
                 maxsize = Sk.misceval.asIndexSized(maxsize, Sk.builtin.OverflowError);
                 if (maxsize < 0) {
                     maxsize = 0;
@@ -108,9 +108,8 @@ function functools_mod(functools) {
                 throw new Sk.builtin.TypeError("maxsize should be integer or None");
             }
             this.root = {};
-            this.root.prev = null;
-            this.root.next = null;
-            // ????
+            this.root.prev = this.root.next = this.root;
+
             this.wrapper = wrapper;
             this.maxsize = maxsize;
             this.typed = typed;
@@ -137,18 +136,18 @@ function functools_mod(functools) {
             tp$descr_get() {},
             tp$doc:
                 "Create a cached callable that wraps another function.\n\
-            \n\
-            user_function:      the function being cached\n\
-            \n\
-            maxsize:  0         for no caching\n\
-                      None      for unlimited cache size\n\
-                      n         for a bounded cache\n\
-            \n\
-            typed:    False     cache f(3) and f(3.0) as identical calls\n\
-                      True      cache f(3) and f(3.0) as distinct calls\n\
-            \n\
-            cache_info_type:    namedtuple class with the fields:\n\
-                                    hits misses currsize maxsize\n",
+\n\
+user_function:      the function being cached\n\
+\n\
+maxsize:  0         for no caching\n\
+          None      for unlimited cache size\n\
+          n         for a bounded cache\n\
+\n\
+typed:    False     cache f(3) and f(3.0) as identical calls\n\
+          True      cache f(3) and f(3.0) as distinct calls\n\
+\n\
+cache_info_type:    namedtuple class with the fields:\n\
+                        hits misses currsize maxsize\n",
         },
         methods: {
             cache_info: {
@@ -170,6 +169,7 @@ function functools_mod(functools) {
                 $meth() {
                     this.hits = this.misses = 0;
                     this.root = {};
+                    this.root.next = this.root.prev = this.root;
                     return Sk.misceval.callsimArray(this.cache.tp$getattr(new Sk.builtin.str("clear")));
                 },
                 $flags: { NoArgs: true },
@@ -206,24 +206,95 @@ function functools_mod(functools) {
         return Sk.misceval.callsimOrSuspendArray(this.func, args, kws);
     }
 
-    function bounded_lru_cache_wrapper(args, kws) {}
+    function bounded_lru_cache_wrapper(args, kws) {
+        const key = _make_key(args, kws, this.typed);
+        const link = this.cache.mp$lookup(key);
+        if (link !== undefined) {
+            // # Move the link to the front of the circular queue
+            const { result } = link;
+            lru_cache_extract_link(link);
+            lru_cache_append_link(this, link);
+            this.hits++;
+            return result;
+        }
+        this.misses++;
+
+        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(this.func, args, kws), (result) => {
+            const testresult = this.cache.mp$lookup(key);
+            if (testresult !== undefined) {
+                /* Getting here means that this same key was added to the cache
+                during the PyObject_Call().  Since the link update is already
+                done, we need only return the computed result. */
+                return result;
+            }
+
+            /* This is the normal case.  The new key wasn't found before
+            user function call and it is still not there.  So we
+            proceed normally and update the cache with the new result. */
+            if (this.cache.get$size() < this.maxsize || this.root.next === this.root) {
+                /* Cache is not full, so put the result in a new link */
+                const link = { key, result };
+                this.cache.mp$ass_subscript(key, link);
+                lru_cache_append_link(this, link);
+                return result;
+            }
+            /* Extract the oldest item. */
+            const link = this.root.next;
+            lru_cache_extract_link(link);
+            /* Remove it from the cache.
+            The cache dict holds one reference to the link.
+            We created one other reference when the link was created.
+            The linked list only has borrowed references. */
+            const popresult = this.cache.pop$item(link.key);
+            if (popresult === undefined) {
+                /* An error arose while trying to remove the oldest key (the one
+                being evicted) from the cache.  We restore the link to its
+                original position as the oldest link.  Then we allow the
+                error propagate upward; treating it the same as an error
+                arising in the user function. */
+                lru_cache_prepend_link(this, link);
+                throw new Sk.builtin.RuntimeError("cached item removed unexpectedly");
+            }
+            link.key = key;
+            link.result = result;
+            this.cache.mp$ass_subscript(key, link);
+            lru_cache_append_link(this, link);
+            return result;
+        });
+    }
+
+    function lru_cache_extract_link(link) {
+        const {prev: link_prev, next: link_next} = link;
+        link_prev.next = link.next;
+        link_next.prev = link.prev;
+    }
+
+    function lru_cache_append_link(self, link) {
+        const root = self.root;
+        const last = root.prev;
+        last.next = root.prev = link;
+        link.prev = last;
+        link.next = root;
+    }
+
+    function lru_cache_prepend_link(self, link) {
+        const root = self.root;
+        const first = root.next;
+        first.prev = root.next = link;
+        link.prev = root;
+        link.next = first;
+    }
+
 
     const _HachedSeq = Sk.abstr.buildNativeClass("_HachedSeq", {
         base: Sk.builtin.list,
         constructor: function _HachedSeq(key_array) {
             this.$hashval = Sk.abstr.objectHash(new Sk.builtin.tuple(key_array));
-            Sk.builtin.list.call(key_array);
+            Sk.builtin.list.call(this, key_array);
         },
         slots: {
             tp$hash() {
                 return this.$hashval;
-            },
-        },
-        getsets: {
-            hashvalue: {
-                $get() {
-                    return this.$hashval;
-                },
             },
         },
     });
@@ -587,6 +658,26 @@ function functools_mod(functools) {
             $flags: { OneArg: true },
             $doc: 'Simple lightweight unbounded cache.  Sometimes called "memoize".',
             $textsig: "($module, user_function, /)",
+        },
+        lru_cache: {
+            $meth: _lru_cache,
+            $flags: { NamedArgs: ["maxsize", "typed"], Defaults: [new Sk.builtin.int_(128), Sk.builtin.bool.false$] },
+            $doc: `Least-recently-used cache decorator.
+
+If *maxsize* is set to None, the LRU features are disabled and the cache
+can grow without bound.
+
+If *typed* is True, arguments of different types will be cached separately.
+For example, f(3.0) and f(3) will be treated as distinct calls with
+distinct results.
+
+Arguments to the cached function must be hashable.
+
+View the cache statistics named tuple (hits, misses, maxsize, currsize)
+with f.cache_info().  Clear the cache and statistics with f.cache_clear().
+Access the underlying function with f.__wrapped__.
+
+See:  http://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)`,
         },
         cmp_to_key: {
             $meth: function cmp_to_key(mycmp) {
