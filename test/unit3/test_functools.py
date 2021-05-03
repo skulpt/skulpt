@@ -1163,6 +1163,13 @@ class TestTotalOrdering(unittest.TestCase):
 #     def __eq__(self, other):
 #         return self.value == other.value
 
+def ignore_skulpt(f):
+    @functools.wraps(f)
+    def wrapper(self, *args, **kws):
+        if (self.verbosity > 1):
+            print(f.__name__, 'was ignored by skulpt')
+    return wrapper
+
 class TestCache:
     # This tests that the pass-through is working as designed.
     # The underlying functionality is tested in TestLRU.
@@ -1180,8 +1187,6 @@ class TestCache:
         fib.cache_clear()
         self.assertEqual(fib.cache_info(),
             self.module._CacheInfo(hits=0, misses=0, maxsize=None, currsize=0))
-
-
 
 class TestLRU:
 
@@ -1226,9 +1231,10 @@ class TestLRU:
         self.assertEqual(currsize, 1)
 
         # test size zero (which means "never-cache")
+        global f_cnt
         @self.module.lru_cache(0)
         def f():
-            nonlocal f_cnt
+            global f_cnt
             f_cnt += 1
             return 20
         self.assertEqual(f.cache_info().maxsize, 0)
@@ -1244,7 +1250,7 @@ class TestLRU:
         # test size one
         @self.module.lru_cache(1)
         def f():
-            nonlocal f_cnt
+            global f_cnt
             f_cnt += 1
             return 20
         self.assertEqual(f.cache_info().maxsize, 1)
@@ -1260,7 +1266,7 @@ class TestLRU:
         # test size two
         @self.module.lru_cache(2)
         def f(x):
-            nonlocal f_cnt
+            global f_cnt
             f_cnt += 1
             return x*10
         self.assertEqual(f.cache_info().maxsize, 2)
@@ -1293,11 +1299,12 @@ class TestLRU:
         # This cause the cache to have orphan links not referenced
         # by the cache dictionary.
 
+        global once
         once = True                 # Modified by f(x) below
 
         @self.module.lru_cache(maxsize=10)
         def f(x):
-            nonlocal once
+            global once
             rv = f'.{x}.'
             if x == 20 and once:
                 once = False
@@ -1327,6 +1334,7 @@ class TestLRU:
         f(0, **{})
         self.assertEqual(f.cache_info().hits, 1)
 
+    @ignore_skulpt
     def test_lru_hash_only_once(self):
         # To protect against weird reentrancy bugs and to improve
         # efficiency when faced with slow __hash__ methods, the
@@ -1366,13 +1374,14 @@ class TestLRU:
         # Test to make sure the LRU cache code isn't thrown-off by
         # caching the built-in len() function.  Since len() can be
         # cached, we shouldn't use it inside the lru code itself.
-        old_len = builtins.len
+        global len
+        old_len = len
         try:
-            builtins.len = self.module.lru_cache(4)(len)
+            len = self.module.lru_cache(4)(len)
             for i in [0, 0, 1, 2, 3, 3, 4, 5, 6, 1, 7, 2, 1]:
                 self.assertEqual(len('abcdefghijklmn'[:i]), i)
         finally:
-            builtins.len = old_len
+            len = old_len
 
     def test_lru_star_arg_handling(self):
         # Test regression that arose in ea064ff3c10f
@@ -1436,7 +1445,7 @@ class TestLRU:
             self.assertEqual(func(0), 'a')
             with self.assertRaises(IndexError) as cm:
                 func(15)
-            self.assertIsNone(cm.exception.__context__)
+            # self.assertIsNone(cm.exception.__context__)
             # Verify that the previous exception did not result in a cached entry
             with self.assertRaises(IndexError):
                 func(15)
@@ -1505,6 +1514,7 @@ class TestLRU:
         for attr in self.module.WRAPPER_ASSIGNMENTS:
             self.assertEqual(getattr(g, attr), getattr(f, attr))
 
+    @ignore_skulpt
     def test_lru_cache_threaded(self):
         n, m = 5, 11
         def orig(x, y):
@@ -1553,6 +1563,7 @@ class TestLRU:
         finally:
             sys.setswitchinterval(orig_si)
 
+    @ignore_skulpt
     def test_lru_cache_threaded2(self):
         # Simultaneous call with the same arguments
         n, m = 5, 7
@@ -1580,6 +1591,7 @@ class TestLRU:
                 pause.reset()
                 self.assertEqual(f.cache_info(), (0, (i+1)*n, m*n, i+1))
 
+    @ignore_skulpt
     def test_lru_cache_threaded3(self):
         @self.module.lru_cache(maxsize=2)
         def f(x):
@@ -1618,9 +1630,12 @@ class TestLRU:
                          DoubleEq(2))               # Verify the correct return value
 
     def test_lru_method(self):
+        debugger
+        global _self
+        _self = self
         class X(int):
             f_cnt = 0
-            @self.module.lru_cache(2)
+            @_self.module.lru_cache(2)
             def f(self, x):
                 self.f_cnt += 1
                 return x*10+self
@@ -1648,6 +1663,7 @@ class TestLRU:
         self.assertEqual(b.f.cache_info(), X.f.cache_info())
         self.assertEqual(c.f.cache_info(), X.f.cache_info())
 
+    @ignore_skulpt
     def test_pickle(self):
         cls = self.__class__
         for f in cls.cached_func[0], cls.cached_meth, cls.cached_staticmeth:
@@ -1664,7 +1680,7 @@ class TestLRU:
         funcs = (cls.cached_func[0], cls.cached_meth, cls.cached_staticmeth,
                  self.module.lru_cache(2)(part))
         for f in funcs:
-            with self.subTest(func=f):
+            # with self.subTest(func=f):
                 f_copy = copy.copy(f)
                 self.assertIs(f_copy, f)
 
@@ -1676,7 +1692,7 @@ class TestLRU:
         funcs = (cls.cached_func[0], cls.cached_meth, cls.cached_staticmeth,
                  self.module.lru_cache(2)(part))
         for f in funcs:
-            with self.subTest(func=f):
+            # with self.subTest(func=f):
                 f_copy = copy.deepcopy(f)
                 self.assertIs(f_copy, f)
 
@@ -1691,6 +1707,7 @@ class TestLRU:
             return 1
         self.assertEqual(f.cache_parameters(), {'maxsize': 1000, "typed": True})
 
+    @ignore_skulpt
     def test_lru_cache_weakrefable(self):
         @self.module.lru_cache
         def test_function(x):
@@ -1721,9 +1738,9 @@ class TestLRU:
             self.assertIsNone(ref())
 
 
-@py_functools.lru_cache()
-def py_cached_func(x, y):
-    return 3 * x + y
+# @py_functools.lru_cache()
+# def py_cached_func(x, y):
+#     return 3 * x + y
 
 @c_functools.lru_cache()
 def c_cached_func(x, y):
