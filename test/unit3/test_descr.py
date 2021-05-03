@@ -1186,10 +1186,10 @@ order (MRO) for bases """
         with self.assertRaises(TypeError):
             "a".__class__ = MyStr
 
-        # class MyBytes(bytes):
-        #     __slots__ = ()
-        # with self.assertRaises(TypeError):
-        #     b"a".__class__ = MyBytes
+        class MyBytes(bytes):
+            __slots__ = ()
+        with self.assertRaises(TypeError):
+            b"a".__class__ = MyBytes
 
         class MyTuple(tuple):
             __slots__ = ()
@@ -1201,130 +1201,130 @@ order (MRO) for bases """
         with self.assertRaises(TypeError):
             frozenset().__class__ = MyFrozenSet
 
-    # def test_slots(self):
-    #     # Testing __slots__...
-    #     class C0(object):
-    #         __slots__ = []
-    #     x = C0()
-    #     self.assertNotHasAttr(x, "__dict__")
-    #     self.assertNotHasAttr(x, "foo")
+    def test_slots(self):
+        # Testing __slots__...
+        class C0(object):
+            __slots__ = []
+        x = C0()
+        self.assertNotHasAttr(x, "__dict__")
+        self.assertNotHasAttr(x, "foo")
 
-    #     class C1(object):
-    #         __slots__ = ['a']
-    #     x = C1()
-    #     self.assertNotHasAttr(x, "__dict__")
-    #     self.assertNotHasAttr(x, "a")
-    #     x.a = 1
-    #     self.assertEqual(x.a, 1)
-    #     x.a = None
-    #     self.assertEqual(x.a, None)
-    #     del x.a
-    #     self.assertNotHasAttr(x, "a")
+        class C1(object):
+            __slots__ = ['a']
+        x = C1()
+        self.assertNotHasAttr(x, "__dict__")
+        self.assertNotHasAttr(x, "a")
+        x.a = 1
+        self.assertEqual(x.a, 1)
+        x.a = None
+        self.assertEqual(x.a, None)
+        del x.a
+        self.assertNotHasAttr(x, "a")
 
-    #     class C3(object):
-    #         __slots__ = ['a', 'b', 'c']
-    #     x = C3()
-    #     self.assertNotHasAttr(x, "__dict__")
-    #     self.assertNotHasAttr(x, 'a')
-    #     self.assertNotHasAttr(x, 'b')
-    #     self.assertNotHasAttr(x, 'c')
-    #     x.a = 1
-    #     x.b = 2
-    #     x.c = 3
-    #     self.assertEqual(x.a, 1)
-    #     self.assertEqual(x.b, 2)
-    #     self.assertEqual(x.c, 3)
+        class C3(object):
+            __slots__ = ['a', 'b', 'c']
+        x = C3()
+        self.assertNotHasAttr(x, "__dict__")
+        self.assertNotHasAttr(x, 'a')
+        self.assertNotHasAttr(x, 'b')
+        self.assertNotHasAttr(x, 'c')
+        x.a = 1
+        x.b = 2
+        x.c = 3
+        self.assertEqual(x.a, 1)
+        self.assertEqual(x.b, 2)
+        self.assertEqual(x.c, 3)
 
-    #     class C4(object):
-    #         """Validate name mangling"""
-    #         __slots__ = ['__a']
-    #         def __init__(self, value):
-    #             self.__a = value
-    #         def get(self):
-    #             return self.__a
-    #     x = C4(5)
-    #     self.assertNotHasAttr(x, '__dict__')
-    #     self.assertNotHasAttr(x, '__a')
-    #     self.assertEqual(x.get(), 5)
-    #     try:
-    #         x.__a = 6
-    #     except AttributeError:
-    #         pass
-    #     else:
-    #         self.fail("Double underscored names not mangled")
+        class C4(object):
+            """Validate name mangling"""
+            __slots__ = ['__a']
+            def __init__(self, value):
+                self.__a = value
+            def get(self):
+                return self.__a
+        x = C4(5)
+        self.assertNotHasAttr(x, '__dict__')
+        self.assertNotHasAttr(x, '__a')
+        self.assertEqual(x.get(), 5)
+        try:
+            x.__a = 6
+        except AttributeError:
+            pass
+        else:
+            self.fail("Double underscored names not mangled")
 
-    #     # Make sure slot names are proper identifiers
-    #     try:
-    #         class C(object):
-    #             __slots__ = [None]
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("[None] slots not caught")
-    #     try:
-    #         class C(object):
-    #             __slots__ = ["foo bar"]
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("['foo bar'] slots not caught")
-    #     try:
-    #         class C(object):
-    #             __slots__ = ["foo\0bar"]
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("['foo\\0bar'] slots not caught")
-    #     try:
-    #         class C(object):
-    #             __slots__ = ["1"]
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("['1'] slots not caught")
-    #     try:
-    #         class C(object):
-    #             __slots__ = [""]
-    #     except TypeError:
-    #         pass
-    #     else:
-    #         self.fail("[''] slots not caught")
-    #     class C(object):
-    #         __slots__ = ["a", "a_b", "_a", "A0123456789Z"]
-    #     # XXX(nnorwitz): was there supposed to be something tested
-    #     # from the class above?
+        # Make sure slot names are proper identifiers
+        try:
+            class C(object):
+                __slots__ = [None]
+        except TypeError:
+            pass
+        else:
+            self.fail("[None] slots not caught")
+        try:
+            class C(object):
+                __slots__ = ["foo bar"]
+        except TypeError:
+            pass
+        else:
+            self.fail("['foo bar'] slots not caught")
+        try:
+            class C(object):
+                __slots__ = ["foo\0bar"]
+        except TypeError:
+            pass
+        else:
+            self.fail("['foo\\0bar'] slots not caught")
+        try:
+            class C(object):
+                __slots__ = ["1"]
+        except TypeError:
+            pass
+        else:
+            self.fail("['1'] slots not caught")
+        try:
+            class C(object):
+                __slots__ = [""]
+        except TypeError:
+            pass
+        else:
+            self.fail("[''] slots not caught")
+        class C(object):
+            __slots__ = ["a", "a_b", "_a", "A0123456789Z"]
+        # XXX(nnorwitz): was there supposed to be something tested
+        # from the class above?
 
-    #     # Test a single string is not expanded as a sequence.
-    #     class C(object):
-    #         __slots__ = "abc"
-    #     c = C()
-    #     c.abc = 5
-    #     self.assertEqual(c.abc, 5)
+        # Test a single string is not expanded as a sequence.
+        class C(object):
+            __slots__ = "abc"
+        c = C()
+        c.abc = 5
+        self.assertEqual(c.abc, 5)
 
-    #     # Test unicode slot names
-    #     # Test a single unicode string is not expanded as a sequence.
-    #     class C(object):
-    #         __slots__ = "abc"
-    #     c = C()
-    #     c.abc = 5
-    #     self.assertEqual(c.abc, 5)
+        # Test unicode slot names
+        # Test a single unicode string is not expanded as a sequence.
+        class C(object):
+            __slots__ = "abc"
+        c = C()
+        c.abc = 5
+        self.assertEqual(c.abc, 5)
 
-    #     # _unicode_to_string used to modify slots in certain circumstances
-    #     slots = ("foo", "bar")
-    #     class C(object):
-    #         __slots__ = slots
-    #     x = C()
-    #     x.foo = 5
-    #     self.assertEqual(x.foo, 5)
-    #     self.assertIs(type(slots[0]), str)
-    #     # this used to leak references
-    #     try:
-    #         class C(object):
-    #             __slots__ = [chr(128)]
-    #     except (TypeError, UnicodeEncodeError):
-    #         pass
-    #     else:
-    #         self.fail("[chr(128)] slots not caught")
+        # _unicode_to_string used to modify slots in certain circumstances
+        slots = ("foo", "bar")
+        class C(object):
+            __slots__ = slots
+        x = C()
+        x.foo = 5
+        self.assertEqual(x.foo, 5)
+        self.assertIs(type(slots[0]), str)
+        # this used to leak references
+        try:
+            class C(object):
+                __slots__ = [chr(128)]
+        except (TypeError, UnicodeEncodeError):
+            pass
+        else:
+            self.fail("[chr(128)] slots not caught")
 
     #     # Test leaks
     #     class Counted(object):
@@ -1403,43 +1403,43 @@ order (MRO) for bases """
     #     with self.assertRaises(AttributeError):
     #         del X().a
 
-    # def test_slots_special(self):
-    #     # Testing __dict__ and __weakref__ in __slots__...
-    #     class D(object):
-    #         __slots__ = ["__dict__"]
-    #     a = D()
-    #     self.assertHasAttr(a, "__dict__")
-    #     self.assertNotHasAttr(a, "__weakref__")
-    #     a.foo = 42
-    #     self.assertEqual(a.__dict__, {"foo": 42})
+    def test_slots_special(self):
+        # Testing __dict__ and __weakref__ in __slots__...
+        class D(object):
+            __slots__ = ["__dict__"]
+        a = D()
+        self.assertHasAttr(a, "__dict__")
+        self.assertNotHasAttr(a, "__weakref__")
+        a.foo = 42
+        self.assertEqual(a.__dict__, {"foo": 42})
 
-    #     class W(object):
-    #         __slots__ = ["__weakref__"]
-    #     a = W()
-    #     self.assertHasAttr(a, "__weakref__")
-    #     self.assertNotHasAttr(a, "__dict__")
-    #     try:
-    #         a.foo = 42
-    #     except AttributeError:
-    #         pass
-    #     else:
-    #         self.fail("shouldn't be allowed to set a.foo")
+        class W(object):
+            __slots__ = ["__weakref__"]
+        a = W()
+        # self.assertHasAttr(a, "__weakref__")
+        self.assertNotHasAttr(a, "__dict__")
+        try:
+            a.foo = 42
+        except AttributeError:
+            pass
+        else:
+            self.fail("shouldn't be allowed to set a.foo")
 
-    #     class C1(W, D):
-    #         __slots__ = []
-    #     a = C1()
-    #     self.assertHasAttr(a, "__dict__")
-    #     self.assertHasAttr(a, "__weakref__")
-    #     a.foo = 42
-    #     self.assertEqual(a.__dict__, {"foo": 42})
+        class C1(W, D):
+            __slots__ = []
+        a = C1()
+        self.assertHasAttr(a, "__dict__")
+        # self.assertHasAttr(a, "__weakref__")
+        a.foo = 42
+        self.assertEqual(a.__dict__, {"foo": 42})
 
-    #     class C2(D, W):
-    #         __slots__ = []
-    #     a = C2()
-    #     self.assertHasAttr(a, "__dict__")
-    #     self.assertHasAttr(a, "__weakref__")
-    #     a.foo = 42
-    #     self.assertEqual(a.__dict__, {"foo": 42})
+        class C2(D, W):
+            __slots__ = []
+        a = C2()
+        self.assertHasAttr(a, "__dict__")
+        # self.assertHasAttr(a, "__weakref__")
+        a.foo = 42
+        self.assertEqual(a.__dict__, {"foo": 42})
 
     # def test_slots_special2(self):
     #     # Testing __qualname__ and __classcell__ in __slots__
@@ -1596,21 +1596,21 @@ order (MRO) for bases """
         else:
             self.fail("inheritance from CFunction should be illegal")
 
-        # try:
-        #     class C(object):
-        #         __slots__ = 1
-        # except TypeError:
-        #     pass
-        # else:
-        #     self.fail("__slots__ = 1 should be illegal")
+        try:
+            class C(object):
+                __slots__ = 1
+        except TypeError:
+            pass
+        else:
+            self.fail("__slots__ = 1 should be illegal")
 
-        # try:
-        #     class C(object):
-        #         __slots__ = [1]
-        # except TypeError:
-        #     pass
-        # else:
-        #     self.fail("__slots__ = [1] should be illegal")
+        try:
+            class C(object):
+                __slots__ = [1]
+        except TypeError:
+            pass
+        else:
+            self.fail("__slots__ = [1] should be illegal")
 
         # class M1(type):
         #     pass
@@ -3388,45 +3388,53 @@ order (MRO) for bases """
         cant(o, type(1))
         cant(o, type(None))
         del o
-        # class G(object):
-        #     __slots__ = ["a", "b"]
-        # class H(object):
-        #     __slots__ = ["b", "a"]
-        # class I(object):
-        #     __slots__ = ["a", "b"]
-        # class J(object):
-        #     __slots__ = ["c", "b"]
-        # class K(object):
-        #     __slots__ = ["a", "b", "d"]
-        # class L(H):
-        #     __slots__ = ["e"]
-        # class M(I):
-        #     __slots__ = ["e"]
-        # class N(J):
-        #     __slots__ = ["__weakref__"]
-        # class P(J):
-        #     __slots__ = ["__dict__"]
-        # class Q(J):
-        #     pass
-        # class R(J):
-        #     __slots__ = ["__dict__", "__weakref__"]
+        class G(object):
+            __slots__ = ["a", "b"]
+        class H(object):
+            __slots__ = ["b", "a"]
+        class I(object):
+            __slots__ = ["a", "b"]
+        class J(object):
+            __slots__ = ["c", "b"]
+        class K(object):
+            __slots__ = ["a", "b", "d"]
+        class L(H):
+            __slots__ = ["e"]
+        class M(I):
+            __slots__ = ["e"]
+        class N(J):
+            # __slots__ = ["__weakref__"]
+            __slots__ = []
+        class P(J):
+            __slots__ = ["__dict__"]
+        class Q(J):
+            pass
+        class R(J):
+            # __slots__ = ["__dict__", "__weakref__"]
+            __slots__ = ["__dict__"]
 
+        # skulpt implementation detail means that this wont work
         # for cls, cls2 in ((G, H), (G, I), (I, H), (Q, R), (R, Q)):
-        #     x = cls()
-        #     x.a = 1
-        #     x.__class__ = cls2
-        #     self.assertIs(x.__class__, cls2,
-        #            "assigning %r as __class__ for %r silently failed" % (cls2, x))
-        #     self.assertEqual(x.a, 1)
-        #     x.__class__ = cls
-        #     self.assertIs(x.__class__, cls,
-        #            "assigning %r as __class__ for %r silently failed" % (cls, x))
-        #     self.assertEqual(x.a, 1)
-        # for cls in G, J, K, L, M, N, P, R, list, Int:
-        #     for cls2 in G, J, K, L, M, N, P, R, list, Int:
-        #         if cls is cls2:
-        #             continue
-        #         cant(cls(), cls2)
+        for cls, cls2 in ((Q, R), (R, Q)): 
+            x = cls()
+            x.a = 1
+            x.__class__ = cls2
+            self.assertIs(x.__class__, cls2,
+                   "assigning %r as __class__ for %r silently failed" % (cls2, x))
+            self.assertEqual(x.a, 1)
+            x.__class__ = cls
+            self.assertIs(x.__class__, cls,
+                   "assigning %r as __class__ for %r silently failed" % (cls, x))
+            self.assertEqual(x.a, 1)
+        for cls in G, J, K, L, M, N, P, R, list, Int:
+            for cls2 in G, J, K, L, M, N, P, R, list, Int:
+                if cls is cls2:
+                    continue
+                # added for skulpt since we don't do weakrefs
+                x = {cls, cls2}
+                if x & {P, Q, R} == x or x == {N, J}:
+                    continue
+                cant(cls(), cls2)
 
         # # Issue5283: when __class__ changes in __del__, the wrong
         # # type gets DECREF'd.
@@ -4001,19 +4009,19 @@ order (MRO) for bases """
     #         o = trash(o)
     #     del o
 
-    # def test_slots_multiple_inheritance(self):
-    #     # SF bug 575229, multiple inheritance w/ slots dumps core
-    #     class A(object):
-    #         __slots__=()
-    #     class B(object):
-    #         pass
-    #     class C(A,B) :
-    #         __slots__=()
-    #     # if support.check_impl_detail():
-    #     #     self.assertEqual(C.__basicsize__, B.__basicsize__)
-    #     self.assertHasAttr(C, '__dict__')
-    #     self.assertHasAttr(C, '__weakref__')
-    #     C().x = 2
+    def test_slots_multiple_inheritance(self):
+        # SF bug 575229, multiple inheritance w/ slots dumps core
+        class A(object):
+            __slots__=()
+        class B(object):
+            pass
+        class C(A,B) :
+            __slots__=()
+        # if support.check_impl_detail():
+        #     self.assertEqual(C.__basicsize__, B.__basicsize__)
+        self.assertHasAttr(C, '__dict__')
+        # self.assertHasAttr(C, '__weakref__')
+        C().x = 2
 
     def test_rmul(self):
         # Testing correct invocation of __rmul__...
@@ -4832,13 +4840,13 @@ order (MRO) for bases """
         with self.assertRaises(TypeError):
             a + a
 
-    # def test_slot_shadows_class_variable(self):
-    #     with self.assertRaises(ValueError) as cm:
-    #         class X:
-    #             __slots__ = ["foo"]
-    #             foo = None
-    #     m = str(cm.exception)
-    #     self.assertEqual("'foo' in __slots__ conflicts with class variable", m)
+    def test_slot_shadows_class_variable(self):
+        with self.assertRaises(ValueError) as cm:
+            class X:
+                __slots__ = ["foo"]
+                foo = None
+        m = str(cm.exception)
+        self.assertEqual("'foo' in __slots__ conflicts with class variable", m)
 
     def test_set_doc(self):
         class X:

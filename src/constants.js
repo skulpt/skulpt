@@ -58,6 +58,7 @@ Sk.builtin.str.$reversed = new Sk.builtin.str("__reversed__");
 Sk.builtin.str.$round = new Sk.builtin.str("__round__");
 Sk.builtin.str.$setattr = new Sk.builtin.str("__setattr__");
 Sk.builtin.str.$setitem = new Sk.builtin.str("__setitem__");
+Sk.builtin.str.$slots = new Sk.builtin.str("__slots__");
 Sk.builtin.str.$str = new Sk.builtin.str("__str__");
 Sk.builtin.str.$trunc = new Sk.builtin.str("__trunc__");
 Sk.builtin.str.$write = new Sk.builtin.str("write");
