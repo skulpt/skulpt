@@ -78,8 +78,6 @@ function functools_mod(functools) {
                 "cache",
                 "lru_cache",
                 "reduce",
-                "TopologicalSorter" /**@todo TopologicalSorter */,
-                "CycleError" /**@todo CycleError */,
                 "partial",
                 "partialmethod",
                 "singledispatch" /**@todo singledispatch */,
@@ -95,8 +93,6 @@ function functools_mod(functools) {
         WRAPPER_UPDATES: new pyTuple([new pyStr("__dict__")]),
 
         /**@todo */
-        TopologicalSorter: proxyFail("TopologicalSorter"),
-        CycleError: proxyFail("CycleError"),
         singledispatch: proxyFail("singledispatch"),
         singledispatchmethod: proxyFail("singledispatchmethod"),
         cached_property: proxyFail("cached_property"),
