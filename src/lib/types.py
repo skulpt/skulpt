@@ -94,3 +94,5 @@ NotImplementedType = type(NotImplemented)
 
 del sys, _f, _g, _C, _x                           # Not for export
 __all__ = list(n for n in globals() if n[:1] != '_')
+
+GenericAlias = type(type[int])

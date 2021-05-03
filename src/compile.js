@@ -992,6 +992,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.cjoinedstr(e);
         case Sk.astnodes.FormattedValue:
             return this.cformattedvalue(e);
+        case Sk.astnodes.Ellipsis:
+            return this.makeConstant("Sk.builtin.ellipsis");
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }

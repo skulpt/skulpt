@@ -777,6 +777,8 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.Starred:
             this.visitExpr(e.value);
             break;
+        case Sk.astnodes.Ellipsis:
+            break;
         default:
             Sk.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
     }

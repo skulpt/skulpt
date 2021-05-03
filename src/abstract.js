@@ -765,6 +765,17 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     if (o.mp$subscript) {
         return o.mp$subscript(key, canSuspend);
     }
+    if (Sk.builtin.checkClass(o)) {
+        if (o === Sk.builtin.type) {
+            return new Sk.builtin.GenericAlias(o, key);
+        }
+        const meth = Sk.abstr.typeLookup(o, Sk.builtin.str.$class_getitem);
+        if (meth !== undefined) {
+            const res = Sk.misceval.callsimOrSuspendArray(meth, [key]);
+            return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+        }
+    }
+
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(o) + "' does not support indexing");
 };
 Sk.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
