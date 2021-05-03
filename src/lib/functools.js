@@ -1,5 +1,13 @@
 function $builtinmodule() {
-    const functools = {
+    const functools = {};
+    return Sk.misceval.chain(Sk.importModule("collections", false, true), (collections_mod) => {
+        functools._namedtuple = collections_mod.$d.namedtuple;
+        return functools_mod(functools);
+    });
+}
+
+function functools_mod(functools) {
+    Object.assign(functools, {
         __name__: new Sk.builtin.str("functools"),
         __doc__: new Sk.builtin.str("Tools for working with functions and callable objects"),
         __all__: new Sk.builtin.list(
@@ -22,7 +30,9 @@ function $builtinmodule() {
             ].map((x) => new Sk.builtin.str(x))
         ),
         WRAPPER_ASSIGNMENTS: new Sk.builtin.tuple(
-            ["__module__", "__name__", "__qualname__", "__doc__" /*"__annotations__"*/].map((x) => new Sk.builtin.str(x))
+            ["__module__", "__name__", "__qualname__", "__doc__" /*"__annotations__"*/].map(
+                (x) => new Sk.builtin.str(x)
+            )
         ),
         WRAPPER_UPDATES: new Sk.builtin.tuple([new Sk.builtin.str("__dict__")]),
 
@@ -33,13 +43,213 @@ function $builtinmodule() {
         singledispatch: proxyFail("singledispatch"),
         singledispatchmethod: proxyFail("singledispatchmethod"),
         cached_property: proxyFail("cached_property"),
-    };
+    });
 
     function proxyFail(_name) {
         return new Sk.builtin.func(function () {
             throw new Sk.builtin.NotImplementedError(_name + " is not yet implemented in skulpt");
         });
     }
+
+    /********** lru_cache *************/
+    const str_cached_params = new Sk.builtin.str("cache_parameters");
+
+    function _lru_cache(maxsize, typed = Sk.builtin.bool.$false) {
+        if (Sk.builtin.checkInt(maxsize)) {
+            maxsize = Sk.builtin.asnum$(maxsize);
+            if (maxsize < 0) {
+                maxsize = 0;
+            }
+        } else if (Sk.builtin.checkCallable(maxsize) && Sk.builtin.checkBool(typed)) {
+            const user_function = maxsize;
+            maxsize = 128;
+            const wrapper = new _lru_cache_wrapper(user_function, maxsize, typed, _CacheInfo);
+            wrapper.tp$setattr(str_cached_params, new Sk.builtin.func(() => Sk.ffi.remapToPy({ maxsize, typed })));
+            return Sk.misceval.callsimOrSuspendArray(functools.update_wrapper, [wrapper, user_function]);
+        } else if (!Sk.builtin.checkNone(maxsize)) {
+            throw new Sk.builtin.TypeError("Expected first argument to be an integer, a callable, or None");
+        }
+
+        return new Sk.builtin.func((user_function) => {
+            const wrapper = new _lru_cache_wrapper(user_function, maxsize, typed, _CacheInfo);
+            wrapper.tp$setattr(str_cached_params, new Sk.builtin.func(() => Sk.ffi.remapToPy({ maxsize, typed })));
+            return Sk.misceval.callsimOrSuspendArray(functools.update_wrapper, [wrapper, user_function]);
+        });
+    }
+
+    const _CacheInfo = (functools._CacheInfo = Sk.misceval.callsimArray(
+        functools._namedtuple,
+        ["CacheInfo", ["hits", "misses", "maxsize", "currsize"]].map((x) => Sk.ffi.remapToPy(x)),
+        ["module", new Sk.builtin.str("functools")]
+    ));
+
+    const _lru_cache_wrapper = Sk.abstr.buildNativeClass("functools._lru_cache_wrapper", {
+        constructor: function _lru_cache_wrapper(func, maxsize, typed, cache_info_type) {
+            if (!Sk.builtin.checkCallable(func)) {
+                throw new Sk.builtin.TypeError("the first argument must be callable");
+            }
+            let wrapper;
+            /* select the caching function, and make/inc maxsize_O */
+            if (Sk.builtin.checkNone(maxsize)) {
+                wrapper = infinite_lru_cache_wrapper;
+                /* use this only to initialize lru_cache_object attribute maxsize */
+                maxsize = -1;
+            } else if (Sk.misceval.checkIndex(maxsize)) {
+                maxsize = Sk.misceval.asIndexSized(maxsize, Sk.builtin.OverflowError);
+                if (maxsize < 0) {
+                    maxsize = 0;
+                }
+                if (maxsize === 0) {
+                    wrapper = uncached_lru_cache_wrapper;
+                } else {
+                    wrapper = bounded_lru_cache_wrapper;
+                }
+            } else {
+                throw new Sk.builtin.TypeError("maxsize should be integer or None");
+            }
+            this.root = {};
+            this.root.prev = null;
+            this.root.next = null;
+            // ????
+            this.wrapper = wrapper;
+            this.maxsize = maxsize;
+            this.typed = typed;
+            this.cache = new Sk.builtin.dict([]);
+            this.func = func;
+            this.misses = this.hits = 0;
+            // this.cache_info_type = cache_info_type;
+            this.$d = new Sk.builtin.dict([]);
+        },
+        slots: {
+            tp$new(args, kws) {
+                const [func, maxsize, typed, cache_info_type] = Sk.abstr.copyKeywordsToNamedArgs(
+                    "_lru_cache_wrapper",
+                    ["user_function", "maxsize", "typed", "cache_info_type"],
+                    args,
+                    kwargs
+                );
+                return new _lru_cache_wrapper(func, maxsize, typed, cache_info_type);
+            },
+            tp$call(args, kws) {
+                // we've already checked it's callable i.e. that it has a tp$call so just call it
+                return this.wrapper(args, kws);
+            },
+            tp$descr_get() {},
+            tp$doc:
+                "Create a cached callable that wraps another function.\n\
+            \n\
+            user_function:      the function being cached\n\
+            \n\
+            maxsize:  0         for no caching\n\
+                      None      for unlimited cache size\n\
+                      n         for a bounded cache\n\
+            \n\
+            typed:    False     cache f(3) and f(3.0) as identical calls\n\
+                      True      cache f(3) and f(3.0) as distinct calls\n\
+            \n\
+            cache_info_type:    namedtuple class with the fields:\n\
+                                    hits misses currsize maxsize\n",
+        },
+        methods: {
+            cache_info: {
+                $meth() {
+                    return Sk.misceval.callsimOrSuspendArray(
+                        _CacheInfo,
+                        [
+                            this.hits,
+                            this.misses,
+                            this.maxsize === -1 ? Sk.builtin.none.none$ : this.maxsize,
+                            this.cache.get$size(),
+                        ].map((x) => Sk.ffi.remapToPy(x))
+                    );
+                },
+                $flags: { NoArgs: true },
+                $doc: "Report cache statistics",
+            },
+            cache_clear: {
+                $meth() {
+                    this.hits = this.misses = 0;
+                    this.root = {};
+                    return Sk.misceval.callsimArray(this.cache.tp$getattr(new Sk.builtin.str("clear")));
+                },
+                $flags: { NoArgs: true },
+                $doc: "Clear the cache and cache statistics",
+            },
+            // __reduce__: {},
+            // __copy__: {},
+            // __deepcopy__: {},
+        },
+        getsets: {
+            __dict__: Sk.generic.getSetDict,
+        },
+    });
+
+    /**
+     * @this lru_cache_object
+     */
+    function infinite_lru_cache_wrapper(args, kws) {
+        const key = _make_key(args, kws, this.typed);
+        const result = this.cache.mp$lookup(key);
+        if (result !== undefined) {
+            this.hits++;
+            return result;
+        }
+        this.misses++;
+        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(this.func, args, kws), (res) => {
+            this.cache.mp$ass_subscript(key, res);
+            return res;
+        });
+    }
+
+    function uncached_lru_cache_wrapper(args, kws) {
+        this.misses++;
+        return Sk.misceval.callsimOrSuspendArray(this.func, args, kws);
+    }
+
+    function bounded_lru_cache_wrapper(args, kws) {}
+
+    const _HachedSeq = Sk.abstr.buildNativeClass("_HachedSeq", {
+        base: Sk.builtin.list,
+        constructor: function _HachedSeq(key_array) {
+            this.$hashval = Sk.abstr.objectHash(new Sk.builtin.tuple(key_array));
+            Sk.builtin.list.call(key_array);
+        },
+        slots: {
+            tp$hash() {
+                return this.$hashval;
+            },
+        },
+        getsets: {
+            hashvalue: {
+                $get() {
+                    return this.$hashval;
+                },
+            },
+        },
+    });
+
+    const kwd_mark = new Sk.builtin.object();
+    const fasttypes = new Set([Sk.builtin.int_, Sk.builtin.str]);
+
+    function _make_key(args, kws, typed) {
+        const key = args.slice(0);
+        const kw_vals = [];
+        if (kws && kws.length) {
+            key.push(kwd_mark);
+            for (let i = 0; i < kws.length; i += 2) {
+                const val = kws[i + 1];
+                kw_vals.push(val);
+                key.push(new Sk.builtin.tuple([new Sk.builtin.str(kws[i]), val]));
+            }
+        }
+        if (Sk.misceval.isTrue(typed)) {
+            key.push(...args.map((v) => v.ob$type), ...kw_vals.map((v) => v.ob$type));
+        } else if (key.length === 1 && fasttypes.has(key[0].ob$type)) {
+            return key[0];
+        }
+        return new _HachedSeq(key);
+    }
+
 
     /********** Partial *************/
 
@@ -303,7 +513,9 @@ function $builtinmodule() {
     function total_ordering(cls) {
         const roots = [];
         if (!Sk.builtin.checkClass(cls)) {
-            throw new Sk.builtin.TypeError("total ordering only supported for type objects not '" + Sk.abstr.typeName(cls) + "'");
+            throw new Sk.builtin.TypeError(
+                "total ordering only supported for type objects not '" + Sk.abstr.typeName(cls) + "'"
+            );
         }
         Object.keys(_convert).forEach((key) => {
             const shortcut = op_name_short[key];
@@ -368,6 +580,14 @@ function $builtinmodule() {
     const __wrapped__ = new Sk.builtin.str("__wrapped__");
 
     Sk.abstr.setUpModuleMethods("functools", functools, {
+        cache: {
+            $meth: function cache(user_function) {
+                return Sk.misceval.callsimOrSuspendArray(_lru_cache(Sk.builtin.none.none$), [user_function]);
+            },
+            $flags: { OneArg: true },
+            $doc: 'Simple lightweight unbounded cache.  Sometimes called "memoize".',
+            $textsig: "($module, user_function, /)",
+        },
         cmp_to_key: {
             $meth: function cmp_to_key(mycmp) {
                 return new KeyWrapper(mycmp);
