@@ -1,5 +1,9 @@
 /**
  * Debugger support for skulpt module
+ * This file is no longer up to date with the master branch
+ * It needs some TLC to get it working
+ * For previous implemenation used with CodeMirror see:
+ * https://github.com/skulpt/skulpt/blob/9b6402f8be903ee5e2053b6acbfb9a108130f8be/doc/static/debugger/debugger_cm.js
  */
 
 var Sk = Sk || {}; //jshint ignore:line
