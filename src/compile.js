@@ -225,7 +225,7 @@ Compiler.prototype.outputInterruptTest = function () { // Added by RNL
         }
         if (Sk.yieldLimit !== null && this.u.canSuspend) {
             output += "if (!$waking && ($dateNow - Sk.lastYield > Sk.yieldLimit)) {";
-            output += "$saveSuspension(new Sk.misceval.Suspension(null, null, {type:'Sk.yield',optional:true}),'"+this.filename+"',$currLineNo,$currColNo);";
+            output += "throw new Sk.misceval.Suspension('Sk.yield');";
             output += "}";
             output += "$waking = false;";
             this.u.doesSuspend = true;
@@ -278,7 +278,8 @@ Compiler.prototype._handleDebug = function (s, suspType) {
     const debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
     out("\n$blk=", debugBlock, ";");
     out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
-        "$saveSuspension(new Sk.misceval.Suspension(null, null, {type: '"+suspType+"', optional: true}), '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+        "$currLineNo=" + s.lineno + "; $currColNo=" + s.col_offset + ";"+
+        "throw new Sk.misceval.Suspension('"+suspType+"');" +
         "}");
     this.u.blocks[this.u.curblock]._next = debugBlock;
     this.setBlock(debugBlock);
@@ -1107,14 +1108,15 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
-                    "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
-                    "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
-                    (hasCell?"$cell=susp.$cell;":"");
+                    "var loc = susp.store;" +
+                    "$blk=loc.$blk; $loc=loc.$loc; $gbl=loc.$gbl; $exc=loc.$exc; $err=loc.$err; $postfinally=loc.$postfinally;" +
+                    "$currLineNo=loc.$lineno; $currColNo=loc.$colno; Sk.lastYield=Date.now();" +
+                    (hasCell?"$cell=loc.$cell;":"");
 
     for (i = 0; i < localsToSave.length; i++) {
         t = localsToSave[i];
         if (seenTemps[t]===undefined) {
-            output += t + "=susp.$tmps." + t + ";";
+            output += t + "=loc.$tmps." + t + ";";
             seenTemps[t] = true;
         }
     }
@@ -1136,13 +1138,11 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     }
 
     output += "var $saveSuspension = function($child, $filename, $lineno, $colno) {" +
-            "if ($dbg === $child) {$dbg.suspend();}" + // we were already thrown inside our body so just rethrow
             "var susp = new Sk.misceval.Suspension(" +
                 "function(){" + 
                     unit.scopename + ".$wakingSuspension=susp; return " + unit.scopename + "(" + (unit.ste.generator ? "$gen" : "") + "); " + 
                  "}, " +
                 "$child, " +  // child
-                "null, " + // data
                 // locals
                 "{$blk:$blk,$loc:$loc,$gbl:$gbl,$exc:$exc,$err:$err,$postfinally:$postfinally," +
                 "$filename:$filename,$lineno:$lineno,$colno:$colno" +
@@ -1150,9 +1150,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
                 ",$tmps: {" + localSaveCode.join(",") + "}" +
                 "}" +
             ");" +
-
-            "$dbg = susp;" +
-            "$dbg.suspend();" +
+            "susp.suspend();" +
         "};";
 
     return output;
@@ -1881,7 +1879,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
     // (fastcall doesn't need to do this, as 'this' is the func object)
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this && this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err=undefined,$ret=undefined,$dbg=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this && this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2731,7 +2729,7 @@ Compiler.prototype.cmod = function (mod) {
         "var $gbl = $forcegbl || {}, $blk=" + entryBlock +
         ",$exc=[],$loc=$gbl,$cell={},$err=undefined;" +
         "$loc.__file__=new Sk.builtins.str('" + this.filename +
-        "');var $ret=undefined,$dbg=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+        "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
