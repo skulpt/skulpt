@@ -155,17 +155,17 @@ Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
  * @param {string=} message defaults to "Cannot call a function that blocks or suspends here"
  */
 Sk.misceval.retryOptionalSuspensionOrThrow = function retryOptionalSuspensionOrThrow(suspendablefn, message) {
-    try {
-        return suspendablefn();
-    } catch (maybeSusp) {
-        return handleSuspensionOrReject(maybeSusp, (susp) => {
-            if (!susp.optional) {
-                throw new Sk.builtin.SuspensionError(
-                    message || "Cannot call a function that blocks or suspends here"
-                );
+    while (true) {
+        try {
+            return suspendablefn();
+        } catch (susp) {
+            if (!(susp instanceof Sk.misceval.Suspension)) {
+                throw susp;
+            } else if (!susp.optional) {
+                throw new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
             }
-            return Sk.misceval.retryOptionalSuspensionOrThrow(() => susp.resume(), message);
-        });
+            suspendablefn = () => susp.resume();
+        }
     }
 };
 Sk.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
