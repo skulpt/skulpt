@@ -61,7 +61,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
         } else if (typeof source === "number") {
             this.v = new Uint8Array(source);
         } else {
-            throw new Sk.builtin.TypeError("bad argument to bytes constructor");
+            throw new TypeError(`bad internal argument to bytes constructor (got '${typeof source}': ${source})`);
         }
     },
     slots: /**@lends {Sk.builtin.bytes.prototype} */ {
@@ -116,7 +116,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 });
                 return Sk.misceval.chain(r, () => new Sk.builtin.bytes(source));
             }
-            throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(source) + "' object into bytes");
+            throw new Sk.builtin.TypeError("cannot convert '" + Sk.abstr.typeName(pySource) + "' object into bytes");
         },
         $r() {
             let num;
