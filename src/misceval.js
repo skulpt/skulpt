@@ -1109,6 +1109,13 @@ Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, a
 };
 Sk.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
 
+const chainBreakErrHandler = (err) => {
+    if (err === Sk.misceval.ChainBreak || err instanceof Sk.misceval.ChainBreak) {
+        return err.brValue;
+    }
+    throw err;
+};
+
 /**
  * Chain together a set of functions, each of which might return a value or
  * an Sk.misceval.Suspension. Each function is called with the return value of
@@ -1138,9 +1145,17 @@ Sk.misceval.chain = function chain(...chainedFns) {
         }
         return value;
     } catch (err) {
-        handleSuspensionOrReject(err, (child) => {
-            throw new Sk.misceval.Suspension(() => Sk.misceval.chain(() => child.resume(), ...chainedFns.slice(i)), child);
-        });
+        // slow path
+        return handleSuspensionOrReject(
+            err,
+            (child) => {
+                throw new Sk.misceval.Suspension(
+                    () => Sk.misceval.chain(() => child.resume(), ...chainedFns.slice(i)),
+                    child
+                );
+            },
+            chainBreakErrHandler
+        );
     }
 };
 Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
@@ -1308,6 +1323,22 @@ Sk.misceval.Break = class Break {
     }
 };
 Sk.exportSymbol("Sk.misceval.Break", Sk.misceval.Break);
+
+/**
+ * A special value to return from a Sk.misceval.chain() function.
+ * A way to break a series of chain functions early.
+ * 
+ * Optionally supply a value for chain() to return
+ * (defaults to 'undefined')
+ *
+ * @constructor
+ * @param {*=}  brValue
+ */
+Sk.misceval.ChainBreak = class ChainBreak {
+    constructor(brValue) {
+        this.brValue = brValue;
+    }
+};
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
