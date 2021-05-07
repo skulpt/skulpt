@@ -2,7 +2,7 @@ function $builtinmodule(name) {
     const collections = {};
     // keyword.iskeyword and itertools.chain are required for collections
     return Sk.misceval.chain(
-        Sk.importModule("keyword", false, true),
+        () => Sk.importModule("keyword", false, true),
         (keyword_mod) => {
             collections._iskeyword = keyword_mod.$d.iskeyword;
             return Sk.importModule("itertools", false, true);

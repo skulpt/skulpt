@@ -184,7 +184,7 @@ function $builtinmodule(name) {
                 Sk.abstr.checkNoKwargs("methodcaller", kwargs);
                 Sk.abstr.checkArgsLen("methodcaller", args, 1, 1);
                 const obj = args[0];
-                return Sk.misceval.chain(Sk.abstr.gattr(obj, this.$name, true), (method) =>
+                return Sk.misceval.chain(() => Sk.abstr.gattr(obj, this.$name, true), (method) =>
                     Sk.misceval.callsimOrSuspendArray(method, this.args, this.kwargs)
                 );
             },
@@ -466,7 +466,7 @@ function $builtinmodule(name) {
         },
         delitem: {
             $meth: function delitem(a, b) {
-                return Sk.misceval.chain(Sk.abstr.objectDelItem(a, b, true), () => Sk.builtin.none.none$);
+                return Sk.misceval.chain(() => Sk.abstr.objectDelItem(a, b, true), () => Sk.builtin.none.none$);
             },
             $flags: { MinArgs: 2, MaxArgs: 2 },
             $textsig: "($module, a, b, /)",
@@ -490,7 +490,7 @@ function $builtinmodule(name) {
         },
         setitem: {
             $meth: function setitem(a, b, c) {
-                return Sk.misceval.chain(Sk.abstr.objectSetItem(a, b, c, true), () => Sk.builtin.none.none$);
+                return Sk.misceval.chain(() => Sk.abstr.objectSetItem(a, b, c, true), () => Sk.builtin.none.none$);
             },
             $flags: { MinArgs: 3, MaxArgs: 3 },
             $textsig: "($module, a, b, c, /)",

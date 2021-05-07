@@ -2240,23 +2240,8 @@ function generateTurtleModule(_target) {
                     throw e;
                 });
 
-                susp = new Sk.misceval.Suspension();
-
-                susp.resume = function() {
-                    return (resolution === undefined) ?
-                        Sk.builtin.none.none$ :
-                        Sk.ffi.remapToPy(resolution);
-                };
-
-                susp.data = {
-                    type: "Sk.promise",
-                    promise: result.then(function(value) {
-                        resolution = value;
-                        return value;
-                    })
-                };
-
-                return susp;
+                susp = new Sk.misceval.Suspension(result.then((value) => Sk.ffi.remapToPy(value)));
+                susp.suspend();
             }
             else {
                 if (result === undefined) return Sk.builtin.none.none$;

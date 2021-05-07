@@ -11,18 +11,18 @@ Sk.builtin.map_ = Sk.abstr.buildIteratorClass("map", {
     },
     iternext(canSuspend) {
         const args = [];
-        const ret = Sk.misceval.chain(
-            Sk.misceval.iterArray(this.$iters, (it) =>
-                Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
+        const ret = () => Sk.misceval.chain(
+            () => Sk.misceval.iterArray(this.$iters, (it) =>
+                Sk.misceval.chain(() => it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
-                        return new Sk.misceval.Break(true);
+                        throw new Sk.misceval.Break(true);
                     }
                     args.push(i);
                 })
             ),
             (endmap) => (endmap ? undefined : Sk.misceval.callsimOrSuspendArray(this.$func, args))
         );
-        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return canSuspend ? ret() : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:

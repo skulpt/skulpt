@@ -22,7 +22,7 @@ Sk.builtin.callable_iter_ = Sk.abstr.buildIteratorClass("callable_iterator", {
             return undefined;
         }
         if (canSuspend) {
-            ret = Sk.misceval.callsimOrSuspendArray(this.$callable, []);
+            ret = () => Sk.misceval.callsimOrSuspendArray(this.$callable, []);
             return Sk.misceval.chain(ret, (r) => {
                 if (Sk.misceval.richCompareBool(r, this.$sentinel, "Eq", true)) {
                     this.$flag = true;
@@ -59,8 +59,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
         this.$seq = seq;
     },
     iternext(canSuspend) {
-        let ret;
-        ret = Sk.misceval.tryCatch(
+        const ret = () => Sk.misceval.tryCatch(
             () => {
                 return this.$seq.mp$subscript(new Sk.builtin.int_(this.$index++), canSuspend);
             },
@@ -72,7 +71,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
                 }
             }
         );
-        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return canSuspend ? ret() : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     methods: {
         __length_hint__: {

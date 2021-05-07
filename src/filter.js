@@ -8,20 +8,42 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     constructor: function filter_(func, iterable) {
         this.$func = func;
         this.$iterable = iterable;
+        if (this.$func === null) {
+            this.$filter = () =>
+                Sk.misceval.iterFor(this.$iterable, (i) => {
+                    if (Sk.misceval.isTrue(i)) {
+                        throw new Sk.misceval.Break(i);
+                    }
+                });
+        } else {
+            this.$filter = () =>
+                Sk.misceval.iterFor(this.$iterable, (i) =>
+                    Sk.misceval.chain(
+                        () => Sk.misceval.callsimOrSuspendArray(this.$func, [i]),
+                        (ret) => {
+                            if (Sk.misceval.isTrue(ret)) {
+                                throw new Sk.misceval.Break(i);
+                            }
+                        }
+                    )
+                );
+        }
     },
     iternext(canSuspend) {
         // iterate over iterable until we pass the predicate
-        // this.chcek$filter either returns the item or undefined
-        const ret = Sk.misceval.iterFor(this.$iterable, (i) =>
-            Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined))
-        );
-        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return canSuspend ? this.$filter() : Sk.misceval.retryOptionalSuspensionOrThrow(this.$filter);
     },
     slots: {
         tp$doc:
             "Return an iterator yielding those items of iterable for which function(item)\nis true. If function is None, return the items that are true.",
         tp$new(args, kwargs) {
-            let [func, iterable] = Sk.abstr.copyKeywordsToNamedArgs("filter", ["predicate", "iterable"], args, kwargs, []);
+            let [func, iterable] = Sk.abstr.copyKeywordsToNamedArgs(
+                "filter",
+                ["predicate", "iterable"],
+                args,
+                kwargs,
+                []
+            );
             func = Sk.builtin.checkNone(func) ? null : func;
             iterable = Sk.abstr.iter(iterable);
             // in theory you could subclass
@@ -32,17 +54,6 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
                 Sk.builtin.filter_.call(instance, func, iterable);
                 return instance;
             }
-        },
-    },
-    proto: {
-        check$filter(item) {
-            let res;
-            if (this.$func === null) {
-                res = item;
-            } else {
-                res = Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
-            }
-            return Sk.misceval.chain(res, (ret) => (Sk.misceval.isTrue(ret) ? item : undefined));
         },
     },
 });

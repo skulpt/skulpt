@@ -338,18 +338,18 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     if (seq.sq$contains) {
         return seq.sq$contains(ob, canSuspend);
     }
-    const r = Sk.misceval.iterFor(
+    const r = () => Sk.misceval.iterFor(
         Sk.abstr.iter(seq),
         function (i) {
             if (i === ob || Sk.misceval.richCompareBool(i, ob, "Eq")) {
-                return new Sk.misceval.Break(true);
+                throw new Sk.misceval.Break(true);
             } else {
                 return false;
             }
         },
         false
     );
-    return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+    return canSuspend ? r() : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
@@ -450,13 +450,13 @@ Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
     const it = Sk.abstr.iter(seq);
     const res = [];
     let i = 0;
-    let upToStar;
+    let upToStar = () => {};
     if (breakIdx > 0) {
         // iterator up to but not including the breakIdx
-        upToStar = Sk.misceval.iterFor(it, (nxt) => {
+        upToStar = () => Sk.misceval.iterFor(it, (nxt) => {
             res.push(nxt);
             if (++i === breakIdx) {
-                return new Sk.misceval.Break();
+                throw new Sk.misceval.Break();
             }
         });
     }
@@ -467,7 +467,7 @@ Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
         }
         if (!hasStar) {
             // check we've consumed the iterator
-            return Sk.misceval.chain(it.tp$iternext(true), (nxt) => {
+            return Sk.misceval.chain(() => it.tp$iternext(true), (nxt) => {
                 if (nxt !== undefined) {
                     throw new Sk.builtin.ValueError("too many values to unpack (expected " + breakIdx + ")");
                 }
@@ -476,14 +476,19 @@ Sk.abstr.sequenceUnpack = function (seq, breakIdx, numvals, hasStar) {
         }
         const starred = [];
         return Sk.misceval.chain(
-            Sk.misceval.iterFor(it, (nxt) => {
-                starred.push(nxt);
-            }),
+            () =>
+                Sk.misceval.iterFor(it, (nxt) => {
+                    starred.push(nxt);
+                }),
             () => {
                 const starred_end = starred.length + breakIdx - numvals;
                 if (starred_end < 0) {
                     throw new Sk.builtin.ValueError(
-                        "not enough values to unpack (expected at least " + numvals + ", got " + (numvals + starred_end) + ")"
+                        "not enough values to unpack (expected at least " +
+                            numvals +
+                            ", got " +
+                            (numvals + starred_end) +
+                            ")"
                     );
                 }
                 res.push(new Sk.builtin.list(starred.slice(0, starred_end)));
@@ -517,12 +522,12 @@ Sk.abstr.mappingUnpackIntoKeywordArray = function (jsArray, pyMapping, pyCodeObj
     if (keyf === undefined) {
         throw new Sk.builtin.TypeError("Object is not a mapping");
     }
-    return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyf), (keys) =>
+    return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(keyf), (keys) =>
         Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) => {
             if (!Sk.builtin.checkString(key)) {
                 throw new Sk.builtin.TypeError((pyCodeObject.$qualname ? pyCodeObject.$qualname + "() " : "") + "keywords must be strings");
             }
-            return Sk.misceval.chain(pyMapping.mp$subscript(key, true), (val) => {
+            return Sk.misceval.chain(() => pyMapping.mp$subscript(key, true), (val) => {
                 jsArray.push(key.v);
                 jsArray.push(val);
             });
@@ -792,19 +797,17 @@ Sk.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
  */
 Sk.abstr.gattr = function (obj, pyName, canSuspend) {
     // let the getattr and setattr's deal with reserved words - we don't want to pass a mangled pyName to tp$getattr!!
-    const ret = obj.tp$getattr(pyName, canSuspend);
-    if (ret === undefined) {
-        throw new Sk.builtin.AttributeError(obj.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'");
-    } else if (ret.$isSuspension) {
-        return Sk.misceval.chain(ret, function (r) {
-            if (r === undefined) {
-                throw new Sk.builtin.AttributeError(obj.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'");
+    return Sk.misceval.chain(
+        () => obj.tp$getattr(pyName, canSuspend),
+        (ret) => {
+            if (ret === undefined) {
+                throw new Sk.builtin.AttributeError(
+                    obj.sk$attrError() + " has no attribute '" + pyName.$jsstr() + "'"
+                );
             }
-            return r;
-        });
-    } else {
-        return ret;
-    }
+            return ret;
+        }
+    );
 };
 Sk.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 

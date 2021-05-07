@@ -14,13 +14,13 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
         return this;
     },
     iternext(canSuspend) {
-        const ret = Sk.misceval.chain(this.$iterable.tp$iternext(canSuspend), (i) => {
+        const ret = () => Sk.misceval.chain(() => this.$iterable.tp$iternext(canSuspend), (i) => {
             if (i === undefined) {
                 return undefined;
             }
             return new Sk.builtin.tuple([new Sk.builtin.int_(this.$index++), i]);
         });
-        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return canSuspend ? ret() : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:

@@ -52,7 +52,7 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
             if (arg.constructor === Sk.builtin.tuple) {
                 return arg;
             }
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (L) => new Sk.builtin.tuple(L));
+            return Sk.misceval.chain(() => Sk.misceval.arrayFromIterable(arg, true), (L) => new Sk.builtin.tuple(L));
         },
         tp$hash() {
             // the numbers and order are taken from Cpython

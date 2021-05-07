@@ -59,7 +59,7 @@ var $builtinmodule = function (name) {
         Sk.builtin.pyCheckArgsLen("sleep", arguments.length, 1, 1);
         Sk.builtin.pyCheckType("delay", "float", Sk.builtin.checkNumber(delay));
 
-        return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
+        throw new Sk.misceval.Suspension(new Promise(function(resolve) {
             Sk.setTimeout(function() {
                 resolve(Sk.builtin.none.none$);
             }, Sk.ffi.remapToJs(delay)*1000);

@@ -44,33 +44,23 @@ $builtinmodule = function (name) {
                 self.image = null;
             }
             if (self.image == null) {
-                susp = new Sk.misceval.Suspension();
-                susp.resume = function () {
-                    // Should the post image get stuff go here??
-                    if (susp.data["error"]) {
-                        throw new Sk.builtin.IOError(susp.data["error"].message);
-                    }
-                };
-                susp.data = {
-                    type: "Sk.promise",
-                    promise: new Promise(function (resolve, reject) {
-                            var newImg = new Image();
-                            newImg.crossOrigin = "";
-                            newImg.onerror = function () {
-                                reject(Error("Failed to load URL: " + newImg.src));
-                            };
-                            newImg.onload = function () {
-                                self.image = this;
-                                initializeImage(self);
-                                resolve();
-                            };
-                            // look for mapping from imagename to url and possible an image proxy server
-                            newImg.src = remapImageIdToURL(imageId);
-                        }
-                    )
-                };
-                return susp;
+                susp = new Sk.misceval.Suspension(new Promise(function (resolve, reject) {
+                    var newImg = new Image();
+                    newImg.crossOrigin = "";
+                    newImg.onerror = function () {
+                        reject(new Sk.builtin.IOError("Failed to load URL: " + newImg.src));
+                    };
+                    newImg.onload = function () {
+                        self.image = this;
+                        initializeImage(self);
+                        resolve(Sk.builtin.none.none$);
+                    };
+                    // look for mapping from imagename to url and possible an image proxy server
+                    newImg.src = remapImageIdToURL(imageId);
+                }));
+                susp.suspend();
             }
+            return Sk.builtin.none.none$;
 
         });
 
@@ -186,41 +176,34 @@ $builtinmodule = function (name) {
 
 
         updateCanvasAndSuspend = function (self, x, y) {
-            var susp = new Sk.misceval.Suspension();
-            susp.resume = function () {
-                return Sk.builtin.none.none$;
-            };
-            susp.data = {
-                type: "Sk.promise",
-                promise: new Promise(function (resolve, reject) {
-                    self.updateCount++;
-                    if ((self.updateCount % self.updateInterval) === 0) {
-                        if (self.lastx + self.updateInterval >= self.width) {
-                            self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
-                                0, self.lasty, self.width, 2);
-                        } else if (self.lasty + self.updateInterval >= self.height) {
-                            self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
-                                self.lastx, 0, 2, self.height);
-                        } else {
-                            self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
-                                Math.min(x, self.lastx),
-                                Math.min(y, self.lasty),
-                                Math.max(Math.abs(x - self.lastx), 1),
-                                Math.max(Math.abs(y - self.lasty), 1));
-                        }
-                        self.lastx = x;
-                        self.lasty = y;
-                        if (self.delay > 0) {
-                            window.setTimeout(resolve, self.delay);
-                        } else {
-                            resolve();
-                        }
+            var susp = new Sk.misceval.Suspension(new Promise(function (resolve, reject) {
+                self.updateCount++;
+                if ((self.updateCount % self.updateInterval) === 0) {
+                    if (self.lastx + self.updateInterval >= self.width) {
+                        self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
+                            0, self.lasty, self.width, 2);
+                    } else if (self.lasty + self.updateInterval >= self.height) {
+                        self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
+                            self.lastx, 0, 2, self.height);
                     } else {
-                        resolve();
+                        self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
+                            Math.min(x, self.lastx),
+                            Math.min(y, self.lasty),
+                            Math.max(Math.abs(x - self.lastx), 1),
+                            Math.max(Math.abs(y - self.lasty), 1));
                     }
-                })
-            };
-            return susp;
+                    self.lastx = x;
+                    self.lasty = y;
+                    if (self.delay > 0) {
+                        window.setTimeout(() => resolve(Sk.builtin.none.none$), self.delay);
+                    } else {
+                        resolve(Sk.builtin.none.none$);
+                    }
+                } else {
+                    resolve(Sk.builtin.none.none$);
+                }
+            }));
+            susp.suspend();
         };
 
         var setpixel = function (self, x, y, pix) {
@@ -330,38 +313,31 @@ $builtinmodule = function (name) {
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
             var susp;
             Sk.builtin.pyCheckArgsLen("draw", arguments.length, 2, 4);
-            susp = new Sk.misceval.Suspension();
-            susp.resume = function () {
-                return Sk.builtin.none.none$;
-            };
-            susp.data = {
-                type: "Sk.promise",
-                promise: new Promise(function (resolve, reject) {
-                    var can;
-                    var ctx;
-                    win = Sk.builtin.asnum$(win);
-                    ulx = Sk.builtin.asnum$(ulx);
-                    uly = Sk.builtin.asnum$(uly);
-                    can = Sk.misceval.callsimArray(win.getWin, [win]);
-                    ctx = can.getContext("2d");
-                    if (ulx === undefined) {
-                        ulx = 0;
-                        uly = 0;
-                    }
-                    self.lastUlx = ulx;
-                    self.lastUly = uly;
-                    self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
-                    //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
-                    ctx.putImageData(self.imagedata, ulx, uly);
+            susp = new Sk.misceval.Suspension(new Promise(function (resolve, reject) {
+                var can;
+                var ctx;
+                win = Sk.builtin.asnum$(win);
+                ulx = Sk.builtin.asnum$(ulx);
+                uly = Sk.builtin.asnum$(uly);
+                can = Sk.misceval.callsimArray(win.getWin, [win]);
+                ctx = can.getContext("2d");
+                if (ulx === undefined) {
+                    ulx = 0;
+                    uly = 0;
+                }
+                self.lastUlx = ulx;
+                self.lastUly = uly;
+                self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
+                //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
+                ctx.putImageData(self.imagedata, ulx, uly);
 
-                    if (self.delay > 0) {
-                        window.setTimeout(resolve, self.delay);
-                    } else {
-                        window.setTimeout(resolve, 200);
-                    }
-                })
-            };
-            return susp;
+                if (self.delay > 0) {
+                    window.setTimeout(() => resolve(Sk.builtin.none.none$), self.delay);
+                } else {
+                    window.setTimeout(() => resolve(Sk.builtin.none.none$), 200);
+                }
+            }));
+            susp.suspend();
 
         });
 

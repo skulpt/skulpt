@@ -345,7 +345,7 @@ function $builtinmodule() {
                 if (!x || !y) {
                     throw new Sk.builtin.AttributeErrror("object");
                 }
-                const comparison = Sk.misceval.callsimOrSuspendArray(this.cmp, [x, y]);
+                const comparison = () => Sk.misceval.callsimOrSuspendArray(this.cmp, [x, y]);
                 return Sk.misceval.chain(comparison, (res) => Sk.misceval.richCompareBool(res, zero, op));
             },
             tp$getattr: Sk.generic.getAttr,
@@ -380,16 +380,15 @@ function $builtinmodule() {
             $meth: function reduce(fun, seq, initializer) {
                 const iter = Sk.abstr.iter(seq);
                 let accum_value;
-                initializer = initializer || iter.tp$iternext(true);
                 return Sk.misceval.chain(
-                    initializer,
+                    () => initializer || iter.tp$iternext(true),
                     (initial) => {
                         if (initial === undefined) {
                             throw new Sk.builtin.TypeError("reduce() of empty sequence with no initial value");
                         }
                         accum_value = initial;
                         return Sk.misceval.iterFor(iter, (item) => {
-                            return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(fun, [accum_value, item]), (res) => {
+                            return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(fun, [accum_value, item]), (res) => {
                                 accum_value = res;
                             });
                         });

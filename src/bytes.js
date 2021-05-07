@@ -88,7 +88,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             if (pySource === undefined) {
                 return new Sk.builtin.bytes();
             } else if ((dunderBytes = Sk.abstr.lookupSpecial(pySource, Sk.builtin.str.$bytes)) !== undefined) {
-                const ret = Sk.misceval.callsimOrSuspendArray(dunderBytes, []);
+                const ret = () => Sk.misceval.callsimOrSuspendArray(dunderBytes, []);
                 return Sk.misceval.chain(ret, (bytesSource) => {
                     if (!Sk.builtin.checkBytes(bytesSource)) {
                         throw new Sk.builtin.TypeError("__bytes__ returned non-bytes (type " + Sk.abstr.typeName(bytesSource) + ")");
@@ -107,7 +107,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 throw new Sk.builtin.TypeError("string argument without an encoding");
             } else if (Sk.builtin.checkIterable(pySource)) {
                 let source = [];
-                let r = Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
+                let r = () => Sk.misceval.iterFor(Sk.abstr.iter(pySource), (byte) => {
                     const n = Sk.misceval.asIndexSized(byte);
                     if (n < 0 || n > 255) {
                         throw new Sk.builtin.ValueError("bytes must be in range(0, 256)");
@@ -554,7 +554,7 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
                 const final = [];
                 let i = 0;
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(iterable), (item) => {
+                    () => Sk.misceval.iterFor(Sk.abstr.iter(iterable), (item) => {
                         if (!(item instanceof Sk.builtin.bytes)) {
                             throw new Sk.builtin.TypeError(
                                 "sequence item " + i + ": expected a bytes-like object, " + Sk.abstr.typeName(item) + " found"

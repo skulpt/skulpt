@@ -92,7 +92,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return dict;
         },
         nb$inplace_or(other) {
-            return Sk.misceval.chain(this.update$onearg(other), () => this);
+            return Sk.misceval.chain(() => this.update$onearg(other), () => this);
         },
         // sequence or mapping slots
         sq$length() {
@@ -109,8 +109,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             let missing = Sk.abstr.lookupSpecial(this, Sk.builtin.str.$missing);
             if (missing !== undefined) {
-                const ret = Sk.misceval.callsimOrSuspendArray(missing, [key]);
-                return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+                const ret = () => Sk.misceval.callsimOrSuspendArray(missing, [key]);
+                return canSuspend ? ret() : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
             }
             throw new Sk.builtin.KeyError(key);
         },
@@ -224,7 +224,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         update: {
             $meth(args, kwargs) {
-                return Sk.misceval.chain(this.update$common(args, kwargs, "update"), () => Sk.builtin.none.none$);
+                return Sk.misceval.chain(() => this.update$common(args, kwargs, "update"), () => Sk.builtin.none.none$);
             },
             $flags: { FastCall: true },
             $textsig: null,
@@ -255,7 +255,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         fromkeys: {
             $meth: function fromkeys(seq, value) {
                 value = value || Sk.builtin.none.none$;
-                let dict = this === Sk.builtin.dict ? new this() : this.tp$call([], []);
+                let dict = () => this === Sk.builtin.dict ? new this() : this.tp$call([], []);
                 return Sk.misceval.chain(
                     dict,
                     (d) => {
@@ -506,9 +506,9 @@ function dict$merge(b) {
         // or other mapping types like mapping proxy
         const keyfunc = Sk.abstr.lookupSpecial(b, Sk.builtin.str.$keys);
 
-        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc, []), (keys) =>
+        return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(keyfunc, []), (keys) =>
             Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
-                Sk.misceval.chain(b.mp$subscript(key, true), (v) => {
+                Sk.misceval.chain(() => b.mp$subscript(key, true), (v) => {
                     this.set$item(key, v);
                 })
             )
@@ -544,7 +544,9 @@ function update$common(args, kwargs, func_name) {
     const arg = args[0];
     let ret;
     if (arg !== undefined) {
-        ret = this.update$onearg(arg);
+        ret = () => this.update$onearg(arg);
+    } else {
+        ret = () => {};
     }
     return Sk.misceval.chain(ret, () => {
         if (kwargs) {

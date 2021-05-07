@@ -27,7 +27,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             // ok we've failed to find anything check if there is __getattr__ defined as per pep 562
             const getattr = this.$d.__getattr__;
             if (getattr !== undefined) {
-                const res  = Sk.misceval.tryCatch(
+                const res  = () => Sk.misceval.tryCatch(
                     () => Sk.misceval.callsimOrSuspendArray(getattr, [pyName]),
                     (e) => {
                         if (e instanceof Sk.builtin.AttributeError) {
@@ -36,7 +36,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                         throw e;
                     }
                 );
-                return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+                return canSuspend ? res() : Sk.misceval.retryOptionalSuspensionOrThrow(res);
             }
         },
         tp$setattr: Sk.generic.setAttr,
