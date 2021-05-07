@@ -185,131 +185,89 @@ Sk.builtin.len = function len(item) {
     });
 };
 
-Sk.builtin.min = function min(args, kwargs) {
-    let iter;
-    const nargs = args.length;
-    if (!nargs) {
-        throw new Sk.builtin.TypeError("min expected 1 argument, got 0");
-    }
-    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("min", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
 
-    // if args is not a single iterable then default should not be included as a kwarg
-    if (nargs > 1 && $default !== null) {
-        throw new Sk.builtin.TypeError("Cannot specify a default for min() with multiple positional arguments");
-    }
+function minMax(name, cmp) {
+    return function (args, kwargs) {
+        let iter;
+        const nargs = args.length;
+        if (!nargs) {
+            throw new Sk.builtin.TypeError(`${name} expected 1 argument, got 0`);
+        }
+        const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs(name, ["default", "key"], [], kwargs, [
+            null,
+            Sk.builtin.none.none$,
+        ]);
 
-    if (nargs == 1) {
-        iter = Sk.abstr.iter(args[0]);
-    } else {
-        iter = Sk.abstr.iter(new Sk.builtin.tuple(args));
-    }
+        // if args is not a single iterable then default should not be included as a kwarg
+        if (nargs > 1 && $default !== null) {
+            throw new Sk.builtin.TypeError(
+                `Cannot specify a default for ${name}() with multiple positional arguments`
+            );
+        }
 
-    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
-    }
+        if (nargs == 1) {
+            iter = Sk.abstr.iter(args[0]);
+        } else {
+            iter = Sk.abstr.iter(new Sk.builtin.tuple(args));
+        }
 
-    let lowest;
-    return Sk.misceval.chain(
-        () => iter.tp$iternext(true),
-        (i) => {
-            lowest = i;
-            if (lowest === undefined) {
-                return;
-            }
-            if (Sk.builtin.checkNone(key)) {
-                return Sk.misceval.iterFor(iter, (i) => {
-                    if (Sk.misceval.richCompareBool(i, lowest, "Lt")) {
-                        lowest = i;
-                    }
-                });
-            } else {
-                return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [lowest]), (lowest_compare) =>
-                    Sk.misceval.iterFor(iter, (i) =>
-                        Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
-                            if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
-                                lowest = i;
-                                lowest_compare = i_compare;
-                            }
-                        })
+        // use iterFor as a reducer
+        const withoutKey = (init_val) =>
+            Sk.misceval.iterFor(
+                iter,
+                (i, current) => (Sk.misceval.richCompareBool(i, current, cmp) ? i : current),
+                init_val
+            );
+
+        const withKey = (init_val) =>
+            Sk.misceval.chain(
+                () => Sk.misceval.callsimOrSuspendArray(key, [init_val]),
+                (current_compare) =>
+                    Sk.misceval.iterFor(
+                        iter,
+                        (i, current) =>
+                            Sk.misceval.chain(
+                                () => Sk.misceval.callsimOrSuspendArray(key, [i]),
+                                (i_compare) => {
+                                    if (Sk.misceval.richCompareBool(i_compare, current_compare, cmp)) {
+                                        current_compare = i_compare;
+                                        current = i;
+                                    }
+                                    return current;
+                                }
+                            ),
+                        init_val
                     )
-                );
-            }
-        },
-        () => {
-            if (lowest === undefined) {
-                if ($default === null) {
-                    throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+            );
+
+        let doMinMax;
+        if (Sk.builtin.checkNone(key)) {
+            doMinMax = withoutKey;
+        } else if (Sk.builtin.checkCallable(key)) {
+            doMinMax = withKey;
+        } else {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
+        }
+
+        return Sk.misceval.chain(
+            () => iter.tp$iternext(true),
+            (init_val) => {
+                if (init_val !== undefined) {
+                    return doMinMax(init_val);
+                } else if ($default !== null) {
+                    return $default;
                 } else {
-                    lowest = $default;
+                    throw new Sk.builtin.ValueError(`${name}() arg is an empty sequence`);
                 }
             }
-            return lowest;
-        }
-    );
-};
+        );
+    };
+}
 
-Sk.builtin.max = function max(args, kwargs) {
-    let iter;
-    const nargs = args.length;
+Sk.builtin.min = minMax("min", "Lt");
 
-    if (!nargs) {
-        throw new Sk.builtin.TypeError("max expected 1 argument, got 0");
-    }
-    const [$default, key] = Sk.abstr.copyKeywordsToNamedArgs("max", ["default", "key"], [], kwargs, [null, Sk.builtin.none.none$]);
+Sk.builtin.max = minMax("max", "Gt");
 
-    // if args is not a single iterable then default should not be included as a kwarg
-    if (nargs > 1 && $default !== null) {
-        throw new Sk.builtin.TypeError("Cannot specify a default for max() with multiple positional arguments");
-    }
-
-    if (nargs === 1) {
-        iter = Sk.abstr.iter(args[0]);
-    } else {
-        iter = Sk.abstr.iter(new Sk.builtin.tuple(args));
-    }
-
-    if (!Sk.builtin.checkNone(key) && !Sk.builtin.checkCallable(key)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(key) + "' object is not callable");
-    }
-    let highest;
-    return Sk.misceval.chain(
-        () => iter.tp$iternext(true),
-        (i) => {
-            highest = i;
-            if (highest === undefined) {
-                return;
-            }
-            if (Sk.builtin.checkNone(key)) {
-                return Sk.misceval.iterFor(iter, (i) => {
-                    if (Sk.misceval.richCompareBool(i, highest, "Gt")) {
-                        highest = i;
-                    }
-                });
-            } else {
-                return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [highest]), (highest_compare) =>
-                    Sk.misceval.iterFor(iter, (i) =>
-                        Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
-                            if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
-                                highest = i;
-                                highest_compare = i_compare;
-                            }
-                        })
-                    )
-                );
-            }
-        },
-        () => {
-            if (highest === undefined) {
-                if ($default === null) {
-                    throw new Sk.builtin.ValueError("max() arg is an empty sequence");
-                } else {
-                    highest = $default;
-                }
-            }
-            return highest;
-        }
-    );
-};
 
 // incase someone calls these functions via Sk.misceval.call
 Sk.builtin.min.co_fastcall = Sk.builtin.max.co_fastcall = 1;
