@@ -14,7 +14,7 @@ title: "Using Skulpt on your site"
     </ul>
     <p>Need some inspiration for a project? Just want to learn or teach Python? Head over to the <a href="gallery.html">Gallery</a> to see how great educational projects are using Skulpt</p>
 </div>
-    
+
 <div data-magellan-expedition="fixed" class="floating-nav">
   <dl class="sub-nav">
     <dd data-magellan-arrival="embed"><a href="#embed">Embed Skulpt</a></dd>
@@ -83,7 +83,7 @@ If you want to customize how a module behaves you can use the `onAfterImport` ho
       <div class="small-12 columns">
           <h4><a href="{{ release.url }}">{{ release.tag_name }}</a></h4>
           <p>
-            {{ release.body }}
+            {{ release.body | markdownify }}
           </p>
       </div>
     {% endfor %}
