@@ -212,21 +212,20 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                                                 searchPath
                                             ),
                                         (codeAndPath_) => {
-                                            codeAndPath = codeAndPath_; // We'll want it in a moment
-                                            if (codeAndPath) {
-                                                return Sk.compile(
-                                                    codeAndPath.code,
-                                                    codeAndPath.filename,
-                                                    "exec",
-                                                    canSuspend
-                                                );
+                                            if (!codeAndPath_) {
+                                                throw new Sk.misceval.ChainBreak(); // return undefined
                                             }
+                                            codeAndPath = codeAndPath_; // We'll want it in a moment
+                                            return Sk.compile(
+                                                codeAndPath.code,
+                                                codeAndPath.filename,
+                                                "exec",
+                                                canSuspend
+                                            );
                                         },
                                         (co) => {
-                                            if (co) {
-                                                co.packagePath = codeAndPath.packagePath;
-                                                return co;
-                                            }
+                                            co.packagePath = codeAndPath.packagePath;
+                                            return co;
                                         }
                                     );
                                 }
@@ -235,8 +234,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                     }
                 },
                 (co) => {
-                    if (!co) {
-                        return;
+                    if (co === undefined) {
+                        if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
+                            throw new Sk.misceval.ChainBreak(undefined); // return undefined
+                        } else {
+                            throw new Sk.builtin.ImportError("No module named " + name);
+                        }
                     }
                     // Now we know this module exists, we can add it to the cache
                     Sk.sysmodules.mp$ass_subscript(new Sk.builtin.str(modname), module);
@@ -298,13 +301,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                     return modscope(module["$d"]);
                 },
                 (modlocs) => {
-                    if (modlocs === undefined) {
-                        if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
-                            return undefined;
-                        } else {
-                            throw new Sk.builtin.ImportError("No module named " + name);
-                        }
-                    }
 
                     // Some builtin modules replace their globals entirely.
                     // For their benefit, we copy over any of the standard
