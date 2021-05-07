@@ -1121,12 +1121,19 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
         }
     }
 
-    output +=  "try { $ret=susp.child.resume(); } catch(err) {  ";
-    output += "if (err instanceof Sk.misceval.Suspension) {"
-    output += !this.canSuspend ? "$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); contine;}" : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);}"
-
-    output += "else if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
-                "};";
+    if (this.canSuspend) {
+        output += "try { $ret=susp.child.resume(); }";
+        output += "catch (err) {";
+        output += "if (err instanceof Sk.misceval.Suspension) {";
+        output += "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    } else {
+        output += "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return susp.child.resume()});}";
+        output += "catch (err) {";
+    }
+    output += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
+    output += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '" + this.filename + "'}); ";
+    output += "if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; }}";
+    output += "};";
 
     seenTemps = {};
     for (i = 0; i < localsToSave.length; i++) {
@@ -1984,9 +1991,14 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){ ";
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
-    this.u.suffixCode += !this.u.canSuspend ? "$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); contine;}" : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);}"
-
-    this.u.suffixCode += "else if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
+    this.u.suffixCode += !this.u.canSuspend
+    ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
+    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    // allow fall throw if we can't suspend
+    this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
+    this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
+    this.u.suffixCode += "if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} ";
+    this.u.suffixCode += "}});";
 
     //
     // jump back to the handler so it can do the main actual work of the
@@ -2302,10 +2314,14 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}}catch(err){ ";
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
-    this.u.suffixCode += !this.u.canSuspend ? "$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); contine;}" : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);}"
-
-    this.u.suffixCode += " else if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}";
-    this.u.suffixCode += "}).call(null, $cell);});";
+    this.u.suffixCode += !this.u.canSuspend
+    ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
+    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    // allow fall throw if we can't suspend
+    this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
+    this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
+    this.u.suffixCode += "if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}";
+    this.u.suffixCode += "}}).call(null, $cell);});";
 
     this.u.private_ = s.name;
 
@@ -2761,9 +2777,15 @@ Compiler.prototype.cmod = function (mod) {
     this.u.suffixCode = "}";
     this.u.suffixCode += "}catch(err){ ";
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
-    this.u.suffixCode += !this.u.canSuspend ? "$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); contine;}" : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);}"
+    this.u.suffixCode += !this.u.canSuspend
+    ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
+    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    // allow fall throw if we can't suspend
+    this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
+    this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
+    this.u.suffixCode += "if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}";
+    this.u.suffixCode += "} });";
 
-    this.u.suffixCode += " else if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those
