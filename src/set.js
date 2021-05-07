@@ -104,19 +104,19 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             if (other === this) {
                 other = other.set$copy();
             }
-            return Sk.misceval.chain(this.difference_update.$meth.call(this, other), () => this);
+            return Sk.misceval.chain(() => this.difference_update.$meth.call(this, other), () => this);
         }),
         nb$inplace_and: numberSlot(function (other) {
-            return Sk.misceval.chain(this.intersection_update.$meth.call(this, other), () => this);
+            return Sk.misceval.chain(() => this.intersection_update.$meth.call(this, other), () => this);
         }),
         nb$inplace_or: numberSlot(function (other) {
-            return Sk.misceval.chain(this.update.$meth.call(this, other), () => this);
+            return Sk.misceval.chain(() => this.update.$meth.call(this, other), () => this);
         }),
         nb$inplace_xor: numberSlot(function (other) {
             if (other === this) {
                 other = other.set$copy();
             }
-            return Sk.misceval.chain(this.symmetric_difference_update.$meth.call(this, other), () => this);
+            return Sk.misceval.chain(() => this.symmetric_difference_update.$meth.call(this, other), () => this);
         }),
         // sequence or mapping slots
         sq$length() {
@@ -168,7 +168,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth(...args) {
                 const result = this.set$copy();
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArray(args, (arg) => result.set$difference_update(arg)),
+                    () => Sk.misceval.iterArray(args, (arg) => result.set$difference_update(arg)),
                     () => result
                 );
             },
@@ -179,7 +179,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         difference_update: {
             $meth(...args) {
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArray(args, (arg) => this.set$difference_update(arg)),
+                    () => Sk.misceval.iterArray(args, (arg) => this.set$difference_update(arg)),
                     () => Sk.builtin.none.none$
                 );
             },
@@ -197,7 +197,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         intersection_update: {
             $meth(...args) {
-                return Sk.misceval.chain(this.set$intersection_multi(...args), (res) => {
+                return Sk.misceval.chain(() => this.set$intersection_multi(...args), (res) => {
                     this.swap$bodies(res);
                     return Sk.builtin.none.none$;
                 });
@@ -210,9 +210,9 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth(other) {
                 // requires all items in this to not be in other
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(other), (i) => {
+                    () => Sk.misceval.iterFor(Sk.abstr.iter(other), (i) => {
                         if (this.sq$contains(i)) {
-                            return new Sk.misceval.Break(Sk.builtin.bool.false$);
+                            throw new Sk.misceval.Break(Sk.builtin.bool.false$);
                         }
                     }),
                     (res) => res || Sk.builtin.bool.true$
@@ -224,10 +224,12 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         },
         issubset: {
             $meth(other) {
+                let get_other;
                 if (!Sk.builtin.checkAnySet(other)) {
-                    other = this.set$make_basetype(other);
+                    return Sk.misceval.chain(() => this.set$make_basetype(other), (other_set) => this.set$issubset(other_set));
+                } else {
+                    return Sk.misceval.chain(() => this.set$issubset(other));
                 }
-                return Sk.misceval.chain(other, (other_set) => this.set$issubset(other_set));
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -236,9 +238,10 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         issuperset: {
             $meth(other) {
                 if (!Sk.builtin.checkAnySet(other)) {
-                    other = this.set$make_basetype(other);
+                    return Sk.misceval.chain(() => this.set$make_basetype(other), (other_set) => other_set.set$issubset(this));
+                } else {
+                    return Sk.misceval.chain(() => other.set$issubset(this));
                 }
-                return Sk.misceval.chain(other, (other_set) => other_set.set$issubset(this));
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -283,7 +286,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth(other) {
                 let other_set;
                 return Sk.misceval.chain(
-                    this.set$make_basetype(other),
+                    () => this.set$make_basetype(other),
                     (os) => {
                         other_set = os;
                         return other_set.set$symmetric_diff_update(this);
@@ -298,13 +301,13 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         symmetric_difference_update: {
             $meth(other) {
                 if (!Sk.builtin.checkAnySet(other)) {
-                    other = this.set$make_basetype(other);
+                    return Sk.misceval.chain(
+                        () => this.set$make_basetype(other),
+                        (other_set) => this.set$symmetric_diff_update(other_set),
+                        () => Sk.builtin.none.none$
+                    );
                 }
-                return Sk.misceval.chain(
-                    other,
-                    (other_set) => this.set$symmetric_diff_update(other_set),
-                    () => Sk.builtin.none.none$
-                );
+                return Sk.misceval.chain(() => this.set$symmetric_diff_update(other), () => Sk.builtin.none.none$);
             },
             $flags: { OneArg: true },
             $textsig: null,
@@ -314,7 +317,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $meth(...args) {
                 const result = this.set$copy();
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArray(args, (arg) => result.set$update(arg)),
+                    () => Sk.misceval.iterArray(args, (arg) => result.set$update(arg)),
                     () => result
                 );
             },
@@ -325,7 +328,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         update: {
             $meth(...args) {
                 return Sk.misceval.chain(
-                    Sk.misceval.iterArray(args, (arg) => this.set$update(arg)),
+                    () => Sk.misceval.iterArray(args, (arg) => this.set$update(arg)),
                     () => Sk.builtin.none.none$
                 );
             },
@@ -346,7 +349,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             this.v.mp$ass_subscript(entry, true);
         },
         set$make_basetype(other) {
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$builtinBase(S));
+            return Sk.misceval.chain(() => Sk.misceval.arrayFromIterable(other, true), (S) => new this.sk$builtinBase(S));
         },
         set$discard(entry) {
             return this.v.pop$item(entry);
@@ -367,7 +370,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
         set$intersection(other) {
             const res = new this.sk$builtinBase();
             return Sk.misceval.chain(
-                Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
+                () => Sk.misceval.iterFor(Sk.abstr.iter(other), (entry) => {
                     if (this.sq$contains(entry)) {
                         res.set$add(entry);
                     }
@@ -381,8 +384,8 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             }
             let result = this;
             return Sk.misceval.chain(
-                Sk.misceval.iterArray(args, (arg) => {
-                    return Sk.misceval.chain(result.set$intersection(arg), (res) => {
+                () => Sk.misceval.iterArray(args, (arg) => {
+                    return Sk.misceval.chain(() => result.set$intersection(arg), (res) => {
                         result = res;
                     });
                 }),
@@ -480,7 +483,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             if (arg !== undefined && arg.ob$type === Sk.builtin.frozenset) {
                 return arg;
             }
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(arg, true), (S) => {
+            return Sk.misceval.chain(() => Sk.misceval.arrayFromIterable(arg, true), (S) => {
                 if (!S.length) {
                     // in cpython frozenset() on an empty set returns the same object
                     return Sk.builtin.frozenset.$emptyset;
@@ -521,7 +524,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
             $subtype_new(args, kwargs) {
                 const instance = new this.constructor();
                 // pass the args but ignore the kwargs for subtyping
-                return Sk.misceval.chain(Sk.builtin.frozenset.prototype.tp$new(args), (frozenset) => {
+                return Sk.misceval.chain(() => Sk.builtin.frozenset.prototype.tp$new(args), (frozenset) => {
                     instance.v = frozenset.v;
                     return instance;
                 });

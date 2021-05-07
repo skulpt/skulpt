@@ -176,7 +176,7 @@ Sk.builtin.len = function len(item) {
     // checking will happen in slot wrapper
     let res;
     if (item.sq$length) {
-        res = item.sq$length(true);
+        res = () => item.sq$length(true);
     } else {
         throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
     }
@@ -210,7 +210,7 @@ Sk.builtin.min = function min(args, kwargs) {
 
     let lowest;
     return Sk.misceval.chain(
-        iter.tp$iternext(true),
+        () => iter.tp$iternext(true),
         (i) => {
             lowest = i;
             if (lowest === undefined) {
@@ -223,9 +223,9 @@ Sk.builtin.min = function min(args, kwargs) {
                     }
                 });
             } else {
-                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [lowest]), (lowest_compare) =>
+                return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [lowest]), (lowest_compare) =>
                     Sk.misceval.iterFor(iter, (i) =>
-                        Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
+                        Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
                             if (Sk.misceval.richCompareBool(i_compare, lowest_compare, "Lt")) {
                                 lowest = i;
                                 lowest_compare = i_compare;
@@ -273,7 +273,7 @@ Sk.builtin.max = function max(args, kwargs) {
     }
     let highest;
     return Sk.misceval.chain(
-        iter.tp$iternext(true),
+        () => iter.tp$iternext(true),
         (i) => {
             highest = i;
             if (highest === undefined) {
@@ -286,9 +286,9 @@ Sk.builtin.max = function max(args, kwargs) {
                     }
                 });
             } else {
-                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [highest]), (highest_compare) =>
+                return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [highest]), (highest_compare) =>
                     Sk.misceval.iterFor(iter, (i) =>
-                        Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
+                        Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(key, [i]), (i_compare) => {
                             if (Sk.misceval.richCompareBool(i_compare, highest_compare, "Gt")) {
                                 highest = i;
                                 highest_compare = i_compare;
@@ -316,9 +316,9 @@ Sk.builtin.min.co_fastcall = Sk.builtin.max.co_fastcall = 1;
 
 Sk.builtin.any = function any(iter) {
     return Sk.misceval.chain(
-        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+        () => Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
             if (Sk.misceval.isTrue(i)) {
-                return new Sk.misceval.Break(Sk.builtin.bool.true$);
+                throw new Sk.misceval.Break(Sk.builtin.bool.true$);
             }
         }),
         (brValue) => brValue || Sk.builtin.bool.false$
@@ -327,9 +327,9 @@ Sk.builtin.any = function any(iter) {
 
 Sk.builtin.all = function all(iter) {
     return Sk.misceval.chain(
-        Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
+        () => Sk.misceval.iterFor(Sk.abstr.iter(iter), function (i) {
             if (!Sk.misceval.isTrue(i)) {
-                return new Sk.misceval.Break(Sk.builtin.bool.false$);
+                throw new Sk.misceval.Break(Sk.builtin.bool.false$);
             }
         }),
         (brValue) => brValue || Sk.builtin.bool.true$
@@ -354,10 +354,10 @@ Sk.builtin.sum = function sum(iter, start) {
                 tot = tot.nb$add(i);
             } else if (i.constructor === Sk.builtin.float_) {
                 tot = tot.nb$float().nb$add(i);
-                return new Sk.misceval.Break("float");
+                throw new Sk.misceval.Break("float");
             } else {
                 tot = Sk.abstr.numberBinOp(tot, i, "Add");
-                return new Sk.misceval.Break("slow");
+                throw new Sk.misceval.Break("slow");
             }
         });
     }
@@ -368,7 +368,7 @@ Sk.builtin.sum = function sum(iter, start) {
                 tot = tot.nb$add(i);
             } else {
                 tot = Sk.abstr.numberBinOp(tot, i, "Add");
-                return new Sk.misceval.Break("slow");
+                throw new Sk.misceval.Break("slow");
             }
         });
     }
@@ -381,11 +381,11 @@ Sk.builtin.sum = function sum(iter, start) {
 
     let sumType;
     if (start === undefined || start.constructor === Sk.builtin.int_) {
-        sumType = fastSumInt();
+        sumType = () => fastSumInt();
     } else if (start.constructor === Sk.builtin.float_) {
-        sumType = "float";
+        sumType = () => "float";
     } else {
-        sumType = "slow";
+        sumType = () => "slow";
     }
 
     return Sk.misceval.chain(
@@ -558,7 +558,7 @@ Sk.builtin.bin = function bin(x) {
 Sk.builtin.dir = function dir(obj) {
     if (obj !== undefined) {
         const obj_dir_func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$dir);
-        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(obj_dir_func, []), (dir) => Sk.builtin.sorted(dir));
+        return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(obj_dir_func, []), (dir) => Sk.builtin.sorted(dir));
         // now iter through the keys and check they are all stings
     }
     // then we want all the objects in the global scope
@@ -571,7 +571,7 @@ Sk.builtin.repr = function repr(x) {
 };
 
 Sk.builtin.ascii = function ascii (x) {
-    return Sk.misceval.chain(x.$r(), (r) => {
+    return Sk.misceval.chain(() => x.$r(), (r) => {
         let ret;
         let i;
         // Fast path
@@ -673,7 +673,7 @@ Sk.builtin.getattr = function getattr(obj, pyName, default_) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    const res = Sk.misceval.tryCatch(
+    const res = () => Sk.misceval.tryCatch(
         () => obj.tp$getattr(pyName, true),
         (e) => {
             if (e instanceof Sk.builtin.AttributeError) {
@@ -699,18 +699,17 @@ Sk.builtin.setattr = function setattr(obj, pyName, value) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
-    return Sk.misceval.chain(obj.tp$setattr(pyName, value, true), () => Sk.builtin.none.none$);
+    return Sk.misceval.chain(() => obj.tp$setattr(pyName, value, true), () => Sk.builtin.none.none$);
 };
 
 Sk.builtin.raw_input = function (prompt) {
     var lprompt = prompt ? prompt : "";
 
-    return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
+    return Sk.misceval.chain(() => Sk.importModule("sys", false, true), function (sys) {
         if (Sk.inputfunTakesPrompt) {
             return Sk.builtin.file.$readline(sys["$d"]["stdin"], null, lprompt);
         } else {
             return Sk.misceval.chain(
-                undefined,
                 function () {
                     return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]);
                 },
@@ -793,7 +792,7 @@ Sk.builtin.map = function map(fun, seq) {
     }
 
     return Sk.misceval.chain(
-        Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
+        () => Sk.misceval.iterFor(Sk.abstr.iter(seq), function (item) {
             if (fun === Sk.builtin.none.none$) {
                 if (item instanceof Array) {
                     // With None function and multiple sequences,
@@ -808,7 +807,7 @@ Sk.builtin.map = function map(fun, seq) {
                     item = [item];
                 }
 
-                return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(fun, item), function (result) {
+                return Sk.misceval.chain(() => Sk.misceval.callsimOrSuspendArray(fun, item), function (result) {
                     retval.push(result);
                 });
             }
@@ -850,7 +849,7 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
  * @param {*=} reverse
  */
 Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
-    const lst = Sk.misceval.arrayFromIterable(iterable, true);
+    const lst = () => Sk.misceval.arrayFromIterable(iterable, true);
     return Sk.misceval.chain(lst, (L) => {
         L = new Sk.builtin.list(L);
         L.list$sort(cmp, key, reverse);
@@ -917,7 +916,7 @@ Sk.builtin.hasattr = function hasattr(obj, pyName) {
     if (!Sk.builtin.checkString(pyName)) {
         throw new Sk.builtin.TypeError("hasattr(): attribute name must be string");
     }
-    const res = Sk.misceval.tryCatch(
+    const res = () => Sk.misceval.tryCatch(
         () => obj.tp$getattr(pyName, true),
         (e) => {
             if (e instanceof Sk.builtin.AttributeError) {

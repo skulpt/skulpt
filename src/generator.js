@@ -67,21 +67,13 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         if (this.func_closure) {
             args.push(this.func_closure);
         }
-        ret = this.func_code.apply(this.func_globals, args);
-        return (function finishIteration(ret) {
-            if (ret instanceof Sk.misceval.Suspension) {
-                if (canSuspend) {
-                    return new Sk.misceval.Suspension(finishIteration, ret);
-                } else {
-                    ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-                }
-            }
-            //print("ret", JSON.stringify(ret));
-            self["gi$running"] = false;
+        ret = () => this.func_code.apply(this.func_globals, args);
+        const finishIteration = () => Sk.misceval.chain(ret, (ret) => {
+            this.gi$running = false;
             Sk.asserts.assert(ret !== undefined);
             if (ret !== Sk.builtin.none.none$) {
                 // returns a pair: resume target and yielded value
-                self["gi$resumeat"] = ret[0];
+                this.gi$resumeat = ret[0];
                 ret = ret[1];
             } else {
                 // todo; StopIteration
@@ -89,7 +81,9 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             }
             //print("returning:", JSON.stringify(ret));
             return ret;
-        })(ret);
+        });
+
+        return canSuspend ? finishIteration() : Sk.misceval.retryOptionalSuspensionOrThrow(finishIteration);
     },
     methods: {
         send: {

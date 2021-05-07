@@ -12,18 +12,18 @@ Sk.builtin.zip_ = Sk.abstr.buildIteratorClass("zip", {
     },
     iternext(canSuspend) {
         const tup = [];
-        const ret = Sk.misceval.chain(
-            Sk.misceval.iterArray(this.$iters, (it) =>
-                Sk.misceval.chain(it.tp$iternext(canSuspend), (i) => {
+        const ret = () => Sk.misceval.chain(
+            () => Sk.misceval.iterArray(this.$iters, (it) =>
+                Sk.misceval.chain(() => it.tp$iternext(canSuspend), (i) => {
                     if (i === undefined) {
-                        return new Sk.misceval.Break(true);
+                        throw new Sk.misceval.Break(true);
                     }
                     tup.push(i);
                 })
             ),
             (endzip) => (endzip ? undefined : new Sk.builtin.tuple(tup))
         );
-        return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        return canSuspend ? ret() : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
     slots: {
         tp$doc:

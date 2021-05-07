@@ -359,7 +359,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             $meth(seq) {
                 const arrOfStrs = [];
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(seq), (i) => {
+                    () => Sk.misceval.iterFor(Sk.abstr.iter(seq), (i) => {
                         if (!(i instanceof Sk.builtin.str)) {
                             throw new Sk.builtin.TypeError(
                                 "sequence item " + arrOfStrs.length + ": expected str, " + Sk.abstr.typeName(i) + " found"

@@ -28,7 +28,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
             // this will be an Sk.builtin.list.prototype or a sk$klass.prototype that inherits from Sk.builtin.list.prototype
             Sk.abstr.checkNoKwargs("list", kwargs);
             Sk.abstr.checkArgsLen("list", args, 0, 1);
-            return Sk.misceval.chain(Sk.misceval.arrayFromIterable(args[0], true), (L) => {
+            return Sk.misceval.chain(() => Sk.misceval.arrayFromIterable(args[0], true), (L) => {
                 this.v = L;
             });
         },
@@ -108,7 +108,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 return this;
             }
             return Sk.misceval.chain(
-                Sk.misceval.iterFor(Sk.abstr.iter(other), (i) => {
+                () => Sk.misceval.iterFor(Sk.abstr.iter(other), (i) => {
                     this.v.push(i);
                 }),
                 () => this
@@ -188,7 +188,7 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                     return Sk.builtin.none.none$;
                 }
                 return Sk.misceval.chain(
-                    Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
+                    () => Sk.misceval.iterFor(Sk.abstr.iter(iterable), (i) => {
                         this.v.push(i);
                     }),
                     () => Sk.builtin.none.none$

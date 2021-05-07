@@ -4,7 +4,7 @@
  * @param {pyObject} iterable
  * @extends Sk.builtin.object
  */
-Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
+ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
     constructor: function filter_(func, iterable) {
         this.$func = func;
         this.$iterable = iterable;
@@ -13,7 +13,7 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         // iterate over iterable until we pass the predicate
         // this.chcek$filter either returns the item or undefined
         const ret = Sk.misceval.iterFor(this.$iterable, (i) =>
-            Sk.misceval.chain(this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined))
+            Sk.misceval.chain(() => this.check$filter(i), (i) => (i ? new Sk.misceval.Break(i) : undefined))
         );
         return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
     },
@@ -38,9 +38,9 @@ Sk.builtin.filter_ = Sk.abstr.buildIteratorClass("filter", {
         check$filter(item) {
             let res;
             if (this.$func === null) {
-                res = item;
+                res = () => item;
             } else {
-                res = Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
+                res = () => Sk.misceval.callsimOrSuspendArray(this.$func, [item]);
             }
             return Sk.misceval.chain(res, (ret) => (Sk.misceval.isTrue(ret) ? item : undefined));
         },
