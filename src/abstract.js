@@ -23,9 +23,9 @@ Sk.abstr = {};
  */
 Sk.abstr.typeName = function (obj) {
     if (obj != null && obj.tp$name !== undefined) {
-        let name = obj.hp$name;
+        let name = obj.ht$name;
         if (name !== undefined) {
-            return name;
+            return name.toString();
         }
         name = obj.tp$name;
         if (name.includes(".")) {

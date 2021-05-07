@@ -40,7 +40,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         tp$doc: "Common base class for all exceptions",
         tp$new(args, kwargs) {
             let instance;
-            if (!this.hp$type) {
+            if (!this.ht$type) {
                 // then we have a builtin constructor so just return it as new this
                 instance = new this.constructor();
             } else {
