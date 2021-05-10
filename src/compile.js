@@ -549,10 +549,22 @@ Compiler.prototype.cyield = function(e) {
         val = this.vexpr(e.value);
     }
     nextBlock = this.newBlock("after yield");
-    // return a pair: resume target block and yielded value
-    out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
+    out(`var $susp = $saveSuspension({
+            resume: () => {
+                debugger;
+                if ($susp.data.throw) {
+                    throw $susp.data.throw
+                } 
+                return $susp.data.sent;
+            }, 
+            data: {type: 'Sk.gen', yielded: ${val}},
+        },'${this.filename}', $currLineNo, $currColNo);`);
+    out(`debugger;$susp.$blk=${nextBlock};`);
+    out('return $susp;');
+
+    // out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
     this.setBlock(nextBlock);
-    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
+    return "$ret;"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 Compiler.prototype.cyieldfrom = function (e) {
@@ -1216,6 +1228,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
+                    "if (susp.data.type === 'Sk.gen'){debugger;}" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
@@ -1995,9 +2008,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // set up standard dicts/variables
     //
     locals = "{}";
+    let exc = "[]";
+    let err = "undefined";
     if (isGenerator) {
-        entryBlock = "$gen.gi$resumeat";
-        locals = "$gen.gi$locals";
+        // entryBlock = "$gen.gi$resumeat";
+        // locals = "$gen.gi$locals";
+        // exc = "$gen.gi$exc";
+        // err = "$gen.gi$err";
     }
     cells = ",$cell={}";
     if (hasCell) {
@@ -2009,7 +2026,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
     // (fastcall doesn't need to do this, as 'this' is the func object)
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this && this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=" + exc + ",$loc=" + locals + cells + ",$gbl=" +(fastCall?"this && this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err="+err+",$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2111,6 +2128,14 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // New switch code to catch exceptions
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
+    if (isGenerator) {
+        this.u.switchCode += `if ($gen.gi$throwvalue) {
+            // $exc.push(1);
+            const err = $gen.gi$throwvalue;
+            $gen.gi$throwvalue = null;
+            throw err;
+        }`
+    }
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
@@ -2212,14 +2237,22 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (isGenerator) {
     // Keyword and variable arguments are not currently supported in generators.
     // The call to pyCheckArgs assumes they can't be true.
-        if (args && args.args.length > 0) {
-            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
+        // if (args && args.args.length > 0) {
+            const func_scope = this._gr('funcscope', `new Sk.builtin.func(${scopename}, $gbl ${frees})`);
+            const func = this._gr("func", `function (args, kws) {
+                ${func_scope}.$resolveArgs(args, kws);
+                return new Sk.builtins.generator(${func_scope}, this.$name, this.$qualname);
+            };`);
+            out(`Object.assign(${func}, ${scopename});`);
+            out(`${func}.co_fastcall = 1;`);
+            return this._gr("gener", `new Sk.builtin.func(${func}, $gbl ${frees})`);
+            return this._gr("gener", "new Sk.builtin.func((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
                             coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
                             ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
-        } else {
-            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
-                            "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
-        }
+        // } else {
+            // return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
+            //                 "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
+        // }
     } else {
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");

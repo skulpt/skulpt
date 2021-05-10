@@ -31,14 +31,16 @@ Sk.misceval = {};
  */
 Sk.misceval.Suspension = function Suspension(resume, child, data) {
     this.$isSuspension = true;
-    if (resume !== undefined && child !== undefined) {
+    if (resume !== undefined && child != null) {
         this.resume = function () {
             return resume(child.resume());
         };
+    } else {
+        this.resume = resume;
     }
     this.child = child;
-    this.optional = child !== undefined && child.optional;
-    if (data === undefined && child !== undefined) {
+    this.optional = child != null && child.optional;
+    if (data === undefined && child != null) {
         this.data = child.data;
     } else {
         this.data = data;
