@@ -104,42 +104,42 @@ class TestPEP380Operation(unittest.TestCase):
             "Finishing g1",
         ])
 
-    # def test_raising_exception_in_delegated_next_call(self):
-    #     """
-    #     Test raising exception in delegated next() call
-    #     """
-    #     trace = []
-    #     def g1():
-    #         try:
-    #             trace.append("Starting g1")
-    #             yield "g1 ham"
-    #             yield from g2()
-    #             yield "g1 eggs"
-    #         finally:
-    #             trace.append("Finishing g1")
-    #     def g2():
-    #         try:
-    #             trace.append("Starting g2")
-    #             yield "g2 spam"
-    #             raise ValueError("hovercraft is full of eels")
-    #             yield "g2 more spam"
-    #         finally:
-    #             trace.append("Finishing g2")
-    #     try:
-    #         for x in g1():
-    #             trace.append("Yielded %s" % (x,))
-    #     except ValueError as e:
-    #         self.assertEqual(e.args[0], "hovercraft is full of eels")
-    #     else:
-    #         self.fail("subgenerator failed to raise ValueError")
-    #     self.assertEqual(trace,[
-    #         "Starting g1",
-    #         "Yielded g1 ham",
-    #         "Starting g2",
-    #         "Yielded g2 spam",
-    #         "Finishing g2",
-    #         "Finishing g1",
-    #     ])
+    def test_raising_exception_in_delegated_next_call(self):
+        """
+        Test raising exception in delegated next() call
+        """
+        trace = []
+        def g1():
+            try:
+                trace.append("Starting g1")
+                yield "g1 ham"
+                yield from g2()
+                yield "g1 eggs"
+            finally:
+                trace.append("Finishing g1")
+        def g2():
+            try:
+                trace.append("Starting g2")
+                yield "g2 spam"
+                raise ValueError("hovercraft is full of eels")
+                yield "g2 more spam"
+            finally:
+                trace.append("Finishing g2")
+        try:
+            for x in g1():
+                trace.append("Yielded %s" % (x,))
+        except ValueError as e:
+            self.assertEqual(e.args[0], "hovercraft is full of eels")
+        else:
+            self.fail("subgenerator failed to raise ValueError")
+        self.assertEqual(trace,[
+            "Starting g1",
+            "Yielded g1 ham",
+            "Starting g2",
+            "Yielded g2 spam",
+            "Finishing g2",
+            "Finishing g1",
+        ])
 
     def test_delegation_of_send(self):
         """
@@ -226,120 +226,120 @@ class TestPEP380Operation(unittest.TestCase):
             "g2 received 2",
         ])
 
-    # def test_delegating_close(self):
-    #     """
-    #     Test delegating 'close'
-    #     """
-    #     trace = []
-    #     def g1():
-    #         try:
-    #             trace.append("Starting g1")
-    #             yield "g1 ham"
-    #             yield from g2()
-    #             yield "g1 eggs"
-    #         finally:
-    #             trace.append("Finishing g1")
-    #     def g2():
-    #         try:
-    #             trace.append("Starting g2")
-    #             yield "g2 spam"
-    #             yield "g2 more spam"
-    #         finally:
-    #             trace.append("Finishing g2")
-    #     g = g1()
-    #     for i in range(2):
-    #         x = next(g)
-    #         trace.append("Yielded %s" % (x,))
-    #     g.close()
-    #     self.assertEqual(trace,[
-    #         "Starting g1",
-    #         "Yielded g1 ham",
-    #         "Starting g2",
-    #         "Yielded g2 spam",
-    #         "Finishing g2",
-    #         "Finishing g1"
-    #     ])
+    def test_delegating_close(self):
+        """
+        Test delegating 'close'
+        """
+        trace = []
+        def g1():
+            try:
+                trace.append("Starting g1")
+                yield "g1 ham"
+                yield from g2()
+                yield "g1 eggs"
+            finally:
+                trace.append("Finishing g1")
+        def g2():
+            try:
+                trace.append("Starting g2")
+                yield "g2 spam"
+                yield "g2 more spam"
+            finally:
+                trace.append("Finishing g2")
+        g = g1()
+        for i in range(2):
+            x = next(g)
+            trace.append("Yielded %s" % (x,))
+        g.close()
+        self.assertEqual(trace,[
+            "Starting g1",
+            "Yielded g1 ham",
+            "Starting g2",
+            "Yielded g2 spam",
+            "Finishing g2",
+            "Finishing g1"
+        ])
 
-    # def test_handing_exception_while_delegating_close(self):
-    #     """
-    #     Test handling exception while delegating 'close'
-    #     """
-    #     trace = []
-    #     def g1():
-    #         try:
-    #             trace.append("Starting g1")
-    #             yield "g1 ham"
-    #             yield from g2()
-    #             yield "g1 eggs"
-    #         finally:
-    #             trace.append("Finishing g1")
-    #     def g2():
-    #         try:
-    #             trace.append("Starting g2")
-    #             yield "g2 spam"
-    #             yield "g2 more spam"
-    #         finally:
-    #             trace.append("Finishing g2")
-    #             raise ValueError("nybbles have exploded with delight")
-    #     try:
-    #         g = g1()
-    #         for i in range(2):
-    #             x = next(g)
-    #             trace.append("Yielded %s" % (x,))
-    #         g.close()
-    #     except ValueError as e:
-    #         self.assertEqual(e.args[0], "nybbles have exploded with delight")
-    #         self.assertIsInstance(e.__context__, GeneratorExit)
-    #     else:
-    #         self.fail("subgenerator failed to raise ValueError")
-    #     self.assertEqual(trace,[
-    #         "Starting g1",
-    #         "Yielded g1 ham",
-    #         "Starting g2",
-    #         "Yielded g2 spam",
-    #         "Finishing g2",
-    #         "Finishing g1",
-    #     ])
+    def test_handing_exception_while_delegating_close(self):
+        """
+        Test handling exception while delegating 'close'
+        """
+        trace = []
+        def g1():
+            try:
+                trace.append("Starting g1")
+                yield "g1 ham"
+                yield from g2()
+                yield "g1 eggs"
+            finally:
+                trace.append("Finishing g1")
+        def g2():
+            try:
+                trace.append("Starting g2")
+                yield "g2 spam"
+                yield "g2 more spam"
+            finally:
+                trace.append("Finishing g2")
+                raise ValueError("nybbles have exploded with delight")
+        try:
+            g = g1()
+            for i in range(2):
+                x = next(g)
+                trace.append("Yielded %s" % (x,))
+            g.close()
+        except ValueError as e:
+            self.assertEqual(e.args[0], "nybbles have exploded with delight")
+            # self.assertIsInstance(e.__context__, GeneratorExit)
+        else:
+            self.fail("subgenerator failed to raise ValueError")
+        self.assertEqual(trace,[
+            "Starting g1",
+            "Yielded g1 ham",
+            "Starting g2",
+            "Yielded g2 spam",
+            "Finishing g2",
+            "Finishing g1",
+        ])
 
-    # def test_delegating_throw(self):
-    #     """
-    #     Test delegating 'throw'
-    #     """
-    #     trace = []
-    #     def g1():
-    #         try:
-    #             trace.append("Starting g1")
-    #             yield "g1 ham"
-    #             yield from g2()
-    #             yield "g1 eggs"
-    #         finally:
-    #             trace.append("Finishing g1")
-    #     def g2():
-    #         try:
-    #             trace.append("Starting g2")
-    #             yield "g2 spam"
-    #             yield "g2 more spam"
-    #         finally:
-    #             trace.append("Finishing g2")
-    #     try:
-    #         g = g1()
-    #         for i in range(2):
-    #             x = next(g)
-    #             trace.append("Yielded %s" % (x,))
-    #         e = ValueError("tomato ejected")
-    #         g.throw(e)
-    #     except ValueError as e:
-    #         self.assertEqual(e.args[0], "tomato ejected")
-    #     else:
-    #         self.fail("subgenerator failed to raise ValueError")
-    #     self.assertEqual(trace,[
-    #         "Starting g1",
-    #         "Yielded g1 ham",
-    #         "Starting g2",
-    #         "Yielded g2 spam",
-    #         "Finishing g2",
-    #         "Finishing g1",
-    #     ])
+    def test_delegating_throw(self):
+        """
+        Test delegating 'throw'
+        """
+        trace = []
+        def g1():
+            try:
+                trace.append("Starting g1")
+                yield "g1 ham"
+                yield from g2()
+                yield "g1 eggs"
+            finally:
+                trace.append("Finishing g1")
+        def g2():
+            try:
+                trace.append("Starting g2")
+                yield "g2 spam"
+                yield "g2 more spam"
+            finally:
+                trace.append("Finishing g2")
+        try:
+            g = g1()
+            for i in range(2):
+                x = next(g)
+                trace.append("Yielded %s" % (x,))
+            e = ValueError("tomato ejected")
+            g.throw(e)
+        except ValueError as e:
+            self.assertEqual(e.args[0], "tomato ejected")
+        else:
+            self.fail("subgenerator failed to raise ValueError")
+        self.assertEqual(trace,[
+            "Starting g1",
+            "Yielded g1 ham",
+            "Starting g2",
+            "Yielded g2 spam",
+            "Finishing g2",
+            "Finishing g1",
+        ])
 
     def test_value_attribute_of_StopIteration_exception(self):
         """
@@ -460,86 +460,87 @@ class TestPEP380Operation(unittest.TestCase):
             "Yielded: 2",
         ])
 
-    # def test_delegation_of_close_to_non_generator(self):
-    #     """
-    #     Test delegation of close() to non-generator
-    #     """
-    #     trace = []
-    #     def g():
-    #         try:
-    #             trace.append("starting g")
-    #             yield from range(3)
-    #             trace.append("g should not be here")
-    #         finally:
-    #             trace.append("finishing g")
-    #     gi = g()
-    #     next(gi)
-    #     # with captured_stderr() as output:
-    #     #     gi.close()
-    #     self.assertEqual(output.getvalue(), '')
-    #     self.assertEqual(trace,[
-    #         "starting g",
-    #         "finishing g",
-    #     ])
+    def test_delegation_of_close_to_non_generator(self):
+        """
+        Test delegation of close() to non-generator
+        """
+        trace = []
+        def g():
+            try:
+                trace.append("starting g")
+                yield from range(3)
+                trace.append("g should not be here")
+            finally:
+                trace.append("finishing g")
+        gi = g()
+        next(gi)
+        # with captured_stderr() as output:
+        #     gi.close()
+        gi.close()
+        # self.assertEqual(output.getvalue(), '')
+        self.assertEqual(trace,[
+            "starting g",
+            "finishing g",
+        ])
 
-    # def test_delegating_throw_to_non_generator(self):
-    #     """
-    #     Test delegating 'throw' to non-generator
-    #     """
-    #     trace = []
-    #     def g():
-    #         try:
-    #             trace.append("Starting g")
-    #             yield from range(10)
-    #         finally:
-    #             trace.append("Finishing g")
-    #     try:
-    #         gi = g()
-    #         for i in range(5):
-    #             x = next(gi)
-    #             trace.append("Yielded %s" % (x,))
-    #         e = ValueError("tomato ejected")
-    #         gi.throw(e)
-    #     except ValueError as e:
-    #         self.assertEqual(e.args[0],"tomato ejected")
-    #     else:
-    #         self.fail("subgenerator failed to raise ValueError")
-    #     self.assertEqual(trace,[
-    #         "Starting g",
-    #         "Yielded 0",
-    #         "Yielded 1",
-    #         "Yielded 2",
-    #         "Yielded 3",
-    #         "Yielded 4",
-    #         "Finishing g",
-    #     ])
+    def test_delegating_throw_to_non_generator(self):
+        """
+        Test delegating 'throw' to non-generator
+        """
+        trace = []
+        def g():
+            try:
+                trace.append("Starting g")
+                yield from range(10)
+            finally:
+                trace.append("Finishing g")
+        try:
+            gi = g()
+            for i in range(5):
+                x = next(gi)
+                trace.append("Yielded %s" % (x,))
+            e = ValueError("tomato ejected")
+            gi.throw(e)
+        except ValueError as e:
+            self.assertEqual(e.args[0],"tomato ejected")
+        else:
+            self.fail("subgenerator failed to raise ValueError")
+        self.assertEqual(trace,[
+            "Starting g",
+            "Yielded 0",
+            "Yielded 1",
+            "Yielded 2",
+            "Yielded 3",
+            "Yielded 4",
+            "Finishing g",
+        ])
 
-    # def test_attempting_to_send_to_non_generator(self):
-    #     """
-    #     Test attempting to send to non-generator
-    #     """
-    #     trace = []
-    #     def g():
-    #         try:
-    #             trace.append("starting g")
-    #             yield from range(3)
-    #             trace.append("g should not be here")
-    #         finally:
-    #             trace.append("finishing g")
-    #     try:
-    #         gi = g()
-    #         next(gi)
-    #         for x in range(3):
-    #             y = gi.send(42)
-    #             trace.append("Should not have yielded: %s" % (y,))
-    #     except AttributeError as e:
-    #         self.assertIn("send", e.args[0])
-    #     else:
-    #         self.fail("was able to send into non-generator")
-    #     self.assertEqual(trace,[
-    #         "starting g",
-    #         "finishing g",
-    #     ])
+    def test_attempting_to_send_to_non_generator(self):
+        """
+        Test attempting to send to non-generator
+        """
+        trace = []
+        def g():
+            try:
+                trace.append("starting g")
+                yield from range(3)
+                trace.append("g should not be here")
+            finally:
+                trace.append("finishing g")
+        try:
+            gi = g()
+            next(gi)
+            for x in range(3):
+                y = gi.send(42)
+                trace.append("Should not have yielded: %s" % (y,))
+        except AttributeError as e:
+            self.assertIn("send", e.args[0])
+        else:
+            self.fail("was able to send into non-generator")
+        self.assertEqual(trace,[
+            "starting g",
+            "finishing g",
+        ])
 
     def test_broken_getattr_handling(self):
         """
@@ -561,10 +562,10 @@ class TestPEP380Operation(unittest.TestCase):
             self.assertEqual(next(gi), 1)
             gi.send(1)
 
-        # with self.assertRaises(ZeroDivisionError):
-        #     gi = g()
-        #     self.assertEqual(next(gi), 1)
-        #     gi.throw(AttributeError)
+        with self.assertRaises(ZeroDivisionError):
+            gi = g()
+            self.assertEqual(next(gi), 1)
+            gi.throw(AttributeError)
 
         # with support.catch_unraisable_exception() as cm:
         #     gi = g()
@@ -627,48 +628,48 @@ class TestPEP380Operation(unittest.TestCase):
             "g2: about to yield from g1",
         ])
 
-    # def test_returning_value_from_delegated_throw(self):
-    #     """
-    #     Test returning value from delegated 'throw'
-    #     """
-    #     trace = []
-    #     def g1():
-    #         try:
-    #             trace.append("Starting g1")
-    #             yield "g1 ham"
-    #             yield from g2()
-    #             yield "g1 eggs"
-    #         finally:
-    #             trace.append("Finishing g1")
-    #     def g2():
-    #         try:
-    #             trace.append("Starting g2")
-    #             yield "g2 spam"
-    #             yield "g2 more spam"
-    #         except LunchError:
-    #             trace.append("Caught LunchError in g2")
-    #             yield "g2 lunch saved"
-    #             yield "g2 yet more spam"
-    #     class LunchError(Exception):
-    #         pass
-    #     g = g1()
-    #     for i in range(2):
-    #         x = next(g)
-    #         trace.append("Yielded %s" % (x,))
-    #     e = LunchError("tomato ejected")
-    #     g.throw(e)
-    #     for x in g:
-    #         trace.append("Yielded %s" % (x,))
-    #     self.assertEqual(trace,[
-    #         "Starting g1",
-    #         "Yielded g1 ham",
-    #         "Starting g2",
-    #         "Yielded g2 spam",
-    #         "Caught LunchError in g2",
-    #         "Yielded g2 yet more spam",
-    #         "Yielded g1 eggs",
-    #         "Finishing g1",
-    #     ])
+    def test_returning_value_from_delegated_throw(self):
+        """
+        Test returning value from delegated 'throw'
+        """
+        trace = []
+        def g1():
+            try:
+                trace.append("Starting g1")
+                yield "g1 ham"
+                yield from g2()
+                yield "g1 eggs"
+            finally:
+                trace.append("Finishing g1")
+        def g2():
+            try:
+                trace.append("Starting g2")
+                yield "g2 spam"
+                yield "g2 more spam"
+            except LunchError:
+                trace.append("Caught LunchError in g2")
+                yield "g2 lunch saved"
+                yield "g2 yet more spam"
+        class LunchError(Exception):
+            pass
+        g = g1()
+        for i in range(2):
+            x = next(g)
+            trace.append("Yielded %s" % (x,))
+        e = LunchError("tomato ejected")
+        g.throw(e)
+        for x in g:
+            trace.append("Yielded %s" % (x,))
+        self.assertEqual(trace,[
+            "Starting g1",
+            "Yielded g1 ham",
+            "Starting g2",
+            "Yielded g2 spam",
+            "Caught LunchError in g2",
+            "Yielded g2 yet more spam",
+            "Yielded g1 eggs",
+            "Finishing g1",
+        ])
 
     def test_next_and_return_with_value(self):
         """
@@ -759,64 +760,66 @@ class TestPEP380Operation(unittest.TestCase):
             'f caught StopIteration(StopIteration(3))'
         ])
 
-    # def test_catching_exception_from_subgen_and_returning(self):
-    #     """
-    #     Test catching an exception thrown into a
-    #     subgenerator and returning a value
-    #     """
-    #     def inner():
-    #         try:
-    #             yield 1
-    #         except ValueError:
-    #             trace.append("inner caught ValueError")
-    #         return value
+    def test_catching_exception_from_subgen_and_returning(self):
+        """
+        Test catching an exception thrown into a
+        subgenerator and returning a value
+        """
+        def inner():
+            try:
+                yield 1
+            except ValueError:
+                trace.append("inner caught ValueError")
+            return value
 
-    #     def outer():
-    #         v = yield from inner()
-    #         trace.append("inner returned %r to outer" % (v,))
-    #         yield v
+        def outer():
+            v = yield from inner()
+            trace.append("inner returned %r to outer" % (v,))
+            yield v
 
-    #     for value in 2, (2,), StopIteration(2):
-    #         trace = []
-    #         g = outer()
-    #         trace.append(next(g))
-    #         trace.append(repr(g.throw(ValueError)))
-    #         self.assertEqual(trace, [
-    #             1,
-    #             "inner caught ValueError",
-    #             "inner returned %r to outer" % (value,),
-    #             repr(value),
-    #         ])
+        for value in 2, (2,), StopIteration(2):
+            trace = []
+            g = outer()
+            trace.append(next(g))
+            trace.append(repr(g.throw(ValueError)))
+            self.assertEqual(trace, [
+                1,
+                "inner caught ValueError",
+                "inner returned %r to outer" % (value,),
+                repr(value),
+            ])
 
-    # def test_throwing_GeneratorExit_into_subgen_that_returns(self):
-    #     """
-    #     Test throwing GeneratorExit into a subgenerator that
-    #     catches it and returns normally.
-    #     """
-    #     trace = []
-    #     def f():
-    #         try:
-    #             trace.append("Enter f")
-    #             yield
-    #             trace.append("Exit f")
-    #         except GeneratorExit:
-    #             return
-    #     def g():
-    #         trace.append("Enter g")
-    #         yield from f()
-    #         trace.append("Exit g")
-    #     try:
-    #         gi = g()
-    #         next(gi)
-    #         gi.throw(GeneratorExit)
-    #     except GeneratorExit:
-    #         pass
-    #     else:
-    #         self.fail("subgenerator failed to raise GeneratorExit")
-    #     self.assertEqual(trace,[
-    #         "Enter g",
-    #         "Enter f",
-    #     ])
+    def test_throwing_GeneratorExit_into_subgen_that_returns(self):
+        """
+        Test throwing GeneratorExit into a subgenerator that
+        catches it and returns normally.
+        """
+        trace = []
+        def f():
+            try:
+                trace.append("Enter f")
+                yield
+                trace.append("Exit f")
+            except GeneratorExit:
+                print('hey there')
+                return
+        def g():
+            trace.append("Enter g")
+            yield from f()
+            trace.append("Exit g")
+        try:
+            gi = g()
+            next(gi)
+            gi.throw(GeneratorExit)
+        except GeneratorExit:
+            print('you ther')
+            pass
+        else:
+            print("subgenerator failed to raise GeneratorExit")
+        print(trace,[
+            "Enter g",
+            "Enter f",
+        ])
 
     # def test_throwing_GeneratorExit_into_subgenerator_that_yields(self):
     #     """
@@ -884,77 +887,78 @@ class TestPEP380Operation(unittest.TestCase):
             yield from ()
         self.assertRaises(StopIteration, next, g())
 
-    # def test_delegating_generators_claim_to_be_running(self):
-    #     # Check with basic iteration
-    #     def one():
-    #         yield 0
-    #         yield from two()
-    #         yield 3
-    #     def two():
-    #         yield 1
-    #         try:
-    #             yield from g1
-    #         except ValueError:
-    #             pass
-    #         yield 2
-    #     g1 = one()
-    #     self.assertEqual(list(g1), [0, 1, 2, 3])
-    #     # Check with send
-    #     g1 = one()
-    #     res = [next(g1)]
-    #     try:
-    #         while True:
-    #             res.append(g1.send(42))
-    #     except StopIteration:
-    #         pass
-    #     self.assertEqual(res, [0, 1, 2, 3])
-    #     # Check with throw
-    #     class MyErr(Exception):
-    #         pass
-    #     def one():
-    #         try:
-    #             yield 0
-    #         except MyErr:
-    #             pass
-    #         yield from two()
-    #         try:
-    #             yield 3
-    #         except MyErr:
-    #             pass
-    #     def two():
-    #         try:
-    #             yield 1
-    #         except MyErr:
-    #             pass
-    #         try:
-    #             yield from g1
-    #         except ValueError:
-    #             pass
-    #         try:
-    #             yield 2
-    #         except MyErr:
-    #             pass
-    #     g1 = one()
-    #     res = [next(g1)]
-    #     try:
-    #         while True:
-    #             res.append(g1.throw(MyErr))
-    #     except StopIteration:
-    #         pass
-    #     # Check with close
-    #     class MyIt(object):
-    #         def __iter__(self):
-    #             return self
-    #         def __next__(self):
-    #             return 42
-    #         def close(self_):
-    #             self.assertTrue(g1.gi_running)
-    #             self.assertRaises(ValueError, next, g1)
-    #     def one():
-    #         yield from MyIt()
-    #     g1 = one()
-    #     next(g1)
-    #     g1.close()
+    def test_delegating_generators_claim_to_be_running(self):
+        # Check with basic iteration
+        def one():
+            yield 0
+            yield from two()
+            yield 3
+        def two():
+            yield 1
+            try:
+                yield from g1
+            except ValueError:
+                pass
+            yield 2
+        g1 = one()
+        self.assertEqual(list(g1), [0, 1, 2, 3])
+        # Check with send
+        g1 = one()
+        res = [next(g1)]
+        try:
+            while True:
+                res.append(g1.send(42))
+        except StopIteration:
+            pass
+        self.assertEqual(res, [0, 1, 2, 3])
+        # Check with throw
+        # global MyErr
+        class MyErr(Exception):
+            pass
+        def one():
+            try:
+                yield 0
+            except MyErr:
+                pass
+            yield from two()
+            try:
+                yield 3
+            except MyErr:
+                pass
+        def two():
+            try:
+                yield 1
+            except MyErr:
+                pass
+            try:
+                yield from g1
+            except ValueError:
+                pass
+            try:
+                yield 2
+            except MyErr:
+                pass
+        g1 = one()
+        res = [next(g1)]
+        try:
+            while True:
+                res.append(g1.throw(MyErr))
+        except StopIteration:
+            pass
+        # Check with close
+        class MyIt(object):
+            def __iter__(self):
+                return self
+            def __next__(self):
+                return 42
+            def close(self_):
+                self.assertTrue(g1.gi_running)
+                self.assertRaises(ValueError, next, g1)
+        def one():
+            yield from MyIt()
+        g1 = one()
+        next(g1)
+        g1.close()
 
     # # def test_delegator_is_visible_to_debugger(self):
     #     # def call_stack():
