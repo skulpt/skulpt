@@ -12,10 +12,10 @@
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
-    constructor: function generator(code, globals, args, closure, closure2) {
+    constructor: function generator(func, name, qualname) {
         var k;
         var i;
-        if (!code) {
+        if (!func) {
             return;
         } // ctor hack
 
@@ -23,75 +23,57 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             throw new TypeError("bad internal call to generator, use 'new'");
         }
 
-        this.func_code = code;
-        this.func_globals = globals || null;
+        this.func_code = func.func_code;
+        this.func_globals = func.func_globals;
+        this.$name = name;
+        this.$qualname = qualname;
+        this.$susp = null;
         this.gi$running = false;
-        this.gi$resumeat = 0;
-        this.gi$sentvalue = Sk.builtin.none.none$;
-        this.gi$locals = {};
-        this.gi$cells = {};
-        if (args.length > 0) {
-            // store arguments into locals because they have to be maintained
-            // too. 'fast' var lookups are locals in generator functions.
-            for (i = 0; i < code.co_varnames.length; ++i) {
-                this.gi$locals[code.co_varnames[i]] = args[i];
-            }
-        }
-        if (closure2 !== undefined) {
-            // todo; confirm that modification here can't cause problems
-            for (k in closure2) {
-                closure[k] = closure2[k];
-            }
-        }
-        //print(JSON.stringify(closure));
-        this.func_closure = closure;
+        this.func_closure = func.func_closure;
     },
     slots: {
         $r() {
-            return new Sk.builtin.str("<generator object " + this.func_code.co_name.v + ">");
+            return new Sk.builtin.str("<generator object " + this.$name + ">");
         },
     },
     iternext(canSuspend, yielded) {
-        var ret;
-        var args;
-        var self = this;
+        let ret;
+        const self = this;
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
         }
         this["gi$running"] = true;
-        if (yielded === undefined) {
-            yielded = Sk.builtin.none.none$;
-        }
-        this["gi$sentvalue"] = yielded;
+        yielded || (yielded = Sk.builtin.none.none$);
 
         // note: functions expect 'this' to be globals to avoid having to
         // slice/unshift onto the main args
-        args = [this];
-        if (this.func_closure) {
-            args.push(this.func_closure);
+        if (this.$susp === null) {
+            const args = [this];
+            if (this.func_closure) {
+                args.push(this.func_closure);
+            }
+            ret = this.func_code.apply(this.func_globals, args);
+        } else {
+            this.$susp.data.sent = yielded;
+            ret = this.$susp.resume();
         }
-        ret = this.func_code.apply(this.func_globals, args);
+        
         return (function finishIteration(ret) {
-            if (ret instanceof Sk.misceval.Suspension) {
-                if (canSuspend) {
-                    return new Sk.misceval.Suspension(finishIteration, ret);
-                } else {
-                    ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-                }
+            Sk.asserts.assert(ret !== undefined);
+            if (!(ret instanceof Sk.misceval.Suspension)) {
+                self.$value = ret;
+                ret = undefined;
+            } else if (ret.data.type === "Sk.gen") {
+                self.$susp = $ret;
+                ret = ret.data.yielded;
+            } else if (canSuspend) {
+                return new Sk.misceval.Suspension(finishIteration, ret);
+            } else {
+                // not quite right 
+                ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
             }
             //print("ret", JSON.stringify(ret));
             self["gi$running"] = false;
-            Sk.asserts.assert(ret !== undefined);
-            if (Array.isArray(ret)) {
-                // returns a pair: resume target and yielded value
-                self["gi$resumeat"] = ret[0];
-                ret = ret[1];
-            } else {
-                // todo; StopIteration
-                self.gi$ret = ret;
-                return undefined;
-            }
-            //print("returning:", JSON.stringify(ret));
             return ret;
         })(ret);
     },
@@ -111,6 +93,47 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             },
             $flags: { OneArg: true },
             $doc: "send(arg) -> send 'arg' into generator,\nreturn next yielded value or raise StopIteration.",
+        },
+        throw: {
+            $meth(value) {
+                if (this.$susp) {
+                    this.$susp.data.throw = new value();
+                } else {
+                    throw new value();
+                }
+                return Sk.misceval.chain(this.tp$iternext(true), (ret) => {
+                    if (ret === undefined) {
+                        throw StopIteration(this.$value);
+                    }
+                    return ret;
+                });
+            },
+            $flags: { OneArg: true },
+            $doc: "",
+        },
+    },
+    getsets: {
+        __name__: {
+            $get() {
+                return new Sk.builtin.str(this.$name);
+            },
+            $set(v) {
+                if (!Sk.builtin.checkString(v)) {
+                    throw new Sk.builtin.TypeError("__name__ must be set to a string object");
+                }
+                this.$name = v.toString();
+            },
+        },
+        __qualname__: {
+            $get() {
+                return new Sk.builtin.str(this.$qualname);
+            },
+            $set(v) {
+                if (!Sk.builtin.checkString(v)) {
+                    throw new Sk.builtin.TypeError("__qualname__ must be set to a string object");
+                }
+                this.$qualname = v.toString();
+            },
         },
     },
 });
