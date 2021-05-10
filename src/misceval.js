@@ -50,15 +50,13 @@ Sk.misceval = {};
  */
 Sk.misceval.Suspension = class Suspension {
     constructor(resume_context, child = null, store) {
-        let optional = false;
         let resume = () => {};
-        let data = { type: null, promise: null, result: null, error: null };
+        let data = { type: null, optional: false, promise: null, result: null, error: null };
         const resume_context_type = typeof resume_context;
         if (resume_context_type === "string" && child === null) {
-            optional = true;
+            data.optional = true;
             data.type = resume_context;
         } else if (resume_context_type === "function" && child !== null) {
-            optional = child.optional;
             data = child.data;
             resume = resume_context;
         } else if (
@@ -66,7 +64,6 @@ Sk.misceval.Suspension = class Suspension {
             (resume_context instanceof Promise || (resume_context_type === "function" && resume_context.then !== undefined)) &&
             child === null
         ) {
-            optional = false;
             data.result = data.error = Suspension.pending;
             data.type = "Sk.promise";
             data.promise = resume_context.then(
@@ -115,11 +112,6 @@ Sk.misceval.Suspension = class Suspension {
          * @property {Sk.misceval.Suspension | null} child
          */
         this.child = child;
-
-        /**
-         * @property {boolean} optional
-         */
-        this.optional = optional;
         /**
          * @property {{type: string,
          *      promise?: Promise,
@@ -140,6 +132,13 @@ Sk.misceval.Suspension = class Suspension {
      */
     suspend() {
         throw this;
+    }
+    get optional() {
+        return this.data.optional;
+    }
+    set optional(value) {
+        this.data.optional = value;
+        return true;
     }
 };
 Sk.misceval.Suspension.pending = Symbol("pending");
