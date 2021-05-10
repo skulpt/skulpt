@@ -13,23 +13,49 @@
  */
 Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
     constructor: function generator(func, name, qualname) {
-        var k;
-        var i;
-        if (!func) {
-            return;
-        } // ctor hack
-
         if (!(this instanceof Sk.builtin.generator)) {
             throw new TypeError("bad internal call to generator, use 'new'");
         }
-
-        this.func_code = func.func_code;
+        this.func_code = func.func_code.bind(this);
         this.func_globals = func.func_globals;
+        this.func_closure = func.func_closure;
+
+        const loc = {};
+        // const args = func.$resolveArgs();
+        // const varnames = func.func_code.co_varnames || [];
+        // for (let i = 0; i<varnames.length; i++) {
+        //     loc[varnames[i]] = args[i];
+        // }
+        this.gi$loc = loc;
+        debugger;
+
         this.$name = name;
         this.$qualname = qualname;
-        this.$susp = null;
+        const inner_susp = new Sk.misceval.Suspension();
+        const data = {
+            type: 'gen',
+            result: Sk.builtin.none.none$,
+            error: null
+        }
+        inner_susp.resume = () => {
+            if (data.error) {
+                throw data.error;
+            }
+            return data.result;
+        }
+
+        inner_susp.data = data;
+        this.inner$susp = inner_susp;
+        this.$susp = {
+            resume: () => {
+                if (data.error) {
+                    throw data.error;
+                }
+                return this.func_code(this, this.func_closure);
+            },
+            data,
+        };
         this.gi$running = false;
-        this.func_closure = func.func_closure;
     },
     slots: {
         $r() {
@@ -42,35 +68,27 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
         }
-        this["gi$running"] = true;
+        this.gi$running = true;
         yielded || (yielded = Sk.builtin.none.none$);
 
-        // note: functions expect 'this' to be globals to avoid having to
-        // slice/unshift onto the main args
-        if (this.$susp === null) {
-            const args = [this];
-            if (this.func_closure) {
-                args.push(this.func_closure);
-            }
-            ret = this.func_code.apply(this.func_globals, args);
-        } else {
-            this.$susp.data.sent = yielded;
-            ret = this.$susp.resume();
-        }
+        this.$susp.data.result = yielded;
+        ret = this.$susp.resume();
         
         return (function finishIteration(ret) {
             Sk.asserts.assert(ret !== undefined);
-            if (!(ret instanceof Sk.misceval.Suspension)) {
+            if (Array.isArray(ret)) {
+                debugger;
+                self.$susp = ret[0];
+                ret = ret[1];
+            } else if (!ret.is$Suspenesion) {
                 self.$value = ret;
                 ret = undefined;
-            } else if (ret.data.type === "Sk.gen") {
-                self.$susp = $ret;
-                ret = ret.data.yielded;
             } else if (canSuspend) {
                 return new Sk.misceval.Suspension(finishIteration, ret);
             } else {
                 // not quite right 
                 ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+                return finishIteration(ret);
             }
             //print("ret", JSON.stringify(ret));
             self["gi$running"] = false;
@@ -96,17 +114,21 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         },
         throw: {
             $meth(value) {
-                if (this.$susp) {
-                    this.$susp.data.throw = new value();
-                } else {
-                    throw new value();
-                }
-                return Sk.misceval.chain(this.tp$iternext(true), (ret) => {
-                    if (ret === undefined) {
-                        throw StopIteration(this.$value);
+                this.$susp.data.error = new value();
+                return Sk.misceval.tryCatch(
+                    () =>
+                        Sk.misceval.chain(this.tp$iternext(true), (ret) => {
+                            this.$susp.data.error = null;
+                            if (ret === undefined) {
+                                throw StopIteration(this.$value);
+                            }
+                            return ret;
+                        }),
+                    (e) => {
+                        this.$susp.data.error = null;
+                        throw e;
                     }
-                    return ret;
-                });
+                );
             },
             $flags: { OneArg: true },
             $doc: "",
