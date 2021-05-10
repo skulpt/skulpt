@@ -549,8 +549,9 @@ Compiler.prototype.cyield = function(e) {
         val = this.vexpr(e.value);
     }
     nextBlock = this.newBlock("after yield");
-    out(`var $susp = $saveSuspension(this.inner$susp,'${this.filename}', $currLineNo, $currColNo);`);
-    out(`debugger;$susp.$blk=${nextBlock};`);
+    out(`var $susp = $saveSuspension(this.base$susp,'${this.filename}', $currLineNo, $currColNo);`);
+    out(`$susp.$blk=${nextBlock};`);
+    // out(`debugger;`);
     out(`return [$susp, ${val}];`);
 
     // out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
@@ -573,21 +574,22 @@ Compiler.prototype.cyieldfrom = function (e) {
     var retval = this.gensym("retval");
     // out(iterable, "=$gen.", iterable, ";");
     out("var ", retval, ";");
-    out("if (this.$susp.data.result === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
-    out("$ret=", iterable, ".tp$iternext(true, this.$susp.data.result);");
+    out("if ($gen.susp$data.send === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
+    out("$ret=", iterable, ".tp$iternext(true, $gen.susp$data.send);");
     out("} else {");
     var send = this.makeConstant("new Sk.builtin.str('send');");
-    out("$ret=Sk.misceval.tryCatch(function(){return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [this.$susp.data.result]);},");
+    out("$ret=Sk.misceval.tryCatch(function(){return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.susp$data.send]);},");
     out("function (e) { if (e instanceof Sk.builtin.StopIteration) { " + iterable + ".$value = e.$value; return undefined; } else { throw e; } }");
     out(");");
     out("}");
     this._checkSuspension(e);
     out(retval, "=$ret;");
-    out("if(", retval, "===undefined){this.$susp.data.result=" + iterable + ".$value || Sk.builtin.none.none$;$blk=", afterBlock, ";continue;}");
+    out("if(", retval, "===undefined){$ret=$gen.susp$data.send=" + iterable + ".$value || Sk.builtin.none.none$;$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;}");
     out("debugger;")
     out(`$blk = ${afterIter};`);
-    out("var $susp = $saveSuspension(this.inner$susp, '${this.filename}', $currLineNo, $currColNo);");
+    out("var $susp = $saveSuspension(this.base$susp, '${this.filename}', $currLineNo, $currColNo);");
     out(`$susp.$blk = ${afterIter};`);
+    out(`$gen.gi$yieldfrom=${iterable};`);
     out(`return [/*resume*/ $susp,/*ret*/`, retval, "];");
     this.setBlock(afterBlock);
     return "$ret"; // will either be none if none sent, or the value from gen.send(value)
@@ -1203,7 +1205,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
-                    "if (susp.data.type === 'Sk.gen'){debugger;}" +
+                    // "if (susp.data.type === 'Sk.gen'){debugger;}" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
@@ -2220,7 +2222,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             const func_scope = this._gr('funcscope', `new Sk.builtin.func(${scopename}, $gbl ${frees})`);
             const func = this._gr("func", `function (args, kws) {
                 const gen = new Sk.builtins.generator(${func_scope}, this.$name, this.$qualname);
-                args = this.$resolveArgs(args, kws);
+                args = ${func_scope}.$resolveArgs(args, kws);
                 const loc = {};
                 const varnames = ${scopename}.co_varnames || [];
                 for (let i = 0; i<varnames.length; i++) {

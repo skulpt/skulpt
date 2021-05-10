@@ -467,6 +467,19 @@ Sk.builtin.UnicodeEncodeError = Sk.abstr.buildNativeClass("UnicodeEncodeError", 
 });
 Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
+
+/**
+ * @constructor
+ * @extends Sk.builtin.BaseException
+ * @param {...} args
+ */
+Sk.builtin.GeneratorExit = Sk.abstr.buildNativeClass("GeneratorExit", {
+    constructor: function GeneratorExit(...args) {
+        Sk.builtin.BaseException.apply(this, args);
+    },
+    base: Sk.builtin.BaseException,
+});
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception
