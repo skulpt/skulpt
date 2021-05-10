@@ -1125,7 +1125,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
         output += "try { $ret=susp.child.resume(); }";
         output += "catch (err) {";
         output += "if (err instanceof Sk.misceval.Suspension) {";
-        output += "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+        output += "throw $saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
     } else {
         output += "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return susp.child.resume()});}";
         output += "catch (err) {";
@@ -1150,14 +1150,15 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
                     unit.scopename + ".$wakingSuspension=susp; return " + unit.scopename + "(" + (unit.ste.generator ? "$gen" : "") + "); " + 
                  "}, " +
                 "$child, " +  // child
-                // locals
+                // store
                 "{$blk:$blk,$loc:$loc,$gbl:$gbl,$exc:$exc,$err:$err,$postfinally:$postfinally," +
                 "$filename:$filename,$lineno:$lineno,$colno:$colno" +
                 (hasCell ? ",$cell:$cell" : "") +
                 ",$tmps: {" + localSaveCode.join(",") + "}" +
+                ",$scope:" + unit.scopename +
                 "}" +
             ");" +
-            "susp.suspend();" +
+            "return susp;" +
         "};";
 
     return output;
@@ -1993,7 +1994,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
     this.u.suffixCode += !this.u.canSuspend
     ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
-    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    : "throw $saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
     // allow fall throw if we can't suspend
     this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
     this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
@@ -2316,7 +2317,7 @@ Compiler.prototype.cclass = function (s) {
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
     this.u.suffixCode += !this.u.canSuspend
     ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
-    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    : "throw $saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
     // allow fall throw if we can't suspend
     this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
     this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
@@ -2779,7 +2780,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.suffixCode += "if (err instanceof Sk.misceval.Suspension) {"
     this.u.suffixCode += !this.u.canSuspend
     ? "try{$ret = Sk.misceval.retryOptionalSuspensionOrThrow(function(){return err.resume()}); continue;} catch (e) {err = e;}}"
-    : "$saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
+    : "throw $saveSuspension(err, '" + this.filename + "', $currLineNo, $currColNo);} else ";
     // allow fall throw if we can't suspend
     this.u.suffixCode += "if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); }";
     this.u.suffixCode += "err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); ";
