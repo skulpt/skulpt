@@ -16,61 +16,48 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         if (!(this instanceof Sk.builtin.generator)) {
             throw new TypeError("bad internal call to generator, use 'new'");
         }
-        this.func_code = func.func_code.bind(this);
-        this.func_globals = func.func_globals;
-        this.func_closure = func.func_closure;
-        this.gi$loc = {};
-        debugger;
 
+        this.func_globals = func.func_globals;
+        // this.func_closure = func.func_closure;
+        this.func_code = func.func_code//.bind(this, this, /*this should have locals I think*/ this.func_closure);
+        // todo this is a hack;
+        this.gi$locals = {};
         this.$name = name;
         this.$qualname = qualname;
         this.$value;
-        const base_susp = new Sk.misceval.Suspension();
+        const susp = new Sk.misceval.Suspension();
         const data = {
             type: "gen",
             send: Sk.builtin.none.none$,
             throw: null,
+            close: null,
         };
-        base_susp.resume = () => {
-            if (data.throw) {
-                debugger;
-                if (this.gi$yieldfrom) {
-                    // delegate
-                    if (this.gi$yieldfrom.susp$data) {
-                        this.gi$yieldfrom.susp$data.throw = data.throw;
-                    } else {
-                        const _throw = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str('throw'));
-                        if (_throw !== undefined) {
-                            Sk.misceval.callsimArray(_throw, [data.throw.ob$type, data.throw]);
-                        }                        
-                        throw data.throw;
-                    }
-                } else {
-                    throw data.throw;
-                }
-            } else if (data.close) {
-                if (this.gi$yieldfrom) {
-                    // delegate
-                    if (this.gi$yieldfrom.susp$data) {
-                        this.gi$yieldfrom.susp$data.close = data.close;
-                    } else {
-                        const _close = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str('close'));
-                        if (_close !== undefined) {
-                            Sk.misceval.callsimArray(_close);
-                        }                        
-                        throw data.close
-                    }
-                } else {
-                    throw data.close;
-                }
-
+        const close_or_throw = (which, args) => {
+            if (this.gi$yieldfrom && this.gi$yieldfrom.gi$data) {
+                this.gi$yieldfrom.gi$data[which] = data[which];
+                return;
+            }
+            let meth;
+            if (this.gi$yieldfrom) {
+                meth = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str(which));
+            }
+            if (meth !== undefined) {
+                Sk.misceval.callsimArray(meth, args || []);
+            }
+            throw data[which];
+        };
+        susp.resume = () => {
+            if (data.close) {
+                close_or_throw("close");
+            } else if (data.throw) {
+                close_or_throw("throw", [data.throw.ob$type, data.throw]);
             }
             return data.send;
         };
-        base_susp.data = data;
-        this.base$susp = base_susp;
-        this.susp$data = data;
-        this.curr$susp = new Sk.misceval.Suspension(() => this.func_code(this, this.func_closure), base_susp);
+        susp.data = data;
+        this.gi$susp = susp;
+        this.gi$data = data;
+        this.curr$susp = new Sk.misceval.Suspension(() => this.func_code(), susp);
         this.gi$running = false;
         this.gi$yieldfrom = null;
         this.gi$closed = false;
@@ -81,8 +68,6 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         },
     },
     iternext(canSuspend, yielded) {
-        let ret;
-        // const self = this;
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
         } else if (this.gi$closed) {
@@ -92,7 +77,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
 
         this.gi$running = true;
         yielded || (yielded = Sk.builtin.none.none$);
-        this.susp$data.send = yielded;
+        this.gi$data.send = yielded;
 
         const nxt = Sk.misceval.tryCatch(
             () =>
@@ -109,40 +94,19 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                     }
                 }),
             (e) => {
-                this.gi$running = false;
                 this.gi$closed = true;
                 this.gi$yieldfrom = null;
                 if (e instanceof Sk.builtin.StopIteration) {
-                    // the user wrote this function and so could easily throw a StopIteration
-                    this.$value = e.$value;
-                    return undefined;
+                    throw new Sk.builtin.RuntimeError("generator raised StopIteration");
                 }
                 throw e;
+            },
+            () => {
+                this.gi$running = false;
             }
         );
 
         return canSuspend ? nxt : Sk.misceval.retryOptionalSuspensionOrThrow(nxt);
-
-        return (function finishIteration(ret) {
-            Sk.asserts.assert(ret !== undefined);
-            if (Array.isArray(ret)) {
-                debugger;
-                self.$susp = ret[0];
-                ret = ret[1];
-            } else if (!ret.is$Suspenesion) {
-                self.$value = ret;
-                ret = undefined;
-            } else if (canSuspend) {
-                return new Sk.misceval.Suspension(finishIteration, ret);
-            } else {
-                // not quite right
-                ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
-                return finishIteration(ret);
-            }
-            //print("ret", JSON.stringify(ret));
-            self["gi$running"] = false;
-            return ret;
-        })(ret);
     },
     methods: {
         send: {
@@ -163,63 +127,69 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         },
         throw: {
             $meth(type, value, tb) {
-                // to do account for the other args
+                /** @todo account for tb and adjust value depending on type*/
                 value || (value = type);
                 if (Sk.builtin.checkClass(value)) {
                     value = Sk.misceval.callsimArray(value);
                 }
+                let isGenExit = false;
                 if (!(value instanceof Sk.builtin.BaseException)) {
                     throw new Sk.builtin.TypeError("exceptions must be classes or instances deriving from BaseException, not str");
+                } else if (value instanceof Sk.builtin.GeneratorExit) {
+                    isGenExit = true;
                 }
-                this.susp$data.throw = value;
+                if (this.gi$yieldfrom && isGenExit) {
+                    const _close = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str("close"));
+                    if (_close !== undefined) {
+                        Sk.misceval.callsimArray(_close);
+                    }
+                    this.gi$yieldfrom = null;
+                }
+                this.gi$data.throw = value;
                 return Sk.misceval.tryCatch(
                     () =>
                         Sk.misceval.chain(this.tp$iternext(true), (ret) => {
-                            this.susp$data.throw = null;
-                            this.gi$yieldfrom && this.gi$yieldfrom.susp$data && (this.gi$yieldfrom.susp$data.throw = null);
                             if (ret === undefined) {
                                 throw new Sk.builtin.StopIteration(this.$value);
                             }
                             return ret;
                         }),
                     (e) => {
-                        this.susp$data.throw = null;
-                        this.gi$yieldfrom && this.gi$yieldfrom.susp$data && (this.gi$yieldfrom.susp$data.throw = null);
                         throw e;
+                    },
+                    () => {
+                        this.gi$data.throw = null;
+                        this.gi$yieldfrom && this.gi$yieldfrom.gi$data && (this.gi$yieldfrom.gi$data.throw = null);
                     }
                 );
             },
-            $flags: { OneArg: true },
-            $doc: "",
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $doc: "throw(typ[,val[,tb]]) -> raise exception in generator,\nreturn next yielded value or raise StopIteration",
         },
         close: {
             $meth() {
-                this.susp$data.close = new Sk.builtin.GeneratorExit();
+                this.gi$data.close = new Sk.builtin.GeneratorExit();
                 return Sk.misceval.tryCatch(
                     () =>
                         Sk.misceval.chain(this.tp$iternext(true), (ret) => {
-                            try {
-                                if (ret === undefined) {
-                                    throw new Sk.builtin.RuntimeError("generator raised StopIteration");
-                                } else if (!this.gi$closed) {
-                                    throw new Sk.builtin.RuntimeError("generator ignored GeneratorExit");
-                                }
-                                return Sk.builtin.none.none$;
-                            } finally {
-                                this.susp$data.close = null;
-                                this.gi$closed = true;
+                            if (!this.gi$closed) {
+                                throw new Sk.builtin.RuntimeError("generator ignored GeneratorExit");
                             }
+                            return Sk.builtin.none.none$;
                         }),
                     (e) => {
-                        this.susp$data.close = null;
                         if (e instanceof Sk.builtin.GeneratorExit) {
                             return Sk.builtin.none.none$;
-                        } else {
-                            throw e;
                         }
+                        throw e;
+                    },
+                    () => {
+                        this.gi$data.close = null;
                     }
                 );
             },
+            $flags: { NoArgs: true },
+            $doc: "close() -> raise GeneratorExit inside generator.",
         },
     },
     getsets: {
@@ -248,13 +218,13 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         gi_running: {
             $get() {
                 return new Sk.builtin.bool(this.gi$running);
-            }
+            },
         },
         gi_yieldfrom: {
             $get() {
                 return this.gi$yieldfrom || Sk.builtin.none.none$;
-            }
-        }
+            },
+        },
     },
 });
 Sk.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
