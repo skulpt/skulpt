@@ -549,14 +549,14 @@ Compiler.prototype.cyield = function(e) {
         val = this.vexpr(e.value);
     }
     nextBlock = this.newBlock("after yield");
-    out(`var $susp = $saveSuspension(this.base$susp,'${this.filename}', $currLineNo, $currColNo);`);
+    out(`var $susp = $saveSuspension(this.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
     out(`$susp.$blk=${nextBlock};`);
     // out(`debugger;`);
     out(`return [$susp, ${val}];`);
 
     // out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
     this.setBlock(nextBlock);
-    return "$ret;"; // will either be none if none sent, or the value from gen.send(value)
+    return "$ret"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 Compiler.prototype.cyieldfrom = function (e) {
@@ -574,20 +574,20 @@ Compiler.prototype.cyieldfrom = function (e) {
     var retval = this.gensym("retval");
     // out(iterable, "=$gen.", iterable, ";");
     out("var ", retval, ";");
-    out("if ($gen.susp$data.send === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
-    out("$ret=", iterable, ".tp$iternext(true, $gen.susp$data.send);");
+    out("if ($gen.gi$data.send === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
+    out("$ret=", iterable, ".tp$iternext(true, $gen.gi$data.send);");
     out("} else {");
     var send = this.makeConstant("new Sk.builtin.str('send');");
-    out("$ret=Sk.misceval.tryCatch(function(){return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.susp$data.send]);},");
+    out("$ret=Sk.misceval.tryCatch(function(){return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.gi$data.send]);},");
     out("function (e) { if (e instanceof Sk.builtin.StopIteration) { " + iterable + ".$value = e.$value; return undefined; } else { throw e; } }");
     out(");");
     out("}");
     this._checkSuspension(e);
     out(retval, "=$ret;");
-    out("if(", retval, "===undefined){$ret=$gen.susp$data.send=" + iterable + ".$value || Sk.builtin.none.none$;$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;}");
+    out("if(", retval, "===undefined){$ret=$gen.gi$data.send=" + iterable + ".$value || Sk.builtin.none.none$;$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;}");
     out("debugger;")
     out(`$blk = ${afterIter};`);
-    out("var $susp = $saveSuspension(this.base$susp, '${this.filename}', $currLineNo, $currColNo);");
+    out("var $susp = $saveSuspension(this.gi$susp, '${this.filename}', $currLineNo, $currColNo);");
     out(`$susp.$blk = ${afterIter};`);
     out(`$gen.gi$yieldfrom=${iterable};`);
     out(`return [/*resume*/ $susp,/*ret*/`, retval, "];");
@@ -1224,7 +1224,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
 
     output += "var $saveSuspension = function($child, $filename, $lineno, $colno) {" +
                 "var susp = new Sk.misceval.Suspension(); susp.child=$child;" +
-                "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+".call($self, "+(unit.ste.generator?"$gen":"")+"); };" +
+                "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+".call($self"+(unit.ste.generator?",$gen":"")+"); };" +
                 "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;susp.$postfinally=$postfinally;" +
                 "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;" +
                 "susp.optional=susp.child.optional;" +
@@ -1922,6 +1922,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.prefixCode = "var " + scopename + "=(function " + this.niceName(coname.v) + "$(";
 
     funcArgs = [];
+    console.log(kwarg, vararg);
     if (isGenerator) {
         // TODO make generators deal with arguments properly
         if (kwarg) {
@@ -1933,6 +1934,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
                                              this.filename, n.lineno);
         }
         funcArgs.push("$gen");
+        funcArgs.push("$loc");
     } else {
         if (kwarg) {
             funcArgs.push("$kwa");
@@ -1986,12 +1988,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     // set up standard dicts/variables
     //
-    locals = "{}";
+    locals = ",$loc={}";
     let exc = "[]";
     let err = "undefined";
-    let gbl = (fastCall || isGenerator ?"this && this.func_globals":"this");
+    let gbl = fastCall || isGenerator ? "this && this.func_globals" : "this";
     if (isGenerator) {
-        locals = 'this.gi$loc';
+        locals = '';
         // entryBlock = "$gen.gi$resumeat";
         // locals = "$gen.gi$locals";
         // exc = "$gen.gi$exc";
@@ -2007,7 +2009,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
     // (fastcall doesn't need to do this, as 'this' is the func object)
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=" + exc + ",$loc=" + locals + cells + ",$gbl=" + gbl + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err="+err+",$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=" + exc + locals + cells + ",$gbl=" + gbl + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err="+err+",$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2109,14 +2111,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // New switch code to catch exceptions
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
-    if (isGenerator) {
-        // this.u.switchCode += `if ($gen.gi$throwvalue) {
-        //     // $exc.push(1);
-        //     const err = $gen.gi$throwvalue;
-        //     $gen.gi$throwvalue = null;
-        //     throw err;
-        // }`
-    }
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
@@ -2215,6 +2209,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             frees += ",$free";
         }
     }
+    let funcname, funccode;
     if (isGenerator) {
     // Keyword and variable arguments are not currently supported in generators.
     // The call to pyCheckArgs assumes they can't be true.
@@ -2223,25 +2218,24 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             const func = this._gr("func", `function (args, kws) {
                 const gen = new Sk.builtins.generator(${func_scope}, this.$name, this.$qualname);
                 args = ${func_scope}.$resolveArgs(args, kws);
-                const loc = {};
+                const loc = gen.gi$locals;
                 const varnames = ${scopename}.co_varnames || [];
                 for (let i = 0; i<varnames.length; i++) {
-                    loc[varnames[i]] = args[i];
+                    loc[Sk.fixReserved(varnames[i])] = args[i];
                 }
-                gen.gi$loc = loc;
+                gen.func_code = gen.func_code.bind(gen, gen, loc ${frees});
                 return gen;
             }`);
             out(`Object.assign(${func}, ${scopename});`);
             out(`${func}.co_fastcall = 1;`);
-            return this._gr("gener", `new Sk.builtin.func(${func}, $gbl ${frees})`);
-            return this._gr("gener", "new Sk.builtin.func((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
-                            coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
-                            ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
-        // } else {
-            // return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
-            //                 "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
-        // }
+            funcname = 'gener';
+            funccode = `new Sk.builtin.func(${func}, $gbl ${frees})`;
+
+            // return this._gr("gener", `new Sk.builtin.func(${func}, $gbl ${frees})`);
     } else {
+        funcname = 'funcobj';
+        funccode = "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")";
+
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
             for (let decorator of decos.reverse()) {
@@ -2253,6 +2247,16 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
 
         return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
     }
+    if (decos.length > 0) {
+        out(`$ret=${funccode};`);
+        for (let decorator of decos.reverse()) {
+            out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
+            this._checkSuspension();
+        }
+        return this._gr(funcname, "$ret");
+    }
+
+    return this._gr(funcname, funccode);
 };
 
 /** JavaScript for the docstring of the given body, or null if the
@@ -2391,7 +2395,11 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
         this.annotateSource(elt);
 
         velt = this.vexpr(elt);
-        out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
+        out(`var $susp = $saveSuspension($gen.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
+        out(`$susp.$blk=${skip};`);
+        // out(`debugger;`);
+        out(`return [$susp, ${velt}];`);
+        // out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
         this.setBlock(skip);
     }
 
