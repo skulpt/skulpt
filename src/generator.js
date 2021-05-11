@@ -12,16 +12,12 @@
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
-    constructor: function generator(func, name, qualname) {
+    constructor: function generator(scope, name, qualname) {
         if (!(this instanceof Sk.builtin.generator)) {
             throw new TypeError("bad internal call to generator, use 'new'");
         }
 
-        this.func_globals = func.func_globals;
-        // this.func_closure = func.func_closure;
-        this.func_code = func.func_code//.bind(this, this, /*this should have locals I think*/ this.func_closure);
-        // todo this is a hack;
-        this.gi$locals = {};
+        this.gi$scope = scope;
         this.$name = name;
         this.$qualname = qualname;
         this.$value;
@@ -57,7 +53,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         susp.data = data;
         this.gi$susp = susp;
         this.gi$data = data;
-        this.curr$susp = new Sk.misceval.Suspension(() => this.func_code(), susp);
+        this.curr$susp = null; // set inside the compile code
         this.gi$running = false;
         this.gi$yieldfrom = null;
         this.gi$closed = false;
