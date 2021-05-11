@@ -174,8 +174,8 @@ Sk.builtin.IndentationError = Sk.abstr.buildNativeClass("IndentationError", {
  * @extends Sk.builtin.Exception
  * @param {...} args Typically called with a single string argument
  */
-Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
-    constructor: function IndexError(...args) {
+Sk.builtin.LookupError = Sk.abstr.buildNativeClass("LookupError", {
+    constructor: function LookupError(...args) {
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
@@ -186,11 +186,11 @@ Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
  * @extends Sk.builtin.Exception
  * @param {...} args Typically called with a single string argument
  */
-Sk.builtin.LookupError = Sk.abstr.buildNativeClass("LookupError", {
-    constructor: function LookupError(...args) {
-        Sk.builtin.Exception.apply(this, args);
+Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
+    constructor: function IndexError(...args) {
+        Sk.builtin.LookupError.apply(this, args);
     },
-    base: Sk.builtin.Exception,
+    base: Sk.builtin.LookupError,
 });
 
 /**
