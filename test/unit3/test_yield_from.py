@@ -801,7 +801,6 @@ class TestPEP380Operation(unittest.TestCase):
                 yield
                 trace.append("Exit f")
             except GeneratorExit:
-                print('hey there')
                 return
         def g():
             trace.append("Enter g")
@@ -812,75 +811,74 @@ class TestPEP380Operation(unittest.TestCase):
             next(gi)
             gi.throw(GeneratorExit)
         except GeneratorExit:
-            print('you ther')
             pass
         else:
-            print("subgenerator failed to raise GeneratorExit")
-        print(trace,[
+            self.fail("subgenerator failed to raise GeneratorExit")
+        self.assertEqual(trace,[
             "Enter g",
             "Enter f",
         ])
 
-    # def test_throwing_GeneratorExit_into_subgenerator_that_yields(self):
-    #     """
-    #     Test throwing GeneratorExit into a subgenerator that
-    #     catches it and yields.
-    #     """
-    #     trace = []
-    #     def f():
-    #         try:
-    #             trace.append("Enter f")
-    #             yield
-    #             trace.append("Exit f")
-    #         except GeneratorExit:
-    #             yield
-    #     def g():
-    #         trace.append("Enter g")
-    #         yield from f()
-    #         trace.append("Exit g")
-    #     try:
-    #         gi = g()
-    #         next(gi)
-    #         gi.throw(GeneratorExit)
-    #     except RuntimeError as e:
-    #         self.assertEqual(e.args[0], "generator ignored GeneratorExit")
-    #     else:
-    #         self.fail("subgenerator failed to raise GeneratorExit")
-    #     self.assertEqual(trace,[
-    #         "Enter g",
-    #         "Enter f",
-    #     ])
+    def test_throwing_GeneratorExit_into_subgenerator_that_yields(self):
+        """
+        Test throwing GeneratorExit into a subgenerator that
+        catches it and yields.
+        """
+        trace = []
+        def f():
+            try:
+                trace.append("Enter f")
+                yield
+                trace.append("Exit f")
+            except GeneratorExit:
+                yield
+        def g():
+            trace.append("Enter g")
+            yield from f()
+            trace.append("Exit g")
+        try:
+            gi = g()
+            next(gi)
+            gi.throw(GeneratorExit)
+        except RuntimeError as e:
+            self.assertEqual(e.args[0], "generator ignored GeneratorExit")
+        else:
+            self.fail("subgenerator failed to raise GeneratorExit")
+        self.assertEqual(trace,[
+            "Enter g",
+            "Enter f",
+        ])
 
-    # def test_throwing_GeneratorExit_into_subgen_that_raises(self):
-    #     """
-    #     Test throwing GeneratorExit into a subgenerator that
-    #     catches it and raises a different exception.
-    #     """
-    #     trace = []
-    #     def f():
-    #         try:
-    #             trace.append("Enter f")
-    #             yield
-    #             trace.append("Exit f")
-    #         except GeneratorExit:
-    #             raise ValueError("Vorpal bunny encountered")
-    #     def g():
-    #         trace.append("Enter g")
-    #         yield from f()
-    #         trace.append("Exit g")
-    #     try:
-    #         gi = g()
-    #         next(gi)
-    #         gi.throw(GeneratorExit)
-    #     except ValueError as e:
-    #         self.assertEqual(e.args[0], "Vorpal bunny encountered")
-    #         self.assertIsInstance(e.__context__, GeneratorExit)
-    #     else:
-    #         self.fail("subgenerator failed to raise ValueError")
-    #     self.assertEqual(trace,[
-    #         "Enter g",
-    #         "Enter f",
-    #     ])
+    def test_throwing_GeneratorExit_into_subgen_that_raises(self):
+        """
+        Test throwing GeneratorExit into a subgenerator that
+        catches it and raises a different exception.
+        """
+        trace = []
+        def f():
+            try:
+                trace.append("Enter f")
+                yield
+                trace.append("Exit f")
+            except GeneratorExit:
+                raise ValueError("Vorpal bunny encountered")
+        def g():
+            trace.append("Enter g")
+            yield from f()
+            trace.append("Exit g")
+        try:
+            gi = g()
+            next(gi)
+            gi.throw(GeneratorExit)
+        except ValueError as e:
+            self.assertEqual(e.args[0], "Vorpal bunny encountered")
+            # self.assertIsInstance(e.__context__, GeneratorExit)
+        else:
+            self.fail("subgenerator failed to raise ValueError")
+        self.assertEqual(trace,[
+            "Enter g",
+            "Enter f",
+        ])
 
     def test_yield_from_empty(self):
         def g():
