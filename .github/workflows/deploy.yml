@@ -1,7 +1,7 @@
 name: deploy
 on:
   push:
-    tags: v*
+    tags: "[0-9]+.[0-9]+.[0-9]+"
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
