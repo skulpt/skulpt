@@ -20,7 +20,6 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         this.gi$scope = scope;
         this.$name = name;
         this.$qualname = qualname;
-        this.$value;
         const susp = new Sk.misceval.Suspension();
         const data = {
             type: "gen",
@@ -51,6 +50,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             return data.send;
         };
         susp.data = data;
+        this.gi$ret = Sk.builtin.none.none$;
         this.gi$susp = susp;
         this.gi$data = data;
         this.curr$susp = null; // set inside the compile code
@@ -67,7 +67,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
         } else if (this.gi$closed) {
-            this.$value = undefined;
+            this.gi$ret = Sk.builtin.none.none$;
             return undefined;
         }
 
@@ -84,7 +84,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                         this.curr$susp = ret[0];
                         return ret[1];
                     } else {
-                        this.$value = ret;
+                        this.gi$ret = ret;
                         this.gi$closed = true;
                         return undefined;
                     }
@@ -113,7 +113,9 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                         // this is a weird quirk - and only for printing purposes StopIteration(None) vs StopIteration()
                         // .value ends up being None. But the repr prints the args we pass to StopIteration.
                         // See tests in test_yield_from and search for StopIteration()
-                        throw v !== undefined && v !== Sk.builtin.none.none$ ? new Sk.builtin.StopIteration(v) : new Sk.builtin.StopIteration();
+                        throw v !== undefined && v !== Sk.builtin.none.none$
+                            ? new Sk.builtin.StopIteration(v)
+                            : new Sk.builtin.StopIteration();
                     }
                     return ret;
                 });
@@ -130,7 +132,9 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 }
                 let isGenExit = false;
                 if (!(value instanceof Sk.builtin.BaseException)) {
-                    throw new Sk.builtin.TypeError("exceptions must be classes or instances deriving from BaseException, not str");
+                    throw new Sk.builtin.TypeError(
+                        "exceptions must be classes or instances deriving from BaseException, not str"
+                    );
                 } else if (value instanceof Sk.builtin.GeneratorExit) {
                     isGenExit = true;
                 }
@@ -146,7 +150,10 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                     () =>
                         Sk.misceval.chain(this.tp$iternext(true), (ret) => {
                             if (ret === undefined) {
-                                throw new Sk.builtin.StopIteration(this.$value);
+                                const v = this.gi$ret;
+                                throw v !== undefined && v !== Sk.builtin.none.none$
+                                    ? new Sk.builtin.StopIteration(v)
+                                    : new Sk.builtin.StopIteration();
                             }
                             return ret;
                         }),
