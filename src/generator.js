@@ -27,30 +27,34 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             throw: null,
             close: null,
         };
-        const close_or_throw = (which, args) => {
+        const do_close_or_throw = (close_or_throw, args) => {
             if (this.gi$yieldfrom && this.gi$yieldfrom.gi$data) {
-                this.gi$yieldfrom.gi$data[which] = data[which];
+                this.gi$yieldfrom.gi$data[close_or_throw] = data[close_or_throw];
                 return;
             }
+            // fall through - we might have a gi$yieldfrom which isn't a generator
+            // call it's close/throw method if it has one
             let meth;
             if (this.gi$yieldfrom) {
-                meth = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str(which));
+                meth = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str(close_or_throw));
             }
             if (meth !== undefined) {
                 Sk.misceval.callsimArray(meth, args || []);
             }
-            throw data[which];
+            // the non-generator didn't throw or we don't have a yieldfrom
+            // either way throw
+            throw data[close_or_throw];
         };
         susp.resume = () => {
             if (data.close) {
-                close_or_throw("close");
+                do_close_or_throw("close");
             } else if (data.throw) {
-                close_or_throw("throw", [data.throw.ob$type, data.throw]);
+                do_close_or_throw("throw", [data.throw.ob$type, data.throw]);
             }
             return data.send;
         };
         susp.data = data;
-        this.gi$ret = Sk.builtin.none.none$;
+        this.gi$ret = null;
         this.gi$susp = susp;
         this.gi$data = data;
         this.curr$susp = null; // set inside the compile code
@@ -67,7 +71,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
         } else if (this.gi$closed) {
-            this.gi$ret = Sk.builtin.none.none$;
+            this.gi$ret = null;
             return undefined;
         }
 
@@ -84,7 +88,11 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                         this.curr$susp = ret[0];
                         return ret[1];
                     } else {
-                        this.gi$ret = ret;
+                        // Since the StopIteration thrown doesn't have an argument
+                        // We keep the gi$ret value as null
+                        // This allows us to distinguish a next value that throws StopIteration() vs StopIteration(None)
+                        // All gens end up throwing StopIteration() but a custom iterator might not
+                        this.gi$ret = ret === Sk.builtin.none.none$ ? null : ret;
                         this.gi$closed = true;
                         return undefined;
                     }
@@ -109,13 +117,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             $meth(value) {
                 return Sk.misceval.chain(this.tp$iternext(true, value), (ret) => {
                     if (ret === undefined) {
-                        const v = this.gi$ret;
-                        // this is a weird quirk - and only for printing purposes StopIteration(None) vs StopIteration()
-                        // .value ends up being None. But the repr prints the args we pass to StopIteration.
-                        // See tests in test_yield_from and search for StopIteration()
-                        throw v !== undefined && v !== Sk.builtin.none.none$
-                            ? new Sk.builtin.StopIteration(v)
-                            : new Sk.builtin.StopIteration();
+                        throw new Sk.builtin.StopIteration(this.gi$ret);
                     }
                     return ret;
                 });
@@ -150,10 +152,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                     () =>
                         Sk.misceval.chain(this.tp$iternext(true), (ret) => {
                             if (ret === undefined) {
-                                const v = this.gi$ret;
-                                throw v !== undefined && v !== Sk.builtin.none.none$
-                                    ? new Sk.builtin.StopIteration(v)
-                                    : new Sk.builtin.StopIteration();
+                                throw new Sk.builtin.StopIteration(this.gi$ret);
                             }
                             return ret;
                         }),

@@ -554,7 +554,7 @@ Compiler.prototype.cyield = function(e) {
     out(`return [$susp, ${val}];`);
 
     this.setBlock(nextBlock);
-    return "$ret"; // will either be none if none sent, or the value from gen.send(value)
+    return "$ret"; // $ret will be set in the resume call to $gen.gi$data.send;
 };
 
 Compiler.prototype.cyieldfrom = function (e) {
@@ -568,8 +568,6 @@ Compiler.prototype.cyieldfrom = function (e) {
     out("$gen.gi$yieldfrom = Sk.abstr.iter(", iterable, ");");
     this._jump(afterIter);
     this.setBlock(afterIter);
-    var retval = this.gensym("retval");
-    out("var ", retval, ";");
     // fast path -> we're sending None (not sending a value) 
     // or we use gen.tp$iternext(true, val) (see generator.js) which is the equivalent of gen.send(val)
     out("if ($gen.gi$data.send === Sk.builtin.none.none$ || $gen.gi$yieldfrom.constructor === Sk.builtin.generator) {");
@@ -593,17 +591,16 @@ Compiler.prototype.cyieldfrom = function (e) {
     out(    ");");
     out("}");
     this._checkSuspension(e);
-    out(retval, "=$ret;");
-    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on from the `yield from` ("afterBlock")
-    out("if(", retval, "===undefined) {");
-    out(    "$gen.gi$data.send=$gen.gi$yieldfrom.gi$ret;");
+    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on to the `yield from` ("afterBlock")
+    out("if($ret===undefined) {");
+    out(    "$ret = $gen.gi$data.send=$gen.gi$yieldfrom.gi$ret || Sk.builtin.none.none$;");
     out(    "$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;");
     out("}");
     out(`$blk = ${afterIter};`);
-    out("var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);");
-    out(`return [/*resume*/ $susp,/*ret*/`, retval, "];");
+    out(`var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);`);
+    out("return [/*resume*/ $susp,/*ret*/ $ret];");
     this.setBlock(afterBlock);
-    return "$gen.gi$data.send"; // will either be none if none sent, or the value from gen.send(value)
+    return "$ret"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 

@@ -487,24 +487,24 @@ Sk.builtin.GeneratorExit = Sk.abstr.buildNativeClass("GeneratorExit", {
  */
 Sk.builtin.StopIteration = Sk.abstr.buildNativeClass("StopIteration", {
     constructor: function StopIteration(...args) {
-        this.$value = args[0] || Sk.builtin.none.none$;
+        this.$value = args[0];
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
     slots: {
         tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs("StopIteration", kwargs);
-            this.$value = args[0] || Sk.builtin.none.none$;
+            this.$value = args[0];
         }
     },
     getsets: {
         value: {
             $get() {
-                return this.$value;
+                return this.$value || Sk.builtin.none.none$;
             },
             $set(v) {
-                // could be deleting the value here but it's always None;
-                this.$value = v || Sk.builtin.none.none$;
+                // could be deleting the value here;
+                this.$value = v;
             }
         }
     }
