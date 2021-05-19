@@ -3,6 +3,8 @@
  * @param {Sk.builtin.str} name
  * @param {Sk.builtin.str} mode
  * @param {Object} buffering
+ * 
+ * @todo - adjust this to be more inline with cpython implementation and use new api
  */
 Sk.builtin.file = function (name, mode, buffering) {
     var i;
@@ -55,7 +57,6 @@ Sk.builtin.file = function (name, mode, buffering) {
     }
     this.pos$ = 0;
 
-    this.__class__ = Sk.builtin.file;
 
     if (Sk.fileopen && this.fileno >= 10) {
         Sk.fileopen(this);
@@ -65,6 +66,7 @@ Sk.builtin.file = function (name, mode, buffering) {
 };
 
 Sk.abstr.setUpInheritance("file", Sk.builtin.file, Sk.builtin.object);
+Sk.abstr.setUpBuiltinMro(Sk.builtin.file);
 
 Sk.builtin.file.prototype["$r"] = function () {
     return new Sk.builtin.str("<" +
@@ -75,14 +77,6 @@ Sk.builtin.file.prototype["$r"] = function () {
         Sk.ffi.remapToJs(this.mode) +
         "'>");
 };
-
-Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(self) {
-    return self;
-});
-
-Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
-    return Sk.misceval.callsimArray(Sk.builtin.file.prototype["close"], [self]);
-});
 
 Sk.builtin.file.prototype.tp$iter = function () {
     var allLines = this.lineList;
@@ -105,6 +99,18 @@ Sk.builtin.file.prototype.tp$iter = function () {
     };
     return ret;
 };
+
+Sk.abstr.setUpSlots(Sk.builtin.file);
+
+Sk.builtin.file.prototype["__enter__"] = new Sk.builtin.func(function __enter__(self) {
+    return self;
+});
+
+Sk.builtin.file.prototype["__exit__"] = new Sk.builtin.func(function __exit__(self) {
+    return Sk.misceval.callsimArray(Sk.builtin.file.prototype["close"], [self]);
+});
+
+
 
 Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function close(self) {
     self.closed = true;

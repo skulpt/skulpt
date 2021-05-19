@@ -63,7 +63,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += Sk.misceval.objectRepr(e).v + "\n";
+        got += Sk.misceval.objectRepr(e) + "\n";
     }
     if (expect !== got)
     {
@@ -274,7 +274,6 @@ function testRun(name, nocatch, debugMode)
                     if (module && module.$js)
                     {
                         console.log("-----\nJS:\n-----");
-                        // to see the javascript uncomment these two lines
                         // var beaut = Sk.js_beautify(module.$js);
                         // console.log(beaut);
                     }
@@ -323,7 +322,7 @@ function testInteractive(name)
             try {
                 var ret = eval(js);
                 if (ret && ret.$r !== undefined)
-                    got += ret.$r().v + "\n";;
+                    got += ret.$r().v + "\n";
             }
             catch (e) { got += "EXCEPTION: " + e.name + "\n" }
             //console.log("made new context");

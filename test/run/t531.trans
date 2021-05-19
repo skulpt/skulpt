@@ -1,5 +1,5 @@
 Module(body=[ClassDef(name='Foo',
-                      bases=[],
+                      bases=[object],
                       body=[Pass()],
                       decorator_list=[]),
              ClassDef(name='Bar',

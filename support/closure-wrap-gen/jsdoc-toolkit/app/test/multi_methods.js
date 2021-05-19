@@ -9,13 +9,13 @@
 	Get a named flavor.
 	@name flavor^2
 	@function
-	@param {String} name The name of the flavor to get.
+	@param {string} name The name of the flavor to get.
 	@returns {String} The value of that flavor.
 */
 /**
 	Set the flavor.
-	@param {String} name The name of the flavor to set.
-	@param {String} value The value of the flavor.
+	@param {string} name The name of the flavor to set.
+	@param {string} value The value of the flavor.
 	@returns {String} The value of that flavor.
 */
 function flavor(name, value) {

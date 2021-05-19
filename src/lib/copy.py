@@ -9,6 +9,10 @@ class Error(Exception):
 error = Error 
 class _EmptyClass:
     pass
+try:
+    long
+except NameError:
+    long = int
 
 def copy(x):
     cls = type(x)
@@ -17,7 +21,7 @@ def copy(x):
     copier = getattr(cls, "__copy__", None)
     if copier:
         return copier(x)
-    if cls in (type(None), int, float, bool, long, str, tuple, type):
+    if cls in (type(None), int, float, bool, str, tuple, type, frozenset, long):
         return x
     if (cls == list) or (cls == dict) or (cls == set) or (cls == slice):
         return cls(x)
@@ -153,6 +157,12 @@ def _deepcopy_set(x, memo):
         result.add(deepcopy(a, memo))  # add the copied elements into the new set
     return result # return the new set
 d[set] = _deepcopy_set
+
+def _deepcopy_frozenset(x, memo):
+    result = frozenset(_deepcopy_set(x,memo)) 
+    memo[id(x)] = result 
+    return result
+d[frozenset] = _deepcopy_frozenset
 
 def _deepcopy_tuple(x, memo):
     y = [deepcopy(a, memo) for a in x]

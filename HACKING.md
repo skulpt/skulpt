@@ -6,74 +6,198 @@ If you are reading this document, chances are you have used Skulpt in some form 
 What is Skulpt?
 ---------------
 
-Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work.
+Skulpt is a system that compiles Python (of the 3.7-ish variety) into Javascript.  But it's not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languages, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work.
 
 To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
 
 **Python Version**
 
 
-    print "hello world"
+    print("hello world")
 
 
 **Javascript Translation**
 
+<details>
+<summary>View the code translation</summary>
 
-    /*     1 */ var $scope0 = (function($modname) {
-    /*     2 */     var $blk = 0,
-    /*     3 */         $exc = [],
-    /*     4 */         $gbl = {},
-    /*     5 */         $loc = $gbl,
-    /*     6 */         $err = undefined;
-    /*     7 */     $gbl.__name__ = $modname;
-    /*     8 */     Sk.globals = $gbl;
-    /*     9 */     try {
-    /*    10 */         while (true) {
-    /*    11 */             try {
-    /*    12 */                 switch ($blk) {
-    /*    13 */                 case 0:
-    /*    14 */                     /* --- module entry --- */
-    /*    15 */                     //
-    /*    16 */                     // line 1:
-    /*    17 */                     // print "hello world"
-    /*    18 */                     // ^
-    /*    19 */                     //
-    /*    20 */                     Sk.currLineNo = 1;
-    /*    21 */                     Sk.currColNo = 0
-    /*    22 */
-    /*    23 */
-    /*    24 */                     Sk.currFilename = './simple.py';
-    /*    25 */
-    /*    26 */                     var $str1 = new Sk.builtins['str']('hello world');
-    /*    27 */                     Sk.misceval.print_(new Sk.builtins['str']($str1).v);
-    /*    28 */                     Sk.misceval.print_("\n");
-    /*    29 */                     return $loc;
-    /*    30 */                     throw new Sk.builtin.SystemError('internal error: unterminated block');
-    /*    31 */                 }
-    /*    32 */             } catch (err) {
-    /*    33 */                 if ($exc.length > 0) {
-    /*    34 */                     $err = err;
-    /*    35 */                     $blk = $exc.pop();
-    /*    36 */                     continue;
-    /*    37 */                 } else {
-    /*    38 */                     throw err;
-    /*    39 */                 }
-    /*    40 */             }
-    /*    41 */         }
-    /*    42 */     } catch (err) {
-    /*    43 */         if (err instanceof Sk.builtin.SystemExit && !Sk.throwSystemExit) {
-    /*    44 */             Sk.misceval.print_(err.toString() + '\n');
-    /*    45 */             return $loc;
-    /*    46 */         } else {
-    /*    47 */             throw err;
-    /*    48 */         }
-    /*    49 */     }
-    /*    50 */ });
+```javascript
+    /*     1 */ Sk.execStart = Sk.lastYield = new Date();
+    /*     2 */ $compiledmod = function() {
+    /*     3 */     var $scope0 = (function($forcegbl) {
+    /*     4 */         var $loadname1;
+    /*     5 */         var $wakeFromSuspension = function() {
+    /*     6 */             var susp = $scope0.$wakingSuspension;
+    /*     7 */             $scope0.$wakingSuspension = undefined;
+    /*     8 */             $blk = susp.$blk;
+    /*     9 */             $loc = susp.$loc;
+    /*    10 */             $gbl = susp.$gbl;
+    /*    11 */             $exc = susp.$exc;
+    /*    12 */             $err = susp.$err;
+    /*    13 */             $postfinally = susp.$postfinally;
+    /*    14 */             $currLineNo = susp.$lineno;
+    /*    15 */             $currColNo = susp.$colno;
+    /*    16 */             Sk.lastYield = Date.now();
+    /*    17 */             $loadname1 = susp.$tmps.$loadname1;
+    /*    18 */             try {
+    /*    19 */                 $ret = susp.child.resume();
+    /*    20 */             } catch (err) {
+    /*    21 */                 if (!(err instanceof Sk.builtin.BaseException)) {
+    /*    22 */                     err = new Sk.builtin.ExternalError(err);
+    /*    23 */                 }
+    /*    24 */                 err.traceback.push({
+    /*    25 */                     lineno: $currLineNo,
+    /*    26 */                     colno: $currColNo,
+    /*    27 */                     filename: '<stdin>.py'
+    /*    28 */                 });
+    /*    29 */                 if ($exc.length > 0) {
+    /*    30 */                     $err = err;
+    /*    31 */                     $blk = $exc.pop();
+    /*    32 */                 } else {
+    /*    33 */                     throw err;
+    /*    34 */                 }
+    /*    35 */             }
+    /*    36 */         };
+    /*    37 */         var $saveSuspension = function($child, $filename, $lineno, $colno) {
+    /*    38 */             var susp = new Sk.misceval.Suspension();
+    /*    39 */             susp.child = $child;
+    /*    40 */             susp.resume = function() {
+    /*    41 */                 $scope0.$wakingSuspension = susp;
+    /*    42 */                 return $scope0();
+    /*    43 */             };
+    /*    44 */             susp.data = susp.child.data;
+    /*    45 */             susp.$blk = $blk;
+    /*    46 */             susp.$loc = $loc;
+    /*    47 */             susp.$gbl = $gbl;
+    /*    48 */             susp.$exc = $exc;
+    /*    49 */             susp.$err = $err;
+    /*    50 */             susp.$postfinally = $postfinally;
+    /*    51 */             susp.$filename = $filename;
+    /*    52 */             susp.$lineno = $lineno;
+    /*    53 */             susp.$colno = $colno;
+    /*    54 */             susp.optional = susp.child.optional;
+    /*    55 */             susp.$tmps = {
+    /*    56 */                 "$loadname1": $loadname1
+    /*    57 */             };
+    /*    58 */             return susp;
+    /*    59 */         };
+    /*    60 */         var $gbl = $forcegbl || {},
+    /*    61 */             $blk = 0,
+    /*    62 */             $exc = [],
+    /*    63 */             $loc = $gbl,
+    /*    64 */             $cell = {},
+    /*    65 */             $err = undefined;
+    /*    66 */         $loc.__file__ = new Sk.builtins.str('<stdin>.py');
+    /*    67 */         var $ret = undefined,
+    /*    68 */             $postfinally = undefined,
+    /*    69 */             $currLineNo = undefined,
+    /*    70 */             $currColNo = undefined;
+    /*    71 */         if (typeof Sk.execStart === 'undefined') {
+    /*    72 */             Sk.execStart = Date.now()
+    /*    73 */         }
+    /*    74 */         if (typeof Sk.lastYield === 'undefined') {
+    /*    75 */             Sk.lastYield = Date.now()
+    /*    76 */         }
+    /*    77 */         if ($scope0.$wakingSuspension !== undefined) {
+    /*    78 */             $wakeFromSuspension();
+    /*    79 */         }
+    /*    80 */         if (Sk.retainGlobals) {
+    /*    81 */             if (Sk.globals) {
+    /*    82 */                 $gbl = Sk.globals;
+    /*    83 */                 Sk.globals = $gbl;
+    /*    84 */                 $loc = $gbl;
+    /*    85 */             }
+    /*    86 */             if (Sk.globals) {
+    /*    87 */                 $gbl = Sk.globals;
+    /*    88 */                 Sk.globals = $gbl;
+    /*    89 */                 $loc = $gbl;
+    /*    90 */                 $loc.__file__ = new Sk.builtins.str('<stdin>.py');
+    /*    91 */             } else {
+    /*    92 */                 Sk.globals = $gbl;
+    /*    93 */             }
+    /*    94 */         } else {
+    /*    95 */             Sk.globals = $gbl;
+    /*    96 */         }
+    /*    97 */         while (true) {
+    /*    98 */             try {
+    /*    99 */                 var $dateNow = Date.now();
+    /*   100 */                 if ($dateNow - Sk.execStart > Sk.execLimit) {
+    /*   101 */                     throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())
+    /*   102 */                 }
+    /*   103 */                 if ($dateNow - Sk.lastYield > Sk.yieldLimit) {
+    /*   104 */                     var $susp = $saveSuspension({
+    /*   105 */                         data: {
+    /*   106 */                             type: 'Sk.yield'
+    /*   107 */                         },
+    /*   108 */                         resume: function() {}
+    /*   109 */                     }, '<stdin>.py', $currLineNo, $currColNo);
+    /*   110 */                     $susp.$blk = $blk;
+    /*   111 */                     $susp.optional = true;
+    /*   112 */                     return $susp;
+    /*   113 */                 }
+    /*   114 */                 switch ($blk) {
+    /*   115 */                     case 0:
+    /*   116 */                         /* --- module entry --- */
+    /*   117 */                         //
+    /*   118 */                         // line 1:
+    /*   119 */                         // print("hello world")
+    /*   120 */                         // ^
+    /*   121 */                         //
+    /*   122 */                         $currLineNo = 1;
+    /*   123 */                         $currColNo = 0;
+    /*   124 */ 
+    /*   125 */                         var $loadname1 = $loc.print !== undefined ? $loc.print : Sk.misceval.loadname('print', $gbl);;
+    /*   126 */                         $ret = ($loadname1.tp$call) ? $loadname1.tp$call([$scope0.$const2], undefined) : Sk.misceval.applyOrSuspend($loadname1, undefined, undefined, undefined, [$scope0.$const2]);
+    /*   127 */                         $blk = 1; /* allowing case fallthrough */
+    /*   128 */                     case 1:
+    /*   129 */                         /* --- function return or resume suspension --- */ if ($ret && $ret.$isSuspension) {
+    /*   130 */                             return $saveSuspension($ret, '<stdin>.py', 1, 0);
+    /*   131 */                         }
+    /*   132 */                         var $call3 = $ret;
+    /*   133 */                         //
+    /*   134 */                         // line 1:
+    /*   135 */                         // print("hello world")
+    /*   136 */                         // ^
+    /*   137 */                         //
+    /*   138 */                         $currLineNo = 1;
+    /*   139 */                         $currColNo = 0;
+    /*   140 */ 
+    /*   141 */                         return $loc;
+    /*   142 */                         throw new Sk.builtin.SystemError('internal error: unterminated block');
+    /*   143 */                 }
+    /*   144 */             } catch (err) {
+    /*   145 */                 if (!(err instanceof Sk.builtin.BaseException)) {
+    /*   146 */                     err = new Sk.builtin.ExternalError(err);
+    /*   147 */                 }
+    /*   148 */                 err.traceback.push({
+    /*   149 */                     lineno: $currLineNo,
+    /*   150 */                     colno: $currColNo,
+    /*   151 */                     filename: '<stdin>.py'
+    /*   152 */                 });
+    /*   153 */                 if ($exc.length > 0) {
+    /*   154 */                     $err = err;
+    /*   155 */                     $blk = $exc.pop();
+    /*   156 */                     continue;
+    /*   157 */                 } else {
+    /*   158 */                     throw err;
+    /*   159 */                 }
+    /*   160 */             }
+    /*   161 */         }
+    /*   162 */     });
+    /*   163 */     $scope0.$const2 = new Sk.builtin.str('hello world');
+    /*   164 */     return $scope0;
+    /*   165 */ }();
+```
 
+</details>
 
-So, 50 lines of Javascript for hello world eh?  That sounds kind of crazy, but you have to recognize that the environment with global variables, local variables, error handling, etc all has to happen even for the simplest program to run.  The parts of the program above that really print "hello world" are lines 26-29.  If you have a look at them you will see that we have to construct a string object from the string literal and then pass that off to some print function.
+<br>
 
-In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skulpt runtime.  It is usually the case that to extend Skulpt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment.
+So, 165 lines of Javascript for `"hello world"` eh?  That sounds kind of crazy, but you have to recognize that the environment with `global variables`, `local variables`, `error handling`, etc all has to happen even for the simplest program to run.  The parts of the program above that really `print("hello world")` are lines `163` and `125-126`.  If you have a look at them you will see that we have to construct a string object from the string literal, load the `constant`, load the `print` function and then pass the `constant` off to that `print` function.
+
+In the example above `Sk.builtin.str` and `Sk.misceval.loadname` are part of the Skulpt runtime.  It is usually the case that to extend Skulpt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment.
+
+Looking at translation code can be quite unsightly and much of the information is unimportant to add new features. For those new to Skulpt, reading the translation code is useful only as much as to hone in on the relevant parts of the code that do what you need. More suggestions on this later. For now, know that it would be rare to have to change compile code. You can implement a whole missing library in Skulpt without having to touch the compiler.
 
 An important thing to keep in mind as you are trying to understand Skulpt is that it is heavily influenced by the implementation of CPython.  So although Python and Javascript are both object oriented languages many parts of the skulpt implementation are quite procedural.  For example using functions that take an object as their first parameter may seem strange as we should have just created a method on that object.  But in order to follow the CPython implementation this decision was made early on.
 
@@ -82,68 +206,67 @@ The Source
 
 The `src` directory contains the javascript that implements skulpt as well
 as parts of the standard library. library modules are in src/lib. The
-source files could roughly be divided into two pieces. The compiler and
-the runtime. The compiler files are:
-`ast.js, parser.js, symtable.js, compile.js, and tokenize.js` The
-compiler part of skulpt reads python code and generates a Javascript
-program. If you want to change the syntax of Python these are the files
-to look at. The syntax used in skulpt is taken right from the Python
-2.6.5 distribution.
+source files could roughly be divided into four pieces:
+- compiler and runtime
+- namespaces
+- builtin functions and types
+- python modules (`src/lib`)
 
-When you run the program in the browser the javascript part is 'evaled'
-by javascript. The runtime files roughly correspond to all of the major
-object types in Python plus builtins:
 
--   abstract.js -- contains lots of abstract function defs
--   biginteger.js -- implements Python's long integer type
--   bool.js
--   skulpt-stdlib.js -- builtin functions: range, min, max, etc. are
-    defined here
--   builtindict.js -- Provides a mapping from the standard Python name
-    to the internal name in skulpt-stdlib.js
--   dict.js
--   enumerate.js
--   env.js
--   errors.js -- Exceptions are defined here
--   file.js
--   float.js
--   function.js
--   generator.js
--   import.js
--   int.js
--   list.js
--   long.js
--   method.js
--   module.js
--   native.js
--   number.js
--   object.js -- most things "inherit" from object
--   set.js
--   slice.js
--   str.js
--   timsort.js
--   tuple.js
--   type.js
+**Compiler**
+The compiler and the runtime. The compiler files are:
+- `ast.js`
+- `parser.js`
+- `symtable.js`
+- `compile.js`
+- `tokenize.js` 
+
+The compiler part of skulpt reads python code and generates a Javascript program. If you want to change the syntax of Python these are the files to look at. The syntax used in skulpt is taken right from the Python 2.6.5 distribution and has since been updated to allow for Python 3.7 syntax.
+
+When you run the program in the browser the javascript part is 'evaled' by javascript. 
+
+
+
+**Namespaces**
+
+The namespaces can be somewhat of a collections of seemingly unconnected functions but as a rough guide:
+- `Sk.abstract` (`abstract.js`)
+  - contains lots of abstract functions that work with Skulpt objects e.g
+    - `Sk.abstr.iter(obj)`
+    - `Sk.abstr.numberBinOp(v, w, op)`
+- `Sk.misceval` (`misceval.js`)
+  - contains methods for calling Python callables
+  - performing an operation on a Skulpt object and converting the result to javascript
+  - working with suspensions/promises/async
+    - `Sk.misceval.richCompareBool(v, w, op)` (returns `Boolean`)
+    - `Sk.misceval.callsimArrayOrSusend(func, args, kwargs)`
+    - `Sk.misceval.arrayFromIterable(iterable)`
+- `Sk.ffi` (`ffi.js`)
+  - A set of tools for moving between Python and javascript
+    - `Sk.ffi.remapToJs(pyObject)`
+    - `Sk.ffi.remapToPy(jsObject)`
+
+
+**Builtins**
+
+Builtin types can all be found in the `Sk.builtin` namespace. Files that contain these functions can all be found in `src/`. All the expected python objects can be found here. 
+
+In order to extend the functionality of a builtin type find the location of the relevant type/method in `src/`. Most methods can be found in `builtin.js`. And most types have their own file - `bool.js`
+
+
 
 Types and Namespaces
 --------------------
 
 
 The `Sk` object contains all of the core Skulpt objects and
-functions. It's pretty easy to get from Sk.blah to its source.
+functions. It's pretty easy to get from `Sk.blah` to its source.
 Usually you will see something like `Sk.builtin.foo` which indicates
 that you will likely find a corresponding file for foo in the src directory.
-Similarly `Sk.misceval.callsim` tells you that you should look
-in `misceval.js` for the callsim function.
+Similarly `Sk.misceval.callsimArray` tells you that you should look
+in `misceval.js` for the `callsimArray` function.
 
-Perhaps one of the most important concepts to learn when starting to program Skulpt is that you
-are always moving back and forth between Python objects and Javascript objects.  Much of your job
-as a skulpt hacker is to either create Python objects as part of a builtin or module function,
-or interact with objects that have been created by the users "regular" Python code.  Knowing when
-you are working with what is critical.  For example a Javascript string is not the same thing as a
-python string.  A Python string is really an instance of ``Sk.builtin.str`` and a Javscript string is
-an instance of ``string``.  You can't compare the two directly, and you definitely cannot use them
-interchangeably.
+Perhaps one of the most important concepts to learn when starting to program Skulpt is that you are always moving back and forth between Python objects and Javascript objects.  Much of your job as a skulpt hacker is to either create Python objects as part of a builtin or module function, or interact with objects that have been created by the users "regular" Python code.  Knowing when you are working with what is critical.  For example a Javascript string is not the same thing as a python string.  A Python string is really an instance of ``Sk.builtin.str`` and a Javscript string is an instance of ``string``.  You can't compare the two directly, and you definitely cannot use them interchangeably.
 
 Python  |  Skulpt              | Javascript
 --------|----------------------|-----------
@@ -154,7 +277,7 @@ complex | Sk.builtin.complex   | NA
 list    | Sk.builtin.list      | Array
 dict    | Sk.builtin.dict      | Object
 set     | Sk.builtin.set       | NA
-bool    | Sk.builtin.bool      | bool
+bool    | Sk.builtin.bool      | boolean
 tuple   | Sk.builtin.tuple     | NA
 
 
@@ -162,14 +285,14 @@ So how do I get the equivalent value?  How do I work with these Python objects f
 
 There are two key functions in Sk.ffi:   `Sk.ffi.remapToJs` and `Sk.ffi.remapToPy` These utility functions are smart enough to remap most builtin data types back and forth.  So if you have a Python string and want to compare it to a Javascript string literal you just need to do `Sk.ffi.remapToJs(pystring)` to get a Javscript string you can compare.
 
-If the Python object in question is a collection, remapToJs will work recursively and not only remap the top level object but also all of the contained objects.
+If the Python object in question is a collection, `remapToJs` will work recursively and not only remap the top level object but also all of the contained objects.
 
 When would you want to convert from Javascript to Python?  Very often, in your implementation you will calculate a value that you want to return.  The returned value needs to be a valid Python type. So lets say you calculate the factorial of a number in a new function you are adding to math.  Then the resulting Javascript number must be turned into a Python object using `Sk.ffi.remapToPy(myresult)`.
 
 
-In many places in the current codebase you will see the use of `somePythonObject.v`  Where `v` is the actual
-javascript value hidden away inside the Python object.  This is not the preferred way to obtain the mapping.  Use
-the `Sk.ffi` API.
+In many places in the current codebase you will see the use of `somePythonObject.v`  Where `v` is the actual javascript value hidden away inside the Python object.  This is not the preferred way to obtain the mapping.  Use the `Sk.ffi` API.
+
+That said `Sk.ffi.remapToJs` can be slow since it does not know in advance which object will be passed to the function. If you are extending the functionality of `Sk.builtin.list`, say, it is worth being consistent with the design choices inside `list.js`, particularly when performance might be a factor. 
 
 Skulpt is divided into several namespaces, you have already seen a couple of them, so here is the list
 
@@ -179,14 +302,130 @@ Skulpt is divided into several namespaces, you have already seen a couple of the
 * Sk.misceval -- To extend skulpt you should know these functions
 
 
+Extending/Creating a native type
+------------------
+A common pull request might be to extend a builtin type, or even to create a missing type. We'll focus on recent example that outlines how to start.
+
+**mappingproxy**
+The `mappingproxy` is a non-writable dictionary like object. To create this object you need to know its makeup. Start by getting the `mappingproxy` type and `pprinting` its `__dict__`.
+
+```python
+mappingproxy = type(object.__dict__) 
+# mappingproxy are not part of the global namespace
+from pprint import pprint
+pprint(mappingproxy.__dict__)
+```
+
+```python
+mappingproxy({'__contains__': <slot wrapper '__contains__' of 'mappingproxy' objects>,
+              '__doc__': None,
+              '__eq__': <slot wrapper '__eq__' of 'mappingproxy' objects>,
+              '__ge__': <slot wrapper '__ge__' of 'mappingproxy' objects>,
+              '__getattribute__': <slot wrapper '__getattribute__' of 'mappingproxy' objects>,
+              '__getitem__': <slot wrapper '__getitem__' of 'mappingproxy' objects>,
+              '__gt__': <slot wrapper '__gt__' of 'mappingproxy' objects>,
+              '__hash__': None,
+              '__iter__': <slot wrapper '__iter__' of 'mappingproxy' objects>,
+              '__le__': <slot wrapper '__le__' of 'mappingproxy' objects>,
+              '__len__': <slot wrapper '__len__' of 'mappingproxy' objects>,
+              '__lt__': <slot wrapper '__lt__' of 'mappingproxy' objects>,
+              '__ne__': <slot wrapper '__ne__' of 'mappingproxy' objects>,
+              '__new__': <built-in method __new__ of type object at 0x10c383908>,
+              '__repr__': <slot wrapper '__repr__' of 'mappingproxy' objects>,
+              '__str__': <slot wrapper '__str__' of 'mappingproxy' objects>,
+              'copy': <method 'copy' of 'mappingproxy' objects>,
+              'get': <method 'get' of 'mappingproxy' objects>,
+              'items': <method 'items' of 'mappingproxy' objects>,
+              'keys': <method 'keys' of 'mappingproxy' objects>,
+              'values': <method 'values' of 'mappingproxy' objects>})
+```
+Notice that there are no actual python functions defined. Unlike when you build a Python class...
+```python
+class A:
+    def __init__(self, x):
+        self.x = x
+pprint(A.__dict__)
+"""
+mappingproxy({...
+              '__init__': <function A.__init__ at 0x10e616d08>,
+              ...})
+"""
+```
+
+There is a difference then in building a skulpt native type compared to building a python class written in python. In Cpython this would be the difference between writing an object in C code vs writing an object in pure python.
+
+The above `mappingproxy.__dict__` can be outlined into skulpt as follows:
+
+```javascript
+Sk.builtin.mappingproxy = Sk.asbtr.buildNativeClass("mappingproxy",{
+    constructor: function mappingproxy(d) {
+        // the constructor in javascript creates an instance of mappingproxy
+    },
+    slots: {
+        tp$getattr: function(pyName) {}, // __getattribute__
+        tp$as_sequence_or_mapping: true, // required for building a mapping or sequence type
+        tp$richcompare: function(){}, // __eq__, __ne__, etc
+        tp$new: function (args, kwargs) {}, // __new__
+        tp$hash: Sk.builtin.none.none$, // __hash__
+        $r: function(){}, // __repr__
+        mp$subscript: function (key) {}, // __getitem__
+        sq$contains: function (key) {}, // __contains__
+        sq$length: function () {}, //__len__
+        tp$iter: function () {},  // __iter__
+    },
+    methods: {
+        copy: {}, // an object literal that defines the method
+        get: {},
+        keys: {},
+        items: {},
+        values: {},
+    },
+    proto: {
+        // private methods and attributes use a dollar in the name
+        // these are accessible by instances of this type
+    },
+    flags: {
+        // flags added to the type object. Not directly accessible by instances
+        sk$acceptable_as_base_class: false,
+    },
+});
+
+```
+The translation from the `mappingproxy.__dict__` to the skulpt skeleton is relatively straight forward. You can find the mapping of dunder methods to skulpt slots in the documentation at [skulpt.org/docs](http://skulpt.org/docs/) or in `src/slotdefs.js` 
+
+From this template we can do a little digging...
+
+```python
+>>> iter(mappingproxy)
+# <dict_keyiterator at 0x10e649228>
+```
+So we now know that a `mappingproxy` reuses some `dict` code. 
+
+```javascript
+tp$iter: function() {
+    return new Sk.builtin.dict_iter_(this);
+}
+```
+
+Then we look at `dict_iter_` and find that `mappingproxy` needs two private methods `get$size` and `sq$asarray` method. 
+
+Since these are private methods we add them to the `proto` in the above object literal.
+
+`sk$acceptable_as_base_class` is flag that was added since
+```python
+>>> class A(mappingproxy): pass
+# TypeError: type 'mappingproxy' is not an acceptable base type
+```
+
+We continue down the rabbit hole of exploring the object as well as reading related skulpt source code from `dict.js`. Perhaps looking at some other implementations from `Cpython` and `pypy` before coming up with skulpt implementation. 
+
+_(It is worth noting that the skulpt implementation is a little less complete than the above. At the point someone needs a missing feature that's when it might be added.)_
+
 
 The Generated Code
 ------------------
 
-Perhaps one of the most instructive things you can do to understand
-Skulpt and how the pieces begin to fit together is to look at a simple
-Python program, and its translation to Javscript. So lets begin with
-Hello World.
+Another instructive things you can do to understand Skulpt and how the pieces begin to fit together is to look at a simple Python program, and its translation to Javscript. So lets begin with Hello World.
 
 ### Python Version
 
@@ -282,6 +521,7 @@ specifically for our program. That would be lines 26-29 above.
     takes care of the same issue. Not sure, maybe this is an
     optimization.
 
+```javascript
 
     Sk.misceval.print_ = function(x)   // this was function print(x)   not sure why...
     {
@@ -299,7 +539,7 @@ specifically for our program. That would be lines 26-29 above.
         if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
             Sk.misceval.softspace_ = true;
     };
-
+```
 
 -   28: print always results in a newline. So do it.
 -   29: done return. This gets us out of the while(true) loop.
@@ -410,18 +650,12 @@ Another Example Naming Conventions
     /*    89 */ });
 
 
-So, here we create some local variables. x, y, do some math to create a
-third local variable z, and then print it. Line 26 illustrates creating
-a local variable `x` (stored as an attribute of $loc)
-`new Sk.builtin.nmber(1, 'int');` By now you can probably guess that
-`Sk.builtin.nmber` is a constructor that creates a Python number object
-that is of type int, and has the value of 1. The same thing happens for
-`y`.
+So, here we create some local variables. x, y, do some math to create a third local variable z, and then print it. Line 26 illustrates creating a local variable `x` (stored as an attribute of $loc) `new Sk.builtin.nmber(1, 'int');` By now you can probably guess that `Sk.builtin.nmber` is a constructor that creates a Python number object that is of type int, and has the value of 1. The same thing happens for `y`.
 
 Next, on lines 40 -- 53 we see what happens in an assignment statement.
-first we load the values of x and y into temporary variables $loadname1
-and $loadname2. Why not just use $loc.x ?? Well, we need to use
-Python's scoping rules. If $loc.x is undefined then we should check the
+first we load the values of x and y into temporary variables `$loadname1`
+and `$loadname2`. Why not just use `$loc.x` ? Well, we need to use
+Python's scoping rules. If `$loc.x` is undefined then we should check the
 outer scope to see if it exists there. `Sk.misceval.loadname` If
 loadname does not find a name `x` or `y` it throws a NameError, and
 execution would abort. You can see where this works by changing the
@@ -433,9 +667,9 @@ On lines 52 and 53 we perform the addition using
 `Sk.abstr.numberBinOp($loadname1, $loadname2, 'Add');` Note the abstract
 (see abstract.js) nature of `numberBinOp` -- two parameters for the
 operands, and one parameter `'Add'` that indicates the operator. Finally
-the temporary result returned by numberBinOp is stored in $loc.z. It's
-important to note that $loc.z contains a Python number object. Down in
-the bowels of numberBinOp, the javascript numeric values for x and y are
+the temporary result returned by `numberBinOp` is stored in `$loc.z`. It's
+important to note that `$loc.z` contains a Python number object. Down in
+the bowels of `numberBinOp`, the javascript numeric values for `x` and `y` are
 retrieved and result of adding two javascript numbers is converted to
 the appropriate type of Python object.
 
@@ -446,15 +680,7 @@ understand this we need a bit more complicated example, so lets look at
 a program that contains an if/else conditional. We'll see that we now
 have a much more interesting switch statement.
 
-Without showing all of the generated code, lets consider a simple python
-program like the one below. There will be two scope functions generated
-by the compiler for this example. $scope0 is for the main program where
-foo is defined and there is an if statement. The second $scope1 is for
-when the foo function is actually called. The $scope1 while/switch
-combo contains four cases: 0, 1, 2, and 3. You can imagine this python
-code consisting of four blocks. The first block starts at the beginning
-and goes through the evaluation of the if condition. The second block is
-the if true block of the if. The third block is the else block of the if
+Without showing all of the generated code, lets consider a simple python program like the one below. There will be two scope functions generated by the compiler for this example. `$scope0` is for the main program where foo is defined and there is an if statement. The second `$scope1` is for when the foo function is actually called. The `$scope1` while/switch combo contains four cases: 0, 1, 2, and 3. You can imagine this python code consisting of four blocks. The first block starts at the beginning and goes through the evaluation of the if condition. The second block is the if true block of the if. The third block is the else block of the if
 statement, and the final block is the rest of the program after the
 if/else is all done. You can verify this for yourself by putting this
 program into a file `simple.py` and running `./skulpt.py run simple.py`
@@ -476,7 +702,7 @@ would probably look a lot different.
            foo("goodbye") # <---- $blk 2
         # <--- $blk 1 end of if
 
-When foo is called, it has its own scope $scope1 created and called using Sk.misceval.callsim.
+When foo is called, it has its own scope `$scope1` created and called using Sk.misceval.callsim.
 
 How do I add Feature X or Fix bug Y
 -----------------------------------
@@ -493,7 +719,7 @@ straightforward path. So start as follows:
     x = [1,2,3]
     print(sorted(x,reverse=True))
 
-Now run this using `./skulpt.py run test.py` and you will get a compiled
+Now run this using `npm run brun test.py`. Run the program and you will get a compiled
 program. With a little bit of sleuthing you find:
 
     /*    35 */                     // line 2:

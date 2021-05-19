@@ -1,4 +1,4 @@
-class Foo:
+class Foo(object):
    pass
 
 class Bar(Foo):
