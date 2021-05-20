@@ -956,6 +956,7 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         Object.defineProperty(child, "sk$baseClass", { value: true, writable: true });
         Object.defineProperty(child.prototype, "sk$builtinBase", { value: child, writable: true });
     }
+    Object.defineProperty(child, "sk$nativeType", { value: true, writable: true });
     const mro = [child];
     while (base !== null) {
         mro.push(base);

@@ -89,6 +89,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
         },
     },
     proto: {
+        sk$hasDict: true, // for reassigning __class__
         init$dict(name, doc) {
             this.$d.__name__ = name;
             this.$d.__doc__ = doc;

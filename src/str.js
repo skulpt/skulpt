@@ -279,6 +279,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             }
             return ret;
         },
+        $isIdentifier() {
+            return Sk.token.isIdentifier(this.v);
+        },
         find$left: mkFind(false),
         find$right: mkFind(true),
         get$tgt(tgt) {
@@ -742,13 +745,15 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             $doc:
                 "Return True if the string is an alpha-numeric string, False otherwise.\n\nA string is alpha-numeric if all characters in the string are alpha-numeric and\nthere is at least one character in the string.",
         },
-        // isidentifier: {
-        //     $meth: methods.isidentifier,
-        //     $flags: {},
-        //     $textsig: "($self, /)",
-        //     $doc:
-        //         'Return True if the string is a valid Python identifier, False otherwise.\n\nUse keyword.iskeyword() to test for reserved identifiers such as "def" and\n"class".',
-        // },
+        isidentifier: {
+            $meth() {
+                return Sk.builtin.bool(this.$isIdentifier());
+            },
+            $flags: { NoArgs: true },
+            $textsig: "($self, /)",
+            $doc:
+                'Return True if the string is a valid Python identifier, False otherwise.\n\nUse keyword.iskeyword() to test for reserved identifiers such as "def" and\n"class".',
+        },
         // isprintable: {
         //     $meth: methods.isprintable,
         //     $flags: {},
