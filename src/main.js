@@ -29,6 +29,7 @@ require("./sk_method.js");
     Sk.abstr.setUpSlots(cls);
     Sk.abstr.setUpMethods(cls);
     Sk.abstr.setUpGetSets(cls);
+    Sk.abstr.setUpClassMethods(cls);
 });
 require("./nonetype");
 require("./formatting.js");

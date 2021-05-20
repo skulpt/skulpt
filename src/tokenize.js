@@ -93,8 +93,8 @@ const IS_IDENTIFIER_REGEX = (function() {
     var Pc = '\\u2040';
     var Other_ID_Start = '[\\u1885-\\u1886\\u2118\\u212E\\u309B-\\u309C]';
     var Other_ID_Continue = '[\\u00B7\\u0387\\u1369-\\u1371\\u19DA]';
-    var id_start = group(Lu, Ll,Lt, Lm, Lo, Nl, the_underscore, Other_ID_Start);
-    var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue);
+    var id_start = group(Lu, Ll, Lt, Lm, Lo, Nl, the_underscore, Other_ID_Start);
+    var id_continue = group(id_start, Mn, Mc, Nd, Pc, Other_ID_Continue, '[0-9]');
 
     // Fall back if we don't support unicode
     if (RegExp().unicode === false) {
@@ -116,6 +116,7 @@ function isidentifier(str) {
     var normalized = str.normalize('NFKC');
     return IS_IDENTIFIER_REGEX.test(normalized);
 }
+Sk.token.isIdentifier = isidentifier;
 
 /* we have to use string and ctor to be able to build patterns up. + on /.../
  * does something strange.

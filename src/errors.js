@@ -72,6 +72,17 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
                 return this.args;
             },
         },
+        __cause__ : {
+            $get() {
+                return this.$cause || Sk.builtin.none.none$;
+            },
+            $set(v) {
+                if (!Sk.builtin.checkNone(v) && !(v instanceof Sk.builtin.BaseException)) {
+                    throw new TypeError("exception cause must be None or derive from BaseException");
+                }
+                this.$cause = v;
+            }
+        },
         __dict__: Sk.generic.getSetDict,
     },
     proto: /**@lends {Sk.builtin.BaseException}*/ {

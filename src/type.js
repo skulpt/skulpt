@@ -34,6 +34,7 @@ Object.defineProperties(
                 tp$doc: "type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type",
                 tp$call,
                 tp$new,
+                tp$init,
                 tp$getattr,
                 tp$setattr,
                 $r,
@@ -41,6 +42,7 @@ Object.defineProperties(
             writable: true,
         },
         tp$methods: { value: null, writable: true }, // define these later
+        tp$classmethods: { value: null, writable: true }, // define these later
         tp$getsets: { value: null, writable: true },
         sk$type: { value: true },
         $isSubType: { value: $isSubType },
@@ -109,20 +111,19 @@ function tp$new(args, kwargs) {
         throw new Sk.builtin.TypeError("type() takes 1 or 3 arguments");
     }
 
-    let $name, bases, dict;
-    $name = args[0];
-    bases = args[1];
-    dict = args[2];
+    const name = args[0];
+    let bases = args[1];
+    const dict = args[2];
     // first check that we only have 3 args and they're of the correct type
     // argument dict must be of type dict
     if (dict.tp$name !== "dict") {
         throw new Sk.builtin.TypeError("type() argument 3 must be dict, not " + Sk.abstr.typeName(dict));
     }
     // checks if name must be string
-    if (!Sk.builtin.checkString($name)) {
-        throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName($name));
+    if (!Sk.builtin.checkString(name)) {
+        throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName(name));
     }
-    $name = $name.$jsstr();
+    const $name = name.$jsstr();
     // argument bases must be of type tuple
     if (bases.tp$name !== "tuple") {
         throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
@@ -133,9 +134,11 @@ function tp$new(args, kwargs) {
      * @type {!typeObject}
      */
     const klass = function () {
-        // klass is essentially a function that gives its instances a dict
-        // if we support slots then we might need to have two versions of this
-        this.$d = new Sk.builtin.dict();
+        // klass is essentially a function that gives its instances a dict and slots
+        if (this.sk$hasDict) {
+            this.$d = new Sk.builtin.dict();
+        }        
+        this.$s = {};
     };
     setUpKlass($name, klass, bases, this.constructor);
 
@@ -145,16 +148,94 @@ function tp$new(args, kwargs) {
     }
     klass.prototype.__doc__ = Sk.builtin.none.none$;
 
-    // set __dict__ if not already on the prototype
-    /**@todo __slots__ */
-    if (klass.$typeLookup(Sk.builtin.str.$dict) === undefined) {
+    let slots = dict.quick$lookup(Sk.builtin.str.$slots);
+    let add_dict = false;
+    let slotSet = false;
+    if (slots !== undefined) {
+        if (Sk.builtin.checkString(slots)) {
+            slots = [slots];
+        } else {
+            slots = Sk.misceval.arrayFromIterable(slots);
+        }
+        let num_slots = 0;
+        slotSet = new Set();
+        slots.forEach((slot) => {
+            // check string and check slot is identifier
+            if (!Sk.builtin.checkString(slot)) {
+                throw new Sk.builtin.TypeError("__slots__ items must be strings, not '" + Sk.abstr.typeName(slot) + "'");
+            } else if (!slot.$isIdentifier()) {
+                throw new Sk.builtin.TypeError("__slots__ must be identifiers");
+            }
+            if (slot === Sk.builtin.str.$dict) {
+                add_dict = true;
+            } else {
+                num_slots++;
+                slot = Sk.mangleName(name, slot);
+                const mangled = slot.$mangled;
+                slotSet.add(mangled);
+                const s = Symbol(mangled);
+                klass.prototype[mangled] = new Sk.builtin.getset_descriptor(klass, {
+                    $get() {
+                        const ret = this.$s[s];
+                        if (ret === undefined) {
+                            throw new Sk.builtin.AttributeError(slot.$jsstr());
+                        }
+                        return ret;
+                    },
+                    $set(v) {
+                        this.$s[s] = v;
+                    },
+                });
+            }
+        });
+        if (num_slots) {
+            Object.defineProperty(klass, "sk$slots", {
+                value: true,
+                writable: true,
+            });
+            Object.defineProperty(klass.prototype, "sk$slotsBase", {
+                value: klass,
+                writable: true,
+            });
+        }
+    } else if (klass.$typeLookup(Sk.builtin.str.$dict) === undefined) {
+        add_dict = true;
+    }
+    if (add_dict) {
+        // we only add the __dict__ descriptor if we defined it in the __slots__ 
+        // or if we don't already have one in a superclass
         klass.prototype.__dict__ = new Sk.builtin.getset_descriptor(klass, subtype_dict_getset_description);
+    }
+    if (add_dict || klass.$typeLookup(Sk.builtin.str.$dict) !== undefined) {
+        Object.defineProperty(klass.prototype, "sk$hasDict", {
+            value: true,
+            writable: true,
+        });
     }
 
     // copy properties from dict into klass.prototype
-    dict.$items().forEach(([key, val]) => {
-        klass.prototype[key.$mangled] = val;
-    });
+    if (!slotSet) {
+        dict.$items().forEach(([key, val]) => {
+            klass.prototype[key.$mangled] = val;
+        });
+    } else {
+        dict.$items().forEach(([key, val]) => {
+            const mangled = key.$mangled;
+            if (slotSet.has(mangled)) {
+                throw new Sk.builtin.ValueError("'" + key.$jsstr() + "' in __slots__ conflicts with class variable");
+            }
+            klass.prototype[key.$mangled] = val;
+        });
+    }
+
+    // make __init_subclass__ a classmethod
+    if (klass.prototype.hasOwnProperty("__init_subclass__")) {
+        const initsubclass = klass.prototype.__init_subclass__;
+        if (initsubclass instanceof Sk.builtin.func) {
+            // initsubclass is an implied classmethod
+            klass.prototype.__init_subclass__ = new Sk.builtin.classmethod(initsubclass);
+        }
+    }
     // make __new__ a static method
     if (klass.prototype.hasOwnProperty("__new__")) {
         const newf = klass.prototype.__new__;
@@ -164,6 +245,9 @@ function tp$new(args, kwargs) {
         }
     }
     klass.$allocateSlots();
+
+    set_names(klass);
+    init_subclass(klass, kwargs);
 
     return klass;
 }
@@ -342,8 +426,9 @@ function best_base_(bases) {
         bases.push(Sk.builtin.object);
     }
     function solid_base(type) {
-        // if we support slots we would need to change this function - for now it just checks for the builtin.
-        if (type.sk$klass === undefined) {
+        if (type.sk$nativeType === true) {
+            return type;
+        } else if (type.sk$slots) {
             return type;
         }
         return solid_base(type.prototype.tp$base);
@@ -501,7 +586,11 @@ function $allocateSlot(dunder, dunderFunc) {
     if (proto.hasOwnProperty(slot_name)) {
         delete proto[slot_name]; // required in order to override the multiple inheritance getter slots
     }
-    proto[slot_name] = slot_def.$slot_func(dunderFunc);
+    Object.defineProperty(proto, slot_name, {
+        value: slot_def.$slot_func(dunderFunc),
+        writable: true,
+        configurable: true,
+    });
 }
 
 function $allocateGetterSlot(dunder) {
@@ -659,6 +748,15 @@ Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     },
 };
 
+Sk.builtin.type.tp$classmethods = {
+    __prepare__: {
+        $meth() {
+            return new Sk.builtin.dict([]);
+        },
+        $flags: { FastCall: true },
+    },
+};
+
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
     $get() {
@@ -702,4 +800,28 @@ function check_special_type_attr(type, value, pyName) {
     if (value === undefined) {
         throw new Sk.builtin.TypeError("can't delete " + type.prototype.tp$name + "." + pyName.$jsstr());
     }
+}
+
+function init_subclass(type, kws) {
+    const super_ = new Sk.builtin.super_(type, type);
+    const func = super_.tp$getattr(Sk.builtin.str.$initsubclass);
+    Sk.misceval.callsimArray(func, [], kws);
+}
+
+function set_names(type) {
+    const proto = type.prototype;
+    Object.keys(proto).forEach((key) => {
+        const set_func = Sk.abstr.lookupSpecial(proto[key], Sk.builtin.str.$setname);
+        if (set_func !== undefined) {
+            try {
+                Sk.misceval.callsimArray(set_func, [type, new Sk.builtin.str(key)]);
+            } catch (e) {
+                const runtime_err = new Sk.builtin.RuntimeError(
+                    "Error calling __set_name__ on '" + Sk.abstr.typeName(proto[key]) + "' instance '" + key + "' in '" + type.prototype.tp$name + "'"
+                );
+                runtime_err.$cause = e;
+                throw runtime_err;
+            }
+        }
+    });
 }

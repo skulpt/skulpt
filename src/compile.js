@@ -318,6 +318,38 @@ Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
     }
 };
 
+Compiler.prototype.cunpackkwstoarray = function (keywords, codeobj) {
+        
+    let keywordArgs = "undefined";
+
+    if (keywords && keywords.length > 0) {
+        let hasStars = false;
+        const kwarray = [];
+        for (let kw of keywords) {
+            if (hasStars && !Sk.__future__.python3) {
+                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+            }
+            if (kw.arg) {
+                kwarray.push("'" + kw.arg.v + "'");
+                kwarray.push(this.vexpr(kw.value));
+            } else {
+                hasStars = true;
+            }
+        }
+        keywordArgs = "[" + kwarray.join(",") + "]";
+        if (hasStars) {
+            keywordArgs = this._gr("keywordArgs", keywordArgs);
+            for (let kw of keywords) {
+                if (!kw.arg) {
+                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",codeobj,");");
+                    this._checkSuspension();
+                }
+            }
+        }
+    }
+    return keywordArgs;
+};
+
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
@@ -540,7 +572,6 @@ Compiler.prototype.ccompare = function (e) {
 
 Compiler.prototype.ccall = function (e) {
     var func = this.vexpr(e.func);
-    var kwarray = null;
     // Okay, here's the deal. We have some set of positional args
     // and we need to unpack them. We have some set of keyword args
     // and we need to unpack those too. Then we make a call.
@@ -548,41 +579,17 @@ Compiler.prototype.ccall = function (e) {
     // help us here; we do it by hand.
 
     let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
-    let keywordArgs = "undefined";
+    let keywordArgs = this.cunpackkwstoarray(e.keywords, func);
 
-    if (e.keywords && e.keywords.length > 0) {
-        let hasStars = false;
-        kwarray = [];
-        for (let kw of e.keywords) {
-            if (hasStars && !Sk.__future__.python3) {
-                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
-            }
-            if (kw.arg) {
-                kwarray.push("'" + kw.arg.v + "'");
-                kwarray.push(this.vexpr(kw.value));
-            } else {
-                hasStars = true;
-            }
-        }
-        keywordArgs = "[" + kwarray.join(",") + "]";
-        if (hasStars) {
-            keywordArgs = this._gr("keywordArgs", keywordArgs);
-            for (let kw of e.keywords) {
-                if (!kw.arg) {
-                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",func,");");
-                    this._checkSuspension();
-                }
-            }
-        }
-    }
 
     if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super" && positionalArgs === "[]") {
         // make sure there is a self variable
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
-        positionalArgs = "[$gbl.__class__,self]";
+        this.u.tempsToSave.push("$sup");
+        out("if (typeof $sup === \"undefined\") { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        positionalArgs = "[$gbl.__class__,$sup]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
@@ -1934,8 +1941,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         } else {
             this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
         }
+        const sup_i = kwarg ? 1 : 0;
         for (let i=0; i < funcArgs.length; i++) {
-            this.u.varDeclsCode += ","+funcArgs[i]+"=$args["+i+"]";
+            const sup = i === sup_i ? "$sup = " : ""
+            this.u.varDeclsCode += ","+sup+funcArgs[i]+"=$args["+i+"]";
         }
         this.u.varDeclsCode += ";\n";
     }
@@ -2314,6 +2323,7 @@ Compiler.prototype.cclass = function (s) {
 
     bases = this.vseqexpr(s.bases);
 
+    let keywordArgs = this.cunpackkwstoarray(s.keywords);
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
@@ -2344,7 +2354,8 @@ Compiler.prototype.cclass = function (s) {
     this.exitScope();
 
     // todo; metaclass
-    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);");
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, ");");
+    this._checkSuspension();
 
     // apply decorators
 
