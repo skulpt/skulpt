@@ -111,7 +111,7 @@ Sk.builtins = {
     // "pow"       : Sk.builtin.pow,
     "reload"    : Sk.builtin.reload,
     "super_$rw$"     : Sk.builtin.super_,
-    "unichr"    : Sk.builtin.unichr,
+    "unichr"    : new Sk.builtin.func(Sk.builtin.unichr),
     "vars"      : Sk.builtin.vars,
     "apply_$rw$": Sk.builtin.apply_,
     "buffer"    : Sk.builtin.buffer,
@@ -552,6 +552,7 @@ Sk.setupObjects = function (py3) {
             return this.$r();
         };
         Sk.builtins["raw_input"] = new Sk.builtin.func(Sk.builtin.raw_input);
+        Sk.builtins["unichr"] = new Sk.builtin.func(Sk.builtin.unichr);
         Sk.builtin.str.prototype.decode = Sk.builtin.str.$py2decode;
         delete Sk.builtins["bytes"];
         delete Sk.builtins["ascii"];
