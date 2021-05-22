@@ -1802,6 +1802,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.defaults) {
         defaults = this.vseqexpr(args.defaults);
     }
+
+    const func_annotations = this.cannotations(args, n.returns);
+
     if (args && args.kw_defaults) {
         kw_defaults = args.kw_defaults.map(e => e ? this.vexpr(e) : "undefined");
     }
@@ -2123,17 +2126,70 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
                             "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
         }
     } else {
+        let funcobj;
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
             for (let decorator of decos.reverse()) {
                 out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
                 this._checkSuspension();
             }
-            return this._gr("funcobj", "$ret");
+            funcobj = this._gr("funcobj", "$ret");
+        } else {
+            funcobj = this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
+        }
+        if (func_annotations) {
+            out(funcobj, ".func_annotations=", func_annotations, ";");
         }
 
-        return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
+        return funcobj;
     }
+};
+
+
+Compiler.prototype.cargannotation = function (id, annotation, ann_dict) {
+    if (annotation) {
+        const mangled = mangleName(this.u.private_, id).v;
+        // var scope = this.u.ste.getScope(mangled);
+        ann_dict.push(`'${mangled}'`);
+        ann_dict.push(this.vexpr(annotation));
+    }
+};
+
+Compiler.prototype.cargannotations = function (args, ann_dict) {
+    if (!args) {
+        return;
+    }
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        this.cargannotation(arg.arg, arg.annotation, ann_dict);
+    }
+};
+
+const return_str = new Sk.builtin.str("return");
+
+Compiler.prototype.cannotations = function (args, returns) {
+    const ann_dict = [];
+    if (args) {
+        this.cargannotations(args.posonlyargs, ann_dict);
+        this.cargannotations(args.args, ann_dict);
+        if (args.vararg && args.vararg.annotation) {
+            this.cargannotation(args.vararg.arg, args.vararg.annotation, ann_dict);
+        }
+        this.cargannotations(args.kwonlyargs, ann_dict);
+        if (args.kwarg && args.kwarg.annotation) {
+            this.cargannotation(args.kwarg.arg, args.kwarg.annotation, ann_dict);
+        }
+    }
+    if (returns) {
+        this.cargannotation(return_str, returns, ann_dict);
+    }
+    if (ann_dict.length === 0) {
+        return;
+    }
+    // return as kw dict like list.
+    // This will get turned into a dict when requested in python code
+    // see func.js;
+    return "[" + ann_dict.join(",") + "]";
 };
 
 /** JavaScript for the docstring of the given body, or null if the
