@@ -491,6 +491,7 @@ Sk.builtin.chr = function chr(x) {
 };
 
 Sk.builtin.unichr = function unichr(x) {
+    Sk.builtin.pyCheckArgsLen("unichr", arguments.length, 1, 1);
     if (!Sk.builtin.checkInt(x)) {
         throw new Sk.builtin.TypeError("an integer is required");
     }
