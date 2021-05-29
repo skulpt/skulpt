@@ -511,15 +511,9 @@ Sk.builtin.unichr = function unichr(x) {
  * This is a helper function and we already know that x is an int or has an nb$index slot
  */
 Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
-    let v;
-    if (x.constructor === Sk.builtin.int_ || x instanceof Sk.builtin.int_) {
-        v = x.v; // we don't use asnum$ because it returns a str rather than a bigint.
-    } else {
-        x = x.nb$index();
-        v = x.v;
-    }
+    let v = Sk.misceval.asIndexOrThrow(x);
     let str = v.toString(radix);
-    if (x.nb$isnegative()) {
+    if (v < 0) {
         str = "-" + prefix + str.slice(1);
     } else {
         str = prefix + str;

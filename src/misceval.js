@@ -234,14 +234,8 @@ Sk.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments
  */
 Sk.misceval.iterator = Sk.abstr.buildIteratorClass("iterator", {
     constructor : function iterator (fn, handlesOwnSuspensions) {
-        this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
-            let x = fn();
-            if (canSuspend || !x.$isSuspension) {
-                return x;
-            } else {
-                return Sk.misceval.retryOptionalSuspensionOrThrow(x);
-            }
-        };
+        Sk.asserts.assert(this instanceof Sk.misceval.iterator, "bad internal call to iterator use 'new'");
+        this.tp$iternext = handlesOwnSuspensions ? fn : (canSuspend) => (canSuspend ? fn() : Sk.misceval.retryOptionalSuspensionOrThrow(fn()));
     }, 
     iternext: function (canSuspend) { /* keep slot __next__ happy */
         return this.tp$iternext(canSuspend);

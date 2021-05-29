@@ -42,7 +42,7 @@ module.exports = (env, argv) => {
                                    'invalidCasts', 'missingProperties',
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
-                    jscomp_off: ['fileoverviewTags', 'deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
+                    jscomp_off: ['deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
                     languageOut: languageOut || 'ECMASCRIPT_2015',
                     externs: 'support/externs/sk.js',
                     rewritePolyfills: true,
