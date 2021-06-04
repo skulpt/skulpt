@@ -347,20 +347,102 @@ class BuiltinTest(unittest.TestCase):
         # self.assertRaises(ValueError, eval, "foo", {}, X())
 
 
-    # def test_eval(self):
-    #     self.assertEqual(eval('1+1'), 2)
-    #     self.assertEqual(eval(' 1+1\n'), 2)
-    #     globals = {'a': 1, 'b': 2}
-    #     locals = {'b': 200, 'c': 300}
-    #     self.assertEqual(eval('a', globals) , 1)
-    #     self.assertEqual(eval('a', globals, locals), 1)
-    #     self.assertEqual(eval('b', globals, locals), 200)
-    #     self.assertEqual(eval('c', globals, locals), 300)
-    #     globals = {'a': 1, 'b': 2}
-    #     locals = {'b': 200, 'c': 300}
-    #     self.assertEqual(eval('"\xe5"', globals), "\xe5")
-    #     self.assertRaises(TypeError, eval)
-    #     self.assertRaises(TypeError, eval, ())
+
+    def test_eval(self):
+        self.assertEqual(eval('1+1'), 2)
+        self.assertEqual(eval(' 1+1\n'), 2)
+        globals = {'a': 1, 'b': 2}
+        locals = {'b': 200, 'c': 300}
+        self.assertEqual(eval('a', globals) , 1)
+        self.assertEqual(eval('a', globals, locals), 1)
+        self.assertEqual(eval('b', globals, locals), 200)
+        self.assertEqual(eval('c', globals, locals), 300)
+        globals = {'a': 1, 'b': 2}
+        locals = {'b': 200, 'c': 300}
+        # bom = b'\xef\xbb\xbf'
+        # self.assertEqual(eval(bom + b'a', globals, locals), 1)
+        self.assertEqual(eval('"\xe5"', globals), "\xe5")
+        self.assertRaises(TypeError, eval)
+        self.assertRaises(TypeError, eval, ())
+        # self.assertRaises(SyntaxError, eval, bom[:2] + b'a')
+
+        # class X:
+        #     def __getitem__(self, key):
+        #         raise ValueError
+        # self.assertRaises(ValueError, eval, "foo", {}, X())
+
+    def test_exec(self):
+        g = {}
+        exec('z = 1', g)
+        if '__builtins__' in g:
+            del g['__builtins__']
+        self.assertEqual(g, {'z': 1})
+
+        exec('z = 1+1', g)
+        if '__builtins__' in g:
+            del g['__builtins__']
+        self.assertEqual(g, {'z': 2})
+        g = {}
+        l = {}
+
+        # with check_warnings():
+        #     warnings.filterwarnings("ignore", "global statement",
+        #             module="<string>")
+        exec('global a; a = 1; b = 2', g, l)
+        if '__builtins__' in g:
+            del g['__builtins__']
+        if '__builtins__' in l:
+            del l['__builtins__']
+        self.assertEqual((g, l), ({'a': 1}, {'b': 2}))
+
+
+
+    # def test_exec_globals(self):
+    #     code = compile("print('Hello World!')", "", "exec")
+    #     # no builtin function
+    #     self.assertRaisesRegex(NameError, "name 'print' is not defined",
+    #                            exec, code, {'__builtins__': {}})
+    #     # __builtins__ must be a mapping type
+    #     self.assertRaises(TypeError,
+    #                       exec, code, {'__builtins__': 123})
+
+    #     # no __build_class__ function
+    #     code = compile("class A: pass", "", "exec")
+    #     self.assertRaisesRegex(NameError, "__build_class__ not found",
+    #                            exec, code, {'__builtins__': {}})
+
+    #     class frozendict_error(Exception):
+    #         pass
+
+    #     class frozendict(dict):
+    #         def __setitem__(self, key, value):
+    #             raise frozendict_error("frozendict is readonly")
+
+    #     # read-only builtins
+    #     if isinstance(__builtins__, types.ModuleType):
+    #         frozen_builtins = frozendict(__builtins__.__dict__)
+    #     else:
+    #         frozen_builtins = frozendict(__builtins__)
+    #     code = compile("__builtins__['superglobal']=2; print(superglobal)", "test", "exec")
+    #     self.assertRaises(frozendict_error,
+    #                       exec, code, {'__builtins__': frozen_builtins})
+
+    #     # read-only globals
+    #     namespace = frozendict({})
+    #     code = compile("x=1", "test", "exec")
+    #     self.assertRaises(frozendict_error,
+    #                       exec, code, namespace)
+
+    def test_exec_redirected(self):
+        savestdout = sys.stdout
+        sys.stdout = None # Whatever that cannot flush()
+        try:
+            # Used to raise SystemError('error return without exception set')
+            exec('a')
+        except NameError:
+            pass
+        finally:
+            sys.stdout = savestdout
 
     def test_filter(self):
         self.assertEqual(list(filter(lambda c: 'a' <= c <= 'z', 'Hello World')), list('elloorld'))

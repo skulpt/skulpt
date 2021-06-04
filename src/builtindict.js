@@ -198,12 +198,12 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $doc: "Return a Unicode string of one character with ordinal i; 0 <= i <= 0x10ffff.",
     },
 
-    // compile: {
-    //     $meth: Sk.builtin.compile,
-    //     $flags: {},
-    //     $textsig: "($module, /, source, filename, mode, flags=0,\n        dont_inherit=False, optimize=-1)",
-    //     $doc: "Compile source into a code object that can be executed by exec() or eval().\n\nThe source code may represent a Python module, statement or expression.\nThe filename will be used for run-time error messages.\nThe mode must be 'exec' to compile a module, 'single' to compile a\nsingle (interactive) statement, or 'eval' to compile an expression.\nThe flags argument, if present, controls which future statements influence\nthe compilation of the code.\nThe dont_inherit argument, if true, stops the compilation inheriting\nthe effects of any future statements in effect in the code calling\ncompile; if absent or false these statements do influence the compilation,\nin addition to any features explicitly specified."
-    // },
+    compile: {
+        $meth: Sk.builtin.compile,
+        $flags: {MinArgs: 3, MaxArgs:6},
+        $textsig: "($module, /, source, filename, mode, flags=0,\n        dont_inherit=False, optimize=-1)",
+        $doc: "Compile source into a code object that can be executed by exec() or eval().\n\nThe source code may represent a Python module, statement or expression.\nThe filename will be used for run-time error messages.\nThe mode must be 'exec' to compile a module, 'single' to compile a\nsingle (interactive) statement, or 'eval' to compile an expression.\nThe flags argument, if present, controls which future statements influence\nthe compilation of the code.\nThe dont_inherit argument, if true, stops the compilation inheriting\nthe effects of any future statements in effect in the code calling\ncompile; if absent or false these statements do influence the compilation,\nin addition to any features explicitly specified."
+    },
 
     delattr: {
         $meth: Sk.builtin.delattr,
@@ -229,19 +229,40 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
 
     eval_$rw$: {
         $name: "eval",
-        $meth: Sk.builtin.eval_,
+        $meth: function (source, globals, locals) {
+            // check globals
+            const tmp_globals = checkGlobLoc(globals, "globals");
+            // check locals
+            const tmp_locals = checkGlobLoc(locals, "locals");
+            return Sk.misceval.chain(Sk.builtin.eval(source, tmp_globals, tmp_locals), (res) => {
+                reassignGlobLoc(globals, tmp_globals);
+                reassignGlobLoc(locals, tmp_locals);
+                return res;
+            });
+        },
         $flags: { MinArgs: 1, MaxArgs: 3 },
         $textsig: "($module, source, globals=None, locals=None, /)",
         $doc:
             "Evaluate the given source in the context of globals and locals.\n\nThe source may be a string representing a Python expression\nor a code object as returned by compile().\nThe globals must be a dictionary and locals can be any mapping,\ndefaulting to the current globals and locals.\nIf only globals is given, locals defaults to it.",
     },
 
-    // exec: {
-    //     $meth: Sk.builtin.exec,
-    //     $flags: {MinArgs:2, MaxArgs: 3},
-    //     $textsig: "($module, source, globals=None, locals=None, /)",
-    //     $doc: "Execute the given source in the context of globals and locals.\n\nThe source may be a string representing one or more Python statements\nor a code object as returned by compile().\nThe globals must be a dictionary and locals can be any mapping,\ndefaulting to the current globals and locals.\nIf only globals is given, locals defaults to it."
-    // },
+    exec: {
+        $meth: function (source, globals, locals) {
+            // check globals
+            const tmp_globals = checkGlobLoc(globals, "globals");
+            // check locals
+            const tmp_locals = checkGlobLoc(locals, "locals");
+            return Sk.misceval.chain(Sk.builtin.exec(source, tmp_globals, tmp_locals), (new_locals) => {
+                reassignGlobLoc(globals, tmp_globals);
+                reassignGlobLoc(locals, tmp_locals);
+                return Sk.builtin.none.none$;
+            });
+        },
+        $flags: { MinArgs: 1, MaxArgs: 3 },
+        $textsig: "($module, source, globals=None, locals=None, /)",
+        $doc:
+            "Execute the given source in the context of globals and locals.\n\nThe source may be a string representing one or more Python statements\nor a code object as returned by compile().\nThe globals must be a dictionary and locals can be any mapping,\ndefaulting to the current globals and locals.\nIf only globals is given, locals defaults to it.",
+    },
 
     format: {
         $meth: Sk.builtin.format,
@@ -468,6 +489,36 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $doc: "vars([object]) -> dictionary\n\nWithout arguments, equivalent to locals().\nWith an argument, equivalent to object.__dict__.",
     },
 });
+
+// function used for exec and eval
+function checkGlobLoc(glob_loc, name) {
+    let tmp = undefined;
+    if (glob_loc === undefined || Sk.builtin.checkNone(glob_loc)) {
+        glob_loc = undefined;
+    } else if (!(glob_loc instanceof Sk.builtin.dict)) {
+        throw new Sk.builtin.TypeError(name + " must be a dict or None, not " + Sk.abstr.typeName(glob_loc));
+    } else {
+        tmp = {};
+        // we only support dicts here since actually we need to convert this to a hashmap for skulpts version of
+        // compiled code. Any old mapping won't do, it must be iterable!
+        glob_loc.$items().forEach(([key, val]) => {
+            if (Sk.builtin.checkString(key)) {
+                tmp[key.$mangled] = val;
+            }
+        });
+    }
+    return tmp;
+}
+
+function reassignGlobLoc(dict, obj) {
+    if (dict === undefined || Sk.builtin.checkNone(dict)) {
+        return;
+    }
+    for (let key in obj) {
+        // this isn't technically correct - if they use delete in the exec this breaks
+        dict.mp$ass_subscript(new Sk.builtin.str(Sk.unfixReserved(key)), obj[key]);
+    }
+}
 
 
 Sk.setupObjects = function (py3) {
