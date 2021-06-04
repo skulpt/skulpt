@@ -2857,7 +2857,8 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     var ret = "$compiledmod = function() {" + c.result.join("") + "\nreturn " + funcname + ";}();";
     return {
         funcname: "$compiledmod",
-        code    : ret
+        code    : ret,
+        filename: filename,
     };
 };
 
