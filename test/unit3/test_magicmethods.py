@@ -57,14 +57,16 @@ class TestMagicMethods(unittest.TestCase):
         # if we're the same type don't try the refelcted slot
         with self.assertRaises(TypeError):
             a + a
-        
+        with self.assertRaises(TypeError):
+            b + b
+
         class C:
             def __radd__(self, other):
                 return 7
         c = C()
         with self.assertRaises(TypeError):
             c + c 
-         # event though c has a __radd__ and no __add__
+         # even though c has a __radd__ and no __add__
          # we don't try the __radd__ because c and c are the same type 
         
         # C has an override and A.__add__ returns NotImplemented
@@ -90,6 +92,19 @@ class TestMagicMethods(unittest.TestCase):
         self.assertFalse(a < b)
         #  but only if we're a subclass
         self.assertTrue(a < a)
+
+        A.__lt__ = lambda self, other: NotImplemented
+        # if the original slot returns NotImplemented
+        # always use the reflected slot with richcompare
+        self.assertFalse(a < a)
+        self.assertFalse(b < b)
+        del A.__lt__
+        # or if it doesn't exist use the relected slot
+        self.assertFalse(a < a)
+        del A.__gt__
+        with self.assertRaises(TypeError):
+            a < a
+
 
 
 
