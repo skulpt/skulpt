@@ -493,10 +493,9 @@ function mp$lookup(key) {
 function dict$merge(b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
     // so use this.set$item instead which can't be overridden by a subclass
-    let keys;
     if (b.tp$iter === Sk.builtin.dict.prototype.tp$iter) {
         // fast way used
-        keys = b.tp$iter();
+        const keys = b.tp$iter();
         for (let key = keys.tp$iternext(); key !== undefined; key = keys.tp$iternext()) {
             const v = b.mp$subscript(key);
             this.set$item(key, v);
@@ -505,10 +504,13 @@ function dict$merge(b) {
         // generic slower way for a subclass that has overriden the tp$iter method
         // or other mapping types like mapping proxy
         const keyfunc = Sk.abstr.lookupSpecial(b, Sk.builtin.str.$keys);
+        if (keyfunc === undefined) {
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(b) + "' object is not a mapping");
+        }
 
-        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc, []), (keys) =>
+        return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc), (keys) =>
             Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
-                Sk.misceval.chain(b.mp$subscript(key, true), (v) => {
+                Sk.misceval.chain(Sk.abstr.objectGetItem(b, key, true), (v) => {
                     this.set$item(key, v);
                 })
             )
