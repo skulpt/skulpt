@@ -739,8 +739,97 @@ Sk.builtin.jsmillis = function jsmillis() {
     return now.valueOf();
 };
 
-Sk.builtin.eval_ = function eval_() {
-    throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
+const pyCode = Sk.abstr.buildNativeClass("code", {
+    constructor: function code(filename, compiled) {
+        this.compiled = compiled;
+        this.code = compiled.code;
+        this.filename = filename;
+    },
+    slots: {
+        tp$new(args, kwargs) {
+            throw new Sk.builtin.NotImplementedError("cannot construct a code object in skulpt");
+        },
+        $r() {
+            return new Sk.builtin.str("<code object <module>, file " + this.filename + ">");
+        },
+    },
+});
+
+Sk.builtin.compile = function (source, filename, mode, flags, dont_inherit, optimize) {
+    Sk.builtin.pyCheckType("source", "str", Sk.builtin.checkString(source));
+    Sk.builtin.pyCheckType("filename", "str", Sk.builtin.checkString(filename));
+    Sk.builtin.pyCheckType("mode", "str", Sk.builtin.checkString(mode));
+    source = source.$jsstr();
+    filename = filename.$jsstr();
+    mode = mode.$jsstr();
+    return Sk.misceval.chain(Sk.compile(source, filename, mode, true), (co) => new pyCode(filename, co));
+};
+
+/**
+ *
+ * @param {*} code
+ * @param {Object|undefined} globals
+ * @param {Object|undefined} locals
+ *
+ * Internally call with javascript objects for globals and locals
+ */
+Sk.builtin.exec = function (code, globals, locals) {
+    if (Sk.builtin.checkString(code)) {
+        code = Sk.compile(code.$jsstr(), "?", "exec", true);
+    } else if (typeof code === "string") {
+        code = Sk.compile(code, "?", "exec", true);
+    } else if (!(code instanceof pyCode)) {
+        throw new Sk.builtin.TypeError("exec() arg 1 must be a string, bytes or code object");
+    }
+    Sk.asserts.assert(
+        globals === undefined || globals.constructor === Object,
+        "internal calls to exec should be called with a javascript object for globals"
+    );
+    Sk.asserts.assert(
+        locals === undefined || locals.constructor === Object,
+        "internal calls to exec should be called with a javascript object for locals"
+    );
+    /**@todo shouldn't have to do this - Sk.globals loses scope*/
+    const tmp = Sk.globals;
+    /** 
+     * @todo this is not correct outside of __main__ i.e. exec doesn't work inside modules using the module scope
+     * This is because globals don't work outside of __main__
+    */
+    globals = globals || tmp;
+    return Sk.misceval.chain(
+        code,
+        (co) => eval(co.code)(globals, locals),
+        (new_locals) => {
+            Sk.globals = tmp;
+            // we return new_locals internally for eval
+            return new_locals;
+        }
+    );
+};
+
+
+Sk.builtin.eval = function (source, globals, locals) {
+    if (Sk.builtin.checkString(source)) {
+        source = source.$jsstr();
+    } else if (Sk.builtin.checkBytes(source)) {
+        throw new Sk.builtin.NotImplementedError("bytes for eval is not yet implemented in skulpt");
+    }
+    if (typeof source === "string") {
+        source = source.trim();
+        const parse = Sk.parse("?", source);
+        const ast = Sk.astFromParse(parse.cst, "?", parse.flags);
+        if (ast.body.length > 1 || !(ast.body[0] instanceof Sk.astnodes.Expr)) {
+            throw new Sk.builtin.SyntaxError("invalid syntax");
+        }
+        source = "__final_res__ = " + source;
+    } else if (!(source instanceof pyCode)) {
+        throw new Sk.builtin.TypeError("eval() arg 1 must be a string, bytes or code object");
+    }
+    return Sk.misceval.chain(Sk.builtin.exec(source, globals, locals), (new_locals) => {
+        const res = new_locals.__final_res__ || Sk.builtin.none.none$;
+        delete new_locals.__final_res__;
+        return res;
+    });
 };
 
 Sk.builtin.map = function map(fun, seq) {
