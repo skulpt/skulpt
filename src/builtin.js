@@ -791,7 +791,10 @@ Sk.builtin.exec = function (code, globals, locals) {
     );
     /**@todo shouldn't have to do this - Sk.globals loses scope*/
     const tmp = Sk.globals;
-    /** @todo this is not correct outside of __main__ i.e. exec doesn't work inside modules using the module scope*/
+    /** 
+     * @todo this is not correct outside of __main__ i.e. exec doesn't work inside modules using the module scope
+     * This is because globals don't work outside of __main__
+    */
     globals = globals || tmp;
     return Sk.misceval.chain(
         code,

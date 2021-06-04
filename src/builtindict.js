@@ -231,9 +231,9 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $name: "eval",
         $meth: function (source, globals, locals) {
             // check globals
-            const tmp_globals = checkGlobLoc(globals, "globals");
+            const tmp_globals = globLocToJs(globals, "globals");
             // check locals
-            const tmp_locals = checkGlobLoc(locals, "locals");
+            const tmp_locals = globLocToJs(locals, "locals");
             return Sk.misceval.chain(Sk.builtin.eval(source, tmp_globals, tmp_locals), (res) => {
                 reassignGlobLoc(globals, tmp_globals);
                 reassignGlobLoc(locals, tmp_locals);
@@ -249,9 +249,9 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     exec: {
         $meth: function (source, globals, locals) {
             // check globals
-            const tmp_globals = checkGlobLoc(globals, "globals");
+            const tmp_globals = globLocToJs(globals, "globals");
             // check locals
-            const tmp_locals = checkGlobLoc(locals, "locals");
+            const tmp_locals = globLocToJs(locals, "locals");
             return Sk.misceval.chain(Sk.builtin.exec(source, tmp_globals, tmp_locals), (new_locals) => {
                 reassignGlobLoc(globals, tmp_globals);
                 reassignGlobLoc(locals, tmp_locals);
@@ -491,7 +491,7 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
 });
 
 // function used for exec and eval
-function checkGlobLoc(glob_loc, name) {
+function globLocToJs(glob_loc, name) {
     let tmp = undefined;
     if (glob_loc === undefined || Sk.builtin.checkNone(glob_loc)) {
         glob_loc = undefined;
