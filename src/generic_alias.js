@@ -145,6 +145,7 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
         },
     },
     proto: {
+        // functions here match similar functions in Objects/genericaliasobject.c
         mk$params() {
             const arg_arr = this.$args.v;
             const params = [];
@@ -166,13 +167,10 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
             }
             const module = Sk.abstr.lookupSpecial(type, Sk.builtin.str.$module);
             if (module === undefined) {
-                // throw some sort of error
-                throw "err?";
+                // throw some sort of error but all objects have __module_ so we shouldn't be here.
+                throw Sk.builtin.RuntimeError("found object withought a __module__");
             }
-            if (module.toString() === "typing") {
-                return true;
-            }
-            return false;
+            return module.toString() === "typing";
         },
         ga$repr(item) {
             if (item === Sk.builtin.ellipsis) {
