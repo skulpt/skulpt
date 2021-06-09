@@ -513,9 +513,6 @@ SymbolTable.prototype.visitStmt = function (s) {
             if (s.value) {
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
-                if (this.cur.generator) {
-                    throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
-                }
             }
             break;
         case Sk.astnodes.Delete:
@@ -712,6 +709,7 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Sk.astnodes.GeneratorExp:
             this.visitGenexp(e);
             break;
+        case Sk.astnodes.YieldFrom:
         case Sk.astnodes.Yield:
             if (e.value) {
                 this.visitExpr(e.value);

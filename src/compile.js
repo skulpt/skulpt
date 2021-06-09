@@ -555,6 +555,58 @@ Compiler.prototype.cyield = function(e) {
     return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
 };
 
+Compiler.prototype.cyieldfrom = function (e) {
+    if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
+        throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
+    }
+    var iterable = this.vexpr(e.value);
+    // get the iterator we are yielding from and store it
+    iterable = this._gr("iter", "Sk.abstr.iter(", iterable, ")");
+    out("$gen." + iterable + "=", iterable, ";");
+    var afterIter = this.newBlock("after iter");
+    var afterBlock = this.newBlock("after yield from");
+    this._jump(afterIter);
+    this.setBlock(afterIter);
+    var retval = this.gensym("retval");
+    // We may have entered this block resuming from a yield
+    // So get the iterable stored on $gen.
+    out(iterable, "=$gen.", iterable, ";");
+    out("var ", retval, ";");
+    // fast path -> we're sending None (not sending a value) 
+    // or we use gen.tp$iternext(true, val) (see generator.js) which is the equivalent of gen.send(val)
+    out("if ($gen.gi$sentvalue === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
+    out(    "$ret=", iterable, ".tp$iternext(true, $gen.gi$sentvalue);");
+    out("} else {");
+    var send = this.makeConstant("new Sk.builtin.str('send');");
+    // slow path -> get the send method of the non-generator iterator and call it
+    // throw anything other than a StopIteration
+    out(    "$ret=Sk.misceval.tryCatch(");
+    out(        "function(){");
+    out(            "return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.gi$sentvalue]);},");
+    out(        "function (e) { ");
+    out(            "if (e instanceof Sk.builtin.StopIteration) { ");
+    out(                    iterable ,".gi$ret = e.$value;");
+                            // store the return value on the iterator
+                            // otherwise we lose it beause iterator code in skulpt relies on returning undefined;
+                            // one day maybe we can use the js .next protocol {value: ret, done: true} ;-)
+    out(                    "return undefined;"); 
+    out(            "} else { throw e; }");
+    out(        "}");
+    out(    ");");
+    out("}");
+    this._checkSuspension(e);
+    out(retval, "=$ret;");
+    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on from the `yield from` ("afterBlock")
+    out("if(", retval, "===undefined) {");
+    out(    "$gen.gi$sentvalue=$gen." + iterable + ".gi$ret;");
+    out(    "$blk=", afterBlock, ";continue;");
+    out("}");
+    out("return [/*resume*/", afterIter, ",/*ret*/", retval, "];");
+    this.setBlock(afterBlock);
+    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value retuned from gen.send(value)
+};
+
+
 Compiler.prototype.ccompare = function (e) {
     var res;
     var rhs;
@@ -843,6 +895,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.cgenexp(e);
         case Sk.astnodes.Yield:
             return this.cyield(e);
+        case Sk.astnodes.YieldFrom:
+            return this.cyieldfrom(e);
         case Sk.astnodes.Compare:
             return this.ccompare(e);
         case Sk.astnodes.Call:
