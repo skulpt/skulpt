@@ -3,10 +3,10 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    mod.__file__ = "/src/lib/token.py";
+    mod.__file__ = new Sk.builtin.str("/src/lib/token.py");
 
     const tok_name_values = [];
-    for (token in Sk.token.tok_name) {
+    for (let token in Sk.token.tok_name) {
         const token_name = Sk.token.tok_name[token].slice(2);
         const token_num = parseInt(token, 10);
 

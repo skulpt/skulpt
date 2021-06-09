@@ -266,6 +266,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             if (co.packagePath) {
                 module["$d"]["__path__"] = new Sk.builtin.tuple([new Sk.builtin.str(co.packagePath)]);
             }
+            if (co.filename && co.funcname !== "$builtinmodule") {
+                module["$d"]["__file__"] = new Sk.builtin.str(co.filename);
+            }
 
             return modscope(module["$d"]);
 
