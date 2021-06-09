@@ -1142,18 +1142,18 @@ Sk.builtin.memoryview = function memoryview() {
 };
 
 Sk.builtin.next_ = function next_(iter, default_) {
-    var nxt;
     if (!iter.tp$iternext) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) + "' object is not an iterator");
     }
-    nxt = iter.tp$iternext();
-    if (nxt === undefined) {
-        if (default_) {
-            return default_;
+    return Sk.misceval.chain(iter.tp$iternext(true), (nxt) => {
+        if (nxt === undefined) {
+            if (default_) {
+                return default_;
+            }
+            throw new Sk.builtin.StopIteration();
         }
-        throw new Sk.builtin.StopIteration();
-    }
-    return nxt;
+        return nxt;
+    });
 };
 
 Sk.builtin.reload = function reload() {
