@@ -398,166 +398,86 @@ function collections_mod(collections) {
         };
     }
 
-    // OrderedDict
-    const odict_iter_ = Sk.abstr.buildIteratorClass("odict_iterator", {
-        constructor: function odict_iter_(odict) {
-            this.$index = 0;
-            this.$seq = odict.sk$asarray();
-            this.$orig = odict;
-        },
-        iternext: Sk.generic.iterNextWithArrayCheckSize,
-        flags: { sk$acceptable_as_base_class: false },
-    });
-
-    collections.OrderedDict = Sk.abstr.buildNativeClass("OrderedDict", {
+    collections.OrderedDict = Sk.abstr.buildNativeClass("collections.OrderedDict", {
         constructor: function OrderedDict() {
-            this.orderedkeys = [];
             Sk.builtin.dict.call(this);
-            return this;
         },
         base: Sk.builtin.dict,
         slots: {
-            tp$as_sequence_or_mapping: true,
-            tp$init(args, kwargs) {
-                Sk.abstr.checkArgsLen("OrderedDict", args, 0, 1);
-                const update = Sk.abstr.lookupSpecial(this, new Sk.builtin.str("update"));
-                return Sk.misceval.callsimOrSuspendArray(update, args, kwargs);
-            },
             tp$doc: "Dictionary that remembers insertion order",
             $r() {
-                let v, pairstr;
-                const ret = [];
-                for (let iter = this.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-                    v = this.mp$subscript(k);
-                    if (v === undefined) {
-                        //print(k, "had undefined v");
-                        v = null;
-                    }
-                    ret.push("(" + Sk.misceval.objectRepr(k) + ", " + Sk.misceval.objectRepr(v) + ")");
+                if (this.in$repr) {
+                    return new Sk.builtin.str(Sk.abstr.typeName(this) + "(...)");
                 }
-                pairstr = ret.join(", ");
-                if (ret.length > 0) {
-                    pairstr = "[" + pairstr + "]";
+                this.in$repr = true;
+                let pairs = this.$items().map(([key, val]) => `(${Sk.misceval.objectRepr(key)}, ${Sk.misceval.objectRepr(val)})`);
+                if (pairs.length === 0) {
+                    pairs = "";
+                } else {
+                    pairs = "[" + pairs.join(", ") + "]";
                 }
-                return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
+                this.in$repr = false;
+                return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + pairs +")");
             },
             tp$richcompare(other, op) {
-                if (op != "Eq" && op != "Ne") {
+                if (op !== "Eq" && op !== "Ne") {
                     return Sk.builtin.NotImplemented.NotImplemented$;
-                }
-                const $true = op == "Eq" ? true : false;
-                if (!(other instanceof collections.OrderedDict)) {
+                } else if (!(other instanceof collections.OrderedDict)) {
                     return Sk.builtin.dict.prototype.tp$richcompare.call(this, other, op);
                 }
+                const ret = op == "Eq" ? true : false;
                 const l = this.size;
-                const otherl = other.size;
-                if (l !== otherl) {
-                    return !$true;
+                if (l !== other.size) {
+                    return !ret;
                 }
-
-                for (
-                    let iter = this.tp$iter(), otheriter = other.tp$iter(), k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
-                    k !== undefined;
-                    k = iter.tp$iternext(), otherk = otheriter.tp$iternext()
-                ) {
-                    if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
-                        return !$true;
+                const oitems = other.$items();
+                const items = this.$items();
+                for (let i = 0; i < l; i++) {
+                    const item = items[i];
+                    const oitem = oitems[i];
+                    const k = item[0];
+                    const otherk = oitem[0];
+                    if (k !== otherk && !Sk.misceval.isTrue(Sk.misceval.richCompareBool(k, otherk, "Eq"))) {
+                        return !ret;
                     }
-                    const v = this.mp$subscript(k);
-                    const otherv = other.mp$subscript(otherk);
-
-                    if (!Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
-                        return !$true;
+                    const v = item[1];
+                    const otherv = oitem[1];
+                    if (v !== otherv && !Sk.misceval.isTrue(Sk.misceval.richCompareBool(v, otherv, "Eq"))) {
+                        return !ret;
                     }
                 }
-                return $true;
-            },
-            mp$ass_subscript(key, w) {
-                if (w === undefined) {
-                    const item = this.pop$item(key);
-                    if (item === undefined) {
-                        throw new Sk.builtin.KeyError(key);
-                    }
-                } else {
-                    this.set$item(key, w);
-                }
-            },
-            tp$iter() {
-                return new odict_iter_(this);
-            },
+                return ret;
+            }
         },
         methods: {
-            pop: {
-                $flags: { NamedArgs: ["key", "default"], Defaults: [null] },
-                $meth(key, d) {
-                    if (d === null) {
-                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key]);
-                    } else {
-                        return Sk.misceval.callsimArray(Sk.builtin.dict.prototype["pop"], [this, key, d]);
-                    }
-                },
-            },
-            popitem: {
-                $flags: { NamedArgs: ["last"], Defaults: [Sk.builtin.bool.true$] },
-                $meth(last) {
-                    let key, val;
-                    if (!this.orderedkeys.length) {
-                        throw new Sk.builtin.KeyError("dictionary is empty");
-                    }
-                    key = this.orderedkeys[0];
-                    if (Sk.misceval.isTrue(last)) {
-                        key = this.orderedkeys[this.orderedkeys.length - 1];
-                    }
-                    val = Sk.misceval.callsimArray(this["pop"], [this, key]);
-                    return new Sk.builtin.tuple([key, val]);
-                },
-            },
             move_to_end: {
                 $flags: { NamedArgs: ["key", "last"], Defaults: [Sk.builtin.bool.true$] },
                 $meth(key, last) {
-                    let orderedkey,
-                        idx = -1;
-                    for (let i = 0; i < this.orderedkeys.length; i++) {
-                        orderedkey = this.orderedkeys[i];
-                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")) {
-                            idx = i;
+                    let foundhash;
+                    for (let keyhash in this.entries) {
+                        const orderedkey = this.entries[keyhash][0];
+                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")) {;
+                            foundhash = keyhash;
                             break;
                         }
                     }
-                    if (idx !== -1) {
-                        this.orderedkeys.splice(idx, 1);
-                    } else {
+                    if (foundhash === undefined) {
                         throw new Sk.builtin.KeyError(key);
                     }
+
+                    const item = this.entries[foundhash];
+                    delete this.entries[foundhash];
                     if (Sk.misceval.isTrue(last)) {
-                        this.orderedkeys.push(key);
+                        this.entries[foundhash] = item
                     } else {
-                        this.orderedkeys.unshift(key);
+                        this.entries = {[foundhash]: item, ...this.entries};
                     }
                     return Sk.builtin.none.none$;
                 },
             },
         },
-        proto: {
-            sk$asarray() {
-                return this.orderedkeys.slice(0);
-            },
-            set$item(key, w) {
-                const idx = this.orderedkeys.indexOf(key);
-                if (idx == -1) {
-                    this.orderedkeys.push(key);
-                }
-                Sk.builtin.dict.prototype.set$item.call(this, key, w);
-            },
-            pop$item(key) {
-                var idx = this.orderedkeys.indexOf(key);
-                if (idx != -1) {
-                    this.orderedkeys.splice(idx, 1);
-                    return Sk.builtin.dict.prototype.pop$item.call(this, key);
-                }
-            },
-        },
     });
+
 
     collections.deque = Sk.abstr.buildNativeClass("collections.deque", {
         constructor: function deque(D, maxlen, head, tail, mask) {
