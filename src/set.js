@@ -434,11 +434,10 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         // takes in an array of py objects
         if (S === undefined) {
             S = [];
+        } else if (!Array.isArray(S)) {
+            S = Sk.misceval.arrayFromIterable(S); // internal calls to constructor can't suspend;
         }
-        Sk.asserts.assert(
-            Array.isArray(S) && this instanceof Sk.builtin.frozenset,
-            "bad call to frozen set - must be called with an Array and 'new'"
-        );
+        Sk.asserts.assert(this instanceof Sk.builtin.frozenset, "bad call to frozen set - must be called with 'new'");
         const L = [];
         for (let i = 0; i < S.length; i++) {
             L.push(S[i]);
