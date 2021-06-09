@@ -487,10 +487,11 @@ Sk.builtin.StopIteration = Sk.abstr.buildNativeClass("StopIteration", {
     getsets: {
         value: {
             $get() {
-                return this.$value || Sk.builtin.none.none$;
+                return this.$value;
             },
             $set(v) {
-                this.$value = v;
+                // could be deleting the value here but it's always None;
+                this.$value = v || Sk.builtin.none.none$;
             }
         }
     }

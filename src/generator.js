@@ -88,7 +88,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 ret = ret[1];
             } else {
                 // todo; StopIteration
-                self.$value = ret;
+                self.gi$ret = ret;
                 return undefined;
             }
             //print("returning:", JSON.stringify(ret));
@@ -100,7 +100,10 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             $meth(value) {
                 return Sk.misceval.chain(this.tp$iternext(true, value), (ret) => {
                     if (ret === undefined) {
-                        const v = this.$value;
+                        const v = this.gi$ret;
+                        // this is a weird quirk - and only for printing purposes StopIteration(None) vs StopIteration()
+                        // .value ends up being None. But the repr prints the args we pass to StopIteration.
+                        // See tests in test_yield_from and search for StopIteration()
                         throw v !== undefined && v !== Sk.builtin.none.none$ ? new Sk.builtin.StopIteration(v) : new Sk.builtin.StopIteration();
                     }
                     return ret;

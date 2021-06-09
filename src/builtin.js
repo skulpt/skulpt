@@ -1150,7 +1150,14 @@ Sk.builtin.next_ = function next_(iter, default_) {
             if (default_) {
                 return default_;
             }
-            const v = iter.$value;
+            const v = iter.gi$ret;
+            // gi$ret is the original value that was thrown by the StopIteration
+            // (or returned by a generator)
+            // We've now lost the original StopIteration
+            // We make the assumption that it was probably called like
+            // raise StopIteration # or  StopIteration()
+            // rather than
+            // raise StopIteration(None)
             if (v !== undefined && v !== Sk.builtin.none.none$) {
                 throw new Sk.builtin.StopIteration(v);
             } else {
