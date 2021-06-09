@@ -5,6 +5,7 @@
 // Order is important!
 
 require("./util.js");
+require("./howler.js");
 
 // Global support functions
 Sk.global["strftime"] = require("strftime");

@@ -1,5 +1,9 @@
 // Tell closure compiler this is defined!
 var Sk = {};
+var HowlerGlobal;
+var Howler;
+var Howl;
+var Sound;
 
 /**
  * 

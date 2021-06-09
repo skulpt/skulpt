@@ -28,12 +28,19 @@ Sk.unit3files = <%- test3 %>;
 
 <h3>Output</h3>
 <pre id="runbrowser_pre" style="background-color: #dddddd"></pre>
+<h3>Canvas</h3>
+<canvas id="canvas" width="500" height="400" tabindex="1"></canvas>
 </div>
 
 </div>
 <div id="files">
 <%- files %>
 </div>
+<script>
+Sk.PyAngelo = {};
+Sk.PyAngelo.canvas = document.getElementById("canvas");
+Sk.PyAngelo.ctx = Sk.PyAngelo.canvas.getContext("2d");
+</script>
 
 </body>
 </html>

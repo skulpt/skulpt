@@ -109,6 +109,7 @@ function runit(myDiv, pyver) {
 </form>
 
 <h3>Canvas</h3>
+<canvas id="canvas" width="500" height="400" tabindex="1"></canvas>
 <div id="turtle" height="500" width="800"
 	style="border-style: solid; display: none"></div>
 
@@ -119,5 +120,10 @@ function runit(myDiv, pyver) {
 <pre id="runbrowser_jsout"></pre>
 
 </div>
+<script>
+Sk.PyAngelo = {};
+Sk.PyAngelo.canvas = document.getElementById("canvas");
+Sk.PyAngelo.ctx = Sk.PyAngelo.canvas.getContext("2d");
+</script>
 </body>
 </html>
