@@ -24,7 +24,7 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
         $r() {
             const origin_repr = this.ga$repr(this.$origin);
             let arg_repr = "";
-            this.$args.forEach((arg, i) => {
+            this.$args.v.forEach((arg, i) => {
                 arg_repr += i > 0 ? ", " : "";
                 arg_repr += this.ga$repr(arg);
             });
