@@ -81,6 +81,7 @@ require("./compile.js");
 require("./import.js");
 require("./timsort.js");
 require("./super.js");
+require("./generic_alias.js");
 require("./builtindict.js");
 require("./constants.js");
 

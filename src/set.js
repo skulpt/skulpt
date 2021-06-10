@@ -334,6 +334,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Update a set with the union of itself and others.",
         },
     },
+    classmethods: Sk.generic.classGetItem,
     proto: /**@lends {Sk.builtin.set.prototype}*/ Object.assign(set_private_, {
         sk$asarray() {
             return this.v.sk$asarray();
@@ -515,6 +516,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         symmetric_difference: set_proto.symmetric_difference.d$def,
         union: set_proto.union.d$def,
     },
+    classmethods: Sk.generic.classGetItem,
     proto: /**@lends {Sk.builtin.frozenset.prototype}*/ Object.assign(
         {
             $subtype_new(args, kwargs) {
