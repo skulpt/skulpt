@@ -213,6 +213,48 @@ class UnpackTest(unittest.TestCase):
         jseval("Sk.retainGlobals = false")
 
 
+    def test_dict_unpacking(self):
+        kwds = {'z': 0, 'w': 12}
+        self.assertEqual(sorted({'x': 1, 'y': 2, **kwds}.items()),
+            [('w', 12), ('x', 1), ('y', 2), ('z', 0)])
+
+        self.assertEqual(sorted({**{'x': 1}, 'y': 2, **{'z': 3}}.items()),
+            [('x', 1), ('y', 2), ('z', 3)])
+
+        self.assertEqual(sorted({**{'x': 1}, 'y': 2, **{'x': 3}}.items()),
+        [('x', 3), ('y', 2)])
+        
+        self.assertEqual(sorted({**{'x': 1}, **{'x': 3}, 'x': 4}.items()),
+            [('x', 4)])
+
+        self.assertEqual({**{}}, {})
+
+        a = {}
+        {**a}[0] = 1
+        self.assertEqual(a, {})
+
+        with self.assertRaises(TypeError) as e:
+            {**1}
+        self.assertEqual(str(e.exception), "'int' object is not a mapping")
+
+        with self.assertRaises(TypeError) as e:
+            {**[]}
+        self.assertEqual(str(e.exception), "'list' object is not a mapping")
+
+        self.assertEqual({0:1, **{0:2}, 0:3, 0:4}, {0: 4})
+
+        # Custom unpacking that suspends
+        class A:
+            def keys(self):
+                return 'ab'
+            def __getitem__(self, key):
+                from time import sleep
+                sleep(.01)
+                return 42
+        
+        self.assertEqual({**A(), 'a': 1, **A(), 'a': 1}, {'a': 1, 'b': 42})
+
+
 
 if __name__ == "__main__":
     unittest.main()

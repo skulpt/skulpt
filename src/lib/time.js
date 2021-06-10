@@ -293,7 +293,7 @@ var $builtinmodule = function (name) {
 
         jsFormat = Sk.ffi.remapToJs(format);
 
-        return Sk.ffi.remapToPy(strftime(jsFormat, new Date(mktime_f(t).v*1000)));
+        return Sk.ffi.remapToPy(Sk.global.strftime(jsFormat, new Date(mktime_f(t).v*1000)));
     }
 
     mod.strftime = new Sk.builtin.func(strftime_f);
@@ -316,7 +316,7 @@ var $builtinmodule = function (name) {
             format = new Sk.builtin.str("%a %b %d %H:%M:%S %Y");
         }
 
-        let t = date_to_struct_time(strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
+        let t = date_to_struct_time(Sk.global.strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
         // We have no idea whether this was a DST time or not
         t.v[8] = new Sk.builtin.int_(-1);
         return t;

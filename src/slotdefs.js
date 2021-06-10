@@ -767,6 +767,7 @@ slots.__next__ = {
                 () => Sk.misceval.callsimOrSuspendArray(func, []),
                 (e) => {
                     if (e instanceof Sk.builtin.StopIteration) {
+                        this.gi$ret = e.$value;
                         return undefined;
                     } else {
                         throw e;
