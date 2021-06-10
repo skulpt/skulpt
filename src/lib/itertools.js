@@ -96,7 +96,7 @@ var $builtinmodule = function (name) {
                 }
             },
         },
-        classmethods: {
+        classmethods: Object.assign({
             from_iterable: {
                 $meth(iterable) {
                     const iterables = Sk.abstr.iter(iterable);
@@ -107,7 +107,7 @@ var $builtinmodule = function (name) {
                     "chain.from_iterable(iterable) --> chain object\n\nAlternate chain() constructor taking a single iterable argument\nthat evaluates lazily.",
                 $textsig: null,
             },
-        },
+        }, Sk.generic.classGetItem),
     });
 
     /**

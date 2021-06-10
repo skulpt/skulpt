@@ -342,3 +342,13 @@ Sk.generic.seqCompare = function (other, op) {
     // or, compare the differing element using the proper operator
     return Sk.misceval.richCompareBool(v[i], w[i], op);
 };
+
+
+Sk.generic.classGetItem = {
+    __class_getitem__: {
+        $meth(args) {
+            return new Sk.builtin.GenericAlias(this, args);
+        },
+        $flags: { OneArg: true },
+    },
+};

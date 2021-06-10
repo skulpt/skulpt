@@ -251,7 +251,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $doc: "D.copy() -> a shallow copy of D",
         },
     },
-    classmethods: /**@lends {Sk.builtin.dict.prototype}*/ {
+    classmethods: /**@lends {Sk.builtin.dict.prototype}*/ Object.assign({
         fromkeys: {
             $meth: function fromkeys(seq, value) {
                 value = value || Sk.builtin.none.none$;
@@ -271,7 +271,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             $textsig: "($type, iterable, value=None, /)",
             $doc: "Create a new dictionary with keys from iterable and values set to value.",
         },
-    },
+    }, Sk.generic.classGetItem),
     proto: /**@lends {Sk.builtin.dict.prototype}*/ {
         quick$lookup,
         mp$lookup,
