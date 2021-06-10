@@ -45,6 +45,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             }
         }
         this.func_closure = closure;
+        this.func_annotations = null;
         this.$memoiseFlags();
         this.memoised = code.co_fastcall || null;
         if (code.co_fastcall) {
@@ -120,6 +121,25 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             },
         },
         __dict__: Sk.generic.getSetDict,
+        __annotations__: {
+            $get() {
+                if (this.func_annotations === null) {
+                    this.func_annotations = new Sk.builtin.dict([]);
+                } else if (Array.isArray(this.func_annotations)) {
+                    this.func_annotations = Sk.abstr.keywordArrayToPyDict(this.func_annotations);
+                }
+                return this.func_annotations;
+            },
+            $set(v) {
+                if (v === undefined || Sk.builtin.checkNone(v)) {
+                    this.func_annotations = new Sk.builtin.dict([]);
+                } else if (v instanceof Sk.builtin.dict) {
+                    this.func_annotations = v;
+                } else {
+                    throw new Sk.builtin.TypeError("__annotations__ must be set to a dict object");
+                }
+            }
+        },
         __defaults__: {
             $get() {
                 return new Sk.builtin.tuple(this.$defaults);

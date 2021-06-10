@@ -632,8 +632,8 @@ class TestUpdateWrapper(unittest.TestCase):
         self.assertEqual(wrapper.__name__, 'f')
         self.assertEqual(wrapper.__qualname__, f.__qualname__)
         self.assertEqual(wrapper.attr, 'This is also a test')
-        # self.assertEqual(wrapper.__annotations__['a'], 'This is a new annotation')
-        # self.assertNotIn('b', wrapper.__annotations__)
+        self.assertEqual(wrapper.__annotations__['a'], 'This is a new annotation')
+        self.assertNotIn('b', wrapper.__annotations__)
 
     # @unittest.skipIf(sys.flags.optimize >= 2,
     #                  "Docstrings are omitted with -O2 and above")
@@ -653,7 +653,7 @@ class TestUpdateWrapper(unittest.TestCase):
         self.assertEqual(wrapper.__name__, 'wrapper')
         self.assertNotEqual(wrapper.__qualname__, f.__qualname__)
         self.assertEqual(wrapper.__doc__, None)
-        # self.assertEqual(wrapper.__annotations__, {})
+        self.assertEqual(wrapper.__annotations__, {})
         self.assertFalse(hasattr(wrapper, 'attr'))
 
     def test_selective_update(self):
@@ -704,7 +704,7 @@ class TestUpdateWrapper(unittest.TestCase):
         functools.update_wrapper(wrapper, max)
         self.assertEqual(wrapper.__name__, 'max')
         self.assertTrue(wrapper.__doc__.startswith('max('))
-        # self.assertEqual(wrapper.__annotations__, {})
+        self.assertEqual(wrapper.__annotations__, {})
 
 
 class TestWraps(TestUpdateWrapper):
