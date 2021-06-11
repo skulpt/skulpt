@@ -32,7 +32,7 @@ if (program.args[0] == "py2") {
     process.exit(1);
 }
 
-const gbl = {__file__: "<repl>", __name__: "__main__"};
+const gbl = {__file__: new Sk.builtin.str("<repl>"), __name__: new Sk.builtin.str("__main__")};
 
 Sk.configure({
     output: (args) => { process.stdout.write(args); },
