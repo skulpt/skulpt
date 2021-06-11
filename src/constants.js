@@ -16,6 +16,7 @@ Sk.builtin.str.$abs = new Sk.builtin.str("__abs__");
 Sk.builtin.str.$bytes = new Sk.builtin.str("__bytes__");
 Sk.builtin.str.$call = new Sk.builtin.str("__call__");
 Sk.builtin.str.$class = new Sk.builtin.str("__class__");
+Sk.builtin.str.$class_getitem = new Sk.builtin.str("__class_getitem__");
 Sk.builtin.str.$cmp = new Sk.builtin.str("__cmp__");
 Sk.builtin.str.$complex = new Sk.builtin.str("__complex__");
 Sk.builtin.str.$contains = new Sk.builtin.str("__contains__");

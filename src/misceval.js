@@ -1187,7 +1187,7 @@ Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
     if (iterable === undefined) {
         return [];
     }
-    if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
+    if (iterable.ht$type === undefined && iterable.sk$asarray !== undefined) {
         // use sk$asarray only if we're a builtin
         return iterable.sk$asarray();
     }

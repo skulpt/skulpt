@@ -925,6 +925,7 @@ function collections_mod(collections) {
                 $doc: "Rotate the deque n steps to the right (default n=1).  If n is negative, rotates left.",
             },
         },
+        classmethods: Sk.generic.classGetItem,
         getsets: {
             maxlen: {
                 $get() {
