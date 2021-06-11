@@ -252,7 +252,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             }
             // }
 
-            finalcode += "\n" + co.funcname + ";";
+            if (co.funcname !== "$compiledmod") {
+                // make sure eval returns the function - already done in Sk.compile
+                // so only necessary with $builtinmodule type modules
+                finalcode += "\n" + co.funcname + ";";
+            }
 
             modscope = Sk.global["eval"](finalcode);
 
