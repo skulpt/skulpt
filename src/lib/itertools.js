@@ -96,7 +96,7 @@ var $builtinmodule = function (name) {
                 }
             },
         },
-        classmethods: {
+        classmethods: Object.assign({
             from_iterable: {
                 $meth(iterable) {
                     const iterables = Sk.abstr.iter(iterable);
@@ -107,7 +107,7 @@ var $builtinmodule = function (name) {
                     "chain.from_iterable(iterable) --> chain object\n\nAlternate chain() constructor taking a single iterable argument\nthat evaluates lazily.",
                 $textsig: null,
             },
-        },
+        }, Sk.generic.classGetItem),
     });
 
     /**
@@ -601,7 +601,7 @@ var $builtinmodule = function (name) {
                     this.indices.push(this.indices.splice(i, 1)[0]); // push ith element to the end
                     this.cycles[i] = this.n - i;
                 } else {
-                    j = this.cycles[i];
+                    const j = this.cycles[i];
                     [this.indices[i], this.indices[this.n - j]] = [this.indices[this.n - j], this.indices[i]]; //swap elements;
                     const res = this.indices.map((i) => this.pool[i]).slice(0, this.r);
                     return new Sk.builtin.tuple(res);
@@ -725,8 +725,8 @@ var $builtinmodule = function (name) {
                 }
             },
             $r() {
-                object_repr = Sk.misceval.objectRepr(this.object);
-                times_repr = this.times === undefined ? "" : ", " + (this.times >= 0 ? this.times : 0);
+                const object_repr = Sk.misceval.objectRepr(this.object);
+                const times_repr = this.times === undefined ? "" : ", " + (this.times >= 0 ? this.times : 0);
                 return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + object_repr + times_repr + ")");
             },
         },

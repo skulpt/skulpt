@@ -160,7 +160,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             return this.tp$str().v;
         },
         hasOwnProperty: Object.prototype.hasOwnProperty,
-        hp$type: undefined,
+        ht$type: undefined,
         // private method used for error messages
         sk$attrError() {
             return "'" + this.tp$name + "' object";
