@@ -45,7 +45,7 @@
   "private": true,
   "devDependencies": {
     "acorn": "^6.1.1",
-    "terser": "^5.5.0",
+    "terser": "^5.7.0",
     "chalk": "^2.4.2",
     "clean-webpack-plugin": "^2.0.2",
     "closure-webpack-plugin": "^2.0.1",
