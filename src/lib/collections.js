@@ -407,17 +407,19 @@ function collections_mod(collections) {
             tp$doc: "Dictionary that remembers insertion order",
             $r() {
                 if (this.in$repr) {
-                    return new Sk.builtin.str(Sk.abstr.typeName(this) + "(...)");
+                    return new Sk.builtin.str("...");
                 }
                 this.in$repr = true;
-                let pairs = this.$items().map(([key, val]) => `(${Sk.misceval.objectRepr(key)}, ${Sk.misceval.objectRepr(val)})`);
+                let pairs = this.$items().map(
+                    ([key, val]) => `(${Sk.misceval.objectRepr(key)}, ${Sk.misceval.objectRepr(val)})`
+                );
                 if (pairs.length === 0) {
                     pairs = "";
                 } else {
                     pairs = "[" + pairs.join(", ") + "]";
                 }
                 this.in$repr = false;
-                return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + pairs +")");
+                return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + pairs + ")");
             },
             tp$richcompare(other, op) {
                 if (op !== "Eq" && op !== "Ne") {
@@ -447,16 +449,28 @@ function collections_mod(collections) {
                     }
                 }
                 return ret;
-            }
+            },
         },
         methods: {
+            popitem: {
+                $flags: { NamedArgs: ["last"], Defaults: [Sk.builtin.bool.true$] },
+                $meth(last) {
+                    const size = this.get$size();
+                    if (size === 0) {
+                        throw new Sk.builtin.KeyError("dictionary is empty");
+                    }
+                    const [key, val] = this.$items()[Sk.misceval.isTrue(last) ? size - 1 : 0];
+                    this.pop$item(key);
+                    return new Sk.builtin.tuple([key, val]);
+                },
+            },
             move_to_end: {
                 $flags: { NamedArgs: ["key", "last"], Defaults: [Sk.builtin.bool.true$] },
                 $meth(key, last) {
                     let foundhash;
                     for (let keyhash in this.entries) {
                         const orderedkey = this.entries[keyhash][0];
-                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")) {;
+                        if (orderedkey === key || Sk.misceval.richCompareBool(orderedkey, key, "Eq")) {
                             foundhash = keyhash;
                             break;
                         }
@@ -468,9 +482,9 @@ function collections_mod(collections) {
                     const item = this.entries[foundhash];
                     delete this.entries[foundhash];
                     if (Sk.misceval.isTrue(last)) {
-                        this.entries[foundhash] = item
+                        this.entries[foundhash] = item;
                     } else {
-                        this.entries = {[foundhash]: item, ...this.entries};
+                        this.entries = { [foundhash]: item, ...this.entries };
                     }
                     return Sk.builtin.none.none$;
                 },
