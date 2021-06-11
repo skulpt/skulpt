@@ -2952,7 +2952,8 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     // Restore the global __future__ flags
     Sk.__future__ = savedFlags;
 
-    var ret = "var $compiledmod = function() {" + c.result.join("") + "\nreturn " + funcname + ";}();";
+    var ret = `var $compiledmod = function() {${c.result.join("")}\nreturn ${funcname};}();\n$compiledmod;`;
+
     return {
         funcname: "$compiledmod",
         code    : ret,
