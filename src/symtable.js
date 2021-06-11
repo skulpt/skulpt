@@ -398,6 +398,36 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
     }
 };
 
+SymbolTable.prototype.visitAnnotations = function (a, returns) {
+    if (a.posonlyargs) {
+        this.visitArgAnnotations(a.posonlyargs);
+    }
+    if (a.args) {
+        this.visitArgAnnotations(a.args);
+    }
+    if (a.vararg && a.vararg.annotation) {
+        this.visitExpr(a.vararg.annotation);
+    }
+    if (a.kwarg && a.kwarg.annotation) {
+        this.visitExpr(a.kwarg.annotation);
+    }
+    if (a.kwonlyargs) {
+        this.visitArgAnnotations(a.kwonlyargs);
+    }
+    if (returns) {
+        this.visitExpr(returns);
+    }
+};
+
+SymbolTable.prototype.visitArgAnnotations = function (args) {
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (arg.annotation) {
+            this.visitExpr(arg.annotation);
+        }
+    }
+};
+
 SymbolTable.prototype.visitArguments = function (a, lineno) {
     if (a.args) {
         this.visitParams(a.args, true);
@@ -492,6 +522,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             if (s.decorator_list) {
                 this.SEQExpr(s.decorator_list);
             }
+            this.visitAnnotations(s.args, s.returns);
             this.enterBlock(s.name.v, FunctionBlock, s, s.lineno);
             this.visitArguments(s.args, s.lineno);
             this.SEQStmt(s.body);
@@ -774,6 +805,8 @@ SymbolTable.prototype.visitExpr = function (e) {
             break;
         case Sk.astnodes.Starred:
             this.visitExpr(e.value);
+            break;
+        case Sk.astnodes.Ellipsis:
             break;
         default:
             Sk.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
