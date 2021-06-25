@@ -2678,9 +2678,10 @@ function parsestrplus (c, n) {
 }
 
 const FLOAT_RE = new RegExp(Sk._tokenize.Floatnumber);
+const underscore = /_/g;
 
 function parsenumber(c, s, lineno) {
-    s = s.replaceAll("_", ""); // we already know that we have a valid underscore number from the tokenizer
+    s = s.replace(underscore, ""); // we already know that we have a valid underscore number from the tokenizer
 
     const end = s[s.length - 1];
     // we know it's just a single floating point imaginary complex number
