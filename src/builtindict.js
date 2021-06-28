@@ -60,6 +60,7 @@ Sk.builtins = {
     "RuntimeError"       : Sk.builtin.RuntimeError,
     "RecursionError"     : Sk.builtin.RecursionError,
     "StopIteration"      : Sk.builtin.StopIteration,
+    "GeneratorExit"      : Sk.builtin.GeneratorExit,
     "SyntaxError"        : Sk.builtin.SyntaxError,
     "SystemError"        : Sk.builtin.SystemError,
 

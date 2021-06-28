@@ -992,6 +992,14 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     });
 };
 
+let fixReserved = (x) => {
+    if (Sk.builtin.str && Sk.builtin.str.$fixReserved) {
+        fixReserved = Sk.builtin.str.$fixReserved;
+        return Sk.builtin.str.$fixReserved(x);
+    }
+    return x;
+};
+
 /**
  * @param {FunctionConstructor} klass 
  * @param {Object=} getsets 
@@ -1004,7 +1012,7 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
     getsets = getsets || klass_proto.tp$getsets || {};
     Object.entries(getsets).forEach(([getset_name, getset_def]) => {
         getset_def.$name = getset_name;
-        klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
+        klass_proto[fixReserved(getset_name)] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
     Object.defineProperty(klass_proto, "tp$getsets", { value: null, writable: true });
 };
@@ -1022,7 +1030,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$methods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.method_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$methods", { value: null, writable: true });
 };
@@ -1040,7 +1048,7 @@ Sk.abstr.setUpClassMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$classmethods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.classmethod_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$classmethods", { value: null, writable: true });
 };
