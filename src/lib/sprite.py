@@ -91,7 +91,7 @@ class TextSprite(Sprite):
         self.a = a
 
 class RectangleSprite(TextSprite):
-    def __init__(self, x, y, width, height, r = 255, b = 255, g = 255, a = 1.0):
+    def __init__(self, x, y, width, height, r = 255, g = 255, b = 255, a = 1.0):
         self.x = x
         self.y = y
         self.width = width
@@ -135,7 +135,7 @@ class RectangleSprite(TextSprite):
         rect(self.x, self.y, self.width, self.height)
 
 class CircleSprite(RectangleSprite):
-    def __init__(self, x, y, radius, r = 255, b = 255, g = 255, a = 1.0):
+    def __init__(self, x, y, radius, r = 255, g = 255, b = 255, a = 1.0):
         self.x = x
         self.y = y
         self.radius = radius
@@ -161,7 +161,7 @@ class CircleSprite(RectangleSprite):
         circle(self.x, self.y, self.radius)
 
 class EllipseSprite(RectangleSprite):
-    def __init__(self, x, y, radiusX, radiusY, r = 255, b = 255, g = 255, a = 1.0):
+    def __init__(self, x, y, radiusX, radiusY, r = 255, g = 255, b = 255, a = 1.0):
         self.x = x
         self.y = y
         self.radiusX = radiusX
