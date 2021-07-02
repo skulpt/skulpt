@@ -1657,11 +1657,10 @@ Sk.builtin._setDoStroke = function _setDoStroke(value) {
     }
 };
 
-Sk.builtin.loadSound = function loadSound(filename, loop) {
-    Sk.builtin.pyCheckArgsLen("loadSound", arguments.length, 1, 2);
+Sk.builtin.loadSound = function loadSound(filename) {
+    Sk.builtin.pyCheckArgsLen("loadSound", arguments.length, 1, 1);
     filename = Sk.ffi.remapToJs(filename);
-    loop = Sk.ffi.remapToJs(loop);
-    let sound = new Howl({"src": [filename], "loop": loop});
+    let sound = new Howl({"src": [filename]});
     Sk.PyAngelo.sounds[filename] = sound;
 
     return Sk.ffi.remapToPy(filename);
@@ -1670,6 +1669,8 @@ Sk.builtin.loadSound = function loadSound(filename, loop) {
 Sk.builtin.playSound = function playSound(sound, loop, volume) {
     Sk.builtin.pyCheckArgsLen("playSound", arguments.length, 1, 3);
     sound = Sk.ffi.remapToJs(sound);
+    loop = Sk.ffi.remapToJs(loop);
+    volume = Sk.ffi.remapToJs(volume);
     if (!Sk.PyAngelo.sounds.hasOwnProperty(sound)) {
         sound = Sk.ffi.remapToJs(Sk.misceval.callsim(Sk.builtin.loadSound, sound));
     }

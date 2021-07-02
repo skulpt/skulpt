@@ -922,10 +922,7 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     },
     loadSound: {
         $meth: Sk.builtin.loadSound,
-        $flags: {
-            NamedArgs: [null, "loop"],
-            Defaults: [Sk.builtin.bool.false$],
-        },
+        $flags: { OneArg: true },
         $textsig: "($module filename, loop /)",
         $doc:
             "Loads a sound into memory.",
