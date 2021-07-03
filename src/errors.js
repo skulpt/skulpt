@@ -40,7 +40,7 @@ Sk.builtin.BaseException = Sk.abstr.buildNativeClass("BaseException", {
         tp$doc: "Common base class for all exceptions",
         tp$new(args, kwargs) {
             let instance;
-            if (!this.hp$type) {
+            if (!this.ht$type) {
                 // then we have a builtin constructor so just return it as new this
                 instance = new this.constructor();
             } else {
@@ -474,9 +474,27 @@ Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
  */
 Sk.builtin.StopIteration = Sk.abstr.buildNativeClass("StopIteration", {
     constructor: function StopIteration(...args) {
+        this.$value = args[0] || Sk.builtin.none.none$;
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
+    slots: {
+        tp$init(args, kwargs) {
+            Sk.abstr.checkNoKwargs("StopIteration", kwargs);
+            this.$value = args[0] || Sk.builtin.none.none$;
+        }
+    },
+    getsets: {
+        value: {
+            $get() {
+                return this.$value;
+            },
+            $set(v) {
+                // could be deleting the value here but it's always None;
+                this.$value = v || Sk.builtin.none.none$;
+            }
+        }
+    }
 });
 Sk.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
 

@@ -501,7 +501,7 @@ function astForDecorator (c, n) {
     }
     else if (NCH(n) === 5) // call with no args
     {
-        return new Sk.astnodes.Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
+        return new Sk.astnodes.Call(nameExpr, [], [], n.lineno, n.col_offset);
     }
     else {
         return ast_for_call(c, CHILD(n, 3), nameExpr);

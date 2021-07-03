@@ -1,8 +1,73 @@
 function $builtinmodule() {
-    const functools = {
-        __name__: new Sk.builtin.str("functools"),
-        __doc__: new Sk.builtin.str("Tools for working with functions and callable objects"),
-        __all__: new Sk.builtin.list(
+    const functools = {};
+    return Sk.misceval.chain(Sk.importModule("collections", false, true), (collections_mod) => {
+        functools._namedtuple = collections_mod.$d.namedtuple;
+        return functools_mod(functools);
+    });
+}
+
+function functools_mod(functools) {
+
+    const {
+        object: pyObject,
+        int_: pyInt,
+        str: pyStr,
+        list: pyList,
+        tuple: pyTuple,
+        dict: pyDict,
+        none: { none$: pyNone },
+        bool: { false$: pyFalse },
+        NotImplemented: { NotImplemented$: pyNotImplemented },
+        bool: pyBool,
+        func: pyFunc,
+        method: pyMethod,
+        TypeError: pyTypeError,
+        RuntimeError,
+        ValueError,
+        NotImplementedError,
+        AttributeErrror,
+        OverflowError,
+        checkNone,
+        checkBool,
+        checkCallable,
+        checkClass,
+    } = Sk.builtin;
+
+    const {
+        callsimArray: pyCall,
+        callsimOrSuspendArray: pyCallOrSuspend,
+        iterFor,
+        chain,
+        isIndex,
+        asIndexSized,
+        isTrue,
+        richCompareBool,
+        objectRepr,
+    } = Sk.misceval;
+
+    const { remapToPy: toPy } = Sk.ffi;
+    
+    const {
+        buildNativeClass,
+        setUpModuleMethods,
+        keywordArrayFromPyDict,
+        keywordArrayToPyDict,
+        objectHash,
+        lookupSpecial,
+        copyKeywordsToNamedArgs,
+        typeName,
+        iter: objectGetIter,
+        gattr: objectGetAttr,
+    } = Sk.abstr;
+
+    const { getSetDict: genericGetSetDict, getAttr: genericGetAttr, setAttr: genericSetAttr } = Sk.generic;
+
+
+
+    Object.assign(functools, {
+        __name__: new pyStr("functools"),
+        __doc__: new pyStr("Tools for working with functions and callable objects"),
+        __all__: new pyList(
             [
                 "update_wrapper",
                 "wraps",
@@ -10,55 +75,340 @@ function $builtinmodule() {
                 "WRAPPER_UPDATES",
                 "total_ordering",
                 "cmp_to_key",
-                "lru_cache" /**@todo lru_cache */,
+                "cache",
+                "lru_cache",
                 "reduce",
-                "TopologicalSorter" /**@todo TopologicalSorter */,
-                "CycleError" /**@todo CycleError */,
                 "partial",
                 "partialmethod",
                 "singledispatch" /**@todo singledispatch */,
                 "singledispatchmethod" /**@todo singledispatchmethod */,
                 "cached_property" /**@todo cached_property */,
-            ].map((x) => new Sk.builtin.str(x))
+            ].map((x) => new pyStr(x))
         ),
-        WRAPPER_ASSIGNMENTS: new Sk.builtin.tuple(
-            ["__module__", "__name__", "__qualname__", "__doc__" /*"__annotations__"*/].map((x) => new Sk.builtin.str(x))
+        WRAPPER_ASSIGNMENTS: new pyTuple(
+            ["__module__", "__name__", "__qualname__", "__doc__", "__annotations__"].map(
+                (x) => new pyStr(x)
+            )
         ),
-        WRAPPER_UPDATES: new Sk.builtin.tuple([new Sk.builtin.str("__dict__")]),
+        WRAPPER_UPDATES: new pyTuple([new pyStr("__dict__")]),
 
         /**@todo */
-        lru_cache: proxyFail("lru_cache"),
-        TopologicalSorter: proxyFail("TopologicalSorter"),
-        CycleError: proxyFail("CycleError"),
         singledispatch: proxyFail("singledispatch"),
         singledispatchmethod: proxyFail("singledispatchmethod"),
         cached_property: proxyFail("cached_property"),
-    };
+    });
 
-    function proxyFail(_name) {
-        return new Sk.builtin.func(function () {
-            throw new Sk.builtin.NotImplementedError(_name + " is not yet implemented in skulpt");
+    function proxyFail(name) {
+        return new pyFunc(() => {
+            throw new NotImplementedError(name + " is not yet implemented in skulpt");
         });
     }
+
+    /********** lru_cache *************/
+    const str_cached_params = new pyStr("cache_parameters");
+
+    function _lru_cache(maxsize, typed) {
+        typed || (typed = pyFalse);
+        if (isIndex(maxsize)) {
+            maxsize = asIndexSized(maxsize, OverflowError);
+            if (maxsize < 0) {
+                maxsize = 0;
+            }
+        } else if (checkCallable(maxsize) && checkBool(typed)) {
+            const user_function = maxsize;
+            maxsize = 128;
+            const wrapper = new _lru_cache_wrapper(user_function, maxsize, typed);
+            wrapper.tp$setattr(str_cached_params, new pyFunc(() => toPy({ maxsize, typed })));
+            return pyCallOrSuspend(functools.update_wrapper, [wrapper, user_function]);
+        } else if (!checkNone(maxsize)) {
+            throw new pyTypeError("Expected first argument to be an integer, a callable, or None");
+        }
+
+        return new pyFunc((user_function) => {
+            const wrapper = new _lru_cache_wrapper(user_function, maxsize, typed);
+            wrapper.tp$setattr(str_cached_params, new pyFunc(() => toPy({ maxsize, typed })));
+            return pyCallOrSuspend(functools.update_wrapper, [wrapper, user_function]);
+        });
+    }
+
+    const _CacheInfo = (functools._CacheInfo = pyCall(
+        functools._namedtuple,
+        ["CacheInfo", ["hits", "misses", "maxsize", "currsize"]].map((x) => toPy(x)),
+        ["module", new pyStr("functools")]
+    ));
+
+    const _lru_cache_wrapper = buildNativeClass("functools._lru_cache_wrapper", {
+        constructor: function _lru_cache_wrapper(func, maxsize, typed, cache_info_type) {
+            if (!checkCallable(func)) {
+                throw new pyTypeError("the first argument must be callable");
+            }
+            let wrapper;
+            /* select the caching function, and make/inc maxsize_O */
+            if (checkNone(maxsize)) {
+                wrapper = infinite_lru_cache_wrapper;
+                /* use this only to initialize lru_cache_object attribute maxsize */
+                maxsize = -1;
+            } else if (isIndex(maxsize)) {
+                maxsize = asIndexSized(maxsize, OverflowError);
+                if (maxsize < 0) {
+                    maxsize = 0;
+                }
+                if (maxsize === 0) {
+                    wrapper = uncached_lru_cache_wrapper;
+                } else {
+                    wrapper = bounded_lru_cache_wrapper;
+                }
+            } else {
+                throw new pyTypeError("maxsize should be integer or None");
+            }
+            this.root = {};
+            this.root.prev = this.root.next = this.root;
+
+            this.wrapper = wrapper;
+            this.maxsize = maxsize;
+            this.typed = typed;
+            this.cache = new pyDict([]);
+            this.func = func;
+            this.misses = this.hits = 0;
+            // this.cache_info_type = cache_info_type;
+            this.$d = new pyDict([]);
+        },
+        slots: {
+            tp$new(args, kws) {
+                const [func, maxsize, typed, cache_info_type] = copyKeywordsToNamedArgs(
+                    "_lru_cache_wrapper",
+                    ["user_function", "maxsize", "typed", "cache_info_type"],
+                    args,
+                    kws
+                );
+                return new _lru_cache_wrapper(func, maxsize, typed, cache_info_type);
+            },
+            tp$call(args, kws) {
+                // we've already checked it's callable i.e. that it has a tp$call so just call it
+                return this.wrapper(args, kws);
+            },
+            tp$descr_get(obj, type) {
+                if (obj === null) {
+                    return this;
+                }
+                return new pyMethod(this, obj);
+            },
+            tp$doc:
+                "Create a cached callable that wraps another function.\n\
+\n\
+user_function:      the function being cached\n\
+\n\
+maxsize:  0         for no caching\n\
+          None      for unlimited cache size\n\
+          n         for a bounded cache\n\
+\n\
+typed:    False     cache f(3) and f(3.0) as identical calls\n\
+          True      cache f(3) and f(3.0) as distinct calls\n\
+\n\
+cache_info_type:    namedtuple class with the fields:\n\
+                        hits misses currsize maxsize\n",
+        },
+        methods: {
+            cache_info: {
+                $meth() {
+                    return pyCallOrSuspend(
+                        _CacheInfo,
+                        [
+                            this.hits,
+                            this.misses,
+                            this.maxsize === -1 ? pyNone : this.maxsize,
+                            this.cache.get$size(),
+                        ].map((x) => toPy(x))
+                    );
+                },
+                $flags: { NoArgs: true },
+                $doc: "Report cache statistics",
+            },
+            cache_clear: {
+                $meth() {
+                    this.hits = this.misses = 0;
+                    this.root = {};
+                    this.root.next = this.root.prev = this.root;
+                    return pyCallOrSuspend(this.cache.tp$getattr(new pyStr("clear"), true));
+                },
+                $flags: { NoArgs: true },
+                $doc: "Clear the cache and cache statistics",
+            },
+            // __reduce__: {},
+            __deepcopy__: {
+                $meth(memo) {
+                    return this;
+                },
+                $flags: { OneArg: true },
+            },
+            __copy__: {
+                $meth() {
+                    return this;
+                },
+                $flags: { NoArgs: true },
+            },
+        },
+        getsets: {
+            __dict__: genericGetSetDict,
+        },
+    });
+
+    /**
+     * @this lru_cache_object
+     */
+    function infinite_lru_cache_wrapper(args, kws) {
+        const key = _make_key(args, kws, this.typed);
+        const result = this.cache.mp$lookup(key);
+        if (result !== undefined) {
+            this.hits++;
+            return result;
+        }
+        this.misses++;
+        return chain(pyCallOrSuspend(this.func, args, kws), (res) => {
+            this.cache.mp$ass_subscript(key, res);
+            return res;
+        });
+    }
+
+    function uncached_lru_cache_wrapper(args, kws) {
+        this.misses++;
+        return pyCallOrSuspend(this.func, args, kws);
+    }
+
+    function bounded_lru_cache_wrapper(args, kws) {
+        const key = _make_key(args, kws, this.typed);
+        const link = this.cache.mp$lookup(key);
+        if (link !== undefined) {
+            // # Move the link to the front of the circular queue
+            const { result } = link;
+            lru_cache_extract_link(link);
+            lru_cache_append_link(this, link);
+            this.hits++;
+            return result;
+        }
+        this.misses++;
+
+        return chain(pyCallOrSuspend(this.func, args, kws), (result) => {
+            const testresult = this.cache.mp$lookup(key);
+            if (testresult !== undefined) {
+                /* Getting here means that this same key was added to the cache
+                during the PyObject_Call().  Since the link update is already
+                done, we need only return the computed result. */
+                return result;
+            }
+
+            /* This is the normal case.  The new key wasn't found before
+            user function call and it is still not there.  So we
+            proceed normally and update the cache with the new result. */
+            if (this.cache.get$size() < this.maxsize || this.root.next === this.root) {
+                /* Cache is not full, so put the result in a new link */
+                const link = { key, result };
+                this.cache.mp$ass_subscript(key, link);
+                lru_cache_append_link(this, link);
+                return result;
+            }
+            /* Extract the oldest item. */
+            const link = this.root.next;
+            lru_cache_extract_link(link);
+            /* Remove it from the cache.
+            The cache dict holds one reference to the link.
+            We created one other reference when the link was created.
+            The linked list only has borrowed references. */
+            const popresult = this.cache.pop$item(link.key);
+            if (popresult === undefined) {
+                /* An error arose while trying to remove the oldest key (the one
+                being evicted) from the cache.  We restore the link to its
+                original position as the oldest link.  Then we allow the
+                error propagate upward; treating it the same as an error
+                arising in the user function. */
+                lru_cache_prepend_link(this, link);
+                throw new RuntimeError("cached item removed unexpectedly");
+            }
+            link.key = key;
+            link.result = result;
+            this.cache.mp$ass_subscript(key, link);
+            lru_cache_append_link(this, link);
+            return result;
+        });
+    }
+
+    function lru_cache_extract_link(link) {
+        const {prev: link_prev, next: link_next} = link;
+        link_prev.next = link.next;
+        link_next.prev = link.prev;
+    }
+
+    function lru_cache_append_link(self, link) {
+        const root = self.root;
+        const last = root.prev;
+        last.next = root.prev = link;
+        link.prev = last;
+        link.next = root;
+    }
+
+    function lru_cache_prepend_link(self, link) {
+        const root = self.root;
+        const first = root.next;
+        first.prev = root.next = link;
+        link.prev = root;
+        link.next = first;
+    }
+
+
+    const _HachedSeq = buildNativeClass("_HachedSeq", {
+        base: pyList,
+        constructor: function _HachedSeq(key_array) {
+            this.$hashval = objectHash(new pyTuple(key_array));
+            pyList.call(this, key_array);
+        },
+        slots: {
+            tp$hash() {
+                return this.$hashval;
+            },
+        },
+    });
+
+    const kwd_mark = new pyObject();
+    const fasttypes = new Set([pyInt, pyStr]);
+
+    function _make_key(args, kws, typed) {
+        const key = args.slice(0);
+        const kw_vals = [];
+        if (kws && kws.length) {
+            key.push(kwd_mark);
+            for (let i = 0; i < kws.length; i += 2) {
+                const val = kws[i + 1];
+                kw_vals.push(val);
+                key.push(new pyTuple([new pyStr(kws[i]), val]));
+            }
+        }
+        if (isTrue(typed)) {
+            key.push(...args.map((v) => v.ob$type), ...kw_vals.map((v) => v.ob$type));
+        } else if (key.length === 1 && fasttypes.has(key[0].ob$type)) {
+            return key[0];
+        }
+        return new _HachedSeq(key);
+    }
+
 
     /********** Partial *************/
 
     function partial_adjust_args_kwargs(args, kwargs) {
         args = this.arg_arr.concat(args);
         if (kwargs) {
-            kwargs = Sk.abstr.keywordArrayToPyDict(kwargs);
+            kwargs = keywordArrayToPyDict(kwargs);
             const kwargs1 = this.kwdict.dict$copy();
             kwargs1.dict$merge(kwargs);
-            kwargs = Sk.abstr.keywordArrayFromPyDict(kwargs1);
+            kwargs = keywordArrayFromPyDict(kwargs1);
         } else {
-            kwargs = Sk.abstr.keywordArrayFromPyDict(this.kwdict);
+            kwargs = keywordArrayFromPyDict(this.kwdict);
         }
         return { args: args, kwargs: kwargs };
     }
 
     function partial_new(args, kwargs) {
         if (args.length < 1) {
-            throw new Sk.builtin.TypeError("type 'partial' takes at least 1 argument");
+            throw new pyTypeError("type 'partial' takes at least 1 argument");
         }
         let func = args.shift();
         let pargs, pkwdict;
@@ -73,7 +423,7 @@ function $builtinmodule() {
             args = pargs.concat(args);
         }
         kwargs = kwargs || [];
-        let kwdict = Sk.abstr.keywordArrayToPyDict(kwargs);
+        let kwdict = keywordArrayToPyDict(kwargs);
         if (pkwdict) {
             const copy = pkwdict.dict$copy();
             copy.dict$merge(kwdict);
@@ -91,30 +441,30 @@ function $builtinmodule() {
 
     function partial_repr() {
         if (this.in$repr) {
-            return new Sk.builtin.str("...");
+            return new pyStr("...");
         }
         this.in$repr = true;
-        const arglist = [Sk.misceval.objectRepr(this.fn)];
+        const arglist = [objectRepr(this.fn)];
         this.arg_arr.forEach((arg) => {
-            arglist.push(Sk.misceval.objectRepr(arg));
+            arglist.push(objectRepr(arg));
         });
         this.kwdict.$items().forEach(([key, val]) => {
-            arglist.push(key.toString() + "=" + Sk.misceval.objectRepr(val));
+            arglist.push(key.toString() + "=" + objectRepr(val));
         });
         this.in$repr = false;
 
         /** @todo this.tp$name should actually include functools here since it's a static type */
-        return new Sk.builtin.str(this.tp$name + "(" + arglist.join(", ") + ")");
+        return new pyStr(this.tp$name + "(" + arglist.join(", ") + ")");
     }
 
-    functools.partial = Sk.abstr.buildNativeClass("functools.partial", {
+    functools.partial = buildNativeClass("functools.partial", {
         constructor: function partial(func, args, kwdict) {
             this.fn = func;
             this.arg_arr = args;
-            this.arg_tup = new Sk.builtin.tuple(args);
+            this.arg_tup = new pyTuple(args);
             this.kwdict = kwdict;
             this.in$repr = false;
-            this.$d = new Sk.builtin.dict([]);
+            this.$d = new pyDict([]);
         },
         slots: {
             tp$new: partial_new,
@@ -124,8 +474,8 @@ function $builtinmodule() {
             },
             tp$doc: "partial(func, *args, **keywords) - new function with partial application\n    of the given arguments and keywords.\n",
             $r: partial_repr,
-            tp$getattr: Sk.generic.getAttr,
-            tp$setattr: Sk.generic.setAttr,
+            tp$getattr: genericGetAttr,
+            tp$setattr: genericSetAttr,
         },
         getsets: {
             func: {
@@ -146,17 +496,18 @@ function $builtinmodule() {
                 },
                 $doc: "dictionary of keyword arguments to future partial calls",
             },
-            __dict__: Sk.generic.getSetDict,
+            __dict__: genericGetSetDict,
         },
         methods: {
             // __reduce__: {},
             // __setstate__: {}
         },
+        classmethods: Sk.generic.classGetItem,
         proto: {
             adj$args_kws: partial_adjust_args_kwargs,
             check$func(func) {
-                if (!Sk.builtin.checkCallable(func)) {
-                    throw new Sk.builtin.TypeError("the first argument must be callable");
+                if (!checkCallable(func)) {
+                    throw new pyTypeError("the first argument must be callable");
                 }
             },
         },
@@ -164,11 +515,11 @@ function $builtinmodule() {
 
     /********** Partial Method *************/
 
-    functools.partialmethod = Sk.abstr.buildNativeClass("functools.partialmethod", {
+    functools.partialmethod = buildNativeClass("functools.partialmethod", {
         constructor: function partialmethod(func, args, kwdict) {
             this.fn = func;
             this.arg_arr = args;
-            this.arg_tup = new Sk.builtin.tuple(args);
+            this.arg_tup = new pyTuple(args);
             this.kwdict = kwdict;
         },
         slots: {
@@ -181,11 +532,11 @@ function $builtinmodule() {
                 if (this.fn.tp$descr_get) {
                     const new_func = this.fn.tp$descr_get(obj, obtype);
                     if (new_func !== this.fn) {
-                        if (!Sk.builtin.checkCallable(new_func)) {
-                            throw new Sk.builtin.TypeError("type 'partial' requires a callable");
+                        if (!checkCallable(new_func)) {
+                            throw new pyTypeError("type 'partial' requires a callable");
                         }
                         res = new functools.partial(new_func, this.arg_arr.slice(0), this.kwdict.dict$copy());
-                        const __self__ = Sk.abstr.lookupSpecial(new_func, this.str$self);
+                        const __self__ = lookupSpecial(new_func, this.str$self);
                         if (__self__ !== undefined) {
                             res.tp$setattr(this.str$self, __self__);
                         }
@@ -205,6 +556,7 @@ function $builtinmodule() {
                 $flags: { NoArgs: true },
             },
         },
+        classmethods: Sk.generic.classGetItem,
         getsets: {
             func: {
                 $get() {
@@ -224,25 +576,25 @@ function $builtinmodule() {
                 },
                 $doc: "dictionary of keyword arguments to future partial calls",
             },
-            __dict__: Sk.generic.getSetDict,
+            __dict__: genericGetSetDict,
         },
         proto: {
-            str$self: new Sk.builtin.str("__self__"),
+            str$self: new pyStr("__self__"),
             make$unbound() {
                 const self = this;
                 function _method(args, kwargs) {
                     const cls_or_self = args.shift();
                     ({ args, kwargs } = self.adj$args_kws(args, kwargs));
                     args.unshift(cls_or_self);
-                    return Sk.misceval.callsimOrSuspendArray(self.fn, args, kwargs);
+                    return pyCallOrSuspend(self.fn, args, kwargs);
                 }
                 _method.co_fastcall = true;
-                return new Sk.builtin.func(_method);
+                return new pyFunc(_method);
             },
             adj$args_kws: partial_adjust_args_kwargs,
             check$func(func) {
-                if (!Sk.builtin.checkCallable(func) && func.tp$descr_get === undefined) {
-                    throw new Sk.builtin.TypeError(Sk.misceval.objectRepr(func) + " is not callable or a descriptor");
+                if (!checkCallable(func) && func.tp$descr_get === undefined) {
+                    throw new pyTypeError(objectRepr(func) + " is not callable or a descriptor");
                 }
             },
         },
@@ -251,40 +603,39 @@ function $builtinmodule() {
     /********** Total Ordering *************/
 
     const js_opname_to_py = {
-        __lt__: Sk.builtin.str.$lt,
-        __le__: Sk.builtin.str.$le,
-        __gt__: Sk.builtin.str.$gt,
-        __ge__: Sk.builtin.str.$ge,
+        __lt__: pyStr.$lt,
+        __le__: pyStr.$le,
+        __gt__: pyStr.$gt,
+        __ge__: pyStr.$ge,
     };
 
     function from_slot(op_name, get_res) {
         const pyName = js_opname_to_py[op_name];
         function compare_slot(self, other) {
-            let op_result = Sk.misceval.callsimArray(self.tp$getattr(pyName), [other]);
-            if (op_result === Sk.builtin.NotImplemented.NotImplemented$) {
+            let op_result = pyCall(self.tp$getattr(pyName), [other]);
+            if (op_result === pyNotImplemented) {
                 return op_result;
             }
-            op_result = Sk.misceval.isTrue(op_result);
-            return new Sk.builtin.bool(get_res(op_result, self, other));
+            op_result = isTrue(op_result);
+            return new pyBool(get_res(op_result, self, other));
         }
         compare_slot.co_name = pyName;
         return compare_slot;
     }
 
-    const _gt_from_lt = from_slot("__lt__", (op_result, self, other) => !op_result && Sk.misceval.richCompareBool(self, other, "NotEq"));
-    const _le_from_lt = from_slot("__lt__", (op_result, self, other) => op_result || Sk.misceval.richCompareBool(self, other, "Eq"));
+    const _gt_from_lt = from_slot("__lt__", (op_result, self, other) => !op_result && richCompareBool(self, other, "NotEq"));
+    const _le_from_lt = from_slot("__lt__", (op_result, self, other) => op_result || richCompareBool(self, other, "Eq"));
     const _ge_from_lt = from_slot("__lt__", (op_result) => !op_result);
-    const _ge_from_le = from_slot("__le__", (op_result, self, other) => !op_result || Sk.misceval.richCompareBool(self, other, "Eq"));
-    const _lt_from_le = from_slot("__le__", (op_result, self, other) => op_result && Sk.misceval.richCompareBool(self, other, "NotEq"));
+    const _ge_from_le = from_slot("__le__", (op_result, self, other) => !op_result || richCompareBool(self, other, "Eq"));
+    const _lt_from_le = from_slot("__le__", (op_result, self, other) => op_result && richCompareBool(self, other, "NotEq"));
     const _gt_from_le = from_slot("__le__", (op_result) => !op_result);
-    const _lt_from_gt = from_slot("__gt__", (op_result, self, other) => !op_result && Sk.misceval.richCompareBool(self, other, "NotEq"));
-    const _ge_from_gt = from_slot("__gt__", (op_result, self, other) => op_result || Sk.misceval.richCompareBool(self, other, "Eq"));
+    const _lt_from_gt = from_slot("__gt__", (op_result, self, other) => !op_result && richCompareBool(self, other, "NotEq"));
+    const _ge_from_gt = from_slot("__gt__", (op_result, self, other) => op_result || richCompareBool(self, other, "Eq"));
     const _le_from_gt = from_slot("__gt__", (op_result) => !op_result);
-    const _le_from_ge = from_slot("__ge__", (op_result, self, other) => !op_result || Sk.misceval.richCompareBool(self, other, "Eq"));
-    const _gt_from_ge = from_slot("__ge__", (op_result, self, other) => op_result && Sk.misceval.richCompareBool(self, other, "NotEq"));
+    const _le_from_ge = from_slot("__ge__", (op_result, self, other) => !op_result || richCompareBool(self, other, "Eq"));
+    const _gt_from_ge = from_slot("__ge__", (op_result, self, other) => op_result && richCompareBool(self, other, "NotEq"));
     const _lt_from_ge = from_slot("__ge__", (op_result) => !op_result);
 
-    const pyFunc = Sk.builtin.func;
 
     const _convert = {
         __lt__: { __gt__: new pyFunc(_gt_from_lt), __le__: new pyFunc(_le_from_lt), __ge__: new pyFunc(_ge_from_lt) },
@@ -302,17 +653,19 @@ function $builtinmodule() {
 
     function total_ordering(cls) {
         const roots = [];
-        if (!Sk.builtin.checkClass(cls)) {
-            throw new Sk.builtin.TypeError("total ordering only supported for type objects not '" + Sk.abstr.typeName(cls) + "'");
+        if (!checkClass(cls)) {
+            throw new pyTypeError(
+                "total ordering only supported for type objects not '" + typeName(cls) + "'"
+            );
         }
         Object.keys(_convert).forEach((key) => {
             const shortcut = op_name_short[key];
-            if (cls.prototype[shortcut] !== Sk.builtin.object.prototype[shortcut]) {
+            if (cls.prototype[shortcut] !== pyObject.prototype[shortcut]) {
                 roots.push(key);
             }
         });
         if (!roots.length) {
-            throw new Sk.builtin.ValueError("must define atleast one ordering operation: <, >, <=, >=");
+            throw new ValueError("must define atleast one ordering operation: <, >, <=, >=");
         }
         const root = roots[0];
         Object.entries(_convert[root]).forEach(([opname, opfunc]) => {
@@ -324,37 +677,37 @@ function $builtinmodule() {
     }
 
     /************* KeyWrapper for cmp_to_key *************/
-    const zero = new Sk.builtin.int_(0);
+    const zero = new pyInt(0);
 
-    const KeyWrapper = Sk.abstr.buildNativeClass("functools.KeyWrapper", {
+    const KeyWrapper = buildNativeClass("functools.KeyWrapper", {
         constructor: function (cmp, obj) {
             this.cmp = cmp;
             this.obj = obj;
         },
         slots: {
             tp$call(args, kwargs) {
-                const [obj] = Sk.abstr.copyKeywordsToNamedArgs("K", ["obj"], args, kwargs, []);
+                const [obj] = copyKeywordsToNamedArgs("K", ["obj"], args, kwargs, []);
                 return new KeyWrapper(this.cmp, obj);
             },
             tp$richcompare(other, op) {
                 if (!(other instanceof KeyWrapper)) {
-                    throw new Sk.builtin.TypeError("other argument must be K instance");
+                    throw new pyTypeError("other argument must be K instance");
                 }
                 const x = this.obj;
                 const y = other.obj;
                 if (!x || !y) {
-                    throw new Sk.builtin.AttributeErrror("object");
+                    throw new AttributeErrror("object");
                 }
-                const comparison = Sk.misceval.callsimOrSuspendArray(this.cmp, [x, y]);
-                return Sk.misceval.chain(comparison, (res) => Sk.misceval.richCompareBool(res, zero, op));
+                const comparison = pyCallOrSuspend(this.cmp, [x, y]);
+                return chain(comparison, (res) => richCompareBool(res, zero, op));
             },
-            tp$getattr: Sk.generic.getAttr,
-            tp$hash: Sk.builtin.none.none$,
+            tp$getattr: genericGetAttr,
+            tp$hash: pyNone,
         },
         getsets: {
             obj: {
                 $get() {
-                    return this.obj || Sk.builtin.none.none$;
+                    return this.obj || pyNone;
                 },
                 $set(value) {
                     this.obj = value;
@@ -364,10 +717,38 @@ function $builtinmodule() {
         },
     });
 
-    const str_update = new Sk.builtin.str("update");
-    const __wrapped__ = new Sk.builtin.str("__wrapped__");
+    const str_update = new pyStr("update");
+    const __wrapped__ = new pyStr("__wrapped__");
 
-    Sk.abstr.setUpModuleMethods("functools", functools, {
+    setUpModuleMethods("functools", functools, {
+        cache: {
+            $meth: function cache(user_function) {
+                return pyCallOrSuspend(_lru_cache(pyNone), [user_function]);
+            },
+            $flags: { OneArg: true },
+            $doc: 'Simple lightweight unbounded cache.  Sometimes called "memoize".',
+            $textsig: "($module, user_function, /)",
+        },
+        lru_cache: {
+            $meth: _lru_cache,
+            $flags: { NamedArgs: ["maxsize", "typed"], Defaults: [new pyInt(128), pyFalse] },
+            $doc: `Least-recently-used cache decorator.
+
+If *maxsize* is set to None, the LRU features are disabled and the cache
+can grow without bound.
+
+If *typed* is True, arguments of different types will be cached separately.
+For example, f(3.0) and f(3) will be treated as distinct calls with
+distinct results.
+
+Arguments to the cached function must be hashable.
+
+View the cache statistics named tuple (hits, misses, maxsize, currsize)
+with f.cache_info().  Clear the cache and statistics with f.cache_clear().
+Access the underlying function with f.__wrapped__.
+
+See:  http://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)`,
+        },
         cmp_to_key: {
             $meth: function cmp_to_key(mycmp) {
                 return new KeyWrapper(mycmp);
@@ -378,18 +759,18 @@ function $builtinmodule() {
         },
         reduce: {
             $meth: function reduce(fun, seq, initializer) {
-                const iter = Sk.abstr.iter(seq);
+                const iter = objectGetIter(seq);
                 let accum_value;
                 initializer = initializer || iter.tp$iternext(true);
-                return Sk.misceval.chain(
+                return chain(
                     initializer,
                     (initial) => {
                         if (initial === undefined) {
-                            throw new Sk.builtin.TypeError("reduce() of empty sequence with no initial value");
+                            throw new pyTypeError("reduce() of empty sequence with no initial value");
                         }
                         accum_value = initial;
-                        return Sk.misceval.iterFor(iter, (item) => {
-                            return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(fun, [accum_value, item]), (res) => {
+                        return iterFor(iter, (item) => {
+                            return chain(pyCallOrSuspend(fun, [accum_value, item]), (res) => {
                                 accum_value = res;
                             });
                         });
@@ -412,19 +793,19 @@ function $builtinmodule() {
 
         update_wrapper: {
             $meth: function update_wrapper(wrapper, wrapped, assigned, updated) {
-                let it = Sk.abstr.iter(assigned);
+                let it = objectGetIter(assigned);
                 let value;
                 for (let attr = it.tp$iternext(); attr !== undefined; attr = it.tp$iternext()) {
                     if ((value = wrapped.tp$getattr(attr)) !== undefined) {
                         wrapper.tp$setattr(attr, value);
                     }
                 }
-                it = Sk.abstr.iter(updated);
+                it = objectGetIter(updated);
                 for (let attr = it.tp$iternext(); attr !== undefined; attr = it.tp$iternext()) {
-                    value = wrapped.tp$getattr(attr) || new Sk.builtin.dict([]);
-                    const to_update = Sk.abstr.gattr(wrapper, attr); // throw the appropriate error
-                    const update_meth = Sk.abstr.gattr(to_update, str_update);
-                    Sk.misceval.callsimArray(update_meth, [value]);
+                    value = wrapped.tp$getattr(attr) || new pyDict([]);
+                    const to_update = objectGetAttr(wrapper, attr); // throw the appropriate error
+                    const update_meth = objectGetAttr(to_update, str_update);
+                    pyCall(update_meth, [value]);
                 }
 
                 wrapper.tp$setattr(__wrapped__, wrapped);
@@ -442,7 +823,7 @@ function $builtinmodule() {
         wraps: {
             $meth: function wraps(wrapped, assigned, updated) {
                 const kwarray = ["wrapped", wrapped, "assigned", assigned, "updated", updated];
-                return Sk.misceval.callsimArray(functools.partial, [functools.update_wrapper], kwarray);
+                return pyCallOrSuspend(functools.partial, [functools.update_wrapper], kwarray);
             },
             $flags: {
                 NamedArgs: ["wrapped", "assigned", "updated"],
