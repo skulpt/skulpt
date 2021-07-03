@@ -67,8 +67,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
                     res = this === other || Sk.builtin.NotImplemented.NotImplemented$;
                     break;
                 case "NotEq":
-                    // use tp$richcompare here... because CPython does. ob$eq breaks some tests for NotEq subclasses
-                    res = this.tp$richcompare(other, "Eq");
+                    res = this.ob$eq(other, "Eq");
                     if (res !== Sk.builtin.NotImplemented.NotImplemented$) {
                         res = !Sk.misceval.isTrue(res);
                     }
