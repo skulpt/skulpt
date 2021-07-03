@@ -4,7 +4,7 @@
  *  Implementation of the Python operator module.
  */
 function $builtinmodule(name) {
-    operator = {
+    const operator = {
         __name__: new Sk.builtin.str("operator"),
         __doc__: new Sk.builtin.str(
             "Operator interface.\n\nThis module exports a set of functions implemented in javascript corresponding\nto the intrinsic operators of Python.  For example, operator.add(x, y)\nis equivalent to the expression x+y.  The function names are those\nused for special methods; variants without leading and trailing\n'__' are also provided for convenience."
@@ -92,8 +92,7 @@ function $builtinmodule(name) {
                 }
                 return new Sk.builtin.tuple(this.items.map((x) => Sk.abstr.objectGetItem(obj, x)));
             },
-            tp$doc:
-                "Return a callable object that fetches the given item(s) from its operand.\n\
+            tp$doc: "Return a callable object that fetches the given item(s) from its operand.\n\
             After f = itemgetter(2), the call f(r) returns r[2].\n\
             After g = itemgetter(2, 5, 3), the call g(r) returns (r[2], r[5], r[3])",
             $r() {

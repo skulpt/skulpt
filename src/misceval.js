@@ -449,15 +449,16 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
 
     shortcut = op2shortcut[op];
     // similar rules apply as with binops - prioritize the reflected ops of subtypes
+    // but different to binop - even if the swapped op is the same as the parent still call it
     if (w_is_subclass) {
         swapped_shortcut = op2shortcut[Sk.misceval.swappedOp_[op]];
-        if (w[swapped_shortcut] !== v[swapped_shortcut] && (ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+        if ((ret = w[swapped_shortcut](v)) !== Sk.builtin.NotImplemented.NotImplemented$) {
             return Sk.misceval.isTrue(ret);
         }
     }
     if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
         return Sk.misceval.isTrue(ret); 
-        // techincally this is not correct along with the compile code 
+    // techincally this is not correct along with the compile code see #1252
         // richcompare slots could return any pyObject ToDo - would require changing compile code
     }
 
@@ -1187,7 +1188,7 @@ Sk.misceval.arrayFromIterable = function (iterable, canSuspend) {
     if (iterable === undefined) {
         return [];
     }
-    if (iterable.hp$type === undefined && iterable.sk$asarray !== undefined) {
+    if (iterable.ht$type === undefined && iterable.sk$asarray !== undefined) {
         // use sk$asarray only if we're a builtin
         return iterable.sk$asarray();
     }

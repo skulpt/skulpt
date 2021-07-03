@@ -623,7 +623,7 @@ class MappingProxyTests(unittest.TestCase):
         self.assertEqual(attrs, {
              '__contains__',
              '__getitem__',
-            #  '__class_getitem__',
+             '__class_getitem__',
              '__ior__',
              '__iter__',
              '__len__',

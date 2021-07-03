@@ -86,7 +86,7 @@ function functools_mod(functools) {
             ].map((x) => new pyStr(x))
         ),
         WRAPPER_ASSIGNMENTS: new pyTuple(
-            ["__module__", "__name__", "__qualname__", "__doc__" /*"__annotations__"*/].map(
+            ["__module__", "__name__", "__qualname__", "__doc__", "__annotations__"].map(
                 (x) => new pyStr(x)
             )
         ),
@@ -502,6 +502,7 @@ cache_info_type:    namedtuple class with the fields:\n\
             // __reduce__: {},
             // __setstate__: {}
         },
+        classmethods: Sk.generic.classGetItem,
         proto: {
             adj$args_kws: partial_adjust_args_kwargs,
             check$func(func) {
@@ -555,6 +556,7 @@ cache_info_type:    namedtuple class with the fields:\n\
                 $flags: { NoArgs: true },
             },
         },
+        classmethods: Sk.generic.classGetItem,
         getsets: {
             func: {
                 $get() {

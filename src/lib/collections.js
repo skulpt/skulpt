@@ -133,7 +133,7 @@ function collections_mod(collections) {
             most_common: {
                 $flags: { NamedArgs: ["n"], Defaults: [Sk.builtin.none.none$] },
                 $meth(n) {
-                    length = this.sq$length();
+                    const length = this.sq$length();
                     if (Sk.builtin.checkNone(n)) {
                         n = length;
                     } else {
@@ -172,7 +172,7 @@ function collections_mod(collections) {
                                 this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, other.mp$subscript(k), "Sub"));
                             }
                         } else {
-                            for (iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+                            for (let iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
                                 const count = this.mp$subscript(k);
                                 this.mp$ass_subscript(k, Sk.abstr.numberBinOp(count, this.$one, "Sub"));
                             }
@@ -420,8 +420,8 @@ function collections_mod(collections) {
             tp$as_sequence_or_mapping: true,
             tp$init(args, kwargs) {
                 Sk.abstr.checkArgsLen("OrderedDict", args, 0, 1);
-                args.unshift(this);
-                res = Sk.misceval.callsimArray(this.update, args, kwargs);
+                const update = Sk.abstr.lookupSpecial(this, new Sk.builtin.str("update"));
+                return Sk.misceval.callsimOrSuspendArray(update, args, kwargs);
             },
             tp$doc: "Dictionary that remembers insertion order",
             $r() {
@@ -572,7 +572,7 @@ function collections_mod(collections) {
             tp$hash: Sk.builtin.none.none$,
             tp$new: Sk.generic.new,
             tp$init(args, kwargs) {
-                [iterable, maxlen] = Sk.abstr.copyKeywordsToNamedArgs("deque", ["iterable", "maxlen"], args, kwargs);
+                let [iterable, maxlen] = Sk.abstr.copyKeywordsToNamedArgs("deque", ["iterable", "maxlen"], args, kwargs);
                 if (maxlen !== undefined && !Sk.builtin.checkNone(maxlen)) {
                     maxlen = Sk.misceval.asIndexSized(maxlen, Sk.builtin.OverflowError, "an integer is required");
                     if (maxlen < 0) {
@@ -730,7 +730,7 @@ function collections_mod(collections) {
             },
             nb$inplace_add(other) {
                 this.maxlen = undefined;
-                for (it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                for (let it = Sk.abstr.iter(other), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                     this.$push(i);
                 }
                 return this;
@@ -826,7 +826,7 @@ function collections_mod(collections) {
             },
             extendleft: {
                 $meth(iterable) {
-                    for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                    for (let it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                         this.$pushLeft(i);
                     }
                     return Sk.builtin.none.none$;
@@ -991,6 +991,7 @@ function collections_mod(collections) {
                 $doc: "Rotate the deque n steps to the right (default n=1).  If n is negative, rotates left.",
             },
         },
+        classmethods: Sk.generic.classGetItem,
         getsets: {
             maxlen: {
                 $get() {
@@ -1010,7 +1011,7 @@ function collections_mod(collections) {
                 return new collections.deque(this.v.slice(0), this.maxlen, this.head, this.tail, this.mask);
             },
             $extend(iterable) {
-                for (it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                for (let it = Sk.abstr.iter(iterable), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                     this.$push(i);
                 }
             },
@@ -1219,7 +1220,7 @@ function collections_mod(collections) {
         // rename fields
         let seen = new Set();
         if (Sk.misceval.isTrue(rename)) {
-            for (i = 0; i < flds.length; i++) {
+            for (let i = 0; i < flds.length; i++) {
                 if (
                     Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [field_names[i]])) ||
                     startsw2.test(flds[i]) ||
@@ -1234,7 +1235,7 @@ function collections_mod(collections) {
             }
         } else {
             // check the field names
-            for (i = 0; i < flds.length; i++) {
+            for (let i = 0; i < flds.length; i++) {
                 if (Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [field_names[i]]))) {
                     throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: '" + flds[i] + "'");
                 } else if (startsw2.test(flds[i])) {

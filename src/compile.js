@@ -402,20 +402,64 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     }
 };
 
-Compiler.prototype.cdict = function (e) {
-    var v;
-    var i;
-    var items;
-    items = [];
-    if (e.keys !== null) {
-        Sk.asserts.assert(e.values.length === e.keys.length);
-        for (i = 0; i < e.values.length; ++i) {
-            v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
-            items.push(this.vexpr(e.keys[i]));
-            items.push(v);
-        }
+Compiler.prototype.csubdict = function(e, begin, end) {
+    const items = [];
+    for (let i = begin; i < end; i++) {
+        items.push(this.vexpr(e.keys[i]));
+        items.push(this.vexpr(e.values[i])); 
     }
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
+}
+
+Compiler.prototype.cdict = function (e) {
+    let have_dict = 0;
+    let is_unpacking = false;
+    const n = e.values ? e.values.length : 0;
+    let elements = 0;
+    let main_dict;
+    let sub_dict;
+
+    for (let i = 0; i<n; i++) {
+        is_unpacking = e.keys[i] === null;
+        if (is_unpacking) {
+            if (elements) {
+                sub_dict = this.csubdict(e, i-elements, i);
+                if (have_dict) {
+                    out(main_dict, ".dict$merge(", sub_dict, ");");
+                    // update the current dict (this won't suspend)
+                } else {
+                    main_dict = sub_dict;
+                    have_dict = 1;
+                }
+                elements = 0;
+            }
+            if (have_dict === 0) {
+                main_dict = this._gr("loaddict", "new Sk.builtins.dict([])");
+                have_dict = 1;
+            }
+            sub_dict = this.vexpr(e.values[i]);
+            out("$ret = ", main_dict, ".dict$merge(", sub_dict, ");");
+            this._checkSuspension(e);
+            // could suspend
+        } else {
+            elements ++;
+        }
+    }
+    if (elements) {
+        sub_dict = this.csubdict(e, n-elements, n)
+        if (have_dict) {
+            out(main_dict, ".dict$merge(", sub_dict, ");");
+            // update the current dict (this won't suspend)
+        } else {
+            main_dict = sub_dict;
+            have_dict = 1;
+        }
+    }
+    if (have_dict === 0) {
+        // add op buildmap
+        main_dict = this._gr("loaddict", "new Sk.builtins.dict([])");
+    }
+    return main_dict;
 };
 
 Compiler.prototype.clistcomp = function(e) {
@@ -510,6 +554,58 @@ Compiler.prototype.cyield = function(e) {
     this.setBlock(nextBlock);
     return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
 };
+
+Compiler.prototype.cyieldfrom = function (e) {
+    if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
+        throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
+    }
+    var iterable = this.vexpr(e.value);
+    // get the iterator we are yielding from and store it
+    iterable = this._gr("iter", "Sk.abstr.iter(", iterable, ")");
+    out("$gen." + iterable + "=", iterable, ";");
+    var afterIter = this.newBlock("after iter");
+    var afterBlock = this.newBlock("after yield from");
+    this._jump(afterIter);
+    this.setBlock(afterIter);
+    var retval = this.gensym("retval");
+    // We may have entered this block resuming from a yield
+    // So get the iterable stored on $gen.
+    out(iterable, "=$gen.", iterable, ";");
+    out("var ", retval, ";");
+    // fast path -> we're sending None (not sending a value) 
+    // or we use gen.tp$iternext(true, val) (see generator.js) which is the equivalent of gen.send(val)
+    out("if ($gen.gi$sentvalue === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
+    out(    "$ret=", iterable, ".tp$iternext(true, $gen.gi$sentvalue);");
+    out("} else {");
+    var send = this.makeConstant("new Sk.builtin.str('send');");
+    // slow path -> get the send method of the non-generator iterator and call it
+    // throw anything other than a StopIteration
+    out(    "$ret=Sk.misceval.tryCatch(");
+    out(        "function(){");
+    out(            "return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.gi$sentvalue]);},");
+    out(        "function (e) { ");
+    out(            "if (e instanceof Sk.builtin.StopIteration) { ");
+    out(                    iterable ,".gi$ret = e.$value;");
+                            // store the return value on the iterator
+                            // otherwise we lose it beause iterator code in skulpt relies on returning undefined;
+                            // one day maybe we can use the js .next protocol {value: ret, done: true} ;-)
+    out(                    "return undefined;"); 
+    out(            "} else { throw e; }");
+    out(        "}");
+    out(    ");");
+    out("}");
+    this._checkSuspension(e);
+    out(retval, "=$ret;");
+    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on from the `yield from` ("afterBlock")
+    out("if(", retval, "===undefined) {");
+    out(    "$gen.gi$sentvalue=$gen." + iterable + ".gi$ret;");
+    out(    "$blk=", afterBlock, ";continue;");
+    out("}");
+    out("return [/*resume*/", afterIter, ",/*ret*/", retval, "];");
+    this.setBlock(afterBlock);
+    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value retuned from gen.send(value)
+};
+
 
 Compiler.prototype.ccompare = function (e) {
     var res;
@@ -799,6 +895,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.cgenexp(e);
         case Sk.astnodes.Yield:
             return this.cyield(e);
+        case Sk.astnodes.YieldFrom:
+            return this.cyieldfrom(e);
         case Sk.astnodes.Compare:
             return this.ccompare(e);
         case Sk.astnodes.Call:
@@ -948,6 +1046,8 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             return this.cjoinedstr(e);
         case Sk.astnodes.FormattedValue:
             return this.cformattedvalue(e);
+        case Sk.astnodes.Ellipsis:
+            return this.makeConstant("Sk.builtin.ellipsis");
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }
@@ -1802,6 +1902,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.defaults) {
         defaults = this.vseqexpr(args.defaults);
     }
+
+    const func_annotations = this.cannotations(args, n.returns);
+
     if (args && args.kw_defaults) {
         kw_defaults = args.kw_defaults.map(e => e ? this.vexpr(e) : "undefined");
     }
@@ -2123,17 +2226,70 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
                             "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
         }
     } else {
+        let funcobj;
         if (decos.length > 0) {
             out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
             for (let decorator of decos.reverse()) {
                 out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
                 this._checkSuspension();
             }
-            return this._gr("funcobj", "$ret");
+            funcobj = this._gr("funcobj", "$ret");
+        } else {
+            funcobj = this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
+        }
+        if (func_annotations) {
+            out(funcobj, ".func_annotations=", func_annotations, ";");
         }
 
-        return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
+        return funcobj;
     }
+};
+
+
+Compiler.prototype.cargannotation = function (id, annotation, ann_dict) {
+    if (annotation) {
+        const mangled = mangleName(this.u.private_, id).v;
+        // var scope = this.u.ste.getScope(mangled);
+        ann_dict.push(`'${mangled}'`);
+        ann_dict.push(this.vexpr(annotation));
+    }
+};
+
+Compiler.prototype.cargannotations = function (args, ann_dict) {
+    if (!args) {
+        return;
+    }
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        this.cargannotation(arg.arg, arg.annotation, ann_dict);
+    }
+};
+
+const return_str = new Sk.builtin.str("return");
+
+Compiler.prototype.cannotations = function (args, returns) {
+    const ann_dict = [];
+    if (args) {
+        this.cargannotations(args.posonlyargs, ann_dict);
+        this.cargannotations(args.args, ann_dict);
+        if (args.vararg && args.vararg.annotation) {
+            this.cargannotation(args.vararg.arg, args.vararg.annotation, ann_dict);
+        }
+        this.cargannotations(args.kwonlyargs, ann_dict);
+        if (args.kwarg && args.kwarg.annotation) {
+            this.cargannotation(args.kwarg.arg, args.kwarg.annotation, ann_dict);
+        }
+    }
+    if (returns) {
+        this.cargannotation(return_str, returns, ann_dict);
+    }
+    if (ann_dict.length === 0) {
+        return;
+    }
+    // return as kw dict like list.
+    // This will get turned into a dict when requested in python code
+    // see func.js;
+    return "[" + ann_dict.join(",") + "]";
 };
 
 /** JavaScript for the docstring of the given body, or null if the
@@ -2763,12 +2919,11 @@ Compiler.prototype.cmod = function (mod) {
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0, this.canSuspend);
 
     var entryBlock = this.newBlock("module entry");
-    this.u.prefixCode = "var " + modf + "=(function($forcegbl){";
+    this.u.prefixCode = "var " + modf + "=(function($forcegbl, $forceloc){";
     this.u.varDeclsCode =
         "var $gbl = $forcegbl || {}, $blk=" + entryBlock +
-        ",$exc=[],$loc=$gbl,$cell={},$err=undefined;" +
-        "$loc.__file__=new Sk.builtins.str('" + this.filename +
-        "');var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+        ",$exc=[],$loc=$forceloc || $gbl,$cell={},$err=undefined;" +
+        "var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
@@ -2781,7 +2936,6 @@ Compiler.prototype.cmod = function (mod) {
     this.u.varDeclsCode += "var $waking=false; if ("+modf+".$wakingSuspension!==undefined) { $wakeFromSuspension(); $waking=true; }" +
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
-        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; $loc.__file__=new Sk.builtins.str('" + this.filename + "');}" +
         "    else { Sk.globals = $gbl; }" +
         "} else { Sk.globals = $gbl; }";
 
@@ -2856,10 +3010,12 @@ Sk.compile = function (source, filename, mode, canSuspend) {
     // Restore the global __future__ flags
     Sk.__future__ = savedFlags;
 
-    var ret = "$compiledmod = function() {" + c.result.join("") + "\nreturn " + funcname + ";}();";
+    var ret = `var $compiledmod = function() {${c.result.join("")}\nreturn ${funcname};}();\n$compiledmod;`;
+
     return {
         funcname: "$compiledmod",
-        code    : ret
+        code    : ret,
+        filename: filename,
     };
 };
 
