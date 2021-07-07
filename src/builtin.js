@@ -1560,11 +1560,16 @@ Sk.builtin.loadImage = function loadImage(file) {
 
 Sk.builtin.image = function image(image, x, y, width, height, opacity) {
     Sk.builtin.pyCheckArgsLen("image", arguments.length, 3, 6);
+    image = Sk.ffi.remapToJs(image);
     x = Sk.ffi.remapToJs(x);
     y = Sk.ffi.remapToJs(y);
     width = Sk.ffi.remapToJs(width);
     height = Sk.ffi.remapToJs(height);
     opacity = Sk.ffi.remapToJs(opacity);
+
+    if (Sk.PyAngelo.images[image] === undefined) {
+        throw new Sk.builtin.IOError("Image " + image + " has not been loaded");
+    }
 
     if (width === null) {
         width = Sk.PyAngelo.images[image].naturalWidth;
