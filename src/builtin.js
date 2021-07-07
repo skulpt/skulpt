@@ -1213,8 +1213,10 @@ Sk.builtin.setCanvasSize = function setCanvasSize(w, h, yAxisMode) {
     // Set up the y axis
     if (yAxisMode === 1) {
         Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, h);
+        Sk.builtins._yAxisMode = yAxisMode;
     } else {
         Sk.PyAngelo.ctx.transform(1, 0, 0, 1, 0, 0);
+        Sk.builtins._yAxisMode = 2;
     }
 };
 
@@ -1254,10 +1256,23 @@ Sk.builtin.background = function background(r, g, b, a) {
 
 Sk.builtin.text = function text(text, x, y, fontSize, fontName) {
     Sk.builtin.pyCheckArgsLen("text", arguments.length, 3, 5);
+    text = Sk.ffi.remapToJs(text);
+    x = Sk.ffi.remapToJs(x);
+    y = Sk.ffi.remapToJs(y);
     let fs = Sk.PyAngelo.ctx.font;
     Sk.PyAngelo.ctx.font = Sk.ffi.remapToJs(fontSize).toString() + "px " + Sk.ffi.remapToJs(fontName);
     Sk.PyAngelo.ctx.textBaseline = "top";
-    Sk.PyAngelo.ctx.fillText(Sk.ffi.remapToJs(text), Sk.ffi.remapToJs(x), Sk.ffi.remapToJs(y));
+    if (Sk.ffi.remapToJs(Sk.builtins._yAxisMode) === 1) {
+        let textMetrics = Sk.PyAngelo.ctx.measureText(text);
+        const height = Math.abs(textMetrics.actualBoundingBoxAscent) + Math.abs(textMetrics.actualBoundingBoxDescent);
+        Sk.PyAngelo.ctx.save();
+        Sk.PyAngelo.ctx.translate(x, y);
+        Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
+        Sk.PyAngelo.ctx.fillText(text, 0, 0);
+        Sk.PyAngelo.ctx.restore();
+    } else {
+        Sk.PyAngelo.ctx.fillText(text, x, y);
+    }
     Sk.PyAngelo.ctx.font = fs;
 };
 
@@ -1601,7 +1616,15 @@ Sk.builtin.image = function image(image, x, y, width, height, opacity) {
         }
         Sk.PyAngelo.ctx.globalAlpha = opacity;
     }
-    Sk.PyAngelo.ctx.drawImage(Sk.PyAngelo.images[image], x, y, width, height);
+    if (Sk.ffi.remapToJs(Sk.builtins._yAxisMode) === 1) {
+        Sk.PyAngelo.ctx.save();
+        Sk.PyAngelo.ctx.translate(x, y);
+        Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
+        Sk.PyAngelo.ctx.drawImage(Sk.PyAngelo.images[image], 0, 0, width, height);
+        Sk.PyAngelo.ctx.restore();
+    } else {
+        Sk.PyAngelo.ctx.drawImage(Sk.PyAngelo.images[image], x, y, width, height);
+    }
     Sk.PyAngelo.ctx.globalAlpha = ga;
 };
 
