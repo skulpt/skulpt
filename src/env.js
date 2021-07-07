@@ -137,6 +137,9 @@ Sk.configure = function (options) {
     Sk.debugging = options["debugging"] || false;
     Sk.asserts.assert(typeof Sk.debugging === "boolean");
 
+    Sk.goto = options["goto"] || false;
+    Sk.asserts.assert(typeof Sk.goto === "boolean");
+
     Sk.killableWhile = options["killableWhile"] || false;
     Sk.asserts.assert(typeof Sk.killableWhile === "boolean");
 
