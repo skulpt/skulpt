@@ -1185,14 +1185,21 @@ Sk.builtin.intern = function intern() {
 };
 
 /* PyAngelo Functionality */
-Sk.builtin.setCanvasSize = function setCanvasSize(w, h) {
-    Sk.builtin.pyCheckArgsLen("setCanvasSize", arguments.length, 2, 2);
+Sk.builtin.setCanvasSize = function setCanvasSize(w, h, yAxisMode) {
+    Sk.builtin.pyCheckArgsLen("setCanvasSize", arguments.length, 2, 3);
+    w = Sk.ffi.remapToJs(w);
+    h = Sk.ffi.remapToJs(h);
+    yAxisMode = Sk.ffi.remapToJs(yAxisMode);
     if (!Sk.builtin.checkInt(w)) {
         throw new Sk.builtin.TypeError("Width must be an integer");
     }
     if (!Sk.builtin.checkInt(h)) {
         throw new Sk.builtin.TypeError("Height must be an integer");
     }
+    if (!Sk.builtin.checkInt(yAxisMode)) {
+        throw new Sk.builtin.TypeError("yAxisMode must be an integer");
+    }
+
     // Change the actual canvas
     Sk.PyAngelo.canvas.style.display = "block";
     Sk.PyAngelo.canvas.width = w;
@@ -1202,6 +1209,13 @@ Sk.builtin.setCanvasSize = function setCanvasSize(w, h) {
     // Update the global variables
     Sk.builtins.width = new Sk.builtin.int_(w);
     Sk.builtins.height = new Sk.builtin.int_(h);
+
+    // Set up the y axis
+    if (yAxisMode === 1) {
+        Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, h);
+    } else {
+        Sk.PyAngelo.ctx.transform(1, 0, 0, 1, 0, 0);
+    }
 };
 
 Sk.builtin.setConsoleSize = function setConsoleSize(size) {

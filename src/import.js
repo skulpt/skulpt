@@ -43,10 +43,10 @@ function parseGoto(name, code) {
             var blockNumberPattern = /case (\d+)/g;
             var blockNumberMatches = block.matchAll(blockNumberPattern);
             for (let blockNumberMatch of blockNumberMatches) {
-                var labalNamePattern = /label (.+)/g;
-                var labalNameMatches = block.matchAll(labalNamePattern);
-                for (let labalNameMatch of labalNameMatches) {
-                    labels[labalNameMatch[1].trim()] = blockNumberMatch[1];
+                var labelNamePattern = /label (.+)/g;
+                var labelNameMatches = block.matchAll(labelNamePattern);
+                for (let labelNameMatch of labelNameMatches) {
+                    labels[labelNameMatch[1].trim()] = blockNumberMatch[1];
 
                     // deleting suspensions code associated with label code
                     var suspensionsPattern = /var \$loadname[\S\s]+?\$blk=(\d+);/g;

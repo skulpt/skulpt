@@ -575,10 +575,13 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     // PyAngelo Methods
     setCanvasSize: {
         $meth: Sk.builtin.setCanvasSize,
-        $flags: { MinArgs: 2, MaxArgs: 2 },
-        $textsig: "($module, w, h /)",
+        $flags: {
+            NamedArgs: [null, null, "yAxisMode"],
+            Defaults: [new Sk.builtin.int_(2)],
+        },
+        $textsig: "($module, w, h, yAxisMode /)",
         $doc:
-            "Sets the size of the canvas that all drawings are written to. The first parameter specifies the width in pixels and the second the height.",
+            "Sets the size of the canvas that all drawings are written to. The first parameter specifies the width in pixels and the second the height. The thrid parameter specifies the direction of the y axis. The constant CARTESIAN can be used to specify the y axis acts like a regular cartesian plane in maths, and JAVASCRIPT can be used to specify a traditional javascript y-axis that moves down the screen.",
     },
     setConsoleSize: {
         $meth: Sk.builtin.setConsoleSize,
