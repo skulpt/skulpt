@@ -1,21 +1,21 @@
 Sk.builtin.structseq_types = {};
 
-Sk.builtin.make_structseq = function (module, name, fields, doc) {
+Sk.builtin.make_structseq = function (module, name, visible_fields, extra_fields, doc) {
     const nm = module + "." + name;
     const flds = [];
-    const docs = [];
-    for (let key in fields) {
-        flds.push(key);
-        docs.push(fields[key]);
-    }
-
     const getsets = {};
-    for (let i = 0; i < flds.length; i++) {
-        getsets[flds[i]] = {
+    Object.keys(visible_fields).forEach((key, i) => {
+        flds.push(key);
+        getsets[key] = {
             $get() { return this.v[i]; },
-            $doc: docs[i]
+            $doc: visible_fields[key],
         };
-    }
+    });
+    let n_fields = flds.length;
+    Object.keys(extra_fields).forEach((key) => {
+        getsets[key] = extra_fields[key];
+        n_fields++;
+    });
 
     /**
      * @constructor
@@ -24,7 +24,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
      */
     var structseq = Sk.abstr.buildNativeClass(nm, {
         constructor: function structseq_constructor(v) {
-            Sk.asserts.assert((Array.isArray(v) || v === undefined) && this instanceof structseq);
+            Sk.asserts.assert(this instanceof structseq);
             Sk.builtin.tuple.call(this, v);
         },
         base: Sk.builtin.tuple,
@@ -36,7 +36,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 for (let it = Sk.abstr.iter(arg), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                     v.push(i);
                 }
-                if (v.length != flds.length) {
+                if (v.length !== flds.length) {
                     throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + v.length + "-sequence given)");
                 }
                 return new structseq(v);
@@ -50,7 +50,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                     return new Sk.builtin.str(nm + "()");
                 }
                 bits = [];
-                for (i = 0; i < this.v.length; ++i) {
+                for (i = 0; i < flds.length; ++i) {
                     bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]);
                 }
                 ret = bits.join(", ");
@@ -59,7 +59,6 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
                 }
                 return new Sk.builtin.str(nm + "(" + ret + ")");
             },
-
         },
         methods: {
             __reduce__: {
@@ -71,7 +70,7 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         },
         getsets: getsets,
         proto: {
-            num_sequence_fields: new Sk.builtin.int_(flds.length)
+            num_sequence_fields: new Sk.builtin.int_(n_fields.length)
         }
     });
     return structseq;
