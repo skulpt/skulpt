@@ -804,7 +804,7 @@ Sk.builtin.exec = function (code, globals, locals) {
     globals = globals || tmp;
     return Sk.misceval.chain(
         code,
-        (co) => eval(co.code)(globals, locals),
+        (co) => Sk.global["eval"](co.code)(globals, locals),
         (new_locals) => {
             Sk.globals = tmp;
             // we return new_locals internally for eval
