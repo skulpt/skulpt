@@ -1,433 +1,240 @@
-"""Test compiler changes for unary ops (+, -, ~) introduced in Python 2.2"""
+
+"""
+cpython test_list.py
+"""
 
 import unittest
+import sys
+import list_tests
+# from test import list_tests
+# from test.support import cpython_only
+# import pickle
 
+class ListTest(list_tests.CommonTest):
+    type2test = list
 
-class IterInheritsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.type2test = list
+    def test_basic(self):
+        self.assertEqual(list([]), [])
+        l0_3 = [0, 1, 2, 3]
+        l0_3_bis = list(l0_3)
+        self.assertEqual(l0_3, l0_3_bis)
+        self.assertTrue(l0_3 is not l0_3_bis)
+        self.assertEqual(list(()), [])
+        self.assertEqual(list((0, 1, 2, 3)), [0, 1, 2, 3])
+        self.assertEqual(list(''), [])
+        self.assertEqual(list('spam'), ['s', 'p', 'a', 'm'])
+        self.assertEqual(list(x for x in range(10) if x % 2),
+                         [1, 3, 5, 7, 9])
 
-    def test_generator(self):
-        def counter(low, high):
-            current = low
-            while current <= high:
-                yield current
-                current += 1
+        # if sys.maxsize == 0x7fffffff:
+        #     # This test can currently only work on 32-bit machines.
+        #     # XXX If/when PySequence_Length() returns a ssize_t, it should be
+        #     # XXX re-enabled.
+        #     # Verify clearing of bug #556025.
+        #     # This assumes that the max data size (sys.maxint) == max
+        #     # address size this also assumes that the address size is at
+        #     # least 4 bytes with 8 byte addresses, the bug is not well
+        #     # tested
+        #     #
+        #     # Note: This test is expected to SEGV under Cygwin 1.3.12 or
+        #     # earlier due to a newlib bug.  See the following mailing list
+        #     # thread for the details:
 
-        l = list(counter(1,12))
-        t = 4 in l
-        self.assertTrue(t)
-        l1 = [1,2,3]
-        self.assertEqual(l1, list([1,2,3]))
-        self.assertEqual(list(tuple([1,2,3])), l1)
+        #     #     http://sources.redhat.com/ml/newlib/2002/msg00369.html
+        #     self.assertRaises(MemoryError, list, range(sys.maxsize // 2))
 
-    def test_getitem(self):
-        class Counter:
-           def __getitem__(self,idx):
-              if idx < 13:
-                 return idx
-              else:
-                 raise StopIteration
-        l = list(Counter())
-        self.assertTrue(5 in l)
+        # This code used to segfault in Py2.4a3
+        x = []
+        x.extend(-y for y in x)
+        self.assertEqual(x, [])
 
-    def test_dunderiter(self):
-        class Counter:
-            def __init__(self, low, high):
-                self.current = low
-                self.high = high
+    def test_keyword_args(self):
+        msg = 'keyword argument'
+        with self.assertRaises(TypeError) as c:
+            list(sequence=[])
+        self.assertIn(msg, c.exception.args[0])
 
-            def __iter__(self):
-                return self
+    def test_truth(self):
+        super().test_truth()
+        self.assertTrue(not [])
+        self.assertTrue([42])
 
-            def __next__(self): # Python 3: def __next__(self)
-                if self.current > self.high:
-                    raise StopIteration
-                else:
-                    self.current += 1
-                    return self.current - 1
-
-        # l = list(Counter(1,12))
-        # self.assertTrue(5 in l)
-
-        # class Foo(Counter):
-        #     pass
-        #
-        # l = list(Foo(100,120))
-        # self.assertTrue(105 in l)
-
-    def test_str(self):
-        l = list("this is a sequence")
-        self.assertTrue("q" in l)
-        x = ["hello"]
-        y = list(x)
-        x[0] = "hi"
-        self.assertEqual(y[0], "hello")
-
-    def test_str_func(self):
-        self.assertEqual(str([1,2,3]),  "[1, 2, 3]")
-
-    def test_repr(self):
-        a = repr([1,2,3])
-        self.assertEqual(a, "[1, 2, 3]")
+    def test_identity(self):
+        self.assertTrue([] is not [])
 
     def test_len(self):
+        super().test_len()
         self.assertEqual(len([]), 0)
-        self.assertEqual(len([1,2,3]), 3)
-        self.assertEqual(len([0]*10), 10)
-        
-    def test_reversed(self):
-        a = list(range(20))
-        r = sorted(a,reverse=True)
-        self.assertEqual(list(r), list(range(19, -1, -1)))
+        self.assertEqual(len([0]), 1)
+        self.assertEqual(len([0, 1, 2]), 3)
 
-    def test_explicit_not_reversed(self):
-        a = list(range(20))
-        r = sorted(a,reverse=False)
-        self.assertEqual(r, a)
+    def test_overflow(self):
+        lst = [4, 5, 6, 7]
+        n = int((sys.maxsize*2+2) // len(lst))
+        def mul(a, b): return a * b
+        def imul(a, b): a *= b
+        self.assertRaises(OverflowError, mul, lst, n) # should also be MemoryError here
+        self.assertRaises(OverflowError, imul, lst, n)
 
-    def test_delitem(self):
-        self.type2test = list
-        a = self.type2test([0, 1])
-        del a[1]
-        self.assertEqual(a, [0])
-        del a[0]
-        self.assertEqual(a, [])
+    def test_repr_large(self):
+        # Check the repr of large list objects
+        def check(n):
+            l = [0] * n
+            s = repr(l)
+            self.assertEqual(s,
+                '[' + ', '.join(['0'] * n) + ']')
+        check(10)       # check our checking code
+        check(1000000)
 
-        a = self.type2test([0, 1])
-        del a[-2]
-        self.assertEqual(a, [1])
-        del a[-1]
-        self.assertEqual(a, [])
-        b = [1,2,3,4]
-        del b[:]
-        self.assertEqual(b,[])
+    # def test_iterator_pickle(self):
+    #     orig = self.type2test([4, 5, 6, 7])
+    #     data = [10, 11, 12, 13, 14, 15]
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         # initial iterator
+    #         itorig = iter(orig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), data)
 
-        # todo: why __delitem__ not found?
-        # a = self.type2test([0, 1])
-        # self.assertRaises(IndexError, a.__delitem__, -3)
-        # self.assertRaises(IndexError, a.__delitem__, 2)
-        #
-        # a = self.type2test([])
-        # self.assertRaises(IndexError, a.__delitem__, 0)
-        #
-        # self.assertRaises(TypeError, a.__delitem__)
+    #         # running iterator
+    #         next(itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), data[1:])
 
-    def test_set_subscript(self):
-        self.type2test = list
-        a = self.type2test(range(20))
-        # todo: again __setitem__ not found
-        # self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 0), [1,2,3])
-        # self.assertRaises(TypeError, a.__setitem__, slice(0, 10), 1)
-        # self.assertRaises(ValueError, a.__setitem__, slice(0, 10, 2), [1,2])
-        # self.assertRaises(TypeError, a.__getitem__, 'x', 1)
-        a[slice(2,10,3)] = [1,2,3]
-        self.assertEqual(a, self.type2test([0, 1, 1, 3, 4, 2, 6, 7, 3,
-                                            9, 10, 11, 12, 13, 14, 15,
-                                            16, 17, 18, 19]))
+    #         # empty iterator
+    #         for i in range(1, len(orig)):
+    #             next(itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), data[len(orig):])
 
-    def test_assignment(self):
-        x = [2,4,6]
-        self.assertEqual(x[1], 4)
-        x[0] = 5
-        self.assertEqual(x, [5,4,6])
-        x[0] = [1,2]
-        self.assertEqual(x,[[1,2],4,6])
-        #assign multiple indices
-        a = [1,2,3,4,5,6]
-        b = [9,9,9]
-        a[1:5] = b
-        self.assertEqual(a, [1, 9, 9, 9, 6])
-        x = [1,2,3,4,5,6]
-        y = [9,9,9]
-        x[1:2] = y
-        self.assertEqual(x, [1, 9, 9, 9, 3, 4, 5, 6])
-        mylist = ['a', 'b', 'c', 'd']
-        d = {'1':1,'2':2}
-        mylist[0:2] = d
-        self.assertEqual(mylist, ['1', '2', 'c', 'd'])
-        mylist[1:3] = 'temp'
-        self.assertEqual(mylist, ['1', 't', 'e', 'm', 'p', 'd'])
-        mylist[:] = ['g','o','o','d']
-        self.assertEqual(mylist, ['g', 'o', 'o', 'd'])
-        e = [1,2,3,4,5,6]
-        f = [9,10,11]
-        e[::2] = f
-        self.assertEqual(e, [9, 2, 10, 4, 11, 6])
-        x = [10] * 5
-        x[:3] += [100,100]
-        self.assertEqual(x, [10, 10, 10, 100, 100, 10, 10])
-        a = [1, 2, 3]
-        a[1] += 4
-        self.assertEqual(a, [1, 6, 3])
+    #         # exhausted iterator
+    #         self.assertRaises(StopIteration, next, itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(list(it), [])
 
-    def test_append(self):
-        self.type2test = list
-        a = self.type2test([])
-        a.append(0)
-        a.append(1)
-        a.append(2)
-        self.assertEqual(a, self.type2test([0, 1, 2]))
+    # def test_reversed_pickle(self):
+    #     orig = self.type2test([4, 5, 6, 7])
+    #     data = [10, 11, 12, 13, 14, 15]
+    #     for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+    #         # initial iterator
+    #         itorig = reversed(orig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), data[len(orig)-1::-1])
 
-        self.assertRaises(TypeError, a.append)
+    #         # running iterator
+    #         next(itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), data[len(orig)-2::-1])
 
-    def test_extend(self):
-        self.type2test = list
-        a1 = self.type2test([0])
-        a2 = self.type2test((0, 1))
-        a = a1[:]
-        a.extend(a2)
-        self.assertEqual(a, a1 + a2)
+    #         # empty iterator
+    #         for i in range(1, len(orig)):
+    #             next(itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(type(it), type(itorig))
+    #         self.assertEqual(list(it), [])
 
-        a.extend(self.type2test([]))
-        self.assertEqual(a, a1 + a2)
+    #         # exhausted iterator
+    #         self.assertRaises(StopIteration, next, itorig)
+    #         d = pickle.dumps((itorig, orig), proto)
+    #         it, a = pickle.loads(d)
+    #         a[:] = data
+    #         self.assertEqual(list(it), [])
 
-        a.extend(a)
-        self.assertEqual(a, self.type2test([0, 0, 1, 0, 0, 1]))
+    def test_step_overflow(self):
+        a = [0, 1, 2, 3, 4]
+        a[1::sys.maxsize] = [0]
+        self.assertEqual(a[3::sys.maxsize], [3])
 
-        a = self.type2test("spam")
-        a.extend("eggs")
-        self.assertEqual(a, list("spameggs"))
+    def test_no_comdat_folding(self):
+        # Issue 8847: In the PGO build, the MSVC linker's COMDAT folding
+        # optimization causes failures in code that relies on distinct
+        # function addresses.
+        class L(list): pass
+        with self.assertRaises(TypeError):
+            (3,) + L([1,2])
 
-        l1 = [42]
-        l2 = l1
-        l1 += [99]
-        self.assertEqual(l1, l2)
-        self.assertEqual(l1, [42, 99])
-        l1 += l1
-        self.assertEqual(l1, [42, 99, 42, 99])
+    def test_equal_operator_modifying_operand(self):
+        # test fix for seg fault reported in bpo-38588 part 2.
+        class X:
+            def __eq__(self,other) :
+                list2.clear()
+                return NotImplemented
 
-        self.assertRaises(TypeError, a.extend, None)
-        m = [[1,2,3],2,3]
-        m.extend(m)
-        self.assertEqual(m, [[1, 2, 3], 2, 3, [1, 2, 3], 2, 3])
-        self.assertRaises(TypeError, lambda x: x + 1, [1])
+        class Y:
+            def __eq__(self, other):
+                list1.clear()
+                return NotImplemented
 
-    def test_insert(self):
-        a = self.type2test([0, 1, 2])
-        a.insert(0, -2)
-        a.insert(1, -1)
-        a.insert(2, 0)
-        self.assertEqual(a, [-2, -1, 0, 0, 1, 2])
+        class Z:
+            def __eq__(self, other):
+                list3.clear()
+                return NotImplemented
 
-        b = a[:]
-        b.insert(-2, "foo")
-        b.insert(-200, "left")
-        b.insert(200, "right")
-        self.assertEqual(b, self.type2test(["left",-2,-1,0,0,"foo",1,2,"right"]))
+        list1 = [X()]
+        list2 = [Y()]
+        self.assertTrue(list1 == list2)
 
-        things = ['hi', 'a', 'b', 'c']
-        things.insert(len(things), 'bye')
-        self.assertEqual(things, ['hi', 'a', 'b', 'c', 'bye'])
-        things.insert(len(things)+3, 'surpise')
-        self.assertEqual(things, ['hi', 'a', 'b', 'c', 'bye', 'surpise'])
-        self.assertRaises(TypeError, a.insert)
+        list3 = [Z()]
+        list4 = [1]
+        self.assertFalse(list3 == list4)
 
-    def test_pop(self):
-        a = self.type2test([-1, 0, 1])
-        a.pop()
-        self.assertEqual(a, [-1, 0])
-        a.pop(0)
-        self.assertEqual(a, [0])
-        self.assertRaises(IndexError, a.pop, 5)
-        a.pop(0)
-        self.assertEqual(a, [])
-        self.assertRaises(IndexError, a.pop)
-        self.assertRaises(TypeError, a.pop, 42, 42)
-        a = self.type2test([0, 10, 20, 30, 40])
-        x = [0, 1, 2]
-        x.insert(2, x.pop(0))
-        self.assertEqual(x, [1, 2, 0])
+    # @cpython_only
+    # def test_preallocation(self):
+    #     iterable = [0] * 10
+    #     iter_size = sys.getsizeof(iterable)
 
-    def test_remove(self):
-        a = self.type2test([0, 0, 1])
-        a.remove(1)
-        self.assertEqual(a, [0, 0])
-        a.remove(0)
-        self.assertEqual(a, [0])
-        a.remove(0)
-        self.assertEqual(a, [])
+    #     self.assertEqual(iter_size, sys.getsizeof(list([0] * 10)))
+    #     self.assertEqual(iter_size, sys.getsizeof(list(range(10))))
 
-        self.assertRaises(ValueError, a.remove, 0)
+    def test_count_index_remove_crashes(self):
+        # bpo-38610: The count(), index(), and remove() methods were not
+        # holding strong references to list elements while calling
+        # PyObject_RichCompareBool().
+        class X:
+            def __eq__(self, other):
+                lst.clear()
+                return NotImplemented
 
-        self.assertRaises(TypeError, a.remove)
+        lst = [X()]
+        with self.assertRaises(ValueError):
+            lst.index(lst)
 
-    def test_count(self):
-        a = self.type2test([0, 1, 2])*3
-        self.assertEqual(a.count(0), 3)
-        self.assertEqual(a.count(1), 3)
-        self.assertEqual(a.count(3), 0)
+        class L(list):
+            def __eq__(self, other):
+                str(other)
+                return NotImplemented
 
-        self.assertRaises(TypeError, a.count)
+        lst = L([X()])
+        lst.count(lst)
 
-        # class BadExc(Exception):
-        #     pass
-        #
-        # class BadCmp:
-        #     def __eq__(self, other):
-        #         if other == 2:
-        #             raise BadExc()
-        #         return False
-        #
-        # self.assertRaises(BadExc, a.count, BadCmp())
+        lst = L([X()])
+        with self.assertRaises(ValueError):
+            lst.remove(lst)
 
-    def test_shallow_copy(self):
-        a = [0,[1]]
-        b = a.copy()
-        self.assertEqual(a,b)
-        a[1][0] = 2
-        self.assertEqual(a,b)
-        a[0] = 5
-        self.assertNotEqual(a,b)
-        l = [1,[2],3]
-        m = list(l)
-        self.assertEqual(l,m)
-        l[1][0] = 3
-        self.assertEqual(l,m)
-        m[0] = 10
-        self.assertNotEqual(l,m)
-        
-    def test_clear(self):
-        a = [1,2,3]
-        b = a
-        a.clear()
-        self.assertEqual(b,a)
-        self.assertEqual(a, [])
-        
-    def test_copy(self):
-        u = self.type2test([1, 2, 3])
-        v = u.copy()
-        self.assertEqual(v, [1, 2, 3])
-
-        u = self.type2test([])
-        v = u.copy()
-        self.assertEqual(v, [])
-
-        # test that it's indeed a copy and not a reference
-        u = self.type2test(['a', 'b'])
-        v = u.copy()
-        v.append('i')
-        self.assertEqual(u, ['a', 'b'])
-        self.assertEqual(v, u + ['i'])
-
-        # test that it's a shallow, not a deep copy
-        u = self.type2test([1, 2, [3, 4], 5])
-        v = u.copy()
-        self.assertEqual(u, v)
-        self.assertIs(v[3], u[3])
-
-        self.assertRaises(TypeError, u.copy, None)
-        
-    def test_index(self):
-        u = self.type2test([0, 1])
-        self.assertEqual(u.index(0), 0)
-        self.assertEqual(u.index(1), 1)
-
-        self.assertRaises(ValueError, u.index, 2)
-
-        u = self.type2test([-2, -1, 0, 0, 1, 2])
-        self.assertEqual(u.count(0), 2)
-        self.assertEqual(u.index(0), 2)
-        self.assertEqual(u.index(0, 2), 2)
-        self.assertEqual(u.index(-2, -10), 0)
-        self.assertEqual(u.index(0, 3), 3)
-        self.assertEqual(u.index(0, 3, 4), 3)
-        self.assertRaises(ValueError, u.index, 2, 0, -10)
-        self.assertRaises(TypeError, u.index)
-        myList = [1, 2, 3, "foo", 4, 5, True, False]
-        self.assertEqual(myList.index("foo"), 3)
-        self.assertEqual(myList.index(True), 0)
-        l = ['h','e','l','l','o']
-
-        self.assertRaises(ValueError, l.index, "l", 4)
-        self.assertRaises(ValueError, l.index, "l", -1)
-        self.assertRaises(ValueError, l.index, "l", 2, 2)
-        self.assertRaises(ValueError, l.index, "l", 3, 2)
-        self.assertRaises(ValueError, l.index, "l", 3, -2)
-        self.assertRaises(ValueError, l.index, "l", 3, 0)
-        self.assertRaises(TypeError, l.index, "l", 4.3)
-        self.assertRaises(TypeError, l.index, "l", 3, 0.6)
-
-        def foo(lst):
-            i = 0
-            while lst[i] != 0:
-                i += 2
-
-        self.assertRaises(IndexError, foo, [2,2,2,2])
-        self.assertRaises(TypeError, u.index)
-
-        # class BadExc(Exception):
-        #     pass
-        #
-        # class BadCmp:
-        #     def __eq__(self, other):
-        #         if other == 2:
-        #             raise BadExc()
-        #         return False
-        #
-        # a = self.type2test([0, 1, 2, 3])
-        # self.assertRaises(BadExc, a.index, BadCmp())
-
-    def test_slicing(self):
-        b = [1,2,"OK",4]
-        self.assertEqual(b[-3:3][1], "OK")
-
-    def test_extendedslicing(self):
-        #  subscript
-        a = self.type2test([0,1,2,3,4])
-
-        #  deletion
-        del a[::2]
-        self.assertEqual(a, self.type2test([1,3]))
-        a = self.type2test(range(5))
-        del a[1::2]
-        self.assertEqual(a, self.type2test([0,2,4]))
-        a = self.type2test(range(5))
-        del a[1::-2]
-        self.assertEqual(a, self.type2test([0,2,3,4]))
-        a = self.type2test(range(10))
-        del a[::1000]
-        self.assertEqual(a, self.type2test([1, 2, 3, 4, 5, 6, 7, 8, 9]))
-        #  assignment
-        a = self.type2test(range(10))
-        a[::2] = [-1]*5
-        self.assertEqual(a, self.type2test([-1, 1, -1, 3, -1, 5, -1, 7, -1, 9]))
-        a = self.type2test(range(10))
-        a[::-4] = [10]*3
-        self.assertEqual(a, self.type2test([0, 10, 2, 3, 4, 10, 6, 7, 8 ,10]))
-        # todo:  this odd test fails
-        # a = self.type2test(range(4))
-        # a[::-1] = a
-        # self.assertEqual(a, self.type2test([3, 2, 1, 0]))
-        a = self.type2test(range(10))
-        b = a[:]
-        c = a[:]
-        a[2:3] = self.type2test(["two", "elements"])
-        b[slice(2,3)] = self.type2test(["two", "elements"])
-        c[2:3:] = self.type2test(["two", "elements"])
-        self.assertEqual(a, b)
-        self.assertEqual(a, c)
-        a = self.type2test(range(10))
-        a[::2] = tuple(range(5))
-        self.assertEqual(a, self.type2test([0, 1, 1, 3, 2, 5, 3, 7, 4, 9]))
-        # test issue7788
-        a = self.type2test(range(10))
-        del a[9::1<<333]
-        x = [1,2,3,4,5]
-        y = x[::-1]
-        self.assertEqual(y, [5, 4, 3, 2, 1])
-        l = [0,1,2,3,4]
-        self.assertTrue(l[0:3] == l[:3] == l[None:3] == [0,1,2])
-        self.assertTrue(l[0:] == l[0:None] == l[:] == [0,1,2,3,4])
-        l = [0, 1, 2, 3]
-        error1, error2, = None, None
-
-        def foo(x, y):
-            return l[x: : y]
-        self.assertRaises(ValueError, foo, 1, 0)
-        def foo2(x, y, z):
-            return l[x : y : z]
-        self.assertRaises(ValueError, foo2, 1, 3, 0)
+        # bpo-39453: list.__contains__ was not holding strong references
+        # to list elements while calling PyObject_RichCompareBool().
+        lst = [X(), X()]
+        3 in lst
+        lst = [X(), X()]
+        X() in lst
 
     def test_contains(self):
         a = self.type2test(range(15))

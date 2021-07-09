@@ -189,6 +189,9 @@ let formatNumber = function(num, formatSpec, isFractional) {
                     result += ".0";
                 }
             }
+            if (conversionType.toLowerCase()==="e") {
+                result = result.replace(/^([-+]?[0-9]*\.?[0-9]+[eE][-+]?)([0-9])?$/, "$10$2");
+            }
             if (m[FMT.COMMA]){
                 var parts = result.toString().split(".");
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -230,23 +233,17 @@ let formatNumber = function(num, formatSpec, isFractional) {
     }
 };
 
-Sk.formatting.mkNumber__format__ = (isFractional) => new Sk.builtin.func(function (self, format_spec) {
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
+Sk.formatting.mkNumber__format__ = (isFractional) => function (format_spec) {
     if (!Sk.builtin.checkString(format_spec)) {
         throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
     }
+    return new Sk.builtin.str(formatNumber(this, format_spec.$jsstr(), isFractional));
+};
 
-    return new Sk.builtin.str(formatNumber(self, format_spec.$jsstr(), isFractional));
-});
-
-let formatString = function (self, format_spec) {
-    Sk.builtin.pyCheckArgsLen("__format__", arguments.length, 2, 2);
-
+function formatString(format_spec) {
     if (!Sk.builtin.checkString(format_spec)) {
         throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
     }
-
     let m = format_spec.$jsstr().match(FORMAT_SPEC_REGEX);
     if (m[FMT.CONVERSION_TYPE] && m[FMT.CONVERSION_TYPE] !== "s") {
         throw new Sk.builtin.ValueError("Unknown format code '" + m[FMT.CONVERSION_TYPE] + "' for object of type 'str'");
@@ -264,7 +261,7 @@ let formatString = function (self, format_spec) {
         throw new Sk.builtin.ValueError("Cannot specify ',' with 's'");
     }
 
-    let value = self.v;
+    let value = this.v;
 
     if (m[FMT.PRECISION]) {
         value = value.substring(0, m[FMT.PRECISION]);
@@ -274,26 +271,11 @@ let formatString = function (self, format_spec) {
 };
 
 // str.format() implementation
-var format = function (kwa) {
+function format(args, kwargs) {
     // following PEP 3101
-
-    var a, args, key, kwargs;
-    var ret;
-    var regex;
-    var index;
-    var replFunc;
-    var arg_dict = {};
-
-    Sk.builtin.pyCheckArgsLen("format", arguments.length, 0, Infinity, true, true);
-
-    args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
-    kwargs = new Sk.builtins["dict"](kwa);
-
-    if (arguments[1] === undefined) {
-        return args.v;
-    }
-    index = 0;
-    regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:([^}]*))?}/g;
+    kwargs = kwargs || [];
+    const arg_dict = {};
+    const regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:([^}]*))?}/g;
     // ex: {o.name!r:*^+#030,.9b}
     // Field 1, Field_name, o.name
     // Field 2, arg_name, o
@@ -307,26 +289,18 @@ var format = function (kwa) {
     // retrive field value
     // hand off format spec
     // return resulting spec to function
-
-    if(kwargs.size !== 0) {
-        let iter, k, v;
-        for (iter = kwargs.tp$iter(), k = iter.tp$iternext();
-            k !== undefined;
-            k = iter.tp$iternext()) {
-            v = kwargs.mp$lookup(k);
-            arg_dict[k.v] = v;
-        }
+    for (let i = 0; i < kwargs.length; i += 2) {
+        arg_dict[kwargs[i]] = kwargs[i + 1];
     }
-    for(var i in args.v){
-        if(i !== "0") {
-            arg_dict[i-1] = args.v[i];
-        }
+    for (let i in args) {
+        arg_dict[i] = args[i];
     }
 
-    replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, offset, str_whole) {
+    let index = 0;
+    function replFunc (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, offset, str_whole) {
         let value;
 
-        if(element_index !== undefined && element_index !== ""){
+        if (element_index !== undefined && element_index !== "") {
             let container = arg_dict[arg_name];
             if (container.constructor === Array) {
                 value = container[element_index];
@@ -336,16 +310,19 @@ var format = function (kwa) {
                 value = Sk.abstr.objectGetItem(container, new Sk.builtin.str(element_index), false);
             }
             index++;
-        } else if(attribute_name !== undefined && attribute_name !== ""){
-            value = Sk.abstr.gattr(arg_dict[arg_name || (index++)], new Sk.builtin.str(attribute_name));
-        } else if(arg_name !== undefined && arg_name !== ""){
+        } else if (attribute_name !== undefined && attribute_name !== "") {
+            value = Sk.abstr.gattr(arg_dict[arg_name || index++], new Sk.builtin.str(attribute_name));
+        } else if (arg_name !== undefined && arg_name !== "") {
             value = arg_dict[arg_name];
-        } else if(field_name === undefined || field_name === ""){
+        } else if (field_name === undefined || field_name === "") {
             value = arg_dict[index];
             index++;
-        } else if (field_name instanceof Sk.builtin.int_ ||
-                   field_name instanceof Sk.builtin.float_ ||
-                   field_name instanceof Sk.builtin.lng || /^\d+$/.test(field_name)) {
+        } else if (
+            field_name instanceof Sk.builtin.int_ ||
+            field_name instanceof Sk.builtin.float_ ||
+            field_name instanceof Sk.builtin.lng ||
+            /^\d+$/.test(field_name)
+        ) {
             value = arg_dict[field_name];
             index++;
         }
@@ -362,10 +339,9 @@ var format = function (kwa) {
         return Sk.abstr.objectFormat(value, new Sk.builtin.str(format_spec)).$jsstr();
     };
 
-    ret = args.v[0].v.replace(regex, replFunc);
+    const ret = this.v.replace(regex, replFunc);
     return new Sk.builtin.str(ret);
 };
 
-format["co_kwargs"] = true;
-Sk.builtin.str.prototype["format"] = new Sk.builtin.func(format);
-Sk.builtin.str.prototype["__format__"] = new Sk.builtin.func(formatString);
+Sk.formatting.format = format;
+Sk.formatting.formatString = formatString;

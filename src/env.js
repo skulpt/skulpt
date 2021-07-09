@@ -21,7 +21,7 @@
  * Any variables that aren't set will be left alone.
  */
 
-Sk.bool_check = function(variable, name) {
+Sk.bool_check = function (variable, name) {
     if (variable === undefined || variable === null || typeof variable !== "boolean") {
         throw new Error("must specify " + name + " and it must be a boolean");
     }
@@ -49,7 +49,7 @@ Sk.python2 = {
     exceptions: false,
     no_long_type: false,
     ceil_floor_int: false,
-    silent_octal_literal: true
+    silent_octal_literal: true,
 };
 
 Sk.python3 = {
@@ -69,7 +69,7 @@ Sk.python3 = {
     exceptions: true,
     no_long_type: true,
     ceil_floor_int: true,
-    silent_octal_literal: false
+    silent_octal_literal: false,
 };
 
 Sk.configure = function (options) {
@@ -102,7 +102,7 @@ Sk.configure = function (options) {
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     Sk.asserts.assert(Sk.isArrayLike(Sk.sysargv));
 
-    Sk.__future__ = options["__future__"] || Sk.python2;
+    Sk.__future__ = options["__future__"] || Sk.python3;
 
     Sk.bool_check(Sk.__future__.print_function, "Sk.__future__.print_function");
     Sk.bool_check(Sk.__future__.division, "Sk.__future__.division");
@@ -146,35 +146,43 @@ Sk.configure = function (options) {
     if (Sk.signals === true) {
         Sk.signals = {
             listeners: [],
-            addEventListener: function (handler) {
+            addEventListener(handler) {
                 Sk.signals.listeners.push(handler);
             },
-            removeEventListener: function (handler) {
+            removeEventListener(handler) {
                 var index = Sk.signals.listeners.indexOf(handler);
                 if (index >= 0) {
                     Sk.signals.listeners.splice(index, 1); // Remove items
                 }
             },
-            signal: function (signal, data) {
+            signal(signal, data) {
                 for (var i = 0; i < Sk.signals.listeners.length; i++) {
                     Sk.signals.listeners[i].call(null, signal, data);
                 }
-            }
+            },
         };
     } else {
         Sk.signals = null;
     }
     Sk.asserts.assert(typeof Sk.signals === "object");
 
-    Sk.breakpoints = options["breakpoints"] || function() { return true; };
+    Sk.breakpoints =
+        options["breakpoints"] ||
+        function () {
+            return true;
+        };
     Sk.asserts.assert(typeof Sk.breakpoints === "function");
 
     Sk.setTimeout = options["setTimeout"];
     if (Sk.setTimeout === undefined) {
         if (typeof setTimeout === "function") {
-            Sk.setTimeout = function(func, delay) { setTimeout(func, delay); };
+            Sk.setTimeout = function (func, delay) {
+                setTimeout(func, delay);
+            };
         } else {
-            Sk.setTimeout = function(func, delay) { func(); };
+            Sk.setTimeout = function (func, delay) {
+                func();
+            };
         }
     }
     Sk.asserts.assert(typeof Sk.setTimeout === "function");
@@ -198,36 +206,29 @@ Sk.configure = function (options) {
 
     Sk.misceval.softspace_ = false;
 
-    Sk.switch_version("round$", Sk.__future__.dunder_round);
-    Sk.switch_version("next$", Sk.__future__.python3);
-    Sk.switch_version("haskey$", Sk.__future__.python3);
-    Sk.switch_version("clear$", Sk.__future__.python3);
-    Sk.switch_version("copy$", Sk.__future__.python3);
-
-    Sk.builtin.lng.prototype.tp$name = Sk.__future__.no_long_type ? "int" : "long";
-    Sk.builtin.lng.prototype.ob$type = Sk.__future__.no_long_type ? Sk.builtin.int_ : Sk.builtin.lng;
+    Sk.switch_version(Sk.__future__.python3);
 
     Sk.builtin.str.$next = Sk.__future__.python3 ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
 
     Sk.setupOperators(Sk.__future__.python3);
     Sk.setupDunderMethods(Sk.__future__.python3);
-    setupDictIterators(Sk.__future__.python3);
     Sk.setupObjects(Sk.__future__.python3);
+    Sk.token.setupTokens(Sk.__future__.python3);
 };
 
 Sk.exportSymbol("Sk.configure", Sk.configure);
 
 /*
-* Replaceable handler for uncaught exceptions
-*/
-Sk.uncaughtException = function(err) {
+ * Replaceable handler for uncaught exceptions
+ */
+Sk.uncaughtException = function (err) {
     throw err;
 };
 
 /*
  * Replaceable handler for uncaught exceptions
  */
-Sk.uncaughtException = function(err) {
+Sk.uncaughtException = function (err) {
     throw err;
 };
 Sk.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
@@ -253,8 +254,7 @@ Sk.yieldLimit = Number.POSITIVE_INFINITY;
 /*
  * Replacable output redirection (called from print, etc).
  */
-Sk.output = function (x) {
-};
+Sk.output = function (x) {};
 
 /*
  * Replaceable function to load modules with (called via import, etc.)
@@ -280,7 +280,6 @@ Sk.getSysArgv = function () {
 };
 Sk.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
 
-
 /**
  * Setable to emulate PYTHONPATH environment variable (for finding modules).
  * Should be an array of JS strings.
@@ -293,8 +292,7 @@ Sk.inBrowser = Sk.global["document"] !== undefined;
  * Internal function used for debug output.
  * @param {...} args
  */
-Sk.debugout = function (args) {
-};
+Sk.debugout = function (args) {};
 
 (function () {
     // set up some sane defaults based on availability
@@ -314,105 +312,80 @@ Sk.debugout = function (args) {
     } else if (Sk.global["print"] !== undefined) {
         Sk.debugout = Sk.global["print"];
     }
-}());
+})();
 
 Sk.inputfun = function (args) {
     return window.prompt(args);
 };
 
-// Information about method names and their internal functions for
-// methods that differ (in visibility or name) between Python 2 and 3.
-//
-// Format:
-//   internal function: {
-//     "classes" : <array of affected classes>,
-//     2 : <visible Python 2 method name> or null if none
-//     3 : <visible Python 3 method name> or null if none
-//   },
-//   ...
-
+/**
+ * currently can't seem to remove these functions without a serious slow down of 2x
+ */
 Sk.setup_method_mappings = function () {
-    return {
-        "round$": {
-            "classes": [Sk.builtin.float_,
-                        Sk.builtin.int_,
-                        Sk.builtin.nmber],
-            2: null,
-            3: "__round__"
-        },
-        "clear$": {
-            "classes": [Sk.builtin.list],
-            2: null,
-            3: "clear"
-        },
-        "copy$": {
-            "classes": [Sk.builtin.list],
-            2: null,
-            3: "copy"
-        },
-        "next$": {
-            "classes": [Sk.builtin.dict_iter_,
-                        Sk.builtin.list_iter_,
-                        Sk.builtin.set_iter_,
-                        Sk.builtin.str_iter_,
-                        Sk.builtin.tuple_iter_,
-                        Sk.builtin.generator,
-                        Sk.builtin.enumerate,
-                        Sk.builtin.filter_,
-                        Sk.builtin.zip_,
-                        Sk.builtin.map_,
-                        Sk.builtin.iterator],
-            2: "next",
-            3: "__next__"
-        },
-        "haskey$": {
-            "classes": [Sk.builtin.dict],
-            2: "has_key",
-            3: null
-        },
-    };
+};
+Sk.setupDictIterators = function (python3) {
 };
 
-Sk.switch_version = function (method_to_map, python3) {
-    var mapping, klass, classes, idx, len, newmeth, oldmeth, mappings;
+Sk.switch_version = function (py3) {
+    const methods_to_map = {
+        float_: {
+            method_names: ["__round__"],
+            2: [false],
+            3: [true],
+        },
+        int_: {
+            method_names: ["__round__"],
+            2: [false],
+            3: [true],
+        },
+        list: {
+            method_names: ["clear", "copy", "sort"],
+            2: [false, false, true],
+            3: [true, true, true],
+        },
+        dict: {
+            method_names: ["has_key", "keys", "items", "values"],
+            2: [true, true, true, true],
+            3: [false, true, true, true],
+        },
+    };
 
-    mappings = Sk.setup_method_mappings();
+    for (let klass_name in methods_to_map) {
+        const klass = Sk.builtin[klass_name];
+        const method_names = methods_to_map[klass_name].method_names;
+        const in_py3 = methods_to_map[klass_name][3];
 
-    mapping = mappings[method_to_map];
-
-    if (python3) {
-        newmeth = mapping[3];
-        oldmeth = mapping[2];
-    } else {
-        newmeth = mapping[2];
-        oldmeth = mapping[3];
-    }
-
-    classes = mapping["classes"];
-    len = classes.length;
-    for (idx = 0; idx < len; idx++) {
-        klass = classes[idx];
-        if (oldmeth && klass.prototype.hasOwnProperty(oldmeth)) {
-            delete klass.prototype[oldmeth];
+        // if we're not changing to py2 and we have no py3$methods then don't continue since these methods exist by default
+        if (py3 && klass.py3$methods === undefined) {
+            return;
+        } else if (klass.py3$methods === undefined) {
+            // Set up py3$methods if we haven't done so already
+            klass.py3$methods = {};
+            for (let i = 0; i < method_names.length; i++) {
+                const method_name = method_names[i];
+                if (!in_py3[i]) {
+                    continue;
+                }
+                klass.py3$methods[method_name] = klass.prototype[method_name].d$def;
+            }
         }
-        if (newmeth) {
-            klass.prototype[newmeth] = new Sk.builtin.func(klass.prototype[method_to_map]);
+        let in_version, new_methods;
+        if (py3) {
+            in_version = in_py3;
+            new_methods = klass.py3$methods;
+        } else {
+            in_version = methods_to_map[klass_name][2];
+            new_methods = klass.py2$methods;
+        }
+        for (let i = 0; i < method_names.length; i++) {
+            const method_name = method_names[i];
+            delete klass.prototype[method_name];
+            if (in_version[i]) {
+                klass.prototype[method_name] = new Sk.builtin.method_descriptor(klass, new_methods[method_name]);
+            }
         }
     }
 };
 
 Sk.exportSymbol("Sk.__future__", Sk.__future__);
 Sk.exportSymbol("Sk.inputfun", Sk.inputfun);
-
-function setupDictIterators (python3) {
-    if (python3) {
-        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$keys);
-        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$values);
-        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py3$items);
-    } else {
-        Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$keys);
-        Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$values);
-        Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(Sk.builtin.dict.prototype.py2$items);
-    }
-};
-
