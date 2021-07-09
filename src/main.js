@@ -9,6 +9,7 @@ require("./util.js");
 // Global support functions
 Sk.global["strftime"] = require("strftime");
 require("../support/polyfills/JSBI");
+require("../support/polyfills/es6");
 require("setimmediate");
 
 // Skulpt
