@@ -2024,6 +2024,15 @@ function astForForeverStmt (c, n) {
     Sk.asserts.fail("wrong number of tokens for 'forever' stmt");
 }
 
+function astForRepeatUntilStmt (c, n) {
+    /* repeatuntil_stmt: 'repeat' ':' suite 'until' test */
+    REQ(n, SYM.repeatuntil_stmt);
+    if (NCH(n) === 5) {
+        return new Sk.astnodes.RepeatUntil(astForSuite(c, CHILD(n, 2)), ast_for_expr(c, CHILD(n, 4)), n.lineno, n.col_offset);
+    }
+    Sk.asserts.fail("wrong number of tokens for 'repeatuntil' stmt");
+}
+
 function astForAugassign (c, n) {
     REQ(n, SYM.augassign);
     n = CHILD(n, 0);
@@ -3208,8 +3217,9 @@ function astForStmt (c, n) {
         }
     }
     else {
-        /* compound_stmt: if_stmt | while_stmt | forever_stmt | for_stmt | try_stmt
-                        | funcdef | classdef | decorated | async_stmt
+        /* compound_stmt: if_stmt | while_stmt | forever_stmt
+         *              | repeatuntil_stmt | for_stmt | try_stmt
+         *              | funcdef | classdef | decorated | async_stmt
         */
         ch = CHILD(n, 0);
         REQ(n, SYM.compound_stmt);
@@ -3220,6 +3230,8 @@ function astForStmt (c, n) {
                 return astForWhileStmt(c, ch);
             case SYM.forever_stmt:
                 return astForForeverStmt(c, ch);
+            case SYM.repeatuntil_stmt:
+                return astForRepeatUntilStmt(c, ch);
             case SYM.for_stmt:
                 return astForForStmt(c, ch);
             case SYM.try_stmt:

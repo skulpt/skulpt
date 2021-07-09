@@ -338,6 +338,21 @@ Sk.astnodes.Forever = function Forever(/* {asdl_seq *} */ body, /* {int} */
 }
 
 /** @constructor */
+Sk.astnodes.RepeatUntil = function RepeatUntil(/* {asdl_seq *} */ body, /*
+                                                    {expr_ty} */ test, /* {int}
+                                                    */ lineno, /* {int} */
+                                                    col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.body = body;
+    this.test = test;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
 Sk.astnodes.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
                                   {asdl_seq *} */ orelse, /* {int} */ lineno,
                                   /* {int} */ col_offset)
@@ -1173,6 +1188,11 @@ Sk.astnodes.While.prototype._fields = [
 Sk.astnodes.Forever.prototype._astname = "Forever";
 Sk.astnodes.Forever.prototype._fields = [
     "body", function(n) { return n.body; }
+];
+Sk.astnodes.RepeatUntil.prototype._astname = "RepeatUntil";
+Sk.astnodes.RepeatUntil.prototype._fields = [
+    "body", function(n) { return n.body; },
+    "test", function(n) { return n.test; }
 ];
 Sk.astnodes.If.prototype._astname = "If";
 Sk.astnodes.If.prototype._fields = [

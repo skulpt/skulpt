@@ -1481,6 +1481,51 @@ Compiler.prototype.cforever = function (s) {
     this.setBlock(next);
 };
 
+Compiler.prototype.crepeatuntil = function (s) {
+    var body;
+    var next;
+    var top;
+
+    top = this.newBlock("repeatuntil");
+    this._jump(top);
+    this.setBlock(top);
+
+    next = this.newBlock("after repeatuntil");
+    body = this.newBlock("repeatuntil body");
+
+    this.annotateSource(s);
+    this._jump(body);
+
+    this.pushBreakBlock(next);
+    this.pushContinueBlock(top);
+
+    this.setBlock(body);
+
+    if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
+        var suspType = "Sk.delay";
+        var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
+        out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
+            "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+            "$susp.$blk = "+debugBlock+";",
+            "$susp.optional = true;",
+            "return $susp;",
+            "}");
+        this._jump(debugBlock);
+        this.setBlock(debugBlock);
+        this.u.doesSuspend = true;
+    }
+
+    this.vseqstmt(s.body);
+
+    this._jumptrue(this.vexpr(s.test), next);
+    this._jump(top);
+
+    this.popContinueBlock();
+    this.popBreakBlock();
+
+    this.setBlock(next);
+};
+
 Compiler.prototype.cfor = function (s) {
     var target;
     var nexti;
@@ -2699,6 +2744,8 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.cwhile(s);
         case Sk.astnodes.Forever:
             return this.cforever(s);
+        case Sk.astnodes.RepeatUntil:
+            return this.crepeatuntil(s);
         case Sk.astnodes.If:
             return this.cif(s);
         case Sk.astnodes.Raise:

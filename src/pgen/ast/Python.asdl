@@ -39,6 +39,7 @@ module Python
           | AsyncFor(expr target, expr iter, stmt* body, stmt* orelse)
           | While(expr test, stmt* body, stmt* orelse)
           | Forever(stmt* body)
+          | RepeatUntil(stmt* body, expr test)
           | If(expr test, stmt* body, stmt* orelse)
           | With(withitem* items, stmt* body)
           | AsyncWith(withitem* items, stmt* body)
