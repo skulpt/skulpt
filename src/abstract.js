@@ -700,6 +700,11 @@ Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
 Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
 Sk.abstr.objectFormat = function (obj, format_spec) {
+    if (format_spec === undefined) {
+        format_spec = Sk.builtin.str.$emptystr;
+    } else if (!Sk.builtin.checkString(format_spec)) {
+        throw new Sk.builtin.TypeError("Format specifier must be a string, not " + Sk.abstr.typeName(format_spec));
+    }
     const meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format); // inherited from object so guaranteed to exist
     const result = Sk.misceval.callsimArray(meth, [format_spec]);
     if (!Sk.builtin.checkString(result)) {

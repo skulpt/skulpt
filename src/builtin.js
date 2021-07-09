@@ -1089,10 +1089,6 @@ Sk.builtin.divmod = function divmod(a, b) {
  * built-in types: Format Specification Mini-Language.
  */
 Sk.builtin.format = function format(value, format_spec) {
-    if (format_spec === undefined) {
-        format_spec = Sk.builtin.str.$emptystr;
-    }
-
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
