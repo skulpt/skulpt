@@ -8,7 +8,6 @@ require("./util.js");
 
 // Global support functions
 Sk.global["strftime"] = require("strftime");
-Sk.global["strptime"] = require("../support/time-helpers/strptime.js");
 require("../support/polyfills/JSBI");
 require("setimmediate");
 
