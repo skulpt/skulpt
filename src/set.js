@@ -334,6 +334,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             $doc: "Update a set with the union of itself and others.",
         },
     },
+    classmethods: Sk.generic.classGetItem,
     proto: /**@lends {Sk.builtin.set.prototype}*/ Object.assign(set_private_, {
         sk$asarray() {
             return this.v.sk$asarray();
@@ -434,11 +435,10 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         // takes in an array of py objects
         if (S === undefined) {
             S = [];
+        } else if (!Array.isArray(S)) {
+            S = Sk.misceval.arrayFromIterable(S); // internal calls to constructor can't suspend;
         }
-        Sk.asserts.assert(
-            Array.isArray(S) && this instanceof Sk.builtin.frozenset,
-            "bad call to frozen set - must be called with an Array and 'new'"
-        );
+        Sk.asserts.assert(this instanceof Sk.builtin.frozenset, "bad call to frozen set - must be called with 'new'");
         const L = [];
         for (let i = 0; i < S.length; i++) {
             L.push(S[i]);
@@ -516,6 +516,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
         symmetric_difference: set_proto.symmetric_difference.d$def,
         union: set_proto.union.d$def,
     },
+    classmethods: Sk.generic.classGetItem,
     proto: /**@lends {Sk.builtin.frozenset.prototype}*/ Object.assign(
         {
             $subtype_new(args, kwargs) {

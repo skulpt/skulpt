@@ -268,7 +268,7 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
         res = "/" + pattern.v.replace(/\//g, "\\/") + "/";
-        lst = mod._findre(res, string);
+        const lst = mod._findre(res, string);
         if (lst.v.length < 1) {
             return Sk.builtin.none.none$;
         }
@@ -296,9 +296,9 @@ var $builtinmodule = function (name) {
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
-        pat = Sk.ffi.remapToJs(pattern);
+        const pat = Sk.ffi.remapToJs(pattern);
         res = "/^" + pat.replace(/\//g, "\\/") + "/";
-        lst = mod._findre(res, string);
+        const lst = mod._findre(res, string);
         if (Sk.ffi.remapToJs(lst).length < 1) {
             return Sk.builtin.none.none$;
         }

@@ -67,8 +67,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
                     res = this === other || Sk.builtin.NotImplemented.NotImplemented$;
                     break;
                 case "NotEq":
-                    // use tp$richcompare here... because CPython does. ob$eq breaks some tests for NotEq subclasses
-                    res = this.tp$richcompare(other, "Eq");
+                    res = this.ob$eq(other, "Eq");
                     if (res !== Sk.builtin.NotImplemented.NotImplemented$) {
                         res = !Sk.misceval.isTrue(res);
                     }
@@ -135,18 +134,10 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
         },
         __format__: {
             $meth(format_spec) {
-                let formatstr;
                 if (!Sk.builtin.checkString(format_spec)) {
-                    if (Sk.__future__.exceptions) {
-                        throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
-                    } else {
-                        throw new Sk.builtin.TypeError("format expects arg 2 to be string or unicode, not " + Sk.abstr.typeName(format_spec));
-                    }
-                } else {
-                    formatstr = Sk.ffi.remapToJs(format_spec);
-                    if (formatstr !== "") {
-                        throw new Sk.builtin.NotImplementedError("format spec is not yet implemented");
-                    }
+                    throw new Sk.builtin.TypeError("__format__() argument must be str, not " + Sk.abstr.typeName(format_spec));
+                } else if (format_spec !== Sk.builtin.str.$empty) {
+                    throw new Sk.builtin.TypeError(`unsupported format string passed to ${Sk.abstr.typeName(this)}.__format__`);
                 }
                 return this.tp$str();
             },
@@ -160,7 +151,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             return this.tp$str().v;
         },
         hasOwnProperty: Object.prototype.hasOwnProperty,
-        hp$type: undefined,
+        ht$type: undefined,
         // private method used for error messages
         sk$attrError() {
             return "'" + this.tp$name + "' object";

@@ -252,7 +252,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             }
             // }
 
-            finalcode += "\n" + co.funcname + ";";
+            if (co.funcname !== "$compiledmod") {
+                // make sure eval returns the function - already done in Sk.compile
+                // so only necessary with $builtinmodule type modules
+                finalcode += "\n" + co.funcname + ";";
+            }
 
             modscope = Sk.global["eval"](finalcode);
 
@@ -265,6 +269,9 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             };
             if (co.packagePath) {
                 module["$d"]["__path__"] = new Sk.builtin.tuple([new Sk.builtin.str(co.packagePath)]);
+            }
+            if (co.filename && co.funcname !== "$builtinmodule") {
+                module["$d"]["__file__"] = new Sk.builtin.str(co.filename);
             }
 
             return modscope(module["$d"]);

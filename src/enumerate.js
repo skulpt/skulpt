@@ -38,5 +38,6 @@ Sk.builtin.enumerate = Sk.abstr.buildIteratorClass("enumerate", {
             }
         },
     },
+    classmethods: Sk.generic.classGetItem,
 });
 Sk.exportSymbol("Sk.builtin.enumerate", Sk.builtin.enumerate);

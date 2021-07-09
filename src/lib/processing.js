@@ -337,9 +337,12 @@ var $builtinmodule = function (name) {
 
     mod.ellipse = new Sk.builtin.func(function (x, y, r1, r2) {
         mod.processing.ellipse(x.v, y.v, r1.v, r2.v);
-
     });
-
+	
+    mod.circle = new Sk.builtin.func(function(x, y, r) {
+        mod.processing.ellipse(x.v, y.v, r.v, r.v);
+    });
+	
     mod.text = new Sk.builtin.func(function (theText, x, y) {
         mod.processing.text(theText.v, x.v, y.v);
     });
@@ -477,7 +480,7 @@ var $builtinmodule = function (name) {
 
     mod.blend = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9, v10) {
-	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
+	if (v1 instanceof Sk.builtin.int_ || v1 instanceof Sk.builtin.float_) {
 	    // blend(x,     y,width,height,dx,    dy,dwidth,dheight,MODE)
 	    mod.processing.blend(v1.v, v2.v, v3.v, v4.v, v5.v,
 				 v6.v, v7.v, v8.v, v9.v);
@@ -528,7 +531,7 @@ var $builtinmodule = function (name) {
 
     mod.copy = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9) {
-	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
+	if (v1 instanceof Sk.builtin.int_ || v1 instanceof Sk.builtin.float_) {
 	    // copy(x,     y,width,height,dx,    dy,dwidth,dheight)
 	    mod.processing.copy(v1.v, v2.v, v3.v, v4.v, v5.v,
 				v6.v, v7.v, v8.v);
@@ -1903,7 +1906,7 @@ var $builtinmodule = function (name) {
 	});
     };
 
-    fontClass = function ($gbl, $loc) {
+    const fontClass = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, input) {
 	    // PFont()
 	    // PFont(input)
@@ -1920,7 +1923,7 @@ var $builtinmodule = function (name) {
 	});
     };
 
-    graphicsClass = function ($gbl, $loc) {
+    const graphicsClass = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, x, y, z) {
 	    // PGraphics()
 	    // PGraphics(width,height)
@@ -1943,7 +1946,7 @@ var $builtinmodule = function (name) {
 	});
     };
     
-    shapeClass = function ($gbl, $loc) {
+    const shapeClass = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, arg1, arg2, arg3) {
 	    if (typeof(arg1) === "undefined") {
 		// special version for Skulpt
@@ -2022,12 +2025,12 @@ var $builtinmodule = function (name) {
 	    self.v.rotateX(angle.v);
 	});
 
-        $loc.rotateY = new Sk.builtin.func(function (self) {
+        $loc.rotateY = new Sk.builtin.func(function (self, angle) {
 	    // rotateY() Rotates the shape around the y-axis
 	    self.v.rotateY(angle.v);
 	});
 
-        $loc.rotateZ = new Sk.builtin.func(function (self) {
+        $loc.rotateZ = new Sk.builtin.func(function (self, angle) {
 	    // rotateZ() Rotates the shape around the z-axis
 	    self.v.rotateZ(angle.v);
 	});
