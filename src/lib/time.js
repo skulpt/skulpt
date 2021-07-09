@@ -26,18 +26,8 @@ var $builtinmodule = function (name) {
     };
     
     var extra_fields = {
-        tm_zone: {
-            $get() {
-                return this.tm$zone || Sk.builtin.none.none$;
-            },
-            $doc: "abbreviation of timezone name",
-        },
-        tm_gmtoff: {
-            $get() {
-                return this.tm$gmtoff || Sk.builtin.none.none;
-            },
-            $doc: "offset from UTC in seconds",
-        },
+        tm_zone: "abbreviation of timezone name",
+        tm_gmtoff: "offset from UTC in seconds",
     };
 
     var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields, extra_fields);
@@ -162,6 +152,15 @@ var $builtinmodule = function (name) {
 
     function date_to_struct_time(date, utc) {
         utc = utc || false;
+        let tm_info;
+        if (utc) {
+            tm_info = [new Sk.builtin.str("UTC"),new Sk.builtin.int_(0) ]
+        } else {
+            var offset = -(stdTimezoneOffset())/60;
+            var pad = offset < 0 ? "-" : "+";
+            var tm_zone = pad + ("" + Math.abs(offset)).padStart(2, "0");
+            tm_info = [new Sk.builtin.str(tm_zone), new Sk.builtin.int_(offset * 3600)];
+        }
         // y, m, d, hh, mm, ss, weekday, jday, dst
         var struct_time = new struct_time_f(
             [
@@ -173,19 +172,11 @@ var $builtinmodule = function (name) {
                 Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()),
                 Sk.builtin.assk$(((utc ? date.getUTCDay() : date.getDay()) + 6) % 7), // Want Monday == 0
                 Sk.builtin.assk$(getDayOfYear(date, utc)), // Want January, 1 == 1
-                Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
-            ]
+                Sk.builtin.assk$(utc ? 0 : dst(date) ? 1 : 0), // 1 for DST /0 for non-DST /-1 for unknown
+            ],
+            tm_info
         );
-        if (utc) {
-            struct_time.tm$zone = new Sk.builtin.str("UTC");
-            struct_time.tm$gmtoff = new Sk.builtin.int_(0);
-        } else {
-            var offset = -(stdTimezoneOffset())/60;
-            var pad = offset < 0 ? "-" : "+";
-            var tm_zone = pad + ("" + Math.abs(offset)).padStart(2, "0");
-            struct_time.tm$zone = new Sk.builtin.str(tm_zone);
-            struct_time.tm$gmtoff = new Sk.builtin.int_(offset * 3600);
-        }
+        
         return struct_time;
     }
 
