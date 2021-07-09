@@ -68,7 +68,7 @@ import time as _time
 # import _testcapi
 
 # Needed by test_datetime
-# import _strptime
+import _strptime
 #
 
 # pickle_loads = {pickle.loads, pickle._loads}
@@ -2598,7 +2598,6 @@ class TestDateTime(TestDate):
         self.assertLessEqual(abs(from_timestamp - from_now), tolerance)
 
     def test_strptime(self):
-        return # skulpt yet to suport strptime #TODO
         string = '2004-12-01 13:02:47.197'
         format = '%Y-%m-%d %H:%M:%S.%f'
         expected = _strptime._strptime_datetime(self.theclass, string, format)
@@ -2658,7 +2657,6 @@ class TestDateTime(TestDate):
 
     def test_strptime_single_digit(self):
         # bpo-34903: Check that single digit dates and times are allowed.
-        return # @TODO strptime
 
         strptime = self.theclass.strptime
 
@@ -2689,7 +2687,7 @@ class TestDateTime(TestDate):
             #                   format=format,
             #                   target=target):
             newdate = strptime(string, format)
-            self.assertEqual(newdate, target, msg=reason)
+            self.assertEqual(newdate, target, reason)
 
     def test_more_timetuple(self):
         # This tests fields beyond those tested by the TestDate.test_timetuple.
@@ -2880,7 +2878,7 @@ class TestDateTime(TestDate):
                                base_d.astimezone(timezone.utc)),
             ('utcfromtimestamp', (utc_ts,), base_d),
             ('fromisoformat', (d_isoformat,), base_d),
-            # ('strptime', (d_isoformat, '%Y-%m-%dT%H:%M:%S.%f'), base_d),
+            ('strptime', (d_isoformat, '%Y-%m-%dT%H:%M:%S.%f'), base_d),
             ('combine', (date(*args[0:3]), time(*args[3:])), base_d),
         ]
 

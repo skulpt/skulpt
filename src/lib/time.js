@@ -323,20 +323,17 @@ var $builtinmodule = function (name) {
 
     mod.tzset = new Sk.builtin.func(tzset_f);
 
-    function strptime_f(s, format)
-    {
-        Sk.builtin.pyCheckArgsLen("strptime", arguments.length, 1, 2);
-        Sk.builtin.pyCheckType("string", "string", Sk.builtin.checkString(s));
-        if (format !== undefined) {
-            Sk.builtin.pyCheckType("format", "string", Sk.builtin.checkString(format));
-        } else {
-            format = new Sk.builtin.str("%a %b %d %H:%M:%S %Y");
-        }
+    let _strptime_time = null;
 
-        let t = date_to_struct_time(Sk.global.strptime(Sk.ffi.remapToJs(s), Sk.ffi.remapToJs(format), true));
-        // We have no idea whether this was a DST time or not
-        t.v[8] = new Sk.builtin.int_(-1);
-        return t;
+    function strptime_f(...args) {
+        Sk.builtin.pyCheckArgsLen("strptime", args.length, 1, 2);
+        if (_strptime_time === null) {
+            return Sk.misceval.chain(Sk.importModule("_strptime", false, true), (s_mod) => {
+                _strptime_time = s_mod.tp$getattr(new Sk.builtin.str("_strptime_time"));
+                return _strptime_time.tp$call(args);
+            });
+        }
+        return _strptime_time.tp$call(args);
     }
 
     mod.strptime = new Sk.builtin.func(strptime_f);
