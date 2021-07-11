@@ -353,6 +353,20 @@ Sk.astnodes.RepeatUntil = function RepeatUntil(/* {asdl_seq *} */ body, /*
 }
 
 /** @constructor */
+Sk.astnodes.Until = function Until(/* {expr_ty} */ test, /* {asdl_seq *} */
+                                        body, /* {int} */ lineno, /* {int} */
+                                        col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.test = test;
+    this.body = body;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
 Sk.astnodes.If = function If(/* {expr_ty} */ test, /* {asdl_seq *} */ body, /*
                                   {asdl_seq *} */ orelse, /* {int} */ lineno,
                                   /* {int} */ col_offset)
@@ -1193,6 +1207,11 @@ Sk.astnodes.RepeatUntil.prototype._astname = "RepeatUntil";
 Sk.astnodes.RepeatUntil.prototype._fields = [
     "body", function(n) { return n.body; },
     "test", function(n) { return n.test; }
+];
+Sk.astnodes.Until.prototype._astname = "Until";
+Sk.astnodes.Until.prototype._fields = [
+    "test", function(n) { return n.test; },
+    "body", function(n) { return n.body; }
 ];
 Sk.astnodes.If.prototype._astname = "If";
 Sk.astnodes.If.prototype._fields = [

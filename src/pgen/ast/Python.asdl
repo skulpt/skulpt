@@ -40,6 +40,7 @@ module Python
           | While(expr test, stmt* body, stmt* orelse)
           | Forever(stmt* body)
           | RepeatUntil(stmt* body, expr test)
+          | Until(expr test, stmt* body)
           | If(expr test, stmt* body, stmt* orelse)
           | With(withitem* items, stmt* body)
           | AsyncWith(withitem* items, stmt* body)

@@ -1447,7 +1447,7 @@ Compiler.prototype.cforever = function (s) {
     this.setBlock(top);
 
     next = this.newBlock("after forever");
-    body = this.newBlock("while body");
+    body = this.newBlock("forever body");
 
     this.annotateSource(s);
     this._jump(body);
@@ -1524,6 +1524,56 @@ Compiler.prototype.crepeatuntil = function (s) {
     this.popBreakBlock();
 
     this.setBlock(next);
+};
+
+Compiler.prototype.cuntil = function (s) {
+    var body;
+    var next;
+    var top;
+    var constant = this.exprConstant(s.test);
+    console.log(s);
+    if (constant === 0) {
+        console.log("No loop at all");
+    } else {
+        top = this.newBlock("until test");
+        this._jump(top);
+        this.setBlock(top);
+
+        next = this.newBlock("after until");
+        body = this.newBlock("until body");
+
+        this.annotateSource(s);
+        this._jumptrue(this.vexpr(s.test), next);
+        this._jump(body);
+
+        this.pushBreakBlock(next);
+        this.pushContinueBlock(top);
+
+        this.setBlock(body);
+
+        if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
+            var suspType = "Sk.delay";
+            var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
+            out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
+                "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+                "$susp.$blk = "+debugBlock+";",
+                "$susp.optional = true;",
+                "return $susp;",
+                "}");
+            this._jump(debugBlock);
+            this.setBlock(debugBlock);
+            this.u.doesSuspend = true;
+        }
+
+        this.vseqstmt(s.body);
+
+        this._jump(top);
+
+        this.popContinueBlock();
+        this.popBreakBlock();
+
+        this.setBlock(next);
+    }
 };
 
 Compiler.prototype.cfor = function (s) {
@@ -2746,6 +2796,8 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.cforever(s);
         case Sk.astnodes.RepeatUntil:
             return this.crepeatuntil(s);
+        case Sk.astnodes.Until:
+            return this.cuntil(s);
         case Sk.astnodes.If:
             return this.cif(s);
         case Sk.astnodes.Raise:
