@@ -1073,6 +1073,28 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     return ret;
 };
 
+
+Compiler.prototype.cannassign = function (s) {
+    const target = s.target;
+    let val = s.value;
+    // perform the actual assignment first
+    if (val) {
+        val = this.vexpr(s.value);
+        this.vexpr(target, val);
+    }
+    switch (target.constructor) {
+        case Sk.astnodes.Name:
+            if (s.simple && (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock || this.u.ste.blockType == Sk.SYMTAB_CONSTS.ModuleBlock)) {
+                this.u.hasAnnotations = true;
+                const val = this.vexpr(s.annotation);
+                let mangled = fixReserved(mangleName(this.u.private_, target.id).v);
+                const key = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
+                this.chandlesubscr(Sk.astnodes.Store, "$loc.__annotations__", key, val);
+            }
+    }
+};
+
+
 Compiler.prototype.caugassign = function (s) {
     var to;
     var augsub;
@@ -2601,10 +2623,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             }
             break;
         case Sk.astnodes.AnnAssign:
-            val = this.vexpr(s.value);
-            this.vexpr(s.target, val);
-            this.vexpr(s.annotation);
-            break;
+            return this.cannassign(s);
         case Sk.astnodes.AugAssign:
             return this.caugassign(s);
         case Sk.astnodes.Print:
@@ -2888,7 +2907,13 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
+    /* Every annotated class and module should have __annotations__. */
+    if (this.u.hasAnnotations) {
+        this.u.varDeclsCode += "$loc.__annotations__ = new Sk.builtin.dict();";
+    }
 };
+
+
 
 Compiler.prototype.cprint = function (s) {
     var i;
