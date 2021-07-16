@@ -23,6 +23,11 @@ Sk.builtin.none = Sk.abstr.buildNativeClass("NoneType", {
             return false;
         },
     },
+    proto: {
+        valueOf() {
+            return null;
+        }
+    },
     flags: {
         sk$acceptable_as_base_class: false,
     },

@@ -141,6 +141,9 @@ Sk.builtin.tuple = Sk.abstr.buildNativeClass("tuple", {
         sk$asarray() {
             return this.v.slice(0);
         },
+        valueOf() {
+            return this.v;
+        },
     },
     methods: /**@lends {Sk.builtin.tuple.prototype}*/ {
         __getnewargs__: {

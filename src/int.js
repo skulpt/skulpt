@@ -314,6 +314,9 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 return new Sk.builtin.int_(tmp);
             }
         },
+        valueOf() {
+            return this.v;
+        },
     },
 });
 
