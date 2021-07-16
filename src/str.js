@@ -225,6 +225,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         toString() {
             return this.v;
         },
+        valueOf() {
+            return this.v;
+        },
         $subtype_new(args, kwargs) {
             const instance = new this.constructor();
             // we call str new method with all the args and kwargs
