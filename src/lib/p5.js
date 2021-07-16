@@ -1,5 +1,4 @@
 function $builtinmodule() {
-
     const {
         builtins: __builtins__,
         builtin: {
@@ -10,7 +9,6 @@ function $builtinmodule() {
         misceval: { callsimArray: pyCall },
         ffi: { toPy },
     } = Sk;
-
 
     const mod = {
         __name__: new pyStr("p5"),
@@ -23,7 +21,7 @@ function $builtinmodule() {
     Object.defineProperty(window.p5.prototype, "_start", {
         get() {
             return () => {};
-        }, 
+        },
         set(val) {
             _start = val;
         },
@@ -39,7 +37,7 @@ function $builtinmodule() {
                 mod[mangled] = p.tp$getattr(asStr);
             }
         }
-    };
+    }
 
     // create an instance of p5 and assign all the attributes to mod
     const p = pyCall(mod.p5, [new pyFunc(sketch), toPy(Sk.canvas)]);
