@@ -10,6 +10,9 @@ function $builtinmodule() {
         ffi: { toPy },
     } = Sk;
 
+    // setup a p5 object on Sk if not already there
+    Sk.p5 || (Sk.p5 = {});
+
     const mod = {
         __name__: new pyStr("p5"),
         p5: toPy(window.p5),
@@ -17,6 +20,10 @@ function $builtinmodule() {
     };
 
     // override _start to a plain function and call this in run when we need it
+    // this is kind of hacky
+    // _start is set in the constructor and then called
+    // by overriding the prototype means we can delay the call to _start
+    // which p5 does on initialization to get the methods in the namespace
     let _start;
     Object.defineProperty(window.p5.prototype, "_start", {
         get() {
@@ -29,6 +36,7 @@ function $builtinmodule() {
     });
 
     function sketch(p) {
+        // p is a python object since we used a python function
         for (let i in window.p5.prototype) {
             const asStr = new pyStr(i);
             const mangled = asStr.$mangled;
@@ -40,7 +48,10 @@ function $builtinmodule() {
     }
 
     // create an instance of p5 and assign all the attributes to mod
-    const p = pyCall(mod.p5, [new pyFunc(sketch), toPy(Sk.canvas)]);
+    const p = pyCall(mod.p5, [new pyFunc(sketch), toPy(Sk.p5.node || Sk.canvas)]);
+    const pInstance = p.valueOf();
+    Sk.p5.instance = pInstance;
+    Sk.p5.kill = pInstance.remove.bind(pInstance);
 
     const wrapFunc = (func) => () => {
         try {
@@ -54,13 +65,30 @@ function $builtinmodule() {
     mod.run = new pyFunc(function run() {
         const main = Sk.sysmodules.quick$lookup(new pyStr("__main__")).$d;
         delete window.p5.prototype._start;
-        const pInstance = p.valueOf();
         pInstance._start = _start;
 
-        ["preload", "setup", "draw", "deviceMoved", "deviceTurned", "deviceShaken",
-        "windowResized", "keyPressed", "keyReleased", "keyTyped", "mousePressed",
-        "mouseReleased", "mouseClicked", "doubleClicked", "mouseMoved", "mouseDragged",
-        "mouseWheel", "touchStarted", "touchMoved", "touchEnded"].forEach((methodName) => {
+        [
+            "preload",
+            "setup",
+            "draw",
+            "deviceMoved",
+            "deviceTurned",
+            "deviceShaken",
+            "windowResized",
+            "keyPressed",
+            "keyReleased",
+            "keyTyped",
+            "mousePressed",
+            "mouseReleased",
+            "mouseClicked",
+            "doubleClicked",
+            "mouseMoved",
+            "mouseDragged",
+            "mouseWheel",
+            "touchStarted",
+            "touchMoved",
+            "touchEnded",
+        ].forEach((methodName) => {
             const method = main[methodName];
             if (method !== undefined) {
                 pInstance[methodName] = wrapFunc(method);
