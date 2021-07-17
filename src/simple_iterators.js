@@ -66,7 +66,7 @@ Sk.builtin.seq_iter_ = Sk.abstr.buildIteratorClass("iterator", {
             },
             (e) => {
                 if (e instanceof Sk.builtin.IndexError || e instanceof Sk.builtin.StopIteration) {
-                    this.gi$ret = e.$value || Sk.builtin.none.none$;
+                    this.gi$ret = e.$value;
                     return undefined;
                 } else {
                     throw e;

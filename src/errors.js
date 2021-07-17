@@ -174,8 +174,8 @@ Sk.builtin.IndentationError = Sk.abstr.buildNativeClass("IndentationError", {
  * @extends Sk.builtin.Exception
  * @param {...} args Typically called with a single string argument
  */
-Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
-    constructor: function IndexError(...args) {
+Sk.builtin.LookupError = Sk.abstr.buildNativeClass("LookupError", {
+    constructor: function LookupError(...args) {
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
@@ -186,11 +186,11 @@ Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
  * @extends Sk.builtin.Exception
  * @param {...} args Typically called with a single string argument
  */
-Sk.builtin.LookupError = Sk.abstr.buildNativeClass("LookupError", {
-    constructor: function LookupError(...args) {
-        Sk.builtin.Exception.apply(this, args);
+Sk.builtin.IndexError = Sk.abstr.buildNativeClass("IndexError", {
+    constructor: function IndexError(...args) {
+        Sk.builtin.LookupError.apply(this, args);
     },
-    base: Sk.builtin.Exception,
+    base: Sk.builtin.LookupError,
 });
 
 /**
@@ -467,6 +467,19 @@ Sk.builtin.UnicodeEncodeError = Sk.abstr.buildNativeClass("UnicodeEncodeError", 
 });
 Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
 
+
+/**
+ * @constructor
+ * @extends Sk.builtin.BaseException
+ * @param {...} args
+ */
+Sk.builtin.GeneratorExit = Sk.abstr.buildNativeClass("GeneratorExit", {
+    constructor: function GeneratorExit(...args) {
+        Sk.builtin.BaseException.apply(this, args);
+    },
+    base: Sk.builtin.BaseException,
+});
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception
@@ -474,24 +487,24 @@ Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
  */
 Sk.builtin.StopIteration = Sk.abstr.buildNativeClass("StopIteration", {
     constructor: function StopIteration(...args) {
-        this.$value = args[0] || Sk.builtin.none.none$;
+        this.$value = args[0];
         Sk.builtin.Exception.apply(this, args);
     },
     base: Sk.builtin.Exception,
     slots: {
         tp$init(args, kwargs) {
             Sk.abstr.checkNoKwargs("StopIteration", kwargs);
-            this.$value = args[0] || Sk.builtin.none.none$;
+            this.$value = args[0];
         }
     },
     getsets: {
         value: {
             $get() {
-                return this.$value;
+                return this.$value || Sk.builtin.none.none$;
             },
             $set(v) {
-                // could be deleting the value here but it's always None;
-                this.$value = v || Sk.builtin.none.none$;
+                // could be deleting the value here;
+                this.$value = v;
             }
         }
     }

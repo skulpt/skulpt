@@ -1489,3 +1489,4 @@ function fixReserved(name) {
 }
 
 Sk.builtin.str.reservedWords_ = reservedWords_;
+Sk.builtin.str.$fixReserved = fixReserved;
