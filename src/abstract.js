@@ -1230,7 +1230,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  * - getsets: getset objects `{$get: Function, $set: Function, $doc: string}`,
  * - classmethods: classmethod objects `{$meth: Function, $flags: callmethod, $doc: string, $textsic: string|null}`,
  *
- * - flags: Object allocated directly onto class like `klass.sk$acceptable_as_base_class`
+ * - flags: Object allocated directly onto class like `klass.sk$unacceptableBase`
  * - proto: Object allocated onto the prototype useful for private methods
  * ```
  * See most builtin type objects for examples

@@ -246,7 +246,7 @@ Sk.misceval.iterator = Sk.abstr.buildIteratorClass("iterator", {
     iternext: function (canSuspend) { /* keep slot __next__ happy */
         return this.tp$iternext(canSuspend);
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 /**
