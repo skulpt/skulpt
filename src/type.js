@@ -358,7 +358,7 @@ function best_base_(bases) {
     }
     function solid_base(type) {
         // if we support slots we would need to change this function - for now it just checks for the builtin.
-        if (type.sk$klass === undefined) {
+        if (type.sk$solidBase) {
             return type;
         }
         return solid_base(type.prototype.tp$base);
