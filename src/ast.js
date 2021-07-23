@@ -2699,16 +2699,20 @@ function parsenumber(c, s, lineno) {
     if (start === "0" && s !== "0" && s.charCodeAt(1) < 65 /** i.e. the second char is a digit and not a base */) {
         s = "0o" + s.substring(1); // silent octal
     }
+    // python2 makes no guarantee about the size of a long
+    // so only make the int literal a long if it has an L suffix
+    let isInt = true;
     if (end === "l" || end === "L") {
-        return new Sk.builtin.lng(JSBI.BigInt(s.slice(0, -1)));
+        s = s.slice(0, -1);
+        isInt = false;
     }
 
     // we know it's a valid octal, hex, binary or decimal so let Number do its thing
     const val = Number(s); // we can rely on this since we know s is positive and is already a valid int literal
     if (val > Number.MAX_SAFE_INTEGER) {
-        return Sk.__future__.python3 ? new Sk.builtin.int_(JSBI.BigInt(s)) : new Sk.builtin.lng(JSBI.BigInt(s));
+        return isInt ? new Sk.builtin.int_(JSBI.BigInt(s)) : new Sk.builtin.lng(JSBI.BigInt(s));
     }
-    return new Sk.builtin.int_(val);
+    return isInt ? new Sk.builtin.int_(val) : new Sk.builtin.lng(val);
 }
 
 
