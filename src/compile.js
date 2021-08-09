@@ -677,7 +677,7 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        out("if (typeof self === \"undefined\" || self === Sk.global) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
         positionalArgs = "[$gbl.__class__,self]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
@@ -1072,6 +1072,28 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     }
     return ret;
 };
+
+
+Compiler.prototype.cannassign = function (s) {
+    const target = s.target;
+    let val = s.value;
+    // perform the actual assignment first
+    if (val) {
+        val = this.vexpr(s.value);
+        this.vexpr(target, val);
+    }
+    switch (target.constructor) {
+        case Sk.astnodes.Name:
+            if (s.simple && (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock || this.u.ste.blockType == Sk.SYMTAB_CONSTS.ModuleBlock)) {
+                this.u.hasAnnotations = true;
+                const val = this.vexpr(s.annotation);
+                let mangled = fixReserved(mangleName(this.u.private_, target.id).v);
+                const key = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
+                this.chandlesubscr(Sk.astnodes.Store, "$loc.__annotations__", key, val);
+            }
+    }
+};
+
 
 Compiler.prototype.caugassign = function (s) {
     var to;
@@ -2601,10 +2623,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             }
             break;
         case Sk.astnodes.AnnAssign:
-            val = this.vexpr(s.value);
-            this.vexpr(s.target, val);
-            this.vexpr(s.annotation);
-            break;
+            return this.cannassign(s);
         case Sk.astnodes.AugAssign:
             return this.caugassign(s);
         case Sk.astnodes.Print:
@@ -2888,7 +2907,13 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
+    /* Every annotated class and module should have __annotations__. */
+    if (this.u.hasAnnotations) {
+        this.u.varDeclsCode += "$loc.__annotations__ = new Sk.builtin.dict();";
+    }
 };
+
+
 
 Compiler.prototype.cprint = function (s) {
     var i;

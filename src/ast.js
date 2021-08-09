@@ -3291,7 +3291,7 @@ Sk.astFromParse = function (n, filename, c_flags) {
         case SYM.file_input:
             for (i = 0; i < NCH(n) - 1; ++i) {
                 ch = CHILD(n, i);
-                if (n.type === TOK.T_NEWLINE) {
+                if (ch.type === TOK.T_NEWLINE) {
                     continue;
                 }
                 REQ(ch, SYM.stmt);

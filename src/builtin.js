@@ -774,10 +774,16 @@ Sk.builtin.compile = function (source, filename, mode, flags, dont_inherit, opti
  * Internally call with javascript objects for globals and locals
  */
 Sk.builtin.exec = function (code, globals, locals) {
+    let filename = globals && globals.__file__;
+    if (filename !== undefined && Sk.builtin.checkString(filename)) {
+        filename = filename.toString();
+    } else {
+        filename = "<string>";
+    }
     if (Sk.builtin.checkString(code)) {
-        code = Sk.compile(code.$jsstr(), "?", "exec", true);
+        code = Sk.compile(code.$jsstr(), filename, "exec", true);
     } else if (typeof code === "string") {
-        code = Sk.compile(code, "?", "exec", true);
+        code = Sk.compile(code, filename, "exec", true);
     } else if (!(code instanceof pyCode)) {
         throw new Sk.builtin.TypeError("exec() arg 1 must be a string, bytes or code object");
     }
@@ -1083,10 +1089,6 @@ Sk.builtin.divmod = function divmod(a, b) {
  * built-in types: Format Specification Mini-Language.
  */
 Sk.builtin.format = function format(value, format_spec) {
-    if (format_spec === undefined) {
-        format_spec = Sk.builtin.str.$emptystr;
-    }
-
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
