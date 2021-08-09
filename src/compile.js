@@ -651,7 +651,7 @@ Compiler.prototype.ccall = function (e) {
         kwarray = [];
         for (let kw of e.keywords) {
             if (hasStars && !Sk.__future__.python3) {
-                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+                throw new Sk.builtin.SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
             }
             if (kw.arg) {
                 kwarray.push("'" + kw.arg.v + "'");
