@@ -14,6 +14,7 @@ function $builtinmodule() {
     const { isTrue, richCompareBool, asIndexOrThrow, asIndexSized, objectRepr, opAllowsEquality } = Sk.misceval;
     const { numberBinOp, typeName, buildNativeClass, checkArgsLen, objectHash, copyKeywordsToNamedArgs } = Sk.abstr;
     const { TypeError, ValueError, OverflowError, ZeroDivisionError, NotImplementedError, checkNumber, checkFloat, checkString, checkInt, asnum$, round } = Sk.builtin;
+    const intRound = (val) => round(val).nb$int(); // because python 2 returns a float.
     const binOp = numberBinOp;
 
     const str_auto = new pyStr("auto");
@@ -577,7 +578,7 @@ function $builtinmodule() {
                     const usdouble = binOp(secondsfrac, _1e6, "Mult");
 
                     if (checkFloat(microseconds)) {
-                        microseconds = round(binOp(microseconds, usdouble, "Add"));
+                        microseconds = intRound(binOp(microseconds, usdouble, "Add"));
                         [seconds, microseconds] = pyDivMod(microseconds, _1000000);
                         [days, seconds] = pyDivMod(seconds, secs_in_day);
                         d = binOp(d, days, "Add");
@@ -588,7 +589,7 @@ function $builtinmodule() {
                         [days, seconds] = pyDivMod(seconds, secs_in_day);
                         d = binOp(d, days, "Add");
                         s = binOp(s, seconds, "Add");
-                        microseconds = round(binOp(microseconds, usdouble, "Add"));
+                        microseconds = intRound(binOp(microseconds, usdouble, "Add"));
                     }
 
                     [seconds, us] = pyDivMod(microseconds, _1000000);
@@ -2125,7 +2126,7 @@ function $builtinmodule() {
                         throw new TypeError("a number is required, (got '" + typeName(t) + "'");
                     }
                     [frac, t] = modf(t); // todo check type
-                    let us = round(binOp(frac, _1e6, "Mult"));
+                    let us = intRound(binOp(frac, _1e6, "Mult"));
                     us = us.v;
                     t = t.v;
                     if (us >= 1000000) {
