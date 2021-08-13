@@ -1,7 +1,36 @@
 function $builtinmodule(name) {
+
+    const {
+        builtin: {
+            dict: pyDict,
+            str: pyStr,
+            list: pyList,
+            int_: pyInt,
+            type: pyType,
+            tuple: pyTuple,
+            mappingproxy: pyMappingProxy,
+            slice: pySlice,
+            none: {none$: pyNone},
+            NotImplemented: { NotImplemented$: pyNotImplemented },
+            Exception,
+            OverflowError,
+            IndexError,
+            TypeError,
+            ValueError,
+            checkInt,
+            checkString,
+            checkCallable,
+            hex,
+        },
+        abstr: { buildNativeClass, typeName, checkOneArg, numberBinOp, copyKeywordToNamedArgs, setUpModuleMethods },
+        misceval: { iterator: pyIterator, objectRepr, asIndexSized, isIndex, callsimArray: pyCall },
+    } = Sk;
+
+
+
     const re = {
-        __name__: new Sk.builtin.str("re"),
-        __all__: new Sk.builtin.list(
+        __name__: new pyStr("re"),
+        __all__: new pyList(
             [
                 "match",
                 "fullmatch",
@@ -32,25 +61,25 @@ function $builtinmodule(name) {
                 "DOTALL",
                 "VERBOSE",
                 "UNICODE",
-            ].map((x) => new Sk.builtin.str(x))
+            ].map((x) => new pyStr(x))
         ),
     };
 
     // cached flags
     const _value2member = {};
 
-    const RegexFlagMeta = Sk.abstr.buildNativeClass("RegexFlagMeta", {
+    const RegexFlagMeta = buildNativeClass("RegexFlagMeta", {
         constructor: function RegexFlagMeta() {},
-        base: Sk.builtin.type,
+        base: pyType,
         slots: {
             tp$iter() {
                 const members = Object.values(_members)[Symbol.iterator]();
-                return new Sk.misceval.iterator(() => members.next().value);
+                return new pyIterator(() => members.next().value);
             },
             sq$contains(flag) {
                 if (!(flag instanceof this)) {
-                    throw new Sk.builtin.TypeError(
-                        "unsupported operand type(s) for 'in': '" + Sk.abstr.typeName(flag) + "' and '" + Sk.abstr.typeName(this) + "'"
+                    throw new TypeError(
+                        "unsupported operand type(s) for 'in': '" + typeName(flag) + "' and '" + typeName(this) + "'"
                     );
                 }
                 return Object.values(_members).includes(flag);
@@ -58,9 +87,9 @@ function $builtinmodule(name) {
         },
     });
 
-    re.RegexFlag = Sk.abstr.buildNativeClass("RegexFlag", {
+    re.RegexFlag = buildNativeClass("RegexFlag", {
         meta: RegexFlagMeta,
-        base: Sk.builtin.int_,
+        base: pyInt,
         constructor: function RegexFlag(value) {
             const member = _value2member[value];
             if (member) {
@@ -72,10 +101,10 @@ function $builtinmodule(name) {
 
         slots: {
             tp$new(args, kwargs) {
-                Sk.abstr.checkOneArg("RegexFlag", args, kwargs);
+                checkOneArg("RegexFlag", args, kwargs);
                 const value = args[0].valueOf();
-                if (!Sk.builtin.checkInt(value)) {
-                    throw new Sk.builtin.ValueError(Sk.abstr.objectRepr(value) + " is not a valid RegexFlag");
+                if (!checkInt(value)) {
+                    throw new ValueError(objectRepr(value) + " is not a valid RegexFlag");
                 }
                 return new re.RegexFlag(value);
             },
@@ -93,18 +122,18 @@ function $builtinmodule(name) {
                     }
                 });
                 if (value) {
-                    members.push(Sk.builtin.hex(value).toString());
+                    members.push(hex(value).toString());
                 }
                 let res = members.join("|");
 
                 if (neg) {
                     res = members.length > 1 ? "~(" + res + ")" : "~" + res;
                 }
-                return new Sk.builtin.str(res);
+                return new pyStr(res);
             },
             sq$contains(flag) {
                 if (!(flag instanceof re.RegexFlag)) {
-                    throw new Sk.builtin.TypeError("'in' requires a RegexFlag not " + Sk.abstr.typeName(flag));
+                    throw new TypeError("'in' requires a RegexFlag not " + typeName(flag));
                 }
                 return this.nb$and(flag) === flag;
             },
@@ -153,7 +182,7 @@ function $builtinmodule(name) {
 
     function flagBitSlot(number_func, bigint_func) {
         return function (other) {
-            if (other instanceof re.RegexFlag || other instanceof Sk.builtin.int_) {
+            if (other instanceof re.RegexFlag || other instanceof pyInt) {
                 let v = this.v;
                 let w = other.v;
                 if (typeof v === "number" && typeof w === "number") {
@@ -167,7 +196,7 @@ function $builtinmodule(name) {
                 w = JSBI.BigUp(w);
                 return new re.RegexFlag(JSBI.numberIfSafe(bigint_func(v, w)));
             }
-            return Sk.builtin.NotImplemented.NotImplemented$;
+            return pyNotImplemented;
         };
     }
 
@@ -187,18 +216,12 @@ function $builtinmodule(name) {
         x: re.X,
     };
 
-    (function checkJsFlags() {
-        try {
-            new RegExp("", "u");
-        } catch {
-            delete jsFlags["u"];
-        }
-        try {
-            new RegExp("", "s");
-        } catch {
-            delete jsFlags["s"];
-        }
-    })();
+    if (!RegExp.prototype.hasOwnProperty("sticky")) {
+        delete jsFlags["s"];
+    }
+    if (!RegExp.prototype.hasOwnProperty("unicode")) {
+        delete jsFlags["u"];
+    }
 
     const flagFails = Object.entries({
         "cannot use LOCALE flag with a str pattern": re.L,
@@ -227,22 +250,22 @@ function $builtinmodule(name) {
             }
         });
 
-        pyFlag = Sk.abstr.numberBinOp(new re.RegexFlag(inlineFlags), pyFlag, "BitOr");
+        pyFlag = numberBinOp(new re.RegexFlag(inlineFlags), pyFlag, "BitOr");
 
         // check compatibility of flags
         flagFails.forEach(([msg, flag]) => {
-            if (Sk.abstr.numberBinOp(flag, pyFlag, "BitAnd") === flag) {
-                throw new Sk.builtin.ValueError(msg);
+            if (numberBinOp(flag, pyFlag, "BitAnd") === flag) {
+                throw new ValueError(msg);
             }
         });
 
         // use unicode?
-        if (Sk.abstr.numberBinOp(re.A, pyFlag, "BitAnd") !== re.A) {
-            pyFlag = Sk.abstr.numberBinOp(re.U, pyFlag, "BitOr");
+        if (numberBinOp(re.A, pyFlag, "BitAnd") !== re.A) {
+            pyFlag = numberBinOp(re.U, pyFlag, "BitOr");
         }
 
         Object.entries(jsFlags).forEach(([flag, reFlag]) => {
-            if (Sk.abstr.numberBinOp(reFlag, pyFlag, "BitAnd") === reFlag) {
+            if (numberBinOp(reFlag, pyFlag, "BitAnd") === reFlag) {
                 jsFlag += flag;
             }
         });
@@ -295,7 +318,7 @@ function $builtinmodule(name) {
                         return p0 + "(?<" + p3 + ">";
                     }
                     if (!named_groups[p2]) {
-                        throw new re.error("unknown group name " + p2 + " at position " + offset + 1, pyPattern, new Sk.builtin.int_(offset + 1));
+                        throw new re.error("unknown group name " + p2 + " at position " + offset + 1, pyPattern, new pyInt(offset + 1));
                     }
                     return p0 + "\\k<" + p2 + ">";
             }
@@ -350,31 +373,31 @@ function $builtinmodule(name) {
     function _compile(pattern, flag) {
         if (pattern instanceof re.Pattern) {
             if (flag !== zero || flag.valueOf()) {
-                throw new Sk.builtin.ValueError("cannot process flags argument with compiled pattern");
+                throw new ValueError("cannot process flags argument with compiled pattern");
             }
             return pattern;
         }
-        if (!Sk.builtin.checkString(pattern)) {
-            throw new Sk.builtin.TypeError("first argument must be string or compiled pattern");
+        if (!checkString(pattern)) {
+            throw new TypeError("first argument must be string or compiled pattern");
         }
         return compile_pattern(pattern, flag); // compile the pattern to javascript Regex
     }
 
-    re.error = Sk.abstr.buildNativeClass("re.error", {
-        base: Sk.builtin.Exception,
+    re.error = buildNativeClass("re.error", {
+        base: Exception,
         constructor: function error(msg, pattern, pos) {
             this.$pattern = pattern;
             this.$msg = msg;
-            this.$pos = pos || Sk.builtin.none.none$;
-            Sk.builtin.Exception.call(this, msg);
+            this.$pos = pos || pyNone;
+            Exception.call(this, msg);
         },
         slots: {
             tp$doc:
                 "Exception raised for invalid regular expressions.\n\n    Attributes:\n\n        msg: The unformatted error message\n        pattern: The regular expression pattern\n",
             tp$init(args, kwargs) {
-                const [msg, pattern, pos] = Sk.abstr.copyKeywordToNamedArgs("re.error", ["msg", "pattern", "pos"], args, kwargs, [
-                    Sk.builtin.none.none$,
-                    Sk.builtin.none.none$,
+                const [msg, pattern, pos] = copyKeywordToNamedArgs("re.error", ["msg", "pattern", "pos"], args, kwargs, [
+                    pyNone,
+                    pyNone,
                 ]);
                 this.$pattern = pattern;
                 this.$pos = pos;
@@ -400,10 +423,10 @@ function $builtinmodule(name) {
         },
     });
 
-    const zero = new Sk.builtin.int_(0);
+    const zero = new pyInt(0);
     const maxsize = Number.MAX_SAFE_INTEGER;
 
-    re.Pattern = Sk.abstr.buildNativeClass("re.Pattern", {
+    re.Pattern = buildNativeClass("re.Pattern", {
         constructor: function (regex, str, flags) {
             this.v = regex;
             this.str = str;
@@ -413,13 +436,13 @@ function $builtinmodule(name) {
         },
         slots: {
             $r() {
-                const patrepr = Sk.misceval.objectRepr(this.str).slice(0, 200);
-                const flagrepr = Sk.misceval.objectRepr(this.$flags.nb$and(re.U.nb$invert())); // re.U is not included in the repr here
-                return new Sk.builtin.str("re.compile(" + patrepr + (flagrepr ? ", " + flagrepr : "") + ")");
+                const patrepr = objectRepr(this.str).slice(0, 200);
+                const flagrepr = objectRepr(this.$flags.nb$and(re.U.nb$invert())); // re.U is not included in the repr here
+                return new pyStr("re.compile(" + patrepr + (flagrepr ? ", " + flagrepr : "") + ")");
             },
             tp$richcompare(other, op) {
                 if ((op !== "Eq" && op !== "NotEq") || !(other instanceof re.Pattern)) {
-                    return Sk.builtin.NotImplemented.NotImplemented$;
+                    return pyNotImplemented;
                 }
                 const res = this.str === other.str && this.$flags === other.$flags;
                 return op === "Eq" ? res : !res;
@@ -540,7 +563,7 @@ function $builtinmodule(name) {
                         // we know we have a compiled expression so we just need to check matching brackets
                         // bracket characters that are not inside [] not followed by ? but could be followed by ?P<
                         const num_matches = (this.str.v.match(this.group$regex) || []).length;
-                        this.$groups = new Sk.builtin.int_(num_matches);
+                        this.$groups = new pyInt(num_matches);
                     }
                     return this.$groups;
                 },
@@ -554,12 +577,12 @@ function $builtinmodule(name) {
                         let i = 1;
                         for (match of matches) {
                             if (match[1]) {
-                                arr.push(new Sk.builtin.str(match[1]));
-                                arr.push(new Sk.builtin.int_(i));
+                                arr.push(new pyStr(match[1]));
+                                arr.push(new pyInt(i));
                             }
                             i++;
                         }
-                        this.$groupindex = new Sk.builtin.mappingproxy(new Sk.builtin.dict(arr));
+                        this.$groupindex = new pyMappingProxy(new pyDict(arr));
                     }
                     return this.$groupindex;
                 },
@@ -571,17 +594,17 @@ function $builtinmodule(name) {
             // if it's a group like (?P<foo>) then we need to capture the foo
             group$regex: /\((?!\?(?!P<).*)(?:\?P<([^\d\W]\w*)>)?(?![^\[]*\])/g,
             get$count(count) {
-                count = Sk.misceval.asIndexSized(count, Sk.builtin.OverflowError);
+                count = asIndexSized(count, OverflowError);
                 return count ? count : Number.POSITIVE_INFINITY;
             },
             get$jsstr(string, pos, endpos) {
-                if (!Sk.builtin.checkString(string)) {
-                    throw new Sk.builtin.TypeError("expected string or bytes-like object");
+                if (!checkString(string)) {
+                    throw new TypeError("expected string or bytes-like object");
                 }
                 if ((pos === zero && endpos === maxsize) || (pos === undefined && endpos === undefined)) {
                     return { jsstr: string.toString(), pos: zero.valueOf(), endpos: string.sq$length() };
                 }
-                const { start, end } = Sk.builtin.slice.startEnd$wrt(string, pos, endpos);
+                const { start, end } = pySlice.startEnd$wrt(string, pos, endpos);
                 return { jsstr: string.toString().slice(start, end), pos: start, endpos: end };
             },
             find$all(string, pos, endpos) {
@@ -593,16 +616,16 @@ function $builtinmodule(name) {
                     // do we have groups?
                     ret.push(
                         match.length === 1
-                            ? new Sk.builtin.str(match[0])
+                            ? new pyStr(match[0])
                             : match.length === 2
-                                ? new Sk.builtin.str(match[1])
-                                : new Sk.builtin.tuple(match.slice(1).map((x) => new Sk.builtin.str(x)))
+                                ? new pyStr(match[1])
+                                : new pyTuple(match.slice(1).map((x) => new pyStr(x)))
                     );
                 }
-                return new Sk.builtin.list(ret);
+                return new pyList(ret);
             },
             $split(string, maxsplit) {
-                maxsplit = Sk.misceval.asIndexSized(maxsplit);
+                maxsplit = asIndexSized(maxsplit);
                 maxsplit = maxsplit ? maxsplit : Number.POSITIVE_INFINITY;
                 let { jsstr } = this.get$jsstr(string);
                 const regex = this.v;
@@ -611,9 +634,9 @@ function $builtinmodule(name) {
                 let num_splits = 0;
                 let idx = 0;
                 while ((match = regex.exec(jsstr)) !== null && num_splits < maxsplit) {
-                    split.push(new Sk.builtin.str(jsstr.substring(idx, match.index)));
+                    split.push(new pyStr(jsstr.substring(idx, match.index)));
                     if (match.length > 1) {
-                        split.push(...match.slice(1).map((x) => (x === undefined ? Sk.builtin.none.none$ : new Sk.builtin.str(x))));
+                        split.push(...match.slice(1).map((x) => (x === undefined ? pyNone : new pyStr(x))));
                     }
                     num_splits++;
                     idx = regex.lastIndex;
@@ -629,8 +652,8 @@ function $builtinmodule(name) {
                     }
                 }
                 regex.lastIndex = 0;
-                split.push(new Sk.builtin.str(jsstr.slice(idx)));
-                return new Sk.builtin.list(split);
+                split.push(new pyStr(jsstr.slice(idx)));
+                return new pyList(split);
             },
             match$from_repl(args, string, pos, endpos) {
                 let match_like;
@@ -649,11 +672,11 @@ function $builtinmodule(name) {
             do$sub(repl, string, count) {
                 const { jsstr, pos, endpos } = this.get$jsstr(string);
                 let matchRepl;
-                if (Sk.builtin.checkCallable(repl)) {
+                if (checkCallable(repl)) {
                     matchRepl = (matchObj) => {
-                        const rep = Sk.misceval.callsimArray(repl, [matchObj]);
-                        if (!Sk.builtin.checkString(rep)) {
-                            throw new Sk.builtin.TypeError("expected str instance, " + Sk.abstr.typeName(rep) + " found");
+                        const rep = pyCall(repl, [matchObj]);
+                        if (!checkString(rep)) {
+                            throw new TypeError("expected str instance, " + typeName(rep) + " found");
                         }
                         return rep.toString();
                     };
@@ -671,21 +694,21 @@ function $builtinmodule(name) {
                     const matchObj = this.match$from_repl(args, string, pos, endpos);
                     return matchRepl(matchObj);
                 });
-                return [new Sk.builtin.str(ret), new Sk.builtin.int_(num_repl)];
+                return [new pyStr(ret), new pyInt(num_repl)];
             },
             $sub(repl, string, count) {
                 const [ret] = this.do$sub(repl, string, count);
                 return ret;
             },
             $subn(repl, string, count) {
-                return new Sk.builtin.tuple(this.do$sub(repl, string, count));
+                return new pyTuple(this.do$sub(repl, string, count));
             },
             do$match(regex, string, pos, endpos) {
                 let jsstr;
                 ({ jsstr, pos, endpos } = this.get$jsstr(string, pos, endpos));
                 const match = jsstr.match(regex);
                 if (match === null) {
-                    return Sk.builtin.none.none$;
+                    return pyNone;
                 }
                 return new re.Match(match, this, string, pos, endpos);
             },
@@ -711,7 +734,7 @@ function $builtinmodule(name) {
                 let jsstr;
                 ({ jsstr, pos, endpos } = this.get$jsstr(string, pos, endpos));
                 const matchIter = jsstr.matchAll(this.v);
-                return new Sk.misceval.iterator(() => {
+                return new pyIterator(() => {
                     const match = matchIter.next().value;
                     if (match === undefined) {
                         return undefined;
@@ -726,10 +749,10 @@ function $builtinmodule(name) {
         },
     });
 
-    re.Match = Sk.abstr.buildNativeClass("re.Match", {
+    re.Match = buildNativeClass("re.Match", {
         constructor: function (match, re, str, pos, endpos) {
             this.v = match; // javascript match object;
-            this.$match = new Sk.builtin.str(this.v[0]);
+            this.$match = new pyStr(this.v[0]);
             this.str = str;
             this.$re = re;
             this.$pos = pos;
@@ -747,13 +770,13 @@ function $builtinmodule(name) {
                 //e.g. <re.Match object; span=(4, 21), match='see chapter 1.4.5'>
                 let ret = "<re.Match object; ";
                 ret += "span=(" + this.v.index + ", " + (this.v.index + this.$match.sq$length()) + "), ";
-                ret += "match=" + Sk.misceval.objectRepr(this.$match) + ">";
-                return new Sk.builtin.str(ret);
+                ret += "match=" + objectRepr(this.$match) + ">";
+                return new pyStr(ret);
             },
             tp$as_squence_or_mapping: true,
             mp$subscript(item) {
                 const ret = this.get$group(item);
-                return ret === undefined ? Sk.builtin.none.none$ : new Sk.builtin.str(ret);
+                return ret === undefined ? pyNone : new pyStr(ret);
             },
         },
         methods: {
@@ -762,14 +785,14 @@ function $builtinmodule(name) {
                     let ret;
                     if (gs.length <= 1) {
                         ret = this.get$group(gs[0]);
-                        return ret === undefined ? Sk.builtin.none.none$ : new Sk.builtin.str(ret);
+                        return ret === undefined ? pyNone : new pyStr(ret);
                     }
                     ret = [];
                     gs.forEach((g) => {
                         g = this.get$group(g);
-                        ret.push(g === undefined ? Sk.builtin.none.none$ : new Sk.builtin.str(g));
+                        ret.push(g === undefined ? pyNone : new pyStr(g));
                     });
-                    return new Sk.builtin.tuple(ret);
+                    return new pyTuple(ret);
                 },
                 $flags: { MinArgs: 0 },
                 $textsig: null,
@@ -780,9 +803,9 @@ function $builtinmodule(name) {
                 $meth: function start(g) {
                     const group = this.get$group(g);
                     if (group === undefined) {
-                        return new Sk.builtin.int_(-1);
+                        return new pyInt(-1);
                     }
-                    return new Sk.builtin.int_(this.str.v.indexOf(group, this.v.index + this.$pos));
+                    return new pyInt(this.str.v.indexOf(group, this.v.index + this.$pos));
                 },
                 $flags: { MinArgs: 0, MaxArgs: 1 },
                 $textsig: "($self, group=0, /)",
@@ -792,9 +815,9 @@ function $builtinmodule(name) {
                 $meth: function end(g) {
                     const group = this.get$group(g);
                     if (group === undefined) {
-                        return new Sk.builtin.int_(-1);
+                        return new pyInt(-1);
                     }
-                    return new Sk.builtin.int_(this.str.v.indexOf(group, this.v.index + this.$pos) + [...group].length);
+                    return new pyInt(this.str.v.indexOf(group, this.v.index + this.$pos) + [...group].length);
                 },
                 $flags: { MinArgs: 0, MaxArgs: 1 },
                 $textsig: "($self, group=0, /)",
@@ -813,11 +836,11 @@ function $builtinmodule(name) {
                     if (this.$groups !== null) {
                         return this.$groups;
                     }
-                    this.$groups = Array.from(this.v.slice(1), (x) => (x === undefined ? d : new Sk.builtin.str(x)));
-                    this.$groups = new Sk.builtin.tuple(this.$groups);
+                    this.$groups = Array.from(this.v.slice(1), (x) => (x === undefined ? d : new pyStr(x)));
+                    this.$groups = new pyTuple(this.$groups);
                     return this.$groups;
                 },
-                $flags: { NamedArgs: ["default"], Defaults: [Sk.builtin.none.none$] },
+                $flags: { NamedArgs: ["default"], Defaults: [pyNone] },
                 $textsig: "($self, /, default=None)",
                 $doc:
                     "Return a tuple containing all the subgroups of the match, from 1.\n\n  default\n    Is used for groups that did not participate in the match.",
@@ -828,30 +851,30 @@ function $builtinmodule(name) {
                         return this.$groupdict;
                     }
                     if (this.v.groups === undefined) {
-                        this.$groupdict = new Sk.builtin.dict();
+                        this.$groupdict = new pyDict();
                     } else {
                         const arr = [];
                         Object.entries(this.v.groups).forEach(([name, val]) => {
-                            arr.push(new Sk.builtin.str(name));
-                            arr.push(val === undefined ? d : new Sk.builtin.str(val));
+                            arr.push(new pyStr(name));
+                            arr.push(val === undefined ? d : new pyStr(val));
                         });
-                        this.$groupdict = new Sk.builtin.dict(arr);
+                        this.$groupdict = new pyDict(arr);
                     }
                     return this.$groupdict;
                 },
-                $flags: { NamedArgs: ["default"], Defaults: [Sk.builtin.none.none$] },
+                $flags: { NamedArgs: ["default"], Defaults: [pyNone] },
                 $textsig: "($self, /, default=None)",
                 $doc:
                     "Return a dictionary containing all the named subgroups of the match, keyed by the subgroup name.\n\n  default\n    Is used for groups that did not participate in the match.",
             },
             expand: {
                 $meth: function expand(template) {
-                    if (!Sk.builtin.checkString(template)) {
-                        throw new Sk.builtin.TypeError("expected str instance got " + Sk.abstr.typeName(template));
+                    if (!checkString(template)) {
+                        throw new TypeError("expected str instance got " + typeName(template));
                     }
                     template = template.toString();
                     template = this.template$repl(template);
-                    return new Sk.builtin.str(template);
+                    return new pyStr(template);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, /, template)",
@@ -888,7 +911,7 @@ function $builtinmodule(name) {
                             lval = val;
                         }
                     });
-                    this.$lastindex = li ? new Sk.builtin.int_(li) : Sk.builtin.none.none$;
+                    this.$lastindex = li ? new pyInt(li) : pyNone;
                     return this.$lastindex;
                 },
                 $doc: "The integer index of the last matched capturing group.",
@@ -899,7 +922,7 @@ function $builtinmodule(name) {
                         return this.$lastgroup;
                     }
                     if (this.v.groups === undefined) {
-                        this.$lastgroup = Sk.builtin.none.none$;
+                        this.$lastgroup = pyNone;
                     } else {
                         let lg;
                         Object.entries(this.v.groups).forEach(([name, val]) => {
@@ -907,7 +930,7 @@ function $builtinmodule(name) {
                                 lg = name;
                             }
                         });
-                        this.$lastgroup = lg === undefined ? Sk.builtin.none.none$ : new Sk.builtin.str(lg);
+                        this.$lastgroup = lg === undefined ? pyNone : new pyStr(lg);
                     }
                     return this.$lastgroup;
                 },
@@ -922,7 +945,7 @@ function $builtinmodule(name) {
                     this.v.forEach((x, i) => {
                         arr.push(this.$span(i));
                     });
-                    this.$regs = new Sk.builtin.tuple(arr);
+                    this.$regs = new pyTuple(arr);
                     return this.$regs;
                 },
             },
@@ -940,13 +963,13 @@ function $builtinmodule(name) {
             },
             pos: {
                 $get() {
-                    return new Sk.builtin.int_(this.$pos);
+                    return new pyInt(this.$pos);
                 },
                 $doc: "The index into the string at which the RE engine started looking for a match.",
             },
             endpos: {
                 $get() {
-                    return new Sk.builtin.int_(this.$endpos);
+                    return new pyInt(this.$endpos);
                 },
                 $doc: "The index into the string beyond which the RE engine will not go.",
             },
@@ -955,31 +978,31 @@ function $builtinmodule(name) {
             get$group(g) {
                 if (g === undefined) {
                     return this.v[0];
-                } else if (Sk.builtin.checkString(g)) {
+                } else if (checkString(g)) {
                     g = g.toString();
                     if (this.v.groups && Object.prototype.hasOwnProperty.call(this.v.groups, g)) {
                         return this.v.groups[g];
                     }
-                } else if (Sk.misceval.isIndex(g)) {
-                    g = Sk.misceval.asIndexSized(g);
+                } else if (isIndex(g)) {
+                    g = asIndexSized(g);
                     if (g >= 0 && g < this.v.length) {
                         return this.v[g];
                     }
                 }
-                throw new Sk.builtin.IndexError("no such group");
+                throw new IndexError("no such group");
             },
             $span(g) {
                 const group = this.get$group(g);
                 if (group === undefined) {
-                    return new Sk.builtin.tuple([new Sk.builtin.int_(-1), new Sk.builtin.int_(-1)]);
+                    return new pyTuple([new pyInt(-1), new pyInt(-1)]);
                 }
                 let idx;
                 if (group === "" && this.v[0] === "") {
-                    idx = new Sk.builtin.int_(this.v.index);
-                    return new Sk.builtin.tuple([idx, idx]);
+                    idx = new pyInt(this.v.index);
+                    return new pyTuple([idx, idx]);
                 }
                 idx = this.str.v.indexOf(group, this.v.index + this.$pos);
-                return new Sk.builtin.tuple([new Sk.builtin.int_(idx), new Sk.builtin.int_(idx + [...group].length)]); // want char length
+                return new pyTuple([new pyInt(idx), new pyInt(idx + [...group].length)]); // want char length
             },
             hasOwnProperty: Object.prototype.hasOwnProperty,
             template$regex: /\\([1-9][0-9]|[1-9])|\\g<([1-9][0-9]*)>|\\g<([^\d\W]\w*)>|\\g<?.*>?/g,
@@ -996,7 +1019,7 @@ function $builtinmodule(name) {
                     }
                     if (ret === undefined) {
                         if (name) {
-                            throw new Sk.builtin.IndexError("unknown group name '" + name + "'");
+                            throw new IndexError("unknown group name '" + name + "'");
                         }
                         throw new re.error("invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1));
                     }
@@ -1009,7 +1032,7 @@ function $builtinmodule(name) {
         },
     });
 
-    Sk.abstr.setUpModuleMethods("re", re, {
+    setUpModuleMethods("re", re, {
         match: {
             $meth: function match(pattern, string, flags) {
                 return _compile(pattern, flags).$match(string);
@@ -1092,7 +1115,7 @@ function $builtinmodule(name) {
                 Object.keys(_compiled_patterns).forEach((key) => {
                     delete _compiled_patterns[key];
                 });
-                return Sk.builtin.none.none$;
+                return pyNone;
             },
             $flags: { NoArgs: true },
             $textsig: "($module, / )",
@@ -1100,7 +1123,7 @@ function $builtinmodule(name) {
         },
         template: {
             $meth: function template(pattern, flags) {
-                return _compile(pattern, Sk.abstr.numberBinOp(re.T, flags, "BitOr"));
+                return _compile(pattern, numberBinOp(re.T, flags, "BitOr"));
             },
             $flags: { NamedArgs: ["pattern", "flags"], Defaults: [zero] },
             $textsig: "($module, / , pattern, flags=0)",
@@ -1108,12 +1131,12 @@ function $builtinmodule(name) {
         },
         escape: {
             $meth: function (pattern) {
-                if (!Sk.builtin.checkString(pattern)) {
-                    throw new Sk.builtin.TypeError("expected a str instances, got " + Sk.abstr.typeName(pattern));
+                if (!checkString(pattern)) {
+                    throw new TypeError("expected a str instances, got " + typeName(pattern));
                 }
                 pattern = pattern.toString();
                 pattern = pattern.replace(escape_chrs, "\\$&");
-                return new Sk.builtin.str(pattern);
+                return new pyStr(pattern);
             },
             $flags: { NamedArgs: ["pattern"], Defaults: [] },
             $textsig: "($module, / , pattern)",
