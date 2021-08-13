@@ -2584,7 +2584,7 @@ function fstring_parse(str, start, end, raw, recurse_lvl, c, n) {
             // We need to error out on any lone }s, and
             // replace doubles with singles.
             if (/(^|[^}])}(}})*($|[^}])/.test(literal)) {
-                throw new SyntaxError("f-string: single '}' is not allowed", LINENO(n), n.col_offset);
+                throw new Sk.builtin.SyntaxError("f-string: single '}' is not allowed", c.c_filename, n.lineno, n.col_offset);
             }
             literal = literal.replace(/}}/g, "}");
         }

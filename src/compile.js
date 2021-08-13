@@ -651,7 +651,7 @@ Compiler.prototype.ccall = function (e) {
         kwarray = [];
         for (let kw of e.keywords) {
             if (hasStars && !Sk.__future__.python3) {
-                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+                throw new Sk.builtin.SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
             }
             if (kw.arg) {
                 kwarray.push("'" + kw.arg.v + "'");
@@ -677,7 +677,7 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        out("if (typeof self === \"undefined\" || self === Sk.global) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
         positionalArgs = "[$gbl.__class__,self]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
@@ -1047,7 +1047,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.FormattedValue:
             return this.cformattedvalue(e);
         case Sk.astnodes.Ellipsis:
-            return this.makeConstant("Sk.builtin.ellipsis");
+            return this.makeConstant("Sk.builtin.Ellipsis");
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }
