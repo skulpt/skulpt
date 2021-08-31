@@ -61,6 +61,8 @@ function $builtinmodule() {
     const secs_in_day = new pyInt(24 * 3600);
     const _243600 = new pyFloat(24 * 3600);
 
+    let _strptime_datetime = null; // see datetime.stprtime
+
     // some helper functions not part of datetime.py
 
     function pyDivMod(a, b) {
@@ -1175,6 +1177,10 @@ function $builtinmodule() {
                 $timetuple() {
                     return _build_struct_time(this.$year, this.$month, this.$day, this.$hour || 0, this.$min || 0, this.$sec || 0, -1);
                 },
+                $strftime(fmt = "") {
+                    // convenience method
+                    return _wrap_strftime(this, fmt.toString(), this.$timetuple());
+                },
             },
         }));
 
@@ -1645,7 +1651,6 @@ function $builtinmodule() {
         time.prototype.min = new time(0, 0, 0);
         time.prototype.max = new time(23, 59, 59, 999999);
         time.prototype.resolution = new timedelta();
-        
 
         const datetime = (mod.datetime = buildNativeClass("datetime.datetime", {
             base: date,
@@ -2057,9 +2062,13 @@ function $builtinmodule() {
                 },
                 strptime: {
                     $meth: function strptime(date_string, format) {
-                        return Sk.misceval.chain(Sk.importModule("_strptime", false, true), (s_mod) => {
-                            return pyCallOrSuspend(s_mod.tp$getattr(new pyStr("_strptime_datetime")), this, date_string, format);
-                        });
+                        if (_strptime_datetime === null) {
+                            return Sk.misceval.chain(Sk.importModule("_strptime", false, true), (s_mod) => {
+                                _strptime_datetime = s_mod.tp$getattr(new pyStr("_strptime_datetime"));
+                                return _strptime_datetime.tp$call([this, date_string, format]);
+                            });
+                        }
+                        return _strptime_datetime.tp$call([this, date_string, format]);
                     },
                     $flags: { MinArgs: 2, MaxArgs: 2 },
                     $textsig: null,

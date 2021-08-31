@@ -1047,7 +1047,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.FormattedValue:
             return this.cformattedvalue(e);
         case Sk.astnodes.Ellipsis:
-            return this.makeConstant("Sk.builtin.ellipsis");
+            return this.makeConstant("Sk.builtin.Ellipsis");
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }

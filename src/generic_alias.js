@@ -173,7 +173,7 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
             return module.toString() === "typing";
         },
         ga$repr(item) {
-            if (item === Sk.builtin.ellipsis) {
+            if (item === Sk.builtin.Ellipsis) {
                 return "...";
             }
             if (Sk.abstr.lookupSpecial(item, this.str$orig)) {

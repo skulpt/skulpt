@@ -83,7 +83,7 @@ except NameError:
 #     del tb
 
 SliceType = slice
-# EllipsisType = type(Ellipsis)
+EllipsisType = type(Ellipsis)
 
 # DictProxyType = type(TypeType.__dict__)
 NotImplementedType = type(NotImplemented)
