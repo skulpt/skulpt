@@ -18,7 +18,7 @@ n = []
 class _deep_reduce_ex:
     def __reduce_ex__(self, proto):
         n.append(1)
-        print "append to n"
+        print("append to n")
         return ""
     def __reduce__(self):
         self.fail("shouldn't call this")
@@ -129,7 +129,7 @@ class TestCopy(unittest.TestCase):
     def test_deepcopy_reduce_ex(self):
         x = _deep_reduce_ex()
         y = copy.deepcopy(x)
-        self.assertEqual(n, [])
+        self.assertEqual(n, [1])
 
     # def test_deepcopy_reduce(self):
     #   x = deep_reduce()
@@ -447,12 +447,12 @@ class TestCopy(unittest.TestCase):
     def test_reconstruct_state_setstate(self):
         x = reconstruct_state_setstate()
         x.foo = [42]
-        # y = copy.copy(x)
-        self.assertRaises(NotImplementedError, copy.copy, x)
-        # self.assertEqual(y, x)
-        # y = copy.deepcopy(x)
-        # self.assertEqual(y, x)
-        # self.assertIsNot(y.foo, x.foo)
+        y = copy.copy(x)
+        # self.assertRaises(NotImplementedError, copy.copy, x)
+        self.assertEqual(y, x)
+        y = copy.deepcopy(x)
+        self.assertEqual(y, x)
+        self.assertIsNot(y.foo, x.foo)
 
     def test_reconstruct_reflexive(self):
         class C(object):
