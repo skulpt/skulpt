@@ -38,9 +38,11 @@ module Python
           | For(expr target, expr iter, stmt* body, stmt* orelse)
           | AsyncFor(expr target, expr iter, stmt* body, stmt* orelse)
           | While(expr test, stmt* body, stmt* orelse)
+          -- Start PyAngelo additions
           | Forever(stmt* body)
           | RepeatUntil(stmt* body, expr test)
           | Until(expr test, stmt* body)
+          -- End PyAngelo Additions
           | If(expr test, stmt* body, stmt* orelse)
           | With(withitem* items, stmt* body)
           | AsyncWith(withitem* items, stmt* body)
@@ -62,6 +64,9 @@ module Python
           -- Skulpt addition (/hack)
           | Print(expr? dest, expr* values, int nl)
           | Debugger
+          -- PyAngelo Additions
+          | Label(identifier name)
+          | Goto(identifier name)
 
           -- XXX Jython will be different
           -- col_offset is the byte offset in the utf8 string the parser uses

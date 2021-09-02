@@ -127,7 +127,7 @@ Sk.builtins = {
     "classmethod"  : Sk.builtin.classmethod,
     "staticmethod" : Sk.builtin.staticmethod,
 
-    "Ellipsis": Sk.builtin.Ellipsis
+    "Ellipsis": Sk.builtin.Ellipsis,
 
     "setCanvasSize"      : Sk.builtin.setCanvasSize,
     "setConsoleSize"     : Sk.builtin.setConsoleSize,

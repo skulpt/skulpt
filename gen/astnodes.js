@@ -581,6 +581,30 @@ Sk.astnodes.Debugger = function Debugger(/* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
+Sk.astnodes.Label = function Label(/* {identifier} */ name, /* {int} */ lineno,
+                                        /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.name = name;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
+Sk.astnodes.Goto = function Goto(/* {identifier} */ name, /* {int} */ lineno,
+                                      /* {int} */ col_offset)
+{
+    Sk.asserts.assert(lineno !== null && lineno !== undefined);
+    Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
+    this.name = name;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
 Sk.astnodes.BoolOp = function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */
                                           values, /* {int} */ lineno, /* {int}
                                           */ col_offset)
@@ -1287,6 +1311,14 @@ Sk.astnodes.Print.prototype._fields = [
 ];
 Sk.astnodes.Debugger.prototype._astname = "Debugger";
 Sk.astnodes.Debugger.prototype._fields = [
+];
+Sk.astnodes.Label.prototype._astname = "Label";
+Sk.astnodes.Label.prototype._fields = [
+    "name", function(n) { return n.name; }
+];
+Sk.astnodes.Goto.prototype._astname = "Goto";
+Sk.astnodes.Goto.prototype._fields = [
+    "name", function(n) { return n.name; }
 ];
 Sk.astnodes.BoolOp.prototype._astname = "BoolOp";
 Sk.astnodes.BoolOp.prototype._fields = [

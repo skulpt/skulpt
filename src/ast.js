@@ -1166,13 +1166,15 @@ function ast_for_flow_stmt(c, n)
 {
     /*
       flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt
-                 | yield_stmt
+                 | yield_stmt | label_stmt | goto_stmt
       break_stmt: 'break'
       continue_stmt: 'continue'
       return_stmt: 'return' [testlist]
       yield_stmt: yield_expr
       yield_expr: 'yield' testlist | 'yield' 'from' test
       raise_stmt: 'raise' [test [',' test [',' test]]]
+      label_stmt: 'label' NAME
+      goto_stmt: 'goto' NAME
     */
     var ch;
 
@@ -1237,7 +1239,10 @@ function ast_for_flow_stmt(c, n)
                 return new Sk.astnodes.Raise(expression, cause, inst, tback, LINENO(n), n.col_offset,
                              n.end_lineno, n.end_col_offset);
             }
-            /* fall through */
+        case SYM.label_stmt:
+            return new Sk.astnodes.Label(CHILD(ch, 1).value, LINENO(n), n.col_offset);
+        case SYM.goto_stmt:
+            return new Sk.astnodes.Goto(CHILD(ch, 1).value, LINENO(n), n.col_offset);
         default:
             Sk.asserts.fail("unexpected flow_stmt: ", TYPE(ch));
             return null;

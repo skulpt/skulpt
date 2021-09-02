@@ -7,94 +7,6 @@
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
 
-// this is used to implement goto functionality
-function parseGoto(name, code) {
-    var destCode = code;
-    if (name == "<stdin>") {
-        var labels = {};
-
-        var blocks = [];
-
-        // grabbing all the blocks and their character indices in the code
-        var casePattern = /case \d+:/g;
-        var matches = code.matchAll(casePattern);
-        var numBlocks = 0;
-        var start = 0;
-        var end = 0;
-        for (let match of matches) {
-            if (numBlocks == 0) {
-                start = match.index;
-            } else {
-                end = match.index;
-                blocks.push([start, end - start]);
-                start = end;
-            }
-            numBlocks++;
-        }
-        if (numBlocks > 0) {
-            blocks.push([start, code.length - start - 1]);
-        }
-
-        // pass 1:
-        // finding all the label blocks, grabbing their block numbers
-        // and populating the lookup table with them
-        for (let i = 0; i < blocks.length; i++) {
-            let block = code.substr(blocks[i][0], blocks[i][1]);
-            var blockNumberPattern = /case (\d+)/g;
-            var blockNumberMatches = block.matchAll(blockNumberPattern);
-            for (let blockNumberMatch of blockNumberMatches) {
-                var labelNamePattern = /label (.+)/g;
-                var labelNameMatches = block.matchAll(labelNamePattern);
-                for (let labelNameMatch of labelNameMatches) {
-                    labels[labelNameMatch[1].trim()] = blockNumberMatch[1];
-
-                    // deleting suspensions code associated with label code
-                    var suspensionsPattern = /var \$loadname[\S\s]+?\$blk=(\d+);/g;
-                    var suspensionsMatches = block.matchAll(suspensionsPattern);
-
-                    for (let suspensionMatch of suspensionsMatches) {
-                        var nextBlock = parseInt(blockNumberMatch[1]) + 1;
-                        var linenoPattern = /currLineNo = (\d+);/g;
-                        var linenoMatches = block.matchAll(linenoPattern);
-                        for (let linenoMatch of linenoMatches) {
-                            var suspCode = "if (Sk.breakpoints('<stdin>.py'," + linenoMatch[1] + ",0)) {var $susp = $saveSuspension({data: {type: 'Sk.delay'}, resume: function() {}}, '<stdin>.py'," + linenoMatch[1] + ",0);$susp.$blk = " + nextBlock + ";$susp.optional = true;return $susp;}$blk=" + nextBlock + ";";
-                            destCode = destCode.replace(suspensionMatch[0], suspCode);
-                        }
-                    }
-
-                    // deleting suspensions code in the next block too
-                    if (i < blocks.length - 1) {
-                        block = code.substr(blocks[i + 1][0], blocks[i + 1][1]);
-                        var suspensionsPattern = /if \(\$ret[\s\S]+=\$ret;/g;
-                        var suspensionsMatches = block.matchAll(suspensionsPattern);
-
-                        for (let suspensionMatch of suspensionsMatches) {
-                            destCode = destCode.replace(suspensionMatch[0], "");
-                        }
-                    }
-                }
-            }
-        }
-
-        // pass 2:
-        // fill in goto statements
-        for (let i = 0; i < blocks.length; i++) {
-            let block = code.substr(blocks[i][0], blocks[i][1]);
-            var gotoPattern = /\/\/\s+goto (.+)[\s\S]+/g;
-            var gotoMatches = block.matchAll(gotoPattern);
-            for (let gotoMatch of gotoMatches) {
-                if (labels[gotoMatch[1].trim()] !== undefined) {
-                    var lineNo = labels[gotoMatch[1].trim()];
-                    // replace everything from the case statement onwards (exclusively) with the blk jump
-                    destCode = destCode.replace(gotoMatch[0], "$blk=" + lineNo + ";/* goto */continue;");
-                }
-            }
-        }
-    }
-
-    return destCode;
-};
-
 /**
  * @param {string} name to look for
  * @param {string} ext extension to use (.py or .js)
@@ -287,13 +199,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                     }
                 });
 
-            }
-            if (Sk.goto) {
-                try {
-                    co.code = parseGoto(name, co.code);
-                } catch (e) {
-                    throw new Sk.builtin.ImportError("Could not parse goto in module named " + name);
-                }
             }
             return co;
 

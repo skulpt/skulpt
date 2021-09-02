@@ -75,6 +75,8 @@ function CompilerUnit () {
     this.exceptBlocks = [];
     // state of where to go on a return
     this.finallyBlocks = [];
+    // keep track of block number for labels
+    this.labelBlocks = {};
 }
 
 CompilerUnit.prototype.activateScope = function () {
@@ -261,6 +263,13 @@ Compiler.prototype._jump = function (block) {
         out("$blk=", block, ";");
         this.u.blocks[this.u.curblock]._next = block;
     }
+};
+
+Compiler.prototype._goto = function (s) {
+    out("PYANGELOGOTO");
+    out(s.name);
+    out(s.lineno);
+    out(s.col_offset);
 };
 
 /**
@@ -1213,6 +1222,12 @@ Compiler.prototype.peekFinallyBlock = function() {
     return (this.u.finallyBlocks.length > 0) ? this.u.finallyBlocks[this.u.finallyBlocks.length-1] : undefined;
 };
 
+Compiler.prototype.pushLabelBlock = function (label, blockNo) {
+    Sk.asserts.assert(blockNo >= 0 && blockNo < this.u.blocknum);
+    Sk.asserts.assert(!this.u.labelBlocks.hasOwnProperty(label));
+    this.u.labelBlocks[label] = blockNo;
+};
+
 Compiler.prototype.setupExcept = function (eb) {
     out("$exc.push(", eb, ");");
     //this.pushExceptBlock(eb);
@@ -1319,6 +1334,21 @@ Compiler.prototype.outputAllUnits = function () {
                 generatedBlocks[block] = true;
 
                 ret += "case " + block + ": /* --- " + blocks[block]._name + " --- */";
+                const gotoIndex = blocks[block].indexOf("PYANGELOGOTO");
+                if (gotoIndex > -1) {
+                    const gotoLabel = blocks[block][gotoIndex + 1];
+                    const gotoLineNo = blocks[block][gotoIndex + 2];
+                    const gotoColOffset = blocks[block][gotoIndex + 3];
+                    if (! unit.labelBlocks.hasOwnProperty(gotoLabel)) {
+                        throw new Sk.builtin.SyntaxError("label " + gotoLabel + " is not defined", this.filename, gotoLineNo);
+                    }
+                    const gotoBlock = unit.labelBlocks[gotoLabel];
+                    blocks[block][gotoIndex] = "$blk=" + gotoBlock + ";";
+                    blocks[block][gotoIndex + 1] = "/* GOTO INJECTED */ continue;";
+                    blocks[block][gotoIndex + 2] = "/* Used for PyAngelo */";
+                    blocks[block][gotoIndex + 3] = "/* https://www.PyAngelo.com */";
+                    blocks[block]._next = gotoBlock;
+                }
                 ret += blocks[block].join("");
 
                 if (blocks[block]._next !== null) {
@@ -1376,6 +1406,24 @@ Compiler.prototype.cif = function (s) {
         this.setBlock(end);
     }
 
+};
+
+Compiler.prototype.clabel = function (s) {
+    var next;
+    var top;
+
+    top = this.newBlock("label: " + s.name);
+    this.pushLabelBlock(s.name, top);
+    this._jump(top);
+    this.setBlock(top);
+
+    next = this.newBlock("after label");
+    this._jump(next);
+    this.setBlock(next);
+};
+
+Compiler.prototype.cgoto = function (s) {
+    this._goto(s);
 };
 
 Compiler.prototype.cwhile = function (s) {
@@ -2825,6 +2873,12 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             break;
         case Sk.astnodes.Debugger:
             out("debugger;");
+            break;
+        case Sk.astnodes.Label:
+            this.clabel(s);
+            break;
+        case Sk.astnodes.Goto:
+            this.cgoto(s);
             break;
         default:
             Sk.asserts.fail("unhandled case in vstmt: " + JSON.stringify(s));
