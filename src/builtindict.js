@@ -183,8 +183,9 @@ Sk.builtins = {
     "stopAllSounds"      : Sk.builtin.stopAllSounds,
     "_getPixelColour"    : Sk.builtin._getPixelColour,
     "isKeyPressed"       : Sk.builtin.isKeyPressed,
-    "wasKeyPressed"       : Sk.builtin.wasKeyPressed,
+    "wasKeyPressed"      : Sk.builtin.wasKeyPressed,
     "dist"               : Sk.builtin.dist,
+    "setTextSize"        : Sk.builtin.setTextSize,
     "setTextColour"      : Sk.builtin.setTextColour,
     "setHighlightColour" : Sk.builtin.setHighlightColour,
     "clear"              : Sk.builtin.clear,
@@ -988,6 +989,13 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $textsig: "($module x1, y1, x2, y2 /)",
         $doc:
             "Returns the distance between two points.",
+    },
+    setTextSize: {
+        $meth: Sk.builtin.setTextSize,
+        $flags: { OneArg: true },
+        $textsig: "($module size /)",
+        $doc:
+            "Sets the text size used by print statements.",
     },
     setTextColour: {
         $meth: Sk.builtin.setTextColour,

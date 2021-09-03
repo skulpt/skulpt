@@ -1782,6 +1782,17 @@ Sk.builtin.dist = function dist(x1, y1, x2, y2) {
     return Sk.ffi.remapToPy(Math.sqrt((x2 - x1)**2 + (y2 - y1)**2));
 };
 
+Sk.builtin.setTextSize = function setTextSize(size) {
+    Sk.builtin.pyCheckArgsLen("setTextSize", arguments.length, 1, 1);
+    if (!Sk.builtin.checkInt(size)) {
+        throw new Sk.builtin.TypeError("Size must be an integer");
+    }
+    size = Sk.ffi.remapToJs(size);
+    if (size >= 8 && size <= 128) {
+        Sk.PyAngelo.textSize = size + "px";
+    }
+};
+
 Sk.builtin.setTextColour = function setTextColour(colour) {
     Sk.builtin.pyCheckArgsLen("setTextColour", arguments.length, 1, 1);
     colour = Sk.ffi.remapToJs(colour);
