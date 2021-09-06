@@ -10,24 +10,6 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
-    var getTimeStamp = (function () {
-        const performance = Sk.global.performance;
-        // all modern browsers support performance (IE10+) but node does not without the use of require('perf_hooks');
-        const timeOrigin =
-            performance && (performance.timeOrigin || (performance.timing && performance.timing.navigationStart));
-        // timeOrigin is experimental but supported by all modern browsers except safari - https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
-        // performance.timing.navigationStart is depracated but supported by all browsers - https://developer.mozilla.org/en-US/docs/Web/API/PerformanceTiming/navigationStart
-        if (performance && performance.now && timeOrigin) {
-            return function () {
-                return (timeOrigin + performance.now()) / 1000;
-            };
-        }
-        // fallback
-        return function () {
-            return Date.now() / 1000;
-        };
-    })();
-
     mod.__package__ = new Sk.builtin.str("");
 
     var struct_time_fields = {
@@ -68,7 +50,7 @@ var $builtinmodule = function (name) {
 
     mod.time = new Sk.builtin.func(function () {
         Sk.builtin.pyCheckArgsLen("time", arguments.length, 0, 0);
-        return new Sk.builtin.float_(getTimeStamp());
+        return new Sk.builtin.float_(Date.now() / 1000);
     });
 
     // This is an experimental implementation of time.sleep(), using suspensions
