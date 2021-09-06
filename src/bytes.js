@@ -327,7 +327,10 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             const ret = [];
             this.v.forEach((x) => {ret.push(new Sk.builtin.int_(x));});
             return ret;
-        }
+        },
+        valueOf() {
+            return this.v;
+        },
     },
     flags: {
         str$encode: strEncode,

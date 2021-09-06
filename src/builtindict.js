@@ -123,6 +123,8 @@ Sk.builtins = {
     "property"     : Sk.builtin.property,
     "classmethod"  : Sk.builtin.classmethod,
     "staticmethod" : Sk.builtin.staticmethod,
+
+    "Ellipsis": Sk.builtin.Ellipsis
 };
 
 
