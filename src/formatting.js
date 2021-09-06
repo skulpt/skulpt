@@ -28,7 +28,7 @@ let handleWidth = function (m, r, prefix, isNumber) {
         let nFill = fieldWidth - (r.length + (prefix ? prefix.length : 0));
 
         if (nFill <= 0) {
-            return r;
+            return prefix + r;
         }
 
         let fill = fillChar.repeat(nFill);
