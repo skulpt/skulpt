@@ -1,1 +1,1 @@
-raise NotImplementedError("fnmatch is not yet implemented in Skulpt")
+import _sk_fail; _sk_fail._("fnmatch")

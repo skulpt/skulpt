@@ -57,7 +57,7 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
         },
     },
     flags: {
-        sk$acceptable_as_base_class: false,
+        sk$unacceptableBase: true,
     },
     methods: {
         __format__: {

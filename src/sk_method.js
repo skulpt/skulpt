@@ -102,7 +102,7 @@ Sk.builtin.sk_method = Sk.abstr.buildNativeClass("builtin_function_or_method", {
             return Sk.builtin.func.prototype.$resolveArgs.call(this);
         },
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
     slots: {
         tp$getattr: Sk.generic.getAttr,
         $r() {
