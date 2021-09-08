@@ -1222,9 +1222,11 @@ Compiler.prototype.peekFinallyBlock = function() {
     return (this.u.finallyBlocks.length > 0) ? this.u.finallyBlocks[this.u.finallyBlocks.length-1] : undefined;
 };
 
-Compiler.prototype.pushLabelBlock = function (label, blockNo) {
+Compiler.prototype.pushLabelBlock = function (label, blockNo, lineno) {
     Sk.asserts.assert(blockNo >= 0 && blockNo < this.u.blocknum);
-    Sk.asserts.assert(!this.u.labelBlocks.hasOwnProperty(label));
+    if (this.u.labelBlocks.hasOwnProperty(label)) {
+        throw new Sk.builtin.SyntaxError("label " + label + " has already been defined", this.filename, lineno);
+    }
     this.u.labelBlocks[label] = blockNo;
 };
 
@@ -1413,7 +1415,7 @@ Compiler.prototype.clabel = function (s) {
     var top;
 
     top = this.newBlock("label: " + s.name);
-    this.pushLabelBlock(s.name, top);
+    this.pushLabelBlock(s.name, top, s.lineno);
     this._jump(top);
     this.setBlock(top);
 
