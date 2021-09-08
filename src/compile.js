@@ -1419,6 +1419,20 @@ Compiler.prototype.clabel = function (s) {
     this._jump(top);
     this.setBlock(top);
 
+    if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
+        var suspType = "Sk.delay";
+        var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
+        out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
+            "var $susp = $saveSuspension({data: {type: '"+suspType+"'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+            "$susp.$blk = "+debugBlock+";",
+            "$susp.optional = true;",
+            "return $susp;",
+            "}");
+        this._jump(debugBlock);
+        this.setBlock(debugBlock);
+        this.u.doesSuspend = true;
+    }
+
     next = this.newBlock("after label");
     this._jump(next);
     this.setBlock(next);
